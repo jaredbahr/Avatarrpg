@@ -57,8 +57,8 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
   {
     // Pella's household carries a basket up to the square and back. The
     // eight-leg schema cap sends it round the west end of the south court,
-    // clear of the house and planters, then along the road and over the canal
-    // bridge.
+    // clear of the house, planters and the kitchen garden's fence, up the west
+    // lane at x1, then along the road and over the canal bridge.
     id: 'bg.pella_household',
     mapId: VILLAGE,
     anchor: 'bd04.yard',
@@ -81,28 +81,30 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
         path: [
           { x: 3, y: 13 },
           { x: 3, y: 12 },
-          { x: 3, y: 11 },
-          { x: 3, y: 10 },
-          { x: 3, y: 9 },
-          { x: 3, y: 8 },
-          { x: 4, y: 8 },
-          { x: 5, y: 8 },
+          { x: 2, y: 12 },
+          { x: 1, y: 12 },
+          { x: 1, y: 11 },
+          { x: 1, y: 10 },
+          { x: 1, y: 9 },
+          { x: 1, y: 8 },
         ],
         hold: 1500,
       },
       {
         path: [
+          { x: 2, y: 8 },
+          { x: 3, y: 8 },
+          { x: 4, y: 8 },
+          { x: 5, y: 8 },
           { x: 6, y: 8 },
           { x: 7, y: 8 },
           { x: 8, y: 8 },
           { x: 9, y: 8 },
-          { x: 9, y: 9 },
         ],
         hold: 1500,
       },
       {
         path: [
-          { x: 9, y: 8 },
           { x: 9, y: 7 },
           { x: 9, y: 6 },
           { x: 9, y: 5 },
@@ -126,19 +128,22 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
           { x: 7, y: 8 },
           { x: 6, y: 8 },
           { x: 5, y: 8 },
+          { x: 4, y: 8 },
+          { x: 3, y: 8 },
+          { x: 2, y: 8 },
         ],
         hold: 1500,
       },
       {
         path: [
-          { x: 4, y: 8 },
-          { x: 3, y: 8 },
-          { x: 3, y: 9 },
-          { x: 3, y: 10 },
-          { x: 3, y: 11 },
+          { x: 1, y: 8 },
+          { x: 1, y: 9 },
+          { x: 1, y: 10 },
+          { x: 1, y: 11 },
+          { x: 1, y: 12 },
+          { x: 2, y: 12 },
           { x: 3, y: 12 },
           { x: 3, y: 13 },
-          { x: 3, y: 14 },
         ],
         hold: 1500,
       },

@@ -713,7 +713,7 @@ export class ResidentWalks {
       facing,
       walking,
       clipTime,
-      lean: RESIDENT_WALK_LEAN_RAD * facing * into,
+      lean: RESIDENT_WALK_LEAN_RAD * facing * into || 0, // a still figure leans +0, never -0
       alpha:
         motion.enter && c < start + fade
           ? clamp01((c - start) / fade)

@@ -534,8 +534,8 @@ export async function writeQuarryGround(
       {
         mapId,
         source: [
-          'public/art/maps/ba-dan-scene/western-approach-ground.webp',
-          'public/art/maps/ba-dan-scene/courtyard-ground.webp',
+          'assets/source/route-ground-material-main/paving.png',
+          'assets/source/route-ground-material-main/lawn.png',
         ],
         page: QUARRY_PAGE,
         regions,

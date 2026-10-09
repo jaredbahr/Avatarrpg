@@ -1,14 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { expect, it, vi } from 'vitest';
-import {
-  BA_DAN_CANAL_BANK_RADIUS,
-  BA_DAN_CANAL_BANKS,
-  BA_DAN_WATER_CELLS,
-} from '../../src/content/scenes/baDan';
+import { BA_DAN_CANAL_BANKS, BA_DAN_WATER_CELLS } from '../../src/content/scenes/baDan';
 import { pixelAt } from './lib/image';
 import { decodeWebp } from './lib/webp';
 import { bedShade, canalInset, canalMetric, canalPosition, kerbShade } from './ba-dan-canal-banks';
-import { shippedPath } from './ba-dan-water';
+import { pageToWorld, shippedPath } from './ba-dan-water';
+import { lightAt } from './ba-dan-village-light';
+import { BA_DAN_CANAL_BANK_RADIUS } from './ba-dan-edge-data';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -83,9 +81,16 @@ it('paints opaque blue water at every registered canal-cell centre', async () =>
     expect(water[3], `water ${cell.x},${cell.y} is opaque`).toBe(255);
     // The accepted fieldstone painting has pale shallows at its ends, so the
     // useful contract is a blue cast, not an arbitrary 30-level saturation.
-    expect((water[2] ?? 0) - (water[0] ?? 0), `water ${cell.x},${cell.y} is blue`).toBeGreaterThan(
-      0,
-    );
+    // The plate carries the village light (a warm lift, cooler shade), so the
+    // cast is judged on the colour with that light divided back out.
+    const world = pageToWorld(px, py);
+    const { mul } = lightAt(world.x, world.y);
+    // The master's east-end shallows at (12,6) are neutral-green (blue minus red
+    // is -3 in the unlit master itself), so that one cell only has to not be
+    // warm; every other cell must still be blue.
+    const cast = (water[2] ?? 0) / mul[2] - (water[0] ?? 0) / mul[0];
+    if (cell.x === 12) expect(cast, `water ${cell.x},${cell.y} is not warm`).toBeGreaterThan(-8);
+    else expect(cast, `water ${cell.x},${cell.y} is blue`).toBeGreaterThan(0);
   }
 });
 

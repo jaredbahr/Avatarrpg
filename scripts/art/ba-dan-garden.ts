@@ -10,9 +10,9 @@
  * "Outer garden").
  *
  * This field is drawn in the lawns' own tones (`GARDEN_TONES`, measured from
- * the quiet-grass swatch the lawns are cut from) at the restyle's grain, two
- * world pixels a texel on a lattice fixed to the world origin, so every piece
- * built from it agrees texel for texel:
+ * the quiet-grass swatch the lawns are cut from) at one source sample per
+ * world pixel on a lattice fixed to the world origin, so every piece built
+ * from it agrees pixel for pixel:
  *
  * - the garden base: two opaque plates over the board, listed first in the
  *   scene's ground, so the painted courts feather into matching grass
@@ -31,7 +31,7 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
-import type { Vec2 } from '../../src/core/types';
+import type { SceneScenery, Vec2 } from '../../src/core/types';
 import {
   BA_DAN_APRON_MAP,
   BA_DAN_COURTYARD_GROUND,
@@ -40,13 +40,21 @@ import {
   BA_DAN_SCENE,
 } from '../../src/content/scenes/baDan';
 import { tileNoise } from '../../src/render/painters/shapes';
-import { newImage, pixelAt, setPixel } from './lib/image';
+import { imageSize, newImage, pixelAt, readImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
-import { decodeWebp, encodeWebpLossless } from './lib/webp';
+import { CLUMPS, treeSpecs } from './ba-dan-trees';
+import { decodeWebp, encodeWebp } from './lib/webp';
+import {
+  GROUND_WEBP_QUALITY,
+  pavingSwatchPoint,
+  villageBake,
+  villageGroundRgb,
+  villageLawnRgb,
+} from './ba-dan-village-material';
 
 export const DIRECTORY = 'public/art/maps/ba-dan-scene';
-/** World pixels per texel: the restyled scenery's two-screen-pixel grain at zoom 1.2. */
-export const GRAIN = 2;
+/** World pixels per sample: one, matching the fine painted scene standard. */
+export const GRAIN = 1;
 /** The projection's origin, matching the scene's own pieces. */
 const ORIGIN = 1024;
 
@@ -147,8 +155,9 @@ export function onExit(x: number, y: number): boolean {
   return terrain !== 'grass' && depth > -EXIT_INSET;
 }
 
+// The unlit paving authority: the shipped courtyard plate carries the light.
 const COURTYARD = await decodeWebp(
-  new Uint8Array(readFileSync(`${DIRECTORY}/courtyard-ground.webp`)),
+  new Uint8Array(readFileSync('assets/source/ba-dan-ground-v1/courtyard-paving.webp')),
 );
 
 /** The courtyard plate's broad flagstone at a logical point of the tiled swatch. */
@@ -171,8 +180,8 @@ const luma = ([r, g, b]: Rgb): number => 0.299 * r + 0.587 * g + 0.114 * b;
  */
 export const FLAGSTONE_TONES: readonly { readonly upTo: number; readonly tone: Rgb }[] = (() => {
   const samples: Rgb[] = [];
-  for (let sy = 7.02; sy < 9; sy += 0.04)
-    for (let sx = 5.02; sx < 10; sx += 0.02) samples.push(swatch(sx, sy));
+  for (let sy = 7.08; sy < 8.93; sy += 0.04)
+    for (let sx = 5.52; sx < 10.5; sx += 0.02) samples.push(swatch(sx, sy));
   samples.sort((a, b) => luma(a) - luma(b));
   return Array.from({ length: 8 }, (_, band) => {
     const part = samples.slice(
@@ -197,10 +206,16 @@ export const FLAGSTONE_TONES: readonly { readonly upTo: number; readonly tone: R
  */
 export function flagstoneTexel(tx: number, ty: number): Rgb {
   const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
-  const sx = 5 + (((Math.floor(x) % 5) + 5) % 5) + (x - Math.floor(x));
-  const sy = 7 + (((Math.floor(y) % 2) + 2) % 2) + (y - Math.floor(y));
-  const l = luma(swatch(sx, sy));
+  const point = pavingSwatchPoint(x, y);
+  const l = luma(swatch(point.x, point.y));
   return (FLAGSTONE_TONES.find((band) => l <= band.upTo) ?? FLAGSTONE_TONES[7]!).tone;
+}
+
+/** Full-resolution courtyard paving for road exits; unlike lawn it is not a 2px texel. */
+export function flagstonePixel(wx: number, wy: number): Rgb {
+  const { x, y } = worldLogical(wx, wy);
+  const point = pavingSwatchPoint(x, y);
+  return swatch(point.x, point.y);
 }
 
 /** The texel's centre in world pixels, for a world pixel inside it. */
@@ -226,7 +241,7 @@ function valueNoise(x: number, y: number, salt: number): number {
 
 /**
  * A world-anchored clustered mask for material transitions. Unlike an ordered
- * dither this has no short repeating lattice: neighbouring two-pixel texels
+ * dither this has no short repeating lattice: neighbouring one-pixel samples
  * tend to agree, so a sparse transition reads as small painted chips rather
  * than a screen of alternating dots.
  */
@@ -234,78 +249,9 @@ export function transitionCluster(x: number, y: number, salt: number): number {
   return valueNoise(x * 2.2, y * 2.2, salt) * 0.72 + valueNoise(x * 5.1, y * 5.1, salt + 2) * 0.28;
 }
 
-/**
- * Which of three tones a texel takes: clusters about a quarter-tile across,
- * laid on the ground plane so they foreshorten with it, with a little
- * per-texel break-up so no cluster edge runs straight.
- */
-function band(x: number, y: number, tx: number, ty: number): 0 | 1 | 2 {
-  const v =
-    valueNoise(x * 3.1, y * 3.1, 41) * 0.6 +
-    valueNoise(x * 7.3, y * 7.3, 43) * 0.3 +
-    tileNoise(tx, ty, 47) * 0.1;
-  return v < 0.4 ? 0 : v < 0.62 ? 1 : 2;
-}
-
-/**
- * A tuft: blades splaying from a deep root, four texels tall. Three chances per
- * logical cell, placed by the tile hash. Returns the tone for this texel, or
- * null when no tuft covers it.
- */
-function tuft(tx: number, ty: number): Rgb | null {
-  // Texel rows of a tuft, from its root upward: [dx, tone] pairs.
-  const glyph: readonly (readonly [number, keyof typeof GARDEN_TONES][])[] = [
-    [
-      [-1, 'deep'],
-      [0, 'deep'],
-      [1, 'deep'],
-    ],
-    [
-      [-1, 'shadow'],
-      [0, 'deep'],
-      [1, 'shadow'],
-    ],
-    [
-      [-2, 'shadow'],
-      [0, 'base'],
-      [2, 'shadow'],
-    ],
-    [
-      [-2, 'light'],
-      [0, 'light'],
-      [3, 'base'],
-    ],
-  ];
-  for (let row = 0; row < glyph.length; row++) {
-    const rootY = ty + row;
-    for (const [dx, tone] of glyph[row] ?? []) {
-      const rootX = tx - dx;
-      const centre = { x: (rootX + 0.5) * GRAIN, y: (rootY + 0.5) * GRAIN };
-      const { x, y } = worldLogical(centre.x, centre.y);
-      const cell = { x: Math.floor(x), y: Math.floor(y) };
-      for (let k = 0; k < 3; k++) {
-        // The tuft's root texel, hashed per cell; only one root matches.
-        const u = tileNoise(cell.x, cell.y, 60 + k * 2);
-        const v = tileNoise(cell.x, cell.y, 61 + k * 2);
-        const root = texelCentre(
-          ORIGIN + (cell.x + u - (cell.y + v)) * 64,
-          (cell.x + u + cell.y + v) * 32,
-        );
-        if (Math.floor(root.x / GRAIN) === rootX && Math.floor(root.y / GRAIN) === rootY)
-          return GARDEN_TONES[tone];
-      }
-    }
-  }
-  return null;
-}
-
 /** The grass at a world texel. */
 export function grassTexel(tx: number, ty: number): Rgb {
-  const tufted = tuft(tx, ty);
-  if (tufted) return tufted;
-  const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
-  const tone = band(x, y, tx, ty);
-  return tone === 0 ? GARDEN_TONES.shadow : tone === 1 ? GARDEN_TONES.base : GARDEN_TONES.light;
+  return villageLawnRgb((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
 }
 
 /** Chebyshev distance in tiles from a logical point to a set of cells; negative inside. */
@@ -335,31 +281,80 @@ type Foot = {
 export const CONTACT_FEET: readonly Foot[] = await (async () => {
   const textures = new Map<string, Image>();
   const feet: Foot[] = [];
-  for (const piece of BA_DAN_SCENE.scenery) {
-    let texture = textures.get(piece.url);
+  const load = async (url: string): Promise<Image> => {
+    let texture = textures.get(url);
     if (!texture) {
-      texture = await decodeWebp(new Uint8Array(readFileSync(`public/${piece.url}`)));
-      textures.set(piece.url, texture);
+      const path = `public/${url}`;
+      const bytes = new Uint8Array(readFileSync(path));
+      texture = imageSize(bytes)?.format === 'webp' ? await decodeWebp(bytes) : readImage(path);
+      textures.set(url, texture);
     }
-    const rect = piece.sourceRect ?? { x: 0, y: 0, width: texture.width, height: texture.height };
-    const tree = piece.url.endsWith('village-tree.webp');
-    const first = Math.ceil(piece.x / GRAIN);
-    for (let tx = first; (tx + 0.5) * GRAIN < piece.x + piece.width; tx++) {
-      const u = ((tx + 0.5) * GRAIN - piece.x) / piece.width;
-      const column = Math.floor(u * rect.width);
-      const sx = rect.x + (piece.flip ? rect.width - 1 - column : column);
-      let row = -1;
-      for (let sy = rect.y + rect.height - 1; sy >= rect.y; sy--)
-        if (pixelAt(texture, sx, sy)[3] > 128) {
-          row = sy;
-          break;
-        }
-      if (row < 0) continue;
-      const wx = (tx + 0.5) * GRAIN;
-      const wy = piece.y + ((row - rect.y + 1) * piece.height) / rect.height;
-      const at = worldLogical(wx, wy);
-      if (footprintDistance(at.x, at.y, piece.footprint) <= 0.35)
-        feet.push({ x: wx, y: wy, tree, piece: piece.id });
+    return texture;
+  };
+  const specs = treeSpecs();
+  for (const scenery of BA_DAN_SCENE.scenery) {
+    // Exterior surround pieces never touch playable ground and may be PNGs.
+    if (scenery.exterior) continue;
+    const tree = scenery.id.startsWith('tree-');
+    // A clump is one sprite, but the feet are its trees' own: the lowest pixel of a column of the
+    // composite is as often the hanging leaves of a tree in front as any root, and a leaf tip that
+    // projected near a member's cell wore a bare disc into the lawn beside it.
+    const clump = /^tree-c(\d+)$/.exec(scenery.id);
+    const parts: {
+      piece: SceneScenery;
+      texture: Image;
+      rect: { x: number; y: number; width: number; height: number };
+    }[] = [];
+    if (clump) {
+      for (const id of CLUMPS[Number(clump[1])]?.members ?? []) {
+        const spec = specs.find((t) => t.id === id);
+        if (!spec) continue;
+        const texture = readImage(`art/source/ba-dan-restyle/fine/${spec.master}-village-tree.png`);
+        parts.push({
+          piece: {
+            id: scenery.id,
+            url: '',
+            x: spec.x,
+            y: spec.y,
+            width: spec.width,
+            height: spec.height,
+            // Where the tree is drawn, not the cell it blocks: a crown moved off its cells still
+            // stands on its own roots.
+            footprint: [{ x: Math.floor(spec.depth.x), y: Math.floor(spec.depth.y) }],
+            depth: spec.depth,
+            ...(spec.flip ? { flip: true } : {}),
+          },
+          texture,
+          rect: { x: 0, y: 0, width: texture.width, height: texture.height },
+        });
+      }
+    } else {
+      const texture = await load(scenery.url);
+      parts.push({
+        piece: scenery,
+        texture,
+        rect: scenery.sourceRect ?? { x: 0, y: 0, width: texture.width, height: texture.height },
+      });
+    }
+    for (const { piece, texture, rect } of parts) {
+      const first = Math.ceil(piece.x / GRAIN);
+      for (let tx = first; (tx + 0.5) * GRAIN < piece.x + piece.width; tx++) {
+        const u = ((tx + 0.5) * GRAIN - piece.x) / piece.width;
+        const column = Math.floor(u * rect.width);
+        const sx = rect.x + (piece.flip ? rect.width - 1 - column : column);
+        let row = -1;
+        for (let sy = rect.y + rect.height - 1; sy >= rect.y; sy--)
+          if (pixelAt(texture, sx, sy)[3] > 128) {
+            row = sy;
+            break;
+          }
+        if (row < 0) continue;
+        const wx = (tx + 0.5) * GRAIN;
+        const wy = piece.y + ((row - rect.y + 1) * piece.height) / rect.height;
+        const at = worldLogical(wx, wy);
+        if (footprintDistance(at.x, at.y, piece.footprint) <= 0.35)
+          feet.push({ x: wx, y: wy, tree, piece: scenery.id });
+      }
     }
   }
   return feet;
@@ -443,8 +438,10 @@ export function contactWear(tx: number, ty: number): Rgb | null {
 
 /** What the garden base paints at a world texel on the board. */
 export function gardenTexel(tx: number, ty: number): Rgb {
-  const at = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
-  return onExit(at.x, at.y) ? flagstoneTexel(tx, ty) : (contactWear(tx, ty) ?? grassTexel(tx, ty));
+  const wx = (tx + 0.5) * GRAIN;
+  const wy = (ty + 0.5) * GRAIN;
+  const at = worldLogical(wx, wy);
+  return onExit(at.x, at.y) ? flagstoneTexel(tx, ty) : villageGroundRgb(wx, wy);
 }
 
 /**
@@ -461,13 +458,16 @@ export function packGardenPlate(plate: {
   if (plate.x % GRAIN || plate.y % GRAIN)
     throw new Error('A plate must start on the texel lattice.');
   const image = newImage(plate.width, plate.height);
-  for (let ty = plate.y / GRAIN; ty < (plate.y + plate.height) / GRAIN; ty++) {
-    for (let tx = plate.x / GRAIN; tx < (plate.x + plate.width) / GRAIN; tx++) {
+  for (let py = 0; py < plate.height; py++) {
+    for (let px = 0; px < plate.width; px++) {
+      const tx = Math.floor((plate.x + px) / GRAIN);
+      const ty = Math.floor((plate.y + py) / GRAIN);
       if (!texelTouchesBoard(tx, ty)) continue;
-      const colour = gardenTexel(tx, ty);
-      for (let dy = 0; dy < GRAIN; dy++)
-        for (let dx = 0; dx < GRAIN; dx++)
-          setPixel(image, tx * GRAIN - plate.x + dx, ty * GRAIN - plate.y + dy, [...colour, 255]);
+      const wx = plate.x + px + 0.5;
+      const wy = plate.y + py + 0.5;
+      const at = worldLogical(wx, wy);
+      const colour = onExit(at.x, at.y) ? flagstonePixel(wx, wy) : gardenTexel(tx, ty);
+      setPixel(image, px, py, [...villageBake(wx, wy, colour), 255]);
     }
   }
   return image;
@@ -480,7 +480,10 @@ export function gardenPlatePath(index: number): string {
 if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/art/ba-dan-garden.ts')) {
   mkdirSync(DIRECTORY, { recursive: true });
   for (const [index, plate] of BA_DAN_GARDEN_PLATES.entries()) {
-    writeFileSync(gardenPlatePath(index), await encodeWebpLossless(packGardenPlate(plate)));
+    writeFileSync(
+      gardenPlatePath(index),
+      await encodeWebp(packGardenPlate(plate), GROUND_WEBP_QUALITY, true),
+    );
     console.log(gardenPlatePath(index));
   }
 }

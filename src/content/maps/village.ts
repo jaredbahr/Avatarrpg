@@ -11,7 +11,12 @@
 
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
-import { BA_DAN_SCENE, BA_DAN_COURTYARD_FOOTPRINTS, BA_DAN_COURT_TREES } from '../scenes/baDan';
+import {
+  BA_DAN_SCENE,
+  BA_DAN_COURTYARD_FOOTPRINTS,
+  BA_DAN_COURT_TREES,
+  BA_DAN_DRESSING_FOOTPRINTS,
+} from '../scenes/baDan';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
 export const BA_DAN_VILLAGE: MapDef = {
@@ -33,7 +38,8 @@ export const BA_DAN_VILLAGE: MapDef = {
    * each paved path meets its house stay open; Gao's routine steps from his
    * lane at (9,4) up to (10,3), a diagonal that needs (9,3) open. The west
    * road ends at the ford, `W` at (0,7) and (0,8), flooded this season; a
-   * future west region opens there behind a `Condition`, not through the rim.
+   * future west region opens there behind a `Condition`, not through the rim. The set
+   * dressing's footprints (`BA_DAN_DRESSING`) are `l` lawn like the courtyard props.
    */
   rows: [
     'TTTT,,,,,,,,,,,,,,TTTTTT',
@@ -57,7 +63,9 @@ export const BA_DAN_VILLAGE: MapDef = {
       .map((tile, x) =>
         BA_DAN_COURT_TREES.some((p) => p.x === x && p.y === y)
           ? 'T'
-          : BA_DAN_COURTYARD_FOOTPRINTS.some((p) => p.x === x && p.y === y)
+          : [...BA_DAN_COURTYARD_FOOTPRINTS, ...BA_DAN_DRESSING_FOOTPRINTS].some(
+                (p) => p.x === x && p.y === y,
+              )
             ? 'l'
             : tile,
       )

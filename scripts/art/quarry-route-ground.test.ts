@@ -11,7 +11,7 @@ import {
 import { QUARRY_GATE_GROUND_REGIONS } from '../../src/content/scenes/quarryGate';
 import type { Image } from './lib/image';
 import type { MapDef } from '../../src/core/types';
-import { pixelAt, toHex } from './lib/image';
+import { pixelAt, readImage, toHex } from './lib/image';
 import { decodeWebp, encodeWebp } from './lib/webp';
 import { FOREST_INK } from './forest-village-material';
 import {
@@ -33,7 +33,7 @@ import { COURSE, NORTH_RISE, SOUTH_RISE } from './cutting-rock';
 import { buildDrillerGantry, buildDrillerShaft, DRILLER_GANTRY_CELLS } from './driller-shaft';
 import type { Plate } from './driller-shaft';
 import { TERRAIN_STYLES } from '../../src/render/palettes';
-import { luma, measure, readPlate } from './forest-ground-measure';
+import { luma, measure } from './forest-ground-measure';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -104,9 +104,7 @@ it('carries no baked gradient and stays in the village tone band', async () => {
   // The plate these pixels are derived from, measured live rather than
   // recorded, so the assertion is "the same key as the village's own paving"
   // and not a number that can go stale.
-  const source = measure(
-    await readPlate('public/art/maps/ba-dan-scene/western-approach-ground.webp'),
-  ).mean;
+  const source = measure(readImage('assets/source/route-ground-material-main/paving.png')).mean;
   for (const [scene, built] of [
     ['driller', driller],
     ['cutting', cutting],

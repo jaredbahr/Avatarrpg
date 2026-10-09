@@ -267,8 +267,8 @@ export async function writeGateGround(overwrite: boolean): Promise<{
     JSON.stringify(
       {
         source: [
-          'public/art/maps/ba-dan-scene/western-approach-ground.webp',
-          'public/art/maps/ba-dan-scene/courtyard-ground.webp',
+          'assets/source/route-ground-material-main/paving.png',
+          'assets/source/route-ground-material-main/lawn.png',
         ],
         page: QUARRY_GATE_PAGE,
         regions,

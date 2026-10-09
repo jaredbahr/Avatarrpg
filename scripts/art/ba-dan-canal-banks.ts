@@ -25,17 +25,13 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init } from '@jsquash/webp/decode.js';
-import {
-  BA_DAN_CANAL_BANK_RADIUS,
-  BA_DAN_CANAL_BANKS,
-  BA_DAN_WATER_CELLS,
-} from '../../src/content/scenes/baDan';
+import { BA_DAN_CANAL_BANKS, BA_DAN_WATER_CELLS } from '../../src/content/scenes/baDan';
 import { newImage, pixelAt, setPixel, writePng } from './lib/image';
 import type { Image } from './lib/image';
+import { BA_DAN_CANAL_BANK_RADIUS } from './ba-dan-edge-data';
 
 /** The tracked courtyard painting this plate's material is cut from. */
 export const SOURCE = 'public/art/maps/ba-dan-scene/courtyard-ground.webp';
-export const OUTPUT = 'public/art/maps/ba-dan-scene/canal-banks.webp';
 export const SOURCE_ORIGIN = { x: 640, y: 256 } as const;
 /**
  * How many cells nearer the viewer the channel's material is cut from. The two
