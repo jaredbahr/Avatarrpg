@@ -1,5 +1,13 @@
 # Painted v3 candidate notes
 
+> **Shipped follow-up — 2026-10-09.** The silhouette and ground lines of every
+> shipped piece are forced by the guide and covered by tests. Internal structure
+> carries the drift measured below and was accepted as shipped: a visual overlay
+> of guide edges on the four shipped house sources (no measured tolerance)
+> showed ridges, eaves, corners, doors, windows, steps and plinths following the
+> guide at viewing scale. Roof-tile course count and spacing are free surface
+> paint, not structural guide geometry.
+
 ## Method
 
 Built-in image editing was used once per complete sheet, with the v3 sheet as the immutable edit target and the fine masters as material/style references. Returned sheets were confirmed at 1536x1024. Each piece was cut at its JSON rectangle, assigned the supplied mask as binary alpha, transparent RGB was cleared, and a one-pixel dark-brown outline was painted inside the mask boundary. `sheet-compare.png` contains guide / new painting / old painted sheet columns at 1x for A, B, and C, followed by 3x eave and door crops.
