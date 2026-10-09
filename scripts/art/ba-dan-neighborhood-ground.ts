@@ -3,6 +3,13 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
+import {
+  GROUND_WEBP_QUALITY,
+  pavedCell,
+  pavingSwatchPoint,
+  villageBake,
+  villageGroundRgb,
+} from './ba-dan-village-material';
 import { newImage } from './lib/image';
 import { encodeWebp } from './lib/webp';
 
@@ -32,8 +39,9 @@ async function readWebp(path: string): Promise<ImageData> {
   const bytes = readFileSync(path);
   return decode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
 }
-const courtyard = await readWebp('public/art/maps/ba-dan-scene/courtyard-ground.webp');
-const western = await readWebp('public/art/maps/ba-dan-scene/western-approach-ground.webp');
+// The unlit paving authority: the shipped courtyard and western plates carry
+// the light, and the light is applied once, after the material, here.
+const courtyard = await readWebp('assets/source/ba-dan-ground-v1/courtyard-paving.webp');
 const smoothstep = (a: number, b: number, value: number) => {
   const t = Math.max(0, Math.min(1, (value - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -51,24 +59,27 @@ const at = (
 };
 const existing = (x: number, y: number): readonly number[] | null => {
   if (x >= 5 && x < 15 && y >= 3 && y < 11) return at(courtyard, { x: 640, y: 256 }, x, y);
-  if (x >= 0 && x < 7 && y >= 6 && y < 10) return at(western, { x: 384, y: 192 }, x, y);
+  // The western approach repeats the interior road five cells west of itself.
+  if (x >= 0 && x < 5 && y >= 6 && y < 10) return at(courtyard, { x: 640, y: 256 }, x + 5, y);
   return null;
 };
 const material = (x: number, y: number, road: boolean): readonly number[] => {
-  const old = existing(x, y);
+  // Preserve authored paving, but do not carry the courtyard's quiet two-cell
+  // lawn swatch over the whole neighbourhood. The garden base already owns the
+  // village's clustered grass, tufts and broken contact wear; sampling it on
+  // the same world lattice makes the lawn plates an exact material continuation.
+  const old = road ? existing(x, y) : null;
   if (old) return old;
-  const fx = x - Math.floor(x),
-    fy = y - Math.floor(y);
-  // Both sources are verified opaque interiors: quiet grass x10..11,y4 and
-  // broad flagstone x5..9,y7..8. Never sample props, water, or a feather.
-  return road
-    ? at(
-        courtyard,
-        { x: 640, y: 256 },
-        5 + (((Math.floor(x) % 5) + 5) % 5) + fx,
-        7 + (((Math.floor(y) % 2) + 2) % 2) + fy,
-      )
-    : at(courtyard, { x: 640, y: 256 }, 10 + (((Math.floor(x) % 2) + 2) % 2) + fx, 4 + fy);
+  if (!road) {
+    const worldX = 1024 + (x - y) * 64;
+    const worldY = (x + y) * 32;
+    return villageGroundRgb(worldX, worldY);
+  }
+  // The paving source is the verified opaque broad flagstone interior of the
+  // courtyard plate, away from its feathered x5..5.45 boundary. Never sample
+  // props, water, or a feather.
+  const swatch = pavingSwatchPoint(x, y);
+  return at(courtyard, { x: 640, y: 256 }, swatch.x, swatch.y);
 };
 
 mkdirSync('public/art/maps/ba-dan-scene', { recursive: true });
@@ -96,19 +107,16 @@ for (const region of regions) {
       );
       const alpha = Math.round(255 * smoothstep(0, 0.4, edge));
       if (!alpha) continue;
-      const rgb = material(
-        worldX,
-        worldY,
-        cell === '=' || cell === '.' || cell === 'B' || cell === 'l',
-      );
+      const rgb = material(worldX, worldY, pavedCell(Math.floor(worldX), Math.floor(worldY)));
       const i = (py * width + px) * 4;
-      image.data[i] = rgb[0] ?? 0;
-      image.data[i + 1] = rgb[1] ?? 0;
-      image.data[i + 2] = rgb[2] ?? 0;
+      const lit = villageBake(px + x + 0.5, py + y + 0.5, rgb);
+      image.data[i] = lit[0];
+      image.data[i + 1] = lit[1];
+      image.data[i + 2] = lit[2];
       image.data[i + 3] = alpha;
     }
   writeFileSync(
     `public/art/maps/ba-dan-scene/${region.name}-ground.webp`,
-    await encodeWebp(image, 82, true),
+    await encodeWebp(image, GROUND_WEBP_QUALITY, true),
   );
 }

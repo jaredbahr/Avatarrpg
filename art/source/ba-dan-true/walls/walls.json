@@ -1,0 +1,227 @@
+{
+  "north-west": {
+    "origin": [
+      536,
+      -190
+    ],
+    "size": [
+      3192,
+      1392
+    ],
+    "scale": 1.5,
+    "modules": 18,
+    "paintings": [
+      "wall-corner-inside",
+      "wall-x-2",
+      "wall-x-2-b",
+      "wall-x-2-buttress",
+      "wall-x-2-c",
+      "wall-x-2",
+      "wall-x-2-buttress",
+      "wall-x-2-c",
+      "wall-x-2-b",
+      "wall-x-2",
+      "wall-x-2-buttress",
+      "wall-x-2-c",
+      "wall-x-2-b",
+      "wall-end-pier-x",
+      "wall-y-2-b",
+      "wall-y-2-c",
+      "wall-y-2-buttress",
+      "gate-pier-n"
+    ],
+    "joins": [
+      {
+        "module": "wall-y-2-b",
+        "at_world_px": [
+          1014,
+          -115
+        ],
+        "cut_px": 163
+      },
+      {
+        "module": "wall-x-2",
+        "at_world_px": [
+          1033,
+          -115
+        ],
+        "cut_px": 164
+      },
+      {
+        "module": "wall-y-2-c",
+        "at_world_px": [
+          888,
+          -49
+        ],
+        "cut_px": 148
+      },
+      {
+        "module": "wall-x-2-b",
+        "at_world_px": [
+          1159,
+          -49
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-y-2-buttress",
+        "at_world_px": [
+          760,
+          15
+        ],
+        "cut_px": 148
+      },
+      {
+        "module": "wall-x-2-buttress",
+        "at_world_px": [
+          1287,
+          15
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "gate-pier-n",
+        "at_world_px": [
+          632,
+          79
+        ],
+        "cut_px": 148
+      },
+      {
+        "module": "wall-x-2-c",
+        "at_world_px": [
+          1415,
+          79
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2",
+        "at_world_px": [
+          1543,
+          143
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2-buttress",
+        "at_world_px": [
+          1671,
+          207
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2-c",
+        "at_world_px": [
+          1799,
+          271
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2-b",
+        "at_world_px": [
+          1927,
+          335
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2",
+        "at_world_px": [
+          2055,
+          399
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2-buttress",
+        "at_world_px": [
+          2183,
+          463
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2-c",
+        "at_world_px": [
+          2311,
+          527
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-x-2-b",
+        "at_world_px": [
+          2439,
+          591
+        ],
+        "cut_px": 149
+      },
+      {
+        "module": "wall-end-pier-x",
+        "at_world_px": [
+          2567,
+          655
+        ],
+        "cut_px": 149
+      }
+    ],
+    "retaken_px": 22502
+  },
+  "west-south": {
+    "origin": [
+      -104,
+      148
+    ],
+    "size": [
+      741,
+      501
+    ],
+    "scale": 1.5,
+    "modules": 5,
+    "paintings": [
+      "gate-pier-s",
+      "wall-y-2-buttress",
+      "wall-y-2",
+      "wall-y-1",
+      "wall-end-pier-y"
+    ],
+    "joins": [
+      {
+        "module": "wall-y-2-buttress",
+        "at_world_px": [
+          312,
+          239
+        ],
+        "cut_px": 148
+      },
+      {
+        "module": "wall-y-2",
+        "at_world_px": [
+          184,
+          303
+        ],
+        "cut_px": 148
+      },
+      {
+        "module": "wall-y-1",
+        "at_world_px": [
+          56,
+          367
+        ],
+        "cut_px": 148
+      },
+      {
+        "module": "wall-end-pier-y",
+        "at_world_px": [
+          -8,
+          399
+        ],
+        "cut_px": 148
+      }
+    ],
+    "retaken_px": 5324
+  }
+}

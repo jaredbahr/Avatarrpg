@@ -31,12 +31,12 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import type { Vec2 } from '../../src/core/types';
+import { BA_DAN_EDGE_WATER } from '../../src/content/scenes/baDan';
 import {
   BA_DAN_CANAL_BANK_RADIUS,
-  BA_DAN_EDGE_WATER,
   BA_DAN_EDGE_WATER_PAGE,
   BA_DAN_FORD_STONES,
-} from '../../src/content/scenes/baDan';
+} from './ba-dan-edge-data';
 import {
   BED_COOL,
   KERB_DESATURATE,

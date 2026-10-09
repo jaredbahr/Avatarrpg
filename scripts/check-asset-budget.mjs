@@ -2,7 +2,7 @@
  * Fails the build if the shipped art exceeds its budget (ADR 0003).
  *
  * Two numbers: no family of art (a folder under public/art, e.g. units or
- * portraits) over 4 MB, and everything the service worker precaches (the
+ * portraits) over 4 MB (units and maps have a larger number of their own, below), and everything the service worker precaches (the
  * built dist, minus source maps) under 25 MB, so a first load on a tablet on
  * a family's wifi stays a breath and a Home Screen install stays small.
  */
@@ -14,6 +14,14 @@ const FAMILY_BUDGET_MB = 4;
 // ADR 0051: the PixelLab G party's locomotion now, and its stance and bend
 // sets to come (ADR 0035 had added the fire deserter at 4.75).
 const UNIT_BUDGET_MB = 6.75;
+// ADR 0075: Ba Dan's pieces are painted at 1.5x the world scale for crispness, and the scene carries
+// three atlases and two ground pages; the village is the proof the polish can be done.
+const MAPS_BUDGET_MB = 7;
+/** A family's budget; any family not named here has `FAMILY_BUDGET_MB`. */
+const FAMILY_BUDGETS_MB = new Map([
+  ['units', UNIT_BUDGET_MB],
+  ['maps', MAPS_BUDGET_MB],
+]);
 const PRECACHE_BUDGET_MB = 25;
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -52,9 +60,14 @@ for (const file of walk(artDir)) {
   const family = relative(artDir, file).split(sep)[0] ?? '.';
   families.set(family, (families.get(family) ?? 0) + statSync(file).size);
 }
-console.log('Art by family (budget %s MiB; units %s MiB):', FAMILY_BUDGET_MB, UNIT_BUDGET_MB);
+console.log(
+  'Art by family (budget %s MiB; units %s MiB; maps %s MiB):',
+  FAMILY_BUDGET_MB,
+  UNIT_BUDGET_MB,
+  MAPS_BUDGET_MB,
+);
 for (const [family, bytes] of [...families].sort()) {
-  const budget = family === 'units' ? UNIT_BUDGET_MB : FAMILY_BUDGET_MB;
+  const budget = FAMILY_BUDGETS_MB.get(family) ?? FAMILY_BUDGET_MB;
   const over = bytes > budget * 1024 * 1024;
   if (over) failed = true;
   console.log(`  ${over ? 'OVER ' : '     '}${mb(bytes).padStart(7)} MB  ${family}`);

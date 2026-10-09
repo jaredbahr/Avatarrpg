@@ -1,0 +1,27 @@
+{
+  "sourceRevision": "origin/main",
+  "crops": {
+    "paving": {
+      "source": "western-approach-ground.webp",
+      "crop": {
+        "x": 128,
+        "y": 64,
+        "width": 448,
+        "height": 224
+      },
+      "output": "paving.png",
+      "rgbaSha256": "3e75cd2a48fca9bcdeb7a2ac3690fc1a1e610a3a2381abfd0bc27b4958d79312"
+    },
+    "lawn": {
+      "source": "courtyard-ground.webp",
+      "crop": {
+        "x": 704,
+        "y": 192,
+        "width": 192,
+        "height": 96
+      },
+      "output": "lawn.png",
+      "rgbaSha256": "c3604277217e8a623f7f06e4b17e958116c6e2f840f29219fdfff2e04aeefe5f"
+    }
+  }
+}

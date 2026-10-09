@@ -1,0 +1,6 @@
+Use case: precise-object-edit
+Asset type: seamless source material atlas for a hand-painted pixel-art village ground generator
+Primary request: Replace both halves with a crisper, smaller-scale painted material while preserving the exact square canvas and the vertical split: grass on the left, worn earth on the right. Grass should use tiny irregular tufts and leaf clumps no larger than the smallest planter leaves, crisp hard-edged pixel clusters, no blur, no large fern silhouettes. Earth must be desaturated warm grey-brown close to limestone paving shadow (#9a8c72 / #8e7049 family), not orange or golden, with subtle irregular compacted patches and very sparse tiny stones. Each half must be seamless/tileable and internally varied enough to support multiple crops.
+Style/medium: authored pixel-art ground texture, flat clustered brush marks, nearest-neighbour crispness
+Color palette: grass based on #6f9e4c, #4f7538, #a8c686 but restrained; earth based on #8e7049, #9a8c72, #b3a488, muted and low saturation
+Constraints: exact same dimensions and left/right organization as input; no transition band; no grid, checkerboard, ordered dither, square cells, gradients, blur, lighting, text, watermark, paths, footprints, large rocks, flowers, or obvious repeated lattice. One painted source pixel should read as one small house-art pixel after sampling.

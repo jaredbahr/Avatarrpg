@@ -1,12 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { BA_DAN_EDGE_WATER, BA_DAN_FORD_STONES } from '../../src/content/scenes/baDan';
+import { BA_DAN_EDGE_WATER } from '../../src/content/scenes/baDan';
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
 import { pixelAt } from './lib/image';
 import { decodeWebp } from './lib/webp';
 import { packWater, shippedPath } from './ba-dan-water';
 import { APRON_FADE, apronAlpha, apronDepth } from './ba-dan-exterior-apron';
 import { FILM, packEdgePage, waterMetric } from './ba-dan-edges';
+import { BA_DAN_FORD_STONES } from './ba-dan-edge-data';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -45,6 +46,7 @@ describe('Ba Dan edge water (reference footprint and shipped page)', () => {
     let alphaMismatch = 0;
     let filmed = 0;
     let water = 0;
+    let coolOutside = 0;
     for (const piece of BA_DAN_EDGE_WATER)
       for (let py = 0; py < piece.height; py++)
         for (let px = 0; px < piece.width; px++) {
@@ -53,9 +55,18 @@ describe('Ba Dan edge water (reference footprint and shipped page)', () => {
           const want = pixelAt(page, sx, sy);
           const got = pixelAt(shipped, sx, sy);
           if (want[3] !== got[3]) alphaMismatch++;
+          // The footprint is the geometry, not a colour: it used to be counted as
+          // "blue over red", which depends on how bright the paving under the
+          // shallows is, so a repainted ground moved four shallow water pixels
+          // across that threshold and the count with it. Cool pixels outside the
+          // metric would be paving or kerb the film had leaked onto.
+          const dx = (piece.x + px + 0.5 - 1024) / 64;
+          const dy = (piece.y + py + 0.5) / 32;
+          const inWater = waterMetric((dx + dy) / 2, (dy - dx) / 2, piece.cells) <= 1;
+          if (want[3] === 255 && !inWater && cool(want) > 0) coolOutside++;
           // Where the reference holds film over water, the painted page must not be
           // the flat film colour: #3e8fb0 within a few levels is the old wash.
-          if (want[3] === 255 && cool(want) > 0) {
+          if (want[3] === 255 && inWater) {
             water++;
             if (
               Math.abs((got[0] ?? 0) - FILM.colour[0]) < 6 &&
@@ -69,8 +80,19 @@ describe('Ba Dan edge water (reference footprint and shipped page)', () => {
     // long channel occupies the page's separate upper sourceRect and is held
     // byte-for-byte by packWater above; 40k described that retired combined
     // footprint, not this piece's geometric reference.
-    expect(water).toBe(13_500);
-    expect({ alphaMismatch, filmed }).toEqual({ alphaMismatch: 0, filmed: 0 });
+    // The ford's footprint inherits the apron's solid band, which now runs to the
+    // margin's low bank (`APRON_BANK_MIN`..`MAX`) instead of fading out in steps
+    // from half a tile, so more of the piece is opaque water than the 13,504 the
+    // stepped fade left. The bank's outer edge now carries hedge crowns
+    // (`apronBank` in `ba-dan-exterior-apron.ts`), a tenth-of-a-tile wobble that
+    // moved the count from 23,279 to 23,260. The film/alpha/cool-outside
+    // assertions below are unchanged.
+    expect(water).toBe(23_260);
+    expect({ alphaMismatch, filmed, coolOutside }).toEqual({
+      alphaMismatch: 0,
+      filmed: 0,
+      coolOutside: 0,
+    });
   });
 
   it('floods the two ford cells, where the road now ends', () => {
