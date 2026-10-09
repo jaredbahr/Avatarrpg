@@ -1,0 +1,230 @@
+{
+  "projection": {
+    "assets": {
+      "true-dwelling-4x3": {
+        "measure": {
+          "left": {
+            "fit": [
+              [
+                14,
+                400
+              ]
+            ]
+          },
+          "right": {
+            "fit": [
+              [
+                397,
+                687
+              ]
+            ]
+          }
+        }
+      },
+      "true-merchant-house-4x3": {
+        "measure": {
+          "left": {
+            "fit": [
+              [
+                14,
+                400
+              ]
+            ]
+          },
+          "right": {
+            "fit": [
+              [
+                397,
+                687
+              ]
+            ]
+          }
+        }
+      },
+      "true-dwelling-4x4": {
+        "measure": {
+          "left": {
+            "fit": [
+              [
+                14,
+                400
+              ]
+            ]
+          },
+          "right": {
+            "fit": [
+              [
+                397,
+                783
+              ]
+            ]
+          }
+        }
+      },
+      "true-merchant-house-4x4": {
+        "measure": {
+          "left": {
+            "fit": [
+              [
+                14,
+                400
+              ]
+            ]
+          },
+          "right": {
+            "fit": [
+              [
+                397,
+                783
+              ]
+            ]
+          }
+        }
+      },
+      "true-merchant-display": {
+        "measure": {
+          "left": {
+            "feet": [
+              [
+                33,
+                41
+              ],
+              [
+                204,
+                212
+              ]
+            ]
+          },
+          "right": {
+            "feet": [
+              [
+                204,
+                212
+              ],
+              [
+                276,
+                284
+              ]
+            ]
+          }
+        }
+      },
+      "true-merchant-display-b": {
+        "measure": {
+          "left": {
+            "feet": [
+              [
+                33,
+                41
+              ],
+              [
+                204,
+                212
+              ]
+            ]
+          },
+          "right": {
+            "feet": [
+              [
+                204,
+                212
+              ],
+              [
+                276,
+                284
+              ]
+            ]
+          }
+        }
+      },
+      "true-merchant-display-c": {
+        "measure": {
+          "left": {
+            "feet": [
+              [
+                33,
+                41
+              ],
+              [
+                204,
+                212
+              ]
+            ]
+          },
+          "right": {
+            "feet": [
+              [
+                204,
+                212
+              ],
+              [
+                276,
+                284
+              ]
+            ]
+          }
+        }
+      },
+      "true-low-planter": {
+        "measure": {
+          "left": {
+            "fit": [
+              [
+                20,
+                209
+              ]
+            ]
+          },
+          "right": {
+            "fit": [
+              [
+                205,
+                297
+              ]
+            ]
+          }
+        }
+      },
+      "true-low-planter-1x2": {
+        "measure": {
+          "left": {
+            "fit": [
+              [
+                20,
+                113
+              ]
+            ]
+          },
+          "right": {
+            "fit": [
+              [
+                109,
+                297
+              ]
+            ]
+          }
+        }
+      },
+      "true-canal-bridge": {
+        "measure": {
+          "left": {
+            "fit": [
+              [
+                71,
+                112
+              ]
+            ]
+          },
+          "right": {
+            "fit": [
+              [
+                195,
+                295
+              ]
+            ]
+          }
+        }
+      }
+    }
+  }
+}

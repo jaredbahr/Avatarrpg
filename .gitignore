@@ -24,3 +24,5 @@ test-results/
 # Art intake: generator output and the normalised frames between it and a packed sheet.
 /art/raw/
 /art/normalised/
+__pycache__/
+*.pyc

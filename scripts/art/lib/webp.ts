@@ -9,7 +9,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init as initDecoder } from '@jsquash/webp/decode.js';
 import encode, { init } from '@jsquash/webp/encode.js';
+import type { EncodeOptions } from '@jsquash/webp/meta.js';
 import type { Image } from './image';
+import { LOSSY_MAX_RGB, LOSSY_MEAN_RGB, lossyError } from './lossy-compare';
 
 let ready: Promise<unknown> | null = null;
 let decoderReady: Promise<unknown> | null = null;
@@ -63,19 +65,51 @@ export async function encodeWebpLossless(image: Image): Promise<Uint8Array> {
   return new Uint8Array(buffer);
 }
 
-/** Lossy WebP; ordinary paintings are opaque, upright scene layers retain alpha. */
+/**
+ * Lossy WebP; ordinary paintings are opaque, upright scene layers retain alpha.
+ * The alpha plane is coded losslessly (the encoder's default `alpha_quality`
+ * of 100), so a transparent edge never moves; `options` override the rest.
+ */
 export async function encodeWebp(
   image: Image,
   quality: number,
   preserveAlpha = false,
+  options: Partial<EncodeOptions> = {},
 ): Promise<Uint8Array> {
   await encoder();
   const data = new Uint8ClampedArray(image.data.length);
   data.set(image.data);
   if (!preserveAlpha) for (let i = 3; i < data.length; i += 4) data[i] = 255;
   const pixels = { data, width: image.width, height: image.height, colorSpace: 'srgb' };
-  const buffer = await encode(pixels as ImageData, { quality });
+  const buffer = await encode(pixels as ImageData, { quality, ...options });
   return new Uint8Array(buffer);
+}
+
+/**
+ * Upright scenery and surround atlases: lossy with an exact alpha plane. Chosen
+ * from a 4x comparison sheet (not kept): q85 softens small
+ * flowers, q90 shows no ringing or edge halo. Sharp YUV keeps the outline's
+ * colour from bleeding into the transparent side of the edge.
+ */
+export const UPRIGHT_WEBP_QUALITY = 90;
+export const UPRIGHT_WEBP_OPTIONS: Partial<EncodeOptions> = { method: 6, use_sharp_yuv: 1 };
+
+/**
+ * Encode an upright piece or atlas the way it ships: q90, stepping up one
+ * quality at a time only when the decoded pixels miss the fine-grain contract
+ * (`lossyError` limits). Pieces that already meet it stay byte-identical; the
+ * finest-grained paintings need a few steps more. Throws when even q100 misses it.
+ */
+export async function encodeUprightWebp(image: Image): Promise<Uint8Array> {
+  for (let quality = UPRIGHT_WEBP_QUALITY; ; quality++) {
+    const bytes = await encodeWebp(image, quality, true, UPRIGHT_WEBP_OPTIONS);
+    const error = lossyError(image, await decodeWebp(bytes));
+    if (error.maxRgb <= LOSSY_MAX_RGB && error.meanRgb < LOSSY_MEAN_RGB) return bytes;
+    if (quality >= 100)
+      throw new Error(
+        `encodeUprightWebp: q100 still misses the lossy contract (max ${error.maxRgb}, mean ${error.meanRgb.toFixed(2)}); fit the source first`,
+      );
+  }
 }
 
 const ascii = (bytes: Uint8Array, offset: number, length: number): string =>

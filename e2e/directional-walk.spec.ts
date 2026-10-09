@@ -80,9 +80,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       });
       // South first: on the village map the canal closes the lawn north of the
       // spawn, so the northward leg is the walk back up to the road.
+      // On the village map the lawn south of the spawn now holds the market
+      // stall and garden plot two tiles down, so that leg is one road tile.
+      const span = riverside ? 4 : 1;
       const legs = [
-        ['North', -4],
-        ['South', 4],
+        ['North', -span],
+        ['South', span],
       ] as const;
       for (const [direction, dy] of riverside ? legs : [legs[1], legs[0]]) {
         // Logical north/south projects diagonally on Ba Dan's oblique basis;

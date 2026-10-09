@@ -35,8 +35,18 @@ approved look. Checkable rules, cross-referenced to where each is decided:
   [player-view-target.md](player-view-target.md#what-the-pictures-do-not-decide).
   This is separate from the character camera in the table below (see the note
   there).
-- **Outline.** Uniform dark brown ink, `#1b1410`, on every asset. Never black,
-  never tapered.
+- **Scene pieces are guided, not conformed.** A building, stall, planter or bridge
+  is built first as code geometry in the map's exact projection (every tile-axis
+  edge at slope +-0.5, verticals vertical), painted over that guide, cut by its
+  silhouette and edge-treated from the same geometry; never painted freehand
+  and then resampled onto the grid. Its light and its contact with the ground are
+  baked into the ground plates from the same geometry, so the piece itself
+  carries no cast or ground shadow. See
+  [art/ba-dan-scene.md](art/ba-dan-scene.md#village-pieces-guide-and-paint-current).
+- **Outline.** Fine scenery and characters use soft dark-brown outlines,
+  normally one to two screen pixels wide, with painted ramps rather than a
+  single hard contour. Use `#1b1410` for the darkest edge; never black or
+  visibly square/texel-stamped.
 - **Shading.** Exactly two flat tones per material (base and shadow) plus one
   thin pale rim light on the lit edge. No gradients, no photographic texture,
   no lens effects.
@@ -57,10 +67,12 @@ approved look. Checkable rules, cross-referenced to where each is decided:
 
 ## The look in one paragraph
 
-Flat cel shading with clean ink lines and painterly ground. Characters read as
-two-tone: a base colour and one shadow tone per material, with a thin rim
-light on the lit edge. Outlines are a uniform dark brown (`#1b1410`), never
-black, never tapered. No gradients, no photographic texture, no lens effects.
+Fine painted scenery and characters carry detail to about one screen pixel at
+the default camera (characters are about 0.94 screen px per source px), with
+soft dark-brown outlines one to two pixels wide and painted ramps. No visible
+square texels, no asset blurrier than the characters, and no photographic
+texture or lens effects. Characters still read as a base colour and one shadow
+tone per material, with a thin rim light on the lit edge.
 Bending effects are shaped: fire as ribbons and licks, water as whips and
 sheets, earth as slabs and shards, air as spirals and arcs. Everything must
 survive being 40 pixels tall.

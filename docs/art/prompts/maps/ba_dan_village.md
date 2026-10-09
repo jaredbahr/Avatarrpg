@@ -8,7 +8,7 @@
 
 **Layout** `ba_dan_village-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, wood `#6b4f33`, road `#b39064`, stone `#d8cbb0`, dirt `#b39064`, water deep `#1f4a5e`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, wood `#6b4f33`, stone `#d8cbb0`, road `#b39064`, dirt `#b39064`, water deep `#1f4a5e`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -22,8 +22,8 @@ Ba Dan, the small village the party sets out from: a clearing in the woods.
 - Still water (12 tiles): a 9×1 block at columns 0–8, row 6 (middle left); a 3×1 block at columns 10–12, row 6 (the centre).
 - Trees (46 tiles): 13 tiles (top right), row 0: columns 18–23; row 1: columns 22–23; rows 2–6: column 23; 11 tiles (bottom left), rows 9–13: column 0; row 14: columns 0–1; row 15: columns 0–3; 10 tiles (top left), row 0: columns 0–3; row 1: columns 0–1; rows 2–5: column 0; 10 tiles (bottom right), rows 9–13: column 23; row 14: columns 22–23; row 15: columns 21–23; one tile at column 21, row 2 (top right); one tile at column 5, row 5 (middle left).
 - Timber walls (52 tiles): 16 tiles (bottom centre), rows 10–11: columns 14–17; rows 12–13: columns 13–16; 14 tiles (bottom centre), rows 10–11: columns 6–8; rows 12–13: columns 6–9; 11 tiles (top centre), rows 1–2: columns 6–9; row 3: columns 6–8; 11 tiles (top centre), rows 1–2: columns 12–15; row 3: columns 13–15.
-- Stone walls (16 tiles): a 4×1 block at columns 4–7, row 9 (middle left); a 2×1 block at columns 7–8, row 4 (top centre); a 2×1 block at columns 13–14, row 4 (top centre); a 2×1 block at columns 16–17, row 4 (top right); a 1×2 block at column 0, rows 7–8 (middle left); a 2×1 block at columns 14–15, row 9 (the centre); a 2×1 block at columns 10–11, row 10 (the centre).
-- Open ground everywhere else: grass (189 tiles), bare earth (7 tiles).
+- Stone walls (40 tiles): 10 tiles (middle left), rows 9–10: columns 2–4; row 11: columns 2–5; a 5×1 block at columns 17–21, row 4 (top right); a 4×1 block at columns 1–4, row 5 (middle left); 4 tiles (middle right), row 9: column 20; row 10: columns 18–20; 3 tiles (the centre), row 5: columns 14–15; row 6: column 14; a 2×1 block at columns 10–11, row 2 (top centre); a 2×1 block at columns 17–18, row 2 (top right); a 2×1 block at columns 6–7, row 5 (middle left); a 1×2 block at column 0, rows 7–8 (middle left); a 2×1 block at columns 10–11, row 10 (the centre); one tile at column 18, row 6 (middle right); one tile at column 20, row 6 (middle right); one tile at column 16, row 9 (middle right); one tile at column 12, row 13 (bottom centre).
+- Open ground everywhere else: grass (165 tiles), bare earth (7 tiles).
 - The party enters from the left, standing at (3, 7); enemies come from the right. The exit is at (23, 7). Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
@@ -31,23 +31,23 @@ The rows as the rules read them:
 ```
 TTTT,,,,,,,,,,,,,,TTTTTT
 TT,,,,BBBB,,BBBB,,,,,,TT
-T,,,,,BBBB,,BBBB,,,,,T,T
+T,,,,,BBBBllBBBB,ll,,T,T
 T,,,,,BBB=,,=BBB,,,,,,,T
-T,,,,,,ll=,,=ll,ll,,,,,T
-T,,,,T,,,=====,,,,,,,,,T
-~~~~~~~~~=~~~=,,,,,,,,,T
+T,,,,,,,,=,,=,,,,lllll,T
+TllllTll,=====ll,,,,,,,T
+~~~~~~~~~=~~~=l,,,l,l,,T
 W=====================..
 W=====================..
-T,,,llll,=====ll,,,,,,,T
-T,,,,,BBB=ll,=BBBB,,,,,T
-T,,,,,BBB=,,,=BBBB,,,,,T
+T,lll,,,,=====,,l,,,l,,T
+T,lll,BBB=ll,=BBBBlll,,T
+T,llllBBB=,,,=BBBB,,,,,T
 T,,,,,BBBB,,,BBBB,,,,,,T
-T,,,,,BBBB,,,BBBB,,,,,,T
+T,,,,,BBBB,,lBBBB,,,,,,T
 TT,,,,,,,,,,,,,,,,,,,,TT
 TTTT,,,,,,,,,,,,,,...TTT
 ```
 
-Legend: `T` trees; `,` grass; `B` timber walls; `=` road; `l` stone walls; `~` still water; `W` stone walls; `.` bare earth.
+Legend: `T` trees; `,` grass; `B` timber walls; `l` stone walls; `=` road; `~` still water; `W` stone walls; `.` bare earth.
 
 ## Prompt
 

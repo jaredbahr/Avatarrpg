@@ -23,15 +23,13 @@
  *
  * Nothing here writes to the village. The two plates are opened read-only.
  */
-import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import decode, { init as initWebpDecode } from '@jsquash/webp/decode.js';
 import {
   BA_DAN_COURTYARD_GROUND,
   BA_DAN_WESTERN_APPROACH_GROUND,
 } from '../../src/content/scenes/baDan';
 import { tileNoise } from '../../src/render/painters/shapes';
-import { parseHex } from './lib/image';
+import { parseHex, readImage } from './lib/image';
+import type { Image } from './lib/image';
 
 /**
  * DL-2 §3, the one ground language. Exactly two flat tones per material plus
@@ -147,7 +145,7 @@ export type CropName = 'paving' | 'lawn';
 
 export interface Crop {
   /** Village plate this crop lives on, and where that plate sits in the scene. */
-  readonly image: ImageData;
+  readonly image: Image;
   readonly origin: { readonly x: number; readonly y: number };
   /** Half-open logical tile bounds, verified fully opaque before use. */
   readonly x0: number;
@@ -164,18 +162,6 @@ export interface Crop {
 /** Rec. 709 luma on the stored sRGB bytes; the same weighting the measure uses. */
 function luma(r: number, g: number, b: number): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-let decoderReady: Promise<void> | null = null;
-async function readWebp(path: string): Promise<ImageData> {
-  if (!decoderReady) {
-    const require = createRequire(import.meta.url);
-    const wasm = readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm'));
-    decoderReady = WebAssembly.compile(wasm).then((module) => initWebpDecode(module));
-  }
-  await decoderReady;
-  const bytes = readFileSync(path);
-  return decode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
 }
 
 /** The village's forward projection, exactly as the neighbourhood packer writes it. */
@@ -249,8 +235,8 @@ export function structure(crop: Crop, x: number, y: number, salt: number): Struc
  * paintings; only the tone table differs between scenes.
  */
 export async function loadVillageCrops(): Promise<Record<CropName, Crop>> {
-  const courtyard = await readWebp('public/art/maps/ba-dan-scene/courtyard-ground.webp');
-  const western = await readWebp('art/material-samples/ba-dan-western-approach-ground.webp');
+  const courtyard = readImage('assets/source/route-ground-material-main/lawn.png');
+  const western = readImage('assets/source/route-ground-material-main/paving.png');
   // Both interiors are the ones the village's own packer certifies: broad
   // paving from the accepted western approach and the quiet lawn at x10..11,y4
   // of the courtyard. The paving source is frozen because re-encoding the
@@ -258,7 +244,10 @@ export async function loadVillageCrops(): Promise<Record<CropName, Crop>> {
   // otherwise untouched pixels. Neither crop holds a prop, water or a feather.
   const paving: Crop = {
     image: western,
-    origin: BA_DAN_WESTERN_APPROACH_GROUND,
+    origin: {
+      x: BA_DAN_WESTERN_APPROACH_GROUND.x + 128,
+      y: BA_DAN_WESTERN_APPROACH_GROUND.y + 64,
+    },
     x0: 1,
     x1: 6,
     y0: 7,
@@ -269,7 +258,7 @@ export async function loadVillageCrops(): Promise<Record<CropName, Crop>> {
   };
   const lawn: Crop = {
     image: courtyard,
-    origin: BA_DAN_COURTYARD_GROUND,
+    origin: { x: BA_DAN_COURTYARD_GROUND.x + 704, y: BA_DAN_COURTYARD_GROUND.y + 192 },
     x0: 10,
     x1: 12,
     y0: 4,

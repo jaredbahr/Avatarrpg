@@ -1,0 +1,83 @@
+{
+  "generated": "2026-10-06",
+  "provenance": "Owner-reviewed fine candidates from built-in OpenAI image generation. Original exact generation prompts are unavailable; the prompt below is a reconstructed acceptance brief, not a verbatim generation transcript.",
+  "prompt": "Repaint each existing shipped Ba Dan design with fine painted detail at the characters grain, about one screen pixel at default zoom. Preserve design, warm upper-left lighting, silhouette, registration and materials. Use soft dark-brown outlines one to two source pixels wide, painted ramps and no visible square texels; nothing blurrier than the characters. Carry dark-brown contact shading and slight lowest-stone-course darkening in the source.",
+  "preparation": "Retained masters only: dwelling and village-tree are borrowed by Forest Road; the four native trees are the village's. The village's houses, stalls, planters and bridge are the true pieces (art/source/ba-dan-true/). The scripts that prepared the replaced masters were removed with them.",
+  "assets": {
+    "dwelling": {
+      "source": "untracked candidate (the hash below pins it)",
+      "sourceSha256": "82eb07a27c2d1a21601f5a3f48c866c40fd9856efede940f1f9a1eae9d23eed0",
+      "sha256": "e42bc12b4f98a979109ec291da50fa762a925b95aac76be48b25bbdd230764d8",
+      "repaints": "public/art/maps/ba-dan-scene/dwelling.webp",
+      "prompt": "variety-prompts.md",
+      "repair": "Lit repaint on the old master's canvas and alpha (painter's notes: variety-prompts.md). It is the Forest Road lodge and is no longer used by the village, which draws the true pieces. It was put on the map's 2:1 projection by an affine resample (Lanczos-3, premultiplied colour, binary alpha) from a pre-correction master that is no longer tracked; the measurement below pins the result."
+    },
+    "village-tree": {
+      "source": "untracked candidate (the hash below pins it)",
+      "sourceSha256": "eadd9a7cd928c2ab1af6c036b5117dce0d05976e590e70264706b4312e6696a3",
+      "sha256": "776e25ee19e6c37de922822e5498dd7cf687383b05da8af6858f0400ec441ab4",
+      "repaints": "public/art/maps/ba-dan-scene/village-tree.webp",
+      "repair": "Integer vertical shift 0 px; local silhouette edge extensions up to 3 px; no whole-image scaling. Brown root tips extend toward the exact foot row and topmost foliage extends by two pixels."
+    },
+    "large-village-tree": {
+      "source": "untracked candidate (the hash below pins it)",
+      "sourceSha256": "326b7960fa20581259400c31b582121863f51e51b5d188ffe494938ab0b0a8e1",
+      "sha256": "40c944b7664e5f5deea19c07e48e4b913c31cd4b75202213a8fee4f37fafb246",
+      "repaints": "public/art/maps/ba-dan-scene/large-village-tree.webp",
+      "prompt": "variety-prompts.md",
+      "repair": "Native-size tree, placed unscaled. Alpha thresholded at 128 to binary; RGB untouched."
+    },
+    "medium-village-tree": {
+      "source": "untracked candidate (the hash below pins it)",
+      "sourceSha256": "0b4e86b8fbc0d25dc7609476cc5321e64426b9906f67670f73b25c2b900d3c72",
+      "sha256": "048c1983a5edfdbd1909b45cb8ddb3c68a828a7918c1374037ee9cfdbab65e8e",
+      "repaints": "public/art/maps/ba-dan-scene/medium-village-tree.webp",
+      "prompt": "variety-prompts.md",
+      "repair": "Native-size tree, placed unscaled. Alpha thresholded at 128 to binary; RGB untouched."
+    },
+    "small-village-tree": {
+      "source": "untracked candidate (the hash below pins it)",
+      "sourceSha256": "a09e6d20ee8bfb985d0889146117907d05c60e66e23b7a64ff752c83bf09a0da",
+      "sha256": "dc8696bdc00efac4dc94a662be9f91171a3f11df3a10b54efa607aeaeee70abc",
+      "repaints": "public/art/maps/ba-dan-scene/small-village-tree.webp",
+      "prompt": "variety-prompts.md",
+      "repair": "Native-size tree, placed unscaled. Alpha thresholded at 128 to binary; RGB untouched. One pixel blended toward its neighbours by ba-dan-lossy-fit.ts."
+    },
+    "sapling-village-tree": {
+      "source": "untracked candidate (the hash below pins it)",
+      "sourceSha256": "3c0e6193b2f0f47cb44caa2ef3f1b0f530cc8bcdedd17da6932b297aeff0b69a",
+      "sha256": "5bb5095a91d8e4508052cbfbd9d424ab2534413ef4ab32e174f1912026103f6d",
+      "repaints": "public/art/maps/ba-dan-scene/sapling-village-tree.webp",
+      "prompt": "variety2 NOTES.md",
+      "repair": "Native-size tree, placed unscaled. Alpha thresholded at 128 to binary; RGB untouched. One pixel blended toward its neighbours by ba-dan-lossy-fit.ts. Chroma averaged over each 2x2 block (chroma-fit.py) so the 4:2:0 encode holds the mean-error contract; luma and alpha untouched."
+    }
+  },
+  "varietyPrepared": "2026-10-07: village-tree is the old master, kept for the forest alder (its lit repaint was rejected: jet-black underside matte); three native trees and the 150x165 sapling were added.",
+  "projection": {
+    "assets": {
+      "dwelling": {
+        "measure": {
+          "left": {
+            "fit": [[12, 240]]
+          },
+          "right": {
+            "fit": [[430, 600]]
+          }
+        },
+        "leftSlope": 0.4564,
+        "rightSlope": -0.4082,
+        "a": 0.8645,
+        "k": -0.0241,
+        "placed": {
+          "width": 602,
+          "height": 388,
+          "a": 0.847176,
+          "shiftX": 41,
+          "shiftY": 14
+        }
+      }
+    },
+    "target": "Every ground line on the map runs at slope +0.5 (along grid x) or -0.5 (along grid y): 26.565 degrees.",
+    "method": "The lodge master is measured on its lower silhouette (scripts/art/lib/ba-dan-projection.ts: Theil-Sen over the windows in \"measure\") for its left slope mL (running down to the right) and right slope mR; it was conformed with x' = a*x, y' = y + k*x, a = mL - mR, k = -(mL + mR)/2, which sends them onto +0.5 and -0.5. \"placed\" records where the pre pixels went. The shipped dwelling.webp is guarded by ba-dan-projection.test.ts."
+  }
+}

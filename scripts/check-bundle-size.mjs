@@ -10,7 +10,8 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const BUDGET_KB = 350;
+// ADR 0074 (360); ADR 0066 had raised it from 320 to 350.
+const BUDGET_KB = 360;
 const dist = resolve(dirname(fileURLToPath(import.meta.url)), '../dist');
 
 function walk(dir) {

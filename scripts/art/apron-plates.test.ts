@@ -10,6 +10,10 @@ import {
   BA_DAN_APRON_DEPTH,
   BA_DAN_APRON_MAP,
   BA_DAN_APRON_PIECES,
+  BA_DAN_FRAME,
+  BA_DAN_FRAME_BANDS,
+  BA_DAN_FRAME_PIECES,
+  BA_DAN_SCENE,
 } from '../../src/content/scenes/baDan';
 import {
   FOREST_APRON_BANDS,
@@ -21,9 +25,16 @@ import {
 import { apronBands, type ApronBand } from './lib/apron-bands';
 import {
   DIRECTORY as BA_DAN_DIRECTORY,
+  FRAME_ENTRIES,
+  FRAME_STEM,
   QUALITY as BA_DAN_QUALITY,
   STEM as BA_DAN_STEM,
+  frameAtlasItems,
+  layoutFrame,
   packApron,
+  packFrame,
+  packFrameAtlas,
+  planFrameBands,
 } from './ba-dan-exterior-apron';
 import {
   DIRECTORY as FOREST_DIRECTORY,
@@ -33,7 +44,7 @@ import {
 } from './forest-exterior-apron';
 import { apronPlatePath } from './lib/apron-plates';
 import { crop } from './lib/trim';
-import { encodeWebp } from './lib/webp';
+import { decodeWebp, encodeWebp } from './lib/webp';
 import type { Image } from './lib/image';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
@@ -167,5 +178,88 @@ describe('the art on disk', () => {
           path,
         ).toEqual(shipped);
       }
+  });
+});
+
+/**
+ * The south and east frame ships differently from the ring: not a file a band but one page,
+ * `exterior-frame.webp`, with each band a rectangle of it (the scene may ask for 40 distinct images,
+ * and the ring's twelve bands already cost twelve). These are the same proofs.
+ */
+describe('the south and east frame', () => {
+  const plate = packFrame();
+  const bands = BA_DAN_FRAME_BANDS;
+
+  it('is the cut the planner makes of the plate, in as few entries as the scene has room for', () => {
+    expect(plate.width).toBe(BA_DAN_FRAME.width);
+    expect(plate.height).toBe(BA_DAN_FRAME.height);
+    expect(bands.map(({ x, y, width, height }) => ({ x, y, width, height }))).toEqual(
+      planFrameBands(plate, FRAME_ENTRIES),
+    );
+    // The scene's ground may list 32 pieces; the frame takes the last of them but one.
+    expect(BA_DAN_SCENE.ground.length).toBeLessThan(32);
+    expect(BA_DAN_FRAME_PIECES).toHaveLength(bands.length);
+  });
+
+  it('covers every painted pixel once, and keeps every band inside the texture every iPad takes', () => {
+    const covered = new Uint8Array(plate.width * plate.height);
+    for (const [index, band] of bands.entries()) {
+      expect(Math.max(band.width, band.height), `band ${index}`).toBeLessThanOrEqual(TEXTURE_CAP);
+      expect(band.x).toBeGreaterThanOrEqual(0);
+      expect(band.y).toBeGreaterThanOrEqual(0);
+      expect(band.x + band.width).toBeLessThanOrEqual(plate.width);
+      expect(band.y + band.height).toBeLessThanOrEqual(plate.height);
+      for (let y = band.y; y < band.y + band.height; y++)
+        for (let x = band.x; x < band.x + band.width; x++)
+          covered[y * plate.width + x] = (covered[y * plate.width + x] ?? 0) + 1;
+    }
+    let missed = 0;
+    let doubled = 0;
+    for (let i = 0; i < covered.length; i++) {
+      if ((plate.data[i * 4 + 3] ?? 0) >= PAINTED && !covered[i]) missed++;
+      if ((covered[i] ?? 0) > 1) doubled++;
+    }
+    expect(missed, 'painted pixels no band covers').toBe(0);
+    expect(doubled, 'pixels two bands cover').toBe(0);
+    // And the bands drop most of the plate's clear texels, as the ring's do.
+    const area = bands.reduce((total, band) => total + band.width * band.height, 0);
+    expect(area).toBeLessThan(plate.width * plate.height * 0.4);
+  });
+
+  it('is laid on one page of at most 2048 pixels, each rectangle where the scene says', () => {
+    const items = frameAtlasItems(plate, bands);
+    const { placed, width, height } = layoutFrame(items);
+    expect(Math.max(width, height)).toBeLessThanOrEqual(TEXTURE_CAP);
+    for (const [index, band] of bands.entries()) {
+      const at = placed.find((p) => p.name === `band-${index}`)!;
+      expect(band.atlas, `band ${index}`).toEqual({ x: at.x, y: at.y });
+      expect(BA_DAN_FRAME_PIECES[index], `piece ${index}`).toEqual({
+        url: `art/maps/ba-dan-scene/${FRAME_STEM}.webp`,
+        sourceRect: { x: at.x, y: at.y, width: band.width, height: band.height },
+        x: BA_DAN_FRAME.x + band.x,
+        y: BA_DAN_FRAME.y + band.y,
+        width: band.width,
+        height: band.height,
+      });
+    }
+  });
+
+  it('is the shipped page, byte for byte, with every band decoding to its crop within the encode error', async () => {
+    const shipped = readFileSync(`${BA_DAN_DIRECTORY}/${FRAME_STEM}.webp`);
+    const packed = await packFrameAtlas(plate);
+    expect(Buffer.from(packed.bytes)).toEqual(shipped);
+    const page = await decodeWebp(new Uint8Array(shipped));
+    expect([page.width, page.height]).toEqual([packed.width, packed.height]);
+    for (const [index, band] of bands.entries()) {
+      let alphaOff = 0;
+      for (let y = 0; y < band.height; y++)
+        for (let x = 0; x < band.width; x++)
+          if (
+            (plate.data[((band.y + y) * plate.width + band.x + x) * 4 + 3] ?? 0) !==
+            (page.data[((band.atlas.y + y) * page.width + band.atlas.x + x) * 4 + 3] ?? 0)
+          )
+            alphaOff++;
+      expect(alphaOff, `band ${index} alpha`).toBe(0);
+    }
   });
 });

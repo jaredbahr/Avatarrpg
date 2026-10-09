@@ -51,7 +51,7 @@ jobs:
   verify:
     name: Typecheck, lint, unit tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     outputs:
       # `true` when HEAD is younger than 24 hours; the nightly suites key on it.
       fresh: ${{ steps.fresh.outputs.fresh }}
