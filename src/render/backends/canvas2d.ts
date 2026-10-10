@@ -84,9 +84,17 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { renderFoot } from '../renderFoot';
 import {
   CAST_SHADOW_ALPHA,
+  CONTACT_BAND,
+  DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
   SHADOW_COLOR,
+  actorGrounding,
   castShadowStrength,
+  contactBandRows,
+  groundTreatment,
+  shadowCeiling,
+  spriteBandArt,
+  type BandArt,
   structureShadowPolygons,
   tileShadowCell,
   silhouetteProjection,
@@ -136,6 +144,10 @@ export class Canvas2DBackend implements RenderBackend {
   private masks = new WeakMap<HTMLCanvasElement | HTMLImageElement, HTMLCanvasElement>();
   /** One union mask, rebuilt each frame from every upright silhouette. */
   private shadowLayer: HTMLCanvasElement | null = null;
+  /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
+  private grounding = DEFAULT_ACTOR_GROUNDING;
+  /** One caster at a time, in the exact-max path (see `castInto`). */
+  private castScratch: HTMLCanvasElement | null = null;
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
@@ -1279,7 +1291,11 @@ export class Canvas2DBackend implements RenderBackend {
       const lift = Math.round((npc.offset?.y ?? 0) * box.size * dpr) / dpr;
       ctx.save();
       ctx.globalAlpha = alpha;
-      if (entry.kind === 'image') {
+      const { pool } = groundTreatment(actorGrounding(view.scene), {
+        castStrength: 1,
+        defaultPool: entry.kind === 'image',
+      });
+      if (pool) {
         const s = box.size * scale;
         const density = actorShadowDensity(view.grid, at, true, width, false);
         ctx.drawImage(sprites.shadow(s * dpr, density), footX - s / 2, footY - 0.86 * s, s, s);
@@ -1382,7 +1398,23 @@ export class Canvas2DBackend implements RenderBackend {
     }
     const layer = this.shadowLayer.getContext('2d');
     if (!layer) return;
-    layer.clearRect(0, 0, width, height);
+    this.grounding = actorGrounding(view.scene);
+    const exact = this.exactMax();
+    if (exact) {
+      // The union is a grey level per pixel on opaque black; see `castInto`.
+      if (
+        !this.castScratch ||
+        this.castScratch.width !== width ||
+        this.castScratch.height !== height
+      ) {
+        this.castScratch = document.createElement('canvas');
+        this.castScratch.width = width;
+        this.castScratch.height = height;
+      }
+      layer.globalCompositeOperation = 'source-over';
+      layer.fillStyle = '#000000';
+      layer.fillRect(0, 0, width, height);
+    } else layer.clearRect(0, 0, width, height);
     this.drawStructureShadowMask(layer, view, camera);
 
     // Scenery and still props are drawn straight into the union each frame:
@@ -1398,15 +1430,108 @@ export class Canvas2DBackend implements RenderBackend {
       );
     }
     this.drawLiveShadowMask(layer, view, camera);
+    if (exact) {
+      this.compositeExactShadow(layer, view, camera, width, height);
+      return;
+    }
     layer.globalCompositeOperation = 'source-in';
     layer.fillStyle = SHADOW_COLOR;
     layer.fillRect(0, 0, width, height);
     layer.globalCompositeOperation = 'source-over';
     this.ctx.save();
-    this.ctx.globalAlpha = CAST_SHADOW_ALPHA;
+    this.ctx.globalAlpha = shadowCeiling(this.grounding);
     this.clipShadowGround(this.ctx, view, camera);
     this.ctx.drawImage(this.shadowLayer, 0, 0);
     this.ctx.restore();
+  }
+
+  /**
+   * A scene with its own grounding mixes casters of different strength, and
+   * ADR 0071 wants an overlap to take the strongest, never to add up. Source-over
+   * of two 0.5 casts gives 0.75, so those scenes keep the union as a grey level
+   * per pixel (white at alpha `a` over black is exactly `a`) and combine casters
+   * with `lighten`, which is a per-channel maximum for opaque sources.
+   */
+  private exactMax(): boolean {
+    return this.grounding.contact > 0 || this.grounding.cast !== CAST_SHADOW_ALPHA;
+  }
+
+  /**
+   * Puts one caster into the union at `level`. A default scene draws it straight
+   * into the layer, as it always did. An exact-max scene draws it alone into the
+   * scratch (transparent, so the source's colours do not matter), turns that to
+   * white at the caster's own alpha on black, scales it by `level` (`multiply`
+   * by an opaque grey is exact) and `lighten`s it into the layer. `bounds` is
+   * where the caster can have drawn, in layer pixels.
+   */
+  private castInto(
+    layer: CanvasRenderingContext2D,
+    level: number,
+    bounds: { x0: number; y0: number; x1: number; y1: number },
+    draw: (target: CanvasRenderingContext2D) => void,
+  ): void {
+    const scratch = this.exactMax() ? this.castScratch?.getContext('2d') : null;
+    if (!scratch || !this.castScratch) {
+      draw(layer);
+      return;
+    }
+    const x0 = Math.max(0, Math.floor(bounds.x0) - 1);
+    const y0 = Math.max(0, Math.floor(bounds.y0) - 1);
+    const x1 = Math.min(this.castScratch.width, Math.ceil(bounds.x1) + 1);
+    const y1 = Math.min(this.castScratch.height, Math.ceil(bounds.y1) + 1);
+    if (x1 <= x0 || y1 <= y0) return;
+    scratch.save();
+    scratch.beginPath();
+    scratch.rect(x0, y0, x1 - x0, y1 - y0);
+    scratch.clip();
+    scratch.clearRect(x0, y0, x1 - x0, y1 - y0);
+    draw(scratch);
+    scratch.globalCompositeOperation = 'source-in';
+    scratch.fillStyle = '#ffffff';
+    scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
+    scratch.globalCompositeOperation = 'destination-over';
+    scratch.fillStyle = '#000000';
+    scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
+    scratch.globalCompositeOperation = 'multiply';
+    const grey = Math.round(Math.max(0, Math.min(1, level)) * 255);
+    scratch.fillStyle = `rgb(${grey}, ${grey}, ${grey})`;
+    scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
+    scratch.restore();
+    layer.save();
+    layer.globalCompositeOperation = 'lighten';
+    layer.drawImage(this.castScratch, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
+    layer.restore();
+  }
+
+  /** Turns the grey union into shadow: `scene * (1 - g) + ink * g`, both steps exact on opaque images. */
+  private compositeExactShadow(
+    layer: CanvasRenderingContext2D,
+    view: MapView,
+    camera: Camera,
+    width: number,
+    height: number,
+  ): void {
+    const scratch = this.castScratch?.getContext('2d');
+    if (!scratch || !this.castScratch || !this.shadowLayer) return;
+    this.ctx.save();
+    this.clipShadowGround(this.ctx, view, camera);
+    scratch.globalCompositeOperation = 'source-over';
+    scratch.fillStyle = '#ffffff';
+    scratch.fillRect(0, 0, width, height);
+    scratch.globalCompositeOperation = 'difference';
+    scratch.drawImage(this.shadowLayer, 0, 0);
+    this.ctx.globalCompositeOperation = 'multiply';
+    this.ctx.drawImage(this.castScratch, 0, 0);
+    scratch.globalCompositeOperation = 'source-over';
+    scratch.fillStyle = SHADOW_COLOR;
+    scratch.fillRect(0, 0, width, height);
+    scratch.globalCompositeOperation = 'multiply';
+    scratch.drawImage(this.shadowLayer, 0, 0);
+    scratch.globalCompositeOperation = 'source-over';
+    this.ctx.globalCompositeOperation = 'lighter';
+    this.ctx.drawImage(this.castScratch, 0, 0);
+    this.ctx.restore();
+    layer.globalCompositeOperation = 'source-over';
   }
 
   /** Procedural wall blocks and raised tiers have no bitmap silhouette. */
@@ -1416,30 +1541,40 @@ export class Canvas2DBackend implements RenderBackend {
     camera: Camera,
   ): void {
     if (camera.projection !== 'oblique') return;
-    target.save();
-    target.fillStyle = '#ffffff';
     const authored = new Set(
       (view.scene?.scenery ?? []).flatMap((piece) =>
         (piece.footprint ?? []).map((cell) => `${cell.x},${cell.y}`),
       ),
     );
     for (const prop of view.props) authored.add(`${prop.pos.x},${prop.pos.y}`);
-    for (const { points } of structureShadowPolygons(
+    const polygons = structureShadowPolygons(
       view.grid.width,
       view.grid.height,
       (x, y) => tileShadowCell(view.grid.tiles[y * view.grid.width + x]),
       (point) => camera.project(point),
       authored,
       TILE * camera.scale,
-    )) {
-      target.beginPath();
-      points.forEach((point, index) =>
-        index ? target.lineTo(point.x, point.y) : target.moveTo(point.x, point.y),
-      );
-      target.closePath();
-      target.fill();
-    }
-    target.restore();
+    );
+    if (polygons.length === 0) return;
+    // Opaque and level: the polygons overlap, and the union is one caster.
+    this.castInto(
+      target,
+      CAST_SHADOW_ALPHA,
+      pointBounds(polygons.flatMap((p) => p.points)),
+      (t) => {
+        t.save();
+        t.fillStyle = '#ffffff';
+        for (const { points } of polygons) {
+          t.beginPath();
+          points.forEach((point, index) =>
+            index ? t.lineTo(point.x, point.y) : t.moveTo(point.x, point.y),
+          );
+          t.closePath();
+          t.fill();
+        }
+        t.restore();
+      },
+    );
   }
 
   private clipShadowGround(ctx: CanvasRenderingContext2D, view: MapView, camera: Camera): void {
@@ -1467,18 +1602,80 @@ export class Canvas2DBackend implements RenderBackend {
     foot: { x: number; y: number },
     alpha = 1,
     flip = false,
+    level = CAST_SHADOW_ALPHA,
   ): void {
     const m = silhouetteProjection(foot.x, foot.y);
-    target.save();
-    target.globalAlpha = alpha;
-    target.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-    if (flip) {
-      target.translate(foot.x * 2, 0);
-      target.scale(-1, 1);
-    }
-    if (src) target.drawImage(source, src.x, src.y, src.w, src.h, dest.x, dest.y, dest.w, dest.h);
-    else target.drawImage(source, dest.x, dest.y, dest.w, dest.h);
-    target.restore();
+    const x0 = flip ? 2 * foot.x - dest.x - dest.w : dest.x;
+    this.castInto(
+      target,
+      level,
+      pointBounds(
+        rectCorners(x0, dest.y, dest.w, dest.h).map((p) => ({
+          x: m.a * p.x + m.c * p.y + m.e,
+          y: m.b * p.x + m.d * p.y + m.f,
+        })),
+      ),
+      (t) => {
+        t.save();
+        t.globalAlpha = alpha;
+        t.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+        if (flip) {
+          t.translate(foot.x * 2, 0);
+          t.scale(-1, 1);
+        }
+        if (src) t.drawImage(source, src.x, src.y, src.w, src.h, dest.x, dest.y, dest.w, dest.h);
+        else t.drawImage(source, dest.x, dest.y, dest.w, dest.h);
+        t.restore();
+      },
+    );
+  }
+
+  /**
+   * The sole band of a frame laid flat about its foot, a little wider and lower
+   * than the boots: the contact under both feet, from the pose's own art.
+   */
+  private projectContactMask(
+    target: CanvasRenderingContext2D,
+    frame: Pick<BandArt, 'source' | 'frame' | 'anchor' | 'pixelsPerTile'>,
+    placed: { x: number; y: number; w: number; h: number },
+    foot: { x: number; y: number },
+    alpha: number,
+    flip: boolean,
+    tilePx: number,
+  ): void {
+    const band = contactBandRows(frame.frame.h, frame.anchor.y, frame.pixelsPerTile);
+    const f = frame.frame;
+    const destH = (band.height / frame.frame.h) * placed.h;
+    const sx = CONTACT_BAND.spreadX * (flip ? -1 : 1);
+    const dy = foot.y + CONTACT_BAND.drop * tilePx;
+    this.castInto(
+      target,
+      this.grounding.contact,
+      pointBounds(
+        [placed.x - foot.x, placed.x - foot.x + placed.w].flatMap((px) => [
+          { x: foot.x + px * sx, y: dy },
+          { x: foot.x + px * sx, y: dy - destH * CONTACT_BAND.spreadY },
+        ]),
+      ),
+      (t) => {
+        t.save();
+        t.globalAlpha = alpha;
+        t.translate(foot.x, dy);
+        t.scale(sx, CONTACT_BAND.spreadY);
+        t.drawImage(
+          frame.source,
+          f.x,
+          f.y + band.top,
+          f.w,
+          band.height,
+          placed.x - foot.x,
+          -destH,
+          placed.w,
+          destH,
+        );
+        t.restore();
+      },
+    );
   }
 
   private drawSceneryShadowMask(
@@ -1496,16 +1693,28 @@ export class Canvas2DBackend implements RenderBackend {
       const h = piece.height * camera.scale;
       const foot = { x: x + w / 2, y: y + h };
       const m = silhouetteProjection(foot.x, foot.y);
-      target.save();
-      target.globalAlpha = castShadowStrength(piece.castShadow);
-      target.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-      if (piece.flip) {
-        target.translate(x + w, 0);
-        target.scale(-1, 1);
-        target.translate(-x, 0);
-      }
-      drawSceneImage(target, image, piece, x, y, w, h);
-      target.restore();
+      this.castInto(
+        target,
+        CAST_SHADOW_ALPHA,
+        pointBounds(
+          rectCorners(x, y, w, h).map((p) => ({
+            x: m.a * p.x + m.c * p.y + m.e,
+            y: m.b * p.x + m.d * p.y + m.f,
+          })),
+        ),
+        (t) => {
+          t.save();
+          t.globalAlpha = castShadowStrength(piece.castShadow);
+          t.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+          if (piece.flip) {
+            t.translate(x + w, 0);
+            t.scale(-1, 1);
+            t.translate(-x, 0);
+          }
+          drawSceneImage(t, image, piece, x, y, w, h);
+          t.restore();
+        },
+      );
     }
   }
 
@@ -1530,19 +1739,65 @@ export class Canvas2DBackend implements RenderBackend {
         box.size * dpr * scale,
         width,
       );
+      const entry = resolveAsset(npc.sprite);
+      const { band } = groundTreatment(this.grounding, {
+        castStrength: 1,
+        defaultPool: entry.kind === 'image',
+      });
       if (frame) {
         const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
-        this.projectMask(target, frame.source, frame.frame, placed, foot, npc.alpha ?? 1);
-      } else {
-        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
         this.projectMask(
           target,
-          sprite,
-          null,
-          { x: box.x, y: box.y, w: box.size * width, h: box.size },
+          frame.source,
+          frame.frame,
+          placed,
           foot,
           npc.alpha ?? 1,
+          false,
+          this.grounding.cast,
         );
+        // A painter resident's baked frame is only the cast's stand-in: its band is cut from what is drawn.
+        if (band && entry.kind === 'sheet')
+          this.projectContactMask(
+            target,
+            frame,
+            placed,
+            foot,
+            npc.alpha ?? 1,
+            false,
+            box.size * scale,
+          );
+      }
+      if (!frame || (band && entry.kind !== 'sheet')) {
+        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
+        if (!frame)
+          this.projectMask(
+            target,
+            sprite,
+            null,
+            { x: box.x, y: box.y, w: box.size * width, h: box.size },
+            foot,
+            npc.alpha ?? 1,
+            false,
+            this.grounding.cast,
+          );
+        if (band) {
+          const k = scale * (npc.poseScale ?? 1);
+          this.projectContactMask(
+            target,
+            spriteBandArt(sprite),
+            {
+              x: foot.x - (foot.x - box.x) * k,
+              y: foot.y - (foot.y - box.y) * k,
+              w: box.size * width * k,
+              h: box.size * k,
+            },
+            foot,
+            npc.alpha ?? 1,
+            false,
+            box.size * k,
+          );
+        }
       }
     }
     this.drawPropShadowMask(
@@ -1565,7 +1820,17 @@ export class Canvas2DBackend implements RenderBackend {
       const scale = unit.scale ?? 1;
       const heightTiles = this.squareFootprints ? unit.size : 1;
       const width = unit.size === 2 ? box.size * 2 : box.size;
-      const foot = { x: box.x + width / 2, y: box.y + FOOT_LINE * box.size };
+      // With a contact layer the foot is the tile's ground, so the walk bob lifts
+      // the figure off both shadows instead of dragging the cast along with it.
+      const grounded = this.grounding.contact > 0;
+      const { band } = groundTreatment(this.grounding, {
+        castStrength: castShadowStrength(unit.castShadow),
+        defaultPool: true,
+      });
+      const foot = {
+        x: box.x + width / 2,
+        y: box.y - (grounded ? (unit.offset?.y ?? 0) * box.size : 0) + FOOT_LINE * box.size,
+      };
       const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
       const frame =
         bend ||
@@ -1592,7 +1857,20 @@ export class Canvas2DBackend implements RenderBackend {
             (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
             castShadowStrength(unit.castShadow),
           !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
+          this.grounding.cast,
         );
+        if (band)
+          this.projectContactMask(
+            target,
+            frame,
+            placed,
+            foot,
+            (unit.alpha ?? 1) *
+              (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+              castShadowStrength(unit.castShadow),
+            !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
+            box.size * scale,
+          );
       } else {
         const sprite = sprites.get(
           unit.sprite,
@@ -1616,7 +1894,21 @@ export class Canvas2DBackend implements RenderBackend {
           (unit.alpha ?? 1) *
             (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
             castShadowStrength(unit.castShadow),
+          false,
+          this.grounding.cast,
         );
+        if (band)
+          this.projectContactMask(
+            target,
+            spriteBandArt(sprite, heightTiles),
+            dest,
+            foot,
+            (unit.alpha ?? 1) *
+              (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+              castShadowStrength(unit.castShadow),
+            false,
+            box.size * scale,
+          );
       }
     }
   }
@@ -1767,7 +2059,11 @@ export class Canvas2DBackend implements RenderBackend {
         unit.size,
         this.squareFootprints,
       );
-      if (shadowDensity > 0) {
+      const { pool } = groundTreatment(actorGrounding(view.scene), {
+        castStrength: castShadowStrength(unit.castShadow),
+        defaultPool: shadowDensity > 0,
+      });
+      if (pool) {
         // On the ground, not on the bob: the tile's foot line, less the ledge.
         const footprint = this.squareFootprints ? unit.size : 1;
         // A square unit's ground contact is its rules footprint. Presentation
@@ -2121,4 +2417,26 @@ function drawGrounding(
     layer.canvas.height * GROUNDING_GRAIN * camera.scale,
   );
   ctx.imageSmoothingEnabled = smoothing;
+}
+
+type Bounds = { x0: number; y0: number; x1: number; y1: number };
+
+function rectCorners(x: number, y: number, w: number, h: number): { x: number; y: number }[] {
+  return [
+    { x, y },
+    { x: x + w, y },
+    { x: x + w, y: y + h },
+    { x, y: y + h },
+  ];
+}
+
+function pointBounds(points: readonly { x: number; y: number }[]): Bounds {
+  const b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (const p of points) {
+    b.x0 = Math.min(b.x0, p.x);
+    b.y0 = Math.min(b.y0, p.y);
+    b.x1 = Math.max(b.x1, p.x);
+    b.y1 = Math.max(b.y1, p.y);
+  }
+  return b;
 }

@@ -1,3 +1,5 @@
+import { FOOT_LINE } from './sheets/bake';
+
 /** One scene light shared by painted geometry and both runtime backends. */
 export const KEY_LIGHT_SCREEN = { x: -0.72, y: -0.69 } as const;
 /** Bible ink; shadows are tinted once after all silhouettes have been unioned. */
@@ -22,6 +24,98 @@ export const PAINTED_FACE_SHADE = { south: 0.16, east: 0.135, foot: 0.08 } as co
 export const REDUCED_CAST_ALPHA = 0.72;
 export const CONTACT_SHADOW_ALPHA = 0.3;
 export const FALLEN_SHADOW_ALPHA = 0.52;
+
+/**
+ * How a scene grounds the figures standing in it. `cast` is the projected
+ * silhouette's alpha; `contact` is a second, tighter layer drawn from the
+ * soles of the frame itself (both feet, whatever the pose) and `0` leaves the
+ * radial contact pool in charge. A painted village whose own shadows run at
+ * ~0.4 darkening needs both turned up or its figures read as floating.
+ */
+export interface ActorGrounding {
+  readonly cast: number;
+  readonly contact: number;
+}
+
+export const DEFAULT_ACTOR_GROUNDING: ActorGrounding = { cast: CAST_SHADOW_ALPHA, contact: 0 };
+
+export function actorGrounding(
+  scene?: { readonly actorGrounding?: Partial<ActorGrounding> } | null,
+): ActorGrounding {
+  const own = scene?.actorGrounding;
+  return own ? { ...DEFAULT_ACTOR_GROUNDING, ...own } : DEFAULT_ACTOR_GROUNDING;
+}
+
+/**
+ * The shadow union is tinted once at its strongest alpha; every caster writes
+ * its own alpha as a fraction of that, so a scene that sets nothing keeps the
+ * single `CAST_SHADOW_ALPHA` and coverage 1.
+ */
+export function shadowCeiling(grounding: ActorGrounding): number {
+  return Math.max(CAST_SHADOW_ALPHA, grounding.cast, grounding.contact);
+}
+
+/** The sole band of a frame laid flat for contact: height in tiles, spread about the foot, drop in tiles. */
+export const CONTACT_BAND = { height: 0.14, spreadX: 1.4, spreadY: 1, drop: 0.03 } as const;
+
+/**
+ * The rows of a frame that make its contact band: the `CONTACT_BAND.height`
+ * tiles ending on the foot line (`anchorY` of the frame), in frame pixels.
+ */
+export function contactBandRows(
+  frameHeight: number,
+  anchorY: number,
+  pixelsPerTile: number,
+): { readonly top: number; readonly height: number } {
+  const bottom = Math.max(0, Math.min(frameHeight, anchorY * frameHeight));
+  const height = Math.max(1, Math.min(bottom, Math.round(CONTACT_BAND.height * pixelsPerTile)));
+  return { top: bottom - height, height };
+}
+
+/** The art a contact band is cut from: a sheet frame, or a drawn sprite stood on the foot line. */
+export interface BandArt<S = HTMLCanvasElement | HTMLImageElement> {
+  readonly source: S;
+  readonly frame: {
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+  };
+  readonly anchor: { readonly x: number; readonly y: number };
+  readonly pixelsPerTile: number;
+}
+
+/**
+ * Band art for a figure with no sheet frame (a painter or single-image
+ * resident, a painter-fallback unit): its drawn sprite, `heightTiles` tall,
+ * standing on `FOOT_LINE` exactly as the backends place it.
+ */
+export function spriteBandArt<S extends { readonly width: number; readonly height: number }>(
+  sprite: S,
+  heightTiles = 1,
+): BandArt<S> {
+  return {
+    source: sprite,
+    frame: { x: 0, y: 0, w: sprite.width, h: sprite.height },
+    anchor: { x: 0.5, y: FOOT_LINE },
+    pixelsPerTile: sprite.height / heightTiles,
+  };
+}
+
+/**
+ * What a figure's feet get under it. A scene with a contact layer draws the
+ * sole band for any figure that casts (frame or sprite, they all have art to
+ * cut it from) and drops the radial pool for it; a figure that casts nothing
+ * keeps its pool where the default scene had one. A default scene is untouched:
+ * `pool` is whatever the figure drew before (`defaultPool`), never a band.
+ */
+export function groundTreatment(
+  grounding: ActorGrounding,
+  figure: { readonly castStrength: number; readonly defaultPool: boolean },
+): { readonly band: boolean; readonly pool: boolean } {
+  const band = grounding.contact > 0 && figure.castStrength > 0;
+  return { band, pool: figure.defaultPool && !band };
+}
 
 /**
  * Screen-space projection of an upright silhouette onto the ground. Both the

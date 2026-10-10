@@ -1,14 +1,26 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { BA_DAN_ACTOR_GROUNDING, BA_DAN_SCENE } from '../content/scenes/baDan';
+import { FOOT_LINE } from './sheets/bake';
+import { FOREST_ROAD_SCENE } from '../content/scenes/forestRoad';
+import { QUARRY_GATE_SCENE } from '../content/scenes/quarryGate';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
+  CONTACT_BAND,
+  DEFAULT_ACTOR_GROUNDING,
   FACE_SHADE,
   PAINTED_FACE_SHADE,
   projectShadowPoint,
   projectRaisedEdgeShadow,
   structureShadowPolygons,
   silhouetteProjection,
+  actorGrounding,
   castShadowStrength,
+  contactBandRows,
+  groundTreatment,
+  shadowCeiling,
+  spriteBandArt,
   unionShadowCoverage,
 } from './lighting';
 
@@ -160,5 +172,89 @@ describe('form shading against the reference', () => {
   it('casts ground to ~0.65 of the lit ground beside it', () => {
     const ground = 150;
     expect(Math.abs(lit(ground, CAST_SHADOW_ALPHA) / ground / 0.65 - 1)).toBeLessThan(0.1);
+  });
+});
+
+describe('scene actor grounding', () => {
+  it("leaves a scene that sets nothing at today's single cast alpha and no contact layer", () => {
+    expect(actorGrounding(undefined)).toEqual({ cast: CAST_SHADOW_ALPHA, contact: 0 });
+    expect(actorGrounding({})).toBe(DEFAULT_ACTOR_GROUNDING);
+    expect(actorGrounding(FOREST_ROAD_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
+    expect(actorGrounding(QUARRY_GATE_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
+    expect(shadowCeiling(DEFAULT_ACTOR_GROUNDING)).toBe(CAST_SHADOW_ALPHA);
+  });
+
+  it('gives Ba Dan a stronger cast and a contact layer, tinted at the strongest of them', () => {
+    const grounding = actorGrounding(BA_DAN_SCENE);
+    expect(grounding).toEqual(BA_DAN_ACTOR_GROUNDING);
+    expect(grounding.cast).toBeGreaterThan(CAST_SHADOW_ALPHA);
+    expect(grounding.contact).toBeGreaterThan(grounding.cast);
+    expect(shadowCeiling(grounding)).toBe(grounding.contact);
+    // Every caster writes its alpha as a fraction of the ceiling, never above it.
+    for (const alpha of [CAST_SHADOW_ALPHA, grounding.cast, grounding.contact])
+      expect(alpha / shadowCeiling(grounding)).toBeLessThanOrEqual(1);
+  });
+
+  it('fills only the keys a scene sets', () => {
+    expect(actorGrounding({ actorGrounding: { contact: 0.6 } })).toEqual({
+      cast: CAST_SHADOW_ALPHA,
+      contact: 0.6,
+    });
+  });
+
+  it('takes the sole band from the rows ending on the foot line', () => {
+    // A 192 px cel at 128 px a tile with the foot line at 0.85 of its height.
+    const band = contactBandRows(192, 0.85, 128);
+    expect(band.height).toBe(Math.round(CONTACT_BAND.height * 128));
+    expect(band.top + band.height).toBeCloseTo(0.85 * 192, 0);
+    // Never past the cel, and never empty.
+    expect(contactBandRows(10, 1, 128)).toEqual({ top: 0, height: 10 });
+    expect(contactBandRows(192, 0, 128).height).toBe(1);
+  });
+
+  it('cuts a sprite band from the rows ending on the foot line', () => {
+    const art = spriteBandArt({ width: 128, height: 128 });
+    expect(art.anchor.y).toBe(FOOT_LINE);
+    const band = contactBandRows(art.frame.h, art.anchor.y, art.pixelsPerTile);
+    expect(band.height).toBe(Math.round(CONTACT_BAND.height * 128));
+    expect(band.top + band.height).toBeCloseTo(FOOT_LINE * 128, 0);
+    // A 2-tile-tall sprite measures its tile by half its height.
+    expect(spriteBandArt({ width: 128, height: 256 }, 2).pixelsPerTile).toBe(128);
+  });
+
+  it('gives a figure a band or a pool in a contact scene, and the old pool in a default one', () => {
+    const contact = { cast: 0.5, contact: 0.8 };
+    // Every figure that casts has art to cut a band from, so it loses its pool...
+    expect(groundTreatment(contact, { castStrength: 1, defaultPool: true })).toEqual({
+      band: true,
+      pool: false,
+    });
+    // ...a resident that never had a pool just gains the band...
+    expect(groundTreatment(contact, { castStrength: 1, defaultPool: false })).toEqual({
+      band: true,
+      pool: false,
+    });
+    // ...and one that casts nothing keeps what it had.
+    expect(groundTreatment(contact, { castStrength: 0, defaultPool: true })).toEqual({
+      band: false,
+      pool: true,
+    });
+    for (const defaultPool of [true, false])
+      expect(groundTreatment(DEFAULT_ACTOR_GROUNDING, { castStrength: 1, defaultPool })).toEqual({
+        band: false,
+        pool: defaultPool,
+      });
+  });
+
+  it('is read the same way by both backends', () => {
+    const read = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8');
+    for (const source of [read('./backends/pixi.ts'), read('./backends/canvas2d.ts')]) {
+      expect(source).toContain('actorGrounding(view.scene)');
+      expect(source).toContain('shadowCeiling(this.grounding)');
+      expect(source).toContain('contactBandRows(');
+      expect(source).toContain('CONTACT_BAND.drop');
+      expect(source).toContain('CONTACT_BAND.spreadX');
+      expect(source).toContain('CONTACT_BAND.spreadY');
+    }
   });
 });
