@@ -1,11 +1,11 @@
 {
   "region": "r2c1",
   "source": {
-    "path": "C:/Users/Jared/OpenClawControl/harness/runs/avatar/region-r2c1-sol-001/worktree/.review/region-paint/region-r2c1-sol-001/attempt-5.png",
+    "path": "region-r2c1-sol-001/attempt-5.png",
     "sha256": "98019398de81a25d68c74d033947a7ae21e5a987d2dc5e5b8c77efc629b79893"
   },
   "stored": {
-    "path": "C:\\Users\\Jared\\OpenClawControl\\harness\\runs\\avatar\\houses-v4-swap-claude-001\\worktree\\art\\source\\ba-dan-regions\\accepted\\r2c1.png",
+    "path": "art/source/ba-dan-regions/accepted/r2c1.png",
     "sha256": "f6b49fd0913a292e9831c8dc6097b08b5aa7c9d8ab54cd132611c81f5490d536"
   },
   "gate": {

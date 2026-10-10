@@ -1,65 +1,65 @@
 {
   "region": "r2c2",
   "source": {
-    "path": "C:/Users/Jared/OpenClawControl/harness/runs/avatar/region-r2c2-sol-001/worktree/.review/region-paint/region-r2c2-sol-001/attempt-3.png",
-    "sha256": "3aed9343c3d850ef88d1a4a91b6652f3bd48ee780f9b78de1352747c912152ee"
+    "path": "contact-r2c2-sol-001/attempt-3.png",
+    "sha256": "c98ef4193a87ee9841056b6b8063c9a51cacec85af300d4663e63ead0180bde5"
   },
   "stored": {
-    "path": "C:\\Users\\Jared\\OpenClawControl\\harness\\runs\\avatar\\houses-v4-swap-claude-001\\worktree\\art\\source\\ba-dan-regions\\accepted\\r2c2.png",
-    "sha256": "3944e245c26950756c5d29a6fa64060c12bfdbf4a958f8daa1f1b06e71141c13"
+    "path": "art/source/ba-dan-regions/accepted/r2c2.png",
+    "sha256": "0d62a2943f50712ca2b7f0490d96f4470e24c147e954f82216c2fbea8ad4efc7"
   },
   "gate": {
     "pass": true,
     "frame": {
-      "dx": 1,
+      "dx": 0,
       "dy": 0,
-      "corr": 0.4963
+      "corr": 0.8258
     },
     "blobs": [
       {
         "n": 1,
         "box": [0, 0, 682, 286],
         "area": 124238,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.5182,
+        "corr": 0.8431,
         "status": "ok"
       },
       {
         "n": 2,
         "box": [1398, 0, 1536, 246],
         "area": 11077,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.3288,
+        "corr": 0.7276,
         "status": "ok"
       },
       {
         "n": 3,
         "box": [871, 17, 975, 247],
         "area": 4485,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.6382,
+        "corr": 0.8768,
         "status": "ok"
       },
       {
         "n": 4,
         "box": [223, 69, 1536, 1024],
         "area": 513353,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.5286,
+        "corr": 0.8239,
         "status": "ok"
       }
     ],
     "carry": {
-      "pixels": 892734,
-      "meanAbsDiff": 12.938,
-      "p95": 38.333,
-      "fractionOver16": 0.2555
+      "pixels": 1269897,
+      "meanAbsDiff": 15.325,
+      "p95": 45.667,
+      "fractionOver16": 0.3276
     },
-    "warn": ["carried pixels repainted: mean difference 12.9/255"],
+    "warn": ["carried pixels repainted: mean difference 15.3/255"],
     "fail": []
   },
   "prompt": null,
