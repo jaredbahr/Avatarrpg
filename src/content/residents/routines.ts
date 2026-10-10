@@ -17,7 +17,8 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
   {
     // Gao restacks his display. Its crates sit under the table, reached from
     // the front at (8,5); the display's own corner blocks the diagonal, so he
-    // goes round by the lane. Then up his steps to the rear room for stock.
+    // goes round by the lane. Then along the lane to the foot of his steps, (10,3), for stock;
+    // the steps' own tile, (9,3), is under the porch and blocked.
     id: 'lw.npc.gao',
     mapId: VILLAGE,
     anchor: 'bd02.shopfront',
@@ -39,8 +40,22 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
         ],
         hold: 5000,
       },
-      { path: [{ x: 10, y: 3 }], hold: 2500, work: true, face: -1 },
-      { path: [{ x: 9, y: 4 }], hold: 6000 },
+      {
+        path: [
+          { x: 10, y: 4 },
+          { x: 10, y: 3 },
+        ],
+        hold: 2500,
+        work: true,
+        face: -1,
+      },
+      {
+        path: [
+          { x: 10, y: 4 },
+          { x: 9, y: 4 },
+        ],
+        hold: 6000,
+      },
     ],
   },
 ];

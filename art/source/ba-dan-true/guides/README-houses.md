@@ -50,7 +50,11 @@ figure at the door, the one-tile-wider alternative, the painter's sheets) are `p
 No hips and no dormers: their ridges and valleys run diagonal on the ground, against the axis rule. The second lower roof is a
 wing with its own ridge along y; the chimney, the vent and the porch roof are axis-aligned boxes and planes.
 
-## Yards (all on blocked tiles; walkability is unchanged)
+## Yards (all on blocked tiles)
+
+Every footprint tile is blocked: the plinth runs the whole footprint and the yard fills its west tiles, so the `walkable_cells_in_footprint`
+that `pieces.json` still lists (the earlier design's doorstep and gate notches: (9,3), (12,3), (9,10), (9,11), (13,10), (13,11)) were closed in `village.ts`;
+a figure stands at the foot of the steps, the door's `faces_tile`, and `baDan.test.ts` holds both. The gates below are painted openings onto the lane, not walkable tiles.
 
 | house                  | yard (tiles, x by y) | contents                                                                                       | gate                                                                         |
 | ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |

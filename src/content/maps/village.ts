@@ -33,27 +33,27 @@ export const BA_DAN_VILLAGE: MapDef = {
   ambience: 'village',
   legend: { ...LEGEND, l: { terrain: 'stone', blocked: true, blocksSight: false } },
   /*
-   * The house bodies are solid: their plank floors (`w` until the edges pass)
-   * were walkable cells under the painted roofs. Only the `=` doorsteps where
-   * each paved path meets its house stay open; Gao's routine steps from his
-   * lane at (9,4) up to (10,3), a diagonal that needs (9,3) open. The west
-   * road ends at the ford, `W` at (0,7) and (0,8), flooded this season; a
-   * future west region opens there behind a `Condition`, not through the rim. The set
+   * The house bodies are solid, and so is everything the painted plinth, steps and yard stand on:
+   * the house plinth runs the whole footprint, the yard fills its west tiles, and the east steps rise
+   * in its last column, so no footprint cell is open. Each door's steps come down on the open tile in
+   * front of them ((10,3), (16,3), (10,13), (17,13)); Gao's routine steps from his lane at (9,4)
+   * to (10,3) by (10,4). The west road ends at the ford, `W` at (0,7) and (0,8), flooded this
+   * season; a future west region opens there behind a `Condition`, not through the rim. The set
    * dressing's footprints (`BA_DAN_DRESSING`) are `l` lawn like the courtyard props.
    */
   rows: [
     'TTTT,,,,,,,,,,,,,,TTTTTT',
     'TT,,,,BBBB,,BBBB,,,,,,TT',
     'T,,,,,BBBB,,BBBB,,,,,,,T',
-    'T,,,,,BBB=,,=BBB,,,,,,,T',
+    'T,,,,,BBBB,,BBBB,,,,,,,T',
     'T,,,,,,,,=,,=,,,,,,,,,,T',
     'T,,,,,,,,=====,,,,,,,,,T',
     '~~~~~~~~~=~~~=,,,,,,,,,T',
     'W=====================..',
     'W=====================..',
     'T,,,,,,,,=====,,,,,,,,,T',
-    'T,,,,,BBB=,,,=BBBB,,,,,T',
-    'T,,,,,BBB=,,,=BBBB,,,,,T',
+    'T,,,,,BBBB,,,BBBBB,,,,,T',
+    'T,,,,,BBBB,,,BBBBB,,,,,T',
     'T,,,,,BBBB,,,BBBB,,,,,,T',
     'T,,,,,BBBB,,,BBBB,,,,,,T',
     'TT,,,,,,,,,,,,,,,,,,,,TT',

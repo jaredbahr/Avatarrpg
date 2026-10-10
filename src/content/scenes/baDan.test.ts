@@ -347,7 +347,7 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
   for (const pos of [
     // A resident-bound NpcDef has no `pos`: its tiles are its resident's anchors.
     ...map.npcs.flatMap((npc) => npcStandTiles(CONTENT_BUNDLE, map.id, npc)),
-    { x: 9, y: 3 },
+    { x: 10, y: 3 },
     { x: 11, y: 3 },
     { x: 23, y: 7 },
     { x: 19, y: 15 },
@@ -650,8 +650,9 @@ it('blocks the dressing, keeps the main ways open, and reaches every stand point
     for (let x = 1; x < map.width; x++) expect(open(x, y), `road ${x},${y}`).toBe(true);
   for (let x = 9; x <= 13; x++)
     for (const y of [5, 9]) expect(open(x, y), `square ${x},${y}`).toBe(true);
-  for (const y of [3, 4, 5])
-    for (const x of [9, 10]) expect(open(x, y), `lane ${x},${y}`).toBe(true);
+  // (9,3) is Gao's plinth and steps; the lane reaches his door at (10,3) from (10,4).
+  for (const y of [4, 5]) for (const x of [9, 10]) expect(open(x, y), `lane ${x},${y}`).toBe(true);
+  expect(open(10, 3), 'lane 10,3').toBe(true);
   for (const x of [9, 13]) expect(open(x, 6), `bridge ${x},6`).toBe(true);
   for (let x = 1; x < 17; x++) expect(open(x, 4), `north lane ${x},4`).toBe(true);
   // One connected walkable region: every walkable tile is reachable from the spawn, and every
@@ -668,7 +669,6 @@ it('blocks the dressing, keeps the main ways open, and reaches every stand point
   ).toEqual([]);
   for (const pos of [
     ...map.npcs.flatMap((npc) => npcStandTiles(CONTENT_BUNDLE, map.id, npc)),
-    { x: 9, y: 3 },
     { x: 10, y: 3 },
     { x: 11, y: 3 },
     { x: 11, y: 5 },
@@ -689,4 +689,66 @@ it('blocks the dressing, keeps the main ways open, and reaches every stand point
     ...[11, 12, 13, 14, 15].map((x) => ({ x, y: 15 })),
   ])
     expect(paths.has(posKey(pos)), `Unreachable stand point ${posKey(pos)}`).toBe(true);
+});
+
+it("leaves no walkable tile under a house's painted plinth, steps, wall or yard", () => {
+  // The painted pieces' own regions (`art/source/ba-dan-true/guides/pieces.json`), local to the footprint's
+  // north-west corner: the yard fills x 0..yard, the plinth runs on to the footprint's east edge over its
+  // whole depth, the wall stands on the plinth and the steps rise in the footprint's last column. A tile
+  // whose centre is inside any of them is one a figure would stand in the building. The tile in front of
+  // the steps (the door's `faces_tile`) is the one place to stand, and must stay open.
+  type Rect = readonly [number, number, number, number];
+  interface Piece {
+    scene_entry: string;
+    footprint_origin_map: [number, number];
+    footprint_tiles: [number, number];
+    door: { faces_tile: [number, number]; steps_x: Rect; steps_y: Rect };
+    geo: { wx0: number; wx1: number; wy0: number; wy1: number };
+    yard: { x: [number, number] };
+  }
+  const guides = JSON.parse(
+    readFileSync('art/source/ba-dan-true/guides/pieces.json', 'utf8'),
+  ) as Record<string, Piece>;
+  const houses = Object.values(guides).filter((piece) =>
+    BA_DAN_STANDING.some((s) => s.id === piece.scene_entry && s.id.endsWith('-house')),
+  );
+  expect(houses).toHaveLength(4);
+  const map = BA_DAN_VILLAGE;
+  const grid = buildGrid(map);
+  const start = map.partySpawns[0];
+  if (!start) throw new Error('Village has no spawn');
+  const paths = reachable({ grid, blocked: new Set(), surfaces: new Map(), size: 1 }, start, 1000);
+  const inside = (r: Rect, x: number, y: number) => x > r[0] && x < r[1] && y > r[2] && y < r[3];
+  for (const piece of houses) {
+    const [ox, oy] = piece.footprint_origin_map;
+    const [w, d] = piece.footprint_tiles;
+    const { wx0, wx1, wy0, wy1 } = piece.geo;
+    const regions: Record<string, Rect> = {
+      yard: [0, piece.yard.x[1], 0, d],
+      plinth: [piece.yard.x[1], w, 0, d],
+      wall: [wx0, wx1, wy0, wy1],
+      steps: [
+        piece.door.steps_x[0] ?? 0,
+        piece.door.steps_x[1] ?? 0,
+        piece.door.steps_y[0] ?? 0,
+        piece.door.steps_y[1] ?? 0,
+      ],
+    };
+    const footprint = BA_DAN_STANDING.find((s) => s.id === piece.scene_entry)?.footprint ?? [];
+    expect(footprint, piece.scene_entry).toHaveLength(w * d);
+    expect(footprint[0], piece.scene_entry).toEqual({ x: ox, y: oy });
+    for (let y = oy - 1; y <= oy + d; y++)
+      for (let x = ox - 1; x <= ox + w; x++) {
+        if (tileAt(grid, { x, y })?.blocked !== false) continue;
+        for (const [name, rect] of Object.entries(regions))
+          expect(
+            inside(rect, x + 0.5 - ox, y + 0.5 - oy),
+            `${piece.scene_entry}: walkable (${x},${y}) is under its ${name}`,
+          ).toBe(false);
+      }
+    const [fx, fy] = piece.door.faces_tile;
+    const foot = { x: ox + fx, y: oy + fy };
+    expect(tileAt(grid, foot)?.blocked, `${piece.scene_entry} door foot`).toBe(false);
+    expect(paths.has(posKey(foot)), `${piece.scene_entry} door foot reachable`).toBe(true);
+  }
 });
