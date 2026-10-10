@@ -1,19 +1,19 @@
 {
   "region": "r0c2",
   "source": {
-    "path": "C:/Users/Jared/OpenClawControl/harness/runs/avatar/region-r0c2-sol-002/worktree/.review/region-paint/region-r0c2-sol-002/attempt-4.png",
-    "sha256": "47bde7e9c78431c290b107e72bc470cbf33b213ebded4065de178578ab3b5496"
+    "path": "contact-r0c2-sol-001/attempt-3.png",
+    "sha256": "0d0c062839eee6eb75f4749b67ae2f3f74200490d9fa79d284c897bce9513127"
   },
   "stored": {
-    "path": "C:\\Users\\Jared\\OpenClawControl\\harness\\runs\\avatar\\houses-v4-swap-claude-001\\worktree\\art\\source\\ba-dan-regions\\accepted\\r0c2.png",
-    "sha256": "9f4b2b6154923242deab788324083a817728e75dc8a459fb7fabc680c44a2756"
+    "path": "art/source/ba-dan-regions/accepted/r0c2.png",
+    "sha256": "bb91fe4bcaab3627ecacc78114d0aeb2af1add7307f9795a424c2399aafc0cef"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 1,
       "dy": 0,
-      "corr": 0.6278
+      "corr": 0.827
     },
     "blobs": [
       {
@@ -22,16 +22,16 @@
         "area": 870970,
         "dx": 1,
         "dy": 0,
-        "corr": 0.6278,
+        "corr": 0.827,
         "status": "ok"
       },
       {
         "n": 2,
         "box": [0, 347, 86, 563],
         "area": 5730,
-        "dx": 1,
-        "dy": -1,
-        "corr": 0.4028,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7532,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 12139,
         "dx": 1,
         "dy": 0,
-        "corr": 0.4328,
+        "corr": 0.7471,
         "status": "ok"
       },
       {
@@ -49,22 +49,17 @@
         "area": 22567,
         "dx": 1,
         "dy": 0,
-        "corr": 0.5224,
+        "corr": 0.7597,
         "status": "ok"
       }
     ],
     "carry": {
-      "pixels": 889764,
-      "meanAbsDiff": 16.4,
-      "p95": 52.333,
-      "fractionOver16": 0.3316
+      "pixels": 1268574,
+      "meanAbsDiff": 13.79,
+      "p95": 47.333,
+      "fractionOver16": 0.2748
     },
-    "warn": [
-      "carried pixels repainted: mean difference 16.4/255",
-      "seam with r0c1: 2.0x the ordinary difference",
-      "seam with r1c2: 2.3x the ordinary difference",
-      "seam with r1c3: 2.6x the ordinary difference"
-    ],
+    "warn": ["carried pixels repainted: mean difference 13.8/255"],
     "fail": []
   },
   "prompt": null,
