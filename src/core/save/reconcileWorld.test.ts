@@ -434,3 +434,46 @@ suite('reconcileWorld: the Ba Dan edge rebuild (A5)', () => {
     expect(tileAt(grid, reconciled.location.pos)?.blocked).toBe(false);
   });
 });
+
+suite('reconcileWorld: a save standing where a house plinth now is', () => {
+  // Ba Dan's four footprints were once open at these tiles (under the plinth, the steps and the yard).
+  // A save made there loads onto the nearest open tile, by the same snap as any other buried position.
+  const buried: readonly [Vec2, Vec2][] = [
+    [
+      { x: 9, y: 3 },
+      { x: 10, y: 3 },
+    ],
+    [
+      { x: 12, y: 3 },
+      { x: 11, y: 3 },
+    ],
+    [
+      { x: 9, y: 10 },
+      { x: 8, y: 9 },
+    ],
+    [
+      { x: 9, y: 11 },
+      { x: 10, y: 10 },
+    ],
+    [
+      { x: 13, y: 10 },
+      { x: 12, y: 9 },
+    ],
+    [
+      { x: 13, y: 11 },
+      { x: 12, y: 11 },
+    ],
+  ];
+  for (const [saved, loaded] of buried)
+    it(`moves a save at (${saved.x},${saved.y}) to (${loaded.x},${loaded.y})`, () => {
+      const result = deserialize(
+        serialize(exploring({ location: { mapId: 'ba_dan_village', pos: saved } }), META),
+      );
+      if (!result.ok) throw new Error(result.error);
+      const reconciled = reconcileWorld(CONTENT, stateFromBlob(result.blob));
+      expect(reconciled.location.pos).toEqual(loaded);
+      const map = CONTENT.maps.get('ba_dan_village');
+      if (!map) throw new Error('no village');
+      expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
+    });
+});

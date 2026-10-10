@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BA_DAN_VILLAGE } from '../../content/maps/village';
+import { BA_DAN_STANDING } from '../../content/scenes/baDan';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { visibleNpcs } from '../../core/story/world';
@@ -55,6 +56,25 @@ describe('placeParty', () => {
 
   it('is the same every time', () => {
     expect(placeParty(grid, spawn, 6)).toEqual(placeParty(grid, spawn, 6));
+  });
+
+  it('never seats a follower on a house plinth, its steps or its yard', () => {
+    // The well stop and the potter's door stop, where the line once stood on the woodcutter's plinth.
+    const houses = BA_DAN_STANDING.filter((piece) => piece.id.endsWith('-house'));
+    for (const lead of [
+      { x: 10, y: 12 },
+      { x: 14, y: 4 },
+    ]) {
+      const seats = placeParty(grid, lead, 4, { awayFrom: exit });
+      for (const seat of seats) {
+        expect(tileAt(grid, seat)?.blocked).toBeFalsy();
+        for (const house of houses)
+          expect(
+            house.footprint.some((cell) => samePos(cell, seat)),
+            `${posKey(seat)}`,
+          ).toBe(false);
+      }
+    }
   });
 
   it('stacks a party larger than the open ground on the last tile taken', () => {
