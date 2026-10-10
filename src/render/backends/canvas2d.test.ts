@@ -2,12 +2,28 @@ import { describe, expect, it, vi } from 'vitest';
 import { Canvas2DBackend, uprightSpriteVisible } from './canvas2d';
 import { sheets } from '../sheets/store';
 import { sprites } from '../spriteCache';
-import { FALLEN_SHADOW_ALPHA } from '../lighting';
+import {
+  CAST_SHADOW_ALPHA,
+  DEFAULT_ACTOR_GROUNDING,
+  FALLEN_SHADOW_ALPHA,
+  type ActorGrounding,
+} from '../lighting';
 
 describe('Canvas unit cast shadow', () => {
   // Drives the private mask pass on a stub context: only globalAlpha at each draw matters.
-  const drawnAlphas = (unit: Record<string, unknown>, sheeted = true): number[] => {
+  const drawnAlphas = (
+    unit: Record<string, unknown>,
+    sheeted = true,
+    grounding: ActorGrounding = DEFAULT_ACTOR_GROUNDING,
+  ): number[] => drawn(unit, sheeted, grounding).alphas;
+
+  const drawn = (
+    unit: Record<string, unknown>,
+    sheeted = true,
+    grounding: ActorGrounding = DEFAULT_ACTOR_GROUNDING,
+  ): { alphas: number[]; levels: number[] } => {
     const alphas: number[] = [];
+    const levels: number[] = [];
     const ctx = {
       globalAlpha: 1,
       save: vi.fn(),
@@ -41,8 +57,16 @@ describe('Canvas unit cast shadow', () => {
     try {
       const self = {
         squareFootprints: false,
+        grounding,
         drawPropShadowMask: () => undefined,
         projectMask: (Canvas2DBackend.prototype as unknown as Record<string, unknown>).projectMask,
+        projectContactMask: (Canvas2DBackend.prototype as unknown as Record<string, unknown>)
+          .projectContactMask,
+        // No scratch: the caster draws straight through, and the level it asked for is recorded.
+        castInto: (_layer: unknown, level: number, _b: unknown, draw: (t: unknown) => void) => {
+          levels.push(level);
+          draw(ctx);
+        },
       };
       const draw = (
         Canvas2DBackend.prototype as unknown as {
@@ -54,7 +78,7 @@ describe('Canvas unit cast shadow', () => {
       spy.mockRestore();
       spriteSpy.mockRestore();
     }
-    return alphas;
+    return { alphas, levels };
   };
 
   it('scales the shadow by the unit alpha during a fade, as the Pixi backend does', () => {
@@ -66,6 +90,23 @@ describe('Canvas unit cast shadow', () => {
   it('applies the same fade when the unit has no sheet frame and falls back to the sprite', () => {
     expect(drawnAlphas({}, false)).toEqual([1]);
     expect(drawnAlphas({ alpha: 0.5 }, false)[0]).toBeCloseTo(0.5);
+  });
+
+  it('writes the cast and the contact band at their own strengths', () => {
+    const out = drawn({}, true, { cast: 0.5, contact: 0.8 });
+    expect(out.levels).toEqual([0.5, 0.8]);
+    expect(out.alphas).toEqual([1, 1]);
+  });
+
+  it('draws no contact band, and the default level, for a scene that sets nothing', () => {
+    const out = drawn({}, true, DEFAULT_ACTOR_GROUNDING);
+    expect(out.alphas).toEqual([1]);
+    expect(out.levels).toEqual([CAST_SHADOW_ALPHA]);
+  });
+
+  it('still gives a painter-fallback unit its band in a contact scene', () => {
+    const out = drawn({}, false, { cast: 0.5, contact: 0.8 });
+    expect(out.levels).toEqual([0.5, 0.8]);
   });
 });
 

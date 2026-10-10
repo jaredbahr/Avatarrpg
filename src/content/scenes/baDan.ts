@@ -347,6 +347,9 @@ const plate = ([
 /** The image files the scene draws: the ground plates and the upright pages. */
 export const BA_DAN_IMAGE_COUNT = BA_DAN_GROUND_PLATES.length + BA_DAN_UPRIGHT_PAGES;
 
+/** Ink alpha of a figure's projected cast and of the sole-band contact under both feet. */
+export const BA_DAN_ACTOR_GROUNDING = { cast: 0.5, contact: 0.8 } as const;
+
 /**
  * A complete scene: the plates cover the whole pan box, so the grid's procedural terrain is not drawn under
  * them and no runtime join is drawn over them. The permanent water is the painted canal.
@@ -355,6 +358,8 @@ export const BA_DAN_SCENE: MapScene = {
   marginTone: 'verdant',
   chimneys: BA_DAN_CHIMNEYS,
   paintedWater: true,
+  // The painting's own casts run ~0.40 darkening with ~0.60 at the contact line; figures answer in kind.
+  actorGrounding: BA_DAN_ACTOR_GROUNDING,
   // The painting's own rectangle: the exploration camera keeps the view inside it, so its edge is never seen.
   paintExtent: {
     x: origin.x,

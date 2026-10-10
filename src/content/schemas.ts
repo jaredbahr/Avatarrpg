@@ -596,6 +596,13 @@ export const mapSchema = z
         groundMode: z.literal('partial').optional(),
         paintedWaterCells: z.array(vec2).optional(),
         paintedRubble: z.array(vec2).optional(),
+        actorGrounding: z
+          .object({
+            cast: z.number().min(0).max(1).optional(),
+            contact: z.number().min(0).max(1).optional(),
+          })
+          .strict()
+          .optional(),
         reliefLift: z
           .union([z.number().min(0).max(0.5), z.array(z.number().min(0).max(0.5))])
           .optional(),
