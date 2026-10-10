@@ -249,13 +249,13 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original generated environments registered to the authored map layouts, with the transparent workers’ tea station packed separately. Prompts and processing notes: docs/art/act1-environments.md; workers’ tea station: docs/art/tea-station.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
-    what: 'The layered Ba Dan courtyard',
-    work: 'Calibrated ground, low-rise houses, pond and village tree',
+    what: 'The Ba Dan village painting',
+    work: 'One continuous painting of the village, cut into ground plates and the pieces a figure can walk behind',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
     covers: ['art/maps/ba-dan-scene'],
-    note: 'Original generated material and scenery art, packed against the logical village map. Exact prompts, processing and registration: docs/art/ba-dan-scene.md and docs/art/ba-dan-scene-prompts.json. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    note: 'Original generated art: twelve overlapping region paintings, each painted over a guide rendered from the village geometry and registered to it within two pixels, stitched into one painting and split back into plates and uprights by that geometry. The accepted regions, their registration gates and the frozen geometry are tracked in art/source/ba-dan-regions/ (the generator prompts were not kept); the older house, table, planter and tree paintings it was built over are art/source/ba-dan-true/ and art/source/ba-dan-restyle/. Processing and layout: docs/art/ba-dan-scene.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The layered Forest Road',

@@ -8,227 +8,201 @@ import {
   BA_DAN_CANAL,
   BA_DAN_WATER_CELLS,
   BA_DAN_CANAL_BRIDGE,
-  BA_DAN_CANAL_BANKS,
-  BA_DAN_COURTYARD_GROUND,
   BA_DAN_COURTYARD_PROPS,
-  BA_DAN_WESTERN_APPROACH_GROUND,
-  BA_DAN_NEIGHBORHOOD_GROUNDS,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
   BA_DAN_DRESSING,
   BA_DAN_DRESSING_FOOTPRINTS,
-  BA_DAN_NORTH_TERRACE,
-  BA_DAN_SURROUND,
-  BA_DAN_SURROUND_MODULES,
-  BA_DAN_APRON_MAP,
-  BA_DAN_APRON_PIECES,
-  BA_DAN_FRAME_PIECES,
-  BA_DAN_EDGE_WATER,
-  BA_DAN_EXTERIOR_APRON,
+  BA_DAN_IMAGE_COUNT,
   BA_DAN_SCENE,
   BA_DAN_SOUTHEAST_PLANTER,
-  BA_DAN_TRUE_PIECES,
+  BA_DAN_STANDING,
 } from './baDan';
+import {
+  BA_DAN_GROUND_PLATES,
+  BA_DAN_PAINTING,
+  BA_DAN_UPRIGHT_PAGES,
+  BA_DAN_UPRIGHTS,
+} from './baDan.art';
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
 import { CONTENT_BUNDLE } from '../index';
 import { npcStandTiles } from '../schemas';
+import type { SceneScenery } from '../../core/types';
 
-// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// Decoding WebP pages is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
-it('disables projected cast shadows for all village scenery', () => {
-  expect(BA_DAN_SCENE.scenery.length).toBeGreaterThan(0);
-  expect(BA_DAN_SCENE.scenery.every((piece) => piece.castShadow === false)).toBe(true);
-});
-
-it('keeps the packed surround atlas within its delivery budget', () => {
-  expect(
-    readFileSync('public/art/maps/ba-dan-scene/village-surround.webp').byteLength,
-  ).toBeLessThanOrEqual(750 * 1024);
-});
-
-it('keeps the painted surround outside the map and leaves all three route mouths open', () => {
-  const surround = BA_DAN_SCENE.scenery.filter((piece) =>
-    BA_DAN_SURROUND.some(([id]) => id === piece.id),
-  );
-  expect(surround).toHaveLength(BA_DAN_SURROUND.length);
-  expect(new Set(surround.map((piece) => piece.url))).toEqual(
-    new Set(['art/maps/ba-dan-scene/village-surround.webp']),
-  );
-  expect(Object.keys(BA_DAN_SURROUND_MODULES)).toHaveLength(2);
-  for (const piece of surround) {
-    expect(piece).toMatchObject({ exterior: true, castShadow: false, contactShadow: false });
-    expect(piece.depth.x + piece.depth.y).toBeLessThan(0);
-    expect(piece.footprint.every(({ x, y }) => Number.isInteger(x) && Number.isInteger(y))).toBe(
-      true,
-    );
-    expect(piece.footprint.every(({ x, y }) => x < 0 || y < 0 || x >= 24 || y >= 16)).toBe(true);
-  }
-  const occupied = new Set(surround.flatMap((piece) => piece.footprint.map(posKey)));
-  for (const exit of [
-    { x: 24, y: 7 },
-    { x: 24, y: 8 },
-    { x: 18, y: 16 },
-    { x: 19, y: 16 },
-    { x: 20, y: 16 },
-    { x: -1, y: 7 },
-    { x: -1, y: 8 },
-  ])
-    expect(occupied, `surround closes route mouth ${posKey(exit)}`).not.toContain(posKey(exit));
-});
-
-it('keeps the backdrops on the far boundaries, behind the wall strips, and leaves both near edges empty', () => {
-  expect(BA_DAN_SURROUND.some(([id]) => /foreground|south-|east-wall/.test(id))).toBe(false);
-  expect(BA_DAN_SURROUND.filter(([id]) => id.startsWith('north-backdrop-'))).toHaveLength(2);
-  expect(BA_DAN_SURROUND.filter(([id]) => id.startsWith('west-backdrop-'))).toHaveLength(2);
-  // The wall itself is no longer a surround module: it is six strips of two composed runs in the
-  // wall atlas (`ba-dan-guides/walls.py`), and `BA_DAN_SURROUND` is the four backdrops.
-  expect(BA_DAN_SURROUND).toHaveLength(4);
-
-  const backdrops = BA_DAN_SCENE.scenery.filter(({ id }) => id.includes('backdrop'));
-  const walls = BA_DAN_SCENE.scenery.filter(({ id }) => /^wall-\d$/.test(id));
-  expect(backdrops).toHaveLength(4);
-  expect(walls).toHaveLength(6);
-  expect(walls.every(({ depth }) => depth.x === -100 && depth.y === -100)).toBe(true);
-  expect(backdrops.every(({ depth }) => depth.x === -101 && depth.y === -101)).toBe(true);
-  expect(
-    Math.max(...backdrops.map(({ depth }) => depth.x + depth.y)),
-    'every backdrop sorts strictly behind every wall',
-  ).toBeLessThan(Math.min(...walls.map(({ depth }) => depth.x + depth.y)));
-  for (const wall of walls) {
-    expect(wall).toMatchObject({
-      url: 'art/maps/ba-dan-scene/true-walls.webp',
-      exterior: true,
-      contactShadow: false,
-    });
-    // Painted at 1.5 source px per world px and drawn at 2/3.
-    expect(wall.sourceRect!.width * (2 / 3)).toBeCloseTo(wall.width, 9);
-    expect(wall.sourceRect!.height * (2 / 3)).toBeCloseTo(wall.height, 9);
-  }
-  // The strips are one wall: no gap between neighbours along the north run.
-  const north = walls
-    .filter((wall) => wall.x >= 1060 || wall.id === 'wall-1')
-    .sort((a, b) => a.x - b.x);
-  for (let i = 0; i + 1 < north.length; i++)
-    expect(north[i + 1]!.x, `${north[i]!.id} to ${north[i + 1]!.id}`).toBeLessThanOrEqual(
-      north[i]!.x + north[i]!.width,
-    );
-  // 4 backdrops, 6 wall strips, 4 houses, 2 bridge slices, 5 courtyard props, the turned planter,
-  // 6 terrace planters, 17 pieces of dressing, 33 tree entries (16 clumps, 17 alone; the last 8
-  // clumps are the south and east frame's).
-  expect(BA_DAN_SCENE.scenery).toHaveLength(78);
-});
-
-it('holds the scenery to the schema limit and the image cap', () => {
-  expect(BA_DAN_SCENE.scenery.length).toBeLessThanOrEqual(80);
-  // The scene's distinct images stay at the cap `src/render/scene.ts` sets (40).
-  const images = new Set([...BA_DAN_SCENE.ground, ...BA_DAN_SCENE.scenery].map((p) => p.url));
-  expect(images.size).toBeLessThanOrEqual(40);
-});
-
-it('carries the village ground outside the rim, painted after every local piece', () => {
-  expect(BA_DAN_APRON_MAP).toEqual({ width: BA_DAN_VILLAGE.width, height: BA_DAN_VILLAGE.height });
-  // The apron is the ring cut into bands, each one a piece of its own; the ring
-  // itself is still the single box `BA_DAN_EXTERIOR_APRON` describes.
-  expect(BA_DAN_EXTERIOR_APRON.width, 'one plate cannot hold the ring').toBeGreaterThan(2048);
-  expect(BA_DAN_APRON_PIECES.length).toBeGreaterThan(1);
-  for (const piece of BA_DAN_APRON_PIECES) {
-    expect(piece.width, `${piece.url} fits an iPad texture`).toBeLessThanOrEqual(2048);
-    expect(piece.height).toBeLessThanOrEqual(2048);
-    expect(piece.x, `${piece.url} stays on the ring`).toBeGreaterThanOrEqual(
-      BA_DAN_EXTERIOR_APRON.x,
-    );
-    expect(piece.y).toBeGreaterThanOrEqual(BA_DAN_EXTERIOR_APRON.y);
-    expect(piece.x + piece.width).toBeLessThanOrEqual(
-      BA_DAN_EXTERIOR_APRON.x + BA_DAN_EXTERIOR_APRON.width,
-    );
-    expect(piece.y + piece.height).toBeLessThanOrEqual(
-      BA_DAN_EXTERIOR_APRON.y + BA_DAN_EXTERIOR_APRON.height,
-    );
-  }
-  // The apron follows every local piece, and the south and east frame follows the apron; only the
-  // edge water, which runs on past the rim into the apron's fade, is painted over them.
-  const edges = BA_DAN_EDGE_WATER.length;
-  const outer = BA_DAN_APRON_PIECES.length + BA_DAN_FRAME_PIECES.length;
-  expect(BA_DAN_SCENE.ground.slice(-outer - edges, -edges)).toEqual([
-    ...BA_DAN_APRON_PIECES,
-    ...BA_DAN_FRAME_PIECES,
-  ]);
-  expect(BA_DAN_SCENE.ground.slice(-edges).map((piece) => piece.url)).toEqual(
-    BA_DAN_EDGE_WATER.map(() => 'art/maps/ba-dan-scene/edge-water.webp'),
-  );
-});
-
-let decodedGround: Map<string, ImageData>;
+type Decoded = Awaited<ReturnType<typeof decode>>;
+const pages: Decoded[] = [];
 
 beforeAll(async () => {
   const require = createRequire(import.meta.url);
   const wasm = readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm'));
   await init(await WebAssembly.compile(wasm));
-  decodedGround = new Map();
-  for (const piece of BA_DAN_SCENE.ground.filter((entry) =>
-    /(?:courtyard|western-approach|northwest-lawn|north-house-court|east-gate-approach|south-house-court|northeast-lawn|southwest-lawn)-ground\.webp$|north-grass-fringe\.webp$/.test(
-      entry.url,
-    ),
-  )) {
-    const bytes = readFileSync(`public/${piece.url}`);
-    decodedGround.set(
-      piece.url,
+  for (let i = 0; i < BA_DAN_UPRIGHT_PAGES; i++) {
+    const bytes = readFileSync(`public/art/maps/ba-dan-scene/uprights-${i}.webp`);
+    pages.push(
       await decode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)),
     );
   }
 });
 
-function alphaAt(
-  piece: (typeof BA_DAN_SCENE.ground)[number],
-  pos: { x: number; y: number },
-): number {
-  const image = decodedGround.get(piece.url);
-  if (!image) return 0;
-  const x = Math.round(1024 + (pos.x - pos.y) * 64 - piece.x);
-  const y = Math.round((pos.x + pos.y + 1) * 32 - piece.y);
-  if (x < 0 || y < 0 || x >= image.width || y >= image.height) return 0;
-  return image.data[(y * image.width + x) * 4 + 3] ?? 0;
+/** The opaque-ness (0..255) of an upright at a scene pixel; 0 outside its rectangle. */
+function alphaAtScenePixel(piece: SceneScenery, x: number, y: number): number {
+  const rect = piece.sourceRect;
+  const page = pages[Number(/uprights-(\d+)\.webp$/.exec(piece.url)?.[1])];
+  if (!rect || !page) throw new Error(`${piece.id} has no sprite`);
+  const u = Math.floor(((x - piece.x) / piece.width) * rect.width);
+  const v = Math.floor(((y - piece.y) / piece.height) * rect.height);
+  if (u < 0 || v < 0 || u >= rect.width || v >= rect.height) return 0;
+  return page.data[((rect.y + v) * page.width + rect.x + u) * 4 + 3] ?? 0;
 }
 
-function alphaAtWorld(
-  piece: (typeof BA_DAN_SCENE.ground)[number],
-  pos: { x: number; y: number },
-): number {
-  const image = decodedGround.get(piece.url);
-  if (!image) return 0;
-  // A plate packed finer than a world pixel (the north fringe) is stretched to
-  // its box, so a scene offset maps to a source pixel through that scale.
-  const x = Math.round(((1024 + (pos.x - pos.y) * 64 - piece.x) * image.width) / piece.width);
-  const y = Math.round((((pos.x + pos.y) * 32 - piece.y) * image.height) / piece.height);
-  if (x < 0 || y < 0 || x >= image.width || y >= image.height) return 0;
-  return image.data[(y * image.width + x) * 4 + 3] ?? 0;
-}
+it('disables projected cast shadows and the runtime contact ring for all village scenery', () => {
+  expect(BA_DAN_SCENE.scenery.length).toBeGreaterThan(0);
+  for (const piece of BA_DAN_SCENE.scenery) {
+    // The painting has the contact and the cast shade; the runtime would draw them a second time.
+    expect(piece.castShadow, piece.id).toBe(false);
+    expect(piece.contactShadow, piece.id).toBe(false);
+  }
+});
 
-function rgbAt(
-  piece: (typeof BA_DAN_SCENE.ground)[number],
-  pos: { x: number; y: number },
-): readonly number[] {
-  const image = decodedGround.get(piece.url);
-  if (!image) return [0, 0, 0];
-  const x = Math.round(1024 + (pos.x - pos.y) * 64 - piece.x);
-  const y = Math.round((pos.x + pos.y + 1) * 32 - piece.y);
-  const at = (y * image.width + x) * 4;
-  return [image.data[at] ?? 0, image.data[at + 1] ?? 0, image.data[at + 2] ?? 0];
-}
+it('is a complete scene whose painting carries the water, the joins and the light', () => {
+  // Not `groundMode: 'partial'`: no procedural terrain under the plates and no runtime join wash over them.
+  expect(BA_DAN_SCENE.groundMode).toBeUndefined();
+  expect(BA_DAN_SCENE.paintedWater).toBe(true);
+  expect(BA_DAN_SCENE.paintedWaterCells).toBeUndefined();
+  expect(BA_DAN_SCENE.paintedRubble).toBeUndefined();
+  expect(BA_DAN_SCENE.marginTone).toBe('verdant');
+});
 
-function rgbAtWorld(
-  piece: (typeof BA_DAN_SCENE.ground)[number],
-  pos: { x: number; y: number },
-): readonly number[] {
-  const image = decodedGround.get(piece.url);
-  if (!image) return [0, 0, 0];
-  const x = Math.round(((1024 + (pos.x - pos.y) * 64 - piece.x) * image.width) / piece.width);
-  const y = Math.round((((pos.x + pos.y) * 32 - piece.y) * image.height) / piece.height);
-  const at = (y * image.width + x) * 4;
-  return [image.data[at] ?? 0, image.data[at + 1] ?? 0, image.data[at + 2] ?? 0];
+it('holds the scenery to the schema limit, the ground to its piece limit and the images to the cap', () => {
+  expect(BA_DAN_SCENE.scenery.length).toBeLessThanOrEqual(80);
+  expect(BA_DAN_SCENE.ground.length).toBeLessThanOrEqual(32);
+  // The scene's distinct images stay at the cap `src/render/scene.ts` sets (40).
+  const images = new Set([...BA_DAN_SCENE.ground, ...BA_DAN_SCENE.scenery].map((p) => p.url));
+  expect(images.size).toBe(BA_DAN_IMAGE_COUNT);
+  expect(images.size).toBeLessThanOrEqual(40);
+});
+
+it('lays the ground plates over the whole pan box with no gap and a 2 px overlap at every join', () => {
+  // The pan box is 3000 x 1600 world px from (-200, -100); the painting is 1.5 px to the world pixel.
+  const { scale, origin, size } = BA_DAN_PAINTING;
+  expect(size.width).toBe(3000 * scale);
+  // The last of twelve 1024-row regions ends at row 2401: 1600.67 world px, over the 1600 of the pan box.
+  expect(size.height).toBe(2401);
+  expect(size.height).toBeGreaterThanOrEqual(1600 * scale);
+  const covered = new Uint8Array(size.width * size.height);
+  for (const [index, x, y, width, height] of BA_DAN_GROUND_PLATES) {
+    const plate = BA_DAN_SCENE.ground[index];
+    expect(plate?.url).toBe(`art/maps/ba-dan-scene/ground-${String(index).padStart(2, '0')}.webp`);
+    expect(plate?.x).toBe(origin.x + x / scale);
+    expect(plate?.y).toBe(origin.y + y / scale);
+    expect(plate?.width).toBe(width / scale);
+    expect(plate?.height).toBe(height / scale);
+    // A plate starts on a whole world pixel and fits the 2048 texture every iPad takes.
+    expect(Number.isInteger(plate?.x) && Number.isInteger(plate?.y), `plate ${index}`).toBe(true);
+    expect(Math.max(width, height)).toBeLessThanOrEqual(2048);
+    for (let row = y; row < y + height; row++)
+      for (let col = x; col < x + width; col++)
+        covered[row * size.width + col] = (covered[row * size.width + col] ?? 0) + 1;
+  }
+  expect(covered.filter((n) => n === 0).length, 'painting pixels no plate covers').toBe(0);
+  const doubled = covered.filter((n) => n > 1).length;
+  // Every join is two px wide: 3 vertical joins of full height and 2 horizontal ones of full width,
+  // their crossings counted once (each crossing is 2 x 2 and four plates thick).
+  expect(doubled).toBeGreaterThan(0);
+  expect(covered.reduce((most, n) => Math.max(most, n), 0)).toBeLessThanOrEqual(4);
+});
+
+it('keeps the uprights to the pieces a figure can stand behind, and the rest in the ground', () => {
+  // `Village.needed` in `scripts/art/ba-dan-regions/regions.py` decides this from the map's walkable cells
+  // and the geometry; `ba-dan-regions.test.ts` recomputes it. It leaves 29 of the 78 pieces the painting
+  // had in the ground: the four backdrops and six wall strips (not listed here at all, they only paint),
+  // the six terrace planters outside the board, the frame's tree clumps, two far trees of the west rim
+  // and one fence.
+  const ground = BA_DAN_STANDING.filter((piece) => !BA_DAN_UPRIGHTS[piece.id]).map((p) => p.id);
+  expect(ground.sort()).toEqual(
+    [
+      'north-terrace-0',
+      'north-terrace-1',
+      'north-terrace-2',
+      'north-terrace-3',
+      'north-terrace-4',
+      'north-terrace-5',
+      'tree-0-6',
+      'tree-0-10',
+      'd13',
+      'tree-c0',
+      'tree-c1',
+      ...[8, 9, 10, 11, 12, 13, 14, 15].map((i) => `tree-c${i}`),
+    ].sort(),
+  );
+  // The backdrops and wall strips were never in the list of things a figure stands behind: they are not
+  // scenery any more, only painting.
+  expect(BA_DAN_SCENE.scenery.some((piece) => /backdrop|^wall-/.test(piece.id))).toBe(false);
+  expect(BA_DAN_SCENE.scenery).toHaveLength(Object.keys(BA_DAN_UPRIGHTS).length);
+  expect(BA_DAN_SCENE.scenery).toHaveLength(49);
+  expect(BA_DAN_STANDING).toHaveLength(49 + ground.length);
+});
+
+interface Frozen {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  depth: { x: number; y: number };
+  footprint: { x: number; y: number }[];
+  fade: boolean;
+  exterior: boolean;
 }
+const frozen = (
+  JSON.parse(readFileSync('art/source/ba-dan-regions/geometry/scene.json', 'utf8')) as {
+    pieces: Frozen[];
+  }
+).pieces;
+
+it('keeps every upright where the frozen geometry put it: same footprint, depth key and flags', () => {
+  const byId = new Map(frozen.map((piece) => [piece.id, piece]));
+  expect(frozen).toHaveLength(78);
+  // The 68 that stand: the frozen 78 less the four backdrops and six wall strips, which only paint.
+  expect(BA_DAN_STANDING).toHaveLength(68);
+  for (const piece of BA_DAN_STANDING) {
+    const was = byId.get(piece.id);
+    expect(was, piece.id).toBeDefined();
+    if (!was) continue;
+    expect(piece.footprint, `${piece.id} footprint`).toEqual(was.footprint);
+    expect(piece.depth, `${piece.id} depth`).toEqual(was.depth);
+    expect(piece.fadeWhenOccluding === true, `${piece.id} fade`).toBe(was.fade);
+    expect(piece.exterior === true, `${piece.id} exterior`).toBe(was.exterior);
+  }
+  // Draw order is the old one with the pieces now in the ground taken out.
+  expect(BA_DAN_STANDING.map((p) => p.id)).toEqual(
+    frozen.map((p) => p.id).filter((id) => !/backdrop|^wall-\d$/.test(id)),
+  );
+});
+
+it("draws each upright inside its frozen rectangle, to within the painting's pixel grid", () => {
+  const byId = new Map(frozen.map((piece) => [piece.id, piece]));
+  const slack = 1 / BA_DAN_PAINTING.scale;
+  for (const piece of BA_DAN_SCENE.scenery) {
+    const was = byId.get(piece.id)!;
+    expect(piece.x, `${piece.id} left`).toBeGreaterThanOrEqual(was.x - slack);
+    expect(piece.y, `${piece.id} top`).toBeGreaterThanOrEqual(was.y - slack);
+    expect(piece.x + piece.width, `${piece.id} right`).toBeLessThanOrEqual(
+      was.x + was.width + slack,
+    );
+    expect(piece.y + piece.height, `${piece.id} bottom`).toBeLessThanOrEqual(
+      was.y + was.height + slack,
+    );
+    expect(piece.url).toMatch(/^art\/maps\/ba-dan-scene\/uprights-\d\.webp$/);
+    // One painting pixel per 2/3 world pixel: the sprite is drawn 1:1 on screen at the game's zoom.
+    expect(piece.sourceRect?.width).toBeCloseTo(piece.width * BA_DAN_PAINTING.scale, 9);
+    expect(piece.sourceRect?.height).toBeCloseTo(piece.height * BA_DAN_PAINTING.scale, 9);
+  }
+});
 
 it('keeps painted low boundaries solid while preserving every village destination', () => {
   const map = BA_DAN_VILLAGE;
@@ -251,15 +225,15 @@ it('keeps painted low boundaries solid while preserving every village destinatio
     expect(paths.has(posKey(p)), `Unreachable village destination ${posKey(p)}`).toBe(true);
 });
 
-it('covers every blocked tree cell with a scenery footprint', () => {
+it('covers every blocked tree cell with a footprint of something the painting holds', () => {
   for (const [y, row] of BA_DAN_VILLAGE.rows.entries())
     for (const [x, tile] of [...row].entries()) {
       if (tile !== 'T') continue;
       expect(
-        BA_DAN_VILLAGE.scene?.scenery.some((piece) =>
+        BA_DAN_STANDING.some((piece) =>
           piece.footprint.some((cell) => cell.x === x && cell.y === y),
         ),
-        `Blocked tree cell ${x},${y} has no scenery footprint`,
+        `Blocked tree cell ${x},${y} has no footprint`,
       ).toBe(true);
     }
 });
@@ -272,8 +246,10 @@ it("keeps Gao's display off his plinth, off the bridge and the moved west plante
     x: 6,
     y: 5,
   });
+  // A tile east of the south-west house's step column: at x 10 its west end tucked under the plinth's
+  // corner (the house sorts in front), so the planter read as cut by the terrace.
   expect(BA_DAN_COURTYARD_PROPS.find(({ id }) => id === 'west-planter')).toMatchObject({
-    x: 10,
+    x: 11,
     y: 10,
   });
   const reserved = [
@@ -299,29 +275,29 @@ it("stands the courtyard planter, turned, on the south-east house's blocked stri
   const planter = scenery.findIndex((piece) => piece.id === 'southeast-planter');
   const houseDepth = scenery[house]?.depth;
   const piece = scenery[planter];
-  const { width, height, anchor } = BA_DAN_TRUE_PIECES['low-planter-1x2'];
   if (!houseDepth || !piece) throw new Error('Missing south-east house or planter');
   for (const cell of BA_DAN_SOUTHEAST_PLANTER) {
     // `rows` already blocks the strip; the house art stops at x 16.
     expect(tileAt(grid, cell)?.blocked).toBe(true);
     expect(scenery[house]?.footprint).not.toContainEqual(cell);
   }
-  // The true 1x2 piece is one unscaled slice, no mirror.
-  expect(piece).toMatchObject({
-    url: 'art/maps/ba-dan-scene/true-low-planter-1x2.webp',
-    footprint: [...BA_DAN_SOUTHEAST_PLANTER],
-    width,
-    height,
-  });
+  // The true 1x2 piece is one slice, no mirror.
+  expect(piece.footprint).toEqual([...BA_DAN_SOUTHEAST_PLANTER]);
   expect(piece.flip).toBeUndefined();
   expect(scenery.some((p) => p.id === 'southeast-planter-far')).toBe(false);
   // It paints after the house and sorts at its far cell, so a figure at (18,10) or
   // (17,12) stands in front of it.
   expect(planter).toBeGreaterThan(house);
   expect(piece.depth).toEqual({ x: 17.5, y: 11.5 });
-  // Its plinth's front corner is the strip's (18,12), exactly.
-  expect(piece.x + anchor[0]).toBe(1024 + (18 - 12) * 64);
-  expect(piece.y + anchor[1]).toBe((18 + 12) * 32);
+  // Its plinth's front corner is the strip's (18,12), exactly: the lowest opaque pixel of the sprite is
+  // the corner, to within the two painting pixels the regional gate allows.
+  const corner = { x: 1024 + (18 - 12) * 64, y: (18 + 12) * 32 };
+  let low = { x: 0, y: -Infinity };
+  for (let y = piece.y; y < piece.y + piece.height; y += 1 / BA_DAN_PAINTING.scale)
+    for (let x = piece.x; x < piece.x + piece.width; x += 1 / BA_DAN_PAINTING.scale)
+      if (alphaAtScenePixel(piece, x, y) > 128 && y > low.y) low = { x, y };
+  expect(Math.abs(low.y - corner.y), 'front corner height').toBeLessThanOrEqual(2);
+  expect(Math.abs(low.x - corner.x), 'front corner column').toBeLessThanOrEqual(2);
 });
 
 it('registers the painted canal to every actual permanent-water cell', () => {
@@ -343,311 +319,14 @@ it('keeps the canal walkable and registers one low bridge at the dry crossing', 
   const bridgeFront = BA_DAN_VILLAGE.scene?.scenery.find(
     (piece) => piece.id === 'canal-bridge-front',
   );
-  const { width, height, anchor } = BA_DAN_TRUE_PIECES['canal-bridge'];
-  // One tile wide over the canal's column, three long on rows 5..7, drawn unscaled.
-  expect(bridge).toMatchObject({
-    url: 'art/maps/ba-dan-scene/true-canal-bridge.webp',
-    footprint: [BA_DAN_CANAL_BRIDGE],
-    width,
-    height,
-  });
-  // The plinth's front corner stands exactly on the crossing's south-east corner (10,8).
-  expect(bridge?.x).toBe(1024 + (10 - 8) * 64 - anchor[0]);
-  expect(bridge?.y).toBe((10 + 8) * 32 - anchor[1]);
-  expect(bridge?.depth).toEqual({ x: 9.5, y: 6.25 });
+  // One tile wide over the canal's column, split at the near rail so a figure can stand on the deck.
+  expect(bridge).toMatchObject({ footprint: [BA_DAN_CANAL_BRIDGE], depth: { x: 9.5, y: 6.25 } });
   expect(bridgeFront).toMatchObject({
-    url: 'art/maps/ba-dan-scene/true-canal-bridge-front.webp',
     footprint: [BA_DAN_CANAL_BRIDGE],
     depth: { x: 9.5, y: 6.75 },
-    x: bridge?.x,
-    y: bridge?.y,
-    width: bridge?.width,
-    height: bridge?.height,
   });
   expect(bridge?.fadeWhenOccluding).toBeUndefined();
-});
-
-it('uses transparent localized canal banks while the grid owns permanent water', () => {
-  expect(BA_DAN_SCENE.groundMode).toBe('partial');
-  expect(BA_DAN_SCENE.ground).toContainEqual({
-    url: 'art/maps/ba-dan-scene/courtyard-ground.webp',
-    ...BA_DAN_COURTYARD_GROUND,
-  });
-  expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/ground-west.webp'))).toBe(false);
-  expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/ground-east.webp'))).toBe(false);
-  const canal = BA_DAN_SCENE.ground.find(
-    (piece) => piece.url.endsWith('/edge-water.webp') && piece.x === BA_DAN_CANAL_BANKS.x,
-  );
-  expect(canal).toMatchObject(BA_DAN_CANAL_BANKS);
-  expect(canal?.url).toBe('art/maps/ba-dan-scene/edge-water.webp');
-  expect(BA_DAN_SCENE.paintedWater).toBeUndefined();
-  // The plates carry the pools: the scene declares exactly the map's permanent water.
-  const liveWater = BA_DAN_VILLAGE.rows.flatMap((row, y) =>
-    [...row].flatMap((ch, x) => (ch === '~' ? [{ x, y }] : [])),
-  );
-  expect(liveWater.length).toBeGreaterThan(0);
-  expect(BA_DAN_SCENE.paintedWaterCells).toEqual(liveWater);
-  expect(BA_DAN_SCENE.paintedWaterCells).toEqual(BA_DAN_WATER_CELLS);
-  expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/canal.webp'))).toBe(false);
-  expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/pond.webp'))).toBe(false);
-});
-
-it('ships the western spawn approach as decoded material coverage with a courtyard overlap', () => {
-  const western = BA_DAN_SCENE.ground.find((piece) =>
-    piece.url.endsWith('/western-approach-ground.webp'),
-  );
-  const courtyard = BA_DAN_SCENE.ground.find((piece) =>
-    piece.url.endsWith('/courtyard-ground.webp'),
-  );
-  expect(western).toMatchObject(BA_DAN_WESTERN_APPROACH_GROUND);
-  expect(courtyard).toBeDefined();
-  if (!western || !courtyard) throw new Error('Missing registered Ba Dan material ground');
-  let westernJoinDiff = 0;
-  let westernJoinChannels = 0;
-  for (const pos of [
-    { x: 10, y: 4 },
-    { x: 11, y: 4 },
-  ]) {
-    expect(BA_DAN_VILLAGE.rows[pos.y]?.[pos.x], `grass source ${pos.x},${pos.y}`).toBe(',');
-    expect(alphaAt(courtyard, pos), `opaque grass source ${pos.x},${pos.y}`).toBeGreaterThan(240);
-  }
-  for (let y = 6; y <= 9; y++) {
-    for (let x = 0; x <= 6; x++) {
-      const cell = BA_DAN_VILLAGE.rows[y]?.[x];
-      const alpha = alphaAt(western, { x, y });
-      if (cell === '~') expect(alpha).toBeLessThan(8);
-      else expect(alpha, `uncovered western cell ${x},${y}`).toBeGreaterThan(240);
-    }
-  }
-  for (const pos of [
-    { x: 5, y: 7 },
-    { x: 6, y: 7 },
-    { x: 5, y: 8 },
-    { x: 6, y: 8 },
-  ]) {
-    expect(alphaAt(western, pos), `western join ${pos.x},${pos.y}`).toBeGreaterThan(240);
-    expect(alphaAt(courtyard, pos), `courtyard join ${pos.x},${pos.y}`).toBeGreaterThan(240);
-    const westernRgb = rgbAt(western, pos);
-    const courtyardRgb = rgbAt(courtyard, pos);
-    for (let channel = 0; channel < 3; channel++) {
-      const diff = Math.abs((westernRgb[channel] ?? 0) - (courtyardRgb[channel] ?? 0));
-      // Per pixel this is two independent lossy encodes of one baked colour. Measured
-      // over the whole join (19,338 channel samples across the four cells' neighbourhood)
-      // the two plates differ by 1.06 on average, with a tail to 12 only at crack lines
-      // and shadow edges, where a lossy block cannot hold a hard step: a read above 4 at
-      // one pixel is the encoder at such an edge, not a colour disagreement (the mean
-      // below is the real bound). These twelve samples read 5 or less (the true-geometry shadows moved an edge near 5,8).
-      expect(diff, `RGB join ${pos.x},${pos.y}, channel ${channel}`).toBeLessThanOrEqual(5);
-      westernJoinDiff += diff;
-      westernJoinChannels++;
-    }
-  }
-  expect(
-    westernJoinDiff / westernJoinChannels,
-    'mean western/courtyard mismatch is encoder noise',
-  ).toBeLessThan(4);
-  for (const y of [7.5, 8.5])
-    for (const x of [5.05, 5.25, 5.5])
-      expect(alphaAtWorld(western, { x, y }), `opaque fractional join ${x},${y}`).toBeGreaterThan(
-        240,
-      );
-});
-
-it('keeps both north-pocket tile boundaries on one world-space material', () => {
-  const courtyard = BA_DAN_SCENE.ground.find((piece) =>
-    piece.url.endsWith('/courtyard-ground.webp'),
-  );
-  const northCourt = BA_DAN_SCENE.ground.find((piece) =>
-    piece.url.endsWith('/north-house-court-ground.webp'),
-  );
-  const northFringe = BA_DAN_SCENE.ground.find((piece) =>
-    piece.url.endsWith('/north-grass-fringe.webp'),
-  );
-  if (!courtyard || !northCourt || !northFringe)
-    throw new Error('Missing north-pocket join plates');
-  // Cross all four boundaries of (10,4) and (11,4). The pocket's wear may
-  // change inside the cells; the two full ground plates must never disagree.
-  // The north court plate ends at y=5 and feathers over its last 0.4 tile, so
-  // it is opaque only where its body reaches. What is compared is what the
-  // player sees: the north plate composited over the courtyard plate beneath
-  // it. Where the north plate is transparent (the y=4.99 samples round onto
-  // its first transparent row) its RGB is whatever the encoder left under zero
-  // alpha, which is not drawn and not a material; the composite ignores it.
-  let northCourtDiff = 0;
-  let northCourtChannels = 0;
-  let opaqueSamples = 0;
-  for (const pos of [
-    { x: 10.01, y: 4.25 },
-    { x: 10.99, y: 4.25 },
-    { x: 11.01, y: 4.25 },
-    { x: 11.99, y: 4.25 },
-    { x: 10.5, y: 4.01 },
-    { x: 10.5, y: 4.99 },
-    { x: 11.5, y: 4.01 },
-    { x: 11.5, y: 4.99 },
-  ]) {
-    expect(alphaAtWorld(courtyard, pos), `courtyard under ${pos.x},${pos.y}`).toBeGreaterThan(240);
-    const northAlpha = alphaAtWorld(northCourt, pos);
-    if (5 - pos.y >= 0.4) expect(northAlpha).toBeGreaterThan(240);
-    if (northAlpha > 240) opaqueSamples++;
-    const expected = rgbAtWorld(courtyard, pos);
-    const actual = rgbAtWorld(northCourt, pos);
-    for (let channel = 0; channel < 3; channel++) {
-      const seen =
-        ((actual[channel] ?? 0) * northAlpha + (expected[channel] ?? 0) * (255 - northAlpha)) / 255;
-      const diff = Math.abs(seen - (expected[channel] ?? 0));
-      expect(diff, `north pocket RGB ${pos.x},${pos.y}, channel ${channel}`).toBeLessThanOrEqual(
-        40,
-      );
-      northCourtDiff += diff;
-      northCourtChannels++;
-    }
-  }
-  // Six of the eight samples are opaque, and they decode within about 2.3
-  // levels of the courtyard on average; a consistent 11-level step on either
-  // plate takes the mean past 7.
-  expect(opaqueSamples, 'opaque north-pocket samples').toBeGreaterThanOrEqual(6);
-  expect(
-    northCourtDiff / northCourtChannels,
-    'mean north-pocket mismatch is encoder noise',
-  ).toBeLessThan(4);
-  // The thin decorative fringe fades at its own silhouette, but its RGB is
-  // the same world sample, so partial alpha cannot draw a pale rule. It is
-  // packed at 3.8 source pixels per world pixel and lossy, so a single pixel
-  // can be a texel off; the run along the pocket must agree on average.
-  let diff = 0;
-  let count = 0;
-  for (let i = 0; i < 40; i++) {
-    const pos = { x: 10.1 + i * 0.045, y: 4 };
-    expect(alphaAtWorld(northFringe, pos)).toBeGreaterThan(0);
-    const expected = rgbAtWorld(courtyard, pos);
-    const actual = rgbAtWorld(northFringe, pos);
-    for (let channel = 0; channel < 3; channel++) {
-      diff += Math.abs((actual[channel] ?? 0) - (expected[channel] ?? 0));
-      count++;
-    }
-  }
-  expect(diff / count, 'fringe agrees with the courtyard along the pocket').toBeLessThan(7);
-});
-
-it('covers the remaining connected village courts with opaque decoded material joins', () => {
-  const courtyard = BA_DAN_SCENE.ground.find((piece) =>
-    piece.url.endsWith('/courtyard-ground.webp'),
-  );
-  const named = (id: string) =>
-    BA_DAN_SCENE.ground.find((piece) => piece.url.endsWith(`/${id}-ground.webp`));
-  const regions = BA_DAN_NEIGHBORHOOD_GROUNDS.map((frame) => ({ frame, piece: named(frame.id) }));
-  expect(courtyard).toBeDefined();
-  for (const {
-    frame: { id: _id, ...frame },
-    piece,
-  } of regions)
-    expect(piece).toMatchObject(frame);
-  if (!courtyard || regions.some(({ piece }) => !piece))
-    throw new Error('Missing neighborhood material ground');
-  // The only repeated swatches are verified opaque source interiors, never props or water.
-  for (const pos of [
-    { x: 10, y: 4 },
-    { x: 11, y: 4 },
-  ]) {
-    expect(BA_DAN_VILLAGE.rows[pos.y]?.[pos.x]).toBe(',');
-    expect(alphaAt(courtyard, pos)).toBeGreaterThan(240);
-  }
-  for (const pos of [
-    { x: 5, y: 7 },
-    { x: 9, y: 7 },
-    { x: 5, y: 8 },
-    { x: 9, y: 8 },
-  ]) {
-    expect(BA_DAN_VILLAGE.rows[pos.y]?.[pos.x]).toBe('=');
-    expect(alphaAt(courtyard, pos)).toBeGreaterThan(240);
-  }
-  const centers: Readonly<Record<string, readonly { x: number; y: number }[]>> = {
-    'northwest-lawn': [
-      { x: 1, y: 4 },
-      { x: 3, y: 5 },
-      { x: 5, y: 5 },
-    ],
-    'north-house-court': [
-      { x: 5, y: 2 },
-      { x: 10, y: 2 },
-      { x: 16, y: 3 },
-    ],
-    'east-gate-approach': [
-      { x: 15, y: 7 },
-      { x: 20, y: 8 },
-      { x: 17, y: 9 },
-    ],
-    'south-house-court': [
-      { x: 6, y: 11 },
-      { x: 10, y: 12 },
-      { x: 17, y: 13 },
-    ],
-    'northeast-lawn': [
-      { x: 19, y: 2 },
-      { x: 21, y: 3 },
-      { x: 22, y: 4 },
-      { x: 18, y: 5 },
-    ],
-    'southwest-lawn': [
-      { x: 1, y: 11 },
-      { x: 3, y: 12 },
-      { x: 4, y: 14 },
-      { x: 1, y: 14 },
-    ],
-  };
-  for (const { frame, piece } of regions) {
-    if (!piece) continue;
-    for (const pos of centers[frame.id] ?? [])
-      expect(alphaAt(piece, pos), `${frame.id} ${pos.x},${pos.y}`).toBeGreaterThan(240);
-  }
-  const joins = [
-    ['northwest-lawn', { x: 5.5, y: 4.5 }, 'courtyard'],
-    ['north-house-court', { x: 10.5, y: 3.5 }, 'courtyard'],
-    ['east-gate-approach', { x: 14.5, y: 7.5 }, 'courtyard'],
-    ['south-house-court', { x: 10.5, y: 10.5 }, 'courtyard'],
-    ['southwest-lawn', { x: 1.25, y: 9.5 }, 'western-approach'],
-    ['southwest-lawn', { x: 5.5, y: 11.5 }, 'south-house-court'],
-    ['northeast-lawn', { x: 17.5, y: 2.5 }, 'north-house-court'],
-  ] as const;
-  for (const [leftId, pos, rightId] of joins) {
-    const left = named(leftId);
-    const right = rightId === 'courtyard' ? courtyard : named(rightId);
-    if (!left || !right) throw new Error(`Missing join ${leftId}/${rightId}`);
-    expect(alphaAtWorld(left, pos), `${leftId} alpha`).toBeGreaterThan(240);
-    expect(alphaAtWorld(right, pos), `${rightId} alpha`).toBeGreaterThan(240);
-    const a = rgbAtWorld(left, pos),
-      b = rgbAtWorld(right, pos);
-    for (let channel = 0; channel < 3; channel++)
-      expect(Math.abs((a[channel] ?? 0) - (b[channel] ?? 0))).toBeLessThanOrEqual(8);
-  }
-  for (const water of BA_DAN_WATER_CELLS) {
-    for (const { piece } of regions) if (piece) expect(alphaAt(piece, water)).toBeLessThan(8);
-  }
-});
-
-it('covers the projected courtyard and southeast canal bank without clipping', () => {
-  const projected = [
-    { x: 5, y: 3 },
-    { x: 15, y: 3 },
-    { x: 5, y: 11 },
-    { x: 15, y: 11 },
-  ].map(({ x, y }) => ({
-    x: 1024 + (x - y) * 64,
-    y: (x + y) * 32,
-  }));
-  for (const point of projected) {
-    expect(point.x).toBeGreaterThanOrEqual(BA_DAN_COURTYARD_GROUND.x);
-    expect(point.y).toBeGreaterThanOrEqual(BA_DAN_COURTYARD_GROUND.y);
-    expect(point.x).toBeLessThanOrEqual(BA_DAN_COURTYARD_GROUND.x + BA_DAN_COURTYARD_GROUND.width);
-    expect(point.y).toBeLessThanOrEqual(BA_DAN_COURTYARD_GROUND.y + BA_DAN_COURTYARD_GROUND.height);
-  }
-  expect(BA_DAN_CANAL_BANKS.x + BA_DAN_CANAL_BANKS.width).toBeLessThanOrEqual(
-    BA_DAN_COURTYARD_GROUND.x + BA_DAN_COURTYARD_GROUND.width,
-  );
-  expect(BA_DAN_CANAL_BANKS.y + BA_DAN_CANAL_BANKS.height).toBeLessThanOrEqual(
-    BA_DAN_COURTYARD_GROUND.y + BA_DAN_COURTYARD_GROUND.height,
-  );
+  expect(bridgeFront?.fadeWhenOccluding).toBeUndefined();
 });
 
 it('keeps court trunks solid and both shop doors and village routes reachable', () => {
@@ -662,7 +341,6 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     expect(map.scene?.scenery.find((s) => s.id === `tree-${pos.x}-${pos.y}`)).toMatchObject({
       footprint: [pos],
       depth: pos,
-      width: 320,
       fadeWhenOccluding: true,
     });
   }
@@ -684,6 +362,35 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
   }
 });
 
+it('draws nothing over the exit, the ford bank or the south road mouth', () => {
+  // A walkable tile's ground diamond, shrunk to its inner half: a figure's feet. A tall piece (a house, a
+  // tree: they fade when a figure is behind them) may reach over tiles behind it, as any oblique building
+  // does, but the exit and the mouths must be clear of every piece. Every upright's alpha is its geometry's
+  // silhouette (`ba-dan-regions.test.ts`), so anything the road shows today it showed before the painting.
+  const feet = (x: number, y: number) =>
+    [
+      { x: 0, y: 0 },
+      { x: -16, y: 0 },
+      { x: 16, y: 0 },
+      { x: 0, y: -8 },
+      { x: 0, y: 8 },
+    ].map((d) => ({ x: 1024 + (x - y) * 64 + d.x, y: (x + y + 1) * 32 + d.y }));
+  const mouths = [
+    { x: 23, y: 7 }, // the exit
+    { x: 23, y: 8 },
+    { x: 1, y: 7 }, // the ford's bank
+    { x: 1, y: 8 },
+    ...[18, 19, 20].map((x) => ({ x, y: 15 })), // the south road's mouth
+  ];
+  for (const piece of BA_DAN_SCENE.scenery)
+    for (const cell of mouths)
+      for (const at of feet(cell.x, cell.y))
+        expect(
+          alphaAtScenePixel(piece, at.x, at.y),
+          `${piece.id} is drawn over the mouth at ${cell.x},${cell.y}`,
+        ).toBeLessThan(128);
+});
+
 it('keeps the east court canopy clear of the market frontage and gate watch', () => {
   expect(BA_DAN_COURT_TREES).toContainEqual({ x: 21, y: 2 });
   expect(BA_DAN_COURT_TREES).not.toContainEqual({ x: 17, y: 5 });
@@ -691,7 +398,6 @@ it('keeps the east court canopy clear of the market frontage and gate watch', ()
   expect(east).toMatchObject({
     footprint: [{ x: 21, y: 2 }],
     depth: { x: 21, y: 2 },
-    width: 320,
     fadeWhenOccluding: true,
   });
   const house = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'north-house');
@@ -717,11 +423,12 @@ it('keeps the east court canopy clear of the market frontage and gate watch', ()
 });
 
 it('keeps the south-east grove beyond the frontage and river-path mouth', () => {
-  expect(BA_DAN_NORTH_TERRACE.at(-1)).toMatchObject({ x: 14, y: -1 });
+  const terrace = BA_DAN_STANDING.filter((piece) => piece.id.startsWith('north-terrace-'));
+  expect(terrace.at(-1)?.footprint[0]).toMatchObject({ x: 14, y: -1 });
   // No tree's cells include the river path's mouth.
   for (const x of [18, 19, 20])
     expect(
-      BA_DAN_SCENE.scenery.some((piece) => piece.footprint.some((c) => c.x === x && c.y === 15)),
+      BA_DAN_STANDING.some((piece) => piece.footprint.some((c) => c.x === x && c.y === 15)),
     ).toBe(false);
 
   const grove = [
@@ -810,80 +517,104 @@ it('keeps the south-east grove beyond the frontage and river-path mouth', () => 
   const eastShoulder = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-22-15');
   expect(eastShoulder?.x).toBeGreaterThanOrEqual(exitMarkerRight);
   expect(BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-21-15')).toMatchObject({
-    width: 150,
     footprint: [{ x: 21, y: 15 }],
   });
 });
 
-it('raises chimney smoke from the painted roof of a dwelling', async () => {
+it('raises chimney smoke from the mouth of a dwelling chimney', () => {
   const chimneys = BA_DAN_SCENE.chimneys ?? [];
   expect(chimneys).toHaveLength(2);
-  const roofs = new Map<string, Awaited<ReturnType<typeof decode>>>();
-  for (const name of ['true-dwelling-4x3', 'true-dwelling-4x4']) {
-    const bytes = readFileSync(`public/art/maps/ba-dan-scene/${name}.webp`);
-    roofs.set(
-      `art/maps/ba-dan-scene/${name}.webp`,
-      await decode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)),
-    );
-  }
   for (const at of chimneys) {
     // The oblique camera's scene pixel for the ground point.
     const px = 1024 + (at.x - at.y) * 64;
     const py = (at.x + at.y) * 32;
     const house = BA_DAN_SCENE.scenery.find(
       (piece) =>
-        /true-dwelling-\dx\d\.webp$/.test(piece.url) &&
+        (piece.id === 'north-house' || piece.id === 'southwest-house') &&
         px >= piece.x &&
         px < piece.x + piece.width &&
         py >= piece.y &&
         py < piece.y + piece.height,
     );
     expect(house, `chimney at ${px},${py} is on a dwelling`).toBeDefined();
-    const roof = house && roofs.get(house.url);
-    if (!house || !roof) continue;
-    const u = Math.floor(((px - house.x) / house.width) * roof.width);
-    const v = Math.floor(((py - house.y) / house.height) * roof.height);
-    // On the roof itself, in its upper band, not in the clear air round it.
-    const at4 = (v * roof.width + u) * 4;
-    expect(roof.data[at4 + 3], `${house.id} roof pixel`).toBeGreaterThan(200);
-    expect(v / roof.height).toBeLessThan(0.3);
-    // Red roof tile, not a ridge-end block or the wall: the wisp starts on the tiles.
-    const [r = 0, g = 0] = [roof.data[at4], roof.data[at4 + 1]];
-    expect(r - g, `${house.id} roof tile`).toBeGreaterThan(40);
+    if (!house?.sourceRect) continue;
+    const page = pages[Number(/uprights-(\d+)\.webp$/.exec(house.url)?.[1])];
+    if (!page) throw new Error('no page');
+    const rect = house.sourceRect;
+    const u = Math.floor(((px - house.x) / house.width) * rect.width);
+    const v = Math.floor(((py - house.y) / house.height) * rect.height);
+    const at4 = (x: number, y: number) => ((rect.y + y) * page.width + rect.x + x) * 4;
+    const alpha = (x: number, y: number) => page.data[at4(x, y) + 3] ?? 0;
+    // On the chimney: painted, in the sprite's top band, with the mouth at the stack's top.
+    expect(alpha(u, v), `${house.id} chimney pixel`).toBeGreaterThan(200);
+    expect(v / rect.height).toBeLessThan(0.1);
+    let top = v;
+    while (top > 0 && alpha(u, top - 1) > 128) top--;
+    expect(v - top, `${house.id} the mouth is at the chimney's top`).toBeLessThanOrEqual(18);
+  }
+});
+
+it('sorts each house against the figures beside it: in front east and south, behind north and west', () => {
+  // A house sprite is one piece with one depth key (its yard lies on the footprint's west tiles), and a figure
+  // is in front of a piece when its ground depth, x + y + 1 for the tile it stands on, is level with or past it.
+  // Every walkable tile whose figure the sprite would paint over must be one the house stands in front of.
+  const houses = BA_DAN_SCENE.scenery.filter((piece) => piece.id.endsWith('-house'));
+  expect(houses).toHaveLength(4);
+  const blocked = (x: number, y: number) => {
+    const ch = BA_DAN_VILLAGE.rows[y]?.[x];
+    return ch === undefined || BA_DAN_VILLAGE.legend[ch]?.blocked === true;
+  };
+  for (const house of houses) {
+    const xs = house.footprint.map((c) => c.x);
+    const ys = house.footprint.map((c) => c.y);
+    const [x0, x1] = [Math.min(...xs), Math.max(...xs) + 1];
+    const [y0, y1] = [Math.min(...ys), Math.max(...ys) + 1];
+    const key = house.depth.x + house.depth.y;
+    // The lane cell below the footprint's south-west corner, the yard's gate end.
+    expect(key, house.id).toBe(x0 + y1 + 1);
+    let judged = 0;
+    for (let cy = y0 - 2; cy <= y1 + 1; cy++)
+      for (let cx = x0 - 2; cx <= x1 + 1; cx++) {
+        const inside = cx >= x0 && cx < x1 && cy >= y0 && cy < y1;
+        // Cells inside the footprint are the door's step and the gates' lanes: no routine or stand point uses them.
+        if (inside || blocked(cx, cy)) continue;
+        // A figure is about 44 world px wide and 86 tall, its feet on the tile's centre.
+        const fx = 1024 + (cx - cy) * 64;
+        const fy = (cx + cy + 1) * 32;
+        let covered = 0;
+        for (let py = fy - 86; py < fy; py += 2)
+          for (let px = fx - 22; px < fx + 22; px += 2)
+            if (alphaAtScenePixel(house, px, py) > 128) covered++;
+        if (covered === 0) continue;
+        judged++;
+        const front = cx >= x1 || cy >= y1;
+        const level = cx + cy + 1 >= key;
+        expect(
+          level,
+          `${house.id}: a figure at ${cx},${cy} is ${front ? 'behind' : 'in front of'} it`,
+        ).toBe(front);
+      }
+    expect(judged, `${house.id} judged cells`).toBeGreaterThan(8);
   }
 });
 
 it('keeps the village an explore-only map, so its painted pools are not changed by a fight today', () => {
-  // The renderer still covers a declared pool that goes dry (`paintedWaterIsDry`);
-  // this records why nothing reaches that path now: no encounter is staged here.
+  // A complete scene never covers a pool that goes dry (that is `paintedWaterIsDry`, partial scenes
+  // only); this records why nothing reaches that path: no encounter is staged here.
   expect(ENCOUNTERS.filter((encounter) => encounter.mapId === BA_DAN_VILLAGE.id)).toEqual([]);
 });
 
-it('draws every tree from the tree atlas and none with the runtime contact ring', () => {
+it('draws every tree from the painting and none with the runtime contact ring', () => {
   const trees = BA_DAN_SCENE.scenery.filter((piece) => piece.id.startsWith('tree-'));
-  expect(trees).toHaveLength(33);
+  // 33 tree entries (16 clumps, 17 alone); the 12 that no figure stands behind are in the ground.
+  expect(BA_DAN_STANDING.filter((piece) => piece.id.startsWith('tree-'))).toHaveLength(33);
+  expect(trees).toHaveLength(33 - 12);
   for (const piece of trees) {
-    expect(piece.url, piece.id).toBe('art/maps/ba-dan-scene/village-trees.webp');
     // No tree carries the runtime's whole-tile footprint ring (a slab on the lawn beside a trunk, an
-    // orphan where a crown is drawn off its cells): the ground bake seats each trunk itself.
+    // orphan where a crown is drawn off its cells): the painting seats each trunk itself.
     expect(piece.contactShadow, `${piece.id} contact shadow`).toBe(false);
     expect(piece.fadeWhenOccluding, piece.id).toBe(true);
   }
-  // Neighbouring trees drawn alone never repeat an image and flip (the clumps were composed from
-  // trees that do not: `ba-dan-true-pipeline.test.ts`).
-  const alone = trees.filter((piece) => !/^tree-c\d$/.test(piece.id));
-  for (const a of alone)
-    for (const b of alone) {
-      if (a.id >= b.id) continue;
-      const near = Math.abs(a.depth.x - b.depth.x) < 2 && Math.abs(a.depth.y - b.depth.y) < 2;
-      if (near)
-        expect(
-          `${JSON.stringify(a.sourceRect)}|${a.flip === true}`,
-          `${a.id} beside ${b.id}`,
-        ).not.toBe(`${JSON.stringify(b.sourceRect)}|${b.flip === true}`);
-    }
-  // The rim keeps more than one native size, so it does not read as clones.
-  expect(new Set(alone.map((piece) => piece.sourceRect?.width)).size).toBeGreaterThanOrEqual(3);
 });
 
 it('blocks the dressing, keeps the main ways open, and reaches every stand point', () => {
@@ -897,10 +628,10 @@ it('blocks the dressing, keeps the main ways open, and reaches every stand point
     expect(map.rows[cell.y]?.[cell.x], `${posKey(cell)} is blocked lawn`).toBe('l');
     expect(tileAt(grid, cell)).toMatchObject({ blocked: true, blocksSight: false });
   }
-  // Every piece of dressing is a scenery piece standing on its cells, none on the courtyard's.
+  // Every piece of dressing stands on its cells, none on the courtyard's.
   for (const [i, [, x, y]] of BA_DAN_DRESSING.entries()) {
     const id = `d${i}`;
-    const piece = BA_DAN_SCENE.scenery.find((p) => p.id === id);
+    const piece = BA_DAN_STANDING.find((p) => p.id === id);
     expect(piece, id).toBeDefined();
     expect(
       piece?.footprint.some((c) => c.x === x && c.y === y),

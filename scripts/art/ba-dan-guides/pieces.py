@@ -1,4 +1,4 @@
-"""Round 3 geometry of every Ba Dan upright piece.  Footprint origin is tile (0,0); x runs down-right on
+"""Geometry of the Ba Dan upright pieces other than the houses (`houses.py`).  Footprint origin is tile (0,0); x runs down-right on
 screen, y down-left.  Horizontal units are tiles, z is world px; guidelib.SC (1.5) turns world px into guide px."""
 import math
 from guidelib import Piece, mul, proj, area2, K_TOP, K_LEFT, K_RIGHT, K_ROOF_NEAR, K_ROOF_FAR, K_BAND
@@ -17,25 +17,6 @@ CLAY = (196, 128, 84)
 STRAW = (214, 184, 110)
 LANTERN = (222, 160, 64)
 CLOTH = [(168, 60, 56), (60, 96, 150), (214, 170, 70), (96, 130, 84)]
-
-# shared proportions (world px; horizontal values in tiles)
-PLINTH_H = 26.0
-WALL_TOP = 140.0       # eave line at wall top, from the ground (plinth 26 + 114 of wall)
-RIDGE_RISE = 46.0      # eave line -> ridge, low pitch
-WALL_D = 1.7           # body depth in x (a deeper body makes the roof plane taller on screen: 64 px per tile of run)
-TERRACE_H = 8.0        # low stone terrace over the footprint west of the house plinth
-OVERHANG_E = 0.15      # +x (door side) overhang
-OVERHANG_Y = 0.20      # gable-side overhang (north / south)
-OVERHANG_W = 0.15
-KICK = 8.0             # upturn of each roof corner
-KICK_LEN = 0.6         # tiles over which the corner kick fades
-LEDGE_W = 0.25         # plinth ledge west of the west wall
-LEDGE_Y = 0.25         # plinth ledge north and south of the gable walls
-PORCH = 0.45           # +x plinth ledge: landing 0.09 + three steps of 0.12
-DOOR_H = 62.0
-LINTEL = 8.0
-RAFTER = 5.0           # fascia thickness
-
 
 class PlaneE:
     """East (+x) wall plane at x = xe; u runs along y."""
@@ -158,12 +139,6 @@ def firewood(p, x0, y0, sx, sy, z, rows=3, cols=5):
             disc_e(p, xe, y0 + (c + 0.5 + off * 0.5) * sy / (cols + 0.5), z + 3.6 + 7.2 * r, 3.3, mul(WOOD, 1.25), 0.9)
 
 
-def broom(p, xb, yb, z):
-    p.poly([(xb, yb - 0.05, z), (xb, yb + 0.05, z), (xb - 0.02, yb + 0.032, z + 14), (xb - 0.02, yb - 0.032, z + 14)], STRAW, 1.2)
-    p.line([(xb - 0.02, yb, z + 14), (xb - 0.075, yb, z + 52)], 1.8)
-    p.line([(xb - 0.02, yb - 0.03, z + 8), (xb - 0.02, yb + 0.03, z + 8)], 1.0)
-
-
 def barrel(p, cx, cy, z):
     prism(p, cx, cy, 0.092, 0.092, z, z + 28, mul(WOOD, 1.0), 12, hoops=(0.2, 0.8), topcol=(70, 100, 110))
     p.line([(cx + 0.075 * math.cos(2 * math.pi * i / 12), cy + 0.075 * math.sin(2 * math.pi * i / 12), z + 28) for i in range(13)], 1.0)
@@ -193,233 +168,6 @@ def name_board(p, wx, uc, vtop, w=0.3, h=22.0, hang=True):
     p.poly([(xb, u0, vtop - h), (xb, u1, vtop - h), (xb, u1, vtop), (xb, u0, vtop)], mul(WOOD, K_RIGHT * 1.15), 1.4)
     p.poly([(xb, u0 + 0.025, vtop - h + 3.5), (xb, u1 - 0.025, vtop - h + 3.5), (xb, u1 - 0.025, vtop - 3.5), (xb, u0 + 0.025, vtop - 3.5)],
            mul(PLASTER, K_RIGHT), 1.0)  # blank panel for the painter's lettering
-
-
-def house(kind, w, d, household):
-    """kind 'dwelling' or 'merchant'.  household: 'jars' | 'wood' (dwellings), 'barrel' | 'crates' (merchants).
-    Footprint w x d tiles, ridge along y, long eave wall (door, windows, shop bay) faces +x, timber gable faces +y."""
-    name = f"{'merchant-house' if kind == 'merchant' else kind}-{w}x{d}"
-    p = Piece(name, w, d)
-    p.household = household
-    roofcol = TERRACOTTA if kind == 'dwelling' else GREEN_TILE
-    x0, y0, x1, y1 = 0.0, 0.0, float(w), float(d)
-    wx1 = x1 - PORCH
-    wx0 = wx1 - WALL_D
-    px0 = wx0 - LEDGE_W                                # west edge of the 26 px plinth
-    wy0, wy1 = y0 + LEDGE_Y, y1 - LEDGE_Y
-    rx0, rx1 = wx0 - OVERHANG_W, wx1 + OVERHANG_E
-    ry0, ry1 = wy0 - OVERHANG_Y, wy1 + OVERHANG_Y
-    xm = (wx0 + wx1) / 2.0
-    zW = WALL_TOP
-    zR = zW + RIDGE_RISE
-    pitch = RIDGE_RISE / (xm - wx0)                   # world px per tile of run
-    zT = zW - pitch * OVERHANG_E                       # tip on the +x side
-    zTw = zW - pitch * OVERHANG_W
-    pw = 0.11
-    tim_s, tim_e = mul(TIMBER, K_LEFT), mul(TIMBER, K_RIGHT)
-
-    def kick(y):
-        e = min(y - ry0, ry1 - y)
-        return KICK * max(0.0, 1.0 - e / KICK_LEN) ** 2
-
-    def zE(y):
-        return zT + kick(y)
-
-    def zroof(x):
-        return zW + (zR - zW) * (1.0 - abs(x - xm) / (xm - wx0))
-
-    ds0, ds1 = y1 - 1.25, y1 - 0.45
-    fr = 0.06
-    # ---------------- plinth with a full-bay veranda stair cut into the east ledge ----------------
-    st_y0, st_y1 = ds0 - fr - 0.04, ds1 + fr + 0.04       # the stair spans the door bay, frame to frame, plus a margin
-    land = wx1 + 0.09
-    p.box(x0, px0, y0, y1, 0, TERRACE_H, mul(STONE, 1.04), tag='plinth')      # low terrace, the rest of the footprint
-    p.stone_courses(x0, px0, y0, y1, 0, TERRACE_H, 1)
-    p.box(px0, x1, y0, st_y0, 0, PLINTH_H, STONE, tag='plinth')
-    p.stone_courses(px0, x1, y0, st_y0, 0, PLINTH_H, 2)
-    p.box(px0, land, st_y0, st_y1, 0, PLINTH_H, STONE, tag='plinth')
-    p.stone_courses(px0, land, st_y0, st_y1, 0, PLINTH_H, 2)
-    for k in range(3):
-        p.box(land + 0.12 * k, land + 0.12 * (k + 1) if k < 2 else x1, st_y0, st_y1, 0, PLINTH_H - 6.5 * (k + 1), STONE, tag='plinth')
-    p.box(px0, x1, st_y1, y1, 0, PLINTH_H, STONE, tag='plinth')
-    p.stone_courses(px0, x1, st_y1, y1, 0, PLINTH_H, 2)
-    # threshold stone at the foot of the door, proud of the landing
-    p.box(wx1 - 0.0, wx1 + 0.085, ds0 - fr, ds1 + fr, PLINTH_H, PLINTH_H + 3, mul(STONE, 1.1), 1.3)
-
-    # ---------------- gable wall (+y face, plane y = wy1) -----------------------------
-    S = PlaneS(p, wy1)
-    gable = [(wx0, wy1, PLINTH_H), (wx1, wy1, PLINTH_H), (wx1, wy1, zW), (xm, wy1, zR), (wx0, wy1, zW)]
-    p.poly(gable, mul(PLASTER, K_LEFT), 1.5, tag='wall')
-    p.poly([(wx0, wy1, zW), (xm, wy1, zR), (wx1, wy1, zW), (wx1, wy1, zW - 9), (xm, wy1, zR - 9), (wx0, wy1, zW - 9)],
-           mul(PLASTER, K_LEFT * K_BAND), 0.8)
-    S.quad(wx0, wx0 + pw, PLINTH_H, zW, tim_s, 1.2)
-    S.quad(wx1 - pw, wx1, PLINTH_H, zW, tim_s, 1.2)
-    S.quad(wx0, wx1, PLINTH_H, PLINTH_H + 6, tim_s, 1.2)
-    S.quad(wx0, wx1, zW - 8, zW, tim_s, 1.2)
-    p.poly([(xm - pw / 2, wy1, PLINTH_H + 6), (xm + pw / 2, wy1, PLINTH_H + 6), (xm + pw / 2, wy1, zR - 5), (xm - pw / 2, wy1, zR - 5)], tim_s, 1.2)
-    for sgn in (-1, 1):
-        ua, ub = xm + sgn * 0.85, xm + sgn * 0.08
-        p.poly([(ua - 0.03, wy1, zW), (ua + 0.03, wy1, zW), (ub + 0.03, wy1, zW + 24), (ub - 0.03, wy1, zW + 24)], tim_s, 1.0)
-    gw0 = xm - 0.31
-    window(S, gw0, gw0 + 0.62, PLINTH_H + 34, PLINTH_H + 70, tim_s)
-    # ---- ledge dressing on the south (+y) ledge, in front of the gable ----
-    south_items = []
-
-    # ---------------- east eave wall (+x face, plane x = wx1) -------------------------------
-    E = PlaneE(p, wx1)
-    p.poly([(wx1, wy0, PLINTH_H), (wx1, wy1, PLINTH_H), (wx1, wy1, zW), (wx1, wy0, zW)], mul(PLASTER, K_RIGHT), 1.5, tag='wall')
-    E.quad(wy0, wy1, zW - 9, zW, mul(PLASTER, K_RIGHT * K_BAND), 0.8)
-    E.quad(wy1 - pw, wy1, PLINTH_H, zW, tim_e, 1.2)
-    E.quad(wy0, wy0 + pw, PLINTH_H, zW, tim_e, 1.2)
-    E.quad(wy0, wy1, PLINTH_H, PLINTH_H + 6, tim_e, 1.2)
-    E.quad(wy0, wy1, zW - 6, zW, tim_e, 1.2)
-    dz1 = PLINTH_H + DOOR_H
-    E.quad(ds0 - fr, ds1 + fr, PLINTH_H, dz1 + LINTEL, tim_e, 1.2)
-    E.quad(ds0, ds1, PLINTH_H, dz1, DARK, 1.0)
-    dm = (ds0 + ds1) / 2
-    for a, b in ((ds0 + 0.03, dm - 0.015), (dm + 0.015, ds1 - 0.03)):
-        E.quad(a, b, PLINTH_H + 2, dz1 - 2, mul(WOOD, K_RIGHT), 0.9)
-        for f in (1 / 3.0, 2 / 3.0):
-            E.line(a + (b - a) * f, PLINTH_H + 2, a + (b - a) * f, dz1 - 2, 0.8)
-        E.line(a, PLINTH_H + DOOR_H * 0.5, b, PLINTH_H + DOOR_H * 0.5, 0.8)
-    E.quad(ds0 - fr - 0.02, ds1 + fr + 0.02, dz1 + LINTEL, dz1 + LINTEL + 3, tim_e, 1.0)   # lintel cap
-    free0, free1 = wy0 + pw, ds0 - fr
-    north_x = wx1 + 0.06     # east-ledge items stand from here to x1 - 0.04
-    if kind == 'dwelling':
-        n = 2
-        usable = free1 - free0 - 0.12
-        wwid = 0.36 if (free1 - free0) < 1.6 else 0.52
-        gap = (usable - n * (wwid + 0.26)) / (n - 1) if n > 1 else 0
-        for k in range(n):
-            u0 = free0 + 0.06 + 0.13 + k * (wwid + 0.26 + max(gap, 0.0))
-            window(E, u0, u0 + wwid, PLINTH_H + 30, PLINTH_H + 66, tim_e)
-    else:
-        bw = 1.0 if (free1 - free0) < 1.6 else 1.5
-        a1 = free1 - 0.1
-        a0 = a1 - bw
-        E.quad(a0 - 0.05, a1 + 0.05, PLINTH_H, PLINTH_H + 70, tim_e, 1.2)
-        E.quad(a0, a1, PLINTH_H, PLINTH_H + 66, DARK, 1.0)
-        for sv in (30, 50):       # two shelves across the bay with a few jars standing on them
-            E.quad(a0 + 0.03, a1 - 0.03, PLINTH_H + sv, PLINTH_H + sv + 4, mul(WOOD, K_RIGHT), 0.9)
-            nj = int((a1 - a0) // 0.22)
-            for j in range(nj):
-                uc = a0 + 0.14 + j * ((a1 - a0 - 0.28) / max(nj - 1, 1))
-                E.quad(uc - 0.04, uc + 0.04, PLINTH_H + sv + 4, PLINTH_H + sv + 13 - (j % 2) * 3, mul(CLAY, K_RIGHT), 0.9)
-        E.quad(a0 - 0.05, a0, PLINTH_H, PLINTH_H + 76, tim_e, 1.0)     # bay jambs
-        E.quad(a1, a1 + 0.05, PLINTH_H, PLINTH_H + 76, tim_e, 1.0)
-        # counter
-        p.box(wx1 + 0.02, wx1 + 0.27, a0 + 0.04, a1 - 0.04, PLINTH_H, PLINTH_H + 26, WOOD, 1.3)
-        p.line([(wx1 + 0.27, a0 + 0.04, PLINTH_H + 17), (wx1 + 0.27, a1 - 0.04, PLINTH_H + 17)], 1.0)
-        p.line([(wx1 + 0.27, a0 + 0.04, PLINTH_H + 8), (wx1 + 0.27, a1 - 0.04, PLINTH_H + 8)], 1.0)
-        # awning on two posts, clearly sloped: 34 px drop over 0.40 tile
-        ax = wx1 + 0.40
-        top_z, lip_z = WALL_TOP - 20, WALL_TOP - 20 - 34
-        p.poly([(wx1, a0 - 0.1, top_z), (wx1, a1 + 0.1, top_z), (ax, a1 + 0.1, lip_z), (ax, a0 - 0.1, lip_z)], mul(AWNING, K_ROOF_NEAR), 1.5)
-        nb = 6
-        for k in range(1, nb):
-            yy = (a0 - 0.1) + (a1 - a0 + 0.2) * k / nb
-            p.line([(wx1, yy, top_z), (ax, yy, lip_z)], 1.0)
-        p.poly([(ax, a1 + 0.1, lip_z - 8), (ax, a0 - 0.1, lip_z - 8), (ax, a0 - 0.1, lip_z), (ax, a1 + 0.1, lip_z)], mul(AWNING, K_RIGHT), 1.3)
-        p.poly([(wx1, a1 + 0.1, top_z), (ax, a1 + 0.1, lip_z), (ax, a1 + 0.1, lip_z - 8), (wx1, a1 + 0.1, top_z - 8)], mul(AWNING, K_LEFT * 0.9), 1.2)
-        for yy in (a0 - 0.07, a1 + 0.05):   # posts stand on the ledge and reach the valance
-            p.box(ax - 0.035, ax + 0.025, yy, yy + 0.06, PLINTH_H, lip_z - 8, TIMBER, 1.2)
-        p.bay = (a0, a1)
-        north_gap = (free0, a0 - 0.05)
-    # lantern bracket beside the door (south of it), board plaque on the north side
-    # ---------------- household set dressing (simple shapes on the plinth ledges) -------------------
-    zL = PLINTH_H
-    xl0, xl1 = wx1 + 0.07, x1 - 0.05
-    xc = (xl0 + xl1) / 2
-    ySB = wy1 + 0.125                                   # centre line of the south ledge
-    spots = []
-    if household == 'jars':
-        ledge_jar(p, xc - 0.05, free0 + 0.16, zL, 1.15)
-        ledge_jar(p, xc + 0.02, free0 + 0.50, zL, 0.85)
-        ledge_jar(p, xc - 0.04, free0 + 0.78, zL, 1.0)
-        spots = ['east ledge, north end: three jars of different sizes', 'south ledge: lidded jar', 'door side: lantern on a bracket']
-        ledge_jar(p, xm - 0.55, ySB, zL, 0.8)
-        lantern(p, wx1, ds1 + fr + 0.06, dz1 + LINTEL)
-    elif household == 'wood':
-        firewood(p, xl0, free0 + 0.05, 0.28, 0.62, zL, rows=3, cols=5)
-        broom(p, xl0 + 0.1, free0 + 0.82, zL)
-        name_x = (free0 + 0.82 + free1) / 2 + 0.05
-        spots = ['east ledge, north end: firewood stack (3 rows)', 'east ledge: broom leaning on the wall', 'name board beside the door']
-        nb_u = free1 - 0.2
-        E.quad(nb_u - 0.17, nb_u + 0.17, PLINTH_H + 62, PLINTH_H + 84, mul(WOOD, K_RIGHT * 1.15), 1.4)
-        E.quad(nb_u - 0.14, nb_u + 0.14, PLINTH_H + 66, PLINTH_H + 80, mul(PLASTER, K_RIGHT), 1.0)
-    elif household == 'barrel':
-        barrel(p, xc, y1 - 0.14, zL)
-        bench(p, wx0 + 0.25, wx0 + 1.25, wy1 + 0.045, wy1 + 0.2, zL)
-        spots = ['SE corner: rain barrel', 'south ledge: bench', 'door side: lantern on a bracket']
-        lantern(p, wx1, ds1 + fr + 0.06, dz1 + LINTEL)
-        # a window above the bench on the gable is already drawn
-    elif household == 'crates':
-        a0_, a1_ = p.bay
-        crate(p, xl0, free0 + 0.0 if (a0_ - free0) > 0.5 else free0, 0.26, 0.26, zL, 17)
-        crate(p, xl0 + 0.02, free0 + 0.28, 0.24, 0.26, zL, 15) if (a0_ - free0) > 0.6 else None
-        crate(p, xl0 + 0.05, free0 + 0.02, 0.22, 0.22, zL + 17, 15)
-        crate(p, wx0 + 0.3, wy1 + 0.03, 0.30, 0.18, zL, 16)
-        crate(p, wx0 + 0.75, wy1 + 0.03, 0.30, 0.18, zL, 16)
-        spots = ['east ledge, north end: stacked crates', 'south ledge: two crates', 'name board hanging beside the shop bay']
-        name_board(p, wx1, (free0 + a0_ - 0.05) / 2 + 0.02, dz1 + LINTEL, 0.5 * (a0_ - free0) if (a0_ - free0) > 0.45 else 0.3, 22)
-    p.spots = spots
-    if kind == 'merchant' and household == 'barrel':
-        p.spots[2] = 'door side: lantern on a bracket'
-
-    # ---------------- roof: ridge along y; the east slope faces the viewer ----------------
-    west = [(rx0, ry1, zTw), (rx0, ry0, zTw), (xm, ry0, zR), (xm, ry1, zR)]
-    west_visible = area2([proj(q) for q in west]) > 0
-    p.notes.append(f'west roof slope visible on screen: {west_visible} (thin sliver)')
-    if west_visible:
-        p.poly(west, mul(roofcol, K_ROOF_FAR), 1.5, tag='roofw')
-    rcol = mul(roofcol, K_ROOF_NEAR)
-    p.poly([(wx1, ry1, zW), (wx1, ry0, zW), (xm, ry0, zR), (xm, ry1, zR)], rcol, 1.5, tag='roof')
-    nseg = int(round((ry1 - ry0) / 0.1))
-    ys = [ry0 + (ry1 - ry0) * i / nseg for i in range(nseg + 1)]
-    for a, b in zip(ys[:-1], ys[1:]):   # overhang strip with kicked corners
-        p.poly([(wx1, a, zW), (rx1, a, zE(a)), (rx1, b, zE(b)), (wx1, b, zW)], rcol, 0, edge=False, tag='roof')
-    p.line([(wx1, ry1, zW), (rx1, ry1, zE(ry1))], 1.2)
-    p.line([(wx1, ry0, zW), (rx1, ry0, zE(ry0))], 1.2)
-    p.line([(rx1, y, zE(y)) for y in ys], 1.5)                     # eave line with its upturned ends
-    p.line([(wx1, ry0, zW), (wx1, ry1, zW)], 1.0)
-    p.line([(xm, ry0, zR), (xm, ry1, zR)], 1.0)
-    n_rib = int(round((ry1 - ry0) / 0.2))
-    for j in range(1, n_rib):
-        y = ry0 + j * (ry1 - ry0) / n_rib
-        p.line([(xm, y, zR), (wx1, y, zW), (rx1, y, zE(y))], 1.0)
-    for f in (0.2, 0.4, 0.6, 0.8):
-        x = xm + (wx1 - xm) * f
-        p.line([(x, ry0, zroof(x)), (x, ry1, zroof(x))], 1.0)
-    # fascia following the kicked eave, then round rafter ends under it
-    fcol = mul(mul(roofcol, K_BAND), K_RIGHT / K_LEFT * 1.1)
-    for a, b in zip(ys[:-1], ys[1:]):
-        p.poly([(rx1, a, zE(a) - RAFTER), (rx1, b, zE(b) - RAFTER), (rx1, b, zE(b)), (rx1, a, zE(a))], fcol, 0, edge=False, tag='roof')
-    p.line([(rx1, y, zE(y) - RAFTER) for y in ys], 1.3)
-    p.line([(rx1, ry1, zE(ry1) - RAFTER), (rx1, ry1, zE(ry1))], 1.2)
-    p.line([(rx1, ry0, zE(ry0) - RAFTER), (rx1, ry0, zE(ry0))], 1.2)
-    n_raf = int((ry1 - ry0 - 0.2) / 0.125)
-    for j in range(n_raf + 1):
-        y = ry0 + 0.1 + j * 0.125
-        disc_e(p, rx1, y, zE(y) - RAFTER - 3.4, 2.6, mul(WOOD, 1.2), 1.0)
-    # verge (barge) boards on the gable edge, following the roof line with the corner kick on the +x end
-    path = [(rx0, zTw), (wx0, zW), (xm, zR), (wx1, zW), (rx1, zE(ry1))]
-    vb = RAFTER + 2
-    p.poly([(x, ry1, z) for x, z in path] + [(x, ry1, z - vb) for x, z in reversed(path)], mul(TIMBER, K_LEFT), 1.5)
-    # ridge beam, a row of ridge tiles, and a stepped ornament at each end
-    p.box(xm - 0.07, xm + 0.07, ry0 - 0.02, ry1 + 0.02, zR, zR + 8, mul(roofcol, 0.85), 1.5)
-    nt = int((ry1 - ry0 - 0.5) / 0.2)
-    for j in range(nt):
-        ya = ry0 + 0.25 + j * ((ry1 - ry0 - 0.5) / nt)
-        p.box(xm - 0.085, xm + 0.085, ya, ya + 0.16, zR + 8, zR + 15, mul(roofcol, 1.0), 1.2)
-    for ya, yb in ((ry0 - 0.05, ry0 + 0.14), (ry1 - 0.14, ry1 + 0.05)):
-        p.box(xm - 0.11, xm + 0.11, ya, yb, zR, zR + 18, mul(TIMBER, 1.15), 1.4)
-        p.box(xm - 0.08, xm + 0.08, ya + 0.015, yb - 0.015, zR + 18, zR + 31, mul(TIMBER, 1.25), 1.3)
-        p.box(xm - 0.115, xm + 0.115, ya - 0.005, yb + 0.005, zR + 31, zR + 36, mul(roofcol, 1.0), 1.3)
-    p.notes.append(f'wall top z={zW} tip z={zT:.1f} ridge z={zR}; rise eave->ridge {RIDGE_RISE}; overhang +x {OVERHANG_E} tile; corner kick {KICK}')
-    p.door = dict(face='east (+x)', door_y=(ds0, ds1), steps_x=(land, x1), steps_y=(st_y0, st_y1),
-                  faces_tile=(w, int(d - 1)), steps_tile=(w - 1, int(d - 1)))
-    p.geo = dict(wx0=wx0, wx1=wx1, wy0=wy0, wy1=wy1, rx1=rx1, xm=xm, zW=zW, zR=zR, zT=zT, ry0=ry0, ry1=ry1, free0=free0, free1=free1)
-    return p
 
 
 # ======================================================================== table
@@ -552,8 +300,6 @@ def bridge():
     return p
 
 def all_pieces():
-    """The ten true pieces, in the order the packer and the painter sheets use."""
-    return [house('dwelling', 4, 3, 'jars'), house('merchant', 4, 3, 'barrel'),
-            house('dwelling', 4, 4, 'wood'), house('merchant', 4, 4, 'crates'),
-            table('baskets'), table('cloth'), table('sacks'),
-            planter(2, 1), planter(1, 2), bridge()]
+    """The ten true pieces, in the order the packer and the painter sheets use: the four houses, then the rest."""
+    from houses import all_houses
+    return all_houses() + [table('baskets'), table('cloth'), table('sacks'), planter(2, 1), planter(1, 2), bridge()]

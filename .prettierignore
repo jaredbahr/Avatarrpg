@@ -18,3 +18,5 @@ art/source/ba-dan-true/guides/pieces.json
 art/source/ba-dan-true/pins.json
 art/source/ba-dan-true/pins-dressing.json
 art/source/ba-dan-true/walls/walls.json
+# Scratch written by the art tools and their tests (never tracked).
+.review/

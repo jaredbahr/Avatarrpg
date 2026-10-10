@@ -229,6 +229,7 @@ export class ExploreScene implements Scene {
       if (this.renderer) {
         this.renderer.camera.projection = map.projection ?? 'orthographic';
         this.renderer.camera.centreMargin = map.cameraCentreMargin;
+        this.renderer.camera.viewExtent = map.scene?.paintExtent;
       }
       this.renderer?.camera.fitExplore(map.projection ? 96 : 48);
       this.renderer?.camera.centreOn(state.location.pos);
@@ -813,6 +814,7 @@ export class ExploreScene implements Scene {
     this.renderer.resize({ width: map.width, height: map.height });
     this.renderer.camera.projection = map.projection ?? 'orthographic';
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
+    this.renderer.camera.viewExtent = map.scene?.paintExtent;
     this.app.animator.setProjection(this.renderer.camera.projection);
     this.renderer.camera.fitExplore(map.projection ? 96 : 48);
     this.renderer.camera.centreOn(state.location.pos);

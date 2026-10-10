@@ -74,6 +74,13 @@ jobs:
 
       - run: npm ci
 
+      # The Ba Dan painting tools and their tests are python (numpy + Pillow); versions are pinned
+      # because the tests rebuild the shipped art and compare bytes.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --quiet numpy==2.5.3 pillow==12.3.0
+
       - name: Typecheck
         run: npm run typecheck
 

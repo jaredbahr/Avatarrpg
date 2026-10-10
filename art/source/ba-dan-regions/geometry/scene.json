@@ -1,0 +1,2766 @@
+{
+  "pieces": [
+    {
+      "id": "north-backdrop-west",
+      "file": "village-surround.webp",
+      "sourceRect": {
+        "x": 0,
+        "y": 0,
+        "width": 912,
+        "height": 640
+      },
+      "x": 896,
+      "y": -326,
+      "width": 912,
+      "height": 640,
+      "flip": false,
+      "depth": {
+        "x": -101,
+        "y": -101
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "north-backdrop-east",
+      "file": "village-surround.webp",
+      "sourceRect": {
+        "x": 0,
+        "y": 0,
+        "width": 912,
+        "height": 640
+      },
+      "x": 1792,
+      "y": 122,
+      "width": 912,
+      "height": 640,
+      "flip": false,
+      "depth": {
+        "x": -101,
+        "y": -101
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 12,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "west-backdrop-north",
+      "file": "village-surround.webp",
+      "sourceRect": {
+        "x": 912,
+        "y": 0,
+        "width": 912,
+        "height": 640
+      },
+      "x": 236,
+      "y": -326,
+      "width": 912,
+      "height": 640,
+      "flip": false,
+      "depth": {
+        "x": -101,
+        "y": -101
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "west-backdrop-south",
+      "file": "village-surround.webp",
+      "sourceRect": {
+        "x": 912,
+        "y": 0,
+        "width": 912,
+        "height": 640
+      },
+      "x": -468,
+      "y": 26,
+      "width": 912,
+      "height": 640,
+      "flip": false,
+      "depth": {
+        "x": -101,
+        "y": -101
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": "wall-0",
+      "file": "true-walls.webp",
+      "sourceRect": {
+        "x": 1551,
+        "y": 592,
+        "width": 396,
+        "height": 327
+      },
+      "x": 536,
+      "y": -56,
+      "width": 264,
+      "height": 218,
+      "flip": false,
+      "depth": {
+        "x": -100,
+        "y": -100
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "wall-1",
+      "file": "true-walls.webp",
+      "sourceRect": {
+        "x": 1608,
+        "y": 2,
+        "width": 390,
+        "height": 354
+      },
+      "x": 800,
+      "y": -190,
+      "width": 260,
+      "height": 236,
+      "flip": false,
+      "depth": {
+        "x": -100,
+        "y": -100
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "wall-2",
+      "file": "true-walls.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 2,
+        "width": 801,
+        "height": 588
+      },
+      "x": 1060,
+      "y": -172,
+      "width": 534,
+      "height": 392,
+      "flip": false,
+      "depth": {
+        "x": -100,
+        "y": -100
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "wall-3",
+      "file": "true-walls.webp",
+      "sourceRect": {
+        "x": 805,
+        "y": 2,
+        "width": 801,
+        "height": 552
+      },
+      "x": 1594,
+      "y": 118,
+      "width": 534,
+      "height": 368,
+      "flip": false,
+      "depth": {
+        "x": -100,
+        "y": -100
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "wall-4",
+      "file": "true-walls.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 592,
+        "width": 804,
+        "height": 531
+      },
+      "x": 2128,
+      "y": 384,
+      "width": 536,
+      "height": 354,
+      "flip": false,
+      "depth": {
+        "x": -100,
+        "y": -100
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "wall-5",
+      "file": "true-walls.webp",
+      "sourceRect": {
+        "x": 808,
+        "y": 592,
+        "width": 741,
+        "height": 501
+      },
+      "x": -104,
+      "y": 148,
+      "width": 494,
+      "height": 334,
+      "flip": false,
+      "depth": {
+        "x": -100,
+        "y": -100
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": -2,
+          "y": -2
+        }
+      ]
+    },
+    {
+      "id": "gao-house",
+      "file": "true-merchant-house-4x3.webp",
+      "sourceRect": null,
+      "x": 1142,
+      "y": 119.33333333333337,
+      "width": 468,
+      "height": 338.66666666666663,
+      "flip": false,
+      "depth": {
+        "x": 6.5,
+        "y": 4.5
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 6,
+          "y": 1
+        },
+        {
+          "x": 7,
+          "y": 1
+        },
+        {
+          "x": 8,
+          "y": 1
+        },
+        {
+          "x": 9,
+          "y": 1
+        },
+        {
+          "x": 6,
+          "y": 2
+        },
+        {
+          "x": 7,
+          "y": 2
+        },
+        {
+          "x": 8,
+          "y": 2
+        },
+        {
+          "x": 9,
+          "y": 2
+        },
+        {
+          "x": 6,
+          "y": 3
+        },
+        {
+          "x": 7,
+          "y": 3
+        },
+        {
+          "x": 8,
+          "y": 3
+        },
+        {
+          "x": 9,
+          "y": 3
+        }
+      ]
+    },
+    {
+      "id": "north-house",
+      "file": "true-dwelling-4x3.webp",
+      "sourceRect": null,
+      "x": 1526,
+      "y": 291.33333333333337,
+      "width": 468,
+      "height": 358.66666666666663,
+      "flip": false,
+      "depth": {
+        "x": 12.5,
+        "y": 4.5
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 12,
+          "y": 1
+        },
+        {
+          "x": 13,
+          "y": 1
+        },
+        {
+          "x": 14,
+          "y": 1
+        },
+        {
+          "x": 15,
+          "y": 1
+        },
+        {
+          "x": 12,
+          "y": 2
+        },
+        {
+          "x": 13,
+          "y": 2
+        },
+        {
+          "x": 14,
+          "y": 2
+        },
+        {
+          "x": 15,
+          "y": 2
+        },
+        {
+          "x": 12,
+          "y": 3
+        },
+        {
+          "x": 13,
+          "y": 3
+        },
+        {
+          "x": 14,
+          "y": 3
+        },
+        {
+          "x": 15,
+          "y": 3
+        }
+      ]
+    },
+    {
+      "id": "southwest-house",
+      "file": "true-dwelling-4x4.webp",
+      "sourceRect": null,
+      "x": 502,
+      "y": 395.33333333333337,
+      "width": 532,
+      "height": 382.66666666666663,
+      "flip": false,
+      "depth": {
+        "x": 6.5,
+        "y": 14.5
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 6,
+          "y": 10
+        },
+        {
+          "x": 7,
+          "y": 10
+        },
+        {
+          "x": 8,
+          "y": 10
+        },
+        {
+          "x": 9,
+          "y": 10
+        },
+        {
+          "x": 6,
+          "y": 11
+        },
+        {
+          "x": 7,
+          "y": 11
+        },
+        {
+          "x": 8,
+          "y": 11
+        },
+        {
+          "x": 9,
+          "y": 11
+        },
+        {
+          "x": 6,
+          "y": 12
+        },
+        {
+          "x": 7,
+          "y": 12
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 9,
+          "y": 12
+        },
+        {
+          "x": 6,
+          "y": 13
+        },
+        {
+          "x": 7,
+          "y": 13
+        },
+        {
+          "x": 8,
+          "y": 13
+        },
+        {
+          "x": 9,
+          "y": 13
+        }
+      ]
+    },
+    {
+      "id": "southeast-house",
+      "file": "true-merchant-house-4x4.webp",
+      "sourceRect": null,
+      "x": 950,
+      "y": 628.6666666666667,
+      "width": 532,
+      "height": 373.3333333333333,
+      "flip": false,
+      "depth": {
+        "x": 13.5,
+        "y": 14.5
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 13,
+          "y": 10
+        },
+        {
+          "x": 14,
+          "y": 10
+        },
+        {
+          "x": 15,
+          "y": 10
+        },
+        {
+          "x": 16,
+          "y": 10
+        },
+        {
+          "x": 13,
+          "y": 11
+        },
+        {
+          "x": 14,
+          "y": 11
+        },
+        {
+          "x": 15,
+          "y": 11
+        },
+        {
+          "x": 16,
+          "y": 11
+        },
+        {
+          "x": 13,
+          "y": 12
+        },
+        {
+          "x": 14,
+          "y": 12
+        },
+        {
+          "x": 15,
+          "y": 12
+        },
+        {
+          "x": 16,
+          "y": 12
+        },
+        {
+          "x": 13,
+          "y": 13
+        },
+        {
+          "x": 14,
+          "y": 13
+        },
+        {
+          "x": 15,
+          "y": 13
+        },
+        {
+          "x": 16,
+          "y": 13
+        }
+      ]
+    },
+    {
+      "id": "canal-bridge",
+      "file": "true-canal-bridge.webp",
+      "sourceRect": null,
+      "x": 1078,
+      "y": 428.6666666666667,
+      "width": 276,
+      "height": 157.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 9.5,
+        "y": 6.25
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 9,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "canal-bridge-front",
+      "file": "true-canal-bridge-front.webp",
+      "sourceRect": null,
+      "x": 1078,
+      "y": 428.6666666666667,
+      "width": 276,
+      "height": 157.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 9.5,
+        "y": 6.75
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 9,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "west-planter",
+      "file": "true-low-planter.webp",
+      "sourceRect": null,
+      "x": 1014,
+      "y": 636.6666666666667,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 12.5,
+        "y": 10.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 11,
+          "y": 10
+        },
+        {
+          "x": 12,
+          "y": 10
+        }
+      ]
+    },
+    {
+      "id": "gao-display",
+      "file": "true-merchant-display.webp",
+      "sourceRect": null,
+      "x": 1014,
+      "y": 310,
+      "width": 212,
+      "height": 148,
+      "flip": false,
+      "depth": {
+        "x": 7.5,
+        "y": 5.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 6,
+          "y": 5
+        },
+        {
+          "x": 7,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "north-garden",
+      "file": "true-low-planter.webp",
+      "sourceRect": null,
+      "x": 1782,
+      "y": 636.6666666666667,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 18.5,
+        "y": 4.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 17,
+          "y": 4
+        },
+        {
+          "x": 18,
+          "y": 4
+        }
+      ]
+    },
+    {
+      "id": "north-market-display",
+      "file": "true-merchant-display-b.webp",
+      "sourceRect": null,
+      "x": 1526,
+      "y": 552.6666666666667,
+      "width": 212,
+      "height": 161.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 15.5,
+        "y": 5.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 14,
+          "y": 5
+        },
+        {
+          "x": 15,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "south-market-display",
+      "file": "true-merchant-display-c.webp",
+      "sourceRect": null,
+      "x": 566,
+      "y": 327.33333333333337,
+      "width": 212,
+      "height": 162.66666666666666,
+      "flip": false,
+      "depth": {
+        "x": 4.5,
+        "y": 9.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 3,
+          "y": 9
+        },
+        {
+          "x": 4,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": "southeast-planter",
+      "file": "true-low-planter-1x2.webp",
+      "sourceRect": null,
+      "x": 1334,
+      "y": 828.6666666666667,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 17.5,
+        "y": 11.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 17,
+          "y": 10
+        },
+        {
+          "x": 17,
+          "y": 11
+        }
+      ]
+    },
+    {
+      "id": "north-terrace-0",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1058,
+        "y": 300,
+        "width": 318,
+        "height": 212
+      },
+      "x": 1270,
+      "y": 60.666666666666686,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 5.5,
+        "y": -0.5
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 4,
+          "y": -1
+        },
+        {
+          "x": 5,
+          "y": -1
+        }
+      ]
+    },
+    {
+      "id": "north-terrace-1",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1058,
+        "y": 300,
+        "width": 318,
+        "height": 212
+      },
+      "x": 1398,
+      "y": 124.66666666666669,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 7.5,
+        "y": -0.5
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 6,
+          "y": -1
+        },
+        {
+          "x": 7,
+          "y": -1
+        }
+      ]
+    },
+    {
+      "id": "north-terrace-2",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1058,
+        "y": 300,
+        "width": 318,
+        "height": 212
+      },
+      "x": 1526,
+      "y": 188.66666666666669,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 9.5,
+        "y": -0.5
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 8,
+          "y": -1
+        },
+        {
+          "x": 9,
+          "y": -1
+        }
+      ]
+    },
+    {
+      "id": "north-terrace-3",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1058,
+        "y": 300,
+        "width": 318,
+        "height": 212
+      },
+      "x": 1654,
+      "y": 252.66666666666669,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 11.5,
+        "y": -0.5
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 10,
+          "y": -1
+        },
+        {
+          "x": 11,
+          "y": -1
+        }
+      ]
+    },
+    {
+      "id": "north-terrace-4",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1058,
+        "y": 300,
+        "width": 318,
+        "height": 212
+      },
+      "x": 1782,
+      "y": 316.6666666666667,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 13.5,
+        "y": -0.5
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 12,
+          "y": -1
+        },
+        {
+          "x": 13,
+          "y": -1
+        }
+      ]
+    },
+    {
+      "id": "north-terrace-5",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1058,
+        "y": 300,
+        "width": 318,
+        "height": 212
+      },
+      "x": 1910,
+      "y": 380.6666666666667,
+      "width": 212,
+      "height": 141.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 15.5,
+        "y": -0.5
+      },
+      "exterior": true,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 14,
+          "y": -1
+        },
+        {
+          "x": 15,
+          "y": -1
+        }
+      ]
+    },
+    {
+      "id": "d0",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1058,
+        "y": 2,
+        "width": 222,
+        "height": 269
+      },
+      "x": 886,
+      "y": 694.6666666666667,
+      "width": 148,
+      "height": 179.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 12.5,
+        "y": 13.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 12,
+          "y": 13
+        }
+      ]
+    },
+    {
+      "id": "d1",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 226,
+        "y": 548,
+        "width": 222,
+        "height": 141
+      },
+      "x": 502,
+      "y": 332,
+      "width": 148,
+      "height": 94,
+      "flip": false,
+      "depth": {
+        "x": 2.5,
+        "y": 9.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 2,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": "d2",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 226,
+        "y": 548,
+        "width": 222,
+        "height": 141
+      },
+      "x": 1462,
+      "y": 620,
+      "width": 148,
+      "height": 94,
+      "flip": false,
+      "depth": {
+        "x": 14.5,
+        "y": 6.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 14,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "d3",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 322,
+        "y": 2,
+        "width": 222,
+        "height": 291
+      },
+      "x": 1526,
+      "y": 296,
+      "width": 148,
+      "height": 194,
+      "flip": false,
+      "depth": {
+        "x": 11.5,
+        "y": 2.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 11,
+          "y": 2
+        }
+      ]
+    },
+    {
+      "id": "d4",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 322,
+        "y": 2,
+        "width": 222,
+        "height": 291
+      },
+      "x": 1462,
+      "y": 776,
+      "width": 148,
+      "height": 194,
+      "flip": false,
+      "depth": {
+        "x": 18.5,
+        "y": 10.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 18,
+          "y": 10
+        }
+      ]
+    },
+    {
+      "id": "d5",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 2,
+        "width": 222,
+        "height": 250
+      },
+      "x": 1398,
+      "y": 707.3333333333334,
+      "width": 148,
+      "height": 166.66666666666666,
+      "flip": false,
+      "depth": {
+        "x": 16.5,
+        "y": 9.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 16,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": "d6",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 2,
+        "width": 222,
+        "height": 250
+      },
+      "x": 1846,
+      "y": 739.3333333333334,
+      "width": 148,
+      "height": 166.66666666666666,
+      "flip": false,
+      "depth": {
+        "x": 20.5,
+        "y": 6.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 20,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "d7",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 2,
+        "width": 222,
+        "height": 250
+      },
+      "x": 1654,
+      "y": 835.3333333333334,
+      "width": 148,
+      "height": 166.66666666666666,
+      "flip": false,
+      "depth": {
+        "x": 20.5,
+        "y": 9.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 20,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": "d8",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 548,
+        "width": 222,
+        "height": 162
+      },
+      "x": 1462,
+      "y": 350,
+      "width": 148,
+      "height": 108,
+      "flip": false,
+      "depth": {
+        "x": 10.5,
+        "y": 2.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 10,
+          "y": 2
+        }
+      ]
+    },
+    {
+      "id": "d9",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 2,
+        "width": 318,
+        "height": 296
+      },
+      "x": 1910,
+      "y": 516.6666666666667,
+      "width": 212,
+      "height": 197.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 18.5,
+        "y": 2.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 17,
+          "y": 2
+        },
+        {
+          "x": 18,
+          "y": 2
+        }
+      ]
+    },
+    {
+      "id": "d10",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1282,
+        "y": 2,
+        "width": 222,
+        "height": 263
+      },
+      "x": 1718,
+      "y": 666.6666666666667,
+      "width": 148,
+      "height": 175.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 18.5,
+        "y": 6.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 18,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "d11",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 642,
+        "y": 300,
+        "width": 414,
+        "height": 224
+      },
+      "x": 1910,
+      "y": 724.6666666666667,
+      "width": 276,
+      "height": 149.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 21.5,
+        "y": 4.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 19,
+          "y": 4
+        },
+        {
+          "x": 20,
+          "y": 4
+        },
+        {
+          "x": 21,
+          "y": 4
+        }
+      ]
+    },
+    {
+      "id": "d12",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 322,
+        "y": 300,
+        "width": 318,
+        "height": 243
+      },
+      "x": 822,
+      "y": 200,
+      "width": 212,
+      "height": 162,
+      "flip": false,
+      "depth": {
+        "x": 4.5,
+        "y": 5.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 3,
+          "y": 5
+        },
+        {
+          "x": 4,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "d13",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1602,
+        "y": 300,
+        "width": 318,
+        "height": 200
+      },
+      "x": 694,
+      "y": 164.66666666666669,
+      "width": 212,
+      "height": 133.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 2.5,
+        "y": 5.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 1,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "d14",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 546,
+        "y": 2,
+        "width": 510,
+        "height": 272
+      },
+      "x": 374,
+      "y": 372.6666666666667,
+      "width": 340,
+      "height": 181.33333333333331,
+      "flip": false,
+      "depth": {
+        "x": 4.5,
+        "y": 11.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 2,
+          "y": 10
+        },
+        {
+          "x": 3,
+          "y": 10
+        },
+        {
+          "x": 4,
+          "y": 10
+        },
+        {
+          "x": 2,
+          "y": 11
+        },
+        {
+          "x": 3,
+          "y": 11
+        },
+        {
+          "x": 4,
+          "y": 11
+        }
+      ]
+    },
+    {
+      "id": "d15",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 1378,
+        "y": 300,
+        "width": 222,
+        "height": 205
+      },
+      "x": 566,
+      "y": 449.33333333333337,
+      "width": 148,
+      "height": 136.66666666666666,
+      "flip": false,
+      "depth": {
+        "x": 5.5,
+        "y": 11.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 5,
+          "y": 11
+        }
+      ]
+    },
+    {
+      "id": "d16",
+      "file": "true-dressing.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 300,
+        "width": 318,
+        "height": 246
+      },
+      "x": 1526,
+      "y": 870,
+      "width": 212,
+      "height": 164,
+      "flip": false,
+      "depth": {
+        "x": 20.5,
+        "y": 10.5
+      },
+      "exterior": false,
+      "fade": false,
+      "footprint": [
+        {
+          "x": 19,
+          "y": 10
+        },
+        {
+          "x": 20,
+          "y": 10
+        }
+      ]
+    },
+    {
+      "id": "tree-0-6",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 904,
+        "y": 2,
+        "width": 420,
+        "height": 410
+      },
+      "x": 426,
+      "y": -170,
+      "width": 420,
+      "height": 410,
+      "flip": false,
+      "depth": {
+        "x": 0,
+        "y": 6
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 0,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "tree-0-9",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 792,
+        "width": 320,
+        "height": 312
+      },
+      "x": 300,
+      "y": 20,
+      "width": 320,
+      "height": 312,
+      "flip": true,
+      "depth": {
+        "x": 0,
+        "y": 9
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 0,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": "tree-5-5",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 792,
+        "width": 320,
+        "height": 312
+      },
+      "x": 852,
+      "y": 52,
+      "width": 320,
+      "height": 312,
+      "flip": false,
+      "depth": {
+        "x": 5,
+        "y": 5
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 5,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "tree-0-10",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 904,
+        "y": 2,
+        "width": 420,
+        "height": 410
+      },
+      "x": 170,
+      "y": -42,
+      "width": 420,
+      "height": 410,
+      "flip": false,
+      "depth": {
+        "x": 0,
+        "y": 10
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 0,
+          "y": 10
+        }
+      ]
+    },
+    {
+      "id": "tree-1-14",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 792,
+        "width": 320,
+        "height": 312
+      },
+      "x": 44,
+      "y": 212,
+      "width": 320,
+      "height": 312,
+      "flip": true,
+      "depth": {
+        "x": 1,
+        "y": 14
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 1,
+          "y": 14
+        }
+      ]
+    },
+    {
+      "id": "tree-2-15",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1358,
+        "y": 1471,
+        "width": 260,
+        "height": 254
+      },
+      "x": 64,
+      "y": 332,
+      "width": 260,
+      "height": 254,
+      "flip": true,
+      "depth": {
+        "x": 2,
+        "y": 15
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 2,
+          "y": 15
+        }
+      ]
+    },
+    {
+      "id": "tree-3-15",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 904,
+        "y": 2,
+        "width": 420,
+        "height": 410
+      },
+      "x": 42,
+      "y": 214,
+      "width": 420,
+      "height": 410,
+      "flip": false,
+      "depth": {
+        "x": 3,
+        "y": 15
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 3,
+          "y": 15
+        }
+      ]
+    },
+    {
+      "id": "tree-18-0",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 792,
+        "width": 320,
+        "height": 312
+      },
+      "x": 2004,
+      "y": 308,
+      "width": 320,
+      "height": 312,
+      "flip": false,
+      "depth": {
+        "x": 18,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 18,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "tree-19-0",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 904,
+        "y": 2,
+        "width": 420,
+        "height": 410
+      },
+      "x": 2026,
+      "y": 246,
+      "width": 420,
+      "height": 410,
+      "flip": false,
+      "depth": {
+        "x": 19,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 19,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "tree-21-2",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 792,
+        "width": 320,
+        "height": 312
+      },
+      "x": 2068,
+      "y": 468,
+      "width": 320,
+      "height": 312,
+      "flip": false,
+      "depth": {
+        "x": 21,
+        "y": 2
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 21,
+          "y": 2
+        }
+      ]
+    },
+    {
+      "id": "tree-23-3",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1358,
+        "y": 1471,
+        "width": 260,
+        "height": 254
+      },
+      "x": 2172,
+      "y": 620,
+      "width": 260,
+      "height": 254,
+      "flip": false,
+      "depth": {
+        "x": 23,
+        "y": 3
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 23,
+          "y": 3
+        }
+      ]
+    },
+    {
+      "id": "tree-27-5",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 904,
+        "y": 2,
+        "width": 420,
+        "height": 410
+      },
+      "x": 2218,
+      "y": 662,
+      "width": 420,
+      "height": 410,
+      "flip": false,
+      "depth": {
+        "x": 27,
+        "y": 5
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 27,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "tree-23-11",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1622,
+        "y": 1510,
+        "width": 150,
+        "height": 165
+      },
+      "x": 1714,
+      "y": 961,
+      "width": 150,
+      "height": 165,
+      "flip": false,
+      "depth": {
+        "x": 23,
+        "y": 11
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 23,
+          "y": 11
+        }
+      ]
+    },
+    {
+      "id": "tree-22-14",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1358,
+        "y": 1471,
+        "width": 260,
+        "height": 254
+      },
+      "x": 1404,
+      "y": 940,
+      "width": 260,
+      "height": 254,
+      "flip": false,
+      "depth": {
+        "x": 22,
+        "y": 14
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 22,
+          "y": 14
+        }
+      ]
+    },
+    {
+      "id": "tree-21-15",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1622,
+        "y": 1510,
+        "width": 150,
+        "height": 165
+      },
+      "x": 1330,
+      "y": 1025,
+      "width": 150,
+      "height": 165,
+      "flip": false,
+      "depth": {
+        "x": 21,
+        "y": 15
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 21,
+          "y": 15
+        }
+      ]
+    },
+    {
+      "id": "tree-22-15",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1622,
+        "y": 1510,
+        "width": 150,
+        "height": 165
+      },
+      "x": 1400,
+      "y": 1057,
+      "width": 150,
+      "height": 165,
+      "flip": true,
+      "depth": {
+        "x": 22,
+        "y": 15
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 22,
+          "y": 15
+        }
+      ]
+    },
+    {
+      "id": "tree-26-16",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1506,
+        "y": 792,
+        "width": 320,
+        "height": 312
+      },
+      "x": 1492,
+      "y": 1076,
+      "width": 320,
+      "height": 312,
+      "flip": false,
+      "depth": {
+        "x": 26,
+        "y": 16
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 26,
+          "y": 16
+        }
+      ]
+    },
+    {
+      "id": "tree-c0",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1328,
+        "y": 2,
+        "width": 520,
+        "height": 406
+      },
+      "x": 828,
+      "y": -268,
+      "width": 520,
+      "height": 406,
+      "flip": false,
+      "depth": {
+        "x": 2,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "tree-c1",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1328,
+        "y": 412,
+        "width": 472,
+        "height": 376
+      },
+      "x": 556,
+      "y": -172,
+      "width": 472,
+      "height": 376,
+      "flip": false,
+      "depth": {
+        "x": 4,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 0,
+          "y": 3
+        },
+        {
+          "x": 0,
+          "y": 4
+        },
+        {
+          "x": 0,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "tree-c2",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 506,
+        "width": 516,
+        "height": 496
+      },
+      "x": -64,
+      "y": 54,
+      "width": 516,
+      "height": 496,
+      "flip": false,
+      "depth": {
+        "x": 13,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 0,
+          "y": 11
+        },
+        {
+          "x": 0,
+          "y": 12
+        },
+        {
+          "x": 0,
+          "y": 13
+        },
+        {
+          "x": 0,
+          "y": 14
+        },
+        {
+          "x": 0,
+          "y": 15
+        },
+        {
+          "x": 1,
+          "y": 15
+        }
+      ]
+    },
+    {
+      "id": "tree-c3",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 522,
+        "y": 502,
+        "width": 456,
+        "height": 410
+      },
+      "x": 2172,
+      "y": 428,
+      "width": 456,
+      "height": 410,
+      "flip": false,
+      "depth": {
+        "x": 23,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 20,
+          "y": 0
+        },
+        {
+          "x": 21,
+          "y": 0
+        },
+        {
+          "x": 22,
+          "y": 0
+        },
+        {
+          "x": 22,
+          "y": 1
+        },
+        {
+          "x": 23,
+          "y": 0
+        },
+        {
+          "x": 23,
+          "y": 1
+        },
+        {
+          "x": 23,
+          "y": 2
+        }
+      ]
+    },
+    {
+      "id": "tree-c4",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1622,
+        "y": 1108,
+        "width": 220,
+        "height": 197
+      },
+      "x": 2098,
+      "y": 737,
+      "width": 220,
+      "height": 197,
+      "flip": false,
+      "depth": {
+        "x": 28,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 23,
+          "y": 4
+        },
+        {
+          "x": 23,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "tree-c5",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 1006,
+        "width": 594,
+        "height": 425
+      },
+      "x": 1596,
+      "y": 801,
+      "width": 594,
+      "height": 425,
+      "flip": false,
+      "depth": {
+        "x": 36,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 23,
+          "y": 6
+        },
+        {
+          "x": 23,
+          "y": 9
+        },
+        {
+          "x": 23,
+          "y": 10
+        }
+      ]
+    },
+    {
+      "id": "tree-c6",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1622,
+        "y": 1309,
+        "width": 220,
+        "height": 197
+      },
+      "x": 1586,
+      "y": 993,
+      "width": 220,
+      "height": 197,
+      "flip": false,
+      "depth": {
+        "x": 36,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 23,
+          "y": 12
+        },
+        {
+          "x": 23,
+          "y": 13
+        }
+      ]
+    },
+    {
+      "id": "tree-c7",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1080,
+        "y": 1471,
+        "width": 274,
+        "height": 282
+      },
+      "x": 1458,
+      "y": 972,
+      "width": 274,
+      "height": 282,
+      "flip": false,
+      "depth": {
+        "x": 37,
+        "y": 0
+      },
+      "exterior": false,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 23,
+          "y": 14
+        },
+        {
+          "x": 23,
+          "y": 15
+        }
+      ]
+    },
+    {
+      "id": "tree-c8",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 480,
+        "y": 2,
+        "width": 420,
+        "height": 496
+      },
+      "x": -366,
+      "y": 230,
+      "width": 420,
+      "height": 496,
+      "flip": false,
+      "depth": {
+        "x": 22,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": -1,
+          "y": 17
+        },
+        {
+          "x": 0,
+          "y": 18
+        },
+        {
+          "x": 1,
+          "y": 20
+        }
+      ]
+    },
+    {
+      "id": "tree-c9",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 600,
+        "y": 916,
+        "width": 372,
+        "height": 354
+      },
+      "x": -244,
+      "y": 452,
+      "width": 372,
+      "height": 354,
+      "flip": false,
+      "depth": {
+        "x": 25,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 2,
+          "y": 20
+        },
+        {
+          "x": 3,
+          "y": 19
+        },
+        {
+          "x": 4,
+          "y": 20
+        }
+      ]
+    },
+    {
+      "id": "tree-c10",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 1080,
+        "y": 1170,
+        "width": 456,
+        "height": 297
+      },
+      "x": 92,
+      "y": 689,
+      "width": 456,
+      "height": 297,
+      "flip": false,
+      "depth": {
+        "x": 30,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 6,
+          "y": 19
+        },
+        {
+          "x": 8,
+          "y": 20
+        },
+        {
+          "x": 10,
+          "y": 19
+        }
+      ]
+    },
+    {
+      "id": "tree-c11",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 600,
+        "y": 1274,
+        "width": 476,
+        "height": 338
+      },
+      "x": 434,
+      "y": 852,
+      "width": 476,
+      "height": 338,
+      "flip": false,
+      "depth": {
+        "x": 37,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 14,
+          "y": 20
+        },
+        {
+          "x": 16,
+          "y": 19
+        }
+      ]
+    },
+    {
+      "id": "tree-c12",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 982,
+        "y": 416,
+        "width": 332,
+        "height": 336
+      },
+      "x": 2516,
+      "y": 636,
+      "width": 332,
+      "height": 336,
+      "flip": false,
+      "depth": {
+        "x": 29,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 25,
+          "y": -1
+        },
+        {
+          "x": 26,
+          "y": 0
+        },
+        {
+          "x": 27,
+          "y": 1
+        }
+      ]
+    },
+    {
+      "id": "tree-c13",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 2,
+        "width": 474,
+        "height": 500
+      },
+      "x": 2332,
+      "y": 614,
+      "width": 474,
+      "height": 500,
+      "flip": false,
+      "depth": {
+        "x": 33,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 26,
+          "y": 4
+        },
+        {
+          "x": 27,
+          "y": 3
+        },
+        {
+          "x": 28,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "tree-c14",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 982,
+        "y": 792,
+        "width": 520,
+        "height": 374
+      },
+      "x": 1632,
+      "y": 1060,
+      "width": 520,
+      "height": 374,
+      "flip": false,
+      "depth": {
+        "x": 44,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 27,
+          "y": 11
+        },
+        {
+          "x": 27,
+          "y": 12
+        },
+        {
+          "x": 27,
+          "y": 14
+        },
+        {
+          "x": 28,
+          "y": 13
+        },
+        {
+          "x": 27,
+          "y": 16
+        }
+      ]
+    },
+    {
+      "id": "tree-c15",
+      "file": "village-trees.webp",
+      "sourceRect": {
+        "x": 2,
+        "y": 1435,
+        "width": 556,
+        "height": 312
+      },
+      "x": 1268,
+      "y": 1220,
+      "width": 556,
+      "height": 312,
+      "flip": false,
+      "depth": {
+        "x": 47,
+        "y": 0
+      },
+      "exterior": true,
+      "fade": true,
+      "footprint": [
+        {
+          "x": 28,
+          "y": 17
+        },
+        {
+          "x": 26,
+          "y": 20
+        },
+        {
+          "x": 27,
+          "y": 19
+        }
+      ]
+    }
+  ],
+  "walkable": [
+    [4, 0],
+    [5, 0],
+    [6, 0],
+    [7, 0],
+    [8, 0],
+    [9, 0],
+    [10, 0],
+    [11, 0],
+    [12, 0],
+    [13, 0],
+    [14, 0],
+    [15, 0],
+    [16, 0],
+    [17, 0],
+    [2, 1],
+    [3, 1],
+    [4, 1],
+    [5, 1],
+    [10, 1],
+    [11, 1],
+    [16, 1],
+    [17, 1],
+    [18, 1],
+    [19, 1],
+    [20, 1],
+    [21, 1],
+    [1, 2],
+    [2, 2],
+    [3, 2],
+    [4, 2],
+    [5, 2],
+    [16, 2],
+    [19, 2],
+    [20, 2],
+    [22, 2],
+    [1, 3],
+    [2, 3],
+    [3, 3],
+    [4, 3],
+    [5, 3],
+    [9, 3],
+    [10, 3],
+    [11, 3],
+    [12, 3],
+    [16, 3],
+    [17, 3],
+    [18, 3],
+    [19, 3],
+    [20, 3],
+    [21, 3],
+    [22, 3],
+    [1, 4],
+    [2, 4],
+    [3, 4],
+    [4, 4],
+    [5, 4],
+    [6, 4],
+    [7, 4],
+    [8, 4],
+    [9, 4],
+    [10, 4],
+    [11, 4],
+    [12, 4],
+    [13, 4],
+    [14, 4],
+    [15, 4],
+    [16, 4],
+    [22, 4],
+    [8, 5],
+    [9, 5],
+    [10, 5],
+    [11, 5],
+    [12, 5],
+    [13, 5],
+    [16, 5],
+    [17, 5],
+    [18, 5],
+    [19, 5],
+    [20, 5],
+    [21, 5],
+    [22, 5],
+    [0, 6],
+    [1, 6],
+    [2, 6],
+    [3, 6],
+    [4, 6],
+    [5, 6],
+    [6, 6],
+    [7, 6],
+    [8, 6],
+    [9, 6],
+    [10, 6],
+    [11, 6],
+    [12, 6],
+    [13, 6],
+    [15, 6],
+    [16, 6],
+    [17, 6],
+    [19, 6],
+    [21, 6],
+    [22, 6],
+    [1, 7],
+    [2, 7],
+    [3, 7],
+    [4, 7],
+    [5, 7],
+    [6, 7],
+    [7, 7],
+    [8, 7],
+    [9, 7],
+    [10, 7],
+    [11, 7],
+    [12, 7],
+    [13, 7],
+    [14, 7],
+    [15, 7],
+    [16, 7],
+    [17, 7],
+    [18, 7],
+    [19, 7],
+    [20, 7],
+    [21, 7],
+    [22, 7],
+    [23, 7],
+    [1, 8],
+    [2, 8],
+    [3, 8],
+    [4, 8],
+    [5, 8],
+    [6, 8],
+    [7, 8],
+    [8, 8],
+    [9, 8],
+    [10, 8],
+    [11, 8],
+    [12, 8],
+    [13, 8],
+    [14, 8],
+    [15, 8],
+    [16, 8],
+    [17, 8],
+    [18, 8],
+    [19, 8],
+    [20, 8],
+    [21, 8],
+    [22, 8],
+    [23, 8],
+    [1, 9],
+    [5, 9],
+    [6, 9],
+    [7, 9],
+    [8, 9],
+    [9, 9],
+    [10, 9],
+    [11, 9],
+    [12, 9],
+    [13, 9],
+    [14, 9],
+    [15, 9],
+    [17, 9],
+    [18, 9],
+    [19, 9],
+    [21, 9],
+    [22, 9],
+    [1, 10],
+    [5, 10],
+    [9, 10],
+    [10, 10],
+    [13, 10],
+    [21, 10],
+    [22, 10],
+    [1, 11],
+    [9, 11],
+    [10, 11],
+    [11, 11],
+    [12, 11],
+    [13, 11],
+    [18, 11],
+    [19, 11],
+    [20, 11],
+    [21, 11],
+    [22, 11],
+    [1, 12],
+    [2, 12],
+    [3, 12],
+    [4, 12],
+    [5, 12],
+    [10, 12],
+    [11, 12],
+    [12, 12],
+    [17, 12],
+    [18, 12],
+    [19, 12],
+    [20, 12],
+    [21, 12],
+    [22, 12],
+    [1, 13],
+    [2, 13],
+    [3, 13],
+    [4, 13],
+    [5, 13],
+    [10, 13],
+    [11, 13],
+    [17, 13],
+    [18, 13],
+    [19, 13],
+    [20, 13],
+    [21, 13],
+    [22, 13],
+    [2, 14],
+    [3, 14],
+    [4, 14],
+    [5, 14],
+    [6, 14],
+    [7, 14],
+    [8, 14],
+    [9, 14],
+    [10, 14],
+    [11, 14],
+    [12, 14],
+    [13, 14],
+    [14, 14],
+    [15, 14],
+    [16, 14],
+    [17, 14],
+    [18, 14],
+    [19, 14],
+    [20, 14],
+    [21, 14],
+    [4, 15],
+    [5, 15],
+    [6, 15],
+    [7, 15],
+    [8, 15],
+    [9, 15],
+    [10, 15],
+    [11, 15],
+    [12, 15],
+    [13, 15],
+    [14, 15],
+    [15, 15],
+    [16, 15],
+    [17, 15],
+    [18, 15],
+    [19, 15],
+    [20, 15]
+  ]
+}

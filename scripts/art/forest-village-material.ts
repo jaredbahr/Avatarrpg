@@ -23,13 +23,17 @@
  *
  * Nothing here writes to the village. The two plates are opened read-only.
  */
-import {
-  BA_DAN_COURTYARD_GROUND,
-  BA_DAN_WESTERN_APPROACH_GROUND,
-} from '../../src/content/scenes/baDan';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { parseHex, readImage } from './lib/image';
 import type { Image } from './lib/image';
+
+/**
+ * Where, in Ba Dan's world pixels, the two plates `assets/source/route-ground-material-main/` was
+ * snapshotted from stood (the courtyard's lawn, the western approach's paving). The plates themselves are
+ * gone from the village (the painting replaced them); the snapshots are the sources.
+ */
+const BA_DAN_COURTYARD_GROUND = { x: 640, y: 256, width: 1152, height: 576 } as const;
+const BA_DAN_WESTERN_APPROACH_GROUND = { x: 384, y: 192, width: 704, height: 352 } as const;
 
 /**
  * DL-2 §3, the one ground language. Exactly two flat tones per material plus

@@ -4,9 +4,10 @@
 pieces, in `public/art/maps/ba-dan-scene/`, from `fine/` and nothing else:
 
 - (until the dressing pass) the four native trees (`sapling-`, `small-`, `medium-`, `large-village-tree`),
-  which the village draws unscaled. They are still the authored sources here, validated by the same
-  rules, but they ship inside `village-trees.webp` with the clumps made from them
-  (`scripts/art/ba-dan-trees-pack.ts`; the scene may ask for only 40 distinct images); and
+  which the village drew unscaled. They are still the authored sources here and the village's painting
+  was made over them (the guides had them), but nothing packs them any more: the trees the village
+  shows are in the painting (`docs/art/ba-dan-scene.md`; `scripts/art/ba-dan-trees-pack.ts` was retired
+  with the continuous painting); and
 - two older masters the Forest Road still borrows: `village-tree` (its alder) and `dwelling`
   (its lodge, 602x388).
 

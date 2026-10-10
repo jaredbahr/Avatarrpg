@@ -1,0 +1,100 @@
+{
+  "region": "r1c1",
+  "source": {
+    "path": "C:/Users/Jared/OpenClawControl/harness/runs/avatar/region-r1c1-sol-002/worktree/.review/region-paint/region-r1c1-sol-002/attempt-2.png",
+    "sha256": "96c5fb9bf1db7e7de982cb902d3647941e7b3c5c920e3b30263566b6306b8a9c"
+  },
+  "stored": {
+    "path": "C:\\Users\\Jared\\OpenClawControl\\harness\\runs\\avatar\\houses-v4-swap-claude-001\\worktree\\art\\source\\ba-dan-regions\\accepted\\r1c1.png",
+    "sha256": "2d2ad447816fb7f814453a3d9ff1bc97954131bd3e354875bac40a0f48d9a994"
+  },
+  "gate": {
+    "pass": true,
+    "frame": {
+      "dx": 0,
+      "dy": 0,
+      "corr": 0.5209
+    },
+    "blobs": [
+      {
+        "n": 1,
+        "box": [0, 0, 874, 637],
+        "area": 303859,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5375,
+        "status": "ok"
+      },
+      {
+        "n": 2,
+        "box": [847, 0, 1148, 145],
+        "area": 16793,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.616,
+        "status": "ok"
+      },
+      {
+        "n": 3,
+        "box": [1136, 0, 1536, 157],
+        "area": 29372,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.4056,
+        "status": "ok"
+      },
+      {
+        "n": 4,
+        "box": [978, 94, 1296, 320],
+        "area": 22567,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.6175,
+        "status": "ok"
+      },
+      {
+        "n": 5,
+        "box": [648, 394, 1536, 973],
+        "area": 295239,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5469,
+        "status": "ok"
+      },
+      {
+        "n": 6,
+        "box": [0, 559, 113, 735],
+        "area": 7269,
+        "dx": 1,
+        "dy": 0,
+        "corr": 0.4137,
+        "status": "ok"
+      },
+      {
+        "n": 7,
+        "box": [0, 716, 500, 1024],
+        "area": 84307,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5056,
+        "status": "ok"
+      },
+      {
+        "n": 8,
+        "box": [1441, 879, 1536, 1024],
+        "area": 5449,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5067,
+        "status": "ok"
+      }
+    ],
+    "carry": {
+      "pixels": 0
+    },
+    "warn": [],
+    "fail": []
+  },
+  "prompt": null,
+  "forced": false
+}

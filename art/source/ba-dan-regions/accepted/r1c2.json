@@ -1,0 +1,112 @@
+{
+  "region": "r1c2",
+  "source": {
+    "path": "C:/Users/Jared/OpenClawControl/harness/runs/avatar/region-r1c2-sol-001/worktree/.review/region-paint/region-r1c2-sol-001/attempt-5.png",
+    "sha256": "6060882421a1050b7ce1e76158d703f44fd70444c546cba5e723d50eadd39dba"
+  },
+  "stored": {
+    "path": "C:\\Users\\Jared\\OpenClawControl\\harness\\runs\\avatar\\houses-v4-swap-claude-001\\worktree\\art\\source\\ba-dan-regions\\accepted\\r1c2.png",
+    "sha256": "6a8523fb3a51debb61900c50e05c59db55ab7882fec6e18722f0f174960ee88d"
+  },
+  "gate": {
+    "pass": true,
+    "frame": {
+      "dx": 0,
+      "dy": 0,
+      "corr": 0.5395
+    },
+    "blobs": [
+      {
+        "n": 1,
+        "box": [0, 0, 158, 145],
+        "area": 10781,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5374,
+        "status": "ok"
+      },
+      {
+        "n": 2,
+        "box": [146, 0, 1536, 510],
+        "area": 314266,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5723,
+        "status": "ok"
+      },
+      {
+        "n": 3,
+        "box": [0, 94, 306, 320],
+        "area": 22567,
+        "dx": 1,
+        "dy": 0,
+        "corr": 0.5039,
+        "status": "ok"
+      },
+      {
+        "n": 4,
+        "box": [520, 280, 926, 534],
+        "area": 34857,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5835,
+        "status": "ok"
+      },
+      {
+        "n": 5,
+        "box": [0, 394, 693, 973],
+        "area": 239585,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5418,
+        "status": "ok"
+      },
+      {
+        "n": 6,
+        "box": [929, 406, 1321, 790],
+        "area": 42790,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5671,
+        "status": "ok"
+      },
+      {
+        "n": 7,
+        "box": [1235, 538, 1536, 933],
+        "area": 27043,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.4499,
+        "status": "ok"
+      },
+      {
+        "n": 8,
+        "box": [871, 704, 975, 934],
+        "area": 4485,
+        "dx": 1,
+        "dy": 0,
+        "corr": 0.6365,
+        "status": "ok"
+      },
+      {
+        "n": 9,
+        "box": [451, 756, 1104, 1024],
+        "area": 65582,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.5777,
+        "status": "ok"
+      }
+    ],
+    "carry": {
+      "pixels": 559104,
+      "meanAbsDiff": 15.931,
+      "p95": 46.333,
+      "fractionOver16": 0.3382
+    },
+    "warn": ["carried pixels repainted: mean difference 15.9/255"],
+    "fail": []
+  },
+  "prompt": null,
+  "forced": false
+}

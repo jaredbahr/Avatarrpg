@@ -79,24 +79,22 @@ the single unioned cast-shadow layer. Overlaps must not double-darken.
 
 Two scenery treatments ship, and each map follows its own.
 
-**Ba Dan village (true pieces and baked plates).** Pieces and ground plates use
-painted ramps, restrained material variation and fine grain. The guided pieces
-(houses, stalls, planters, bridge, dressing and wall strips) have a fine
-dark-brown outer edge cut from guide geometry; internal material edges may be
-painted rather than uniformly outlined. They are authored at 1.5 image pixels
-per world pixel and drawn at 2/3 size. The silhouette and footprint edges are
-forced by the guide; ridges, eaves, corners, openings, steps and plinths are
-painted over the guide's lines, and roof-course count and spacing are free
-surface paint.
+**Ba Dan village (one continuous painting).** The village is a single painting, not pieces laid on a
+lawn: twelve overlapping region paintings, each painted over a guide rendered from the map's own geometry
+and registered to it within two pixels, stitched into one picture and cut back into ground plates and
+the pieces a figure can walk behind (the houses, the trees, the dressing). Painted ramps, restrained
+material variation and fine grain, authored at 1.5 painting pixels per world pixel and shown at the
+camera's 1.5 screen pixels per world pixel, so a painted pixel is a screen pixel. The silhouette and
+footprint edges of an upright are forced by the geometry (its alpha is the guide's silhouette); ridges,
+eaves, corners, openings, steps and plinths are painted over the guide's lines, and roof-course count
+and spacing are free surface paint.
 
-A village piece carries no cast or ground shadow outside its silhouette. From
-the same geometry, the ground plates bake the upper-left light, projected cast
-shadow, all-round contact, landings and surface joins. Ba Dan therefore
-disables ADR 0071's runtime projected cast for all of its scenery; the ground
-bake owns it. Follow
-[Ba Dan modular courtyard layers](art/ba-dan-scene.md#village-pieces-guide-and-paint-current)
-for the authoritative construction and edge-treatment details rather than
-duplicating them here.
+The painting already holds the upper-left light, the cast shadow, the contact under every foot, the worn
+ground, the joins between materials and the canal. So Ba Dan is a complete scene: the runtime draws no
+contact ring, no projected cast (ADR 0071's cast stays off for all of its scenery), no ground-join wash and
+no film over the permanent water; actors keep their own shadows. Follow
+[Ba Dan: one continuous painting](art/ba-dan-scene.md#ba-dan-one-continuous-painting-integration-of-10-october-2026)
+for the construction and the pipeline rather than duplicating them here.
 
 **Forest road and quarry.** Ground keeps the DL-2 material table below: two
 flat tones per material plus the rim or detail colour, enforced by the route
@@ -169,9 +167,9 @@ colour-checked against these values; drift is a QA failure.
 
 These are the route's authoritative material triples; generated plates,
 procedural fallbacks and both render backends must use the same values. Forest
-road and quarry ground use them as flat tones. Ba Dan's painted plates are the
-stated exception: they take these values as palette anchors and add painted
-ramps and fine grain (see [art/ba-dan-scene.md](art/ba-dan-scene.md)).
+road and quarry ground use them as flat tones. Ba Dan's painting is the
+stated exception: the village painting takes these values as palette anchors and adds
+painted ramps and fine grain (see [art/ba-dan-scene.md](art/ba-dan-scene.md)).
 
 | Ground material       | Base           | Shadow                    | Rim / detail                           |
 | --------------------- | -------------- | ------------------------- | -------------------------------------- |
@@ -285,15 +283,16 @@ Every asset passes the shared list plus its class list before it is committed.
 - [ ] The map's own treatment is followed: Ba Dan village painted ramps and
       fine grain, crisp at the default camera; forest road and quarry ground in
       the flat DL-2 triples
-- [ ] Guided pieces: geometry-derived outer alpha and dark-brown edge are clean,
-      without halos
+- [ ] Ba Dan uprights: the alpha is the geometry's silhouette and the colour is the
+      painting's, rim included, so the static view is the painting; no halo, no double
+      outline
 - [ ] With a tile-grid overlay, ground edges, eaves and ridges sit on the 2:1
       projection lines from the guide
 - [ ] At 2× base scale, contact runs all round; open legs and see-through gaps
       remain open; edges are clean; steps land on their landing; solid pieces do
       not overlap
-- [ ] Ba Dan village: no cast or ground shadow outside the piece's silhouette;
-      baked ground light, cast, contact and joins agree with the same geometry.
+- [ ] Ba Dan village: light, cast shadow, contact and material joins are in the
+      painting and agree with the guide geometry; nothing is drawn over them at runtime.
       Forest road and quarry: no painted cast or ground shadow; the renderer
       owns contact and cast (ADR 0071)
 

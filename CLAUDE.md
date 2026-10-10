@@ -228,17 +228,20 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   already passed through and nothing lights.
 - `previewAbility` consumes no RNG, and the AI's `scoreAbility` must not either.
   That is why damage to props is flat, with no to-hit roll or crit.
-- **Ba Dan is at its scenery limits.** The scene asks for all 40 of `SCENE_IMAGE_CAP`'s distinct
-  images, 78 of the schema's 80 scenery entries and 31 of its 32 ground pieces, so new village art goes
-  into `true-dressing.webp` (props, terrace planter) or `village-trees.webp` (tree masters and clumps)
-  by `sourceRect`, never as a file of its own (ADR 0073); the south and east frame is one page,
-  `exterior-frame.webp`, cut into six ground pieces (`ba-dan-exterior-apron.ts`, `--plan` prints the
-  cut; ADR 0075's budgets); the wall strips are `true-walls.webp`, composed at 1.5 px per world px. Regenerate
-  with `sh scripts/art/ba-dan-guides/regen.sh`; the atlas rectangles in `baDan.ts` are asserted equal to
-  what the packers lay out. A rim tree may join a clump only if no figure on a walkable tile and no other
-  piece changes draw order (`ba-dan-trees.ts`). A piece of dressing beside a house draws behind it when
-  its depth (footprint front cell) is smaller than the house's, whatever side of the wall it stands on:
-  that is why the shop stack stands at (10,2) and not beside the plinth at (10,1).
+- **Ba Dan is one continuous painting, and `baDan.art.ts` is generated.** Twelve accepted region paintings
+  (`art/source/ba-dan-regions/accepted/`) are stitched, cut into 12 ground plates and 49 uprights (the pieces a figure can stand
+  behind; 29 more are the ground only), and packed by `sh scripts/art/ba-dan-regions/regen.sh` (`--check` proves the shipped files are
+  what the sources make). Never edit `src/content/scenes/baDan.art.ts` or the `ground-NN` / `uprights-N` files by hand. The painting
+  holds the light, cast shadow, contact, worn ground, joins and the canal, so Ba Dan is a **complete scene** (no `groundMode:
+'partial'`, `paintedWater: true`) and draws no runtime contact, cast or join wash; do not add one. The split is cut by the **frozen**
+  geometry (`art/source/ba-dan-regions/geometry/`), not by `baDan.ts`: moving a piece is a repaint of its region, and a
+  piece's footprint, depth key and flags in `baDan.ts` must still equal the frozen ones (`baDan.test.ts`). Rejected by the owner: the
+  piece-on-lawn village (houses, trees and dressing laid on baked ground plates: cut, stacked, floating).
+- **Ba Dan's resolution is 1.5 painting px per world px for ground and uprights.** At 1 px the painting is visibly softer than the
+  characters; do not downscale it for bytes. The maps art family is 7.5 MiB (ADR 0076).
+- **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
+  lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
+  lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
   Pixi texture map are bounded LRUs because iOS caps canvas memory; do not

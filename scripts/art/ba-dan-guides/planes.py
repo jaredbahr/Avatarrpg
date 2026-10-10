@@ -3,7 +3,7 @@
 For every pixel of a house guide, which axis-aligned plane was drawn there last (painter's order, the same ops
 as guidelib.render): R = 0 none / 1 horizontal (z) / 2 east face x = const / 3 south face y = const,
 G,B = high and low byte of the plane's coordinate (z x 100, or x or y in tiles x 1000).
-The packer (`scripts/art/ba-dan-true-pieces.ts`) inverts the screen projection on those planes to find the 3D
+The packer (`scripts/art/ba-dan-true-pieces.ts`, retired at the continuous-painting integration) inverts the screen projection on those planes to find the 3D
 point under each pixel and shades the horizontal ones (plinth tops, steps, ledges) with the shared light's shadow
 on that plane, so the roof's shadow carries on across the porch the way the baked ground shadow leaves it."""
 import os, sys
