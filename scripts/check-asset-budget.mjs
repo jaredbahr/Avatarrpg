@@ -14,9 +14,10 @@ const FAMILY_BUDGET_MB = 4;
 // ADR 0051: the PixelLab G party's locomotion now, and its stance and bend
 // sets to come (ADR 0035 had added the fire deserter at 4.75).
 const UNIT_BUDGET_MB = 6.75;
-// ADR 0075: Ba Dan's pieces are painted at 1.5x the world scale for crispness, and the scene carries
-// three atlases and two ground pages; the village is the proof the polish can be done.
-const MAPS_BUDGET_MB = 7;
+// ADR 0075: Ba Dan's pieces are painted at 1.5x the world scale for crispness; the village is the proof the
+// polish can be done. ADR 0076: it is one continuous painting now (12 plates and 2 sprite pages, 4.1 MB), the
+// family measures 7.34 MiB, and the owner allowed the raise (9 October 2026) to the next half MiB.
+const MAPS_BUDGET_MB = 7.5;
 /** A family's budget; any family not named here has `FAMILY_BUDGET_MB`. */
 const FAMILY_BUDGETS_MB = new Map([
   ['units', UNIT_BUDGET_MB],

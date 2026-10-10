@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BA_DAN_DRESSING, BA_DAN_SCENE } from '../../src/content/scenes/baDan';
-import { measurePiece, readProjectionPins } from './ba-dan-projection';
-import { DRESSING_PINS, TRUE_PINS, WALL_RUNS } from './ba-dan-true-pins';
+import { BA_DAN_DRESSING } from '../../src/content/scenes/baDan';
+import { BA_DAN_PAINTING, BA_DAN_UPRIGHTS } from '../../src/content/scenes/baDan.art';
+import { DRESSING_PINS, TRUE_PINS, measurePiece, readProjectionPins } from './ba-dan-projection';
 import { OUTPUT_DIR, SOURCE_DIR } from './ba-dan-restyle';
 import { offTile } from './lib/ba-dan-projection';
-import { readImage } from './lib/image';
+import { newImage, readImage } from './lib/image';
+import type { Image } from './lib/image';
 import { decodeWebp } from './lib/webp';
 
 /**
@@ -43,33 +44,88 @@ describe.each(names)('%s', (name) => {
 });
 
 /**
- * The true pieces are painted on the guides, not conformed, so their ground windows live in
- * `art/source/ba-dan-true/pins.json` (`ba-dan-true-pins.ts` finds them from each piece's lower
- * silhouette) and the guard is the same one: the packed source and the shipped WebP both lie
- * within a degree of the tile line over those windows.
+ * The village's uprights are cut from the painting by their geometry's silhouette, so the ground line a
+ * guide drew is the one that ships. The true pieces were painted on the guides, not conformed: their
+ * ground windows live in `art/source/ba-dan-true/pins.json` (the longest run of columns over which the guide
+ * piece's lower silhouette lay on one tile line, in the piece's own canvas pixels) and the set dressing's in
+ * `pins-dressing.json`. Each shipped upright is put back on its piece's canvas (the frozen geometry says where
+ * that was) and measured over the same windows: within a degree of the tile line.
  */
 const truePins = readProjectionPins(TRUE_PINS);
+const dressingPins = readProjectionPins(DRESSING_PINS);
 
-describe.each(Object.keys(truePins))('%s', (name) => {
-  const source = name.replace(/^true-/, '');
-  it('is on the tile lines in its packed source', () => {
-    const m = measurePiece(
-      truePins,
-      name,
-      readImage(`art/source/ba-dan-true/${source}.png`),
-      false,
-    );
-    expect(Math.abs(offTile(m.left)), `left ${m.left.degrees}`).toBeLessThanOrEqual(
-      TOLERANCE_DEGREES,
-    );
-    expect(Math.abs(offTile(m.right)), `right ${m.right.degrees}`).toBeLessThanOrEqual(
-      TOLERANCE_DEGREES,
-    );
-  });
+const PIN_OF: Record<string, [Record<string, (typeof truePins)[string]>, string]> = {
+  'gao-house': [truePins, 'true-merchant-house-4x3'],
+  'north-house': [truePins, 'true-dwelling-4x3'],
+  'southwest-house': [truePins, 'true-dwelling-4x4'],
+  'southeast-house': [truePins, 'true-merchant-house-4x4'],
+  'gao-display': [truePins, 'true-merchant-display'],
+  'north-market-display': [truePins, 'true-merchant-display-b'],
+  'south-market-display': [truePins, 'true-merchant-display-c'],
+  'west-planter': [truePins, 'true-low-planter'],
+  'north-garden': [truePins, 'true-low-planter'],
+  'southeast-planter': [truePins, 'true-low-planter-1x2'],
+  'canal-bridge': [truePins, 'true-canal-bridge'],
+};
+BA_DAN_DRESSING.forEach(([image], i) => {
+  // The well's round curb has no tile line to measure; a piece with no sprite is part of the ground.
+  if (image !== 'village-well' && BA_DAN_UPRIGHTS[`d${i}`]) PIN_OF[`d${i}`] = [dressingPins, image];
+});
 
+interface FrozenPiece {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+const frozen = new Map(
+  (
+    JSON.parse(readFileSync('art/source/ba-dan-regions/geometry/scene.json', 'utf8')) as {
+      pieces: FrozenPiece[];
+    }
+  ).pieces.map((piece) => [piece.id, piece]),
+);
+
+const pages = new Map<number, Image>();
+async function page(index: number): Promise<Image> {
+  let image = pages.get(index);
+  if (!image) {
+    image = await decodeWebp(
+      new Uint8Array(readFileSync(`public/art/maps/ba-dan-scene/uprights-${index}.webp`)),
+    );
+    pages.set(index, image);
+  }
+  return image;
+}
+
+/** The upright on the canvas its piece was painted on: the frozen rectangle, in painting pixels, at 1.5 to the world pixel. */
+async function onCanvas(id: string): Promise<Image> {
+  const piece = frozen.get(id)!;
+  const [index, sx, sy, vx, vy, width, height] = BA_DAN_UPRIGHTS[id]!;
+  const scale = BA_DAN_PAINTING.scale;
+  const x0 = Math.floor((piece.x - BA_DAN_PAINTING.origin.x) * scale);
+  const y0 = Math.floor((piece.y - BA_DAN_PAINTING.origin.y) * scale);
+  const canvas = newImage(
+    Math.ceil((piece.x + piece.width - BA_DAN_PAINTING.origin.x) * scale) - x0,
+    Math.ceil((piece.y + piece.height - BA_DAN_PAINTING.origin.y) * scale) - y0,
+  );
+  const atlas = await page(index);
+  for (let y = 0; y < height; y++)
+    canvas.data.set(
+      atlas.data.subarray(
+        ((sy + y) * atlas.width + sx) * 4,
+        ((sy + y) * atlas.width + sx + width) * 4,
+      ),
+      ((vy - y0 + y) * canvas.width + (vx - x0)) * 4,
+    );
+  return canvas;
+}
+
+describe.each(Object.keys(PIN_OF))('upright %s', (id) => {
   it('is on the tile lines as shipped', async () => {
-    const shipped = await decodeWebp(new Uint8Array(readFileSync(`${OUTPUT_DIR}/${name}.webp`)));
-    const m = measurePiece(truePins, name, shipped, false);
+    const [pins, name] = PIN_OF[id]!;
+    const m = measurePiece(pins, name, await onCanvas(id), false);
     expect(Math.abs(offTile(m.left)), `left ${m.left.degrees}`).toBeLessThanOrEqual(
       TOLERANCE_DEGREES,
     );
@@ -79,29 +135,11 @@ describe.each(Object.keys(truePins))('%s', (name) => {
   });
 });
 
-it('has a ground measurement for every upright piece the village draws', () => {
-  const upright = BA_DAN_SCENE.scenery.flatMap((piece) => {
-    const base = /ba-dan-scene\/(.+)\.webp$/.exec(piece.url)?.[1];
-    // Trees stand on a point (and ship in an atlas), the surround is two backdrops, the bridge's near
-    // layer is cut from the bridge, and the dressing and wall atlases are measured piece by piece below.
-    return base &&
-      !/tree$|^village-trees$|^village-surround$|^true-dressing$|^true-walls$|-front$/.test(base)
-      ? [base]
-      : [];
-  });
-  expect(upright.length).toBeGreaterThan(0);
-  for (const base of new Set(upright))
-    expect((pins[base] ?? truePins[base])?.measure, `${base} has no projection pin`).toBeDefined();
-});
-
-it('has a ground measurement for every piece of dressing and both wall runs the village draws', () => {
-  const dressing = readProjectionPins(DRESSING_PINS);
-  // The well's round curb has no tile line to measure; `ba-dan-true-pipeline.test.ts` fits its ellipse.
-  const sprites = new Set<string>(BA_DAN_DRESSING.map(([image]) => image));
-  sprites.add('terrace-planter-2x1');
-  sprites.delete('village-well');
-  for (const sprite of sprites)
-    expect(dressing[sprite]?.measure, `${sprite} has no projection pin`).toBeDefined();
-  for (const run of WALL_RUNS)
-    expect(dressing[`wall-${run}`]?.measure, `wall ${run} has no projection pin`).toBeDefined();
+it('has a ground measurement for every upright that stands on a tile line', () => {
+  // Trees stand on a point; the bridge's near layer is cut from the bridge.
+  const measured = Object.keys(BA_DAN_UPRIGHTS).filter(
+    (id) => !id.startsWith('tree-') && id !== 'canal-bridge-front' && id !== 'd0',
+  );
+  expect(measured.length).toBeGreaterThan(20);
+  for (const id of measured) expect(PIN_OF[id], `${id} has no projection pin`).toBeDefined();
 });

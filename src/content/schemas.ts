@@ -599,6 +599,16 @@ export const mapSchema = z
         reliefLift: z
           .union([z.number().min(0).max(0.5), z.array(z.number().min(0).max(0.5))])
           .optional(),
+        // The rectangle the art covers, in projected world pixels: the camera
+        // keeps its whole view inside it.
+        paintExtent: z
+          .object({
+            x: z.number().finite(),
+            y: z.number().finite(),
+            width: z.number().finite().positive(),
+            height: z.number().finite().positive(),
+          })
+          .optional(),
         // Where smoke leaves a painted roof, in ground tiles; a roof stands
         // above the grid, so these may lie off it. A handful at most.
         chimneys: z

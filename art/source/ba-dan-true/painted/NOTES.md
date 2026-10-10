@@ -1,5 +1,9 @@
 # Painted v3 candidate notes
 
+> **The four houses here are gone.** The round 3 house paintings (sheets A and B below) and the yard paintings made
+> for them were replaced by the round 4 houses (`NOTES-houses.md`). What follows still describes the tables, planters and
+> bridge (sheet C), which are as shipped; the house rows, sheets and prompts are history.
+
 > **Shipped follow-up — 2026-10-09.** The silhouette and ground lines of every
 > shipped piece are forced by the guide and covered by tests. Internal structure
 > carries the drift measured below and was accepted as shipped: a visual overlay

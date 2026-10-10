@@ -1,7 +1,7 @@
-# Ba Dan paint guides, round 3 (1.5x, taller wall, four households)
+# Ba Dan paint guides (1.5x)
 
-`python scripts/art/ba-dan-guides/build.py` rebuilds the guides, masks, footprints and `pieces.json` here (PIL + numpy; `guidelib.py` renderer, `pieces.py` geometry, `meas.py` proportion probe); `--sheets DIR` also writes the painter sheets to `DIR`.
-The round-2 guides, comparison images and the placement check these notes once mentioned were scratch and are not kept. See `../README.md` for the whole chain.
+`python scripts/art/ba-dan-guides/build.py` rebuilds the guides, masks, footprints and `pieces.json` here (PIL + numpy; `guidelib.py` renderer, `houses.py` the four houses, `pieces.py` the tables, planters and bridge,
+`dressing.py` the dressing); `--sheets DIR` also writes the painter sheets to `DIR`. The houses are described in `README-houses.md`. See `../README.md` for the whole chain.
 
 ## Scale (new)
 
@@ -14,10 +14,10 @@ Line widths are in output px (so lines are 1 to 2 px, crisper than before).
 
 | piece                                     | footprint | canvas  | anchor     | canvas at scene scale | anchor at scene scale |
 | ----------------------------------------- | --------- | ------- | ---------- | --------------------- | --------------------- |
-| dwelling-4x3                              | 4x3       | 702x576 | (399, 561) | 468x384               | (266, 374)            |
-| merchant-house-4x3                        | 4x3       | 702x576 | (399, 561) | 468x384               | (266, 374)            |
-| dwelling-4x4                              | 4x4       | 798x624 | (399, 609) | 532x416               | (266, 406)            |
-| merchant-house-4x4                        | 4x4       | 798x624 | (399, 609) | 532x416               | (266, 406)            |
+| dwelling-4x3                              | 4x3       | 702x538 | (399, 523) | 468x358.7             | (266, 348.7)          |
+| merchant-house-4x3                        | 4x3       | 702x508 | (399, 493) | 468x338.7             | (266, 328.7)          |
+| dwelling-4x4                              | 4x4       | 798x574 | (399, 559) | 532x382.7             | (266, 372.7)          |
+| merchant-house-4x4                        | 4x4       | 798x560 | (399, 545) | 532x373.3             | (266, 363.3)          |
 | merchant-display (three baskets)          | 2x1       | 318x222 | (207, 207) | 212x148               | (138, 138)            |
 | merchant-display-b (cloth bolts, jars)    | 2x1       | 318x242 | (207, 227) | 212x161               | (138, 151)            |
 | merchant-display-c (sacks, hanging scale) | 2x1       | 318x244 | (207, 229) | 212x163               | (138, 153)            |
@@ -30,38 +30,11 @@ Sheets (1536x1024, JSON beside each, `rect` / `anchor_front_corner` / `foot_poly
 `sheet-c` the three tables, both planters, the bridge. Per piece: `<piece>-guide.png`, `-mask.png` (grey silhouette, blue plinth/stone, red footprint clipped to the silhouette),
 `-footprint.png` (full unclipped quad). The comparison and placement-check images (`compare-r2-*`, `check*.png`) were scratch and are not kept.
 
-## Orientation and placement (unchanged)
+## Orientation and placement
 
 Ridge along y; long eave wall with door, windows and shop bay faces +x; timber gable faces +y. Door faces tile (x+w, y+d-1), steps in tile (x+w-1, y+d-1).
-Placements: gao-house merchant 4x3 at (6,1); north-house dwelling 4x3 at (12,1); southwest-house dwelling 4x4 at (6,10); southeast-house merchant 4x4 at (13,10).
-Footprint: body depth is now 1.7 tiles in x, so the 26 px plinth (ledges 0.25 west/north/south, 0.45 east porch) covers only the east part; **the rest of the footprint westward
-(about 1.6 tiles, behind the house) is a low 8 px stone terrace** to be painted as paving or yard. It is behind the house; from the front it shows left of the gable.
-
-## Wall / roof proportions (world px, measured on the guide)
-
-- Plinth 26; eave line (wall top) z 140 (plinth + 114 of wall); ridge z 186 (rise 46); roof tip on the door side z 131.9 (overhang +x 0.15 tile, other sides 0.15 to 0.20); corner kick 8 px over 0.6 tile.
-- Door opening 62 + lintel 8 (top z 96, cap z 99); windows z 56 to 92 with frame/sill; the eave tip reads at wall-plane z about 127 and the round rafter ends bottom out at z about 116, so
-  **about 17 world px of plaster show above the lintel**, more above the windows.
-- Measured on the raster (`meas.py`: tagged roof pixels in one screen column just north of the door, wall plane): **visible near roof plane 123 world px (185 guide px) tall; wall + plinth
-  below it, eave edge to ground 146 world px (219 guide px): ratio 0.84.** (Round 2: 119 vs 122, ratio 0.98.)
-- How it got there: roof screen height is 64 px per tile of body depth/2 plus the rise, so the body depth was cut from 3.0 to 1.7 tiles, with eave 140 and rise 46 (the brief said about 50).
-  The cost: with a shallower body the far (west) slope is steeper than the 32 px/tile screen slope of the ground, so it shows as a band beyond the ridge. Measured visible band **about 10 world px (16 guide px)**.
-  It cannot be shrunk to nothing without a deeper body (roof taller) or a lopsided gable; say if you want a different trade.
-
-## Households (four, no shared dressing)
-
-All houses: gently upturned eave corners, ridge beam with a row of ridge tiles and a stepped ornament at each end, round rafter ends under the eave on the +x face, plank door with lintel cap and a
-threshold stone, a veranda stair spanning the door bay (frame to frame plus 0.04 tile each side, three steps), shuttered windows (open shutters flat on the wall, sill stones), a shuttered gable window.
-Attachment spots on the plinth ledge are simple solids (prisms, boxes) for the painter to turn into set dressing:
-
-| piece                                                                                                                                                                                                           | household                    | spots                                                                                                                                                                   |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| dwelling-4x3                                                                                                                                                                                                    | potter's, jars               | three jars of different sizes on the east ledge in front of the two windows; a lidded jar on the south ledge; lantern on a bracket south of the door                    |
-| dwelling-4x4                                                                                                                                                                                                    | woodcutter's, wood and broom | firewood stack (3 rows of log ends) at the north end of the east ledge; broom leaning on the wall; name board on the wall between windows and door                      |
-| merchant-house-4x3                                                                                                                                                                                              | rain barrel and bench        | barrel at the SE corner of the plinth; bench along the south ledge; lantern on a bracket by the door                                                                    |
-| merchant-house-4x4                                                                                                                                                                                              | crates                       | stacked crates at the north end of the east ledge; two crates on the south ledge; hanging name board (bracket arm, blank panel) in the wall space north of the shop bay |
-| Dwellings have two windows on the +x wall. Merchants: open shop bay (jambs, dark opening, two shelves with jar silhouettes), a counter on the ledge (three board lines on its face) and an awning on two posts, |
-| **sloped 34 px over 0.40 tile** (top z 120 at the wall, lip z 86, valance 8 px, side flap, six seams down the slope); the bay is 1.0 tile wide on 4x3 and 1.5 on 4x4.                                           |
+Placements: gao-house merchant 4x3 at (6,1); north-house dwelling 4x3 at (12,1); southwest-house dwelling 4x4 at (6,10); southeast-house merchant 4x4 at (13,10). The houses' proportions, yards
+and households are in `README-houses.md`.
 
 ## Table variants (2x1)
 

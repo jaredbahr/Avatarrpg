@@ -168,6 +168,12 @@ export class Camera {
   clampToProgrammaticReachableSet = false;
   /** When present, keeps the viewport centre inside the map plus this tile margin. */
   centreMargin?: number;
+  /**
+   * A scene's painted rectangle in world pixels. When set, the whole view stays inside it (so the edge of
+   * the art is never on screen), zoom-out stops where the view just fits it, and a viewport larger than
+   * it in either axis is centred on it. Unset, the usual bounds apply.
+   */
+  viewExtent?: { x: number; y: number; width: number; height: number };
 
   private get bounds() {
     return groundBounds(this.grid.width, this.grid.height, this.projection);
@@ -232,20 +238,28 @@ export class Camera {
 
   /** Keeps the grid inside the frame; centres a smaller board. */
   clamp(): void {
-    if (this.clampCentre()) return;
+    if (this.clampCentre()) {
+      this.clampToExtent();
+      return;
+    }
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
     this.offsetX = clampOffset(this.offsetX, slackX);
     this.offsetY = clampOffset(this.offsetY, slackY);
+    this.clampToExtent();
   }
 
   /** Manual gestures may expose authored paint, but only on an overflowing axis. */
   clampToPanBounds(): void {
-    if (this.clampCentre()) return;
+    if (this.clampCentre()) {
+      this.clampToExtent();
+      return;
+    }
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
     if (this.clampToProgrammaticReachableSet) {
       this.clampToReachableSet();
+      this.clampToExtent();
       return;
     }
     const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
@@ -263,6 +277,37 @@ export class Camera {
             -pixels(this.clampRingTiles.top),
             Math.min(slackY + pixels(this.clampRingTiles.bottom), this.offsetY),
           );
+    this.clampToExtent();
+  }
+
+  /** The smallest scale at which the view still fits inside `viewExtent` (0 when there is none). */
+  get minExtentScale(): number {
+    const extent = this.viewExtent;
+    if (!extent) return 0;
+    return Math.min(
+      this.maxScale,
+      Math.max(this.viewport.width / extent.width, this.viewport.height / extent.height),
+    );
+  }
+
+  /** Keeps the view inside `viewExtent`, zooming in about the view centre if it would be larger. */
+  private clampToExtent(): void {
+    const extent = this.viewExtent;
+    if (!extent) return;
+    const floor = this.minExtentScale;
+    if (this.scale < floor) {
+      const ratio = floor / this.scale;
+      this.offsetX = (this.offsetX + this.viewport.width / 2) * ratio - this.viewport.width / 2;
+      this.offsetY = (this.offsetY + this.viewport.height / 2) * ratio - this.viewport.height / 2;
+      this.scale = floor;
+    }
+    const fitAxis = (offset: number, start: number, size: number, view: number) => {
+      const lo = start * this.scale;
+      const span = size * this.scale - view;
+      return span <= 0 ? lo + span / 2 : Math.max(lo, Math.min(lo + span, offset));
+    };
+    this.offsetX = fitAxis(this.offsetX, extent.x, extent.width, this.viewport.width);
+    this.offsetY = fitAxis(this.offsetY, extent.y, extent.height, this.viewport.height);
   }
 
   private clampCentre(): boolean {
@@ -401,7 +446,7 @@ export class Camera {
    * new, just a smaller map.
    */
   zoomAt(at: ScreenPoint, factor: number): void {
-    const lower = Math.min(this.fitScale(), this.maxScale);
+    const lower = Math.max(Math.min(this.fitScale(), this.maxScale), this.minExtentScale);
     const next = Math.max(lower, Math.min(this.maxScale, this.scale * factor));
     const ratio = next / this.scale;
     if (ratio === 1) return;

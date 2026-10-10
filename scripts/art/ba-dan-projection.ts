@@ -1,7 +1,7 @@
 /**
  * Report where each Ba Dan upright piece's ground lines run: the Forest Road lodge master
  * (`art/source/ba-dan-restyle/fine/pins.json`) and the true pieces
- * (`art/source/ba-dan-true/pins.json`, `ba-dan-true-pins.ts`).
+ * (`art/source/ba-dan-true/pins.json`).
  *
  *   node --import tsx scripts/art/ba-dan-projection.ts
  *
@@ -22,9 +22,17 @@ import {
   TILE_DEGREES,
 } from './lib/ba-dan-projection';
 import { SOURCE_DIR } from './ba-dan-restyle';
-import { TRUE_PINS } from './ba-dan-true-pins';
 
 const PINS = `${SOURCE_DIR}/fine/pins.json`;
+/**
+ * The true pieces' ground-line windows (`art/source/ba-dan-true/pins.json`): each is the longest run of columns
+ * over which the piece's lower silhouette lay on a tile line (slope +0.5 on grid x, -0.5 on grid y), found from
+ * the guide's own silhouette, so they are not tuned to a painting. The set dressing and the wall runs are in
+ * `pins-dressing.json`, measured the same way. The ba-dan-true packers that found them are retired with the
+ * pieces' own sprites (`art/source/ba-dan-true/README.md`); the pins are the record.
+ */
+export const TRUE_PINS = 'art/source/ba-dan-true/pins.json';
+export const DRESSING_PINS = 'art/source/ba-dan-true/pins-dressing.json';
 
 export interface ProjectionPin {
   readonly measure?: GroundSpec;

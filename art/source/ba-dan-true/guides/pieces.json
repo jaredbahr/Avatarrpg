@@ -1,81 +1,85 @@
 {
  "dwelling-4x3": {
+  "scene_entry": "north-house",
+  "footprint_origin_map": [
+   12,
+   1
+  ],
   "footprint_tiles": [
    4,
    3
   ],
   "canvas": [
    702,
-   576
+   538
   ],
   "world_scale": 1.5,
   "scene_draw_scale": 0.666667,
   "anchor_front_corner_px": [
    399,
-   561
+   523
   ],
   "anchor_front_corner_at_scene_scale_px": [
    266.0,
-   374.0
+   348.67
   ],
   "canvas_at_scene_scale": [
    468.0,
-   384.0
+   358.7
   ],
   "foot_polygon_px": [
    [
     303.0,
-    225.0
+    187.0
    ],
    [
     687.0,
-    417.0
+    379.0
    ],
    [
     399.0,
-    561.0
+    523.0
    ],
    [
     15.0,
-    369.0
+    331.0
    ]
   ],
   "audit": {
-   "analytic_edges": 574,
-   "analytic_max_dev_from_0.5": 1.9984014443252818e-14,
-   "verticals": 355,
+   "analytic_edges": 818,
+   "analytic_max_dev_from_0.5": 2.142730437526552e-14,
+   "verticals": 490,
    "verticals_max_dX": 0.0,
-   "raster_probe_edges": 67,
-   "raster_probe_max_dev_from_0.5": 0.003256430400548016,
+   "raster_probe_edges": 75,
+   "raster_probe_max_dev_from_0.5": 0.003123883618464718,
    "raster_probe_slopes_abs_range": [
-    0.496743569599452,
-    0.5026036642227806
+    0.4968761163815353,
+    0.5026036642227802
    ],
    "foot_raster_slopes": {
-    "front-left": 0.49998950190015573,
+    "front-left": 0.4999895019001555,
     "front-right": -0.5000188624674624,
-    "back-left": -0.4999811375325382,
+    "back-left": -0.4999811375325383,
     "back-right": 0.499989501900156
    },
    "foot_outside_silhouette_px": 0
   },
   "notes": [
-   "west roof slope visible on screen: True (thin sliver)",
-   "wall top z=140.0 tip z=131.9 ridge z=186.0; rise eave->ridge 46.0; overhang +x 0.15 tile; corner kick 8.0"
+   "depth 2.0 rise 28.0 pitch 28.0 px/tile; far-slope band 41.4 world px"
   ],
   "door": {
    "face": "east (+x)",
    "door_y": [
-    1.75,
-    2.55
+    1.7,
+    2.5
    ],
    "steps_x": [
-    3.6399999999999997,
+    3.72,
     4.0
    ],
    "steps_y": [
-    1.65,
-    2.65
+    1.6,
+    2.6
    ],
    "faces_tile": [
     4,
@@ -88,97 +92,367 @@
   },
   "household": "jars",
   "dressing_spots": [
-   "east ledge, north end: three jars of different sizes",
+   "east ledge, north end: two jars",
    "south ledge: lidded jar",
    "door side: lantern on a bracket"
   ],
   "proportions": {
-   "col": 493,
-   "roof_px": 123.33333333333333,
-   "below_px": 146.0,
-   "ratio": 0.8447488584474886,
-   "plinth_bottom": 513,
-   "roof_top": 110,
-   "roof_bottom": 294
+   "body_depth": 2.0,
+   "half_span": 1.0,
+   "rise": 28.0,
+   "pitch_px_per_tile": 28.0,
+   "wall_h_above_plinth": 108.0,
+   "plinth": 18.0,
+   "step_risers": [
+    9.0,
+    9.0
+   ],
+   "door_clear": 88.0,
+   "figure_h": 86.0,
+   "plinth_over_figure": 0.209,
+   "door_over_figure": 1.023,
+   "far_band_world_px_formula": 41.4,
+   "far_band_guide_px_measured": 63,
+   "far_band_world_px_measured": 42.0,
+   "wing": null
+  },
+  "yard": {
+   "x": [
+    0.0,
+    1.3
+   ],
+   "y": [
+    0.0,
+    3.0
+   ],
+   "interior": [
+    [
+     0.12,
+     1.3
+    ],
+    [
+     0.12,
+     2.88
+    ]
+   ],
+   "gate": "south",
+   "gate_at": 0.5,
+   "style": "wattle",
+   "gate_tiles_local": [
+    [
+     0,
+     3
+    ],
+    [
+     0,
+     3
+    ]
+   ],
+   "walkable_cells_in_footprint": [
+    {
+     "local": [
+      0,
+      2
+     ],
+     "map": [
+      12,
+      3
+     ],
+     "tile": "="
+    }
+   ],
+   "visible_fraction": 0.325
+  },
+  "volumes": [
+   {
+    "id": "yard-floor",
+    "kind": "prop",
+    "rect": [
+     0.0,
+     1.3,
+     0.0,
+     3.0
+    ],
+    "z": [
+     0,
+     3.0
+    ],
+    "density": 0.0
+   },
+   {
+    "id": "yard-wall-w",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.12,
+     0.0,
+     3.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.7
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     1.3,
+     0.0,
+     0.12
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.7
+   },
+   {
+    "id": "basin",
+    "kind": "prop",
+    "rect": [
+     0.2,
+     0.7,
+     0.22,
+     0.62
+    ],
+    "z": [
+     3.0,
+     15.0
+    ]
+   },
+   {
+    "id": "drying-bench",
+    "kind": "prop",
+    "rect": [
+     0.2,
+     0.46,
+     0.87,
+     1.87
+    ],
+    "z": [
+     3.0,
+     45.0
+    ]
+   },
+   {
+    "id": "kiln",
+    "kind": "prop",
+    "rect": [
+     0.62,
+     1.18,
+     2.036,
+     2.484
+    ],
+    "z": [
+     3.0,
+     45.0
+    ]
+   },
+   {
+    "id": "kiln-flue",
+    "kind": "prop",
+    "rect": [
+     0.83,
+     0.97,
+     2.19,
+     2.33
+    ],
+    "z": [
+     45.0,
+     65.0
+    ]
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.27,
+     2.88,
+     3.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.7
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.73,
+     1.3,
+     2.88,
+     3.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.7
+   },
+   {
+    "id": "plinth",
+    "kind": "house",
+    "rect": [
+     1.3,
+     4.0,
+     0.0,
+     3.0
+    ],
+    "z": [
+     0,
+     18.0
+    ]
+   },
+   {
+    "id": "wall-main",
+    "kind": "house",
+    "rect": [
+     1.5,
+     3.5,
+     0.2,
+     2.8
+    ],
+    "z": [
+     18.0,
+     126.0
+    ]
+   },
+   {
+    "id": "roof-main",
+    "kind": "roof",
+    "eave": [
+     1.35,
+     3.65,
+     0.0,
+     3.0
+    ],
+    "xm": 2.5,
+    "zW": 126.0,
+    "zR": 154.0,
+    "zT": 121.8,
+    "beam": 14
+   },
+   {
+    "id": "chimney",
+    "kind": "prop",
+    "rect": [
+     2.37,
+     2.63,
+     0.55,
+     0.85
+    ],
+    "z": [
+     154.0,
+     208.0
+    ]
+   }
+  ],
+  "geo": {
+   "wx0": 1.5,
+   "wx1": 3.5,
+   "wy0": 0.2,
+   "wy1": 2.8,
+   "xm": 2.5,
+   "zW": 126.0,
+   "zR": 154.0,
+   "px0": 1.3,
+   "wm": 2.8,
+   "zWw": 126.0,
+   "zRw": 154.0,
+   "ry0": 0.0,
+   "ry1": 3.0,
+   "rx0": 1.35,
+   "rx1": 3.65,
+   "zT": 121.8
   }
  },
  "merchant-house-4x3": {
+  "scene_entry": "gao-house",
+  "footprint_origin_map": [
+   6,
+   1
+  ],
   "footprint_tiles": [
    4,
    3
   ],
   "canvas": [
    702,
-   576
+   508
   ],
   "world_scale": 1.5,
   "scene_draw_scale": 0.666667,
   "anchor_front_corner_px": [
    399,
-   561
+   493
   ],
   "anchor_front_corner_at_scene_scale_px": [
    266.0,
-   374.0
+   328.67
   ],
   "canvas_at_scene_scale": [
    468.0,
-   384.0
+   338.7
   ],
   "foot_polygon_px": [
    [
     303.0,
-    225.0
+    157.0
    ],
    [
     687.0,
-    417.0
+    349.0
    ],
    [
     399.0,
-    561.0
+    493.0
    ],
    [
     15.0,
-    369.0
+    301.0
    ]
   ],
   "audit": {
-   "analytic_edges": 560,
+   "analytic_edges": 874,
    "analytic_max_dev_from_0.5": 1.176836406102666e-14,
-   "verticals": 347,
+   "verticals": 462,
    "verticals_max_dX": 0.0,
-   "raster_probe_edges": 86,
-   "raster_probe_max_dev_from_0.5": 0.003256430400548016,
+   "raster_probe_edges": 94,
+   "raster_probe_max_dev_from_0.5": 0.004077111613876028,
    "raster_probe_slopes_abs_range": [
-    0.496743569599452,
-    0.5026036642227806
+    0.49692622950819587,
+    0.504077111613876
    ],
    "foot_raster_slopes": {
     "front-left": 0.49998950190015573,
-    "front-right": -0.5000188624674624,
+    "front-right": -0.5000188624674625,
     "back-left": -0.4999811375325382,
-    "back-right": 0.499989501900156
+    "back-right": 0.49998950190015595
    },
    "foot_outside_silhouette_px": 0
   },
   "notes": [
-   "west roof slope visible on screen: True (thin sliver)",
-   "wall top z=140.0 tip z=131.9 ridge z=186.0; rise eave->ridge 46.0; overhang +x 0.15 tile; corner kick 8.0"
+   "depth 2.2 rise 30.0 pitch 27.3 px/tile; far-slope band 45.9 world px"
   ],
   "door": {
    "face": "east (+x)",
    "door_y": [
-    1.75,
-    2.55
+    1.7,
+    2.5
    ],
    "steps_x": [
-    3.6399999999999997,
+    3.72,
     4.0
    ],
    "steps_y": [
-    1.65,
-    2.65
+    1.6,
+    2.6
    ],
    "faces_tile": [
     4,
@@ -196,92 +470,391 @@
    "door side: lantern on a bracket"
   ],
   "proportions": {
-   "col": 493,
-   "roof_px": 123.33333333333333,
-   "below_px": 146.0,
-   "ratio": 0.8447488584474886,
-   "plinth_bottom": 513,
-   "roof_top": 110,
-   "roof_bottom": 294
+   "body_depth": 2.2,
+   "half_span": 1.1,
+   "rise": 30.0,
+   "pitch_px_per_tile": 27.27,
+   "wall_h_above_plinth": 112.0,
+   "plinth": 18.0,
+   "step_risers": [
+    9.0,
+    9.0
+   ],
+   "door_clear": 88.0,
+   "figure_h": 86.0,
+   "plinth_over_figure": 0.209,
+   "door_over_figure": 1.023,
+   "far_band_world_px_formula": 45.91,
+   "far_band_guide_px_measured": 70,
+   "far_band_world_px_measured": 46.67,
+   "wing": null
+  },
+  "yard": {
+   "x": [
+    0.0,
+    1.1
+   ],
+   "y": [
+    0.0,
+    3.0
+   ],
+   "interior": [
+    [
+     0.12,
+     1.1
+    ],
+    [
+     0.12,
+     2.88
+    ]
+   ],
+   "gate": "south",
+   "gate_at": 0.6,
+   "style": "stone",
+   "gate_tiles_local": [
+    [
+     0,
+     3
+    ],
+    [
+     0,
+     3
+    ]
+   ],
+   "walkable_cells_in_footprint": [
+    {
+     "local": [
+      3,
+      2
+     ],
+     "map": [
+      9,
+      3
+     ],
+     "tile": "="
+    }
+   ],
+   "visible_fraction": 0.287
+  },
+  "volumes": [
+   {
+    "id": "yard-floor",
+    "kind": "prop",
+    "rect": [
+     0.0,
+     1.1,
+     0.0,
+     3.0
+    ],
+    "z": [
+     0,
+     3.0
+    ],
+    "density": 0.0
+   },
+   {
+    "id": "yard-wall-w",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.12,
+     0.0,
+     3.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     1.1,
+     0.0,
+     0.12
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "cart",
+    "kind": "prop",
+    "rect": [
+     0.18,
+     1.1,
+     1.88,
+     2.36
+    ],
+    "z": [
+     3.0,
+     39.0
+    ]
+   },
+   {
+    "id": "barrel",
+    "kind": "prop",
+    "rect": [
+     0.22,
+     0.42,
+     0.26,
+     0.42
+    ],
+    "z": [
+     3.0,
+     33.0
+    ]
+   },
+   {
+    "id": "barrel",
+    "kind": "prop",
+    "rect": [
+     0.52,
+     0.72,
+     0.32,
+     0.48
+    ],
+    "z": [
+     3.0,
+     33.0
+    ]
+   },
+   {
+    "id": "barrel",
+    "kind": "prop",
+    "rect": [
+     0.82,
+     1.02,
+     0.28,
+     0.44
+    ],
+    "z": [
+     3.0,
+     33.0
+    ]
+   },
+   {
+    "id": "stock",
+    "kind": "prop",
+    "rect": [
+     0.2,
+     0.5,
+     0.74,
+     1.04
+    ],
+    "z": [
+     3.0,
+     32.0
+    ]
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.37,
+     2.88,
+     3.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.83,
+     1.1,
+     2.88,
+     3.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "plinth",
+    "kind": "house",
+    "rect": [
+     1.1,
+     4.0,
+     0.0,
+     3.0
+    ],
+    "z": [
+     0,
+     18.0
+    ]
+   },
+   {
+    "id": "wall-main",
+    "kind": "house",
+    "rect": [
+     1.3,
+     3.5,
+     0.2,
+     2.8
+    ],
+    "z": [
+     18.0,
+     130.0
+    ]
+   },
+   {
+    "id": "awning",
+    "kind": "roof",
+    "rect": [
+     3.5,
+     3.88,
+     0.42,
+     1.62
+    ],
+    "z": [
+     82.0,
+     116.0
+    ],
+    "density": 0.45
+   },
+   {
+    "id": "roof-main",
+    "kind": "roof",
+    "eave": [
+     1.15,
+     3.65,
+     0.0,
+     3.0
+    ],
+    "xm": 2.4,
+    "zW": 130.0,
+    "zR": 160.0,
+    "zT": 125.91,
+    "beam": 14
+   },
+   {
+    "id": "roof-vent",
+    "kind": "prop",
+    "rect": [
+     2.25,
+     2.55,
+     0.95,
+     1.45
+    ],
+    "z": [
+     166.0,
+     193.0
+    ]
+   }
+  ],
+  "geo": {
+   "wx0": 1.3,
+   "wx1": 3.5,
+   "wy0": 0.2,
+   "wy1": 2.8,
+   "xm": 2.4,
+   "zW": 130.0,
+   "zR": 160.0,
+   "px0": 1.1,
+   "wm": 2.8,
+   "zWw": 130.0,
+   "zRw": 160.0,
+   "ry0": 0.0,
+   "ry1": 3.0,
+   "rx0": 1.15,
+   "rx1": 3.65,
+   "zT": 125.9091
   }
  },
  "dwelling-4x4": {
+  "scene_entry": "southwest-house",
+  "footprint_origin_map": [
+   6,
+   10
+  ],
   "footprint_tiles": [
    4,
    4
   ],
   "canvas": [
    798,
-   624
+   574
   ],
   "world_scale": 1.5,
   "scene_draw_scale": 0.666667,
   "anchor_front_corner_px": [
    399,
-   609
+   559
   ],
   "anchor_front_corner_at_scene_scale_px": [
    266.0,
-   406.0
+   372.67
   ],
   "canvas_at_scene_scale": [
    532.0,
-   416.0
+   382.7
   ],
   "foot_polygon_px": [
    [
     399.0,
-    225.0
+    175.0
    ],
    [
     783.0,
-    417.0
+    367.0
    ],
    [
     399.0,
-    609.0
+    559.0
    ],
    [
     15.0,
-    417.0
+    367.0
    ]
   ],
   "audit": {
-   "analytic_edges": 662,
+   "analytic_edges": 1164,
    "analytic_max_dev_from_0.5": 1.8540724511240114e-14,
-   "verticals": 352,
+   "verticals": 509,
    "verticals_max_dX": 0.0,
-   "raster_probe_edges": 71,
-   "raster_probe_max_dev_from_0.5": 0.0033480258131955987,
+   "raster_probe_edges": 77,
+   "raster_probe_max_dev_from_0.5": 0.0032330413478257602,
    "raster_probe_slopes_abs_range": [
-    0.49674356959945104,
-    0.5033480258131956
+    0.49687611638153495,
+    0.5032330413478258
    ],
    "foot_raster_slopes": {
-    "front-left": 0.4999895019001549,
-    "front-right": -0.5000104980998437,
-    "back-left": -0.4999895019001569,
-    "back-right": 0.4999895019001561
+    "front-left": 0.4999895019001555,
+    "front-right": -0.5000104980998433,
+    "back-left": -0.4999895019001566,
+    "back-right": 0.499989501900156
    },
    "foot_outside_silhouette_px": 0
   },
   "notes": [
-   "west roof slope visible on screen: True (thin sliver)",
-   "wall top z=140.0 tip z=131.9 ridge z=186.0; rise eave->ridge 46.0; overhang +x 0.15 tile; corner kick 8.0"
+   "depth 2.0 rise 26.0 pitch 26.0 px/tile; far-slope band 43.7 world px"
   ],
   "door": {
    "face": "east (+x)",
    "door_y": [
-    2.75,
-    3.55
+    2.7,
+    3.5
    ],
    "steps_x": [
-    3.6399999999999997,
+    3.72,
     4.0
    ],
    "steps_y": [
-    2.65,
-    3.65
+    2.6,
+    3.6
    ],
    "faces_tile": [
     4,
@@ -294,97 +867,378 @@
   },
   "household": "wood",
   "dressing_spots": [
-   "east ledge, north end: firewood stack (3 rows)",
-   "east ledge: broom leaning on the wall",
-   "name board beside the door"
+   "east ledge, north end: firewood stack",
+   "name board beside the door",
+   "porch roof over the door"
   ],
   "proportions": {
-   "col": 493,
-   "roof_px": 123.33333333333333,
-   "below_px": 146.0,
-   "ratio": 0.8447488584474886,
-   "plinth_bottom": 561,
-   "roof_top": 158,
-   "roof_bottom": 342
+   "body_depth": 2.0,
+   "half_span": 1.0,
+   "rise": 26.0,
+   "pitch_px_per_tile": 26.0,
+   "wall_h_above_plinth": 102.0,
+   "plinth": 18.0,
+   "step_risers": [
+    9.0,
+    9.0
+   ],
+   "door_clear": 88.0,
+   "figure_h": 86.0,
+   "plinth_over_figure": 0.209,
+   "door_over_figure": 1.023,
+   "far_band_world_px_formula": 43.7,
+   "far_band_guide_px_measured": 66,
+   "far_band_world_px_measured": 44.0,
+   "wing": null
+  },
+  "yard": {
+   "x": [
+    0.0,
+    1.3
+   ],
+   "y": [
+    0.0,
+    4.0
+   ],
+   "interior": [
+    [
+     0.12,
+     1.3
+    ],
+    [
+     0.12,
+     3.88
+    ]
+   ],
+   "gate": "south",
+   "gate_at": 0.5,
+   "style": "rail",
+   "gate_tiles_local": [
+    [
+     0,
+     4
+    ],
+    [
+     0,
+     4
+    ]
+   ],
+   "walkable_cells_in_footprint": [
+    {
+     "local": [
+      3,
+      0
+     ],
+     "map": [
+      9,
+      10
+     ],
+     "tile": "="
+    },
+    {
+     "local": [
+      3,
+      1
+     ],
+     "map": [
+      9,
+      11
+     ],
+     "tile": "="
+    }
+   ],
+   "visible_fraction": 0.244
+  },
+  "volumes": [
+   {
+    "id": "yard-floor",
+    "kind": "prop",
+    "rect": [
+     0.0,
+     1.3,
+     0.0,
+     4.0
+    ],
+    "z": [
+     0,
+     3.0
+    ],
+    "density": 0.0
+   },
+   {
+    "id": "yard-wall-w",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.12,
+     0.0,
+     4.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.3
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     1.3,
+     0.0,
+     0.12
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.3
+   },
+   {
+    "id": "log-stack",
+    "kind": "prop",
+    "rect": [
+     0.16,
+     0.46,
+     0.62,
+     1.97
+    ],
+    "z": [
+     3.0,
+     32.0
+    ]
+   },
+   {
+    "id": "sawhorse",
+    "kind": "prop",
+    "rect": [
+     0.58,
+     1.14,
+     2.17,
+     2.52
+    ],
+    "z": [
+     3.0,
+     36.0
+    ]
+   },
+   {
+    "id": "chopping-block",
+    "kind": "prop",
+    "rect": [
+     0.75,
+     1.05,
+     3.36,
+     3.6
+    ],
+    "z": [
+     3.0,
+     23.0
+    ]
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.27,
+     3.88,
+     4.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.3
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.73,
+     1.3,
+     3.88,
+     4.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 0.3
+   },
+   {
+    "id": "plinth",
+    "kind": "house",
+    "rect": [
+     1.3,
+     4.0,
+     0.0,
+     4.0
+    ],
+    "z": [
+     0,
+     18.0
+    ]
+   },
+   {
+    "id": "wall-main",
+    "kind": "house",
+    "rect": [
+     1.5,
+     3.5,
+     0.2,
+     3.8
+    ],
+    "z": [
+     18.0,
+     120.0
+    ]
+   },
+   {
+    "id": "porch-roof",
+    "kind": "roof",
+    "rect": [
+     3.5,
+     3.92,
+     2.52,
+     3.68
+    ],
+    "z": [
+     79.0,
+     108.0
+    ]
+   },
+   {
+    "id": "roof-main",
+    "kind": "roof",
+    "eave": [
+     1.35,
+     3.65,
+     0.0,
+     4.0
+    ],
+    "xm": 2.5,
+    "zW": 120.0,
+    "zR": 146.0,
+    "zT": 116.1,
+    "beam": 14
+   },
+   {
+    "id": "chimney",
+    "kind": "prop",
+    "rect": [
+     2.37,
+     2.63,
+     0.55,
+     0.85
+    ],
+    "z": [
+     146.0,
+     200.0
+    ]
+   }
+  ],
+  "geo": {
+   "wx0": 1.5,
+   "wx1": 3.5,
+   "wy0": 0.2,
+   "wy1": 3.8,
+   "xm": 2.5,
+   "zW": 120.0,
+   "zR": 146.0,
+   "px0": 1.3,
+   "wm": 3.8,
+   "zWw": 120.0,
+   "zRw": 146.0,
+   "ry0": 0.0,
+   "ry1": 4.0,
+   "rx0": 1.35,
+   "rx1": 3.65,
+   "zT": 116.1
   }
  },
  "merchant-house-4x4": {
+  "scene_entry": "southeast-house",
+  "footprint_origin_map": [
+   13,
+   10
+  ],
   "footprint_tiles": [
    4,
    4
   ],
   "canvas": [
    798,
-   624
+   560
   ],
   "world_scale": 1.5,
   "scene_draw_scale": 0.666667,
   "anchor_front_corner_px": [
    399,
-   609
+   545
   ],
   "anchor_front_corner_at_scene_scale_px": [
    266.0,
-   406.0
+   363.33
   ],
   "canvas_at_scene_scale": [
    532.0,
-   416.0
+   373.3
   ],
   "foot_polygon_px": [
    [
     399.0,
-    225.0
+    161.0
    ],
    [
     783.0,
-    417.0
+    353.0
    ],
    [
     399.0,
-    609.0
+    545.0
    ],
    [
     15.0,
-    417.0
+    353.0
    ]
   ],
   "audit": {
-   "analytic_edges": 700,
-   "analytic_max_dev_from_0.5": 1.176836406102666e-14,
-   "verticals": 393,
+   "analytic_edges": 972,
+   "analytic_max_dev_from_0.5": 1.4765966227514582e-14,
+   "verticals": 515,
    "verticals_max_dX": 0.0,
-   "raster_probe_edges": 83,
-   "raster_probe_max_dev_from_0.5": 0.0032564304005489597,
+   "raster_probe_edges": 108,
+   "raster_probe_max_dev_from_0.5": 0.003348528406577733,
    "raster_probe_slopes_abs_range": [
-    0.49674356959945104,
-    0.5026036642227807
+    0.4969262295081952,
+    0.5033485284065777
    ],
    "foot_raster_slopes": {
-    "front-left": 0.4999895019001549,
-    "front-right": -0.5000104980998437,
-    "back-left": -0.4999895019001569,
+    "front-left": 0.4999895019001558,
+    "front-right": -0.5000104980998435,
+    "back-left": -0.4999895019001559,
     "back-right": 0.4999895019001561
    },
    "foot_outside_silhouette_px": 0
   },
   "notes": [
-   "west roof slope visible on screen: True (thin sliver)",
-   "wall top z=140.0 tip z=131.9 ridge z=186.0; rise eave->ridge 46.0; overhang +x 0.15 tile; corner kick 8.0"
+   "depth 2.2 rise 30.0 pitch 27.3 px/tile; far-slope band 45.9 world px"
   ],
   "door": {
    "face": "east (+x)",
    "door_y": [
-    2.75,
-    3.55
+    2.7,
+    3.5
    ],
    "steps_x": [
-    3.6399999999999997,
+    3.72,
     4.0
    ],
    "steps_y": [
-    2.65,
-    3.65
+    2.6,
+    3.6
    ],
    "faces_tile": [
     4,
@@ -398,17 +1252,342 @@
   "household": "crates",
   "dressing_spots": [
    "east ledge, north end: stacked crates",
-   "south ledge: two crates",
-   "name board hanging beside the shop bay"
+   "south ledge: crate",
+   "shop bay with awning"
   ],
   "proportions": {
-   "col": 493,
-   "roof_px": 123.33333333333333,
-   "below_px": 146.0,
-   "ratio": 0.8447488584474886,
-   "plinth_bottom": 561,
-   "roof_top": 158,
-   "roof_bottom": 342
+   "body_depth": 2.2,
+   "half_span": 1.1,
+   "rise": 30.0,
+   "pitch_px_per_tile": 27.27,
+   "wall_h_above_plinth": 116.0,
+   "plinth": 18.0,
+   "step_risers": [
+    9.0,
+    9.0
+   ],
+   "door_clear": 88.0,
+   "figure_h": 86.0,
+   "plinth_over_figure": 0.209,
+   "door_over_figure": 1.023,
+   "far_band_world_px_formula": 45.91,
+   "far_band_guide_px_measured": 67,
+   "far_band_world_px_measured": 44.67,
+   "wing": {
+    "length_y": 1.55,
+    "eave_drop": 14.0,
+    "rise": 22.0
+   }
+  },
+  "yard": {
+   "x": [
+    0.0,
+    1.1
+   ],
+   "y": [
+    0.0,
+    4.0
+   ],
+   "interior": [
+    [
+     0.12,
+     1.1
+    ],
+    [
+     0.12,
+     3.88
+    ]
+   ],
+   "gate": "north",
+   "gate_at": 0.5,
+   "style": "stone",
+   "gate_tiles_local": [
+    [
+     0,
+     -1
+    ],
+    [
+     0,
+     -1
+    ]
+   ],
+   "walkable_cells_in_footprint": [
+    {
+     "local": [
+      0,
+      0
+     ],
+     "map": [
+      13,
+      10
+     ],
+     "tile": "="
+    },
+    {
+     "local": [
+      0,
+      1
+     ],
+     "map": [
+      13,
+      11
+     ],
+     "tile": "="
+    }
+   ],
+   "visible_fraction": 0.216
+  },
+  "volumes": [
+   {
+    "id": "yard-floor",
+    "kind": "prop",
+    "rect": [
+     0.0,
+     1.1,
+     0.0,
+     4.0
+    ],
+    "z": [
+     0,
+     3.0
+    ],
+    "density": 0.0
+   },
+   {
+    "id": "yard-wall-w",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.12,
+     0.0,
+     4.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     0.27,
+     0.0,
+     0.12
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.73,
+     1.1,
+     0.0,
+     0.12
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "cart",
+    "kind": "prop",
+    "rect": [
+     0.18,
+     0.82,
+     2.93,
+     3.38
+    ],
+    "z": [
+     3.0,
+     41.0
+    ]
+   },
+   {
+    "id": "crate",
+    "kind": "prop",
+    "rect": [
+     0.24,
+     0.52,
+     0.32,
+     0.6
+    ],
+    "z": [
+     3.0,
+     34.0
+    ]
+   },
+   {
+    "id": "crate",
+    "kind": "prop",
+    "rect": [
+     0.58,
+     0.86,
+     0.32,
+     0.6
+    ],
+    "z": [
+     3.0,
+     20.0
+    ]
+   },
+   {
+    "id": "barrel",
+    "kind": "prop",
+    "rect": [
+     0.22,
+     0.42,
+     0.89,
+     1.05
+    ],
+    "z": [
+     3.0,
+     33.0
+    ]
+   },
+   {
+    "id": "yard-wall",
+    "kind": "wall",
+    "rect": [
+     0.0,
+     1.1,
+     3.88,
+     4.0
+    ],
+    "z": [
+     0,
+     15.0
+    ],
+    "density": 1.0
+   },
+   {
+    "id": "plinth",
+    "kind": "house",
+    "rect": [
+     1.1,
+     4.0,
+     0.0,
+     4.0
+    ],
+    "z": [
+     0,
+     18.0
+    ]
+   },
+   {
+    "id": "wall-main",
+    "kind": "house",
+    "rect": [
+     1.3,
+     3.5,
+     0.2,
+     2.25
+    ],
+    "z": [
+     18.0,
+     134.0
+    ]
+   },
+   {
+    "id": "wall-wing",
+    "kind": "house",
+    "rect": [
+     1.3,
+     3.5,
+     2.25,
+     3.8
+    ],
+    "z": [
+     18.0,
+     120.0
+    ]
+   },
+   {
+    "id": "awning",
+    "kind": "roof",
+    "rect": [
+     3.5,
+     3.88,
+     0.4,
+     2.2
+    ],
+    "z": [
+     86.0,
+     120.0
+    ],
+    "density": 0.45
+   },
+   {
+    "id": "roof-main",
+    "kind": "roof",
+    "eave": [
+     1.15,
+     3.65,
+     0.0,
+     2.25
+    ],
+    "xm": 2.4,
+    "zW": 134.0,
+    "zR": 164.0,
+    "zT": 129.91,
+    "beam": 14
+   },
+   {
+    "id": "roof-wing",
+    "kind": "roof",
+    "eave": [
+     1.15,
+     3.65,
+     2.25,
+     4.0
+    ],
+    "xm": 2.4,
+    "zW": 120.0,
+    "zR": 142.0,
+    "zT": 117.0,
+    "beam": 14
+   },
+   {
+    "id": "chimney",
+    "kind": "prop",
+    "rect": [
+     2.61,
+     2.89,
+     2.27,
+     2.55
+    ],
+    "z": [
+     137.8,
+     172.0
+    ]
+   }
+  ],
+  "geo": {
+   "wx0": 1.3,
+   "wx1": 3.5,
+   "wy0": 0.2,
+   "wy1": 3.8,
+   "xm": 2.4,
+   "zW": 134.0,
+   "zR": 164.0,
+   "px0": 1.1,
+   "wm": 2.25,
+   "zWw": 120.0,
+   "zRw": 142.0,
+   "ry0": 0.0,
+   "ry1": 4.0,
+   "rx0": 1.15,
+   "rx1": 3.65,
+   "zT": 129.9091
   }
  },
  "merchant-display": {

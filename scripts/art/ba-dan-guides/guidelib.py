@@ -189,6 +189,8 @@ class Piece:
                         for k, v in tagimg.items()}
         bsm = self.tagmask['plinth'].astype(np.float64) if 'plinth' in self.tagmask else np.zeros((H, W))
         mk[(bsm >= 0.5) & sil_bin] = (40, 130, 255, 255)
+        if 'yard' in self.tagmask:   # round 4 houses: the yard's own colour (olive), under the footprint colouring
+            mk[(self.tagmask['yard'].astype(np.float64) >= 0.5) & sil_bin] = (170, 150, 40, 255)
         fimg = Image.new('L', (W * SS, H * SS), 0)
         ImageDraw.Draw(fimg).polygon([to_c(p) for p in self.footprint_poly()], fill=255)
         fm = np.asarray(fimg).astype(np.float64).reshape(H, SS, W, SS).mean(axis=(1, 3)) / 255.0

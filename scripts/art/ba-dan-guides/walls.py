@@ -276,8 +276,7 @@ def main():
         meta[name] = {'origin': [ox, oy], 'size': [int(bx1 - bx0), int(by1 - by0)], 'scale': SC, 'modules': len(placements),
                       'paintings': [pl[1] for pl in placements], 'joins': joins, 'retaken_px': banded}
         print(name, meta[name]['origin'], meta[name]['size'], len(joins), 'joins', banded, 'px re-taken')
-    json.dump(meta, open(os.path.join(OUT, 'walls.json'), 'w', newline='
-'), indent=2)
+    json.dump(meta, open(os.path.join(OUT, 'walls.json'), 'w', newline='\r\n'), indent=2)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""Build every Ba Dan true-piece guide: the guide, the silhouette mask, the full footprint quad, and pieces.json.
+"""Build every Ba Dan true-piece guide (houses: `houses.py`; the rest `pieces.py`, `dressing.py`): the guide, the silhouette mask, the full footprint quad, and pieces.json.
 
     python scripts/art/ba-dan-guides/build.py [--sheets DIR]
 
@@ -16,7 +16,7 @@ sys.path.insert(0, HERE)
 import guidelib as GL  # noqa: E402
 import pieces as PC  # noqa: E402
 import dressing as DR  # noqa: E402
-from meas import measure  # noqa: E402
+import houses_meta as HM  # noqa: E402
 
 SC = GL.SC
 SHEET = (1536, 1024)
@@ -141,7 +141,11 @@ def main():
         make_sheet([d44, m44], 'sheet-b.png', 'sheet-b.json', sheets)
         make_sheet([t1, t2, t3, pl, pl2, br], 'sheet-c.png', 'sheet-c.json', sheets)
 
+    rows = HM.village_rows()
     for p in PIECES + DRESS:
+        if hasattr(p, 'household'):       # the four houses: scene entry, proportions, yard and light volumes
+            meta[p.name] = HM.house_meta(p, rows, audit[p.name])
+            continue
         m = {'footprint_tiles': [p.w, p.d], 'canvas': list(p.size), 'world_scale': SC, 'scene_draw_scale': round(1 / SC, 6),
              'anchor_front_corner_px': list(p.anchor),
              'anchor_front_corner_at_scene_scale_px': [round(p.anchor[0] / SC, 2), round(p.anchor[1] / SC, 2)],
@@ -150,15 +154,10 @@ def main():
              'door': getattr(p, 'door', None)}
         if p in DRESS:
             m['height_world_px'] = round(zmax(p), 1)   # tallest point, for the baked shadow
-        if hasattr(p, 'household'):
-            m['household'] = p.household
-            m['dressing_spots'] = p.spots
-            m['proportions'] = {k: (float(v) if isinstance(v, (np.floating, float)) else int(v)) for k, v in measure(p).items()}
         meta[p.name] = m
-    json.dump(meta, open(os.path.join(OUT, 'pieces.json'), 'w', newline='
-'), indent=1, default=str)
+    json.dump(meta, open(os.path.join(OUT, 'pieces.json'), 'w', newline='\r\n'), indent=1, default=str)
     print(json.dumps({k: {'canvas': v['canvas'], 'anchor': v['anchor_front_corner_px'], 'dev': round(v['audit']['raster_probe_max_dev_from_0.5'], 4),
-                          'foot_out': v['audit']['foot_outside_silhouette_px'], 'prop': v.get('proportions')} for k, v in meta.items()}, indent=0, default=str))
+                          'foot_out': v['audit']['foot_outside_silhouette_px']} for k, v in meta.items()}, indent=0, default=str))
 
 
 if __name__ == '__main__':

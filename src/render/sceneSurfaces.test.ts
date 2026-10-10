@@ -71,8 +71,15 @@ it('keeps Ba Dan permanent water painted by declaration only', () => {
 
 it('suppresses the film on Ba Dan water cells the scene declares, and nowhere else', () => {
   const grid = buildGrid(BA_DAN_VILLAGE);
-  const scene = BA_DAN_VILLAGE.scene;
-  if (!scene) throw new Error('Missing Ba Dan scene');
+  // Ba Dan is a complete scene now (its painting carries the canal), so no shipped scene declares
+  // `paintedWaterCells`; the renderer still reads them, and this is the village as a partial scene that does.
+  if (!BA_DAN_VILLAGE.scene) throw new Error('Missing Ba Dan scene');
+  const scene = {
+    ...BA_DAN_VILLAGE.scene,
+    groundMode: 'partial' as const,
+    paintedWater: undefined,
+    paintedWaterCells: BA_DAN_WATER_CELLS,
+  };
   const view = { scene, hatch: false, crispOverlays: false };
   expect(scene.groundMode).toBe('partial');
   for (const pos of BA_DAN_WATER_CELLS) {
@@ -114,8 +121,15 @@ it('suppresses the film on Ba Dan water cells the scene declares, and nowhere el
 
 it('covers a declared Ba Dan pool the rules no longer hold as water, on both backends', () => {
   const grid = buildGrid(BA_DAN_VILLAGE);
-  const scene = BA_DAN_VILLAGE.scene;
-  if (!scene) throw new Error('Missing Ba Dan scene');
+  // Ba Dan is a complete scene now (its painting carries the canal), so no shipped scene declares
+  // `paintedWaterCells`; the renderer still reads them, and this is the village as a partial scene that does.
+  if (!BA_DAN_VILLAGE.scene) throw new Error('Missing Ba Dan scene');
+  const scene = {
+    ...BA_DAN_VILLAGE.scene,
+    groundMode: 'partial' as const,
+    paintedWater: undefined,
+    paintedWaterCells: BA_DAN_WATER_CELLS,
+  };
   const view = { scene, hatch: false, crispOverlays: false };
   for (const pos of BA_DAN_WATER_CELLS) {
     const tile = tileAt(grid, pos);

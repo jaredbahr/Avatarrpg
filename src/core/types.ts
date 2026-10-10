@@ -959,6 +959,17 @@ export interface MapScene {
    * Absent, 0.
    */
   readonly reliefLift?: number | readonly number[];
+  /**
+   * The rectangle the art covers, in the same projected world pixels as `ground` (the camera's own).
+   * The exploration camera keeps the whole view inside it, so the edge of a painting can never be seen;
+   * absent, the camera keeps its usual bounds.
+   */
+  readonly paintExtent?: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
   /** Where smoke leaves a painted roof, in ground tiles (fractional, may lie off the grid). */
   readonly chimneys?: readonly Vec2[];
   readonly ground: readonly SceneImage[];

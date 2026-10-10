@@ -31,10 +31,32 @@ import {
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
 import { tileNoise } from '../../src/render/painters/shapes';
-import { transitionCluster } from './ba-dan-garden';
 import { writeApronPlates } from './lib/apron-plates';
 import { newImage, pixelAt, setPixel } from './lib/image';
 import type { Image } from './lib/image';
+
+/** Bilinear value noise over the tile hash: smooth only between lattice points, then thresholded. */
+function valueNoise(x: number, y: number, salt: number): number {
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const fx = x - x0;
+  const fy = y - y0;
+  const a = tileNoise(x0, y0, salt);
+  const b = tileNoise(x0 + 1, y0, salt);
+  const c = tileNoise(x0, y0 + 1, salt);
+  const d = tileNoise(x0 + 1, y0 + 1, salt);
+  return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy;
+}
+
+/**
+ * A world-anchored clustered mask for material transitions. Unlike an ordered
+ * dither this has no short repeating lattice: neighbouring one-pixel samples
+ * tend to agree, so a sparse transition reads as small painted chips rather
+ * than a screen of alternating dots.
+ */
+function transitionCluster(x: number, y: number, salt: number): number {
+  return valueNoise(x * 2.2, y * 2.2, salt) * 0.72 + valueNoise(x * 5.1, y * 5.1, salt + 2) * 0.28;
+}
 
 /** The bands are written here, one file per entry in `FOREST_APRON_BANDS`. */
 export const DIRECTORY = 'public/art/maps/forest-scene';

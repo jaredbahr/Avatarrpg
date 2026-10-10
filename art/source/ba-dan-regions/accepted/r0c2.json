@@ -1,0 +1,72 @@
+{
+  "region": "r0c2",
+  "source": {
+    "path": "C:/Users/Jared/OpenClawControl/harness/runs/avatar/region-r0c2-sol-002/worktree/.review/region-paint/region-r0c2-sol-002/attempt-4.png",
+    "sha256": "47bde7e9c78431c290b107e72bc470cbf33b213ebded4065de178578ab3b5496"
+  },
+  "stored": {
+    "path": "C:\\Users\\Jared\\OpenClawControl\\harness\\runs\\avatar\\houses-v4-swap-claude-001\\worktree\\art\\source\\ba-dan-regions\\accepted\\r0c2.png",
+    "sha256": "9f4b2b6154923242deab788324083a817728e75dc8a459fb7fabc680c44a2756"
+  },
+  "gate": {
+    "pass": true,
+    "frame": {
+      "dx": 1,
+      "dy": 0,
+      "corr": 0.6278
+    },
+    "blobs": [
+      {
+        "n": 1,
+        "box": [0, 0, 1536, 1024],
+        "area": 870970,
+        "dx": 1,
+        "dy": 0,
+        "corr": 0.6278,
+        "status": "ok"
+      },
+      {
+        "n": 2,
+        "box": [0, 347, 86, 563],
+        "area": 5730,
+        "dx": 1,
+        "dy": -1,
+        "corr": 0.4028,
+        "status": "ok"
+      },
+      {
+        "n": 3,
+        "box": [0, 630, 158, 835],
+        "area": 12139,
+        "dx": 1,
+        "dy": 0,
+        "corr": 0.4328,
+        "status": "ok"
+      },
+      {
+        "n": 4,
+        "box": [0, 784, 306, 1010],
+        "area": 22567,
+        "dx": 1,
+        "dy": 0,
+        "corr": 0.5224,
+        "status": "ok"
+      }
+    ],
+    "carry": {
+      "pixels": 889764,
+      "meanAbsDiff": 16.4,
+      "p95": 52.333,
+      "fractionOver16": 0.3316
+    },
+    "warn": [
+      "carried pixels repainted: mean difference 16.4/255",
+      "seam with r0c1: 2.0x the ordinary difference",
+      "seam with r1c2: 2.3x the ordinary difference",
+      "seam with r1c3: 2.6x the ordinary difference"
+    ],
+    "fail": []
+  },
+  "prompt": null,
+  "forced": false
+}

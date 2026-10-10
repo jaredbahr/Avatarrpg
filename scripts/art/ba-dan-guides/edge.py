@@ -1,7 +1,7 @@
 """Edge pass for the true Ba Dan pieces: python scripts/art/ba-dan-guides/edge.py [name ...]
 
-Reads the painted piece (art/source/ba-dan-true/yards/<name>.png for the four houses, else painted/<name>.png: binary alpha, 1 px outline
-inside the mask), re-derives the silhouette's exact coverage from the guide geometry (8x supersampled, the same
+Reads the painted piece (art/source/ba-dan-true/painted/<name>.png: binary alpha, 1 px outline inside the mask; a house's
+includes its yard), re-derives the silhouette's exact coverage from the guide geometry (8x supersampled, the same
 polygons and strokes as guidelib.render), and writes art/source/ba-dan-true/<name>.png with
   - an antialiased alpha edge (alpha = geometric coverage; the game filters the art bilinearly at 2/3 x zoom,
     where a binary edge and a 1 px line dash),
@@ -20,6 +20,7 @@ import dressing as DR  # noqa
 OUT = os.path.abspath(os.path.join(HERE, '..', '..', '..', 'art', 'source', 'ba-dan-true'))
 SS = 8
 DRESSING = {p.name for p in DR.all_dressing()}
+HOUSES = {'dwelling-4x3', 'merchant-house-4x3', 'dwelling-4x4', 'merchant-house-4x4'}
 HOUSE_OUTLINE = (75, 43, 29)
 
 def builders():
@@ -90,11 +91,53 @@ def chamfer_inside(inside):
 def dist_to_inside(inside):
     return chamfer_inside(~inside)
 
+BLACK_MAX = 8       # a painted pixel whose brightest channel is at or under this is the painter's black, not stone
+SEAM_SHADE = 0.72   # a filled pixel is this much darker than the stone round it, so a seam reads as a joint
+
+def unblack_seams(img):
+    """A house painting may carry runs of pure black one to three px thick and speckled with white (a seam drawn
+    between a kerb's coping and its base), which the game shows as a dashed black line along the foot of a low wall.
+    Fill those pixels, and the white specks in them, from the stone beside them,
+    one ring at a time (each ring the mean of the already valid neighbours), darkened by SEAM_SHADE so the join reads as
+    a mortar line.  Returns the image and the number of pixels filled."""
+    img = img.copy()
+    solid = img[..., 3] > 0
+    H, W = solid.shape
+    rgb = img[..., :3]
+    dark = solid & (rgb.max(axis=-1) <= BLACK_MAX)
+    near = dark.copy()
+    near[1:] |= dark[:-1]; near[:-1] |= dark[1:]; near[:, 1:] |= dark[:, :-1]; near[:, :-1] |= dark[:, 1:]
+    luma = rgb @ np.array([0.3, 0.59, 0.11])
+    speck = np.zeros_like(solid)
+    for y, x in zip(*np.nonzero(near & solid & ~dark)):
+        ring = [luma[y + dy, x + dx] for dy in (-1, 0, 1) for dx in (-1, 0, 1)
+                if (dy or dx) and 0 <= y + dy < H and 0 <= x + dx < W and solid[y + dy, x + dx] and not dark[y + dy, x + dx]]
+        if len(ring) >= 3 and luma[y, x] > np.median(ring) + 35:      # a bright speck in the line, not stone beside it
+            speck[y, x] = True
+    fill = dark | speck
+    if not fill.any():
+        return img, 0
+    valid = solid & ~fill
+    def window_sum(a):
+        pad = np.pad(a, [(1, 1), (1, 1)] + [(0, 0)] * (a.ndim - 2))
+        return sum(pad[1 + dy:1 + dy + H, 1 + dx:1 + dx + W] for dy in (-1, 0, 1) for dx in (-1, 0, 1))
+    todo = fill.copy()
+    while todo.any():
+        cnt = window_sum(valid.astype(np.float64))
+        acc = window_sum(rgb * valid[..., None])
+        ring = todo & (cnt > 0)
+        if not ring.any():
+            break
+        rgb[ring] = acc[ring] / cnt[ring][:, None]
+        valid |= ring
+        todo &= ~ring
+    rgb[fill] *= SEAM_SHADE
+    return img, int(fill.sum())
+
 def process(name, p):
-    src = os.path.join(OUT, 'yards', name + '.png')
-    if not os.path.exists(src):
-        src = os.path.join(OUT, 'painted', name + '.png')
-    img = np.asarray(Image.open(src).convert('RGBA')).astype(np.float64)
+    img = np.asarray(Image.open(os.path.join(OUT, 'painted', name + '.png')).convert('RGBA')).astype(np.float64)
+    if name in HOUSES:
+        img, _ = unblack_seams(img)
     H, W = img.shape[:2]
     cov = coverage(p)
     assert cov.shape == (H, W), (cov.shape, img.shape)
@@ -106,7 +149,7 @@ def process(name, p):
     # outline colour: median of the painted 1 px outline (old boundary pixels)
     ring = old & (chamfer_inside(old) <= 1.0)
     outline = np.median(img[..., :3][ring], axis=0)
-    if name in DRESSING:      # painted without an outline: the houses' brown, so every piece reads as one set
+    if name in DRESSING or name in HOUSES:      # painted without an outline: the houses' brown, so every piece reads as one set
         outline = np.array(HOUSE_OUTLINE, np.float64)
     # painted colour everywhere inside: keep; boundary pixels newly inside have no paint -> outline
     rgb = img[..., :3].copy()

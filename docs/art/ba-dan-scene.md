@@ -1,4 +1,193 @@
-# Ba Dan modular courtyard layers
+# Ba Dan: the village art
+
+## Ba Dan: one continuous painting (integration of 10 October 2026)
+
+The village is **one painting**: twelve region paintings (`art/source/ba-dan-regions/accepted/`), each painted
+over a guide rendered from the map's own geometry at 1.5 image px per world px and registered to it within
+two pixels, stitched into one 4500 x 2401 picture (the pan box, 3000 x 1600 world px from (-200, -100)), cut
+on a regular 4 x 3 grid into twelve **ground plates**, with the pieces a figure can walk behind cut back
+out of it by their geometry as **uprights**. The painting already holds the light, the cast shadow, the contact
+under every foot, the worn ground, the joins between materials and the canal, so the game draws none of them
+for Ba Dan. Everything under "History" describes the piece-and-plate village this replaced.
+
+### What ships
+
+| files in `public/art/maps/ba-dan-scene/` | what                                                                                                                        |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `ground-00.webp` .. `ground-11.webp`     | the painting in twelve plates, opaque lossy WebP q85, 1127 x 803 px (the edge ones 1125 x 799), 1.5 px per world px         |
+| `uprights-0.webp`, `uprights-1.webp`     | 49 sprites, trimmed to what they draw and packed into two pages (2048 x 2040, 2048 x 1450), lossy with an exact alpha plane |
+| `dwelling.webp`, `village-tree.webp`     | the lodge and the alder the **Forest Road** still borrows (`ba-dan-restyle.ts`); not the village's                          |
+
+`src/content/scenes/baDan.art.ts` is generated: each plate's rectangle and each sprite's page, source
+rectangle and rectangle in painting pixels. `baDan.ts` turns those into the scene (painting px / 1.5 +
+(-200, -100) = world px) and adds what the art does not say: ids, footprints, depth keys, fade flags. The
+scene is a **complete scene** (no `groundMode: 'partial'`): 14 images (12 ground pieces and 2 pages) against
+the schema's 32 ground pieces, 80 scenery entries and the 40-image cap. `paintedWater: true` keeps the
+film off the permanent water; ice, fire and steam still draw over it.
+
+### Pipeline
+
+```sh
+sh scripts/art/ba-dan-regions/regen.sh           # accepted regions -> stitched painting -> split -> shipped files
+sh scripts/art/ba-dan-regions/regen.sh --check   # the same, then compare every byte with what is on disk
+```
+
+1. `regions.py render` lays the **frozen geometry** (`art/source/ba-dan-regions/geometry/`) on the grid: every
+   scenery entry as it stood when the painting was made (world rectangle, depth key, footprint, flags), the
+   sprites those entries drew, and the map's walkable cells. Nothing reads the game's scene data, so the
+   painting splits the same whatever the scene says today.
+2. `regions.py stitch` joins the accepted regions (below).
+3. `regions.py split` writes the plates and one trimmed sprite per upright (below).
+4. `pack.ts` encodes them (ground q85; uprights q90, stepping up only to hold the fine-grain contract),
+   packs the sprites into pages and writes `baDan.art.ts`. All of it is deterministic: the same sources give the
+   same bytes, which `ba-dan-regions.test.ts` holds.
+
+### Stitch
+
+A first stitch cross-faded each overlap with a 160 px feather. At 2x it showed ghosting (two slightly
+different paintings blended: doubled paver joints, doubled grass blades, soft bands; the overlaps kept 0.80 to
+0.92, mean 0.85, of the edge contrast of the sources), colour steps (low-frequency difference between
+neighbours 3 to 12 levels, 11.7 between r1c2 and r2c3), and one region's canopy painted over the flat
+margin colour where its neighbour kept the margin (r0c3 over r1c3 near village px (4036..4230, 770..870): the
+cross-fade left a canopy half faded into the margin).
+
+The stitch now joins each row left to right and then the rows top to bottom. Every join (`owner_mask`,
+`merge_mask` in `regions.py`):
+
+- finds the **cheapest seam** through the overlap, a path that keeps to where the two paintings agree and off the
+  uprights, at least 72 px inside the overlap, so it follows paving edges, canal banks and canopy outlines
+  wherever the two agree;
+- gives a place where they **painted different things** (a smoothed colour difference over 30 across 500 px or more:
+  a canopy, a planter) **whole to one side**, never cut and never blended: the side whose territory it runs into,
+  else the side the seam already gave most of it;
+- blends colour (the low band) over about +-50 px and detail over about +-4 px, so a colour step becomes a ramp
+  and nothing is cross-faded.
+
+Result: the overlaps keep 0.88 to 0.99 (mean 0.95) of the sources' edge contrast, the ghosts and the half-faded
+canopy are gone, 32 disagreements were given whole to one side (444,000 px; the largest, r1c0 over r1c1 around
+village px (987..1535, 966..1598), is where the two painted different lawn between the south-west house and the
+tree), and no disagreement runs from one region's own territory to the other's (`needsRepaint` is empty). The
+per-seam colour step before the ramp is 2.5 to 8.0 levels (mean absolute, low band). Two-times crops of
+every join, old against new, are in `.review/integrate/joins/`.
+
+Left, and judged not to be defects: the painters' tree crowns over the flat margin along the north-east
+rim (village px x 2900..4100, y 300..900) match the backdrop trees the exterior frame had; a one-pixel
+stair in one paver edge near village px (3300, 1545) where a seam crosses it.
+
+### Split
+
+- **Uprights are the pieces a figure can stand behind.** `Village.needed` (`regions.py`) tests, for every walkable cell
+  of the map (frozen with the geometry; `baDan.test.ts` holds the map to the same cells), whether a figure
+  (48 world px either side of its foot, 120 up, 8 down) stands behind a piece: the figure's foot depth
+  `x + y + 1` is below the piece's depth key and the figure's box overlaps something the piece draws.
+  49 of the 78 old entries pass. The 29 that do not (the four backdrops and six wall strips beyond the board, the six north
+  terrace planters, the frame's eight far tree clumps, the clumps `tree-c0` and `tree-c1`, the trees `tree-0-6` and `tree-0-10`,
+  and the fence `d13`) are never in front of anyone, so they are painting only; their footprints stay in
+  `BA_DAN_STANDING` for the blocked-cell guard. A piece in front of an upright but in the ground
+  does not hide it: where the painting shows such a piece, the upright shows the painting.
+- **Alpha is the geometry's** (the old sprite's antialiased silhouette, unchanged: `ba-dan-regions.test.ts` compares
+  every shipped alpha plane with the geometry's, pixel for pixel) and the sprite is trimmed to its bounding box.
+  Every pixel under it that the piece owns takes the painting's colour, rim included, so the sprite over the
+  plates is the painting again: the composite of plates and uprights differs from the painting by 2.7 levels
+  on average (the WebP encode), and by more than 60 in 0.007% of pixels.
+- **Hidden parts.** Where another upright hides part of a sprite (632,030 px of the 3.2 million opaque; 603,614 of them
+  behind pieces that fade) the pixels come from the entry's old sprite, moved by the repaint's colour
+  change measured on its own painted pixels and spread from them (`_match_fill`: a normalised blur, radius 10
+  near a painted pixel, 40 beyond, then the sprite's mean). That matches the colour at the border; it cannot match the
+  painting's detail, which differs from the old sprites' by 15 to 30 levels (12 after a 6 px blur): a fading
+  front piece reveals the old painting's drawing in the new painting's colours.
+- **Straddles.** 70 places (20 on houses, dressing and walls; the rest tree crowns, which are ground cover at their rims
+  by nature) where painting the old sprites did not have lies across a silhouette edge with ground. The plates
+  carry the whole painting and an upright the part inside its silhouette, so the two always agree in colour: nothing is sliced in a
+  still frame or when a piece fades. A figure passing behind is occluded along the geometry's silhouette, as before; a planting
+  that crosses that line is cut there, within a few px of the geometry's own edge. None was re-assigned.
+- **Plates.** `PLATE_GRID` 4 x 3, cuts on multiples of 3 painting px (whole world px), each plate running 2 px into the next so that
+  no fraction of a screen pixel can leave a hairline; the encode noise between two plates over a join is about
+  3 to 5 levels either way and has no bias (`shipped_plates_are_continuous`).
+- **Rectangles.** A sprite's rectangle is its trimmed box on the painting's pixel grid: inside the old entry's rectangle, bar six
+  tree sprites whose old rectangles did not start on a painting pixel, which poke out by 1/3 of a world pixel at most (half a painting
+  pixel; `baDan.test.ts` allows 2/3). Footprints, depth keys and flags are the frozen geometry's, and a test says so.
+
+### Resolution and quality
+
+1.5 px per world px is shipped for everything. The game shows a world pixel at about 1.5 screen px, so the painting is drawn
+1:1, as the characters are (they are drawn from pixel art at that scale and are sharp). At 1 px per world px
+the same painting is resampled by the browser and loses the mesh in the windows, the lantern glass, the roof
+courses and the small flowers: visibly softer than the characters beside it. The comparison at 2x is in
+`.review/integrate/resolution/`. Ground WebP quality is 85, the lowest of 60, 70, 75, 80, 85, 90 whose 2x crops of a
+wall and steps, a paved path and a canopy show no loss: 80 softens wood grain and stone texture a little. Uprights
+keep the village's q90 (`UPRIGHT_WEBP_QUALITY`) with sharp YUV and an exact alpha plane.
+
+### What the runtime no longer does for Ba Dan
+
+`groundMode: 'partial'` (the procedural terrain under the plates and the neighbour-coloured join wedges of
+`paintTileSeams` over them), `paintedWaterCells` and the baked canal banks, the contact ring (already off on every
+piece), the projected cast (already off), the baked-light ground generators with their plates, and the exterior
+apron, frame and surround pieces and the edge-water plate are all gone. It still does collision, blocked and door tiles,
+depth sorting, the house fade (`fadeWhenOccluding` on the houses and trees), the chimney smoke points, the actors' own
+shadows (ADR 0071) and the live surfaces (ice, fire, steam) over the painted canal. `src/render` is unchanged.
+
+### Budgets
+
+Ba Dan's folder: 14 files, 4,097,958 bytes (3,427,002 in 40 files before, the Forest Road's two borrowed files aside);
+decoded, 68.6 MiB (ground 41.3, uprights 27.3) against 85.3 (ground 45.5, uprights 39.8). The maps family is 7.34 MiB
+(7,695,430 B), 6.70 before: over the old 7 MiB, so the limit is 7.5 MiB with the owner's approval of 9 October 2026 (ADR 0076).
+`baDan.ts` plus `baDan.art.ts` minify to 6.5 KB (2.8 KB gzip) against 9.8 KB (3.9 KB) before; the JS gate (360 KB) is
+not touched.
+
+### Pan reach: the camera is held inside the painting
+
+**Fixed (10 October 2026).** The scene declares `paintExtent` (the painting's rectangle, (-200, -100) to (2800, 1500.67) world px)
+and `Camera.viewExtent` keeps the whole view inside it: panning, pinch, wheel, follow-party and every resize clamp to it, zooming out
+stops where the view just fits it (`minExtentScale`, the larger of viewport width / 3000 and height / 1600.67), and a refit that
+leaves the view larger zooms in. A viewport the painting cannot fill even at the 2.5 maximum zoom (over 7,500 x 4,000 px) is centred. Other
+scenes declare nothing and keep their bounds. The painting's outer edge is also faded into the margin colour (48 to 96 world px, ragged;
+`edge_fade` in `regions.py`), so a canopy the painting's border cuts reads as foliage thinning out, and the very edge is exactly the margin
+colour. The section below is the measurement that led to it.
+
+The painting covers the pan box the regions were planned on, (-200, -100, 3000, 1600) world px. The camera
+(`cameraCentreMargin` -0.609375 keeps the viewport _centre_ inside the grid) reaches further, by viewport and zoom
+(measured with `Camera.panBy` over every direction, grid 24 x 16, oblique):
+
+| viewport and scale | world x      | world y      | past the pan box                         |
+| ------------------ | ------------ | ------------ | ---------------------------------------- |
+| 1368 x 714 at 1.5  | -378 .. 2938 | -199 .. 1479 | left 178, right 138, top 99              |
+| 1368 x 714 at 1.0  | -606 .. 3166 | -318 .. 1598 | left 406, right 366, top 218, bottom 98  |
+| 1368 x 714 at 0.75 | -834 .. 3394 | -437 .. 1717 | left 634, right 594, top 337, bottom 217 |
+| 820 x 1000 at 1.5  | -195 .. 2755 | -294 .. 1574 | top 194, bottom 74                       |
+| 390 x 600 at 1.5   | -52 .. 2612  | -161 .. 1441 | top 61                                   |
+
+The old art went further than the painting does (the apron and frame to x -384 .. 3136 and y 416 .. 1728, the backdrops
+to y -326), so at the extremes of a pan on a wide viewport the player now sees the flat margin colour where there was
+foliage, and the painting's own edge: painted content (not the margin colour) touches the top row at 1,043 of its 4,500 px (mostly village px
+x 1312 .. 2330), the bottom at 742, the left column at 652 of 2,401 and the right at 322, and is cut there. Nothing in code can paint
+the ring. Either re-plan the regions on a pan box that holds the camera's reach (about (-640, -340, 3840, 1960) at the 1.0 zoom
+the wide desktop view reaches, a ring of outer regions to repaint), or hold the camera inside the painting (a larger
+`cameraCentreMargin`, which also changes how near the village rim the view can go).
+
+### What needs the running game
+
+The house and tree fade over the repainted ground (the ground under a faded piece is the painting, which has the
+piece itself in it, so the fade veils a figure rather than clearing the building away, and a fading front piece
+reveals the hidden fill); the canal and the film over it; chimney smoke from the mouths; figures at the doors, the
+gates and the road mouths against the new sprite edges; the pan to every edge of the 3000 x 1600 box, the plate joins at
+fractional zoom, and the load time of the 14 images.
+
+### Sources and provenance
+
+`art/source/ba-dan-regions/accepted/` (the twelve paintings and their registration gates; the painter's prompts
+were not kept) and `art/source/ba-dan-regions/geometry/` (the frozen entries and sprites; see its `README.md`).
+Built over the guides and paintings in `art/source/ba-dan-true/` and `art/source/ba-dan-restyle/`.
+
+# History: the piece-and-plate village (superseded 10 October 2026)
+
+Everything below describes the village as it was before the continuous painting: baked ground plates, a
+runtime partial scene, and uprights packed from painted masters. The generators it names (`ba-dan-village-light.ts`,
+`ba-dan-village-material.ts`, `ba-dan-garden.ts`, `ba-dan-exterior-apron.ts`, `ba-dan-water.ts`, `ba-dan-edges.ts`,
+`ba-dan-true-pieces.ts`, `ba-dan-trees.ts`, `ba-dan-surround.ts`, the ground and join generators and their tests) were
+removed at the integration; they are in git history at `7925789c`. The painted masters, guides and python tools they
+worked from are still under `art/source/` and `scripts/art/ba-dan-guides/`, and the sprites they packed
+(the frozen geometry's `sprites/`) are the silhouettes the uprights are cut by.
 
 ## Exterior surround modules (6 October 2026)
 
@@ -183,18 +372,18 @@ by `ba-dan-restyle.ts`; `variety-prompts.md` there is their record. Everything f
 pieces is under `art/source/ba-dan-true/`, whose `README.md` gives the exact order and the
 painter's verbatim prompts; the geometry and python tools are `scripts/art/ba-dan-guides/`.
 
-**Guide.** `pieces.py` models each piece in 3D (ground (x, y) to screen `X = 64(x - y)`,
-`Y = 32(x + y) - z`, at 1.5 image pixels per world pixel). A house is a plinth with a low
-rear terrace, a plaster wall with a door, steps and windows, and a gabled tile roof; the long
-eave wall and its door face +x. `build.py` renders the flat-shaded guide, a silhouette mask, the
+**Guide.** `houses.py` (the four houses) and `pieces.py` model each piece in 3D (ground (x, y) to
+screen `X = 64(x - y)`, `Y = 32(x + y) - z`, at 1.5 image pixels per world pixel). A house is a
+whole building: an 18 px plinth all round with a two-riser stair, a plaster wall with a door and
+windows, a gabled tile roof whose far slope shows above the ridge, and a yard of its own on the
+footprint's west tiles (kerb or fence on every open side, one gate, a few things standing in it);
+the long eave wall and its door face +x (`guides/README-houses.md`). `build.py` renders the flat-shaded guide, a silhouette mask, the
 footprint quad and `pieces.json` (canvas, anchor, foot polygon, door and steps). Every axis edge
 is +-0.5 to float error and every vertical has dX 0.
 
-**Paint.** The guides went to the painter on three sheets (`build.py --sheets DIR`), edited once
-per sheet with the guide as the immutable target, cut at each piece's rectangle and forced
-through its mask (`painted/`). The four houses had a second pass: the low terrace behind the
-house (the plane `planes/<house>.png` marks) was repainted into a private yard, with every pixel
-outside it and every alpha byte from the first painting (`yards/`).
+**Paint.** The guides went to the painter on sheets (`build.py --sheets DIR`, the houses'
+`houses_review.py --sheets DIR`), edited once per sheet with the guide as the immutable target, cut at
+each piece's rectangle and forced through its mask (`painted/`). A house's yard is part of its painting.
 
 **Edge.** `edge.py` re-derives the silhouette's coverage from the guide geometry (8x supersampled)
 and writes `<name>.png`: an antialiased alpha edge (the game filters art bilinearly, where a binary
@@ -202,8 +391,8 @@ edge dashes), a dark-brown outline two source pixels wide, and the outline colou
 pixels under the transparent fringe so no filter or encoder pulls in another colour. The
 silhouette is geometry only.
 
-**Pack.** `ba-dan-true-pieces.ts` shades each house's horizontal faces (plinth top, porch,
-steps) with the shared light's shadow on that plane, so the roof's shadow carries across the
+**Pack.** `ba-dan-true-pieces.ts` shades each house's horizontal faces (plinth top, steps,
+yard floor) with the shared light's shadow on that plane, so the roof's shadow carries across the
 porch as the ground's does; plants stone feet in turf with a ragged grass fringe, only where every
 placement stands on open lawn; and encodes q90 with `exact` so the fringe colour survives, stepping
 up only to hold the fine-grain contract. The bridge's near layer is cut on the tile line
@@ -217,16 +406,16 @@ set `contactShadow: false`: the runtime's footprint ring is a whole-tile box, a 
 table's open legs, and the baked contact below replaces it.
 
 **Light bake.** `ba-dan-village-light.ts` builds the volumes from the live scenery at the guide's
-own heights (house: terrace slab, plinth, wall, roof with eave overhang and ridge; table: top,
+own heights (house: plinth, walls, one or two roofs with eave overhang and ridge, awning, chimney, and the yard's floor, fences and contents, from `guides/pieces.json`; table: top,
 trays, shelf, legs; planter: rim and bed; bridge: abutments, deck, beams, posts; trees cast their
 silhouettes). One world-space light shades every plate (see "Light and shadow").
 
-**Contact rules.** Every foot (terrace, plinth, rim, leg, abutment) carries a dark seat line 2.6
+**Contact rules.** Every foot (yard floor, plinth, rim, leg, abutment) carries a dark seat line 2.6
 ground pixels wide, a 12 pixel falloff and a faint 14 pixel tail all round, at full weight for a
-plinth and less for a thin leg (0.78, reach 0.55), a low terrace (0.75) and the bridge (reach
+plinth and less for a thin leg (0.78, reach 0.55), a low slab, the yard floor (0.75) and the bridge (reach
 0.85); two pieces' edges together are no darker than 0.36. A table's top and the bridge's deck take
 sky light from the ground beneath. Each house door lands on a small worn flagstone landing as deep
-as two slabs, centred on its three steps, with a trodden trail to the nearest path
+as two slabs, centred on its two steps, with a trodden trail to the nearest path
 (`LANDINGS`, `DOOR_TRAILS` in `ba-dan-village-material.ts`).
 
 **Guards.** `ba-dan-true-pipeline.test.ts` holds: every shipped true file equals a re-pack of the
@@ -317,12 +506,11 @@ off for this map (`castShadow: false`, the faint wedges read as dirt); baked
 light replaces them.
 
 **Where the shadows come from.** Volumes are read from the live scene, not
-copied: each house is a wall box on its footprint plus a hipped roof with an
-eave overhang (the ridge runs along y, the slopes close in, the ends step in),
+copied: each house is its plinth, a wall box, one or two gabled roofs with an eave
+overhang (the ridge runs along y, the slopes close in to a beam on top) and its yard's floor, fences and contents,
 each stall a table slab on two legs with goods on it, each planter a rim and a
 bed, the bridge a deck with two rails, the north and west surround runs a
-dry-stone wall. Heights are the guides' own, in world pixels (plinth 26, eave line 140,
-ridge 186, table top 36, planter rim 26), and checked in place with
+dry-stone wall. Heights are the guides' own, in world pixels (plinth 18, table top 36, planter rim 26), and checked in place with
 `ba-dan-ground-composite.ts`. Trees cast their own
 painted silhouette, sheared the way unit shadows are.
 
@@ -444,9 +632,12 @@ the run's silhouette. The painters' black (a shadow drawn inside the foot and th
 from the stone beside it before the run's own two-pixel outline is applied.
 
 **Where dressing may stand.** A piece of scenery draws in front of another when its depth (the footprint's
-front cell, `x + w - 0.5` and `y + d - 0.5`) is larger, and a house's depth is its front corner. So a
-prop on a house's lawn side with a smaller sum draws _behind_ the house even when it stands in front
-of its wall: the well cannot stand at (7,4) or (8,4), the shop stack at (10,1) was overlapped by Gao's
+front cell, `x + w - 0.5` and `y + d - 0.5`) is larger. A house is one sprite with its yard on the west
+tiles, so its depth is the lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`: a figure there
+or anywhere east or south of it stands in front of the whole house, the yard's gate end included
+(`baDan.test.ts` holds it). The round 3 key, the front corner, put a figure on the lane
+beside a yard behind it and a prop on a house's lawn side behind the house even when it stood in front of
+its wall: the well could not stand at (7,4) or (8,4), the shop stack at (10,1) was overlapped by Gao's
 plinth, and the south planters at (6,9) and (14,9) were hidden by the southern roofs. The well was
 moved from (8,5), hard against the bridge's post and on Gao's work tile, to (12,13) in the south
 court: every lawn tile near the square is in front of a door's steps ((10,4), (11,4)), behind a house

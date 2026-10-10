@@ -1,20 +1,12 @@
 /**
  * The apron ships as bands, and these are the proofs that make that safe: the
- * bands cover the whole ring, cover it once, stay inside the texture the device
- * matrix promises, and are the exact rectangles the packed art was cut into.
+ * bands cover the whole ring, stay inside the texture the device matrix promises,
+ * and are the exact rectangles the packed art was cut into. Forest Road's ring is
+ * the one left; Ba Dan's apron and frame are inside its continuous painting now
+ * (`scripts/art/ba-dan-regions/`).
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  BA_DAN_APRON_BANDS,
-  BA_DAN_APRON_DEPTH,
-  BA_DAN_APRON_MAP,
-  BA_DAN_APRON_PIECES,
-  BA_DAN_FRAME,
-  BA_DAN_FRAME_BANDS,
-  BA_DAN_FRAME_PIECES,
-  BA_DAN_SCENE,
-} from '../../src/content/scenes/baDan';
 import {
   FOREST_APRON_BANDS,
   FOREST_APRON_DEPTH,
@@ -24,19 +16,6 @@ import {
 } from '../../src/content/scenes/forestRoad';
 import { apronBands, type ApronBand } from './lib/apron-bands';
 import {
-  DIRECTORY as BA_DAN_DIRECTORY,
-  FRAME_ENTRIES,
-  FRAME_STEM,
-  QUALITY as BA_DAN_QUALITY,
-  STEM as BA_DAN_STEM,
-  frameAtlasItems,
-  layoutFrame,
-  packApron,
-  packFrame,
-  packFrameAtlas,
-  planFrameBands,
-} from './ba-dan-exterior-apron';
-import {
   DIRECTORY as FOREST_DIRECTORY,
   QUALITY as FOREST_QUALITY,
   STEM as FOREST_STEM,
@@ -44,7 +23,7 @@ import {
 } from './forest-exterior-apron';
 import { apronPlatePath } from './lib/apron-plates';
 import { crop } from './lib/trim';
-import { decodeWebp, encodeWebp } from './lib/webp';
+import { encodeWebp } from './lib/webp';
 import type { Image } from './lib/image';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
@@ -62,19 +41,15 @@ interface Scene {
   readonly bands: readonly ApronBand[];
 }
 
-const village: Scene = { name: 'Ba Dan', ring: packApron(), bands: BA_DAN_APRON_BANDS };
 const forest: Scene = {
   name: 'Forest Road',
   ring: await packSceneApron(),
   bands: FOREST_APRON_BANDS,
 };
-const scenes = [village, forest];
+const scenes = [forest];
 
 describe('the ring the scene registers', () => {
   it('is the table the geometry computes from each map', () => {
-    expect([...BA_DAN_APRON_BANDS]).toEqual(
-      apronBands({ ...BA_DAN_APRON_MAP, depth: BA_DAN_APRON_DEPTH }),
-    );
     expect([...FOREST_APRON_BANDS]).toEqual(
       apronBands({
         ...FOREST_APRON_MAP,
@@ -125,8 +100,7 @@ describe('the ring the scene registers', () => {
       expect(painted, `${scene.name} has painted apron`).toBeGreaterThan(100_000);
       expect(missed, `${scene.name} pixels no band covers`).toBe(0);
       expect(tripled, `${scene.name} pixels three bands cover`).toBe(0);
-      if (scene === village) expect(doubled, `${scene.name} pixels two bands cover`).toBe(0);
-      else expect(doubled, `${scene.name} has seam overlap`).toBeGreaterThan(0);
+      expect(doubled, `${scene.name} has seam overlap`).toBeGreaterThan(0);
     }
   });
 
@@ -142,10 +116,7 @@ describe('the ring the scene registers', () => {
   });
 
   it('is the ground the scene itself lists, offset by the ring', () => {
-    expect(BA_DAN_APRON_PIECES).toHaveLength(BA_DAN_APRON_BANDS.length);
     expect(FOREST_APRON_PIECES).toHaveLength(FOREST_APRON_BANDS.length);
-    for (const [index, piece] of BA_DAN_APRON_PIECES.entries())
-      expect(piece.url).toBe(`art/maps/ba-dan-scene/exterior-apron-${index}.webp`);
     for (const [index, piece] of FOREST_APRON_PIECES.entries())
       expect(piece.url).toBe(`art/maps/forest-scene/exterior-apron-${index}.webp`);
   });
@@ -154,13 +125,6 @@ describe('the ring the scene registers', () => {
 describe('the art on disk', () => {
   it('is the packed ring cut into exactly those bands', async () => {
     const cases = [
-      {
-        label: 'Ba Dan',
-        ...village,
-        directory: BA_DAN_DIRECTORY,
-        stem: BA_DAN_STEM,
-        quality: BA_DAN_QUALITY,
-      },
       {
         label: 'Forest Road',
         ...forest,
@@ -178,88 +142,5 @@ describe('the art on disk', () => {
           path,
         ).toEqual(shipped);
       }
-  });
-});
-
-/**
- * The south and east frame ships differently from the ring: not a file a band but one page,
- * `exterior-frame.webp`, with each band a rectangle of it (the scene may ask for 40 distinct images,
- * and the ring's twelve bands already cost twelve). These are the same proofs.
- */
-describe('the south and east frame', () => {
-  const plate = packFrame();
-  const bands = BA_DAN_FRAME_BANDS;
-
-  it('is the cut the planner makes of the plate, in as few entries as the scene has room for', () => {
-    expect(plate.width).toBe(BA_DAN_FRAME.width);
-    expect(plate.height).toBe(BA_DAN_FRAME.height);
-    expect(bands.map(({ x, y, width, height }) => ({ x, y, width, height }))).toEqual(
-      planFrameBands(plate, FRAME_ENTRIES),
-    );
-    // The scene's ground may list 32 pieces; the frame takes the last of them but one.
-    expect(BA_DAN_SCENE.ground.length).toBeLessThan(32);
-    expect(BA_DAN_FRAME_PIECES).toHaveLength(bands.length);
-  });
-
-  it('covers every painted pixel once, and keeps every band inside the texture every iPad takes', () => {
-    const covered = new Uint8Array(plate.width * plate.height);
-    for (const [index, band] of bands.entries()) {
-      expect(Math.max(band.width, band.height), `band ${index}`).toBeLessThanOrEqual(TEXTURE_CAP);
-      expect(band.x).toBeGreaterThanOrEqual(0);
-      expect(band.y).toBeGreaterThanOrEqual(0);
-      expect(band.x + band.width).toBeLessThanOrEqual(plate.width);
-      expect(band.y + band.height).toBeLessThanOrEqual(plate.height);
-      for (let y = band.y; y < band.y + band.height; y++)
-        for (let x = band.x; x < band.x + band.width; x++)
-          covered[y * plate.width + x] = (covered[y * plate.width + x] ?? 0) + 1;
-    }
-    let missed = 0;
-    let doubled = 0;
-    for (let i = 0; i < covered.length; i++) {
-      if ((plate.data[i * 4 + 3] ?? 0) >= PAINTED && !covered[i]) missed++;
-      if ((covered[i] ?? 0) > 1) doubled++;
-    }
-    expect(missed, 'painted pixels no band covers').toBe(0);
-    expect(doubled, 'pixels two bands cover').toBe(0);
-    // And the bands drop most of the plate's clear texels, as the ring's do.
-    const area = bands.reduce((total, band) => total + band.width * band.height, 0);
-    expect(area).toBeLessThan(plate.width * plate.height * 0.4);
-  });
-
-  it('is laid on one page of at most 2048 pixels, each rectangle where the scene says', () => {
-    const items = frameAtlasItems(plate, bands);
-    const { placed, width, height } = layoutFrame(items);
-    expect(Math.max(width, height)).toBeLessThanOrEqual(TEXTURE_CAP);
-    for (const [index, band] of bands.entries()) {
-      const at = placed.find((p) => p.name === `band-${index}`)!;
-      expect(band.atlas, `band ${index}`).toEqual({ x: at.x, y: at.y });
-      expect(BA_DAN_FRAME_PIECES[index], `piece ${index}`).toEqual({
-        url: `art/maps/ba-dan-scene/${FRAME_STEM}.webp`,
-        sourceRect: { x: at.x, y: at.y, width: band.width, height: band.height },
-        x: BA_DAN_FRAME.x + band.x,
-        y: BA_DAN_FRAME.y + band.y,
-        width: band.width,
-        height: band.height,
-      });
-    }
-  });
-
-  it('is the shipped page, byte for byte, with every band decoding to its crop within the encode error', async () => {
-    const shipped = readFileSync(`${BA_DAN_DIRECTORY}/${FRAME_STEM}.webp`);
-    const packed = await packFrameAtlas(plate);
-    expect(Buffer.from(packed.bytes)).toEqual(shipped);
-    const page = await decodeWebp(new Uint8Array(shipped));
-    expect([page.width, page.height]).toEqual([packed.width, packed.height]);
-    for (const [index, band] of bands.entries()) {
-      let alphaOff = 0;
-      for (let y = 0; y < band.height; y++)
-        for (let x = 0; x < band.width; x++)
-          if (
-            (plate.data[((band.y + y) * plate.width + band.x + x) * 4 + 3] ?? 0) !==
-            (page.data[((band.atlas.y + y) * page.width + band.atlas.x + x) * 4 + 3] ?? 0)
-          )
-            alphaOff++;
-      expect(alphaOff, `band ${index} alpha`).toBe(0);
-    }
   });
 });
