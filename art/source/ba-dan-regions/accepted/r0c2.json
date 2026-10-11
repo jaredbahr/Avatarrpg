@@ -1,19 +1,19 @@
 {
   "region": "r0c2",
   "source": {
-    "path": "nature2-r0c2-sol-002/best.png",
-    "sha256": "8a28b89e7d447c9108dc1a24422c95cc2f5f734f746cbc641d3912a4c9409785"
+    "path": "nature2-r0c2-sol-002/best.png with the jar and barrel from prop-fix-jar-sol-001/attempt-6.png",
+    "sha256": "1722835894102177e5401e33b64929d2cc40c96931cb0c9eae5b8c5b74302e3d"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r0c2.png",
-    "sha256": "3e14ddca268105fa8d5930b7c4c056ea40bee9ee3fe1e499b1ce281bcb6159d6"
+    "sha256": "1722835894102177e5401e33b64929d2cc40c96931cb0c9eae5b8c5b74302e3d"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.8531
+      "corr": 0.819
     },
     "blobs": [
       {
@@ -22,16 +22,16 @@
         "area": 870970,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8531,
+        "corr": 0.819,
         "status": "ok"
       },
       {
         "n": 2,
         "box": [0, 347, 86, 563],
         "area": 5730,
-        "dx": 0,
+        "dx": 1,
         "dy": 0,
-        "corr": 0.8204,
+        "corr": 0.4363,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 12139,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8302,
+        "corr": 0.6971,
         "status": "ok"
       },
       {
@@ -49,17 +49,17 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8427,
+        "corr": 0.8158,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1268574,
-      "meanAbsDiff": 13.584,
-      "p95": 50.333,
-      "fractionOver16": 0.2542
+      "meanAbsDiff": 11.751,
+      "p95": 41.667,
+      "fractionOver16": 0.2168
     },
-    "warn": ["carried pixels repainted: mean difference 13.6/255"],
+    "warn": ["carried pixels repainted: mean difference 11.8/255"],
     "fail": []
   },
   "prompt": null,

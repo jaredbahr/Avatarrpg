@@ -29,6 +29,12 @@ climbers and beds against walls, wildflower drifts and worn earth paths in the l
 tiles only low ground cover was added; no building, path, object or the water's course moved (same gate). Each `.json`
 names the attempt taken (`source.path`, relative to the painters' run folders, which are not tracked).
 
+**Prop check.** The gate measures where buildings and other large pieces sit; it does not notice a small prop drawn wrongly.
+The owner found a white jar fused into a barrel by the north shop (there since the first repaint). It was redrawn as two
+objects and that one box (about 112 x 122 px) was put into `r0c2` and, feathered, into the same spot of `r1c2`; nothing else
+in either region changed. After any repaint, compare every prop with the painting before at 3x (fused, miscounted, missing
+parts, broken construction, lost shadow) before accepting it.
+
 ## Rebuilding
 
 `sh scripts/art/ba-dan-regions/regen.sh` rebuilds `public/art/maps/ba-dan-scene/ground-NN.webp`,
