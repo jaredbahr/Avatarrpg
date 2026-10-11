@@ -8,6 +8,7 @@ import {
   battleActive,
   enterNode,
   resetStorage,
+  settleDialog,
   settleLayout,
   snapshot,
   startGame,
@@ -173,76 +174,57 @@ test.describe('a session', () => {
 
   test('closes to an enemy and the preview matches what actually happens', async ({ page }) => {
     await resetStorage(page);
-    // Three players, so the fight lasts long enough to close the distance.
+    // Keep the original party and seeded combat outcome used by this contract check.
     await startGame(page, ['Elias', 'Lorelai', 'Frehley'], ['bo', 'nilak', 'kaya'], 'ability-spec');
     await enterNode(page, 'battle_forest_road');
 
-    /*
-     * Both sides start at opposite ends of a 20-wide map, so getting in range
-     * takes a few rounds. Walk toward the nearest enemy and end the turn until
-     * Rock Throw can actually reach — the bandits are closing too, so this
-     * converges quickly.
-     */
-    const inRange = async (): Promise<boolean> =>
-      page.evaluate(() => {
-        const battle = window.fnt?.app.state?.battle;
-        if (!battle || battle.phase !== 'active') return false;
-        const unit = battle.units.find((u) => u.id === battle.order[battle.turnIndex]);
-        if (!unit || unit.faction !== 'party') return false;
-        return battle.units.some(
-          (e) =>
-            e.faction === 'enemy' &&
-            e.hp > 0 &&
-            Math.max(Math.abs(e.pos.x - unit.pos.x), Math.abs(e.pos.y - unit.pos.y)) <= 5,
+    // This test is about the preview contract, not enemy AI playback. Stage the
+    // same face-off used by the gallery: give Bo the turn and place one living
+    // enemy on an open, unoccupied tile within Rock Throw range.
+    await page.evaluate(() => {
+      const app = window.fnt?.app;
+      const state = app?.state;
+      const battle = state?.battle;
+      if (!app || !state || !battle) throw new Error('No fight is running.');
+      const bo = battle.units.find((unit) => unit.abilities.includes('rock_throw'));
+      const enemy = battle.units.find((unit) => unit.faction === 'enemy' && unit.hp > 0);
+      if (!bo || !enemy) throw new Error('The fight needs Bo and a living enemy.');
+
+      const candidates = [
+        { x: bo.pos.x + 4, y: bo.pos.y },
+        { x: bo.pos.x - 4, y: bo.pos.y },
+        { x: bo.pos.x, y: bo.pos.y + 4 },
+        { x: bo.pos.x, y: bo.pos.y - 4 },
+      ];
+      const enemyPos = candidates.find((pos) => {
+        if (pos.x < 0 || pos.y < 0 || pos.x >= battle.grid.width || pos.y >= battle.grid.height)
+          return false;
+        const tile = battle.grid.tiles[pos.y * battle.grid.width + pos.x];
+        return (
+          tile !== undefined &&
+          !tile.blocked &&
+          !battle.units.some(
+            (unit) =>
+              unit.id !== enemy.id && unit.hp > 0 && unit.pos.x === pos.x && unit.pos.y === pos.y,
+          )
         );
       });
+      if (!enemyPos) throw new Error('No open tile can stage an enemy in Rock Throw range.');
 
-    for (let round = 0; round < 14 && !(await inRange()); round++) {
-      if (!(await takeTurn(page))) break;
-      await page.evaluate(() => {
-        const app = window.fnt?.app;
-        const battle = app?.state?.battle;
-        if (!app || !battle) return;
-        const unit = battle.units.find((u) => u.id === battle.order[battle.turnIndex]);
-        const enemy = battle.units.find((u) => u.faction === 'enemy' && u.hp > 0);
-        if (!unit || !enemy) return;
-
-        const path: { x: number; y: number }[] = [];
-        let p = { ...unit.pos };
-        for (let step = 0; step < unit.move; step++) {
-          p = { x: p.x + Math.sign(enemy.pos.x - p.x), y: p.y + Math.sign(enemy.pos.y - p.y) };
-          path.push(p);
-        }
-        if (path.length > 0) app.dispatch({ type: 'move', unitId: unit.id, path });
-        app.dispatch({ type: 'endTurn', unitId: unit.id });
+      const turnIndex = battle.order.indexOf(bo.id);
+      if (turnIndex < 0) throw new Error('Bo is missing from the turn order.');
+      const units = battle.units.map((unit) => {
+        if (unit.id === bo.id)
+          return { ...unit, ap: unit.base.maxAp, move: unit.base.maxMove, cooldowns: {} };
+        return unit.id === enemy.id ? { ...unit, pos: enemyPos } : unit;
       });
-      await page.waitForTimeout(400);
-    }
+      app.state = { ...state, battle: { ...battle, units, turnIndex } };
+      app.resync();
+    });
 
-    expect(await battleActive(page), 'the fight ended before anyone got in range').toBe(true);
+    expect(await battleActive(page), 'the staged fight is not active').toBe(true);
+    // The staged turn still opens with the hot-seat hand-off card: take it as a player would.
     expect(await takeTurn(page)).toBe(true);
-    expect(await inRange(), 'never got within range of an enemy').toBe(true);
-
-    /*
-     * Hand the turn along until it is the earthbender's — Rock Throw is only on
-     * the action bar when Bo is the one acting.
-     */
-    for (let hop = 0; hop < 6; hop++) {
-      const isBo = await page.evaluate(() => {
-        const battle = window.fnt?.app.state?.battle;
-        const unit = battle?.units.find((u) => u.id === battle.order[battle.turnIndex]);
-        return unit?.abilities.includes('rock_throw') === true;
-      });
-      if (isBo) break;
-      await page.evaluate(() => {
-        const app = window.fnt?.app;
-        const battle = app?.state?.battle;
-        const unit = battle?.units.find((u) => u.id === battle.order[battle.turnIndex]);
-        if (app && unit) app.dispatch({ type: 'endTurn', unitId: unit.id });
-      });
-      await page.waitForTimeout(400);
-      if (!(await takeTurn(page))) break;
-    }
 
     // Aim through the UI and read the preview the player would be reading.
     await waitForIdle(page);
@@ -293,6 +275,7 @@ test.describe('a session', () => {
 
     const confirmBar = page.locator('.confirm-bar').filter({ hasText: /Confirm/ });
     await expect(confirmBar).toBeVisible();
+    await settleDialog(confirmBar);
 
     // The chip reads like "Bandit: 90% · ~9 dmg".
     const chip = await confirmBar.locator('.chip-hostile').first().textContent();
@@ -304,7 +287,9 @@ test.describe('a session', () => {
     expect(previewedHit).toBeGreaterThan(0);
     expect(previewedHit).toBeLessThanOrEqual(100);
 
-    await page.getByRole('button', { name: /^Confirm$/ }).click();
+    const confirm = confirmBar.getByRole('button', { name: /^Confirm$/ });
+    await expect(confirm).toBeEnabled();
+    await confirm.click();
 
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.log.length ?? 0))

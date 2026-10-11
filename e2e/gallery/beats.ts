@@ -27,7 +27,9 @@ import {
   focusStagedBlast,
   giveTurn,
   grantAbility,
+  heldCells,
   loadDice,
+  moveAllowance,
   open,
   paintSurface,
   partyUnit,
@@ -157,6 +159,116 @@ const CLOSE_ROWS: readonly FigureRow[] = [
 
 function shifted(pos: Vec2, dx: number, dy: number): Vec2 {
   return { x: pos.x + dx, y: pos.y + dy };
+}
+
+/** Headings a walk sets off in: east first, as `05b-walk` always has. */
+const WALK_HEADINGS: readonly Vec2[] = [
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 0, y: -1 },
+];
+
+/** One leg pair of a one-turn walk: `straight` tiles along the heading, then `turn` at right angles. */
+interface WalkLegs {
+  readonly straight: number;
+  readonly turn: number;
+}
+
+/**
+ * The walk shapes the search tries, longest straight run first: three tiles
+ * then one (the note's "four-tile walk with a turn in it"), then two and two,
+ * and the three-tile two-then-one a mover with only three move points can pay
+ * for.
+ */
+const WALK_LEGS: readonly WalkLegs[] = [
+  { straight: 3, turn: 1 },
+  { straight: 2, turn: 2 },
+  { straight: 2, turn: 1 },
+];
+
+/** The right-angle steps from an east or west heading: south, then north. */
+const PERPENDICULAR_Y: readonly Vec2[] = [
+  { x: 0, y: 1 },
+  { x: 0, y: -1 },
+];
+
+/** The right-angle steps from a north or south heading: east, then west. */
+const PERPENDICULAR_X: readonly Vec2[] = [
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+];
+
+/** Both right-angle steps from `heading`, the positive one first. */
+function turnSteps(heading: Vec2): readonly Vec2[] {
+  return heading.x === 0 ? PERPENDICULAR_X : PERPENDICULAR_Y;
+}
+
+/** The tiles of a walk: `legs.straight` steps along `heading`, then `legs.turn` along `bend`. */
+function walkTiles(start: Vec2, heading: Vec2, bend: Vec2, legs: WalkLegs): Vec2[] {
+  const route: Vec2[] = [];
+  for (let step = 1; step <= legs.straight; step++) {
+    route.push(shifted(start, heading.x * step, heading.y * step));
+  }
+  const corner = route[route.length - 1];
+  if (!corner) return route;
+  for (let step = 1; step <= legs.turn; step++) {
+    route.push(shifted(corner, bend.x * step, bend.y * step));
+  }
+  return route;
+}
+
+/** True when every tile of the walk is on the map, open, unheld and unrepeated. */
+async function walkIsClear(
+  page: Page,
+  route: readonly Vec2[],
+  held: ReadonlySet<string>,
+): Promise<boolean> {
+  const seen = new Set<string>();
+  for (const tile of route) {
+    const key = `${tile.x},${tile.y}`;
+    if (seen.has(key) || held.has(key)) return false;
+    seen.add(key);
+    if (!(await open(page, tile))) return false;
+  }
+  return true;
+}
+
+/**
+ * The route for `05b-walk`, read from the live board instead of hard-coded.
+ *
+ * A four-tile walk with exactly one turn that the `move` action will accept:
+ * every tile on the map, open, and held by nobody else — a path the reducer
+ * would refuse is a beat that never moves. Headings and the turn are tried in
+ * a fixed order (east first, then the other three; the positive step of the
+ * turn axis before the negative one), so the same board always gives the same
+ * route and the stills stay stable. A mover who cannot pay for four tiles gets
+ * the longest one-turn walk that fits instead.
+ */
+async function walkRoute(
+  page: Page,
+  start: Vec2,
+  exceptUnitId: string,
+  budget: number,
+): Promise<Vec2[]> {
+  const length = Math.min(4, budget);
+  const held = await heldCells(page, exceptUnitId);
+  const rejected = new Set<string>();
+  for (const legs of WALK_LEGS) {
+    if (legs.straight + legs.turn !== length) continue;
+    for (const heading of WALK_HEADINGS) {
+      for (const bend of turnSteps(heading)) {
+        const route = walkTiles(start, heading, bend, legs);
+        if (await walkIsClear(page, route, held)) return route;
+        for (const tile of route) rejected.add(`${tile.x},${tile.y}`);
+      }
+    }
+  }
+  const tried = [...rejected].join(', ');
+  throw new Error(
+    `No ${length}-tile walk with a turn from Kaya at ${start.x},${start.y} within ` +
+      `${budget} move. Candidate tiles blocked or held: ${tried || 'none'}.`,
+  );
 }
 
 /** A fresh page, a fresh game, into the village with the layout settled. */
@@ -443,15 +555,8 @@ export const BEATS: readonly Beat[] = [
       if (!kaya) throw new Error('Kaya is not in the party.');
       await giveTurn(ctx.page, kaya.id);
       await settleLayout(ctx.page, ctx.settleTimeout);
-      const route: Vec2[] = [
-        shifted(kaya.pos, 1, 0),
-        shifted(kaya.pos, 2, 0),
-        shifted(kaya.pos, 3, 0),
-        shifted(kaya.pos, 3, 1),
-      ];
-      for (const tile of route) {
-        if (!(await open(ctx.page, tile))) throw new Error(`Tile ${tile.x},${tile.y} is not open.`);
-      }
+      const budget = await moveAllowance(ctx.page, kaya.id);
+      const route = await walkRoute(ctx.page, kaya.pos, kaya.id, budget);
       await ctx.filmstrip(this.note, [60, 160, 260, 360, 430], async () => {
         await ctx.page.evaluate(
           ({ id, path }) => {
