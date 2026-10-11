@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { occupiedCells } from '../../src/core/rules/grid';
 import { upcomingOrder } from '../../src/core/rules/turnOrder';
 import { settleLayout } from '../helpers';
 import { paintedTileCentre } from '../projection';
@@ -182,6 +183,29 @@ export async function open(page: Page, pos: Vec2): Promise<boolean> {
   }, pos);
 }
 
+/**
+ * The cells another living unit stands on, as `x,y` keys.
+ *
+ * `open` only asks whether the tile itself is blocked, but a `move` also
+ * refuses a path through a body, so a beat that walks a route has to know
+ * where everyone else is standing. Uses the game's own footprint rule, so a
+ * size-2 ally reserves all four of its cells.
+ */
+export async function heldCells(page: Page, exceptUnitId: string): Promise<Set<string>> {
+  const units = await page.evaluate((id) => {
+    const battle = window.fnt?.app.state?.battle;
+    if (!battle) return [];
+    return battle.units
+      .filter((unit) => unit.id !== id && unit.hp > 0)
+      .map((unit) => ({ pos: unit.pos, size: unit.size }));
+  }, exceptUnitId);
+  const keys = new Set<string>();
+  for (const unit of units) {
+    for (const cell of occupiedCells(unit)) keys.add(`${cell.x},${cell.y}`);
+  }
+  return keys;
+}
+
 /** Makes it `unitId`'s turn with a fresh action budget, and tells the HUD. */
 export async function giveTurn(page: Page, unitId: string): Promise<void> {
   await page.evaluate((id) => {
@@ -196,6 +220,14 @@ export async function giveTurn(page: Page, unitId: string): Promise<void> {
     );
     app.state = { ...state, battle: { ...battle, units, turnIndex: index } };
     app.resync();
+  }, unitId);
+}
+
+/** `unitId`'s remaining move points, or 0 when it is not on the field. */
+export async function moveAllowance(page: Page, unitId: string): Promise<number> {
+  return page.evaluate((id) => {
+    const battle = window.fnt?.app.state?.battle;
+    return battle?.units.find((unit) => unit.id === id)?.move ?? 0;
   }, unitId);
 }
 
