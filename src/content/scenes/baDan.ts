@@ -322,7 +322,9 @@ function upright(piece: Standing): SceneScenery | null {
     height: height / PIXELS_PER_WORLD,
     footprint: piece.footprint,
     depth: piece.depth,
-    ...(piece.fadeWhenOccluding ? { fadeWhenOccluding: true } : {}),
+    // The plates hold every building and tree this fades over, so the veil only shows a figure through
+    // its own roof: it is for a figure that is hidden, not for one whose legs the roof corner covers.
+    ...(piece.fadeWhenOccluding ? { fadeWhenOccluding: true, fadeWhenHeadHidden: true } : {}),
     ...(piece.exterior ? { exterior: true } : {}),
     // The painting has the contact and the cast shade; the runtime would draw them a second time.
     contactShadow: false,

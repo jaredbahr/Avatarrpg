@@ -915,6 +915,11 @@ export interface SceneScenery extends SceneImage {
    */
   readonly wall?: boolean;
   readonly fadeWhenOccluding?: boolean;
+  /**
+   * Fade only once the figure's upper body is behind the piece. Where the ground art holds the same
+   * building, a veil over a figure whose head clears the silhouette just draws it standing on the roof.
+   */
+  readonly fadeWhenHeadHidden?: boolean;
   /** Connected depth slices share the lowest cutaway opacity within this scene. */
   readonly fadeGroup?: string;
   /**
