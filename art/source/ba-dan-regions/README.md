@@ -23,6 +23,12 @@ guide of the shipped painting with the geometry's uprights over it (`scripts/art
 The painter's prompts were not kept (`prompt: null`). Do not paste carried pixels back into a region after painting it:
 `stitch` joins the accepted regions across their overlaps, and that join is invisible.
 
+**Nature pass (2026-10-10).** The owner asked for a greener, more grown-in village on the same layout. All twelve
+regions were repainted once more over guides of the shipped painting: reeds, irises and lily pads at the water's edge,
+climbers and beds against walls, wildflower drifts and worn earth paths in the lawn, growth in the paving joints. On walkable
+tiles only low ground cover was added; no building, path, object or the water's course moved (same gate). Each `.json`
+names the attempt taken (`source.path`, relative to the painters' run folders, which are not tracked).
+
 ## Rebuilding
 
 `sh scripts/art/ba-dan-regions/regen.sh` rebuilds `public/art/maps/ba-dan-scene/ground-NN.webp`,

@@ -1,65 +1,65 @@
 {
   "region": "r1c0",
   "source": {
-    "path": "region-r1c0-sol-001/attempt-5.png",
-    "sha256": "58ad9b7be579cd0d9d5140fa0ae58daf8636d735f320953dcd82a7298bb8eb6c"
+    "path": "nature3-r1c0-sol-001/best.png",
+    "sha256": "9dd448dc5bd125d55f7a0746bbb7e2164c2f01e093fcc564beb4f6abd64ba7be"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r1c0.png",
-    "sha256": "79ae7afb2b6d6c8ed5292895d648405037a1ce1d1389976bebaea30d289248cc"
+    "sha256": "da52d9cabf453c06d1c6180dc1c4b324ce0a27d61c21d65b36792fec6a42b545"
   },
   "gate": {
     "pass": true,
     "frame": {
-      "dx": 1,
+      "dx": 0,
       "dy": 0,
-      "corr": 0.5093
+      "corr": 0.721
     },
     "blobs": [
       {
         "n": 1,
         "box": [0, 0, 1536, 693],
         "area": 583111,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.4826,
+        "corr": 0.7013,
         "status": "ok"
       },
       {
         "n": 2,
         "box": [460, 469, 807, 914],
         "area": 46487,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.4521,
+        "corr": 0.6452,
         "status": "ok"
       },
       {
         "n": 3,
         "box": [753, 537, 1100, 962],
         "area": 42323,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.4019,
+        "corr": 0.6386,
         "status": "ok"
       },
       {
         "n": 4,
         "box": [964, 716, 1487, 1024],
         "area": 84307,
-        "dx": 2,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.4191,
+        "corr": 0.702,
         "status": "ok"
       }
     ],
     "carry": {
-      "pixels": 562176,
-      "meanAbsDiff": 21.792,
-      "p95": 68.0,
-      "fractionOver16": 0.4469
+      "pixels": 1224453,
+      "meanAbsDiff": 16.348,
+      "p95": 55.333,
+      "fractionOver16": 0.3343
     },
-    "warn": ["carried pixels repainted: mean difference 21.8/255"],
+    "warn": ["carried pixels repainted: mean difference 16.3/255"],
     "fail": []
   },
   "prompt": null,

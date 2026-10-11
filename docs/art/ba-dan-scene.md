@@ -129,11 +129,14 @@ shadows (ADR 0071) and the live surfaces (ice, fire, steam) over the painted can
 
 ### Budgets
 
-Ba Dan's folder: 14 files, 4,097,958 bytes (3,427,002 in 40 files before, the Forest Road's two borrowed files aside);
-decoded, 68.6 MiB (ground 41.3, uprights 27.3) against 85.3 (ground 45.5, uprights 39.8). The maps family is 7.34 MiB
+Ba Dan's folder when the painting first shipped: 14 files, 4,097,958 bytes (3,427,002 in 40 files before, the Forest Road's two borrowed files aside);
+decoded, 68.6 MiB (ground 41.3, uprights 27.3) against 85.3 (ground 45.5, uprights 39.8). The maps family was then 7.34 MiB
 (7,695,430 B), 6.70 before: over the old 7 MiB, so the limit is 7.5 MiB with the owner's approval of 9 October 2026 (ADR 0076).
 `baDan.ts` plus `baDan.art.ts` minify to 6.5 KB (2.8 KB gzip) against 9.8 KB (3.9 KB) before; the JS gate (360 KB) is
 not touched.
+
+After the nature pass of 10 October 2026 (`art/source/ba-dan-regions/README.md`) the same 14 files are 3,620,172 bytes and the
+maps family is 6.88 MiB (7,217,644 B); dimensions, and so decoded size, are unchanged.
 
 ### Pan reach: the camera is held inside the painting
 

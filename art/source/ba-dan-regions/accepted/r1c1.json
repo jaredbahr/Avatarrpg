@@ -1,19 +1,19 @@
 {
   "region": "r1c1",
   "source": {
-    "path": "contact-r1c1-sol-001/attempt-2.png",
-    "sha256": "19d4ff3f628bff1fb26e150e14254c4dad7416e5dc94daa435a383f5700421f4"
+    "path": "nature3-r1c1-sol-001/best.png",
+    "sha256": "c59253aed866f42a74654a011079766e25c324aa14b429d1e59315889980dd67"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r1c1.png",
-    "sha256": "87daeb1f0e6d0488ab51faff7ec55f05ba462dd55543eda492df42fceddf15ad"
+    "sha256": "196273b530c0facd38f459c1c8d26c27188953aea4ea4e41d5ac2cf88e066223"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7783
+      "corr": 0.79
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 303859,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7613,
+        "corr": 0.8131,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 16793,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7766,
+        "corr": 0.8126,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 29372,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7593,
+        "corr": 0.8027,
         "status": "ok"
       },
       {
@@ -48,8 +48,8 @@
         "box": [978, 94, 1296, 320],
         "area": 22567,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.7333,
+        "dy": 0,
+        "corr": 0.8215,
         "status": "ok"
       },
       {
@@ -58,7 +58,7 @@
         "area": 295239,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8036,
+        "corr": 0.7648,
         "status": "ok"
       },
       {
@@ -67,7 +67,7 @@
         "area": 7269,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7645,
+        "corr": 0.7539,
         "status": "ok"
       },
       {
@@ -76,7 +76,7 @@
         "area": 84307,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8149,
+        "corr": 0.8067,
         "status": "ok"
       },
       {
@@ -85,17 +85,17 @@
         "area": 5449,
         "dx": 0,
         "dy": 0,
-        "corr": 0.709,
+        "corr": 0.7199,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1417191,
-      "meanAbsDiff": 18.041,
-      "p95": 55.667,
-      "fractionOver16": 0.3699
+      "meanAbsDiff": 15.06,
+      "p95": 47.667,
+      "fractionOver16": 0.3026
     },
-    "warn": ["carried pixels repainted: mean difference 18.0/255"],
+    "warn": ["carried pixels repainted: mean difference 15.1/255"],
     "fail": []
   },
   "prompt": null,
