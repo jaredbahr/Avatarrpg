@@ -127,6 +127,11 @@ apron, frame and surround pieces and the edge-water plate are all gone. It still
 depth sorting, the house fade (`fadeWhenOccluding` on the houses and trees), the chimney smoke points, the actors' own
 shadows (ADR 0071) and the live surfaces (ice, fire, steam) over the painted canal. `src/render` is unchanged.
 
+Because the plates hold every house and tree, a faded upright shows the same roof beneath it, and a figure seen through
+the veil looks as if it stands on the roof. So Ba Dan's fading pieces also set `fadeWhenHeadHidden`: they fade only when the
+figure's head is behind the piece, and a roof corner over the legs simply covers them (`sceneryOpacity` in `src/render/scene.ts`;
+`src/content/scenes/baDanDepth.test.ts` sweeps every walkable tile, and lists the tree and dressing sort ties still open).
+
 ### Budgets
 
 Ba Dan's folder when the painting first shipped: 14 files, 4,097,958 bytes (3,427,002 in 40 files before, the Forest Road's two borrowed files aside);

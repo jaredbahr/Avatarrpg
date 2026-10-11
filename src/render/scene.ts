@@ -222,6 +222,14 @@ function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number
   return (mask[Math.floor(y * MASK_SIZE) * MASK_SIZE + Math.floor(x * MASK_SIZE)] ?? 0) > 64;
 }
 
+/** Heights (world px) above the foot at which a figure is tested against a piece's silhouette. */
+const BODY_PROBES = [8, 32, 56] as const;
+const HEAD_PROBE = [56] as const;
+
+/** The unscaled lifts `sceneryOpacity` tests for a piece; it multiplies each by the figure's scale. */
+export const probeLifts = (scenery: Pick<SceneScenery, 'fadeWhenHeadHidden'>): readonly number[] =>
+  scenery.fadeWhenHeadHidden ? HEAD_PROBE : BODY_PROBES;
+
 /** Roof cutaway follows actual on-screen overlap and ground depth, on either backend. */
 export function sceneryOpacity(
   scenery: SceneScenery,
@@ -271,7 +279,7 @@ export function sceneryOpacity(
     // Head, torso and feet probes follow upright figures, not the ground's
     // affine transform. Future route points cannot fade an unoccupied building.
     const across = (foot.x - scenery.x) / scenery.width;
-    for (const lift of [8, 32, 56]) {
+    for (const lift of probeLifts(scenery)) {
       if (
         covers(
           image,

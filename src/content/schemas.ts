@@ -639,6 +639,7 @@ export const mapSchema = z
                 exterior: z.boolean().optional(),
                 wall: z.boolean().optional(),
                 fadeWhenOccluding: z.boolean().optional(),
+                fadeWhenHeadHidden: z.boolean().optional(),
                 fadeGroup: id.optional(),
                 flip: z.boolean().optional(),
                 contactShadow: z.literal(false).optional(),
