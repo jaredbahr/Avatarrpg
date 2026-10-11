@@ -1,39 +1,39 @@
 {
   "region": "r0c0",
   "source": {
-    "path": "region-r0c0-sol-002/attempt-4.png",
-    "sha256": "93698ed0b7cafae4e75aa64c9927ac0d899054ad23e1c3f5d5457b4ecd2852ae"
+    "path": "nature-r0c0-sol-001/best.png",
+    "sha256": "fc6d68113ef7e9b03153483ba7c3100aecc4dd48985aa3b715da1deccbe7f810"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r0c0.png",
-    "sha256": "ada93684a25288501e86bf4650fcd85c09d0b3f0b951e22d5606c650b98d09cd"
+    "sha256": "211dc72092080a22e5a4bd2daef9975ffaab971d214cc84451e27e37fd80df17"
   },
   "gate": {
     "pass": true,
     "frame": {
-      "dx": 1,
+      "dx": 0,
       "dy": 0,
-      "corr": 0.6271
+      "corr": 0.8044
     },
     "blobs": [
       {
         "n": 1,
         "box": [0, 0, 1536, 1024],
         "area": 981035,
-        "dx": 1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.6271,
+        "corr": 0.8044,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 891834,
-      "meanAbsDiff": 17.517,
-      "p95": 53.667,
-      "fractionOver16": 0.3626
+      "meanAbsDiff": 15.247,
+      "p95": 49.333,
+      "fractionOver16": 0.291
     },
     "warn": [
-      "carried pixels repainted: mean difference 17.5/255",
+      "carried pixels repainted: mean difference 15.2/255",
       "seam with r1c0: 2.2x the ordinary difference"
     ],
     "fail": []
