@@ -11,6 +11,7 @@ import {
   BA_DAN_COURTYARD_PROPS,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
+  BA_DAN_DEPTH_OVERRIDES,
   BA_DAN_DRESSING,
   BA_DAN_DRESSING_FOOTPRINTS,
   BA_DAN_IMAGE_COUNT,
@@ -28,6 +29,7 @@ import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
 import { CONTENT_BUNDLE } from '../index';
 import { npcStandTiles } from '../schemas';
 import type { SceneScenery } from '../../core/types';
+import { compareRenderedDepth } from '../../render/backends/depthOrder';
 
 // Decoding WebP pages is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -182,6 +184,62 @@ it('keeps every upright where the frozen geometry put it: same footprint, depth 
   expect(BA_DAN_STANDING.map((p) => p.id)).toEqual(
     frozen.map((p) => p.id).filter((id) => !/backdrop|^wall-\d$/.test(id)),
   );
+});
+
+function opaqueOverlap(a: SceneScenery, b: SceneScenery): boolean {
+  const scale = BA_DAN_PAINTING.scale;
+  const left = Math.ceil(Math.max(a.x, b.x) * scale);
+  const top = Math.ceil(Math.max(a.y, b.y) * scale);
+  const right = Math.floor(Math.min(a.x + a.width, b.x + b.width) * scale);
+  const bottom = Math.floor(Math.min(a.y + a.height, b.y + b.height) * scale);
+  for (let y = top; y < bottom; y++)
+    for (let x = left; x < right; x++) {
+      const worldX = (x + 0.5) / scale;
+      const worldY = (y + 0.5) / scale;
+      if (alphaAtScenePixel(a, worldX, worldY) > 0 && alphaAtScenePixel(b, worldX, worldY) > 0)
+        return true;
+    }
+  return false;
+}
+
+it('preserves the frozen draw order of every pair of overlapping upright pixels', () => {
+  const ids = new Set(BA_DAN_SCENE.scenery.map((piece) => piece.id));
+  const frozenOrder = frozen
+    .map((piece, index) => ({ piece, index }))
+    .filter(({ piece }) => ids.has(piece.id))
+    .sort(
+      (a, b) =>
+        compareRenderedDepth(
+          a.piece.depth.x + a.piece.depth.y,
+          b.piece.depth.x + b.piece.depth.y,
+        ) || a.index - b.index,
+    )
+    .map(({ piece }) => piece.id);
+  const runtimeOrder = BA_DAN_SCENE.scenery
+    .map((piece, index) => ({ piece, index }))
+    .sort(
+      (a, b) =>
+        compareRenderedDepth(
+          a.piece.depth.x + a.piece.depth.y,
+          b.piece.depth.x + b.piece.depth.y,
+        ) || a.index - b.index,
+    )
+    .map(({ piece }) => piece.id);
+  const frozenIndex = new Map(frozenOrder.map((id, index) => [id, index]));
+  const runtimeIndex = new Map(runtimeOrder.map((id, index) => [id, index]));
+  const inverted: string[] = [];
+  for (let i = 0; i < BA_DAN_SCENE.scenery.length; i++) {
+    const a = BA_DAN_SCENE.scenery[i];
+    if (!a) continue;
+    for (let j = i + 1; j < BA_DAN_SCENE.scenery.length; j++) {
+      const b = BA_DAN_SCENE.scenery[j];
+      if (!b || !opaqueOverlap(a, b)) continue;
+      const frozenBefore = (frozenIndex.get(a.id) ?? -1) < (frozenIndex.get(b.id) ?? -1);
+      const runtimeBefore = (runtimeIndex.get(a.id) ?? -1) < (runtimeIndex.get(b.id) ?? -1);
+      if (frozenBefore !== runtimeBefore) inverted.push(`${a.id}/${b.id}`);
+    }
+  }
+  expect(inverted).toEqual([]);
 });
 
 it("draws each upright inside its frozen rectangle, to within the painting's pixel grid", () => {
@@ -340,7 +398,7 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     expect(paths.has(posKey(pos))).toBe(false);
     expect(map.scene?.scenery.find((s) => s.id === `tree-${pos.x}-${pos.y}`)).toMatchObject({
       footprint: [pos],
-      depth: pos,
+      depth: BA_DAN_DEPTH_OVERRIDES[`tree-${pos.x}-${pos.y}`] ?? pos,
       fadeWhenOccluding: true,
     });
   }
