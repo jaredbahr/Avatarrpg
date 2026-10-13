@@ -109,8 +109,9 @@ class Stage implements BeatContext {
    * "Unable to capture screenshot" on a page it captures a moment later. Two
    * more shards recently lost the title and illustrated-opening beats after
    * three quick tries, so the waits grow from 250 ms to 2 s and a compositor
-   * nudge is made after the second refusal. Nothing about the picture is
-   * retried or relaxed, and any other error is thrown at once.
+   * nudge is made after the second refusal (never under a paused clock).
+   * Nothing about the picture is retried or relaxed, and any other error is
+   * thrown at once.
    */
   private async capture(path: string): Promise<void> {
     const deadline = Date.now() + 20_000;
@@ -132,7 +133,8 @@ class Stage implements BeatContext {
         if (Date.now() >= deadline) throw error;
         const wait = Math.min(250 * 2 ** (refusals - 1), 2_000);
         await this.page.waitForTimeout(wait);
-        if (refusals >= 2) {
+        // Not while a filmstrip holds the page clock: no animation frame would come.
+        if (refusals >= 2 && !this.paused) {
           try {
             await this.page.evaluate(
               () =>
