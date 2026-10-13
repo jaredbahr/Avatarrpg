@@ -104,24 +104,14 @@ export function sweep(): Offence[] {
 }
 
 /**
- * Sort offences nobody can fix in scene data: the trees' and the dressing's depth keys are the frozen
- * geometry's (`baDan.test.ts` pins them), a cell corner where the trunk stands at the cell's middle, so the
- * cell just north of a trunk ties with it and a figure wins the tie. Changing them is a repaint of the region
- * (`regen.sh`), not a scene edit. Listed so a new offender cannot hide among them.
+ * The north-east rim clump is one cut sprite containing trees at incompatible depths: fixing its west tree
+ * needs a key <= 22 while its middle and east crowns need keys > 23 and > 25. It cannot be corrected without
+ * splitting/regenerating that upright. Listed so a new offender cannot hide among the three known cases.
  */
 const KNOWN = new Set([
-  'tree-18-0@17,0:in-front-of-nearer',
   'tree-c3@20,1:behind-farther',
-  'tree-21-2@21,1:in-front-of-nearer',
   'tree-c3@21,1:in-front-of-nearer',
   'tree-c3@22,2:in-front-of-nearer',
-  'tree-23-3@22,3:in-front-of-nearer',
-  'tree-5-5@5,4:in-front-of-nearer',
-  'd14@2,12:behind-farther',
-  'tree-22-14@22,13:in-front-of-nearer',
-  'tree-2-15@2,14:in-front-of-nearer',
-  'tree-3-15@3,14:in-front-of-nearer',
-  'tree-22-14@21,14:in-front-of-nearer',
 ]);
 const SMALL = 0.04;
 

@@ -130,7 +130,9 @@ shadows (ADR 0071) and the live surfaces (ice, fire, steam) over the painted can
 Because the plates hold every house and tree, a faded upright shows the same roof beneath it, and a figure seen through
 the veil looks as if it stands on the roof. So Ba Dan's fading pieces also set `fadeWhenHeadHidden`: they fade only when the
 figure's head is behind the piece, and a roof corner over the legs simply covers them (`sceneryOpacity` in `src/render/scene.ts`;
-`src/content/scenes/baDanDepth.test.ts` sweeps every walkable tile, and lists the tree and dressing sort ties still open).
+`src/content/scenes/baDanDepth.test.ts` sweeps every walkable tile). Eight rim pieces use runtime-only depth overrides in
+`baDan.ts`; their frozen geometry still controls the art split. Three ties remain in `tree-c3`, whose single upright contains
+trees that require mutually incompatible keys and therefore cannot be corrected without splitting and regenerating that art.
 
 ### Budgets
 

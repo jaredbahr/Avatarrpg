@@ -11,6 +11,7 @@ import {
   BA_DAN_COURTYARD_PROPS,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
+  BA_DAN_DEPTH_OVERRIDES,
   BA_DAN_DRESSING,
   BA_DAN_DRESSING_FOOTPRINTS,
   BA_DAN_IMAGE_COUNT,
@@ -340,7 +341,7 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     expect(paths.has(posKey(pos))).toBe(false);
     expect(map.scene?.scenery.find((s) => s.id === `tree-${pos.x}-${pos.y}`)).toMatchObject({
       footprint: [pos],
-      depth: pos,
+      depth: BA_DAN_DEPTH_OVERRIDES[`tree-${pos.x}-${pos.y}`] ?? pos,
       fadeWhenOccluding: true,
     });
   }
@@ -397,7 +398,7 @@ it('keeps the east court canopy clear of the market frontage and gate watch', ()
   const east = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-21-2');
   expect(east).toMatchObject({
     footprint: [{ x: 21, y: 2 }],
-    depth: { x: 21, y: 2 },
+    depth: { x: 21.25, y: 2 },
     fadeWhenOccluding: true,
   });
   const house = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'north-house');

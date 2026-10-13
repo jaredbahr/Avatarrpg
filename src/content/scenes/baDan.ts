@@ -307,6 +307,22 @@ export const BA_DAN_STANDING: readonly Standing[] = [
   ...CLUMPS.map(clump),
 ];
 
+/**
+ * Runtime-only sort corrections for opaque pixels that reach over a neighbouring walkable tile. The
+ * frozen standing depths above still describe the geometry used to split the painting; these quarter-step
+ * keys only decide whether an actor is drawn before or after the already-cut upright.
+ */
+export const BA_DAN_DEPTH_OVERRIDES: Readonly<Record<string, Vec2>> = {
+  d14: { x: 3.5, y: 11.5 },
+  'tree-18-0': { x: 18.25, y: 0 },
+  'tree-21-2': { x: 21.25, y: 2 },
+  'tree-23-3': { x: 23.25, y: 3 },
+  'tree-5-5': { x: 5.25, y: 5 },
+  'tree-22-14': { x: 22.25, y: 14 },
+  'tree-2-15': { x: 2.25, y: 15 },
+  'tree-3-15': { x: 3.25, y: 15 },
+};
+
 /** A sprite, drawn where the painting has it: the sprite's rectangle in painting pixels is the world rectangle times 1.5. */
 function upright(piece: Standing): SceneScenery | null {
   const art = BA_DAN_UPRIGHTS[piece.id];
@@ -321,7 +337,7 @@ function upright(piece: Standing): SceneScenery | null {
     width: width / PIXELS_PER_WORLD,
     height: height / PIXELS_PER_WORLD,
     footprint: piece.footprint,
-    depth: piece.depth,
+    depth: BA_DAN_DEPTH_OVERRIDES[piece.id] ?? piece.depth,
     // The plates hold every building and tree this fades over, so the veil only shows a figure through
     // its own roof: it is for a figure that is hidden, not for one whose legs the roof corner covers.
     ...(piece.fadeWhenOccluding ? { fadeWhenOccluding: true, fadeWhenHeadHidden: true } : {}),
