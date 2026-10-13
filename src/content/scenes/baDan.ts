@@ -315,10 +315,8 @@ export const BA_DAN_STANDING: readonly Standing[] = [
 export const BA_DAN_DEPTH_OVERRIDES: Readonly<Record<string, Vec2>> = {
   d14: { x: 3.5, y: 11.5 },
   'tree-18-0': { x: 18.25, y: 0 },
-  'tree-21-2': { x: 21.25, y: 2 },
   'tree-23-3': { x: 23.25, y: 3 },
   'tree-5-5': { x: 5.25, y: 5 },
-  'tree-22-14': { x: 22.25, y: 14 },
   'tree-2-15': { x: 2.25, y: 15 },
   'tree-3-15': { x: 3.25, y: 15 },
 };

@@ -104,14 +104,19 @@ export function sweep(): Offence[] {
 }
 
 /**
- * The north-east rim clump is one cut sprite containing trees at incompatible depths: fixing its west tree
- * needs a key <= 22 while its middle and east crowns need keys > 23 and > 25. It cannot be corrected without
- * splitting/regenerating that upright. Listed so a new offender cannot hide among the three known cases.
+ * The north-east rim clump is one cut sprite containing trees at incompatible depths, and two neighbouring
+ * trees share frozen keys with overlapping uprights. Those ties cannot be corrected independently without
+ * changing the painting's scenery stack. Listed so a new offender cannot hide among the six known cases.
  */
 const KNOWN = new Set([
+  // Raising this tied tree alone would put its hidden-fill pixels over tree-c3's foreground crown.
+  'tree-21-2@21,1:in-front-of-nearer',
   'tree-c3@20,1:behind-farther',
   'tree-c3@21,1:in-front-of-nearer',
   'tree-c3@22,2:in-front-of-nearer',
+  // Its three equal-depth neighbours overlap it, so an actor-only override cannot preserve the painting.
+  'tree-22-14@22,13:in-front-of-nearer',
+  'tree-22-14@21,14:in-front-of-nearer',
 ]);
 const SMALL = 0.04;
 

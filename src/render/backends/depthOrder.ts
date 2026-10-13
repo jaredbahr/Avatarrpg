@@ -11,6 +11,11 @@
 export const SHADOW_BIAS = -0.001;
 export const SCENERY_BIAS = -0.002;
 
+/** Stable-sort comparator shared by the Canvas scene stack and its content-order tests. */
+export function compareRenderedDepth(a: number, b: number): number {
+  return a - b;
+}
+
 /** A figure's shadow, just under the figure standing at `figure`. */
 export function shadowZ(figure: number): number {
   return figure + SHADOW_BIAS;

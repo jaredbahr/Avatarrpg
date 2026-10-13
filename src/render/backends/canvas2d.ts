@@ -81,6 +81,7 @@ import {
   type RenderUnit,
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
+import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import {
   CAST_SHADOW_ALPHA,
@@ -424,7 +425,9 @@ export class Canvas2DBackend implements RenderBackend {
           ),
           draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
         })),
-      ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
+      ].sort((a, b) =>
+        compareRenderedDepth(camera.groundPoint(a.pos).y, camera.groundPoint(b.pos).y),
+      );
       for (const occupant of occupants) occupant.draw();
       this.flushHealthBars();
       this.drawTargetReticle(view, camera);
