@@ -94,6 +94,8 @@ export type ParticleShape = (typeof PARTICLE_SHAPES)[number];
  * - `arc`: a curved band sweeping across `from` towards `to`, for gusts and waves.
  * - `gust`: tapered, open wind streaks carried from `from` to `to`.
  * - `flame`: a pointed flame silhouette carried from `from` to `to`.
+ * - `glint`: a short, faint highlight (`reach` long) easing from `from` to `to`
+ *   and fading in and out; it never leaves the segment those two points span.
  */
 export const STROKE_SHAPES = [
   'bolt',
@@ -105,6 +107,7 @@ export const STROKE_SHAPES = [
   'arc',
   'gust',
   'flame',
+  'glint',
 ] as const;
 export type StrokeShape = (typeof STROKE_SHAPES)[number];
 
@@ -151,7 +154,7 @@ export const particleEmitterSchema = z.object({
 export const strokeEmitterSchema = z.object({
   kind: z.literal('strokes'),
   shape: z.enum(STROKE_SHAPES),
-  duration: z.number().int().min(40).max(1500),
+  duration: z.number().int().min(40).max(8000),
   /** How many strokes; branches for a bolt, cracks for a crack, slabs for a slab. */
   count: z.number().int().min(1).max(12),
   /** Line width in tiles. */
@@ -1538,6 +1541,8 @@ export interface AmbienceRecipe {
   readonly emitters: readonly ParticleEmitterDef[];
   /** What rises from each of the scene's `chimneys`, if it has any. */
   readonly chimney?: ParticleEmitterDef;
+  /** A highlight sliding along each painted water cell the map is given, if it has any. */
+  readonly glint?: StrokeEmitterDef;
 }
 
 /**
@@ -1570,13 +1575,27 @@ const chimneySmoke = particles({
   layer: 'over',
 });
 
+/** A faint highlight easing across one painted water cell: slow, short, and gone before it can be read as a mark. */
+const waterGlint = strokes({
+  shape: 'glint',
+  count: 1,
+  duration: 6000,
+  width: 0.03,
+  reach: 0.3,
+  color: 'white',
+  ink: false,
+  blend: 'add',
+  layer: 'under',
+});
+
 /**
  * What a map's `ambience` puts in the air, keyed by the ambience string. A
  * map whose ambience is not here gets nothing, which is a valid answer for
- * a cellar. The motes are WebGL-only and off under reduce motion: they are
+ * a cellar. The motes and a `glint` are off under reduce motion: they are
  * fidelity, not information (ADR 0002). A `chimney` rises from each of the
- * scene's `MapScene.chimneys` and is drawn everywhere: animated on WebGL, a
- * still wisp on Canvas 2D and under reduce motion (ADR 0008 amendment).
+ * scene's `MapScene.chimneys` and is drawn everywhere, animated, and a still
+ * wisp under reduce motion (ADR 0008 amendment). Exploration draws all of it
+ * on both backends; combat ambience stays WebGL-only.
  */
 export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
   forest: {
@@ -1595,6 +1614,7 @@ export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
       drifting('glow', 8, 'white', 4.88, [0.05, 0.1], [0.03, 0.05], 'add', 0),
     ],
     chimney: chimneySmoke,
+    glint: waterGlint,
   },
   quarry: {
     palette: 'neutral',

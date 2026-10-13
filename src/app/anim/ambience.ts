@@ -8,8 +8,10 @@
  * fresh seed so the same leaves do not fall in the same places twice.
  *
  * A recipe's `chimney` rises from each of the scene's chimneys the same way.
- * Held `still` (Canvas 2D, or reduce motion) the motes go and the smoke is
- * one fixed frame: a wisp that stays where it is.
+ * A recipe's `glint` slides a faint highlight along each of the painted water
+ * cells it is given, on a per-cell clock. Held `still` (reduce motion) the
+ * motes and glints go and the smoke is one fixed frame: a wisp that stays
+ * where it is.
  */
 
 import type { Grid, Vec2 } from '../../core/types';
@@ -22,6 +24,23 @@ import type { EmitterInstance } from '../../render/view';
 const LOOPS = 2;
 /** The moment a still wisp is frozen at: the village smoke's fullest column. */
 const STILL_MS = 2400;
+/** A water cell's glint cycle: a glint lives for the recipe's duration, then the cell rests. */
+const GLINT_CYCLE = 9000;
+
+/** The permanent water cells of a grid, kept per grid: it is the same object every frame. */
+const watered = new WeakMap<Grid, Vec2[]>();
+export function waterCells(grid: Grid): readonly Vec2[] {
+  let cells = watered.get(grid);
+  if (!cells) {
+    cells = grid.tiles.flatMap((tile, i) =>
+      tile.surface?.id === 'water' && tile.surface.duration < 0
+        ? [{ x: i % grid.width, y: Math.floor(i / grid.width) }]
+        : [],
+    );
+    watered.set(grid, cells);
+  }
+  return cells;
+}
 
 export function ambientEmitters(
   recipe: AmbienceRecipe | null,
@@ -29,6 +48,7 @@ export function ambientEmitters(
   time: number,
   chimneys: readonly Vec2[] = [],
   still = false,
+  water: readonly Vec2[] = [],
 ): EmitterInstance[] {
   if (!recipe) return [];
   const out: EmitterInstance[] = [];
@@ -55,5 +75,26 @@ export function ambientEmitters(
     );
   const smoke = recipe.chimney;
   if (smoke) chimneys.forEach((at, index) => loop(smoke, 100 + index, at, at));
+  const glint = recipe.glint;
+  if (glint && !still)
+    for (const cell of water) {
+      // Each cell keeps its own phase; about half its cycles sit out, so only a few are lit at once.
+      const shifted = time + (hashSeed(cell.x, cell.y) % GLINT_CYCLE);
+      const cycle = Math.floor(shifted / GLINT_CYCLE);
+      const seed = hashSeed(cell.x, cell.y, 1 + cycle);
+      const elapsed = shifted - cycle * GLINT_CYCLE;
+      if (seed & 1 || elapsed > glint.duration) continue;
+      // A path along the flow, inside the cell by more than half a glint and its width.
+      const y = cell.y + 0.3 + (((seed >>> 8) & 255) / 255) * 0.4;
+      out.push({
+        def: glint,
+        from: { x: cell.x + 0.3, y },
+        to: { x: cell.x + 0.7, y },
+        elapsed,
+        seed,
+        palette: recipe.palette,
+        arc: 0,
+      });
+    }
   return out;
 }

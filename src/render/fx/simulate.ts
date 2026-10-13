@@ -232,6 +232,26 @@ export function sampleStrokes(
     case 'gust':
     case 'flame':
       return movingElement(def, t, from, to, arc);
+    case 'glint': {
+      // Eases along the segment, brightest mid-way: the caller keeps the segment inside its cell.
+      const c = { x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t) };
+      const half = def.reach / 2;
+      const sin = Math.sin(Math.PI * t);
+      strokes.push({
+        points: [
+          c.x - Math.cos(aim) * half,
+          c.y - Math.sin(aim) * half,
+          c.x + Math.cos(aim) * half,
+          c.y + Math.sin(aim) * half,
+        ],
+        width: def.width,
+        alpha: 0.2 * sin * sin,
+        closed: false,
+        fill: false,
+      });
+      break;
+    }
+
     case 'bolt': {
       boltStrokes(def, elapsed, t, seed, from, to, aim, strokes);
       break;

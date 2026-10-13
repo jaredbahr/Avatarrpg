@@ -30,7 +30,7 @@ import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../re
 import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
-import { ambientEmitters } from '../anim/ambience';
+import { ambientEmitters, waterCells } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
 import type { FollowerRoute } from '../anim/trail';
 import { append, button, clear, el, mark, motionReduced } from '../ui/dom';
@@ -1121,14 +1121,16 @@ export class ExploreScene implements Scene {
       .map((npc) => ({ at: npc.renderPos ?? npc.pos, scale: npc.scale ?? 1, to: npc.pos }));
     this.lastNpcs = npcs;
 
-    // The air over the village is fidelity: WebGL only, and still under reduce
-    // motion. Chimney smoke stays on both as one still wisp.
+    // The air over the village and the light on its painted canal are fidelity,
+    // drawn on both backends. Under reduce motion the motes and glints go and
+    // the chimney smoke is one still wisp.
     const ambient = ambientEmitters(
       ambienceFx(map.ambience),
       grid,
       now,
       map.scene?.chimneys,
-      !renderer.capabilities.shaders || motionReduced(),
+      motionReduced(),
+      map.scene?.paintedWater ? waterCells(grid) : [],
     );
 
     // Finish the legal route already in flight before previewing queued intent.
