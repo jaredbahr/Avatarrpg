@@ -58,9 +58,10 @@ e2e spec depends on.
   using a new `drift` particle shape born anywhere in the board's rectangle.
   The scene loops each emitter on the clock, two loops half a period apart,
   reseeded every cycle (`src/app/anim/ambience.ts`), so nothing is stored
-  between frames. WebGL only and off under reduce motion: it is fidelity,
-  not information. A map whose ambience has no recipe gets still air.
-  Chimney smoke is the exception; see the amendment below.
+  between frames. Off under reduce motion: it is fidelity, not information.
+  A map whose ambience has no recipe gets still air. Chimney smoke is an
+  exception, and exploration now draws its ambience on both backends; see the
+  amendments below.
 
 ## Consequences
 
@@ -98,3 +99,28 @@ as a **still wisp**: one frame frozen at the column's fullest, marked
 another reads as a different village; a still wisp moves nothing, so it
 costs Reduce motion nothing. The Canvas backend samples a still emitter once
 and keeps it, so the wisp is not resampled every frame.
+
+## Amendment, 2026-10-13: exploration ambience on both backends
+
+The village moves a little more: `canopies` on the scene (the trees that let
+leaves go), and two ambience-recipe fields, `canopy` (leaves in two foliage
+colours) and `glint` (a ripple on each permanent water cell of a scene with
+`paintedWater`). The first sentence of the ambience bullet above no longer
+holds for exploration: `ExploreScene` passes `ambientEmitters` the same
+emitters to either backend, and the motes, leaves and ripples are drawn on
+Canvas 2D as well as WebGL. Under reduce motion the motes, leaves and ripples
+are omitted and the chimney smoke is still the one frozen wisp.
+
+**Combat is unchanged.** `CombatScene` still asks for the ambience only when
+the renderer has shaders and motion is not reduced, and passes no chimneys,
+canopies or water, so a battle's air is WebGL-only motes as before.
+
+The ripple is a `glint` stroke shape: a long, flat crescent (and often a
+shorter, fainter one under it) in the pale blue of the painted ripples, drawn
+with ordinary blending at a peak alpha of 0.3 and 0.2, so it reads as a
+painted mark that fades in and out and not as an overlay. Where and when a
+ripple appears is a pure function of the scene clock and the cell: centres keep
+0.28 tile from any edge that faces a bank, about half the cycles sit out, and
+a ripple gives way to a stronger one in the same or a touching cell whose swell
+peaks within a quarter second. The chimney smoke itself is unchanged.
+The Canvas 2D particle cap this must fit under is checked in ADR 0004.

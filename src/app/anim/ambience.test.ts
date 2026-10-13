@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { FX_AMBIENCE } from '../../content/fx';
-import type { Grid, Tile, Vec2 } from '../../core/types';
-import { particleSpan, sampleStrokes } from '../../render/fx/simulate';
+import { BA_DAN_CANOPIES, BA_DAN_CHIMNEYS } from '../../content/scenes/baDan';
+import type { Grid, Tile } from '../../core/types';
+import {
+  PARTICLE_STRIDE,
+  particleSpan,
+  sampleParticles,
+  sampleStrokes,
+} from '../../render/fx/simulate';
 import { ambientEmitters, waterCells } from './ambience';
 
 const grid: Grid = { width: 20, height: 12, tiles: [] };
@@ -89,73 +95,131 @@ describe('ambientEmitters', () => {
     const village = FX_AMBIENCE.village;
     if (!village?.glint) throw new Error('no village ripple');
     const { glint } = village;
-    const row = (x: number): Vec2 => ({ x, y: 2 });
-    const water = [0, 1, 2, 3, 4, 5, 7, 8].map(row);
+    // A canal one cell wide along row 2, a bridge on cell 6, dry ground all round it.
+    const canalGrid: Grid = {
+      width: 12,
+      height: 5,
+      tiles: Array.from({ length: 60 }, (_, i) => {
+        const x = i % 12;
+        const y = Math.floor(i / 12);
+        return {
+          terrain: 'dirt',
+          ...(y === 2 && x !== 6 && x < 10
+            ? { surface: { id: 'water', duration: -1, spread: 0 } }
+            : {}),
+        } as Tile;
+      }),
+    };
+    const water = waterCells(canalGrid);
     const lit = (time: number) =>
-      ambientEmitters(village, grid, time, [], false, water).filter((e) => e.def === glint);
+      ambientEmitters(village, canalGrid, time, [], false, water).filter((e) => e.def === glint);
 
     it('is the same at the same time, and a fresh scatter in a later cycle', () => {
       expect(lit(31_000)).toEqual(lit(31_000));
-      expect(lit(31_000)).not.toEqual(lit(31_000 + 5200));
+      expect(lit(31_000)).not.toEqual(lit(31_000 + 4800));
     });
 
-    it('lights most cells within any four seconds, never all of them at once or in step', () => {
+    it('is sparse and slow: 3.4 to 3.8 s, a few cells at a time, every cell in its turn', () => {
+      expect(glint.duration).toBeGreaterThanOrEqual(3400);
+      expect(glint.duration).toBeLessThanOrEqual(3800);
       let most = 0;
-      for (let time = 0; time < 120_000; time += 500) {
+      let total = 0;
+      let samples = 0;
+      for (let time = 0; time < 240_000; time += 250) {
         const now = lit(time);
         most = Math.max(most, now.length);
+        total += now.length;
+        samples += 1;
         for (const e of now) expect(e.elapsed).toBeLessThanOrEqual(glint.duration);
-        // Never in step: three or more alive together are never all at the same point of their life.
-        const ages = new Set(now.map((e) => Math.round(e.elapsed / 100)));
-        if (now.length >= 3) expect(ages.size).toBeGreaterThan(1);
       }
-      expect(most).toBeGreaterThan(water.length / 2);
+      // Eight cells, two slots each: never every slot lit, and on average well under half of them.
       expect(most).toBeLessThan(water.length * 2);
-      for (let time = 0; time < 120_000; time += 4000) {
-        const seen = new Set<number>();
-        for (let t = time; t < time + 4000; t += 250)
-          for (const e of lit(t)) seen.add(Math.floor(e.from.x));
-        expect(seen.size).toBeGreaterThanOrEqual(Math.floor(water.length * 0.6));
+      expect(total / samples).toBeGreaterThan(water.length * 0.2);
+      expect(total / samples).toBeLessThan(water.length * 0.6);
+      const seen = new Set<number>();
+      for (let time = 0; time < 120_000; time += 250)
+        for (const e of lit(time)) seen.add(Math.floor(e.from.x));
+      expect(seen.size).toBe(water.length);
+    });
+
+    it('never has two ripples at the top of their swell side by side', () => {
+      for (let time = 0; time < 240_000; time += 250) {
+        const peaking = lit(time).filter((e) => Math.abs(e.elapsed - glint.duration / 2) < 125);
+        for (const a of peaking)
+          for (const b of peaking)
+            if (a !== b)
+              expect(Math.abs(Math.floor(a.from.x) - Math.floor(b.from.x))).toBeGreaterThan(1);
       }
     });
 
-    it('stays in open water: inside its cell, clear of the banks, at any moment', () => {
-      for (let time = 0; time < 40_000; time += 700) {
+    it('stays in open water: 0.28 tile clear of every bank, and never over the bridge', () => {
+      const clear = 0.28 - 1e-9;
+      for (let time = 0; time < 60_000; time += 250) {
         for (const e of lit(time)) {
-          const inside = water.find(
-            (c) => Math.floor(e.from.x) === c.x && Math.floor(e.from.y) === c.y,
-          );
-          expect(inside).toBeDefined();
-          const strokes = sampleStrokes(glint, e.elapsed, e.seed, e.from, e.to);
-          expect(strokes).toHaveLength(glint.count);
-          for (const stroke of strokes) {
-            for (let i = 0; i < stroke.points.length; i += 2) {
-              expect(stroke.points[i]).toBeGreaterThan((inside?.x ?? 0) + 0.1);
-              expect(stroke.points[i]).toBeLessThan((inside?.x ?? 0) + 0.9);
-              expect(stroke.points[i + 1]).toBeGreaterThan((inside?.y ?? 0) + 0.15);
-              expect(stroke.points[i + 1]).toBeLessThan((inside?.y ?? 0) + 0.85);
-            }
-            // Faint at its brightest, and nothing at either end of its life.
-            expect(stroke.alpha).toBeLessThanOrEqual(0.45);
-            expect(stroke.fill).toBe(true);
-          }
+          const cx = Math.floor(e.from.x);
+          expect(water.some((c) => c.x === cx && c.y === Math.floor(e.from.y))).toBe(true);
+          expect(cx).not.toBe(6);
+          // Row 2 has dry rows above and below it.
+          expect(e.from.y - 2).toBeGreaterThanOrEqual(clear);
+          expect(3 - e.from.y).toBeGreaterThanOrEqual(clear);
+          // The canal's ends, and either side of the bridge, face a bank too.
+          if (cx === 0) expect(e.from.x).toBeGreaterThanOrEqual(clear);
+          if (cx === 5) expect(6 - e.from.x).toBeGreaterThanOrEqual(clear);
+          if (cx === 7) expect(e.from.x - 7).toBeGreaterThanOrEqual(clear);
+          if (cx === 9) expect(10 - e.from.x).toBeGreaterThanOrEqual(clear);
         }
       }
     });
 
+    it('draws a thin, flat, pale arc that fades: one long crescent, sometimes a shorter one', () => {
+      expect(glint.blend).toBe('normal');
+      expect(glint.color).toBe('shallows');
+      expect(glint.reach).toBeGreaterThanOrEqual(0.3);
+      expect(glint.reach).toBeLessThanOrEqual(0.34);
+      expect(glint.width).toBeLessThanOrEqual(0.03);
+      const counts = new Set<number>();
+      for (let seed = 1; seed < 80; seed++) {
+        const strokes = sampleStrokes(
+          glint,
+          glint.duration / 2,
+          seed,
+          { x: 3.4, y: 2.5 },
+          { x: 3.48, y: 2.5 },
+        );
+        counts.add(strokes.length);
+        expect(strokes.length).toBeGreaterThanOrEqual(1);
+        expect(strokes.length).toBeLessThanOrEqual(glint.count);
+        expect(strokes[0]?.alpha).toBeGreaterThan(strokes[1]?.alpha ?? 0);
+        for (const stroke of strokes) {
+          expect(stroke.fill).toBe(true);
+          expect(stroke.alpha).toBeLessThanOrEqual(0.3 + 1e-9);
+          // Across and down on the screen, in tile widths: long and flat.
+          const across: number[] = [];
+          const down: number[] = [];
+          for (let i = 0; i < stroke.points.length; i += 2) {
+            const x = stroke.points[i] ?? 0;
+            const y = stroke.points[i + 1] ?? 0;
+            across.push(x - y);
+            down.push((x + y) / 2);
+          }
+          const wide = Math.max(...across) - Math.min(...across);
+          const deep = Math.max(...down) - Math.min(...down);
+          expect(wide).toBeGreaterThan(0.3);
+          expect(deep).toBeLessThan(wide / 5);
+        }
+      }
+      // The lower arc is there on some ripples and not on others.
+      expect([...counts].sort()).toEqual([1, 2]);
+    });
+
     it('fades in and out: nothing at the start or end of a ripple', () => {
       const from = { x: 3.4, y: 2.5 };
-      const to = { x: 3.52, y: 2.5 };
+      const to = { x: 3.48, y: 2.5 };
       for (const elapsed of [0, glint.duration])
         for (const stroke of sampleStrokes(glint, elapsed, 7, from, to))
           expect(stroke.alpha).toBeLessThan(0.01);
       const mid = sampleStrokes(glint, glint.duration / 2, 7, from, to);
-      expect(Math.max(...mid.map((s) => s.alpha))).toBeGreaterThan(0.3);
-    });
-
-    it('stays away from the cells it is not given, such as a bridge in the canal', () => {
-      for (let time = 0; time < 60_000; time += 250)
-        for (const e of lit(time)) expect(Math.floor(e.from.x)).not.toBe(6);
+      expect(Math.max(...mid.map((s) => s.alpha))).toBeGreaterThan(0.2);
     });
 
     it('is omitted under reduce motion, with the motes', () => {
@@ -181,16 +245,17 @@ describe('ambientEmitters', () => {
     const village = FX_AMBIENCE.village;
     if (!village?.canopy) throw new Error('no village canopy');
     const { canopy } = village;
+    const isLeaf = (def: unknown) => canopy.some((leaf) => leaf === def);
     const trees = [
       { x: 5, y: 5 },
       { x: 21, y: 2 },
     ];
 
-    it('lets leaves go above and around each tree, two loops apiece', () => {
-      const live = ambientEmitters(village, grid, 4000, [], false, [], trees).filter(
-        (e) => e.def === canopy,
+    it('lets leaves go above and around each tree, two loops per colour', () => {
+      const live = ambientEmitters(village, grid, 4000, [], false, [], trees).filter((e) =>
+        isLeaf(e.def),
       );
-      expect(live).toHaveLength(trees.length * 2);
+      expect(live).toHaveLength(trees.length * 2 * canopy.length);
       for (const e of live) {
         const tree = trees.find((t) => e.to.x === t.x && e.to.y === t.y);
         expect(tree).toBeDefined();
@@ -199,15 +264,57 @@ describe('ambientEmitters', () => {
       }
     });
 
-    it('is small and slow, and absent under reduce motion or without trees', () => {
-      expect(canopy.size[1]).toBeLessThanOrEqual(0.2);
-      expect(canopy.speed[1]).toBeLessThanOrEqual(0.3);
-      expect(canopy.count).toBeLessThanOrEqual(6);
-      const still = ambientEmitters(village, grid, 4000, [], true, [], trees);
-      expect(still.some((e) => e.def === canopy)).toBe(false);
-      const none = ambientEmitters(village, grid, 4000);
-      expect(none.some((e) => e.def === canopy)).toBe(false);
+    it('is few, small, slow, foliage-coloured and falling', () => {
+      expect(canopy.map((leaf) => leaf.color).sort()).toEqual(['moss', 'straw']);
+      let slots = 0;
+      for (const def of canopy) {
+        if (def.kind !== 'particles') throw new Error('leaves are particles');
+        expect(def.cell).toBe('leaf');
+        expect(def.size[0]).toBeGreaterThanOrEqual(0.16);
+        expect(def.size[1]).toBeLessThanOrEqual(0.22);
+        expect(def.speed[1]).toBeLessThanOrEqual(0.3);
+        expect(def.spin).toBeGreaterThanOrEqual(0.7);
+        expect(def.spin).toBeLessThanOrEqual(1);
+        expect(def.opacity).toBeLessThanOrEqual(0.75);
+        // A heading a little below due east on the ground: down the screen as well as across it.
+        expect(Math.sin(def.spread)).toBeGreaterThan(0);
+        slots += def.count;
+      }
+      // Three or four leaves a canopy at a time: one loop of each colour's count.
+      expect(slots).toBeGreaterThanOrEqual(3);
+      expect(slots).toBeLessThanOrEqual(4);
     });
+
+    it('is absent under reduce motion or without trees', () => {
+      const still = ambientEmitters(village, grid, 4000, [], true, [], trees);
+      expect(still.some((e) => isLeaf(e.def))).toBe(false);
+      const none = ambientEmitters(village, grid, 4000);
+      expect(none.some((e) => isLeaf(e.def))).toBe(false);
+    });
+  });
+
+  it('keeps the whole village in the air under the Canvas 2D cap of 96 particles (ADR 0004)', () => {
+    const village = FX_AMBIENCE.village;
+    if (!village) throw new Error('no village ambience');
+    const out = new Float32Array(400 * PARTICLE_STRIDE);
+    let most = 0;
+    for (let time = 0; time < 120_000; time += 100) {
+      let live = 0;
+      for (const e of ambientEmitters(
+        village,
+        grid,
+        time,
+        BA_DAN_CHIMNEYS,
+        false,
+        [],
+        BA_DAN_CANOPIES,
+      ))
+        if (e.def.kind === 'particles')
+          live += sampleParticles(e.def, e.elapsed, e.seed, e.from, e.to, out);
+      most = Math.max(most, live);
+    }
+    expect(most).toBeGreaterThan(40);
+    expect(most).toBeLessThanOrEqual(96);
   });
 
   describe('waterCells', () => {
@@ -220,7 +327,7 @@ describe('ambientEmitters', () => {
     it('lists the permanent water only, by position, and reuses the answer per grid', () => {
       const tiles = [tile(null), tile(-1), tile(3), tile(-1), tile(null), tile(null)];
       const small: Grid = { width: 3, height: 2, tiles };
-      expect(waterCells(small)).toEqual([
+      expect(waterCells(small).map(({ x, y }) => ({ x, y }))).toEqual([
         { x: 1, y: 0 },
         { x: 0, y: 1 },
       ]);

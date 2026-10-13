@@ -233,31 +233,36 @@ export function sampleStrokes(
     case 'flame':
       return movingElement(def, t, from, to, arc);
     case 'glint': {
-      // A ripple: `count` smile-shaped crescents, each a little narrower and lower than the one
-      // before and fading in a little later, drifting from `from` to `to`. They are drawn upright
-      // on the oblique screen (u across, v down, in tile widths), so they sit like the painted ones.
-      const half = def.reach * (0.85 + (seed & 3) / 10) * (0.9 + 0.2 * t);
+      // A ripple: a long, flat, smile-shaped crescent, and under it up to `count - 1` shorter,
+      // fainter ones. Where they sit, how long they run and whether the lower ones come at all
+      // is the seed's, so no two ripples are a stamp of each other. They are drawn upright on the
+      // oblique screen (u across, v down, in tile widths), so they sit like the painted ones.
+      const r = mulberry32(hashSeed(seed, 5));
+      const half = def.reach * (0.9 + 0.2 * r()) * (0.92 + 0.16 * t);
       const here = { x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t) };
       for (let i = 0; i < def.count; i++) {
+        const spacing = (0.07 + 0.06 * r()) * i;
+        const length = i === 0 ? 1 : 0.55 + 0.25 * r();
+        const slide = i === 0 ? 0 : (r() - 0.5) * 0.08;
+        const present = i === 0 || r() < 0.65;
+        if (!present) continue;
         const k = Math.min(1, Math.max(0, (t - 0.12 * i) / (1 - 0.12 * i)));
         const swell = Math.sin(Math.PI * k);
-        const h = half * (1 - 0.22 * i);
-        const drop = i * 0.1;
+        const h = half * length;
         const points: number[] = [];
         const lower: number[] = [];
-        for (let n = 0; n <= 8; n++) {
-          const u = h * (n / 4 - 1);
-          const bow = 1 - (u / h) * (u / h);
-          const v = drop + 0.2 * h * bow;
-          const top = [here.x + u / 2 + v, here.y - u / 2 + v];
-          const v2 = v + def.width * bow;
-          points.push(top[0] ?? 0, top[1] ?? 0);
+        for (let n = 0; n <= 12; n++) {
+          const u = h * (n / 6 - 1) + slide;
+          const bow = 1 - ((u - slide) / h) ** 2;
+          const v = spacing + 0.09 * h * bow;
+          const v2 = v + def.width * (0.25 + 0.75 * bow);
+          points.push(here.x + u / 2 + v, here.y - u / 2 + v);
           lower.unshift(here.x + u / 2 + v2, here.y - u / 2 + v2);
         }
         strokes.push({
           points: points.concat(lower),
           width: 0.01,
-          alpha: (0.45 - 0.11 * i) * swell * swell,
+          alpha: (i === 0 ? 0.3 : 0.2) * swell * swell,
           closed: true,
           fill: true,
         });
