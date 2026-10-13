@@ -37,7 +37,7 @@ export const FX_CELLS = [
 ] as const;
 export type FxCell = (typeof FX_CELLS)[number];
 
-/** Palette roles, plus three fixed tones no palette carries: white heat, smoke and stone. */
+/** Palette roles, plus four fixed tones no palette carries: white heat, pale water foam, smoke and stone. */
 export const FX_COLORS = [
   'base',
   'light',
@@ -45,6 +45,7 @@ export const FX_COLORS = [
   'accent',
   'ink',
   'white',
+  'foam',
   'smoke',
   'stone',
 ] as const;
@@ -94,8 +95,10 @@ export type ParticleShape = (typeof PARTICLE_SHAPES)[number];
  * - `arc`: a curved band sweeping across `from` towards `to`, for gusts and waves.
  * - `gust`: tapered, open wind streaks carried from `from` to `to`.
  * - `flame`: a pointed flame silhouette carried from `from` to `to`.
- * - `glint`: a short, faint highlight (`reach` long) easing from `from` to `to`
- *   and fading in and out; it never leaves the segment those two points span.
+ * - `glint`: a water ripple, two shallow smile-shaped crescents one above the
+ *   other, drawn upright on the screen and drifting from `from` to `to` as it
+ *   fades in and out. `reach` is the outer crescent's half-width and `width`
+ *   its thickness, both in screen tile widths (oblique camera only).
  */
 export const STROKE_SHAPES = [
   'bolt',
@@ -1541,57 +1544,83 @@ export interface AmbienceRecipe {
   readonly emitters: readonly ParticleEmitterDef[];
   /** What rises from each of the scene's `chimneys`, if it has any. */
   readonly chimney?: ParticleEmitterDef;
-  /** A highlight sliding along each painted water cell the map is given, if it has any. */
+  /** A ripple fading in and out on each painted water cell the map is given, if it has any. */
   readonly glint?: StrokeEmitterDef;
+  /** Leaves let go by each of the scene's `canopies`, if it has any. */
+  readonly canopy?: ParticleEmitterDef;
 }
 
 /**
- * A cooking fire under a painted roof: a few soft grey-brown wisps, faint and
- * rising up the screen (on the oblique ground, heading 4.08 rad is straight up
- * leaning a little with the leaves' wind) and spreading as they go. Smoke
- * grey, never white: under the single warm key light a pale blob over a roof
- * reads as a leaked light, not as smoke.
+ * A cooking fire under a painted roof: a soft grey column that rises, leans a
+ * little with the leaves' wind (on the oblique ground, heading 3.93 rad is
+ * straight up the screen) and spreads and thins as it goes. Smoke grey, never
+ * white: under the single warm key light a pale blob over a roof reads as a
+ * leaked light, not as smoke.
  */
 const chimneySmoke = particles({
   shape: 'drift',
   cell: 'glow',
-  count: 7,
+  count: 24,
   duration: 6000,
-  life: [5000, 7000],
+  life: [4500, 6500],
   delay: [0, 6000],
-  speed: [0.2, 0.3],
-  spread: 4.08,
+  speed: [0.36, 0.5],
+  spread: 3.93,
   gravity: 0,
   drag: 0,
-  size: [0.26, 0.36],
-  grow: 1.7,
+  size: [0.22, 0.3],
+  grow: 2.1,
   spin: 0,
   color: 'smoke',
-  // Thickest at the vent and thinning as it rises, so the wisp sits on the roof.
+  // Thickest at the vent and thinning as it rises, so the column sits on the roof.
   fade: 'out',
-  opacity: 0.45,
+  opacity: 1,
   upright: true,
   blend: 'normal',
   layer: 'over',
 });
 
-/** A faint highlight easing across one painted water cell: slow, short, and gone before it can be read as a mark. */
-const waterGlint = strokes({
+/**
+ * A ripple on the canal, shaped like the ones painted into it: two shallow
+ * crescents, pale blue-white, coming up out of the water and going again.
+ */
+const waterRipple = strokes({
   shape: 'glint',
-  count: 1,
-  duration: 6000,
-  width: 0.03,
-  reach: 0.3,
-  color: 'white',
+  count: 2,
+  duration: 3000,
+  width: 0.05,
+  reach: 0.24,
+  color: 'foam',
   ink: false,
   blend: 'add',
   layer: 'under',
 });
 
+/** Leaves let go of a canopy: a few, small and slow, drifting off on the village wind. */
+const canopyLeaves = particles({
+  shape: 'drift',
+  cell: 'leaf',
+  count: 6,
+  duration: 8000,
+  life: [5000, 8000],
+  delay: [0, 8000],
+  speed: [0.12, 0.25],
+  spread: 0.7,
+  gravity: 0,
+  drag: 0,
+  size: [0.14, 0.2],
+  grow: 1,
+  spin: 2,
+  color: 'light',
+  fade: 'in-out',
+  blend: 'normal',
+  layer: 'over',
+});
+
 /**
  * What a map's `ambience` puts in the air, keyed by the ambience string. A
  * map whose ambience is not here gets nothing, which is a valid answer for
- * a cellar. The motes and a `glint` are off under reduce motion: they are
+ * a cellar. The motes, the `canopy` leaves and a `glint` are off under reduce motion: they are
  * fidelity, not information (ADR 0002). A `chimney` rises from each of the
  * scene's `MapScene.chimneys` and is drawn everywhere, animated, and a still
  * wisp under reduce motion (ADR 0008 amendment). Exploration draws all of it
@@ -1614,7 +1643,8 @@ export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
       drifting('glow', 8, 'white', 4.88, [0.05, 0.1], [0.03, 0.05], 'add', 0),
     ],
     chimney: chimneySmoke,
-    glint: waterGlint,
+    glint: waterRipple,
+    canopy: canopyLeaves,
   },
   quarry: {
     palette: 'neutral',

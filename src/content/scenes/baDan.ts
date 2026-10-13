@@ -135,6 +135,18 @@ export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
   { x: 5.375, y: 7.575 },
 ];
 
+/** The trunks that let their leaves go: the court trees and the rim's nearest, one emitter each. */
+export const BA_DAN_CANOPIES: readonly Vec2[] = [
+  { x: 5, y: 5 },
+  { x: 21, y: 2 },
+  { x: 0, y: 6 },
+  { x: 18, y: 0 },
+  { x: 23, y: 3 },
+  { x: 23, y: 11 },
+  { x: 1, y: 14 },
+  { x: 21, y: 15 },
+];
+
 /**
  * What stands in the village, in draw order, and how it sorts: the id (which names its sprite in
  * `baDan.art.ts`), the cells it occupies and its depth key (both backends sort by projected x + y;
@@ -373,6 +385,7 @@ export const BA_DAN_ACTOR_GROUNDING = { cast: 0.5, contact: 0.8 } as const;
 export const BA_DAN_SCENE: MapScene = {
   marginTone: 'verdant',
   chimneys: BA_DAN_CHIMNEYS,
+  canopies: BA_DAN_CANOPIES,
   paintedWater: true,
   // The painting's own casts run ~0.40 darkening with ~0.60 at the contact line; figures answer in kind.
   actorGrounding: BA_DAN_ACTOR_GROUNDING,

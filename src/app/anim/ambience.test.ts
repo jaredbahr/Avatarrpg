@@ -59,8 +59,9 @@ describe('ambientEmitters', () => {
       chimneys[1],
     ]);
     for (const emitter of smoke) expect(emitter.to).toEqual(emitter.from);
-    // A haze on the roof, never a solid column, and standing up off the oblique ground.
-    expect(village.chimney.opacity).toBeLessThanOrEqual(0.6);
+    // A soft blob that thins as it rises, never a hard-edged one, standing up off the oblique ground.
+    expect(village.chimney.cell).toBe('glow');
+    expect(village.chimney.fade).toBe('out');
     expect(village.chimney.upright).toBe(true);
   });
 
@@ -84,9 +85,9 @@ describe('ambientEmitters', () => {
     expect(ambientEmitters(village, grid, 4000)).toHaveLength(village.emitters.length * 2);
   });
 
-  describe('water glints', () => {
+  describe('water ripples', () => {
     const village = FX_AMBIENCE.village;
-    if (!village?.glint) throw new Error('no village glint');
+    if (!village?.glint) throw new Error('no village ripple');
     const { glint } = village;
     const row = (x: number): Vec2 => ({ x, y: 2 });
     const water = [0, 1, 2, 3, 4, 5, 7, 8].map(row);
@@ -95,40 +96,61 @@ describe('ambientEmitters', () => {
 
     it('is the same at the same time, and a fresh scatter in a later cycle', () => {
       expect(lit(31_000)).toEqual(lit(31_000));
-      expect(lit(31_000)).not.toEqual(lit(31_000 + 9000));
+      expect(lit(31_000)).not.toEqual(lit(31_000 + 5200));
     });
 
-    it('keeps only a few cells lit, each on a slow path along its own cell', () => {
+    it('lights most cells within any four seconds, never all of them at once or in step', () => {
       let most = 0;
       for (let time = 0; time < 120_000; time += 500) {
         const now = lit(time);
         most = Math.max(most, now.length);
         for (const e of now) expect(e.elapsed).toBeLessThanOrEqual(glint.duration);
+        // Never in step: three or more alive together are never all at the same point of their life.
+        const ages = new Set(now.map((e) => Math.round(e.elapsed / 100)));
+        if (now.length >= 3) expect(ages.size).toBeGreaterThan(1);
       }
-      expect(most).toBeGreaterThan(0);
-      expect(most).toBeLessThan(water.length);
+      expect(most).toBeGreaterThan(water.length / 2);
+      expect(most).toBeLessThan(water.length * 2);
+      for (let time = 0; time < 120_000; time += 4000) {
+        const seen = new Set<number>();
+        for (let t = time; t < time + 4000; t += 250)
+          for (const e of lit(t)) seen.add(Math.floor(e.from.x));
+        expect(seen.size).toBeGreaterThanOrEqual(Math.floor(water.length * 0.6));
+      }
     });
 
-    it('never draws outside the water cells it is given, at any moment', () => {
-      for (let time = 0; time < 120_000; time += 250) {
+    it('stays in open water: inside its cell, clear of the banks, at any moment', () => {
+      for (let time = 0; time < 40_000; time += 700) {
         for (const e of lit(time)) {
           const inside = water.find(
             (c) => Math.floor(e.from.x) === c.x && Math.floor(e.from.y) === c.y,
           );
           expect(inside).toBeDefined();
           const strokes = sampleStrokes(glint, e.elapsed, e.seed, e.from, e.to);
+          expect(strokes).toHaveLength(glint.count);
           for (const stroke of strokes) {
-            // Every end of the stroke, with its width, is inside its own cell.
             for (let i = 0; i < stroke.points.length; i += 2) {
               expect(stroke.points[i]).toBeGreaterThan((inside?.x ?? 0) + 0.1);
               expect(stroke.points[i]).toBeLessThan((inside?.x ?? 0) + 0.9);
-              expect(stroke.points[i + 1]).toBeGreaterThan((inside?.y ?? 0) + 0.2);
-              expect(stroke.points[i + 1]).toBeLessThan((inside?.y ?? 0) + 0.8);
+              expect(stroke.points[i + 1]).toBeGreaterThan((inside?.y ?? 0) + 0.15);
+              expect(stroke.points[i + 1]).toBeLessThan((inside?.y ?? 0) + 0.85);
             }
-            expect(stroke.alpha).toBeLessThanOrEqual(0.2);
+            // Faint at its brightest, and nothing at either end of its life.
+            expect(stroke.alpha).toBeLessThanOrEqual(0.45);
+            expect(stroke.fill).toBe(true);
           }
         }
       }
+    });
+
+    it('fades in and out: nothing at the start or end of a ripple', () => {
+      const from = { x: 3.4, y: 2.5 };
+      const to = { x: 3.52, y: 2.5 };
+      for (const elapsed of [0, glint.duration])
+        for (const stroke of sampleStrokes(glint, elapsed, 7, from, to))
+          expect(stroke.alpha).toBeLessThan(0.01);
+      const mid = sampleStrokes(glint, glint.duration / 2, 7, from, to);
+      expect(Math.max(...mid.map((s) => s.alpha))).toBeGreaterThan(0.3);
     });
 
     it('stays away from the cells it is not given, such as a bridge in the canal', () => {
@@ -139,7 +161,7 @@ describe('ambientEmitters', () => {
     it('is omitted under reduce motion, with the motes', () => {
       const chimneys = [{ x: 8, y: 6 }];
       for (const time of [100, 31_000, 987_654]) {
-        const still = ambientEmitters(village, grid, time, chimneys, true, water);
+        const still = ambientEmitters(village, grid, time, chimneys, true, water, [{ x: 4, y: 4 }]);
         expect(still.some((e) => e.def === glint)).toBe(false);
         expect(still.every((e) => e.def === village.chimney)).toBe(true);
       }
@@ -152,6 +174,39 @@ describe('ambientEmitters', () => {
         (forest?.emitters.length ?? 0) * 2,
       );
       expect(ambientEmitters(village, grid, 31_000).some((e) => e.def === glint)).toBe(false);
+    });
+  });
+
+  describe('canopy leaves', () => {
+    const village = FX_AMBIENCE.village;
+    if (!village?.canopy) throw new Error('no village canopy');
+    const { canopy } = village;
+    const trees = [
+      { x: 5, y: 5 },
+      { x: 21, y: 2 },
+    ];
+
+    it('lets leaves go above and around each tree, two loops apiece', () => {
+      const live = ambientEmitters(village, grid, 4000, [], false, [], trees).filter(
+        (e) => e.def === canopy,
+      );
+      expect(live).toHaveLength(trees.length * 2);
+      for (const e of live) {
+        const tree = trees.find((t) => e.to.x === t.x && e.to.y === t.y);
+        expect(tree).toBeDefined();
+        expect(e.from.x).toBeLessThan(e.to.x);
+        expect(e.from.y).toBeLessThan(e.to.y);
+      }
+    });
+
+    it('is small and slow, and absent under reduce motion or without trees', () => {
+      expect(canopy.size[1]).toBeLessThanOrEqual(0.2);
+      expect(canopy.speed[1]).toBeLessThanOrEqual(0.3);
+      expect(canopy.count).toBeLessThanOrEqual(6);
+      const still = ambientEmitters(village, grid, 4000, [], true, [], trees);
+      expect(still.some((e) => e.def === canopy)).toBe(false);
+      const none = ambientEmitters(village, grid, 4000);
+      expect(none.some((e) => e.def === canopy)).toBe(false);
     });
   });
 

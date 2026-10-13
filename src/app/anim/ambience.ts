@@ -8,10 +8,10 @@
  * fresh seed so the same leaves do not fall in the same places twice.
  *
  * A recipe's `chimney` rises from each of the scene's chimneys the same way.
- * A recipe's `glint` slides a faint highlight along each of the painted water
- * cells it is given, on a per-cell clock. Held `still` (reduce motion) the
- * motes and glints go and the smoke is one fixed frame: a wisp that stays
- * where it is.
+ * A recipe's `glint` raises ripples on each of the painted water cells it is
+ * given, on a per-cell clock, and its `canopy` lets leaves go from each canopy.
+ * Held `still` (reduce motion) the motes, ripples and canopy leaves go and the
+ * smoke is one fixed frame: a wisp that stays where it is.
  */
 
 import type { Grid, Vec2 } from '../../core/types';
@@ -24,8 +24,9 @@ import type { EmitterInstance } from '../../render/view';
 const LOOPS = 2;
 /** The moment a still wisp is frozen at: the village smoke's fullest column. */
 const STILL_MS = 2400;
-/** A water cell's glint cycle: a glint lives for the recipe's duration, then the cell rests. */
-const GLINT_CYCLE = 9000;
+/** Ripples a painted water cell can show at once, and the span each slot repeats in. */
+const RIPPLE_SLOTS = 2;
+const RIPPLE_CYCLE = 5200;
 
 /** The permanent water cells of a grid, kept per grid: it is the same object every frame. */
 const watered = new WeakMap<Grid, Vec2[]>();
@@ -49,6 +50,7 @@ export function ambientEmitters(
   chimneys: readonly Vec2[] = [],
   still = false,
   water: readonly Vec2[] = [],
+  canopies: readonly Vec2[] = [],
 ): EmitterInstance[] {
   if (!recipe) return [];
   const out: EmitterInstance[] = [];
@@ -75,26 +77,32 @@ export function ambientEmitters(
     );
   const smoke = recipe.chimney;
   if (smoke) chimneys.forEach((at, index) => loop(smoke, 100 + index, at, at));
-  const glint = recipe.glint;
-  if (glint && !still)
-    for (const cell of water) {
-      // Each cell keeps its own phase; about half its cycles sit out, so only a few are lit at once.
-      const shifted = time + (hashSeed(cell.x, cell.y) % GLINT_CYCLE);
-      const cycle = Math.floor(shifted / GLINT_CYCLE);
-      const seed = hashSeed(cell.x, cell.y, 1 + cycle);
-      const elapsed = shifted - cycle * GLINT_CYCLE;
-      if (seed & 1 || elapsed > glint.duration) continue;
-      // A path along the flow, inside the cell by more than half a glint and its width.
-      const y = cell.y + 0.3 + (((seed >>> 8) & 255) / 255) * 0.4;
-      out.push({
-        def: glint,
-        from: { x: cell.x + 0.3, y },
-        to: { x: cell.x + 0.7, y },
-        elapsed,
-        seed,
-        palette: recipe.palette,
-        arc: 0,
-      });
-    }
+  const leaves = recipe.canopy;
+  if (leaves && !still)
+    canopies.forEach((at, index) => loop(leaves, 200 + index, { x: at.x - 3, y: at.y - 3 }, at));
+  const ripple = recipe.glint;
+  if (ripple && !still)
+    for (const cell of water)
+      for (let slot = 0; slot < RIPPLE_SLOTS; slot++) {
+        // Each slot keeps its own phase and, every cycle, its own start and place; some cycles sit out.
+        const shifted = time + (hashSeed(cell.x, cell.y, slot) % RIPPLE_CYCLE);
+        const cycle = Math.floor(shifted / RIPPLE_CYCLE);
+        const seed = hashSeed(cell.x, cell.y, 1 + cycle, slot);
+        const start = ((seed >>> 8) & 255) / 255;
+        const elapsed = shifted - cycle * RIPPLE_CYCLE - start * (RIPPLE_CYCLE - ripple.duration);
+        if (seed % 4 === 0 || elapsed < 0 || elapsed > ripple.duration) continue;
+        // Open water only: the middle of the cell, clear of its banks, carried down the flow (+x).
+        const x = cell.x + 0.3 + slot * 0.15 + (((seed >>> 16) & 255) / 255) * 0.08;
+        const y = cell.y + 0.42 + slot * 0.16 + (((seed >>> 24) & 255) / 255 - 0.5) * 0.06;
+        out.push({
+          def: ripple,
+          from: { x, y },
+          to: { x: x + 0.12, y },
+          elapsed,
+          seed,
+          palette: recipe.palette,
+          arc: 0,
+        });
+      }
   return out;
 }

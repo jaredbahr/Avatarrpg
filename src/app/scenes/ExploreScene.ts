@@ -1131,6 +1131,7 @@ export class ExploreScene implements Scene {
       map.scene?.chimneys,
       motionReduced(),
       map.scene?.paintedWater ? waterCells(grid) : [],
+      map.scene?.canopies,
     );
 
     // Finish the legal route already in flight before previewing queued intent.

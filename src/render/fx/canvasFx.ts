@@ -17,7 +17,7 @@ import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
 import type { EmitterInstance } from '../view';
 
 /** Particles drawn per frame, across every emitter. */
-const MAX_PARTICLES = 96;
+const MAX_PARTICLES = 160;
 /** Stroke segments drawn per frame. */
 const MAX_STROKES = 60;
 /** Tinted cells kept; a cell per (shape, colour) so the map stays small. */

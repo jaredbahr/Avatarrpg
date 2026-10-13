@@ -622,6 +622,12 @@ export const mapSchema = z
           .array(z.object({ x: z.number(), y: z.number() }))
           .max(4)
           .optional(),
+        // The trees whose leaves drift off in the ambience, in ground tiles at
+        // the trunk. A handful: each is an emitter.
+        canopies: z
+          .array(z.object({ x: z.number(), y: z.number() }))
+          .max(12)
+          .optional(),
         // A ground draw is cheap and the apron forces several of them: a ring of
         // exterior ground is wider than the 2048-pixel texture every iPad takes,
         // so each scene ships it as a dozen registered bands, and the village
