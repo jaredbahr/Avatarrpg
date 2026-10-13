@@ -104,24 +104,46 @@ class Stage implements BeatContext {
   }
 
   /**
-   * One screenshot, tried again if the browser itself refuses it. On the WebGL
-   * projects Chromium now and then answers `Page.captureScreenshot` with
-   * "Unable to capture screenshot" on a page it captures a moment later (the
-   * nightly gallery lost a shard to it two nights running, on a different beat
-   * each time). That is the capture failing, not the page: nothing about the
-   * picture is retried or relaxed, and any other error is thrown at once.
+   * One screenshot, retried for about 20 s when the browser refuses it. On the
+   * WebGL projects Chromium now and then answers `Page.captureScreenshot` with
+   * "Unable to capture screenshot" on a page it captures a moment later. Two
+   * more shards recently lost the title and illustrated-opening beats after
+   * three quick tries, so the waits grow from 250 ms to 2 s and a compositor
+   * nudge is made after the second refusal. Nothing about the picture is
+   * retried or relaxed, and any other error is thrown at once.
    */
   private async capture(path: string): Promise<void> {
-    const attempts = 3;
-    for (let attempt = 1; ; attempt += 1) {
+    const deadline = Date.now() + 20_000;
+    let refusals = 0;
+    for (;;) {
       try {
         await this.page.screenshot({ path, scale: 'css', caret: 'hide' });
+        if (refusals > 0) {
+          console.warn(
+            `[gallery] screenshot recovered: beat=${this.beat.id} file=${path} refusals=${refusals}`,
+          );
+        }
         return;
       } catch (error) {
         const refused =
           error instanceof Error && /Unable to capture screenshot/.test(error.message);
-        if (!refused || attempt >= attempts) throw error;
-        await this.page.waitForTimeout(250 * attempt);
+        if (!refused) throw error;
+        refusals += 1;
+        if (Date.now() >= deadline) throw error;
+        const wait = Math.min(250 * 2 ** (refusals - 1), 2_000);
+        await this.page.waitForTimeout(wait);
+        if (refusals >= 2) {
+          try {
+            await this.page.evaluate(
+              () =>
+                new Promise((r) =>
+                  requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
+                ),
+            );
+          } catch {
+            // A failed compositor nudge should not hide the capture refusal.
+          }
+        }
       }
     }
   }
