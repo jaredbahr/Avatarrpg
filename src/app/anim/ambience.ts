@@ -17,7 +17,7 @@
 import type { Grid, Vec2 } from '../../core/types';
 import type { AmbienceRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
-import { particleSpan } from '../../render/fx/simulate';
+import { glintExtent, particleSpan } from '../../render/fx/simulate';
 import type { EmitterInstance } from '../../render/view';
 
 /** Loops run at once per emitter, spaced evenly through the period. */
@@ -31,8 +31,9 @@ const RIPPLE_CYCLE = 4800;
 const RIPPLE_SHARE = 40;
 /** Ripples whose swells peak this close together, in cells touching, are one too many: the weaker sits out. */
 const RIPPLE_APART = 250;
-/** How far a ripple's centre keeps from a cell edge that faces a bank, in tiles. */
-const BANK_CLEAR = 0.28;
+/** Water left between the complete ripple and a bank or map edge, in tiles. */
+const BANK_CLEAR = 0.02;
+const RIPPLE_DRIFT = { x: 0.08, y: 0 } as const;
 
 /** A permanent water cell, and the stretch of it a ripple's centre may fall in (tiles from its corner). */
 export interface WaterCell extends Vec2 {
@@ -41,6 +42,12 @@ export interface WaterCell extends Vec2 {
     readonly x1: number;
     readonly y0: number;
     readonly y1: number;
+  };
+  readonly bank: {
+    readonly left: boolean;
+    readonly right: boolean;
+    readonly top: boolean;
+    readonly bottom: boolean;
   };
 }
 
@@ -60,17 +67,20 @@ export function waterCells(grid: Grid): readonly WaterCell[] {
     for (let y = 0; y < grid.height; y++)
       for (let x = 0; x < grid.width; x++) {
         if (!isWater(x, y)) continue;
-        // A side that is not water is a bank: stones, reeds or masonry. Keep clear of it.
-        const edge = (water: boolean) => (water ? 0.08 : BANK_CLEAR);
+        const left = !isWater(x - 1, y);
+        const right = !isWater(x + 1, y);
+        const top = !isWater(x, y - 1);
+        const bottom = !isWater(x, y + 1);
         out.push({
           x,
           y,
           room: {
-            x0: edge(isWater(x - 1, y)),
-            x1: 1 - edge(isWater(x + 1, y)),
-            y0: edge(isWater(x, y - 1)),
-            y1: 1 - edge(isWater(x, y + 1)),
+            x0: left ? 0 : 0.08,
+            x1: right ? 1 : 0.92,
+            y0: top ? 0 : 0.08,
+            y1: bottom ? 1 : 0.92,
           },
+          bank: { left, right, top, bottom },
         });
       }
     cells = out;
@@ -184,14 +194,19 @@ export function ambientEmitters(
           crowded(cell, slot, mine, ripple.duration, water)
         )
           continue;
-        // Open water only, clear of the banks, carried a little down the flow (+x).
-        const { room } = cell;
-        const x = cell.x + room.x0 + (((mine.seed >>> 16) & 255) / 255) * (room.x1 - room.x0);
-        const y = cell.y + room.y0 + (((mine.seed >>> 24) & 255) / 255) * (room.y1 - room.y0);
+        // Bound the whole seeded shape, not merely its centre, away from every bank.
+        const { room, bank } = cell;
+        const extent = glintExtent(ripple, RIPPLE_DRIFT);
+        const x0 = bank.left ? extent.left + BANK_CLEAR : room.x0;
+        const x1 = bank.right ? 1 - extent.right - BANK_CLEAR : room.x1;
+        const y0 = bank.top ? extent.top + BANK_CLEAR : room.y0;
+        const y1 = bank.bottom ? 1 - extent.bottom - BANK_CLEAR : room.y1;
+        const x = cell.x + x0 + (((mine.seed >>> 16) & 255) / 255) * (x1 - x0);
+        const y = cell.y + y0 + (((mine.seed >>> 24) & 255) / 255) * (y1 - y0);
         out.push({
           def: ripple,
           from: { x, y },
-          to: { x: x + 0.08, y },
+          to: { x: x + RIPPLE_DRIFT.x, y: y + RIPPLE_DRIFT.y },
           elapsed,
           seed: mine.seed,
           palette: recipe.palette,

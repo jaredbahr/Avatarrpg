@@ -181,7 +181,8 @@ The painting is still, and the village moves a little on top of it (`src/app/ani
 in `src/content/fx.ts`), the same on both backends and from the scene clock alone. Smoke rises from the two chimney
 mouths as it always has, now on Canvas 2D too; three or four leaves at a time let go of each canopy in `BA_DAN_CANOPIES`; and faint ripples
 fade in and out on the canal, drawn to look like the painted ripple arcs (pale shallows blue, normal blending, long and
-flat), centred well clear of the banks, so a live one could be taken for a painted one. Nothing is painted into the plates
+flat), with every point of both crescents kept 0.02 tile clear of the banks, so a live one could be taken for a painted
+one. Nothing is painted into the plates
 for any of it. Under Reduce motion only the still wisp of smoke remains. The ripples' placement and look are
 tuned from 3x crops beside the painted arcs; see ADR 0008's last amendment before changing them.
 

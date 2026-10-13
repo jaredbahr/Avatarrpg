@@ -214,6 +214,48 @@ export interface Stroke {
   readonly fill: boolean;
 }
 
+export interface GlintExtent {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+}
+
+/**
+ * Furthest a glint point can lie from `from`, in ground-tile axes. This is the
+ * envelope of every seeded crescent and every moment, including the supplied
+ * drift. Keeping it beside the sampler makes placement follow the shape's own
+ * reach, width, secondary-arc spacing, length and lateral-offset limits.
+ */
+export function glintExtent(def: StrokeEmitterDef, drift: Vec2): GlintExtent {
+  const half = def.reach * 1.1 * 1.08;
+  let minX = 0;
+  let maxX = 0;
+  let minY = 0;
+  let maxY = 0;
+  for (let i = 0; i < def.count; i++) {
+    const h = half * (i === 0 ? 1 : 0.8);
+    const spacing = i === 0 ? 0 : 0.13 * i;
+    const slide = i === 0 ? 0 : 0.04;
+    const curve = 0.09 * h + 0.75 * def.width;
+    // u / 2 + v is concave in q=(u-slide)/h. Its maximum is at the
+    // clamped vertex q=h/(4*curve); its minimum is the opposite endpoint.
+    const q = Math.min(1, h / (4 * curve));
+    const peak = spacing + 0.25 * def.width + (h * q) / 2 + curve * (1 - q * q);
+    const edge = spacing + 0.25 * def.width - h / 2;
+    minX = Math.min(minX, edge - slide / 2);
+    maxX = Math.max(maxX, peak + slide / 2);
+    minY = Math.min(minY, edge - slide / 2);
+    maxY = Math.max(maxY, peak + slide / 2);
+  }
+  return {
+    left: -Math.min(minX, minX + drift.x),
+    right: Math.max(maxX, maxX + drift.x),
+    top: -Math.min(minY, minY + drift.y),
+    bottom: Math.max(maxY, maxY + drift.y),
+  };
+}
+
 /** The strokes of one emitter at `elapsed` ms, none once it is over. */
 export function sampleStrokes(
   def: StrokeEmitterDef,

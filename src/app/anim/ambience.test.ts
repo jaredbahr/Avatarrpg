@@ -4,6 +4,7 @@ import { BA_DAN_CANOPIES, BA_DAN_CHIMNEYS } from '../../content/scenes/baDan';
 import type { Grid, Tile } from '../../core/types';
 import {
   PARTICLE_STRIDE,
+  glintExtent,
   particleSpan,
   sampleParticles,
   sampleStrokes,
@@ -152,23 +153,40 @@ describe('ambientEmitters', () => {
       }
     });
 
-    it('stays in open water: 0.28 tile clear of every bank, and never over the bridge', () => {
-      const clear = 0.28 - 1e-9;
-      for (let time = 0; time < 60_000; time += 250) {
+    it('keeps every point of every crescent inside permanent water', () => {
+      const permanentWater = (x: number, y: number) =>
+        water.some((cell) => cell.x === Math.floor(x) && cell.y === Math.floor(y));
+      for (let time = 0; time < 240_000; time += 137) {
         for (const e of lit(time)) {
           const cx = Math.floor(e.from.x);
           expect(water.some((c) => c.x === cx && c.y === Math.floor(e.from.y))).toBe(true);
           expect(cx).not.toBe(6);
-          // Row 2 has dry rows above and below it.
-          expect(e.from.y - 2).toBeGreaterThanOrEqual(clear);
-          expect(3 - e.from.y).toBeGreaterThanOrEqual(clear);
-          // The canal's ends, and either side of the bridge, face a bank too.
-          if (cx === 0) expect(e.from.x).toBeGreaterThanOrEqual(clear);
-          if (cx === 5) expect(6 - e.from.x).toBeGreaterThanOrEqual(clear);
-          if (cx === 7) expect(e.from.x - 7).toBeGreaterThanOrEqual(clear);
-          if (cx === 9) expect(10 - e.from.x).toBeGreaterThanOrEqual(clear);
+          // Re-sample each deterministic seed across its life, including moments other than
+          // the scene-clock sample above. Both crescents and every polygon point must remain wet.
+          for (const elapsed of [
+            0,
+            glint.duration * 0.17,
+            glint.duration / 2,
+            glint.duration * 0.83,
+            glint.duration,
+          ])
+            for (const stroke of sampleStrokes(glint, elapsed, e.seed, e.from, e.to))
+              for (let i = 0; i < stroke.points.length; i += 2)
+                expect(permanentWater(stroke.points[i] ?? -1, stroke.points[i + 1] ?? -1)).toBe(
+                  true,
+                );
         }
       }
+    });
+
+    it('derives the full directional envelope from the ripple definition', () => {
+      const extent = glintExtent(glint, { x: 0.08, y: 0 });
+      expect(extent.left).toBeCloseTo(0.18308, 6);
+      expect(extent.right).toBeCloseTo(0.389064, 6);
+      expect(extent.top).toBeCloseTo(0.18308, 6);
+      expect(extent.bottom).toBeCloseTo(0.309064, 6);
+      expect(extent.left + extent.right).toBeLessThan(0.96);
+      expect(extent.top + extent.bottom).toBeLessThan(0.96);
     });
 
     it('draws a thin, flat, pale arc that fades: one long crescent, sometimes a shorter one', () => {
