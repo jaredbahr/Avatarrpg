@@ -120,7 +120,7 @@ shorter, fainter one under it) in the pale blue of the painted ripples, drawn
 with ordinary blending at a peak alpha of 0.3 and 0.2, so it reads as a
 painted mark that fades in and out and not as an overlay. Where and when a
 ripple appears is a pure function of the scene clock and the cell: centres keep
-0.28 tile from any edge that faces a bank, about half the cycles sit out, and
+0.28 tile from any edge that faces a bank, six cycles in ten sit out, and
 a ripple gives way to a stronger one in the same or a touching cell whose swell
 peaks within a quarter second. The chimney smoke itself is unchanged.
 The Canvas 2D particle cap this must fit under is checked in ADR 0004.

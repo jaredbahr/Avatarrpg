@@ -28,7 +28,7 @@ const STILL_MS = 2400;
 const RIPPLE_SLOTS = 2;
 const RIPPLE_CYCLE = 4800;
 /** Percent of a slot's cycles that raise a ripple at all. */
-const RIPPLE_SHARE = 55;
+const RIPPLE_SHARE = 40;
 /** Ripples whose swells peak this close together, in cells touching, are one too many: the weaker sits out. */
 const RIPPLE_APART = 250;
 /** How far a ripple's centre keeps from a cell edge that faces a bank, in tiles. */
@@ -95,12 +95,20 @@ function rippleOf(cell: Vec2, slot: number, cycle: number, duration: number): Ri
 }
 
 /** Whether a stronger ripple swells in this cell or one touching it at about the same moment. */
-function crowded(cell: Vec2, slot: number, mine: Ripple, duration: number): boolean {
+function crowded(
+  cell: Vec2,
+  slot: number,
+  mine: Ripple,
+  duration: number,
+  water: readonly Vec2[],
+): boolean {
   for (let dx = -1; dx <= 1; dx++)
     for (let dy = -1; dy <= 1; dy++)
       for (let other = 0; other < RIPPLE_SLOTS; other++) {
         if (!dx && !dy && other === slot) continue;
         const at = { x: cell.x + dx, y: cell.y + dy };
+        // Only water raises ripples: a bank or the map's edge cannot crowd one out.
+        if (!water.some((c) => c.x === at.x && c.y === at.y)) continue;
         const phase = hashSeed(at.x, at.y, other) % RIPPLE_CYCLE;
         const around = Math.floor((mine.start + phase) / RIPPLE_CYCLE);
         for (let cycle = around - 1; cycle <= around + 1; cycle++) {
@@ -170,7 +178,11 @@ export function ambientEmitters(
         );
         if (!mine) continue;
         const elapsed = time - mine.start;
-        if (elapsed < 0 || elapsed > ripple.duration || crowded(cell, slot, mine, ripple.duration))
+        if (
+          elapsed < 0 ||
+          elapsed > ripple.duration ||
+          crowded(cell, slot, mine, ripple.duration, water)
+        )
           continue;
         // Open water only, clear of the banks, carried a little down the flow (+x).
         const { room } = cell;
