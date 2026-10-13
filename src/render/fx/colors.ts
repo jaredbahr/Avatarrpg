@@ -13,6 +13,9 @@ import { paletteFor } from '../palettes';
 const SMOKE = '#7a736a';
 const STONE = '#a39c91';
 const WHITE = '#ffffff';
+const SHALLOWS = '#a8d7df';
+const MOSS = '#8e9d45';
+const STRAW = '#c1a650';
 
 export function roleColor(role: FxColor, paletteKey: string): string {
   const palette: Palette = paletteFor(paletteKey);
@@ -29,6 +32,12 @@ export function roleColor(role: FxColor, paletteKey: string): string {
       return palette.ink;
     case 'white':
       return WHITE;
+    case 'shallows':
+      return SHALLOWS;
+    case 'moss':
+      return MOSS;
+    case 'straw':
+      return STRAW;
     case 'smoke':
       return SMOKE;
     case 'stone':

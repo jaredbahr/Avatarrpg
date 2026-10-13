@@ -977,6 +977,8 @@ export interface MapScene {
   };
   /** Where smoke leaves a painted roof, in ground tiles (fractional, may lie off the grid). */
   readonly chimneys?: readonly Vec2[];
+  /** The trees whose leaves drift off in the ambience, in ground tiles at the trunk. */
+  readonly canopies?: readonly Vec2[];
   /**
    * How strongly the renderer grounds figures here (see `ActorGrounding` in
    * render/lighting.ts). Absent, the defaults every other scene uses.

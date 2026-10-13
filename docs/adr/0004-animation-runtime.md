@@ -101,3 +101,18 @@ way, where it departs from the plan above, and why:
   error, and that reduce motion collapses it to an instant.
 - **`busy()` and `finishesAt` mean what they did.** Durations are the
   constants in `src/app/anim/choreography.ts`; the walk step is unchanged.
+
+## Amendment, 2026-10-13: the Canvas 2D particle cap, and the exploration ambience
+
+The cap of 96 particles a frame (the Canvas 2D bullet above) stands. Exploration
+now draws its ambience on Canvas 2D too (ADR 0008 amendment), so the cap had to
+be checked against the fullest scene: the Ba Dan village, with its motes, two
+chimneys of smoke and eight canopies of leaves. Measured over two minutes of
+scene time that stays under the cap (`ambience.test.ts` measures it). A first
+build of this ambience had raised the cap to 160 for fuller smoke and leaves;
+with the smoke left as it was and the leaves two foliage-coloured emitters of
+two per canopy, the village fits under 96, so the cap stays where this ADR put
+it.
+`ambience.test.ts` holds the village under 96, so a recipe that outgrows the cap
+fails there and not as silently dropped particles. The ripples are strokes, not
+particles, and sit well inside the 60 stroke segments.

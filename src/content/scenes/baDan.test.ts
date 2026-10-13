@@ -579,6 +579,19 @@ it('keeps the south-east grove beyond the frontage and river-path mouth', () => 
   });
 });
 
+it('lets leaves go from trees on the board, a handful of them', () => {
+  const canopies = BA_DAN_SCENE.canopies ?? [];
+  expect(canopies.length).toBeGreaterThan(0);
+  expect(canopies.length).toBeLessThanOrEqual(12);
+  for (const at of canopies) {
+    expect(at.x).toBeGreaterThanOrEqual(0);
+    expect(at.x).toBeLessThan(24);
+    expect(at.y).toBeGreaterThanOrEqual(0);
+    expect(at.y).toBeLessThan(16);
+  }
+  for (const tree of BA_DAN_COURT_TREES) expect(canopies).toContainEqual(tree);
+});
+
 it('raises chimney smoke from the mouth of a dwelling chimney', () => {
   const chimneys = BA_DAN_SCENE.chimneys ?? [];
   expect(chimneys).toHaveLength(2);

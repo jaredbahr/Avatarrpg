@@ -152,7 +152,10 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `docs/device-matrix.md`.
 - Backends: board-correctness parity is mandatory, fidelity parity is not
   (`src/render/backends/backend.ts`). Draw anything the rules care about on
-  both backends; particles and shader effects are WebGL-only by design.
+  both backends; particles and shader effects are WebGL-only by design, with one
+  exception: exploration draws its ambience (motes, chimney smoke, canopy leaves,
+  canal ripples) on both, frozen or omitted under reduce motion (ADR 0008
+  amendment). Combat ambience is still WebGL-only.
 
 ## Things that will bite you
 

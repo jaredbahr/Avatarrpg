@@ -175,6 +175,17 @@ the ring. Either re-plan the regions on a pan box that holds the camera's reach 
 the wide desktop view reaches, a ring of outer regions to repaint), or hold the camera inside the painting (a larger
 `cameraCentreMargin`, which also changes how near the village rim the view can go).
 
+### Gentle motion
+
+The painting is still, and the village moves a little on top of it (`src/app/anim/ambience.ts`, the `village` recipe
+in `src/content/fx.ts`), the same on both backends and from the scene clock alone. Smoke rises from the two chimney
+mouths as it always has, now on Canvas 2D too; three or four leaves at a time let go of each canopy in `BA_DAN_CANOPIES`; and faint ripples
+fade in and out on the canal, drawn to look like the painted ripple arcs (pale shallows blue, normal blending, long and
+flat), with every point of both crescents kept 0.02 tile clear of the banks, so a live one could be taken for a painted
+one. Nothing is painted into the plates
+for any of it. Under Reduce motion only the still wisp of smoke remains. The ripples' placement and look are
+tuned from 3x crops beside the painted arcs; see ADR 0008's last amendment before changing them.
+
 ### What needs the running game
 
 The house and tree fade over the repainted ground (the ground under a faded piece is the painting, which has the

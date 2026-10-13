@@ -214,6 +214,48 @@ export interface Stroke {
   readonly fill: boolean;
 }
 
+export interface GlintExtent {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+}
+
+/**
+ * Furthest a glint point can lie from `from`, in ground-tile axes. This is the
+ * envelope of every seeded crescent and every moment, including the supplied
+ * drift. Keeping it beside the sampler makes placement follow the shape's own
+ * reach, width, secondary-arc spacing, length and lateral-offset limits.
+ */
+export function glintExtent(def: StrokeEmitterDef, drift: Vec2): GlintExtent {
+  const half = def.reach * 1.1 * 1.08;
+  let minX = 0;
+  let maxX = 0;
+  let minY = 0;
+  let maxY = 0;
+  for (let i = 0; i < def.count; i++) {
+    const h = half * (i === 0 ? 1 : 0.8);
+    const spacing = i === 0 ? 0 : 0.13 * i;
+    const slide = i === 0 ? 0 : 0.04;
+    const curve = 0.09 * h + 0.75 * def.width;
+    // u / 2 + v is concave in q=(u-slide)/h. Its maximum is at the
+    // clamped vertex q=h/(4*curve); its minimum is the opposite endpoint.
+    const q = Math.min(1, h / (4 * curve));
+    const peak = spacing + 0.25 * def.width + (h * q) / 2 + curve * (1 - q * q);
+    const edge = spacing + 0.25 * def.width - h / 2;
+    minX = Math.min(minX, edge - slide / 2);
+    maxX = Math.max(maxX, peak + slide / 2);
+    minY = Math.min(minY, edge - slide / 2);
+    maxY = Math.max(maxY, peak + slide / 2);
+  }
+  return {
+    left: -Math.min(minX, minX + drift.x),
+    right: Math.max(maxX, maxX + drift.x),
+    top: -Math.min(minY, minY + drift.y),
+    bottom: Math.max(maxY, maxY + drift.y),
+  };
+}
+
 /** The strokes of one emitter at `elapsed` ms, none once it is over. */
 export function sampleStrokes(
   def: StrokeEmitterDef,
@@ -232,6 +274,44 @@ export function sampleStrokes(
     case 'gust':
     case 'flame':
       return movingElement(def, t, from, to, arc);
+    case 'glint': {
+      // A ripple: a long, flat, smile-shaped crescent, and under it up to `count - 1` shorter,
+      // fainter ones. Where they sit, how long they run and whether the lower ones come at all
+      // is the seed's, so no two ripples are a stamp of each other. They are drawn upright on the
+      // oblique screen (u across, v down, in tile widths), so they sit like the painted ones.
+      const r = mulberry32(hashSeed(seed, 5));
+      const half = def.reach * (0.9 + 0.2 * r()) * (0.92 + 0.16 * t);
+      const here = { x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t) };
+      for (let i = 0; i < def.count; i++) {
+        const spacing = (0.07 + 0.06 * r()) * i;
+        const length = i === 0 ? 1 : 0.55 + 0.25 * r();
+        const slide = i === 0 ? 0 : (r() - 0.5) * 0.08;
+        const present = i === 0 || r() < 0.65;
+        if (!present) continue;
+        const k = Math.min(1, Math.max(0, (t - 0.12 * i) / (1 - 0.12 * i)));
+        const swell = Math.sin(Math.PI * k);
+        const h = half * length;
+        const points: number[] = [];
+        const lower: number[] = [];
+        for (let n = 0; n <= 12; n++) {
+          const u = h * (n / 6 - 1) + slide;
+          const bow = 1 - ((u - slide) / h) ** 2;
+          const v = spacing + 0.09 * h * bow;
+          const v2 = v + def.width * (0.25 + 0.75 * bow);
+          points.push(here.x + u / 2 + v, here.y - u / 2 + v);
+          lower.unshift(here.x + u / 2 + v2, here.y - u / 2 + v2);
+        }
+        strokes.push({
+          points: points.concat(lower),
+          width: 0.01,
+          alpha: (i === 0 ? 0.3 : 0.2) * swell * swell,
+          closed: true,
+          fill: true,
+        });
+      }
+      break;
+    }
+
     case 'bolt': {
       boltStrokes(def, elapsed, t, seed, from, to, aim, strokes);
       break;
