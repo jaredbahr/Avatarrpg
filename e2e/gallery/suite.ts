@@ -108,10 +108,10 @@ class Stage implements BeatContext {
    * WebGL projects Chromium now and then answers `Page.captureScreenshot` with
    * "Unable to capture screenshot" on a page it captures a moment later. Two
    * more shards recently lost the title and illustrated-opening beats after
-   * three quick tries, so the waits grow from 250 ms to 2 s and a compositor
-   * nudge is made after the second refusal (never under a paused clock).
-   * Nothing about the picture is retried or relaxed, and any other error is
-   * thrown at once.
+   * three quick tries, so the waits now grow from 250 ms to 2 s. Only Node-side
+   * waits are used, so a paused page clock or a stalled compositor cannot hold
+   * the loop past its budget. Nothing about the picture is retried or relaxed,
+   * and any other error is thrown at once.
    */
   private async capture(path: string): Promise<void> {
     const deadline = Date.now() + 20_000;
@@ -133,19 +133,6 @@ class Stage implements BeatContext {
         if (Date.now() >= deadline) throw error;
         const wait = Math.min(250 * 2 ** (refusals - 1), 2_000);
         await this.page.waitForTimeout(wait);
-        // Not while a filmstrip holds the page clock: no animation frame would come.
-        if (refusals >= 2 && !this.paused) {
-          try {
-            await this.page.evaluate(
-              () =>
-                new Promise((r) =>
-                  requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
-                ),
-            );
-          } catch {
-            // A failed compositor nudge should not hide the capture refusal.
-          }
-        }
       }
     }
   }
