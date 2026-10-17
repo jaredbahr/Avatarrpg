@@ -1,6 +1,7 @@
 # Roadmap: cross-device, art, animation and the world
 
-The owner's approved visual destination and the current delivery sequence are in
+The end goal, design pillars and the owner's dated decisions are in
+[Project direction](direction.md). The owner's approved visual destination and the current delivery sequence are in
 [Player-view target](player-view-target.md). Compare playable changes with its
 three reference views; they are design targets, not implemented-content claims.
 
