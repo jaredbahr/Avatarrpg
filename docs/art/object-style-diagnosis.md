@@ -1,6 +1,6 @@
 # Object style diagnosis (2026-10-13)
 
-An independent art-direction diagnosis of why the village objects read as a different hand from the characters, written for the final object-style pass. Frames it refers to were in-game captures of the Ba Dan canal market at the time. The route it recommends was tried; the outcome is in [project direction](../direction.md#current-art-problem-objects-vs-characters).
+An independent art-direction diagnosis of why the village objects read as a different hand from the characters, written for the final object-style pass. Frames it refers to were in-game captures of the Ba Dan canal market at the time. Its fallback route (d), objects from the character generator, was tried (the primary route (f) needs a human artist the project does not have); the outcome is in [project direction](../direction.md#current-art-problem-objects-vs-characters).
 
 **The objects are drawn as polished miniature display pieces; the characters are drawn as restrained, functional figures. Matching pixel resolution will not reconcile them. The next proof must change prop design, proportions, and shading together.**
 
