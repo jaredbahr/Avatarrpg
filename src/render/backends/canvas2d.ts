@@ -30,6 +30,7 @@ import {
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
+import { talkPipPosition } from '../geometry/talkPip';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { contourLoops } from '../geometry/contour';
@@ -68,7 +69,7 @@ import {
   paintSurface,
   paintTerrain,
 } from '../painters/tiles';
-import { npcPose, sprites } from '../spriteCache';
+import { npcPose, sprites, visibleFrameBounds, visibleSpriteBounds } from '../spriteCache';
 import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
@@ -1319,10 +1320,19 @@ export class Canvas2DBackend implements RenderBackend {
               width,
             )
           : null;
+      let artBounds: { left: number; top: number; right: number; bottom: number };
       if (frame) {
         const fw = (frame.frame.w / frame.pixelsPerTile) * box.size;
         const fh = (frame.frame.h / frame.pixelsPerTile) * box.size;
         const f = frame.frame;
+        const visible = visibleFrameBounds(frame.source, f);
+        artBounds = {
+          left: visible.left / frame.pixelsPerTile - (frame.anchor.x * f.w) / frame.pixelsPerTile,
+          top: visible.top / frame.pixelsPerTile - (frame.anchor.y * f.h) / frame.pixelsPerTile,
+          right: visible.right / frame.pixelsPerTile - (frame.anchor.x * f.w) / frame.pixelsPerTile,
+          bottom:
+            visible.bottom / frame.pixelsPerTile - (frame.anchor.y * f.h) / frame.pixelsPerTile,
+        };
         ctx.drawImage(
           frame.source,
           f.x,
@@ -1336,6 +1346,14 @@ export class Canvas2DBackend implements RenderBackend {
         );
       } else {
         const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
+        const visible = visibleSpriteBounds(sprite);
+        const pixelsPerTile = sprite.height;
+        artBounds = {
+          left: visible.left / pixelsPerTile - sprite.width / pixelsPerTile / 2,
+          top: visible.top / pixelsPerTile - FOOT_LINE,
+          right: visible.right / pixelsPerTile - sprite.width / pixelsPerTile / 2,
+          bottom: visible.bottom / pixelsPerTile - FOOT_LINE,
+        };
         ctx.drawImage(sprite, box.x, box.y, box.size * width, box.size);
       }
 
@@ -1346,13 +1364,16 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.globalAlpha = alpha * (0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2));
       ctx.fillStyle = '#f0c674';
       ctx.beginPath();
-      ctx.arc(
-        box.x + box.size * width * 0.5,
-        footY + lift - box.size * (FOOT_LINE - 0.08) * scale,
+      const pip = talkPipPosition(
+        { x: footX, y: footY + lift },
+        artBounds,
+        scale * (npc.poseScale ?? 1) * box.size,
+        npc.lean ?? 0,
         box.size * 0.07,
-        0,
-        Math.PI * 2,
+        box.size * 0.04,
+        npc.facing ?? 1,
       );
+      ctx.arc(pip.x, pip.y, box.size * 0.07, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }

@@ -78,6 +78,7 @@ import {
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
+import { talkPipPosition } from '../geometry/talkPip';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import {
   clip,
@@ -108,7 +109,13 @@ import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
 import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
-import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
+import {
+  MAX_SPRITE_PX,
+  npcPose,
+  sprites,
+  visibleFrameBounds,
+  visibleSpriteBounds,
+} from '../spriteCache';
 import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
@@ -2564,6 +2571,7 @@ export class PixiBackend implements RenderBackend {
               width,
             )
           : null;
+      let artBounds: { left: number; top: number; right: number; bottom: number };
       const screen = camera.spriteBox(at, width, false);
       const anchor = {
         x: (screen.x + camera.offsetX) / camera.scale,
@@ -2584,10 +2592,33 @@ export class PixiBackend implements RenderBackend {
         sprite.position.set(footX, y + FOOT_LINE * TILE);
         sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale * poseScale;
         sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale * poseScale;
+        const visible = visibleFrameBounds(frame.source, frame.frame);
+        artBounds = {
+          left:
+            visible.left / frame.pixelsPerTile -
+            (frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
+          top:
+            visible.top / frame.pixelsPerTile -
+            (frame.anchor.y * frame.frame.h) / frame.pixelsPerTile,
+          right:
+            visible.right / frame.pixelsPerTile -
+            (frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
+          bottom:
+            visible.bottom / frame.pixelsPerTile -
+            (frame.anchor.y * frame.frame.h) / frame.pixelsPerTile,
+        };
       } else {
         const art = sprites.get(npc.sprite, px * scale, npcPose(npc), width);
         // A painter or single-image resident has no frame; its band is the drawn sprite's soles.
         bandArt = spriteBandArt(art);
+        const visible = visibleSpriteBounds(art);
+        const pixelsPerTile = art.height;
+        artBounds = {
+          left: visible.left / pixelsPerTile - art.width / pixelsPerTile / 2,
+          top: visible.top / pixelsPerTile - FOOT_LINE,
+          right: visible.right / pixelsPerTile - art.width / pixelsPerTile / 2,
+          bottom: visible.bottom / pixelsPerTile - FOOT_LINE,
+        };
         sprite.texture = this.texture(art);
         sprite.anchor.set(0.5, FOOT_LINE);
         sprite.position.set(footX, y + FOOT_LINE * TILE);
@@ -2632,15 +2663,21 @@ export class PixiBackend implements RenderBackend {
       }
 
       // A small "talk" pip so a child can tell an NPC from scenery.
-      if (!npc.quiet)
-        g.circle(
-          x + TILE * width * 0.5,
-          y + TILE * (FOOT_LINE - (FOOT_LINE - 0.08) * scale),
+      if (!npc.quiet) {
+        const pip = talkPipPosition(
+          { x: footX, y: y + FOOT_LINE * TILE },
+          artBounds,
+          scale * poseScale * TILE,
+          npc.lean ?? 0,
           TILE * 0.07,
-        ).fill({
+          TILE * 0.04,
+          facing,
+        );
+        g.circle(pip.x, pip.y, TILE * 0.07).fill({
           color: '#f0c674',
           alpha: alpha * (0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2)),
         });
+      }
     }
 
     for (const prop of view.props) {
