@@ -14,8 +14,8 @@ from PIL import Image
 sys.dont_write_bytecode = True
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'cels'); RAW = os.path.join(HERE, 'raw'); TONE = os.path.join(HERE, 'tone', 'tone_thug.py')
-THUG = 'D:/AvatarRPG-tools/models-p0p1/thug/'
-TONED_IDLE = THUG + 'tone/out-v3/idle/{d}/0.png'
+# The thug's approved toned idle cel 0 per facing, copied from his sheet's source set so a fresh checkout can rebuild.
+TONED_IDLE = os.path.join(HERE, 'stance', '{d}', '0.png')
 HEADING = {'east': 'East', 'north-east': 'NorthEast', 'north': 'North', 'north-west': 'NorthWest', 'west': 'West',
            'south-west': 'SouthWest', 'south': 'South', 'south-east': 'SouthEast'}
 CMU = ("The data used in this project was obtained from mocap.cs.cmu.edu. "
