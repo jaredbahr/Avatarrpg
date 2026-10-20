@@ -450,14 +450,9 @@ export class SheetStore {
         this.loaded.set(key, {
           pages,
           clips,
-          // Measured over the sheet's own clips only. The fetched hit and
-          // knockout clips flinch or lie lower than the idle, so they never
-          // raise the envelope, and reading back each of their cels cost
-          // WebKit seconds per battle once every bandit carried them
-          // (2026-10-20: the iPad e2e shards ran about twice as long).
           headroom: Math.min(
             entry.uiHeadroomCap ?? Number.POSITIVE_INFINITY,
-            Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image))),
+            Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips))),
           ),
         });
         if (this.bendsWanted.has(key)) this.bend(key, entry);
