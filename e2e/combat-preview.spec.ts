@@ -13,7 +13,9 @@ import { tileCentre } from './gallery/stage';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`elevation preview explains the shot and ledge drop on ${renderer}`, async ({ page }) => {
-    test.setTimeout(renderer === 'webgl' ? 90_000 : 30_000);
+    // The canvas run is a long sequence of taps; the CI WebKit runner takes 1 to 2 s per
+    // action, so 30 s ran out on main on 2026-10-20.
+    test.setTimeout(renderer === 'webgl' ? 90_000 : 60_000);
     allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Climber'], ['kaya'], `elevation-preview-${renderer}`);
