@@ -39,13 +39,13 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     licence: 'CC0 1.0',
   },
   {
-    what: 'The motion of the party’s and the thug’s knockouts',
+    what: 'The motion of the party’s, the thug’s and the slinger’s knockouts',
     work: 'CMU Graphics Lab Motion Capture Database, subject 90 trial 18 and subject 77 trials 16 and 18',
     authors: 'Carnegie Mellon University Graphics Lab',
     licence: 'CMU Motion Capture Database terms',
   },
   {
-    what: 'The motion of the party’s and the thug’s hit reactions',
+    what: 'The motion of the party’s, the thug’s and the slinger’s hit reactions',
     work: 'CMU Graphics Lab Motion Capture Database, subject 79 trial 73, subject 76 trial 03 and subject 77 trial 09',
     authors: 'Carnegie Mellon University Graphics Lab',
     licence: 'CMU Motion Capture Database terms',
