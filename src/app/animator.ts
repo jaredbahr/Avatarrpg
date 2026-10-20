@@ -164,6 +164,8 @@ export class Animator {
    * sheet declares eight-way locomotion; four-way art never sees them.
    */
   private headings = new Map<string, Heading>();
+  /** The side each unit faces before it has turned, as `locomotion` was last told (enemies face west). */
+  private restFacings = new Map<string, 1 | -1>();
   /** When each unit's last voluntary walk ended, and when its stop settles. */
   private stops = new Map<
     string,
@@ -196,6 +198,7 @@ export class Animator {
     this.facings.clear();
     this.directions.clear();
     this.headings.clear();
+    this.restFacings.clear();
     this.stops.clear();
     this.walkPhaseFractions.clear();
     this.pendingHeadings = [];
@@ -440,6 +443,7 @@ export class Animator {
     restFacing: 1 | -1 = 1,
   ): { clip: ClipName; facing: 1 | -1 } {
     this.settleHeadings(now);
+    this.restFacings.set(unitId, restFacing);
     const travel = this.walkTravel(now, unitId);
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
@@ -703,12 +707,18 @@ export class Animator {
    * sheet whose clips carry G knockouts falls on the diagonal `koClip` gives
    * the heading the unit faces, and one carrying G hits flinches in that
    * heading's own; one that does not, or has not loaded, keeps the legacy
-   * pose. A unit that has not turned yet faces east, as its stance does.
+   * pose. A unit that has not turned yet reacts the way it stands: west for
+   * an enemy (its rest facing), east otherwise, as its stance does.
    */
-  private reactionClip(clip: ClipName, unitId: string, sprite?: string): ClipName {
+  private reactionClip(
+    clip: ClipName,
+    unitId: string,
+    sprite?: string,
+    restFacing: 1 | -1 = this.restFacings.get(unitId) ?? 1,
+  ): ClipName {
     if ((clip !== 'ko' && clip !== 'hit') || !sprite || sheetLocomotion(sprite)?.headings !== 8)
       return clip;
-    const heading = this.headings.get(unitId) ?? 'east';
+    const heading = this.heading(unitId, restFacing) ?? 'east';
     const authored = clip === 'ko' ? koClip(heading) : hitClip(heading);
     return this.options.sheetClips?.(sprite)?.[authored] ? authored : clip;
   }
@@ -718,8 +728,12 @@ export class Animator {
    * last frame, held, for a sheet that authors one; undefined otherwise, and
    * the scene keeps its standing pose under the fallen fade (ADR 0059).
    */
-  fallenPose(unitId: string, sprite: string): { clip: ClipName; clipTime: number } | undefined {
-    const clip = this.reactionClip('ko', unitId, sprite);
+  fallenPose(
+    unitId: string,
+    sprite: string,
+    restFacing?: 1 | -1,
+  ): { clip: ClipName; clipTime: number } | undefined {
+    const clip = this.reactionClip('ko', unitId, sprite, restFacing);
     const def = this.options.sheetClips?.(sprite)?.[clip];
     return clip === 'ko' && !def?.frameMs ? undefined : { clip, clipTime: HELD };
   }

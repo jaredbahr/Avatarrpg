@@ -2465,7 +2465,7 @@ export class CombatScene implements Scene {
       ? partyScale(projection, pose?.scale)
       : enemyScale(sprite, pose?.scale, projection);
     // Once a G knockout has played, the body stays where it fell (ADR 0059).
-    const down = !pose && fallen ? this.app.animator.fallenPose(unitId, sprite) : undefined;
+    const down = !pose && fallen ? this.app.animator.fallenPose(unitId, sprite, restFacing) : undefined;
     if (down) return { ...down, facing: fallenFacing(down.clip, walked ?? restFacing), scale };
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {

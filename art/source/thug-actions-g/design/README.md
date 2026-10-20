@@ -14,3 +14,9 @@ re-derived them from the shoulders and the model turned the face with every tors
 
 The generated cels are in `../raw/`, `../assembly.json` says which frames of which job each take uses, `../assemble.py` tones
 them (frozen `tone/params-v3.json`) and writes `../cels/`, and `../ledger.json` records every generation.
+
+**Inputs outside this repository.** `design.py` and `req.py` read the CMU mocap copies, the thug's rotation skeleton
+(`src_joints.json`) and the original walk request from the art hand-off folder on the authoring machine
+(`D:/AvatarRPG-tools/models-p0p1/thug/` and `bend-style-source/work`), which is not tracked. They only regenerate the
+skeletons already committed in `kp/`; the shipped clips rebuild from tracked files alone (`raw/` -> `assemble.py` ->
+`cels/` -> `scripts/art/thug-clips.ts`).

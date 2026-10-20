@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../core/types';
-import { clipDurationMs } from '../content/assets/clips';
+import { clipDurationMs, koClip } from '../content/assets/clips';
 import type { SheetClips } from '../render/sheets/store';
 import {
   Animator,
@@ -299,6 +299,47 @@ describe('Animator', () => {
     expect(a.locomotion(5000, 'e0', 'idle', thug, -1).clip).toBe('idleSouth');
   });
 
+  it('an unturned enemy reacts the way it stands: west (ADR 0078)', () => {
+    const thug = 'unit.enemy.thug';
+    const thugClips = JSON.parse(
+      readFileSync('public/art/units/thug-g-clips.json', 'utf8'),
+    ) as SheetClips;
+    const a = new Animator(CONTENT, {
+      motionReduced: () => false,
+      sheetClips: (sprite) => (sprite === thug ? thugClips : undefined),
+    });
+    const roster = [
+      { ...combatUnit('p0', 4, 4, 20), sprite: 'unit.fire.kaya' },
+      { ...combatUnit('e0', 7, 4, 20), faction: 'enemy' as const, sprite: thug },
+    ];
+    // The scene draws an enemy at rest facing west (restFacing -1) before any reaction.
+    expect(a.locomotion(0, 'e0', 'idle', thug, -1).clip).toBe('idleWest');
+    a.push(
+      0,
+      [
+        {
+          type: 'damaged',
+          unitId: 'e0',
+          amount: 3,
+          crit: false,
+          damageType: 'fire',
+          sourceId: 'p0',
+        },
+      ],
+      roster,
+    );
+    expect(a.unitPose(1, 'e0', thug)?.clip).toBe('hitWest');
+    a.clear();
+    // The scene draws it every frame, so the rest facing is known again before the fall.
+    a.locomotion(0, 'e0', 'idle', thug, -1);
+    a.push(0, [{ type: 'unitDied', unitId: 'e0' }], roster);
+    expect(a.unitPose(1, 'e0', thug)?.clip).toBe(koClip('west'));
+    a.prune(5000);
+    expect(a.fallenPose('e0', thug, -1)?.clip).toBe(koClip('west'));
+    // A unit standing east (the party's rest) still falls east.
+    expect(a.fallenPose('p9', thug, 1)?.clip).toBe(koClip('east'));
+  });
+
   it('plays the heading’s G hit and holds the G knockout it falls on once the sheet is in (ADR 0059, ADR 0063)', () => {
     const kaya = 'unit.fire.kaya';
     const kayaClips = JSON.parse(
@@ -321,7 +362,7 @@ describe('Animator', () => {
       sourceId,
     });
     // Unturned, she faces east and flinches in the east hit, frame by frame;
-    // the thug's sheet has none and keeps the legacy hit.
+    // with no clips loaded for the thug here, he keeps the legacy hit.
     a.push(0, [blow('p0', 'e0'), blow('e0', 'p0')], roster);
     const renderedHitFrame = (at: number, animator = a) => {
       const pose = animator.unitPose(at, 'p0', kaya);
@@ -368,7 +409,7 @@ describe('Animator', () => {
     expect(renderedHitFrame(impact.start, impactAnimator)).toBe(1);
     expect(a.unitPose(100, 'e0', 'unit.enemy.thug')?.clip).toBe('hit');
     expect(a.unitPose(100, 'e0', 'unit.enemy.thug')?.frame).toBe(0);
-    // The thug's sheet has no G knockout: the legacy pose, and nothing held.
+    // No thug clips are loaded in this test: the legacy pose, and nothing held.
     expect(a.fallenPose('e0', 'unit.enemy.thug')).toBeUndefined();
 
     // Walked north, she flinches north, falls on the diagonal clockwise of it

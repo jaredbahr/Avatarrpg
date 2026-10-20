@@ -64,5 +64,5 @@ ceiling.
   falling frames fail the party's 0.03 size gate (largest 0.075). Two frames fail the
   facing gate: south H2 (the rag flares and widens the head 22%) and north-east K1,
   which is falling. No frame swings to profile. The south-west knockout ends with the
-  club standing up from the lying hand. The full table is `.review/thug-actions/facing-pitch.md`
+  club standing up from the lying hand. The full table is `art/source/thug-actions-g/facing-pitch.md`
   until that folder is dropped, and `gates.py` regenerates it.
