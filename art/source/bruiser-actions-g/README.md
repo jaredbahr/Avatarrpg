@@ -21,3 +21,7 @@ Rebuild: `py -I assemble.py assembly.json`, delete `pins.json`, `node --import t
 joints, rotations) and the CMU files under `models-p0p1/work/` (read only). The first frame of every job is the bruiser's
 approved rotation under the literal direction name his walk used; the motion is CMU Graphics Lab mocap
 (mocap.cs.cmu.edu, free for any use; credit in `NOTICE.md`).
+
+**Inputs outside this repository.** `design/design.py` reads the CMU mocap copies and the rotation skeleton from the art
+hand-off folders on the authoring machine (`D:/AvatarRPG-tools/models-p0p1/`, `models-p1-bandits/`, `bend-style-source/work`),
+which are not tracked. They only regenerate the committed `design/kp/` skeletons; the shipped clips rebuild from tracked files alone.
