@@ -86,12 +86,12 @@ describe('thug hits and knockouts (ADR 0059, ADR 0063)', () => {
     for (const frame of Object.keys(p.frames)) expect(frame.startsWith(`${THUG_KEY}/`)).toBe(true);
   });
 
-  it('is what the manifest lists for the thug, and for no other enemy', () => {
+  it('is what the manifest lists for the thug, and for no enemy that has not drawn its own clips', () => {
     const thug = ASSETS[THUG_KEY];
     if (thug?.kind !== 'sheet') throw new Error('The thug is not a sheet');
     expect(thug.atlasPages).toEqual(['art/units/thug-g-2.json', 'art/units/thug-g-3.json']);
     expect(thug.clipData).toBe('art/units/thug-g-clips.json');
-    for (const other of ['slinger', 'bruiser', 'quarrybender']) {
+    for (const other of ['bruiser', 'quarrybender']) {
       const entry = ASSETS[`unit.enemy.${other}`];
       if (entry?.kind !== 'sheet') throw new Error(`${other} is not a sheet`);
       expect(entry.clipData, other).toBeUndefined();
