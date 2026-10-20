@@ -249,7 +249,9 @@ type EnemyGName = 'thug' | 'slinger' | 'bruiser' | 'quarrybender';
  * A toned PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle,
  * walk and rest at the party's scale and walk rate, and the old sheet's
  * cast, hit and KO cels, mirrored as the party's legacy actions are. The
- * bruiser's club needs a 160 px cel.
+ * bruiser's club needs a 160 px cel. The thug also draws his own G hits (eight
+ * headings) and knockouts (the four diagonals) from two further pages and a
+ * clip file (ADR 0059, ADR 0063), as the party does.
  */
 function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
   const key = `unit.enemy.${name}`;
@@ -280,6 +282,13 @@ function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
+    // Page 2 holds the knockouts and page 3 the hits, whose clips arrive with them.
+    ...(name === 'thug'
+      ? {
+          atlasPages: [`art/units/${name}-g-2.json`, `art/units/${name}-g-3.json`],
+          clipData: `art/units/${name}-g-clips.json`,
+        }
+      : {}),
     pixelsPerTile: 128,
     ...(name === 'bruiser' ? { frameSize: { w: 160, h: 192 } } : {}),
     footprint: { w: 1, h: 1 },
