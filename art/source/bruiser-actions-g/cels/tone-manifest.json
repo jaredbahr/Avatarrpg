@@ -1,0 +1,122 @@
+{
+ "koNorthEast": {
+  "frames": 6,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 18728,
+  "protected_px": 26280
+ },
+ "koNorthWest": {
+  "frames": 6,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 10184,
+  "protected_px": 33713
+ },
+ "koSouthWest": {
+  "frames": 6,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 14856,
+  "protected_px": 33621
+ },
+ "koSouthEast": {
+  "frames": 6,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 13880,
+  "protected_px": 37732
+ },
+ "hitEast": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 5768,
+  "protected_px": 12829
+ },
+ "hitNorthEast": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 7413,
+  "protected_px": 17684
+ },
+ "hitNorth": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 11774,
+  "protected_px": 15426
+ },
+ "hitNorthWest": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 6733,
+  "protected_px": 19154
+ },
+ "hitWest": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 4053,
+  "protected_px": 13165
+ },
+ "hitSouthWest": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 8152,
+  "protected_px": 18602
+ },
+ "hitSouth": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 11177,
+  "protected_px": 18623
+ },
+ "hitSouthEast": {
+  "frames": 3,
+  "skin_identical": true,
+  "alpha_identical": true,
+  "colours_as_intended": true,
+  "outline_weight_max_delta": 0.0,
+  "luma_max_abs_delta": 0.45,
+  "changed_px": 8390,
+  "protected_px": 18737
+ }
+}

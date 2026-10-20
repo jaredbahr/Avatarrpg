@@ -1,0 +1,129 @@
+{
+  "task": "bruiser-actions-claude-001",
+  "budget_gens": 75,
+  "balance_before": 5945,
+  "note": "animate_with_skeleton_v3, view high top-down; first frame = the bruiser's approved PixelLab rotation (same URL and literal direction name as his idle/walk), first_frame_keypoints = stance skeleton; head keypoints ride the neck (design.py). Seed 5101 first pass. Known flaws of the shipped takes are listed in docs/adr/0080-bruiser-hits-and-knockouts.md.",
+  "jobs": [
+    {
+      "name": "hit-east-s5101",
+      "job": "7efdad63-261a-41d6-87f2-7a98d7efd259",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-east-s5101",
+      "job": "d492cd66-b2b4-41a0-9b99-ad6358309035",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-s5101",
+      "job": "78f5541f-67b9-477d-92c4-33755000987f",
+      "gens": 2,
+      "verdict": "superseded: club absent in H1 and H3"
+    },
+    {
+      "name": "hit-north-west-s5101",
+      "job": "ec9f6576-3781-4809-9e43-86ca96f0e508",
+      "gens": 2,
+      "verdict": "superseded: marginally worse pitch and head width"
+    },
+    {
+      "name": "hit-west-s5101",
+      "job": "1f0205c7-5603-4580-91e1-2aa95891ab86",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-south-west-s5101",
+      "job": "32eab79c-d9b0-413e-8db3-5d3680088166",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-south-s5101",
+      "job": "5e47c040-b11d-4ce4-9201-8cc58b3c2332",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-south-east-s5101",
+      "job": "39c11643-0047-469a-b3b4-05799af1f07e",
+      "gens": 2,
+      "verdict": "superseded: club less coherent in H2/H3"
+    },
+    {
+      "name": "ko-south-east-s5101",
+      "job": "e14bd08a-a439-4d8f-965a-bea81229da76",
+      "gens": 3,
+      "verdict": "superseded: club stands up in last two frames"
+    },
+    {
+      "name": "ko-south-west-s5101",
+      "job": "fda3196f-dc4d-483c-9a1d-6ccc01046ad2",
+      "gens": 3,
+      "verdict": "superseded: garbled last frame, club stands up"
+    },
+    {
+      "name": "ko-north-east-s5101",
+      "job": "022e2f2f-8f2b-45c4-bd57-73ad60edc705",
+      "gens": 3,
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-north-west-s5101",
+      "job": "4fb671d7-cc28-4305-8a99-02e8988ccd11",
+      "gens": 3,
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-south-west-s5102",
+      "job": "156f6a95-15a6-4baa-8fdb-84b7a7dd1403",
+      "gens": 3,
+      "note": "description + 'club stays in hand, lies along the ground when lying down'",
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-south-east-s5102",
+      "job": "12bb308d-bacf-48cd-873d-80edcf7edaa0",
+      "gens": 3,
+      "note": "same clause",
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-s5102",
+      "job": "80201d64-43ee-411b-97a7-298557a7bcbd",
+      "gens": 2,
+      "note": "description + 'the club is always visible'",
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-south-west-s5103",
+      "job": "66aae055-7909-4192-bfe2-67f268ca5ab2",
+      "gens": 3,
+      "note": "description: drops club flat, never pointing up",
+      "verdict": "rejected: garbled last frame, club stands up"
+    },
+    {
+      "name": "ko-south-west-s5104",
+      "job": "336c651e-8aa5-4b27-8bf4-d2e2cc155c41",
+      "gens": 3,
+      "note": "same",
+      "verdict": "rejected: club stands up in last three frames (same as USED take, which has an intact last frame)"
+    },
+    {
+      "name": "hit-north-west-s5102",
+      "job": "4b991253-1894-4c4c-b69d-0ad4099c0665",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-south-east-s5102",
+      "job": "83e8a5e1-ff5e-4f63-bcc1-dad56e317183",
+      "gens": 2,
+      "verdict": "USED"
+    }
+  ],
+  "total_gens": 46,
+  "balance_after": 5899
+}

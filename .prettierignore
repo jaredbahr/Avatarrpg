@@ -24,3 +24,7 @@ art/source/ba-dan-true/walls/walls.json
 art/source/thug-actions-g/design/kp/
 art/source/thug-actions-g/tone/
 art/source/thug-actions-g/cels/**/*.json
+# The bruiser's hit and knockout design, same as the thug's: generated skeletons, and the frozen tone parameters.
+art/source/bruiser-actions-g/design/kp/
+art/source/bruiser-actions-g/tone/
+art/source/bruiser-actions-g/cels/**/*.json
