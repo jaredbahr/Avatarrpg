@@ -100,7 +100,7 @@ describe('slinger hits and knockouts (ADR 0059, ADR 0063)', () => {
       'art/units/slinger-g-3.json',
     ]);
     expect(slinger.clipData).toBe('art/units/slinger-g-clips.json');
-    for (const other of ['bruiser', 'quarrybender']) {
+    for (const other of ['quarrybender']) {
       const entry = ASSETS[`unit.enemy.${other}`];
       if (entry?.kind !== 'sheet') throw new Error(`${other} is not a sheet`);
       expect(entry.clipData, other).toBeUndefined();

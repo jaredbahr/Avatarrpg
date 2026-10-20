@@ -91,7 +91,7 @@ describe('thug hits and knockouts (ADR 0059, ADR 0063)', () => {
     if (thug?.kind !== 'sheet') throw new Error('The thug is not a sheet');
     expect(thug.atlasPages).toEqual(['art/units/thug-g-2.json', 'art/units/thug-g-3.json']);
     expect(thug.clipData).toBe('art/units/thug-g-clips.json');
-    for (const other of ['bruiser', 'quarrybender']) {
+    for (const other of ['quarrybender']) {
       const entry = ASSETS[`unit.enemy.${other}`];
       if (entry?.kind !== 'sheet') throw new Error(`${other} is not a sheet`);
       expect(entry.clipData, other).toBeUndefined();

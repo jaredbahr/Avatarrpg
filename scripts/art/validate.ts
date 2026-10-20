@@ -94,7 +94,10 @@ export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
     'art/source/slinger-g/pins.json',
     'art/source/slinger-actions-g/pins.json',
   ],
-  'unit.enemy.bruiser': ['art/source/bruiser-g/pins.json'],
+  'unit.enemy.bruiser': [
+    'art/source/bruiser-g/pins.json',
+    'art/source/bruiser-actions-g/pins.json',
+  ],
   'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
 };
 
