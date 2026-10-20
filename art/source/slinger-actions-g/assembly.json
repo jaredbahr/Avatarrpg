@@ -1,0 +1,100 @@
+{
+  "takes": [
+    {
+      "kind": "ko",
+      "dir": "north-east",
+      "raw": "ko-north-east-s5102",
+      "seed": 5102,
+      "job": "88ad8de0-a7fe-4262-b538-4f2e1ce4a468",
+      "frames": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "kind": "ko",
+      "dir": "north-west",
+      "raw": "ko-north-west-s5102",
+      "seed": 5102,
+      "job": "42869c43-81f7-4ed0-91f7-8199e9833ca1",
+      "frames": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "kind": "ko",
+      "dir": "south-west",
+      "raw": "ko-south-west-s5102",
+      "seed": 5102,
+      "job": "5dd87b80-9c06-412e-b09f-82afd28a704e",
+      "frames": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "kind": "ko",
+      "dir": "south-east",
+      "raw": "ko-south-east-s5102",
+      "seed": 5102,
+      "job": "df8958b4-6140-4621-bdd5-daa17bf5bfc5",
+      "frames": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "kind": "hit",
+      "dir": "east",
+      "raw": "hit-east-s5101",
+      "seed": 5101,
+      "job": "0d749803-fcd3-4224-af7f-ea8120b668f5",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "north-east",
+      "raw": "hit-north-east-s5101",
+      "seed": 5101,
+      "job": "ab998c50-2ffa-4b44-9434-dea72fe31b53",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "north",
+      "raw": "hit-north-s5102",
+      "seed": 5102,
+      "job": "ec721e05-216e-4aa5-9131-dfa7fe7d0a52",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "north-west",
+      "raw": "hit-north-west-s5102",
+      "seed": 5102,
+      "job": "917d6c41-2bb8-4312-8123-f957c797a24c",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "west",
+      "raw": "hit-west-s5101",
+      "seed": 5101,
+      "job": "eb59ba45-b9e6-4148-abd1-a3544b139e47",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "south-west",
+      "raw": "hit-south-west-s5101",
+      "seed": 5101,
+      "job": "30999c3f-d0ee-4049-bb8c-43019e5c90fb",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "south",
+      "raw": "hit-south-s5101",
+      "seed": 5101,
+      "job": "88be7794-cf41-4126-9feb-c7863fdaf4fe",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "south-east",
+      "raw": "hit-south-east-s5102",
+      "seed": 5102,
+      "job": "42812583-05ab-495c-a3c1-63110b6340e1",
+      "frames": [0, 1, 2]
+    }
+  ]
+}

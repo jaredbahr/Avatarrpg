@@ -89,9 +89,15 @@ export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
     'art/source/bo-clips/pins.json',
     'art/source/bo-hits/pins.json',
   ],
-  'unit.enemy.thug': ['art/source/thug-g/pins.json'],
-  'unit.enemy.slinger': ['art/source/slinger-g/pins.json'],
-  'unit.enemy.bruiser': ['art/source/bruiser-g/pins.json'],
+  'unit.enemy.thug': ['art/source/thug-g/pins.json', 'art/source/thug-actions-g/pins.json'],
+  'unit.enemy.slinger': [
+    'art/source/slinger-g/pins.json',
+    'art/source/slinger-actions-g/pins.json',
+  ],
+  'unit.enemy.bruiser': [
+    'art/source/bruiser-g/pins.json',
+    'art/source/bruiser-actions-g/pins.json',
+  ],
   'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
 };
 
@@ -428,7 +434,12 @@ export async function validateSheets(
       for (const [clip, heading] of registered) {
         const def = clips[clip];
         if (!def?.anchor) continue;
-        const stanceFound = find(`${key}/${headingClip('stance', heading)}/0`);
+        // An enemy has no fighting stance: its idle's first cel is the stance
+        // its hits and knockouts start and end on (`enemy-clips.ts`).
+        const stanceClip = headingClip('stance', heading);
+        const stanceFound = find(
+          `${key}/${clips[stanceClip] ? stanceClip : headingClip('idle', heading)}/0`,
+        );
         if (!stanceFound) {
           problems.push(`${key}: no ${heading} stance cel to register ${clip} on`);
           continue;

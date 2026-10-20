@@ -1,0 +1,152 @@
+{
+  "task": "slinger-actions-claude-001",
+  "budget_gens": 70,
+  "balance_before": 5998,
+  "note": "animate_with_skeleton_v3; first frame = the slinger approved PixelLab rotation (same URL and literal direction name as his idle/walk), first_frame_keypoints = stance skeleton; head keypoints ride the neck (design.py). Seed 5101 first pass, 5102/5103 retakes. hit-north-west-s5102 is the least bad NW take: the sling is absent from all NW hit frames in all three takes (known flaw).",
+  "jobs": [
+    {
+      "name": "hit-east-s5101",
+      "job": "0d749803-fcd3-4224-af7f-ea8120b668f5",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-east-s5101",
+      "job": "ab998c50-2ffa-4b44-9434-dea72fe31b53",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-s5101",
+      "job": "1e93c726-c886-45d6-ae44-219139b12395",
+      "gens": 2,
+      "verdict": "superseded: sling thin"
+    },
+    {
+      "name": "hit-north-s5102",
+      "job": "ec721e05-216e-4aa5-9131-dfa7fe7d0a52",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-s5103",
+      "job": "9eac90ee-4ce8-47ca-a6e7-67bf39385a7c",
+      "gens": 2,
+      "verdict": "superseded: sling shows in f3 only, f2 none"
+    },
+    {
+      "name": "hit-north-west-s5101",
+      "job": "1cc25be3-73dd-4693-b851-aab6bd4f94f2",
+      "gens": 2,
+      "verdict": "superseded: sling absent, hood flap"
+    },
+    {
+      "name": "hit-north-west-s5102",
+      "job": "917d6c41-2bb8-4312-8123-f957c797a24c",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-west-s5103",
+      "job": "929b07f6-25aa-4ffb-ac65-8fb3b9a98541",
+      "gens": 2,
+      "verdict": "superseded: sling absent (emphasised description), hood flap"
+    },
+    {
+      "name": "hit-west-s5101",
+      "job": "eb59ba45-b9e6-4148-abd1-a3544b139e47",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-south-west-s5101",
+      "job": "30999c3f-d0ee-4049-bb8c-43019e5c90fb",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-south-s5101",
+      "job": "88be7794-cf41-4126-9feb-c7863fdaf4fe",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-south-east-s5101",
+      "job": "dd749a1b-2904-4d74-b471-7a7adc66c6ac",
+      "gens": 2,
+      "verdict": "superseded: grey speck ghost beside head in H2"
+    },
+    {
+      "name": "hit-south-east-s5102",
+      "job": "42812583-05ab-495c-a3c1-63110b6340e1",
+      "gens": 2,
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-north-east-s5101",
+      "job": "373b6cb4-ec0d-4f2c-8701-f651991a938d",
+      "gens": 3,
+      "verdict": "superseded: ghost smudges at feet, f6 smear"
+    },
+    {
+      "name": "ko-north-east-s5102",
+      "job": "88ad8de0-a7fe-4262-b538-4f2e1ce4a468",
+      "gens": 3,
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-north-west-s5101",
+      "job": "3eb6fe4e-9d30-455b-a617-2ee35b31706e",
+      "gens": 3,
+      "verdict": "superseded: last frame smear"
+    },
+    {
+      "name": "ko-north-west-s5102",
+      "job": "42869c43-81f7-4ed0-91f7-8199e9833ca1",
+      "gens": 3,
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-south-west-s5101",
+      "job": "bbe3f468-7525-42c1-a3ee-836fa98b32c5",
+      "gens": 3,
+      "verdict": "superseded: last frame smear"
+    },
+    {
+      "name": "ko-south-west-s5102",
+      "job": "5dd87b80-9c06-412e-b09f-82afd28a704e",
+      "gens": 3,
+      "verdict": "USED"
+    },
+    {
+      "name": "ko-south-west-s5103",
+      "job": "a3577cf1-6468-4048-9668-87e58b8113f4",
+      "gens": 3,
+      "verdict": "superseded: last frame smear"
+    },
+    {
+      "name": "ko-south-east-s5101",
+      "job": "4331e87e-28ea-4015-bb71-90fe920a5164",
+      "gens": 3,
+      "verdict": "superseded: last frame arm clutter"
+    },
+    {
+      "name": "ko-south-east-s5102",
+      "job": "df8958b4-6140-4621-bdd5-daa17bf5bfc5",
+      "gens": 3,
+      "verdict": "USED"
+    },
+    {
+      "name": "hit-north-west-s5104",
+      "job": "be23832a-e04a-49e9-8f6d-aad9cd4e3454",
+      "gens": 2,
+      "verdict": "rejected: sling still absent (fourth take)"
+    }
+  ],
+  "total_gens": 53,
+  "balance_after": 5945,
+  "retake_task": {
+    "task": "bandit-retakes-claude-001",
+    "note": "Retakes after the art review: one more north-west hit take (still no sling, 2 gens); knockout SW/SE unchanged (a held duplicate cel is refused by the packer); params-v3.json restored byte-exact."
+  }
+}

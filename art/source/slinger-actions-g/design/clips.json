@@ -1,0 +1,264 @@
+{
+  "atk-a": {
+    "kind": "attack",
+    "clip": "13_17",
+    "ref": 205,
+    "amp": 1.0,
+    "frames": ["stance", 215, 224, 230, 240],
+    "ms": [60, 90, 70, 110, 0],
+    "keys": {
+      "A1": 1,
+      "A2": 2,
+      "A3": 3,
+      "A4": 4
+    },
+    "roles": {
+      "A1": "wind-up",
+      "A2": "strike",
+      "A3": "follow-through",
+      "A4": "recover"
+    },
+    "action": "swinging a club in a heavy strike",
+    "attribution": "CMU 13_17 boxing"
+  },
+  "hit-a": {
+    "kind": "hit",
+    "clip": "79_73",
+    "ref": 48,
+    "amp": 1.2,
+    "frames": [
+      "stance",
+      60,
+      72,
+      {
+        "f": 72,
+        "amp": 0.4
+      }
+    ],
+    "ms": [70, 120, 80, 90],
+    "keys": {
+      "H1": 0,
+      "H2": 1,
+      "H3": 2
+    },
+    "roles": {
+      "H1": "contact",
+      "H2": "flinch extreme",
+      "H3": "recovery"
+    },
+    "action": "hit reaction, flinching back",
+    "attribution": "CMU 79_73 scared f48-72"
+  },
+  "atk-b": {
+    "kind": "attack",
+    "clip": "14_01",
+    "ref": 4440,
+    "amp": 1.15,
+    "frames": ["stance", 4462, 4479, 4488, 4505],
+    "ms": [60, 90, 70, 110, 0],
+    "keys": {
+      "A1": 1,
+      "A2": 2,
+      "A3": 3,
+      "A4": 4
+    },
+    "roles": {
+      "A1": "wind-up",
+      "A2": "strike",
+      "A3": "follow-through",
+      "A4": "recover"
+    },
+    "action": "swinging a club in a heavy strike",
+    "attribution": "CMU 14_01 boxing",
+    "travel": 0.6
+  },
+  "atk": {
+    "kind": "attack",
+    "clip": "14_01",
+    "ref": 4440,
+    "amp": 1.1,
+    "frames": [
+      "stance",
+      4462,
+      4479,
+      {
+        "f": 4486,
+        "amp": 0.8
+      },
+      {
+        "f": 4479,
+        "amp": 0.3
+      }
+    ],
+    "ms": [90, 70, 90, 110, 0],
+    "keys": {
+      "A1": 1,
+      "A2": 2,
+      "A3": 3,
+      "A4": 4
+    },
+    "roles": {
+      "A1": "wind-up",
+      "A2": "strike",
+      "A3": "follow-through",
+      "A4": "recover"
+    },
+    "action": "swinging a club in a heavy strike",
+    "attribution": "CMU 14_01 boxing",
+    "travel": 0.5,
+    "yaw_hip": 15,
+    "yaw_sh": 20
+  },
+  "hit": {
+    "kind": "hit",
+    "clip": "79_73",
+    "ref": 48,
+    "amp": 2.0,
+    "frames": [
+      "stance",
+      60,
+      72,
+      {
+        "f": 72,
+        "amp": 0.4
+      }
+    ],
+    "ms": [70, 120, 80, 90],
+    "keys": {
+      "H1": 0,
+      "H2": 1,
+      "H3": 2
+    },
+    "roles": {
+      "H1": "contact",
+      "H2": "flinch extreme",
+      "H3": "recovery"
+    },
+    "action": "hit reaction, flinching back",
+    "attribution": "CMU 79_73 scared f48-72",
+    "yaw_hip": 10,
+    "yaw_sh": 15
+  },
+  "ko": {
+    "kind": "ko",
+    "clip": "90_18",
+    "ref": 64,
+    "amp": 1.0,
+    "travel": 0.7,
+    "frames": ["stance", 86, 100, 112, 128, 142, 170],
+    "ms": [40, 80, 60, 50, 110, 90, 400],
+    "keys": {
+      "K1": 1,
+      "K2": 2,
+      "K3": 4,
+      "K4": 6
+    },
+    "roles": {
+      "K1": "hit",
+      "K2": "falling",
+      "K3": "down",
+      "K4": "lying"
+    },
+    "action": "knocked down, falling backwards",
+    "attribution": "CMU 90_18"
+  },
+  "atk2": {
+    "kind": "attack",
+    "clip": "14_01",
+    "ref": 4440,
+    "amp": 0.9,
+    "frames": [
+      "stance",
+      4462,
+      4479,
+      {
+        "f": 4486,
+        "amp": 0.8
+      },
+      {
+        "f": 4479,
+        "amp": 0.3
+      }
+    ],
+    "ms": [90, 70, 90, 110, 0],
+    "keys": {
+      "A1": 1,
+      "A2": 2,
+      "A3": 3,
+      "A4": 4
+    },
+    "roles": {
+      "A1": "wind-up",
+      "A2": "strike",
+      "A3": "follow-through",
+      "A4": "recover"
+    },
+    "action": "swinging a club in a heavy strike",
+    "attribution": "CMU 14_01 boxing",
+    "travel": 0.5,
+    "yaw_hip": 4,
+    "yaw_sh": 6
+  },
+  "hit-lic": {
+    "kind": "hit",
+    "clip": "79_73",
+    "ref": 48,
+    "amp": 1.35,
+    "frames": [
+      "stance",
+      60,
+      72,
+      {
+        "f": 72,
+        "amp": 0.4
+      },
+      "stance"
+    ],
+    "ms": [40, 70, 120, 80, 90],
+    "keys": {
+      "H1": 1,
+      "H2": 2,
+      "H3": 3
+    },
+    "roles": {
+      "H1": "contact: shoulders snap in, hips jerk back",
+      "H2": "flinch extreme (held)",
+      "H3": "recovery, guard coming back"
+    },
+    "action": "hit reaction, flinching back",
+    "attribution": "motion: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 'scared', frames 48-72 (120 fps). Licence: CMU mocap is free to use for any purpose, including commercial products and games; credit requested ('The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.'). H3 = the H2 pose at 0.4 amplitude (in-between back to the stance); retargeted onto the character's own stance (amplitude 1.35, exaggerated)",
+    "yaw_hip": 10,
+    "yaw_sh": 15
+  },
+  "ko-lic": {
+    "kind": "ko",
+    "clip": "90_18",
+    "ref": 64,
+    "amp": 1.0,
+    "frames": ["stance", 86, 100, 112, 128, 142, 170],
+    "ms": [40, 80, 60, 50, 110, 90, 400],
+    "keys": {
+      "K1": 1,
+      "K2": 2,
+      "K3": 4,
+      "K4": 6
+    },
+    "roles": {
+      "K1": "hit: knocked off balance",
+      "K2": "falling back, feet leaving",
+      "K3": "ground impact",
+      "K4": "lying on his back (last frame, holds)"
+    },
+    "absw": [0, 0, 0.25, 0.5, 0.8, 1, 1],
+    "action": "knocked down, falling backwards",
+    "attribution": "motion: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18, frames 64-170; retargeted onto the slinger's own stance. Licence: CMU mocap is free to use for any purpose, including commercial products and games; credit requested ('The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.')",
+    "root_travel": 0.7,
+    "turn_per_frame_dirs": {
+      "south-east": [0, 0, 12.0, 30.0, 48.0, 60, 60],
+      "south-west": [0, 0, -9.0, -22.5, -36.0, -45, -45],
+      "north-east": [0, 0, -3.0, -7.5, -12.0, -15, -15],
+      "north-west": [0, 0, 3.0, 7.5, 12.0, 15, 15]
+    },
+    "per_dir_note": "heading turn per diagonal chosen by a sweep (sweep.py): the lying body is laid along a screen diagonal that fits the 192 canvas unshifted (the rotation URL is the first frame, so the canvas is never shifted); root travel 0.7"
+  }
+}
