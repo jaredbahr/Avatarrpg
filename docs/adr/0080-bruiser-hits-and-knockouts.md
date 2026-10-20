@@ -38,7 +38,7 @@ The same recipe, with only the unit changed.
 
 Units go from 6,551,459 B (6.25 MiB) to 6,728,256 B (6.42 MiB) against the 6.75 MiB
 ceiling: 176,797 B for two pages and the clip data. This ADR does not raise any ceiling.
-46 of the 75 PixelLab generations allowed were used (first pass 28, retakes 18); the
+59 PixelLab generations were used in all (first pass 28, retakes 18, and 13 more in the knockout and hit retakes recorded below); the
 ledger is `art/source/bruiser-actions-g/ledger.json`.
 
 ## Consequences
@@ -49,8 +49,8 @@ ledger is `art/source/bruiser-actions-g/ledger.json`.
   body in H3, and the north-west idle and hit hide it throughout. The north-west and
   south-east hits still flare the rag tail, which fails the facing gate's head-width ratio
   (1.26 to 1.43); by eye no frame swings to profile. `gates.py` reports 12 failing
-  frames, the largest pitch error 0.088. The full table is
-  `.review/bruiser-actions/facing-pitch.md` until that folder is dropped.
+  frames, the largest pitch error 0.088. The full table (before the later retakes) is
+  `art/source/bruiser-actions-g/facing-pitch.md`.
 
 ## Amendment: retakes after an art review
 

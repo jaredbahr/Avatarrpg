@@ -1,6 +1,6 @@
 # ADR 0078: The thug's own hit reactions and knockouts
 
-Status: accepted for the thug; the other enemies are unchanged.
+Status: accepted for the thug; ADR 0079 (slinger) and ADR 0080 (bruiser) extend the same recipe.
 
 ## Context
 

@@ -1,6 +1,6 @@
 # ADR 0079: The slinger's own hit reactions and knockouts
 
-Status: accepted for the slinger; the bruiser and the quarry bender are unchanged.
+Status: accepted for the slinger; ADR 0080 extends it to the bruiser; the quarry bender is unchanged.
 
 ## Context
 
@@ -37,7 +37,7 @@ The same recipe, with only the unit changed.
 
 Units go from 6,405,200 B (6.11 MiB) to 6,551,459 B (6.25 MiB) against the 6.75 MiB
 ceiling: 146,259 B for two pages and the clip data. This ADR does not raise any ceiling.
-53 of the 70 PixelLab generations allowed were used; the ledger is
+55 of the 70 PixelLab generations allowed were used (including the seed 5104 retake); the ledger is
 `art/source/slinger-actions-g/ledger.json`.
 
 ## Consequences
@@ -51,8 +51,7 @@ ceiling: 146,259 B for two pages and the clip data. This ADR does not raise any 
   thug's facing or pitch gates (pitch error at most 0.062; the facing failures are
   head-width ratios from the hood, 1.2 to 1.65), and by eye no frame swings to
   profile. The north-west hit was retaken once more (seed 5104, job `be23832a-e04a-49e9-8f6d-aad9cd4e3454`, a description that insists on a long visible sling): still no sling, so the shipped take is unchanged after four attempts.
-  The full table is `.review/slinger-actions/facing-pitch.md` until that folder is
-  dropped.
+  The full table is `art/source/slinger-actions-g/facing-pitch.md`.
 
 ## Amendment: retakes after an art review
 
