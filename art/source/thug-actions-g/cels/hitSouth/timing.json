@@ -2,8 +2,8 @@
  "take": "hitSouth",
  "foot_pin_dy": [
   0,
-  -1,
-  -1,
+  0,
+  0,
   0,
   0
  ],
@@ -27,9 +27,9 @@
    192
   ]
  },
- "raw_job": "20ca895f-b555-42bb-9292-2d00b752acd0",
- "raw": "hit-south-s4101 frames [0, 1, 2]",
- "seed": 4101,
+ "raw_job": "8af328f5-654b-4da0-baca-d2704986e02c",
+ "raw": "hit-south-s4102 frames [0, 1, 2]",
+ "seed": 4102,
  "attribution": "motion: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 'scared', frames 48-72 (120 fps). Licence: CMU mocap is free to use for any purpose, including commercial products and games; credit requested ('The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.'). H3 = the H2 pose at 0.4 amplitude (in-between back to the stance); retargeted onto the character's own stance (amplitude 1.35, exaggerated)",
  "credit": "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.",
  "motion": "79_73 source frames ['stance', 60, 72, {'f': 72, 'amp': 0.4}, 'stance']"

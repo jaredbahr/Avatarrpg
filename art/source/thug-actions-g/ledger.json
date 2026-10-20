@@ -87,10 +87,56 @@
       "gens": 3,
       "note": "retake: s4101 last frame came back as a smear",
       "verdict": "used (frames 0-5; frame 6 is the sacrificial duplicate)"
+    },
+    {
+      "name": "ko-south-east-s4201",
+      "job": "729b3eca-6b43-4163-9444-e6358c5855fc",
+      "gens": 3,
+      "verdict": "superseded: description change only; last frame smeared, club not fixed"
+    },
+    {
+      "name": "ko-south-west-s4201",
+      "job": "f3346cc4-cbe0-462e-bb1c-f14670234e3c",
+      "gens": 3,
+      "verdict": "superseded: club raised in the held frames, last frame smeared"
+    },
+    {
+      "name": "ko-south-east-s4202",
+      "job": "f32225fe-5227-41cb-967c-725270432768",
+      "gens": 3,
+      "verdict": "USED frames 0-4: right wrist lowered in the last two keypoint frames; club never upright"
+    },
+    {
+      "name": "ko-south-west-s4202",
+      "job": "491d35d9-a8a7-48cc-bb69-2c9ae6e69c7b",
+      "gens": 3,
+      "verdict": "superseded: club still upright"
+    },
+    {
+      "name": "ko-south-west-s4203",
+      "job": "187cb916-87ac-44e7-bc8c-98e3573c5deb",
+      "gens": 3,
+      "verdict": "USED frames 0-4: right wrist lowered to y 0.92 in the last three keypoint frames; no upright club"
+    },
+    {
+      "name": "hit-north-s4102",
+      "job": "70a79c27-27e4-41df-8ec4-88f20e053ffa",
+      "gens": 2,
+      "verdict": "rejected: worse (H1 fragmented, no club in H2/H3)"
+    },
+    {
+      "name": "hit-south-s4102",
+      "job": "8af328f5-654b-4da0-baca-d2704986e02c",
+      "gens": 2,
+      "verdict": "USED: head smaller in H2"
     }
   ],
   "gens_used": 36,
   "balance_after": 5998,
   "gens_used_by_this_task": 36,
-  "balance_note": "The shared account fell by 48 (6046 to 5998); the 36 above are this task's receipts (animate_with_skeleton_v3: 2 per 3-frame job, 3 per 6- or 7-frame job). The other 12 are other workers' creator-image jobs seen in list_jobs."
+  "balance_note": "The shared account fell by 48 (6046 to 5998); the 36 above are this task's receipts (animate_with_skeleton_v3: 2 per 3-frame job, 3 per 6- or 7-frame job). The other 12 are other workers' creator-image jobs seen in list_jobs.",
+  "retake_task": {
+    "task": "bandit-retakes-claude-001",
+    "note": "Retakes after the art review: 5 knockout jobs (15 gens) and 2 hit jobs (4 gens), 19 gens. Requests used the committed kp/ skeletons; the right wrist (RIGHT ARM) of the held frames was lowered onto the ground in the SE and SW knockout requests."
+  }
 }

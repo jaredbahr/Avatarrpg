@@ -31,9 +31,9 @@
    192
   ]
  },
- "raw_job": "59210a90-3a8d-4484-9163-d693a86d9359",
- "raw": "ko-south-west-s4102 frames [0, 1, 2, 3, 4, 5]",
- "seed": 4102,
+ "raw_job": "187cb916-87ac-44e7-bc8c-98e3573c5deb",
+ "raw": "ko-south-west-s4203 frames [0, 1, 2, 3, 4, 5]",
+ "seed": 4203,
  "attribution": "motion: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18, frames 64-170; retargeted onto the thug's own stance. Licence: CMU mocap is free to use for any purpose, including commercial products and games; credit requested ('The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.')",
  "credit": "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.",
  "motion": "90_18 source frames ['stance', 86, 100, 112, 128, 142, 170]"

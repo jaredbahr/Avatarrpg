@@ -135,8 +135,18 @@
       "job": "df8958b4-6140-4621-bdd5-daa17bf5bfc5",
       "gens": 3,
       "verdict": "USED"
+    },
+    {
+      "name": "hit-north-west-s5104",
+      "job": "be23832a-e04a-49e9-8f6d-aad9cd4e3454",
+      "gens": 2,
+      "verdict": "rejected: sling still absent (fourth take)"
     }
   ],
   "total_gens": 53,
-  "balance_after": 5945
+  "balance_after": 5945,
+  "retake_task": {
+    "task": "bandit-retakes-claude-001",
+    "note": "Retakes after the art review: one more north-west hit take (still no sling, 2 gens); knockout SW/SE unchanged (a held duplicate cel is refused by the packer); params-v3.json restored byte-exact."
+  }
 }

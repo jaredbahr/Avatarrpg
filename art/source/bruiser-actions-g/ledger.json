@@ -122,8 +122,42 @@
       "job": "83e8a5e1-ff5e-4f63-bcc1-dad56e317183",
       "gens": 2,
       "verdict": "USED"
+    },
+    {
+      "name": "ko-south-west-s5201",
+      "job": "561a9e84-1eaa-4a2f-b4e4-d6b964a4bc4f",
+      "gens": 3,
+      "verdict": "USED (frames 0-5) with lay_club.py on raw 4,5 (raw/ko-south-west-s5201e)"
+    },
+    {
+      "name": "ko-south-east-s5201",
+      "job": "49ee734a-eaad-43a4-9cd7-7353eed96902",
+      "gens": 3,
+      "verdict": "USED: right wrist lowered in the last two keypoint frames; club lies across the thigh"
+    },
+    {
+      "name": "ko-south-west-s5202",
+      "job": "e450cdf3-076a-4e30-983b-ef320192e62f",
+      "gens": 3,
+      "verdict": "rejected: club upright (original skeleton)"
+    },
+    {
+      "name": "hit-south-east-s5203",
+      "job": "19d64aab-cc3d-4102-8ced-89f8ef00d89f",
+      "gens": 2,
+      "verdict": "USED: rag described as tied flat"
+    },
+    {
+      "name": "hit-north-west-s5203",
+      "job": "eebb5265-2510-4393-b11e-8c404e656ea6",
+      "gens": 2,
+      "verdict": "USED: rag described as tied flat"
     }
   ],
   "total_gens": 46,
-  "balance_after": 5899
+  "balance_after": 5899,
+  "retake_task": {
+    "task": "bandit-retakes-claude-001",
+    "note": "Retakes after the art review; seeds 5201-5203."
+  }
 }

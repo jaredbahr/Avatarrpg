@@ -45,12 +45,26 @@ ledger is `art/source/bruiser-actions-g/ledger.json`.
 
 - Credits: the two CMU entries in `credits.ts`, `credits.notice.ts` and `NOTICE.md`
   now also cover the bruiser's pages.
-- Known flaws ship as they are, pending review. In the south-west knockout the club
-  stands up out of the lying hand in the last three frames (four takes, and a
-  description that says the club lies flat did not change it); the south-east
-  knockout's last frame does the same, smaller. The north hit hides the club behind the
+- Known flaws ship as they are, pending review. The north hit hides the club behind the
   body in H3, and the north-west idle and hit hide it throughout. The north-west and
-  south-east hits flare the rag tail, which fails the facing gate's head-width ratio
+  south-east hits still flare the rag tail, which fails the facing gate's head-width ratio
   (1.26 to 1.43); by eye no frame swings to profile. `gates.py` reports 12 failing
   frames, the largest pitch error 0.088. The full table is
   `.review/bruiser-actions/facing-pitch.md` until that folder is dropped.
+
+## Amendment: retakes after an art review
+
+- south-east knockout: seed 5201 (job `49ee734a-eaad-43a4-9cd7-7353eed96902`), the right
+  wrist lowered onto the ground in the last two frames of the request. The club now lies
+  across the thigh in the hand; nothing stands up.
+- south-west knockout: seed 5201 (job `561a9e84-1eaa-4a2f-b4e4-d6b964a4bc4f`) and a seed 5202
+  take (not used) also stood the club up, so the held frames carry **one pixel edit**
+  (`lay_club.py`, raw frames 4 and 5 of the 5201 take, kept as `raw/ko-south-west-s5201e/`):
+  the upright part of the club (every opaque pixel above the body's top edge inside the
+  club's own columns) is cut out and put back rotated 90 degrees counter-clockwise,
+  the generator's own pixels with nothing painted, behind the thigh on the far side, its
+  handle end at the original handle column. Frame 3 of that take (the club leaning)
+  and everything else is unedited.
+- south-east and north-west hits: seed 5203 (jobs `19d64aab-cc3d-4102-8ced-89f8ef00d89f`,
+  `eebb5265-2510-4393-b11e-8c404e656ea6`), with a description that ties the rag flat.
+  The tails are shorter but still flare; `gates.py` still reports 12 failing frames.

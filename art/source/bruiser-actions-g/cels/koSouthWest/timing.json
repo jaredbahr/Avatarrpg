@@ -31,9 +31,9 @@
    192
   ]
  },
- "raw_job": "156f6a95-15a6-4baa-8fdb-84b7a7dd1403",
- "raw": "ko-south-west-s5102 frames [0, 1, 2, 3, 4, 5]",
- "seed": 5102,
+ "raw_job": "561a9e84-1eaa-4a2f-b4e4-d6b964a4bc4f",
+ "raw": "ko-south-west-s5201e frames [0, 1, 2, 3, 4, 5]",
+ "seed": 5201,
  "attribution": "motion: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18, frames 64-170; retargeted onto the bruiser's own stance. Licence: CMU mocap is free to use for any purpose, including commercial products and games; credit requested ('The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.')",
  "credit": "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.",
  "motion": "90_18 source frames ['stance', 86, 100, 112, 128, 142, 170]"

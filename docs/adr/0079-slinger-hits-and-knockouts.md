@@ -50,6 +50,18 @@ ceiling: 146,259 B for two pages and the clip data. This ADR does not raise any 
   shows above the north-west hit's head. `gates.py` reports 24 frames failing the
   thug's facing or pitch gates (pitch error at most 0.062; the facing failures are
   head-width ratios from the hood, 1.2 to 1.65), and by eye no frame swings to
-  profile. The south-west knockout's last frame has a faint blob where a raised hand is.
+  profile. The north-west hit was retaken once more (seed 5104, job `be23832a-e04a-49e9-8f6d-aad9cd4e3454`, a description that insists on a long visible sling): still no sling, so the shipped take is unchanged after four attempts.
   The full table is `.review/slinger-actions/facing-pitch.md` until that folder is
   dropped.
+
+## Amendment: retakes after an art review
+
+The north-west hit's sling and the south-west and south-east knockouts' last-cel blobs are
+not fixed: dropping the last frame to hold the one before is refused by the packer (a
+duplicate cel must be a declared hold) and the takes have no spare frame to use instead.
+`tone/params-v3.json` is restored byte-exact from the thug's copy (SHA-256
+`d6f5afc6...1494`, the hash `tone_p1.py` checks; prettier had rewritten it) and
+`.prettierignore` now lists the slinger's `tone/`, `design/kp/` and `cels/**/*.json` as
+the thug's and bruiser's are. `assemble.py` was run against the restored file and rebuilds
+every cel PNG byte-identical; only the `timing.json` files changed (they are no longer
+prettier-formatted), so `pins.json` was re-pinned.

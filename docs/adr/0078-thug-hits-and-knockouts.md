@@ -63,6 +63,28 @@ ceiling.
   south-west and west on all three, south and north on two, east on one) and 4 early
   falling frames fail the party's 0.03 size gate (largest 0.075). Two frames fail the
   facing gate: south H2 (the rag flares and widens the head 22%) and north-east K1,
-  which is falling. No frame swings to profile. The south-west knockout ends with the
-  club standing up from the lying hand. The full table is `art/source/thug-actions-g/facing-pitch.md`
+  which is falling. No frame swings to profile. The full table is `art/source/thug-actions-g/facing-pitch.md`
   until that folder is dropped, and `gates.py` regenerates it.
+
+## Amendment: retakes after an art review
+
+An independent review found the south-east and south-west knockouts held on a lying
+frame with the club standing straight up out of the chest. Retaken, same design
+skeletons (CMU 90_18, the per-diagonal turns), the right wrist lowered onto the ground in
+the last frames of the request (`design/kp` is unchanged; the lowered wrist is a request
+edit recorded in `ledger.json`):
+
+- south-east knockout: seed 4202 (job `f32225fe-5227-41cb-967c-725270432768`), frames
+  0 to 5 of 7. The club ends under the body with its handle in the hand and a faint
+  knob over the thigh in the last cel; it never stands up.
+- south-west knockout: seed 4203 (job `187cb916-87ac-44e7-bc8c-98e3573c5deb`), frames
+  0 to 5. The club leaves the hand early; a small stub shows behind the belt in the last
+  cels and nothing stands up.
+- north-east knockout: not retaken. Its last cel still loses the club (a take that
+  dropped it to hold frame 4 failed the packer's no-duplicate-cel rule, which is kept).
+- south hit: seed 4102 (job `8af328f5-654b-4da0-baca-d2704986e02c`).
+- A north hit retake (seed 4102) came back worse (no club in H2 and H3, fragmented H1)
+  and is not used. The north-west knockout was not retaken.
+
+Nothing was pixel-edited. Every other cel, including the stances, is byte-identical.
+`facing-pitch.md` is regenerated and `gates.py` now reports 18 failing frames.

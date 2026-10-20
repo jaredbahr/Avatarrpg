@@ -70,18 +70,18 @@
     "hitNorthEast/04.png": "bac2ae8f8685d5be27c2389ff3e69bcf9f6a2d04609757da398c8e4e687cd372"
   },
   "timing": {
-    "koSouthEast/timing.json": "ac9fef4beea001dc61daa20e140e9eb479868d6424656ce3650d80e7b6149fe6",
-    "koSouthWest/timing.json": "a5820fd405c4e3155e61f14f7b72d7492a3cf7af925d6d0b89a9f61b1be29ca8",
-    "koNorthEast/timing.json": "8be29328688bb9abf25cd91540fffccd11a229c82a5b8297186ff49fa86f3319",
-    "koNorthWest/timing.json": "53d4900c0078a640b65f80f68fd8b445f967ee7e28c6a36e963cc3e5985798b6",
-    "hitEast/timing.json": "a421bccadea32304fce874ef77c0cd06dc5da718504cd8240bfdcb7cdc1b4924",
-    "hitSouthEast/timing.json": "5c925420b44afd9cc183eb6eb0825c6e320a4239cf1584aa2649f3ad3592404d",
-    "hitSouth/timing.json": "008d0ffa521068b890bc727af61095ccdad63ed170cdcb731f0338764c1f35c8",
-    "hitSouthWest/timing.json": "8c3ffc392960d5d2ce427b909556b689e4a2c5ca81039d26c6d8856ca49e4dab",
-    "hitWest/timing.json": "59ae0be0524b7c65cd7c2c57d47cc3dfc2b3bce02f4230cc58ad512be53d51d2",
-    "hitNorthWest/timing.json": "f69f9d0624c393eb6b9f03f05054aca6d2f9602e30033e8534ee414daceca3ae",
-    "hitNorth/timing.json": "adea1fe6d20b43fa3e14899053afd5e361457e85744e4eed72d7379c3a668eea",
-    "hitNorthEast/timing.json": "9319df88c16b78abf81a32eb30b2528963eb5f3e5b5ba248d2d4957e29708f30"
+    "koSouthEast/timing.json": "3d4b5063996bdecfd2a772796ae804045ced3a8c1a75a609f038ea6cb9e90828",
+    "koSouthWest/timing.json": "41a4694d17f6f25c83e13e31920434f97d16325607986d930a24cfefa2e5a433",
+    "koNorthEast/timing.json": "bd721d7b5ddabea100af10542562f662b5615b8ed98bdd200cf925a2e327f0fe",
+    "koNorthWest/timing.json": "48a0e4ba13072f8603b195534daff667177cb40095e6df89389f6a7edf002fd9",
+    "hitEast/timing.json": "36cb6626f9c343504a16ad631e89211eef37864cfcc88aa46dde7a04120dd21c",
+    "hitSouthEast/timing.json": "2a02604fe4b2b6fb6545846ccb686995017be798ec01ae666bbe6f7f69c3646d",
+    "hitSouth/timing.json": "6e1f01c939c8aa3494abd8e17670baba96129cde55a9aa6aa4003340f6a929fe",
+    "hitSouthWest/timing.json": "818fde24714ef35a7e19a3df790c9540ee06316f21069de8079400c5dfa34131",
+    "hitWest/timing.json": "ad955afef9d465784e41d98a1f9bd10bbbc855f112a0806accbe8cb10aac7a88",
+    "hitNorthWest/timing.json": "46061751f016612de88ad8d5863b73adf6762e4881295f77dbecf816f7572dab",
+    "hitNorth/timing.json": "63b945427000f3c9af00b56a6ff0dd883ebe7fa750649c5ed30ce5c100dd9705",
+    "hitNorthEast/timing.json": "52623bc11aff8b04512e087297a19cdd337ef398aa2ffe83b8d504a2d152a1e9"
   },
   "tone": {
     "tool": "models-p1-bandits/scripts/tone_p1.py",

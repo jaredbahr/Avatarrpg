@@ -26,8 +26,8 @@
   "colours_as_intended": true,
   "outline_weight_max_delta": 0.0,
   "luma_max_abs_delta": 0.45,
-  "changed_px": 7907,
-  "protected_px": 9942
+  "changed_px": 7977,
+  "protected_px": 9817
  },
  "hitEast": {
   "frames": 3,
@@ -86,8 +86,8 @@
   "colours_as_intended": true,
   "outline_weight_max_delta": 0.0,
   "luma_max_abs_delta": 0.45,
-  "changed_px": 14212,
-  "protected_px": 19624
+  "changed_px": 14553,
+  "protected_px": 19151
  },
  "koNorthEast": {
   "frames": 6,
@@ -106,8 +106,8 @@
   "colours_as_intended": true,
   "outline_weight_max_delta": 0.0,
   "luma_max_abs_delta": 0.45,
-  "changed_px": 14617,
-  "protected_px": 18523
+  "changed_px": 12739,
+  "protected_px": 19739
  },
  "koNorthWest": {
   "frames": 6,

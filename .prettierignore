@@ -28,3 +28,7 @@ art/source/thug-actions-g/cels/**/*.json
 art/source/bruiser-actions-g/design/kp/
 art/source/bruiser-actions-g/tone/
 art/source/bruiser-actions-g/cels/**/*.json
+# The slinger's hit and knockout design, same as the thug's and bruiser's: generated skeletons, and the frozen tone parameters.
+art/source/slinger-actions-g/design/kp/
+art/source/slinger-actions-g/tone/
+art/source/slinger-actions-g/cels/**/*.json
