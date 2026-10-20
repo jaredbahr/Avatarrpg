@@ -20,3 +20,7 @@ art/source/ba-dan-true/pins-dressing.json
 art/source/ba-dan-true/walls/walls.json
 # Scratch written by the art tools and their tests (never tracked).
 .review/
+# The thug's hit and knockout design: generated skeletons, and the frozen tone parameters (their SHA-256 is pinned).
+art/source/thug-actions-g/design/kp/
+art/source/thug-actions-g/tone/
+art/source/thug-actions-g/cels/**/*.json

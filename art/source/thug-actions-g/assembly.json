@@ -1,0 +1,100 @@
+{
+  "takes": [
+    {
+      "kind": "hit",
+      "dir": "south-east",
+      "raw": "hit-south-east-s4101",
+      "seed": 4101,
+      "job": "c97135d1-2efd-4724-8442-698d889379c1",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "south-west",
+      "raw": "hit-south-west-s4101",
+      "seed": 4101,
+      "job": "df2f98ec-3b81-4ba5-a9f5-3a0d1c30d924",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "south",
+      "raw": "hit-south-s4101",
+      "seed": 4101,
+      "job": "20ca895f-b555-42bb-9292-2d00b752acd0",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "east",
+      "raw": "hit-east-s4101",
+      "seed": 4101,
+      "job": "fa7738ca-457f-4204-901f-37b497ffe70a",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "north-east",
+      "raw": "hit-north-east-s4101",
+      "seed": 4101,
+      "job": "958ba55c-87cc-4498-9d92-9bdf398d6f1b",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "north",
+      "raw": "hit-north-s4101",
+      "seed": 4101,
+      "job": "41359dc3-5d14-44e8-aabd-b0d55b67f92e",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "north-west",
+      "raw": "hit-north-west-s4101",
+      "seed": 4101,
+      "job": "191b5b50-b5c9-41cc-af16-10497186ecda",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "hit",
+      "dir": "west",
+      "raw": "hit-west-s4102",
+      "seed": 4102,
+      "job": "b964059c-6a75-42cb-85ac-4d9d983177ce",
+      "frames": [0, 1, 2]
+    },
+    {
+      "kind": "ko",
+      "dir": "south-east",
+      "raw": "ko-south-east-s4101",
+      "seed": 4101,
+      "job": "4afb9d5d-c7e8-453a-b5c9-6436c090c088",
+      "frames": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "kind": "ko",
+      "dir": "north-east",
+      "raw": "ko-north-east-s4101",
+      "seed": 4101,
+      "job": "0e23f3d3-cc50-4352-8be7-3f1860bab1a1",
+      "frames": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "kind": "ko",
+      "dir": "south-west",
+      "raw": "ko-south-west-s4102",
+      "seed": 4102,
+      "job": "59210a90-3a8d-4484-9163-d693a86d9359",
+      "frames": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "kind": "ko",
+      "dir": "north-west",
+      "raw": "ko-north-west-s4102",
+      "seed": 4102,
+      "job": "6c867d75-a09f-489c-b42a-8ad67495102f",
+      "frames": [0, 1, 2, 3, 4, 5]
+    }
+  ]
+}
