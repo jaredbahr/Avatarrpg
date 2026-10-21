@@ -43,6 +43,12 @@ describe('ba-dan-regions', () => {
   it('cuts plates that cover the painting and overlap by two pixels', () => {
     expect(run('split_plates_cover_and_overlap')).toContain('ok');
   }, 180_000);
+  it('calms the ground with a deterministic median, saturation and contrast step', () => {
+    expect(run('quiet_ground_calms_and_is_deterministic')).toContain('ok');
+  });
+  it('softens the ground plates and leaves the uprights on the unsoftened painting', () => {
+    expect(run('split_softens_plates_and_not_uprights')).toContain('ok');
+  }, 180_000);
   it('reports planting painted across an upright edge', () => {
     expect(run('straddle_detects_added_clutter')).toContain('ok');
   }, 180_000);

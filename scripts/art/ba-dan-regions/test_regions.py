@@ -466,6 +466,87 @@ def case_edge_fade_is_flat_bounded_irregular_and_deterministic(work):
     assert first.min() >= R.FADE_FLAT - 1 and first.max() <= hi
 
 
+def case_quiet_ground_calms_and_is_deterministic(work):
+    assert (R.QUIET_MEDIAN, R.QUIET_SATURATION, R.QUIET_CONTRAST) == (3, 0.85, 0.88)
+    rng = np.random.RandomState(7)
+    base = np.clip(rng.randint(60, 190, (300, 400, 3)), 0, 255).astype(np.uint8)
+    q = R.quiet_ground(base)
+    assert q.shape == base.shape and q.dtype == np.uint8
+    assert np.array_equal(q, R.quiet_ground(base)), "deterministic"
+    def grain(a):
+        a = a.astype(float)
+        return np.abs(np.diff(a, axis=1)).mean()
+    def chroma(a):
+        a = a.astype(float)
+        return (a.max(-1) - a.min(-1)).mean()
+    assert grain(q) < 0.8 * grain(base), (grain(q), grain(base))
+    assert chroma(q) < chroma(base)
+    # a flat field is only moved by saturation and contrast, never by the median
+    flat = np.full((20, 20, 3), (90, 120, 70), np.uint8)
+    f = R.quiet_ground(flat)
+    assert (f == f[0, 0]).all()
+
+
+def case_split_softens_plates_and_not_uprights(work):
+    import shutil
+    from types import SimpleNamespace
+    plan, v, painting = split_inputs(work)
+    out = work / "two"
+    R.save(out / "stitched.png", painting)
+    R.dump(out / "regions.json", plan)
+    assert R.main(["--out", str(out), "split"]) == 0
+    sdir = out / "split"
+    fade = R.edge_fade(painting)
+    raw = R.fade_into_margin(painting, fade)
+    quiet = R.fade_into_margin(R.quiet_plates(painting, v), fade)
+    assert not np.array_equal(raw, quiet)
+    # only the ground is softened: a pixel any piece owns (upright or not) is the unsoftened painting, a pixel
+    # beyond the 2 px feather is the softened one
+    vh, vw = painting.shape[:2]
+    owned = v.ids[:vh, :vw] > 0
+    far = ~R._grow(owned, 2)
+    assert owned.sum() > 0 and far.sum() > 0
+    assert np.array_equal(quiet[owned], raw[owned])
+    soft = R.fade_into_margin(R.quiet_ground(painting), fade)
+    assert np.array_equal(quiet[far], soft[far])
+    nonup = [p for p in v.pieces if v.needed()[p["id"]] == 0 and (v.ids == p["index"] + 1).any()]
+    assert nonup, "a piece that is not an upright is owned somewhere"
+    for p in nonup:
+        m = v.ids[:vh, :vw] == p["index"] + 1
+        assert np.array_equal(quiet[m], raw[m]), p["id"]
+    ramp = R._grow(owned, 2) & ~owned
+    assert ramp.any() and (np.abs(quiet[ramp].astype(int) - raw[ramp]) <= np.abs(soft[ramp].astype(int) - raw[ramp])).all()
+    # deterministic
+    assert np.array_equal(quiet, R.fade_into_margin(R.quiet_plates(painting, v), fade))
+    # every plate is the ground-softened painting; none is the raw one
+    for p in R.json.load(open(sdir / "split-report.json"))["plates"]:
+        im = R.load_rgb(sdir / p["file"])
+        win = (slice(p["y"], p["y"] + p["height"]), slice(p["x"], p["x"] + p["width"]))
+        assert np.array_equal(im, quiet[win]), p["file"]
+        assert not np.array_equal(im, raw[win]), p["file"]
+    # every upright pixel it owns is the unsoftened painting, exactly
+    rep = R.json.load(open(sdir / "split-report.json"))
+    checked = 0
+    for row in rep["sprites"]:
+        sp = R.load_rgba(sdir / row["file"])
+        sy0, sx0 = max(0, row["y"]), max(0, row["x"])
+        sy1, sx1 = min(vh, row["y"] + row["height"]), min(vw, row["x"] + row["width"])
+        if sy1 <= sy0 or sx1 <= sx0:
+            continue
+        own_here = v.ids[sy0:sy1, sx0:sx1] == row["index"] + 1
+        part = sp[sy0 - row["y"]:sy1 - row["y"], sx0 - row["x"]:sx1 - row["x"]]
+        solid = own_here & (part[..., 3] > 0) & (v.front[sy0:sy1, sx0:sx1] <= 2)
+        if not solid.any():
+            continue
+        assert np.array_equal(part[..., :3][solid], raw[sy0:sy1, sx0:sx1][solid]), row["file"]
+        checked += int(solid.sum())
+    assert checked > 0
+    # and the second run gives the same plates (deterministic end to end)
+    first = {f.name: f.read_bytes() for f in (sdir / "plates").glob("*.png")}
+    assert R.main(["--out", str(out), "split"]) == 0
+    assert first == {f.name: f.read_bytes() for f in (sdir / "plates").glob("*.png")}
+
+
 CASES = {n[5:]: f for n, f in globals().items() if n.startswith("case_")}
 
 if __name__ == "__main__":

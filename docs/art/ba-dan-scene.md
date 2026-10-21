@@ -210,6 +210,15 @@ removed at the integration; they are in git history at `7925789c`. The painted m
 worked from are still under `art/source/` and `scripts/art/ba-dan-guides/`, and the sprites they packed
 (the frozen geometry's `sprites/`) are the silhouettes the uprights are cut by.
 
+## Calm ground plates (20 October 2026)
+
+The ground is softened so it reads as a backdrop while buildings, objects and characters keep the detail (ADR 0083). In
+`regions.py split`, `quiet_plates` blends `quiet_ground` (`MedianFilter(QUIET_MEDIAN = 3)`, colour `QUIET_SATURATION = 0.85`, contrast
+`QUIET_CONTRAST = 0.88`) into the raw painting only where no geometry piece owns the pixel (`ground_weight`, from the frozen owner
+map, so non-upright pieces such as the stall, barrels, planters and fences count as pieces), with a 2 px feather on the ground side.
+Plates are cut from that result (`DIR/quiet.png`); the uprights are cut from the unsoftened painting (`DIR/faded.png`). The canal
+water is calmed; the ripple highlights are runtime and unaffected. The ground plates are about 12% smaller (2.23 MB to 1.97 MB).
+
 ## Exterior surround modules (6 October 2026)
 
 `village-surround.webp` is one 1824×1280 lossy WebP atlas (exact binary alpha) containing four
