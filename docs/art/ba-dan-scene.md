@@ -212,11 +212,12 @@ worked from are still under `art/source/` and `scripts/art/ba-dan-guides/`, and 
 
 ## Calm ground plates (20 October 2026)
 
-The ground plates are softened so the ground reads as a backdrop and the characters and objects keep the detail (ADR 0083). In
-`regions.py split`, `quiet_ground` runs on the raw painting before the edge fade: `MedianFilter(QUIET_MEDIAN = 3)`, then colour
-`QUIET_SATURATION = 0.85`, then contrast `QUIET_CONTRAST = 0.88`. Only the plates are cut from the result (`DIR/quiet.png`); the
-uprights are cut from the unsoftened painting (`DIR/faded.png`), so their pixels and silhouettes do not change. The plate under an
-upright's footprint is softened too; it is hidden by the upright. The ground plates are about 26% smaller (2.23 MB to 1.65 MB).
+The ground is softened so it reads as a backdrop while buildings, objects and characters keep the detail (ADR 0083). In
+`regions.py split`, `quiet_plates` blends `quiet_ground` (`MedianFilter(QUIET_MEDIAN = 3)`, colour `QUIET_SATURATION = 0.85`, contrast
+`QUIET_CONTRAST = 0.88`) into the raw painting only where no geometry piece owns the pixel (`ground_weight`, from the frozen owner
+map, so non-upright pieces such as the stall, barrels, planters and fences count as pieces), with a 2 px feather on the ground side.
+Plates are cut from that result (`DIR/quiet.png`); the uprights are cut from the unsoftened painting (`DIR/faded.png`). The canal
+water is calmed; the ripple highlights are runtime and unaffected. The ground plates are about 12% smaller (2.23 MB to 1.97 MB).
 
 ## Exterior surround modules (6 October 2026)
 

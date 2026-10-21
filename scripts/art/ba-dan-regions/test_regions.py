@@ -498,9 +498,27 @@ def case_split_softens_plates_and_not_uprights(work):
     sdir = out / "split"
     fade = R.edge_fade(painting)
     raw = R.fade_into_margin(painting, fade)
-    quiet = R.fade_into_margin(R.quiet_ground(painting), fade)
+    quiet = R.fade_into_margin(R.quiet_plates(painting, v), fade)
     assert not np.array_equal(raw, quiet)
-    # every plate is the softened painting; none is the raw one
+    # only the ground is softened: a pixel any piece owns (upright or not) is the unsoftened painting, a pixel
+    # beyond the 2 px feather is the softened one
+    vh, vw = painting.shape[:2]
+    owned = v.ids[:vh, :vw] > 0
+    far = ~R._grow(owned, 2)
+    assert owned.sum() > 0 and far.sum() > 0
+    assert np.array_equal(quiet[owned], raw[owned])
+    soft = R.fade_into_margin(R.quiet_ground(painting), fade)
+    assert np.array_equal(quiet[far], soft[far])
+    nonup = [p for p in v.pieces if v.needed()[p["id"]] == 0 and (v.ids == p["index"] + 1).any()]
+    assert nonup, "a piece that is not an upright is owned somewhere"
+    for p in nonup:
+        m = v.ids[:vh, :vw] == p["index"] + 1
+        assert np.array_equal(quiet[m], raw[m]), p["id"]
+    ramp = R._grow(owned, 2) & ~owned
+    assert ramp.any() and (np.abs(quiet[ramp].astype(int) - raw[ramp]) <= np.abs(soft[ramp].astype(int) - raw[ramp])).all()
+    # deterministic
+    assert np.array_equal(quiet, R.fade_into_margin(R.quiet_plates(painting, v), fade))
+    # every plate is the ground-softened painting; none is the raw one
     for p in R.json.load(open(sdir / "split-report.json"))["plates"]:
         im = R.load_rgb(sdir / p["file"])
         win = (slice(p["y"], p["y"] + p["height"]), slice(p["x"], p["x"] + p["width"]))
@@ -509,7 +527,6 @@ def case_split_softens_plates_and_not_uprights(work):
     # neighbouring plates agree on their overlap (cut from one image)
     # every upright pixel it owns is the unsoftened painting, exactly
     rep = R.json.load(open(sdir / "split-report.json"))
-    vh, vw = painting.shape[:2]
     checked = 0
     for row in rep["sprites"]:
         sp = R.load_rgba(sdir / row["file"])

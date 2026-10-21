@@ -13,22 +13,30 @@ treatment below.
 
 ## Decision
 
-- `regions.py split` applies `quiet_ground` to the **ground plates only**: PIL `MedianFilter(QUIET_MEDIAN = 3)` on the full-resolution
+- `regions.py split` applies `quiet_ground` to the **ground only**: PIL `MedianFilter(QUIET_MEDIAN = 3)` on the full-resolution
   painting, then `ImageEnhance.Color(QUIET_SATURATION = 0.85)`, then `ImageEnhance.Contrast(QUIET_CONTRAST = 0.88)`. It is
   deterministic (no randomness; the contrast pivot is the painting's own mean grey).
-- It runs on the raw painting **before** the edge fade, so the perimeter is still exactly the margin colour. The softened painting is
-  written to `DIR/quiet.png`; `DIR/faded.png` stays the unsoftened one.
-- The plates are cut from the softened painting in one piece, so the 2 px overlaps between neighbours are identical and there is
-  no seam.
-- **Uprights are excluded.** They are cut from the unsoftened (faded) painting, so a house, tree or prop a figure can walk behind keeps
-  its crisp pixels and its silhouette, rim included. The soft ground underneath an upright's footprint is hidden by the upright, so
-  no extra handling is needed there; the plate is softened under the footprint as well.
-- The geometry, the upright set, `baDan.art.ts` and the scene flags are untouched.
+- **Ground means a pixel no geometry piece owns.** The plates carry the whole painting, but the uprights cover only what a figure can
+  stand behind, so softening the whole plate also softened roofs, walls, the market stall, barrels, benches, planters, carts, fences and
+  the 29 pieces left in the ground. `ground_weight` reads the frozen geometry's owner map (`village/ids.png`, the front-most piece at
+  each pixel, upright or not) and `quiet_plates` blends `quiet_ground` into the painting by it: weight 1 on ground (grass, paving,
+  paths, soil, banks, the canal water), 0 on every pixel a piece owns, so painted pieces keep the unsoftened painting exactly.
+- The seam is feathered on the **ground side only**: ground pixels 1 and 2 px from a piece take 0.35 and 0.7 of the softening
+  (`QUIET_FEATHER`). A piece pixel is never touched, so there is no halo of softened colour inside a piece and no hard step outside it.
+- The canal water is ground and is calmed. The ripple highlights are drawn by the runtime, not baked into the plates, so they are
+  unaffected.
+- The step runs on the raw painting **before** the edge fade, so the perimeter is still exactly the margin colour. The softened
+  painting is written to `DIR/quiet.png`; `DIR/faded.png` stays the unsoftened one.
+- The plates are cut from the blended painting in one piece, so the 2 px overlaps between neighbours are identical and there is no seam.
+- **Uprights are excluded** and are cut from the unsoftened (faded) painting as before. The geometry, the upright set, `baDan.art.ts`
+  and the scene flags are untouched.
 
 ## Consequences
 
-- Plate bytes fall from 2,228,946 to 1,650,030 (-26%) at the same WebP quality, because the median and the lower contrast remove
-  grain the encoder was spending on. The maps family gets smaller by about 0.55 MiB.
-- Tests: `quiet_ground_calms_and_is_deterministic` and `split_softens_plates_and_not_uprights` hold the step; `regen.sh --check` still
-  proves the shipped files follow from the tracked sources.
-- Tuning the look is a change to the three constants and a `regen.sh`; the uprights do not move.
+- Plate bytes: 2,228,946 before ADR 0083, 1,968,134 now (-12%). (A first version that softened the whole plate reached 1,650,030 but
+  also flattened painted objects; the detail kept on pieces is what the extra bytes are.) The maps family stays well inside 7.5 MiB.
+- Tests: `quiet_ground_calms_and_is_deterministic` and `split_softens_plates_and_not_uprights` hold the step, the second checking that
+  every pixel of a piece (including the non-upright ones) equals the unsoftened painting, every ground pixel beyond the feather
+  equals the softened one, and the feather never softens more than the ground does; `regen.sh --check` still proves the shipped files
+  follow from the tracked sources.
+- Tuning the look is a change to the constants and a `regen.sh`; the uprights do not move.

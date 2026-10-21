@@ -48,10 +48,12 @@ PLATE_OVERLAP = 2
 
 # The ground plates (and only they) are calmed so the ground reads as a backdrop and the figures and objects keep the
 # detail (ADR 0083): a median filter of this size over the full-resolution painting, then these factors for colour
-# saturation and contrast (PIL `ImageEnhance`, 1.0 = unchanged). The uprights are cut from the unsoftened painting.
+# saturation and contrast (PIL `ImageEnhance`, 1.0 = unchanged). Only pixels no geometry piece owns are calmed; the
+# pieces (upright or not) and the uprights keep the unsoftened painting.
 QUIET_MEDIAN = 3
 QUIET_SATURATION = 0.85
 QUIET_CONTRAST = 0.88
+QUIET_FEATHER = (0.35, 0.7)  # the softening weight of a ground pixel 1 px and 2 px from a painted piece
 
 BLOB_MIN_AREA = 4000
 BLOB_PAD = 24
@@ -847,6 +849,30 @@ def quiet_ground(painting: np.ndarray) -> np.ndarray:
     return np.asarray(im, dtype=np.uint8).copy()
 
 
+def ground_weight(village: "Village", shape: tuple[int, int]) -> np.ndarray:
+    """(h, w) float32 in 0..1: how much of `quiet_ground` a plate pixel takes. 1 where no geometry piece owns the
+    pixel (grass, paving, paths, soil, water, banks), 0 on every pixel any piece owns (upright or not: roofs, walls,
+    stalls, barrels, benches, planters, fences), and a short ramp over the 1 to 2 ground pixels next to a piece so
+    the softening does not step at the edge. The ramp lies on the ground side only: a piece pixel is never touched."""
+    h, w = shape
+    piece = village.ids[:h, :w] > 0
+    weight = np.ones((h, w), np.float32)
+    near2 = _grow(piece, 2)
+    near1 = _grow(piece, 1)
+    weight[near2] = QUIET_FEATHER[1]
+    weight[near1] = QUIET_FEATHER[0]
+    weight[piece] = 0.0
+    return weight
+
+
+def quiet_plates(painting: np.ndarray, village: "Village") -> np.ndarray:
+    """The painting for the ground plates: `quiet_ground` blended in by `ground_weight`, so only the ground is calmed
+    and every painted piece keeps the painting exactly. Run on the raw painting, before the edge fade."""
+    w = ground_weight(village, painting.shape[:2])[..., None]
+    mixed = painting.astype(np.float32) * (1 - w) + quiet_ground(painting).astype(np.float32) * w
+    return np.rint(mixed).astype(np.uint8)
+
+
 def fade_into_margin(colour: np.ndarray, weight: np.ndarray) -> np.ndarray:
     """`colour` (h, w, 3 uint8) mixed toward the margin colour by `weight` (h, w)."""
     margin = np.array(MARGIN_RGB, np.float32)
@@ -1294,7 +1320,7 @@ def cmd_split(a) -> int:
     if painting.shape[:2] != (vh, vw):
         sys.exit(f"painting is {painting.shape[1]}x{painting.shape[0]}, the village is {vw}x{vh}")
     fade = edge_fade(painting)
-    quiet = fade_into_margin(quiet_ground(painting), fade)  # the plates; the uprights keep the unsoftened painting
+    quiet = fade_into_margin(quiet_plates(painting, village), fade)  # the plates: only the ground is calmed, pieces keep the painting
     painting = fade_into_margin(painting, fade)
     save(Path(a.out) / "faded.png", painting)
     save(Path(a.out) / "quiet.png", quiet)
