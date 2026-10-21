@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Dev-only: served by `vite`, never built (the build's one entry is index.html). -->
+    <title>Style test, 2D: a courtyard in Ba Dan</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #1b1410;
+        overflow: hidden;
+        font-family: system-ui, sans-serif;
+      }
+      #board {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        touch-action: none;
+      }
+      #hud {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 1rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+        color: #f4ead2;
+        text-shadow: 0 1px 2px #000;
+      }
+      #hud button {
+        pointer-events: auto;
+        min-width: 7rem;
+        min-height: 3rem;
+        font-size: 1.1rem;
+        border-radius: 0.5rem;
+        border: 2px solid #6b4a2b;
+        background: #8a5a2e;
+        color: #fff4dc;
+      }
+      #hud button:active {
+        background: #a8733a;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="board"></canvas>
+    <div id="hud">
+      <span>Tap to walk · WASD/arrows · Space strikes</span>
+      <button id="strike" type="button">Earth strike</button>
+    </div>
+    <script type="module" src="/src/dev/styleTest2d.ts"></script>
+  </body>
+</html>
