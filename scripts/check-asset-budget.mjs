@@ -12,8 +12,9 @@ import { fileURLToPath } from 'node:url';
 
 const FAMILY_BUDGET_MB = 4;
 // ADR 0051: the PixelLab G party's locomotion now, and its stance and bend
-// sets to come (ADR 0035 had added the fire deserter at 4.75).
-const UNIT_BUDGET_MB = 6.75;
+// sets to come (ADR 0035 had added the fire deserter at 4.75). ADR 0082: the
+// owner raised it to 8.5 for Ba Dan's residents (20 October 2026).
+const UNIT_BUDGET_MB = 8.5;
 // ADR 0075: Ba Dan's pieces are painted at 1.5x the world scale for crispness; the village is the proof the
 // polish can be done. ADR 0076: it is one continuous painting now (12 plates and 2 sprite pages, 4.1 MB), the
 // family measures 7.34 MiB, and the owner allowed the raise (9 October 2026) to the next half MiB.
