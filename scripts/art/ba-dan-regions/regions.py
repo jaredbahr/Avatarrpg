@@ -24,7 +24,7 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
@@ -45,6 +45,13 @@ FIGURE_HALF_WIDTH, FIGURE_UP, FIGURE_DOWN = 48, 120, 8
 # fractional screen position can never leave a hairline between two, cuts on multiples of 3 px (whole world px)
 PLATE_GRID = (4, 3)
 PLATE_OVERLAP = 2
+
+# The ground plates (and only they) are calmed so the ground reads as a backdrop and the figures and objects keep the
+# detail (ADR 0083): a median filter of this size over the full-resolution painting, then these factors for colour
+# saturation and contrast (PIL `ImageEnhance`, 1.0 = unchanged). The uprights are cut from the unsoftened painting.
+QUIET_MEDIAN = 3
+QUIET_SATURATION = 0.85
+QUIET_CONTRAST = 0.88
 
 BLOB_MIN_AREA = 4000
 BLOB_PAD = 24
@@ -829,6 +836,17 @@ def edge_fade(painting: np.ndarray) -> np.ndarray:
     return (1 - t * t * (3 - 2 * t)).astype(np.float32)
 
 
+def quiet_ground(painting: np.ndarray) -> np.ndarray:
+    """The painting calmed for the ground plates: `QUIET_MEDIAN` median filter, then `QUIET_SATURATION`, then
+    `QUIET_CONTRAST`. Deterministic (no randomness; the contrast pivot is the painting's own mean grey). Run on
+    the raw painting before the edge fade, so the margin colour at the perimeter stays exact."""
+    im = Image.fromarray(np.ascontiguousarray(painting), "RGB")
+    im = im.filter(ImageFilter.MedianFilter(QUIET_MEDIAN))
+    im = ImageEnhance.Color(im).enhance(QUIET_SATURATION)
+    im = ImageEnhance.Contrast(im).enhance(QUIET_CONTRAST)
+    return np.asarray(im, dtype=np.uint8).copy()
+
+
 def fade_into_margin(colour: np.ndarray, weight: np.ndarray) -> np.ndarray:
     """`colour` (h, w, 3 uint8) mixed toward the margin colour by `weight` (h, w)."""
     margin = np.array(MARGIN_RGB, np.float32)
@@ -1276,13 +1294,15 @@ def cmd_split(a) -> int:
     if painting.shape[:2] != (vh, vw):
         sys.exit(f"painting is {painting.shape[1]}x{painting.shape[0]}, the village is {vw}x{vh}")
     fade = edge_fade(painting)
+    quiet = fade_into_margin(quiet_ground(painting), fade)  # the plates; the uprights keep the unsoftened painting
     painting = fade_into_margin(painting, fade)
     save(Path(a.out) / "faded.png", painting)
+    save(Path(a.out) / "quiet.png", quiet)
     sdir = Path(a.out) / "split"
     for stale in ("uprights", "plates"):
         shutil.rmtree(sdir / stale, ignore_errors=True)
     sprites, baked = split_sprites(village, painting, sdir, fade)
-    plates = cut_plates(painting, sdir)
+    plates = cut_plates(quiet, sdir)
     straddles = straddle_report(village, painting)
     report = {
         "painting": {"file": src.name, "width": vw, "height": vh, "scale": SCALE,
