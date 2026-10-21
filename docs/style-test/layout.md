@@ -13,7 +13,7 @@ the 3D team should rebuild it cell for cell. Screenshot of the 2D version: `layo
 - **Tile size: 64 world units** per cell side, in the game's own units (`TILE = 64`). One cell on the
   screen is a 2:1 diamond, 64 wide by 32 tall in world units. Figures are drawn upright, never skewed.
 - Painting resolution: 1.5 painting pixels per world unit, so 96 painting pixels to a cell.
-- Figure height: Bo is about 77 world units tall (1.2 cells at the party's oblique draw scale of 1.25).
+- Figure height: Bo is about 77 world units tall, measured off a screenshot (the party's oblique draw scale is 1.25).
   The target is about 1.2x that.
 
 ## Camera and light
@@ -30,28 +30,28 @@ the 3D team should rebuild it cell for cell. Screenshot of the 2D version: `layo
 
 ## What stands where (cells)
 
-| Thing | Cells | Notes |
-| --- | --- | --- |
-| South-west house | footprint x 6..9, y 10..13 (4x4); court shows rows 10..12 | Timber-and-plaster, red clay tile roof, brick chimney at the north-west ridge. The door and its awning face east (+x). The plinth is stone. |
-| House yard | the footprint's west tiles, x 6..7 | Chopping block and a timber rail; part of the house sprite. |
-| Tree | trunk at (5, 5) | Large broadleaf oak on the canal's north bank. Its canopy reaches over (3..7, 3..5) on screen. |
-| Fence | (1,5) and (2,5) | Low timber rail, along the north bank. (1,5) is just outside the court. |
-| Bench | (3,5) and (4,5) | Timber, facing the canal. |
-| Market table | (6,5) and (7,5) | Fruit baskets. |
-| Canal | row y = 6, x 0..12 | Painted water with a dry-stone kerb. Ripples are the engine's own. |
-| Plank bridge | (9, 6) | The only way across inside the court. |
-| Stone path | rows y = 7 and y = 8, x 2..9, and (9,5), (9,9) | Flagstone road, the open ground for the target. |
-| Garden plot | x 2..4, y 10..11 | Timber-edged vegetable beds. |
-| Stall and baskets | stall (3,9) and (4,9); baskets (2,9) | Market stall with sacks and scales. |
-| Stone lantern | (5, 11) | Beside the garden. |
-| Grass lane | (5..8, 9), (5,10), (2..5,12) | Walkable lawn. |
+| Thing             | Cells                                                     | Notes                                                                                                                                       |
+| ----------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| South-west house  | footprint x 6..9, y 10..13 (4x4); court shows rows 10..12 | Timber-and-plaster, red clay tile roof, brick chimney at the north-west ridge. The door and its awning face east (+x). The plinth is stone. |
+| House yard        | the footprint's west tiles, x 6..7                        | Chopping block and a timber rail; part of the house sprite.                                                                                 |
+| Tree              | trunk at (5, 5)                                           | Large broadleaf oak on the canal's north bank. Its canopy overhangs the bank and the court's upper right on screen.                         |
+| Fence             | (1,5) and (2,5)                                           | Low timber rail, along the north bank. (1,5) is just outside the court.                                                                     |
+| Bench             | (3,5) and (4,5)                                           | Timber, facing the canal.                                                                                                                   |
+| Market table      | (6,5) and (7,5)                                           | Fruit baskets.                                                                                                                              |
+| Canal             | row y = 6, x 0..12                                        | Painted water with a dry-stone kerb. Ripples are the engine's own.                                                                          |
+| Plank bridge      | (9, 6)                                                    | The only way across inside the court.                                                                                                       |
+| Stone path        | rows y = 7 and y = 8, x 2..9, and (9,5), (9,9)            | Flagstone road, the open ground for the target.                                                                                             |
+| Garden plot       | x 2..4, y 10..11                                          | Timber-edged vegetable beds.                                                                                                                |
+| Stall and baskets | stall (3,9) and (4,9); baskets (2,9)                      | Market stall with sacks and scales.                                                                                                         |
+| Stone lantern     | (5, 11)                                                   | Beside the garden.                                                                                                                          |
+| Grass lane        | (5..8, 9), (5,10), (2..5,12)                              | Walkable lawn.                                                                                                                              |
 
 Blocked in the shipped grid (and so in the test): the house footprint, the tree, the table, the bench, the
 fence, the stall and baskets, the garden plot, the lantern, and the canal (bridge excepted).
 
 ## Characters and target
 
-- **Bo (earthbender) spawns at (3, 7)**, on the path at the west end, facing east.
+- **Bo (earthbender) spawns at (3, 7)**, on the path at the west end.
 - **Practice target at (6, 7)**: a timber post with a bound-straw pad and a crossbar, 1.2 figures tall,
   standing on the stone path with the canal just behind it. Its foot is the cell centre.
 - **Strike spots**, both on the path row y = 7 and 3 cells from the target:

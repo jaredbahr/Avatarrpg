@@ -35,7 +35,7 @@ import type { MapView, NpcMarker, RenderUnit } from '../render/view';
 
 /** The courtyard: cells of the shipped Ba Dan grid, inclusive (layout.md). */
 export const COURT = { x0: 2, y0: 5, x1: 9, y1: 12 } as const;
-/** Bo's spawn, the practice target's cell and the target's art (public/art/maps/style-test/). */
+/** Bo's spawn, the practice target's cell and the target's art (dev/assets/style-test/, outside public/ so it never ships). */
 export const SPAWN: Vec2 = { x: 3, y: 7 };
 export const TARGET_CELL: Vec2 = { x: 6, y: 7 };
 const PLAYER = 'bo';
@@ -51,7 +51,8 @@ const map = BA_DAN_VILLAGE;
 const grid: Grid = buildGrid(map);
 const projection = 'oblique';
 const SCALE = partyScale(projection);
-const inCourt = (c: Vec2) => c.x >= COURT.x0 && c.x <= COURT.x1 && c.y >= COURT.y0 && c.y <= COURT.y1;
+const inCourt = (c: Vec2) =>
+  c.x >= COURT.x0 && c.x <= COURT.x1 && c.y >= COURT.y0 && c.y <= COURT.y1;
 
 /** Walkable for this test: open in the shipped grid, inside the courtyard, not the target's cell. */
 const free = (c: Vec2) => {
@@ -111,7 +112,7 @@ const until = async (ok: () => boolean, ms = 20000) => {
 
 // ---- the practice target: a scenery piece (the game's own mechanism for an upright prop) ----
 const TARGET_ART = {
-  url: 'art/maps/style-test/dummy.png',
+  url: 'dev/assets/style-test/dummy.png',
   // 96x128 art drawn at 0.8 world px per art px (a figure and a fifth tall); its foot is the slab centre (48, 112).
   widthPx: Number(params.get('dw') ?? 88),
   heightPx: Number(params.get('dh') ?? 117),
@@ -136,7 +137,10 @@ function targetScenery(offset: Vec2): SceneScenery {
 }
 
 const baseScene = map.scene as MapScene;
-let sceneRest: MapScene = { ...baseScene, scenery: [...baseScene.scenery, targetScenery({ x: 0, y: 0 })] };
+const sceneRest: MapScene = {
+  ...baseScene,
+  scenery: [...baseScene.scenery, targetScenery({ x: 0, y: 0 })],
+};
 const sceneWith = (offset: Vec2): MapScene =>
   offset.x === 0 && offset.y === 0
     ? sceneRest
@@ -150,7 +154,8 @@ const animator = new Animator(CONTENT, {
     bendFx
       ? {
           fx: bendFx,
-          setOf: (sprite) => (sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined),
+          setOf: (sprite) =>
+            sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
           frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
         }
       : undefined,
@@ -189,7 +194,15 @@ const dummyUnit = (): Unit =>
     sprite: 'unit.enemy.thug',
   }) as unknown as Unit;
 const boUnit = (): Unit =>
-  ({ ...dummyUnit(), id: PLAYER, name: 'Bo', faction: 'party', pos, hp: 99, sprite: BO_SPRITE }) as Unit;
+  ({
+    ...dummyUnit(),
+    id: PLAYER,
+    name: 'Bo',
+    faction: 'party',
+    pos,
+    hp: 99,
+    sprite: BO_SPRITE,
+  }) as Unit;
 
 function walkTo(cell: Vec2): boolean {
   if (animator.busy(now())) return false;
@@ -215,8 +228,21 @@ function strike(): boolean {
     return false;
   }
   const events: GameEvent[] = [
-    { type: 'abilityUsed', unitId: PLAYER, abilityId: 'rock_throw', target: TARGET_CELL, tiles: [TARGET_CELL] },
-    { type: 'damaged', unitId: DUMMY, amount: 6, crit: false, damageType: 'earth', sourceId: PLAYER },
+    {
+      type: 'abilityUsed',
+      unitId: PLAYER,
+      abilityId: 'rock_throw',
+      target: TARGET_CELL,
+      tiles: [TARGET_CELL],
+    },
+    {
+      type: 'damaged',
+      unitId: DUMMY,
+      amount: 6,
+      crit: false,
+      damageType: 'earth',
+      sourceId: PLAYER,
+    },
   ];
   animator.push(t, events, [boUnit(), dummyUnit()]);
   strikes++;
@@ -235,7 +261,6 @@ function note(text: string) {
 const frameTimes: number[] = [];
 const strikeFrameTimes: number[] = [];
 let last = performance.now();
-let flock: number | null = null;
 
 function view(t: number): MapView {
   const reduced = false;
@@ -309,7 +334,6 @@ function view(t: number): MapView {
     backdrop: null,
     time: t,
     reducedMotion: reduced,
-    flushedAt: flock,
   };
 }
 
@@ -328,7 +352,8 @@ function drawDebugCells() {
   for (let y = 0; y < grid.height; y++)
     for (let x = 0; x < grid.width; x++) {
       const p = cam.project({ x: x + 0.5, y: y + 0.5 });
-      if (p.x < -40 || p.y < -40 || p.x > cam.viewport.width + 40 || p.y > cam.viewport.height + 40) continue;
+      if (p.x < -40 || p.y < -40 || p.x > cam.viewport.width + 40 || p.y > cam.viewport.height + 40)
+        continue;
       const tile = grid.tiles[y * grid.width + x];
       const colour = inCourt({ x, y }) ? '#ff0' : '#fff8';
       html.push(
@@ -366,10 +391,14 @@ canvas.addEventListener('pointerdown', (e) => {
   if (!walkTo(cell)) note(free(cell) ? 'Wait for the current move.' : 'Out of the courtyard.');
 });
 const STEPS: Record<string, Vec2> = {
-  ArrowUp: { x: -1, y: -1 }, w: { x: -1, y: -1 },
-  ArrowDown: { x: 1, y: 1 }, s: { x: 1, y: 1 },
-  ArrowLeft: { x: -1, y: 1 }, a: { x: -1, y: 1 },
-  ArrowRight: { x: 1, y: -1 }, d: { x: 1, y: -1 },
+  ArrowUp: { x: -1, y: -1 },
+  w: { x: -1, y: -1 },
+  ArrowDown: { x: 1, y: 1 },
+  s: { x: 1, y: 1 },
+  ArrowLeft: { x: -1, y: 1 },
+  a: { x: -1, y: 1 },
+  ArrowRight: { x: 1, y: -1 },
+  d: { x: 1, y: -1 },
 };
 window.addEventListener('keydown', (e) => {
   if (e.key === ' ') {
@@ -393,7 +422,11 @@ async function setup() {
   requestAnimationFrame(loop);
   return {
     backend: renderer.backendName,
-    camera: () => ({ scale: renderer.camera.scale, ox: renderer.camera.offsetX, oy: renderer.camera.offsetY }),
+    camera: () => ({
+      scale: renderer.camera.scale,
+      ox: renderer.camera.offsetX,
+      oy: renderer.camera.offsetY,
+    }),
     /** Screen point of a cell's centre, CSS px, for the capture script. */
     screenOf: (c: Vec2) => renderer.camera.project({ x: c.x + 0.5, y: c.y + 0.5 }),
     walkTo,

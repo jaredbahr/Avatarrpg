@@ -1,0 +1,72 @@
+{
+  "canvas": {
+    "backend": "canvas",
+    "idle": {
+      "frames": 266,
+      "meanMs": 18.85,
+      "fps": 53.1,
+      "p95Ms": 21,
+      "maxMs": 42.9
+    },
+    "walk": {
+      "frames": 157,
+      "meanMs": 19.35,
+      "fps": 51.7,
+      "p95Ms": 21.8,
+      "maxMs": 24.3
+    },
+    "strike": {
+      "frames": 372,
+      "meanMs": 20.62,
+      "fps": 48.5,
+      "p95Ms": 30.8,
+      "maxMs": 80.3
+    },
+    "bytesByType": {
+      "html": 1578,
+      "ts": 3544832,
+      "http://localhost:5399/@vite/client": 182790,
+      "mjs": 4161,
+      "js": 2245628,
+      "png": 1502712,
+      "json": 137984,
+      "webp": 4535604
+    },
+    "errors": []
+  },
+  "webgl": {
+    "backend": "webgl",
+    "idle": {
+      "frames": 34,
+      "meanMs": 160.29,
+      "fps": 6.2,
+      "p95Ms": 178.1,
+      "maxMs": 183.6
+    },
+    "walk": {
+      "frames": 26,
+      "meanMs": 159.54,
+      "fps": 6.3,
+      "p95Ms": 181.7,
+      "maxMs": 209.8
+    },
+    "strike": {
+      "frames": 48,
+      "meanMs": 166.14,
+      "fps": 6,
+      "p95Ms": 195.3,
+      "maxMs": 261.1
+    },
+    "bytesByType": {
+      "html": 1578,
+      "http://localhost:5399/@vite/client": 182790,
+      "ts": 3544832,
+      "mjs": 4161,
+      "js": 2247132,
+      "json": 137984,
+      "png": 1502712,
+      "webp": 4535604
+    },
+    "errors": []
+  }
+}
