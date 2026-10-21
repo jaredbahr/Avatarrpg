@@ -60,7 +60,10 @@ node --import tsx scripts/art/ba-dan-regions/pack.ts [DIR] [--check]
   grid (a trial, a test) is cross-faded with a smoothstep feather; whatever is uncovered is the margin colour and is counted.
 - **split** first fades the painting's outer edge into the margin colour (`edge_fade`: exactly the margin on the outer 12 painting px,
   then a ragged ramp reaching 72 to 144 painting px = 48 to 96 world px in, longest where the painting is already dark canopy or
-  undergrowth; fixed seed, no scipy; saved as `DIR/faded.png`), then writes to `DIR/split/`: `uprights/NNN-<id>.png` (trimmed to what each draws), `plates/plate-NN.png`, and
+  undergrowth; fixed seed, no scipy; saved as `DIR/faded.png`). Before that fade, `quiet_plates` calms the ground (ADR 0083:
+  `QUIET_MEDIAN` 3, `QUIET_SATURATION` 0.85, `QUIET_CONTRAST` 0.88) only where no geometry piece owns the pixel (`village/ids.png`),
+  feathered over 2 px on the ground side (`QUIET_FEATHER`); the plates are cut from that calmed painting and the uprights from
+  the unsoftened `faded.png`. It then writes to `DIR/split/`: `uprights/NNN-<id>.png` (trimmed to what each draws), `plates/plate-NN.png`, and
   `split-report.json`. A piece is an upright only if a figure on a walkable cell can stand behind it (`Village.needed`); the
   others (29) are the ground only. Per sprite the alpha is the geometry's, unchanged; every pixel under it that the piece owns
   takes the painting's colour (rim included); a pixel under a piece that is ground takes the painting's; a pixel hidden by a front upright or

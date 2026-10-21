@@ -524,7 +524,6 @@ def case_split_softens_plates_and_not_uprights(work):
         win = (slice(p["y"], p["y"] + p["height"]), slice(p["x"], p["x"] + p["width"]))
         assert np.array_equal(im, quiet[win]), p["file"]
         assert not np.array_equal(im, raw[win]), p["file"]
-    # neighbouring plates agree on their overlap (cut from one image)
     # every upright pixel it owns is the unsoftened painting, exactly
     rep = R.json.load(open(sdir / "split-report.json"))
     checked = 0

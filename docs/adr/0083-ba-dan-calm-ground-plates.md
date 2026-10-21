@@ -40,3 +40,6 @@ treatment below.
   equals the softened one, and the feather never softens more than the ground does; `regen.sh --check` still proves the shipped files
   follow from the tracked sources.
 - Tuning the look is a change to the constants and a `regen.sh`; the uprights do not move.
+
+Repaint guides (`guide`, `current_painting`) still show the unsoftened stitched painting, so a future repaint is painted at
+full detail and calmed again by this step; a guide does not look exactly like the shipped plates.
