@@ -15,7 +15,7 @@ def plan(w, h, tile=512, min_ov=64):
     tw, th = min(w, tile), min(h, tile)
     return [(x, y, tw, th) for y in grid(h, th, min_ov) for x in grid(w, tw, min_ov)]
 
-def stitch(w, h, parts):
+def stitch(w, h, parts, hard=False, r=64):
     """parts: list of ((x,y,tw,th), Image). Colour-match each tile to what is already laid, feather overlaps."""
     acc = np.zeros((h, w, 4)); wsum = np.zeros((h, w, 1))
     for (x, y, tw, th), im in parts:
@@ -28,12 +28,17 @@ def stitch(w, h, parts):
             gain = (cur.mean(0) + 1) / (mine.mean(0) + 1)
             a[..., :3] = np.clip(a[..., :3] * gain, 0, 255)
         # weight: ramps to 0 at tile edges that are interior
-        wx = np.ones(tw); wy = np.ones(th); r = 64
+        wx = np.ones(tw); wy = np.ones(th)
         if x > 0: wx[:r] = np.linspace(0.01, 1, r)
         if x + tw < w: wx[-r:] = np.minimum(wx[-r:], np.linspace(1, 0.01, r))
         if y > 0: wy[:r] = np.linspace(0.01, 1, r)
         if y + th < h: wy[-r:] = np.minimum(wy[-r:], np.linspace(1, 0.01, r))
+        if hard:
+            wx = np.ones(tw); wy = np.ones(th)
         wt = (wy[:, None] * wx[None, :])[..., None]
+        if hard:
+            acc[y:y+th, x:x+tw] = a; wsum[y:y+th, x:x+tw] = 1
+            continue
         acc[y:y+th, x:x+tw] += a * wt; wsum[y:y+th, x:x+tw] += wt
     out = acc / np.maximum(wsum, 1e-6)
     return Image.fromarray(np.clip(out + 0.5, 0, 255).astype(np.uint8), 'RGBA')
