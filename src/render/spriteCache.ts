@@ -21,6 +21,7 @@ import { resolveAsset } from '../content/assets/manifest';
 import { FALLBACK_SHADOW_WIDTH, measureArt } from './propFootprint';
 import { resolvePainter } from './painters/registry';
 import { groundShadow } from './painters/shapes';
+import { visiblePixelBounds, type VisibleArtBounds } from './geometry/talkPip';
 import type { PainterOptions } from './painters/units';
 
 interface CacheEntry {
@@ -54,6 +55,65 @@ const MAX_ENTRIES = 128;
  * density: measured under the rubble heap against the reference's crates.
  */
 const PROP_SHADOW_DENSITY = 0.55;
+
+const visibleBoundsByCanvas = new WeakMap<HTMLCanvasElement, VisibleArtBounds>();
+const visibleBoundsByFrame = new WeakMap<object, Map<string, VisibleArtBounds>>();
+
+/** Cached alpha envelope for painter and image sprites already in the sprite cache. */
+export function visibleSpriteBounds(canvas: HTMLCanvasElement): VisibleArtBounds {
+  const known = visibleBoundsByCanvas.get(canvas);
+  if (known) return known;
+  const bounds = readVisibleBounds(canvas, {
+    x: 0,
+    y: 0,
+    width: canvas.width,
+    height: canvas.height,
+  });
+  visibleBoundsByCanvas.set(canvas, bounds);
+  return bounds;
+}
+
+/** Alpha envelope for a trimmed animation cel; one small read per cel per session. */
+export function visibleFrameBounds(
+  source: CanvasImageSource,
+  frame: { readonly x: number; readonly y: number; readonly w: number; readonly h: number },
+): VisibleArtBounds {
+  const cacheKey = `${frame.x},${frame.y},${frame.w},${frame.h}`;
+  let sourceBounds = visibleBoundsByFrame.get(source);
+  if (!sourceBounds) {
+    sourceBounds = new Map();
+    visibleBoundsByFrame.set(source, sourceBounds);
+  }
+  const known = sourceBounds.get(cacheKey);
+  if (known) return known;
+  const bounds = readVisibleBounds(source, {
+    x: frame.x,
+    y: frame.y,
+    width: frame.w,
+    height: frame.h,
+  });
+  sourceBounds.set(cacheKey, bounds);
+  return bounds;
+}
+
+function readVisibleBounds(
+  source: CanvasImageSource,
+  rect: { x: number; y: number; width: number; height: number },
+): VisibleArtBounds {
+  const width = Math.max(1, Math.round(rect.width));
+  const height = Math.max(1, Math.round(rect.height));
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) throw new Error('No 2D context');
+    ctx.drawImage(source, rect.x, rect.y, rect.width, rect.height, 0, 0, width, height);
+    return visiblePixelBounds(ctx.getImageData(0, 0, width, height).data, width, height);
+  } catch {
+    return { left: 0, top: 0, right: width, bottom: height };
+  }
+}
 
 export class SpriteCache {
   private entries = new Map<string, CacheEntry>();
