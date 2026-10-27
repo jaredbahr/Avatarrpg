@@ -297,9 +297,9 @@
     "offset_in_footprint_screen_px": [33.66, 35.66]
   },
   "firewood": {
-    "canvas": [140, 128],
+    "canvas": [140, 136],
     "grain_f": 0.5625,
-    "ground_anchor_src_px": [32, 51],
+    "ground_anchor_src_px": [32, 58],
     "extent_screen_px": {
       "along_a": 64,
       "along_b": 16

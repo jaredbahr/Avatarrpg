@@ -1,0 +1,117 @@
+{
+  "village-well": {
+    "blockout": "village-well",
+    "path": "raw/village-well-f2-s41/0.png",
+    "tiles": [[12, 13]]
+  },
+  "banner-pole": {
+    "blockout": "banner-pole",
+    "path": "raw/banner-pole-f2-s41/0.png",
+    "tiles": [
+      [11, 2],
+      [18, 10]
+    ]
+  },
+  "lantern-post": {
+    "blockout": "lantern-post",
+    "path": "raw/lantern-post-f2-s41/0.png",
+    "tiles": [
+      [16, 9],
+      [20, 6],
+      [20, 9]
+    ]
+  },
+  "laundry-line": {
+    "blockout": "laundry-line",
+    "path": "raw/laundry-line-f3-s52/0.png",
+    "tiles": [[17, 2]]
+  },
+  "notice-board": {
+    "blockout": "notice-board",
+    "path": "raw/notice-board-f2-s41/0.png",
+    "tiles": [[18, 6]]
+  },
+  "handcart": {
+    "blockout": "handcart",
+    "path": "fixes/handcart-f2-s41-clean.png",
+    "tiles": [[19, 4]]
+  },
+  "garden-edge-a": {
+    "blockout": "garden-edge-a",
+    "path": "raw/garden-edge-a-f2-s41/0.png",
+    "tiles": []
+  },
+  "garden-edge-b": {
+    "blockout": "garden-edge-b",
+    "path": "raw/garden-edge-b-f2-s41/0.png",
+    "tiles": []
+  },
+  "garden-post": {
+    "blockout": "garden-post",
+    "path": "raw/garden-post-f2-s41/0.png",
+    "tiles": []
+  },
+  "garden-cabbages": {
+    "blockout": "garden-cabbages",
+    "path": "raw/garden-cabbages-f2-s41/0.png",
+    "tiles": []
+  },
+  "garden-beans": {
+    "blockout": "garden-beans",
+    "path": "fixes/garden-beans-f2-s41-clean.png",
+    "tiles": []
+  },
+  "garden-greens": {
+    "blockout": "garden-greens",
+    "path": "raw/garden-greens-f2-s41/0.png",
+    "tiles": []
+  },
+  "stone-lantern": {
+    "blockout": "stone-lantern",
+    "path": "raw/stone-lantern-f2-s41/0.png",
+    "tiles": [[5, 11]]
+  },
+  "trough-hay": {
+    "blockout": "trough-hay",
+    "path": "raw/trough-hay-f2-s41/0.png",
+    "tiles": [[19, 10]]
+  },
+  "low-planter": {
+    "blockout": "low-planter",
+    "path": "raw/low-planter-f2-s41/0.png",
+    "tiles": [
+      [11, 10],
+      [17, 4]
+    ]
+  },
+  "low-planter-1x2": {
+    "blockout": "low-planter-1x2",
+    "path": "raw/low-planter-1x2-f2-s41/0.png",
+    "tiles": [[17, 10]]
+  },
+  "barrels": {
+    "blockout": "barrels",
+    "path": "raw/barrels-f2-s41/0.png",
+    "tiles": []
+  },
+  "crates": {
+    "blockout": "crates",
+    "path": "raw/crates-f2-s42/0.png",
+    "tiles": []
+  },
+  "water-jars": {
+    "blockout": "water-jars",
+    "path": "raw/water-jars-f2-s41/0.png",
+    "tiles": []
+  },
+  "firewood": {
+    "blockout": "firewood",
+    "path": "raw/firewood-f3-s52/0.png",
+    "tiles": []
+  },
+  "kiln": {
+    "blockout": "kiln",
+    "path": "raw/kiln-f2-s41/0.png",
+    "tiles": []
+  }
+}

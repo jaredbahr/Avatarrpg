@@ -262,7 +262,13 @@ def laundry_line(seed=1):
         a += w + rnd.uniform(4, 8)
     post(c, L - 4, B, 0, 72, w=4)
     # a laundry basket at the foot of the right post
-    c.basket(L - 26, B + 16, 0, 22, 9, CLOTHS[1][:2], 5, 7, seed=seed, heap=0.4)
+    c.cylinder(L - 26, B + 16, 0, 22, 9, WICKER)
+    c.ell(L - 26, B + 16, 9, 19, WICKER_IN, line=False)
+    for i, (da, db, t) in enumerate([(-4, -1, 0), (2, 1, 3), (-1, 3, 4), (4, -2, 2)]):   # folded cloths heaped in it
+        x, y = c.p(L - 26 + da, B + 16 + db, 10 + i * 1.2)
+        w, h = c.s(9), c.s(4)
+        c.d.rounded_rectangle([x - w / 2, y - h / 2, x + w / 2, y + h / 2], radius=2, fill=CLOTHS[t][0], outline=LINE)
+        c.d.line([(x - w / 2 + 1, y + h / 2 - 1), (x + w / 2 - 1, y + h / 2 - 1)], fill=CLOTHS[t][2])
     return c
 
 
@@ -483,8 +489,33 @@ def firewood(seed=1):
     f = 0.5625
     L, D = 64, 16
     c = canvas_for(132, 104, f, L, D, margin_bottom=4)
-    c.box(0, L, 0, D, 0, 26, WOOD_OLD)
-    logs_face(c, 0, L, D, 0, 26, 6.5, seed=seed)
+    # split logs stacked between two end posts: uneven rounds of three sizes, the top course uneven
+    for a in (0, L - 3):
+        c.box(a, a + 3, 0, D, 0, 30, WOOD_DARK)
+    c.box(3, L - 3, 0, D, 0, 22, WOOD_OLD)
+    rnd = random.Random(seed)
+    tops = []
+    a = 6
+    while a < L - 8:
+        d = rnd.choice((5, 6.5, 8))
+        tops.append((a + d / 2, 22 + d * 0.45, d))
+        a += d * 0.95
+    for ac, zc, d in tops:                                             # top course: log backs, lit
+        c.box(ac - d / 2, ac + d / 2, 1, D - 1, 20, zc + d * 0.3, [WOOD[0], WOOD[1], WOOD[2]])
+    for r in range(4):                                                 # visible ends on the +b face
+        zc = 3 + r * 5.6
+        a = 5 + (2.5 if r % 2 else 0)
+        while a < L - 6:
+            d = rnd.choice((4.6, 5.6, 6.6))
+            x, y = c.p(a, D, zc)
+            rr = c.s(d) / 2
+            c.d.ellipse([x - rr, y - rr * 0.95, x + rr, y + rr * 0.95], fill=rgb("#a98456"), outline=LINE)
+            c.d.ellipse([x - rr * 0.35, y - rr * 0.35, x + rr * 0.35, y + rr * 0.35], fill=rgb("#8a6842"))
+            a += d * rnd.uniform(0.95, 1.1)
+    for ac, zc, d in tops:
+        x, y = c.p(ac, D, zc)
+        rr = c.s(d) / 2
+        c.d.ellipse([x - rr, y - rr, x + rr, y + rr], fill=rgb("#a98456"), outline=LINE)
     # a chopping block and an axe-less split log in front
     c.cylinder(L - 6, D + 10, 0, 12, 8, WOOD_DARK)
     c.box(8, 22, D + 6, D + 9, 0, 3, WOOD)

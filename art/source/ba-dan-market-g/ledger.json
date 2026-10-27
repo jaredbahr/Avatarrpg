@@ -1,1163 +1,2493 @@
 {
- "entries": [
-  {
-   "id": "probe1-flash-create",
-   "endpoint": "/create-object-pro-flash",
-   "started": "2026-10-27T03:21:44.679626+00:00",
-   "job_id": null,
-   "object_id": "90325802-4524-4730-9832-112a99ea835a",
-   "status": null,
-   "body": {
-    "description": "plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges",
-    "name": "badan market g probe1 fruit table",
-    "view": "high top-down",
-    "seed": 2841,
-    "image_size": {
-     "width": 256,
-     "height": 224
+  "entries": [
+    {
+      "id": "probe1-flash-create",
+      "endpoint": "/create-object-pro-flash",
+      "started": "2026-10-27T03:21:44.679626+00:00",
+      "job_id": null,
+      "object_id": "90325802-4524-4730-9832-112a99ea835a",
+      "status": null,
+      "body": {
+        "description": "plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges",
+        "name": "badan market g probe1 fruit table",
+        "view": "high top-down",
+        "seed": 2841,
+        "image_size": {
+          "width": 256,
+          "height": 224
+        },
+        "n_directions": 1,
+        "style_image": {
+          "size": {
+            "width": 192,
+            "height": 192
+          },
+          "usage_description": "style reference only: copy its line weight, restrained palette, pixel cluster size and shading; do not draw the person"
+        },
+        "style_options": {
+          "color_palette": false,
+          "outline": true,
+          "detail": true,
+          "shading": true
+        }
+      },
+      "inputs": {
+        "style_image.image": {
+          "path": "ref/kaya-idle-south.png",
+          "sha256": "d59f6d1e50ba3d352a6c77900cf40e3b06c5137fe5c70fcc664052bc1ea52d21"
+        }
+      },
+      "usage": null,
+      "balance_before": 9385.0,
+      "balance_after": 9383.0,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/probe1-flash-create/0.png",
+          "sha256": "81fee0912a28df4561dea39fa9bd60a005c3ab4cbd3b3cf7442c06cb32151267"
+        }
+      ],
+      "verdict": "rejected",
+      "note": "Pro Flash create (the generator Kaya G came from), Kaya idle south as style image, text only | text-only Pro Flash create: on the 2:1 axis but drawn far too small for the canvas (table 74x63 screen px, baskets oversized against it); the tool will not size an object on request",
+      "gens_estimated": true
     },
-    "n_directions": 1,
-    "style_image": {
-     "size": {
-      "width": 192,
-      "height": 192
-     },
-     "usage_description": "style reference only: copy its line weight, restrained palette, pixel cluster size and shading; do not draw the person"
+    {
+      "id": "probe2-flash-edit-blockout",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:19:56.312384+00:00",
+      "job_id": "70628939-03ac-4f1f-bb85-7ad2fffc6ce6",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 2841,
+        "no_background": true,
+        "description": "repaint this rough blockout as finished pixel art, keeping every shape, size and position exactly: plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges"
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/fruit-table-256x224.png",
+          "sha256": "63e078b2b07751f7680c0338abd6d79d45193df58bb692125e2ba4718ef3d864"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9582.0,
+      "balance_after": 9496.0,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/probe2-flash-edit-blockout/0.png",
+          "sha256": "6db1f441ac455a98f66be94ea50fe408c9bd87ae10f5ac7716dc6a6c0eb45624"
+        }
+      ],
+      "verdict": "probe winner",
+      "note": "Pro Flash edit over the 2:1 construction blockout, text method | Pro Flash edit over a measured 2:1 blockout keeps size, axis and construction exactly and redraws the surface at character grain; chosen route"
     },
-    "style_options": {
-     "color_palette": false,
-     "outline": true,
-     "detail": true,
-     "shading": true
-    }
-   },
-   "inputs": {
-    "style_image.image": {
-     "path": "ref/kaya-idle-south.png",
-     "sha256": "d59f6d1e50ba3d352a6c77900cf40e3b06c5137fe5c70fcc664052bc1ea52d21"
-    }
-   },
-   "usage": null,
-   "balance_before": 9385.0,
-   "balance_after": 9383.0,
-   "gens": 9.0,
-   "outputs": [
     {
-     "path": "raw/probe1-flash-create/0.png",
-     "sha256": "81fee0912a28df4561dea39fa9bd60a005c3ab4cbd3b3cf7442c06cb32151267"
-    }
-   ],
-   "verdict": "rejected",
-   "note": "Pro Flash create (the generator Kaya G came from), Kaya idle south as style image, text only | text-only Pro Flash create: on the 2:1 axis but drawn far too small for the canvas (table 74x63 screen px, baskets oversized against it); the tool will not size an object on request",
-   "gens_estimated": true
-  },
-  {
-   "id": "probe2-flash-edit-blockout",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:19:56.312384+00:00",
-   "job_id": "70628939-03ac-4f1f-bb85-7ad2fffc6ce6",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 2841,
-    "no_background": true,
-    "description": "repaint this rough blockout as finished pixel art, keeping every shape, size and position exactly: plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges"
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/fruit-table-256x224.png",
-     "sha256": "63e078b2b07751f7680c0338abd6d79d45193df58bb692125e2ba4718ef3d864"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9582.0,
-   "balance_after": 9496.0,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/probe2-flash-edit-blockout/0.png",
-     "sha256": "6db1f441ac455a98f66be94ea50fe408c9bd87ae10f5ac7716dc6a6c0eb45624"
-    }
-   ],
-   "verdict": "probe winner",
-   "note": "Pro Flash edit over the 2:1 construction blockout, text method | Pro Flash edit over a measured 2:1 blockout keeps size, axis and construction exactly and redraws the surface at character grain; chosen route"
-  },
-  {
-   "id": "probe3-mapobject-init",
-   "endpoint": "/map-objects",
-   "started": "2026-10-27T03:21:46.902661+00:00",
-   "job_id": null,
-   "object_id": "ea494b27-46d0-4e8e-8a02-d2eb011edd38",
-   "status": null,
-   "body": {
-    "description": "plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges",
-    "image_size": {
-     "width": 320,
-     "height": 256
+      "id": "probe3-mapobject-init",
+      "endpoint": "/map-objects",
+      "started": "2026-10-27T03:21:46.902661+00:00",
+      "job_id": null,
+      "object_id": "ea494b27-46d0-4e8e-8a02-d2eb011edd38",
+      "status": null,
+      "body": {
+        "description": "plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges",
+        "image_size": {
+          "width": 320,
+          "height": 256
+        },
+        "view": "high top-down",
+        "outline": "single color outline",
+        "shading": "basic shading",
+        "detail": "medium detail",
+        "init_image_strength": 450,
+        "seed": 2841
+      },
+      "inputs": {
+        "init_image": {
+          "path": "blockouts/fruit-table-320x256.png",
+          "sha256": "5f8c8864e35ccad5b585e98b47adeae2314a3d197b7e51d0075444c10525b730"
+        }
+      },
+      "usage": null,
+      "balance_before": 9383.0,
+      "balance_after": 9373.0,
+      "gens": null,
+      "outputs": [
+        {
+          "path": "raw/probe3-mapobject-init/0.png",
+          "sha256": "713709f1c9e366097aa8574ee902d3ec88b4edde98fd5fcb4af409ac021df72b"
+        }
+      ],
+      "verdict": "rejected",
+      "note": "map-objects with the blockout as init image at full 1.65H length | map-objects with the blockout as init image: background not removed (grey field) and the surface barely changed",
+      "gens_estimated": true
     },
-    "view": "high top-down",
-    "outline": "single color outline",
-    "shading": "basic shading",
-    "detail": "medium detail",
-    "init_image_strength": 450,
-    "seed": 2841
-   },
-   "inputs": {
-    "init_image": {
-     "path": "blockouts/fruit-table-320x256.png",
-     "sha256": "5f8c8864e35ccad5b585e98b47adeae2314a3d197b7e51d0075444c10525b730"
-    }
-   },
-   "usage": null,
-   "balance_before": 9383.0,
-   "balance_after": 9373.0,
-   "gens": null,
-   "outputs": [
     {
-     "path": "raw/probe3-mapobject-init/0.png",
-     "sha256": "713709f1c9e366097aa8574ee902d3ec88b4edde98fd5fcb4af409ac021df72b"
-    }
-   ],
-   "verdict": "rejected",
-   "note": "map-objects with the blockout as init image at full 1.65H length | map-objects with the blockout as init image: background not removed (grey field) and the surface barely changed",
-   "gens_estimated": true
-  },
-  {
-   "id": "gao-r2-ref-kaya-s11",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:25:52.104075+00:00",
-   "job_id": "8d70b300-e986-4f42-ba4a-bbc6d58c017d",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "reference",
-    "seed": 11,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wicker weave, wood grain and fruit in a careful hand-drawn pixel style: finished pixel art of a worn wooden market table loaded with fruit, high top-down view on a 2:1 isometric axis, the long edge running from upper left to lower right. matte weathered planks with thin seams, four slim square legs with open gaps and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no gloss, no bevelled plank edges. Use the reference character only for line weight, colour restraint and shading; do not draw the character."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/gao-fruit-table.png",
-     "sha256": "78da04e83680018cf4f4de40c489a9c90d022762d178b9f504bff7a4b1b22fe7"
+      "id": "gao-r2-ref-kaya-s11",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:25:52.104075+00:00",
+      "job_id": "8d70b300-e986-4f42-ba4a-bbc6d58c017d",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "reference",
+        "seed": 11,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wicker weave, wood grain and fruit in a careful hand-drawn pixel style: finished pixel art of a worn wooden market table loaded with fruit, high top-down view on a 2:1 isometric axis, the long edge running from upper left to lower right. matte weathered planks with thin seams, four slim square legs with open gaps and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no gloss, no bevelled plank edges. Use the reference character only for line weight, colour restraint and shading; do not draw the character."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/gao-fruit-table.png",
+          "sha256": "78da04e83680018cf4f4de40c489a9c90d022762d178b9f504bff7a4b1b22fe7"
+        },
+        "reference_image": {
+          "path": "ref/kaya-idle-south.png",
+          "sha256": "d59f6d1e50ba3d352a6c77900cf40e3b06c5137fe5c70fcc664052bc1ea52d21"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9193.999999999998,
+      "balance_after": 9126.999999999998,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/gao-r2-ref-kaya-s11/0.png",
+          "sha256": "5ced3970e27752341f78234ba2a886f462c8f68409b7e32c8755a28249671c4b"
+        }
+      ],
+      "verdict": "superseded",
+      "note": "round 2: reference method with Kaya idle south | reference method with Kaya: no visible gain over the text method, so round 3 uses text"
     },
-    "reference_image": {
-     "path": "ref/kaya-idle-south.png",
-     "sha256": "d59f6d1e50ba3d352a6c77900cf40e3b06c5137fe5c70fcc664052bc1ea52d21"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9193.999999999998,
-   "balance_after": 9126.999999999998,
-   "gens": 9.0,
-   "outputs": [
     {
-     "path": "raw/gao-r2-ref-kaya-s11/0.png",
-     "sha256": "5ced3970e27752341f78234ba2a886f462c8f68409b7e32c8755a28249671c4b"
-    }
-   ],
-   "verdict": "superseded",
-   "note": "round 2: reference method with Kaya idle south | reference method with Kaya: no visible gain over the text method, so round 3 uses text"
-  },
-  {
-   "id": "gao-r2-text-s11",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:25:52.081905+00:00",
-   "job_id": "35a98097-8bba-4fc6-97b1-5a350ae43bfb",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 11,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wicker weave, wood grain and fruit in a careful hand-drawn pixel style: finished pixel art of a worn wooden market table loaded with fruit, high top-down view on a 2:1 isometric axis, the long edge running from upper left to lower right. matte weathered planks with thin seams, four slim square legs with open gaps and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no gloss, no bevelled plank edges"
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/gao-fruit-table.png",
-     "sha256": "78da04e83680018cf4f4de40c489a9c90d022762d178b9f504bff7a4b1b22fe7"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9193.999999999998,
-   "balance_after": 9138.999999999998,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/gao-r2-text-s11/0.png",
-     "sha256": "5433e3ef5cce179e9809459ac501d9b2840e4b9aebccde689738883d76a1876b"
-    }
-   ],
-   "verdict": "superseded",
-   "note": "round 2: grouped blockout, text edit | grouped blockout; green fruit drifted to grey-brown"
-  },
-  {
-   "id": "gao-r2-text-s12",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:25:52.064041+00:00",
-   "job_id": "70d0f7eb-0d64-45dd-8a54-dd44f8f63d41",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 12,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wicker weave, wood grain and fruit in a careful hand-drawn pixel style: finished pixel art of a worn wooden market table loaded with fruit, high top-down view on a 2:1 isometric axis, the long edge running from upper left to lower right. matte weathered planks with thin seams, four slim square legs with open gaps and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no gloss, no bevelled plank edges"
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/gao-fruit-table.png",
-     "sha256": "78da04e83680018cf4f4de40c489a9c90d022762d178b9f504bff7a4b1b22fe7"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9193.999999999998,
-   "balance_after": 9147.999999999998,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/gao-r2-text-s12/0.png",
-     "sha256": "64746e8902632ed473791027278abadf26a61c8aca12de8cc4eed2d32dfe34d6"
-    }
-   ],
-   "verdict": "superseded",
-   "note": "round 2: grouped blockout, text edit, second seed | grouped blockout; kept fruit colours; blockout stretcher joined no legs (fixed in round 3)"
-  },
-  {
-   "id": "gao-fruit-table-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:31:15.272057+00:00",
-   "job_id": "d4b1f502-ccda-479d-9192-dcd12b6ea84b",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table loaded with fruit: matte weathered planks with thin seams, four slim square legs joined by end rails and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/gao-fruit-table.png",
-     "sha256": "195fe33c56066dc99dda44eaf882d0b3f1a90657a09eacd4a59b2ce2a90d04cc"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 8901.2,
-   "balance_after": 8793.2,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/gao-fruit-table-r3-s21/0.png",
-     "sha256": "9c7f62ba0e85686951b34b09c479a975a263948df7d9d78dcff505dae8ff6d4b"
-    }
-   ],
-   "verdict": "alternate",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "gao-fruit-table-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:31:47.724475+00:00",
-   "job_id": "96107e19-8a63-4127-bc61-d61cb5e1a383",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table loaded with fruit: matte weathered planks with thin seams, four slim square legs joined by end rails and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/gao-fruit-table.png",
-     "sha256": "195fe33c56066dc99dda44eaf882d0b3f1a90657a09eacd4a59b2ce2a90d04cc"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 8855.2,
-   "balance_after": 8719.2,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/gao-fruit-table-r3-s22/0.png",
-     "sha256": "4027f8eb8250c095103de06b18fa459c0be6b300f27a49a725f297bdf2c4de11"
-    }
-   ],
-   "verdict": "selected",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "south-grain-table-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:33:11.080072+00:00",
-   "job_id": "cfb9b447-ef38-48ba-aa44-05164b22008b",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A grey weathered wooden market table selling dry goods by measure: a small standing wooden balance with two hanging pans at the left end, three burlap sacks with rolled-down mouths full of pale grain, brown beans and dried red pepper, a small clay jar with a wooden scoop, a folded red-brown cloth; a tied burlap sack under the table and an open sack of grain slumped on the ground at the front leg. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/south-grain-table.png",
-     "sha256": "6da3d6e46eb70b753a97a75df6978eda9c89ff1cc7bc7c2e65e0bdf910fc769f"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 8730.2,
-   "balance_after": 8625.1,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/south-grain-table-r3-s21/0.png",
-     "sha256": "8119d767619671361176444dd1ec4b75962543d0f666a5b826159e971b94d469"
-    }
-   ],
-   "verdict": "selected, cleaned",
-   "note": "round 3: final blockout, text edit | 44 near-white grain pixels recoloured from their neighbours by tools/clean_white.py -> fixes/south-grain-table-r3-s21-clean.png"
-  },
-  {
-   "id": "south-grain-table-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:33:21.067882+00:00",
-   "job_id": "d4fa46ec-7af9-4165-aee0-dd90aa56c824",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A grey weathered wooden market table selling dry goods by measure: a small standing wooden balance with two hanging pans at the left end, three burlap sacks with rolled-down mouths full of pale grain, brown beans and dried red pepper, a small clay jar with a wooden scoop, a folded red-brown cloth; a tied burlap sack under the table and an open sack of grain slumped on the ground at the front leg. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/south-grain-table.png",
-     "sha256": "6da3d6e46eb70b753a97a75df6978eda9c89ff1cc7bc7c2e65e0bdf910fc769f"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 8709.2,
-   "balance_after": 8625.1,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/south-grain-table-r3-s22/0.png",
-     "sha256": "18cda9bf7ea215150479e6cab95c4d60014b1e95d2c3d312835f1aa6f9c5427f"
-    }
-   ],
-   "verdict": "rejected",
-   "note": "round 3: final blockout, text edit | white background-removal speckle around the legs"
-  },
-  {
-   "id": "north-pottery-table-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:28:56.954366+00:00",
-   "job_id": "05bd4849-1add-468a-aeff-a7fd8a056f07",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table of a potter's stock: unglazed terracotta and pale clay storage jars and jugs of different sizes standing close together, one dull green glazed jar, a stack of shallow clay bowls; two clay jars on the ground under the table and a big pale storage jar on the ground at the right end. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/north-pottery-table.png",
-     "sha256": "2d7a9a6e4629bb9de3be0db36a2207ec338980972e527e378eedde117cca7ff5"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9080.199999999999,
-   "balance_after": 8980.2,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/north-pottery-table-r3-s21/0.png",
-     "sha256": "af6ac1e763f7e09005c608fe72fa660c72ce55cf299fe3418dcf677fb95e538b"
-    }
-   ],
-   "verdict": "selected",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "north-pottery-table-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:28:56.874078+00:00",
-   "job_id": "71bd74ff-3ba0-417e-a4b3-a8b32efbf466",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table of a potter's stock: unglazed terracotta and pale clay storage jars and jugs of different sizes standing close together, one dull green glazed jar, a stack of shallow clay bowls; two clay jars on the ground under the table and a big pale storage jar on the ground at the right end. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/north-pottery-table.png",
-     "sha256": "2d7a9a6e4629bb9de3be0db36a2207ec338980972e527e378eedde117cca7ff5"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9080.199999999999,
-   "balance_after": 8980.2,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/north-pottery-table-r3-s22/0.png",
-     "sha256": "e4aa2ba8bee40baebf038ea89de15f47ef7797671fac4ac312b99df03683c440"
-    }
-   ],
-   "verdict": "rejected",
-   "note": "round 3: final blockout, text edit | invented a cloth hanging over the right end"
-  },
-  {
-   "id": "bench-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:28:53.370153+00:00",
-   "job_id": "8f6a096c-8d49-4686-b9f7-9ee5ccab8995",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A plain wooden village bench: one thick worn seat plank on two slab legs joined by a low stretcher, scuffed edges. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/bench.png",
-     "sha256": "d0883244c158559ff852c81e0cf091e231f78c9b360263621d8537d4d1ac6027"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9095.199999999999,
-   "balance_after": 9010.199999999999,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/bench-r3-s21/0.png",
-     "sha256": "3abee4b980d0abdb9c26ee297d4c61283cbdd2e8108d9ad7f9e8000cffa6d34a"
-    }
-   ],
-   "verdict": "alternate",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "bench-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:28:53.377004+00:00",
-   "job_id": "d309d82f-277a-4081-8541-e07c8ac65e8a",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A plain wooden village bench: one thick worn seat plank on two slab legs joined by a low stretcher, scuffed edges. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/bench.png",
-     "sha256": "d0883244c158559ff852c81e0cf091e231f78c9b360263621d8537d4d1ac6027"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 9095.199999999999,
-   "balance_after": 8992.2,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/bench-r3-s22/0.png",
-     "sha256": "c3a0a6c4edfd8e786c32b02d8cafeb9598dba6a895d14c2796576d53d948dab9"
-    }
-   ],
-   "verdict": "selected",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "fence-segment-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:28:55.046807+00:00",
-   "job_id": "72688982-805e-4b3f-a148-71455c5f2c17",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. One section of rough split-wood post and rail village fence: two weathered square posts and two split rails. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/fence-segment.png",
-     "sha256": "4e30ffbdef172456a73610160295b8297ebf83837d53954db410586c9eff4d75"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 9092.199999999999,
-   "balance_after": 9019.199999999999,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/fence-segment-r3-s21/0.png",
-     "sha256": "0eb97ad5a338a93a83e94d19aebad145f6e1f9ef4653960c1b8b5cf269228d7e"
-    }
-   ],
-   "verdict": "alternate",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "fence-segment-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:31:05.853619+00:00",
-   "job_id": "bd036a81-f1c6-4bfd-ac4b-9ca422c9cfa3",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. One section of rough split-wood post and rail village fence: two weathered square posts and two split rails. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/fence-segment.png",
-     "sha256": "4e30ffbdef172456a73610160295b8297ebf83837d53954db410586c9eff4d75"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 8910.2,
-   "balance_after": 8855.2,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/fence-segment-r3-s22/0.png",
-     "sha256": "444ad2634c8198229ceac0c7df14b0a1ea160e607878993badc3a4039887c083"
-    }
-   ],
-   "verdict": "selected",
-   "note": "round 3: final blockout, text edit | cleaner posts"
-  },
-  {
-   "id": "shop-stack-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:31:48.584824+00:00",
-   "job_id": "f63ae4ab-4860-482e-8ed3-57ebc5187180",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A shopkeeper's outdoor stock: two slatted wooden crates stacked, the top one full of small yellow-green fruit, a low crate of small red peppers, a clay jar on the ground, and behind them a simple wooden rack with three leather waterskins and a string of dried red peppers hanging from its crossbar on cords. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/shop-stack.png",
-     "sha256": "9db6c4351069dfd5a6edcf7f282d1dd89472564a28d054ed96b8ff14edfaf4c9"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 8855.2,
-   "balance_after": 8677.2,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/shop-stack-r3-s21/0.png",
-     "sha256": "0f5f15ebaea86d28de9b29232f4b8b815fba6f60e21f3b10f693f7226c35c412"
-    }
-   ],
-   "verdict": "selected",
-   "note": "round 3: final blockout, text edit | crate wood matches the other tables"
-  },
-  {
-   "id": "shop-stack-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:32:18.664031+00:00",
-   "job_id": "33df24c5-64a4-4297-9d35-eff2cbc22ddb",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A shopkeeper's outdoor stock: two slatted wooden crates stacked, the top one full of small yellow-green fruit, a low crate of small red peppers, a clay jar on the ground, and behind them a simple wooden rack with three leather waterskins and a string of dried red peppers hanging from its crossbar on cords. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/shop-stack.png",
-     "sha256": "9db6c4351069dfd5a6edcf7f282d1dd89472564a28d054ed96b8ff14edfaf4c9"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 9.0
-   },
-   "balance_before": 8793.2,
-   "balance_after": 8730.2,
-   "gens": 9.0,
-   "outputs": [
-    {
-     "path": "raw/shop-stack-r3-s22/0.png",
-     "sha256": "356c5e8278f9779f7ce6cd4ed5ac4b5974dada5ed3a18fe227edf16c2eeec23c"
-    }
-   ],
-   "verdict": "alternate",
-   "note": "round 3: final blockout, text edit | warmer crates"
-  },
-  {
-   "id": "baskets-north-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:30:13.599753+00:00",
-   "job_id": "a29b8189-7e83-4558-98df-26a2deb779d6",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: two empty baskets nested one on another, a basket of brown onions and roots, a small basket of orange fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/baskets-north.png",
-     "sha256": "1e2c950a39fee75bd43c774bd1a4ee4e645d05882195900557408acb97070c96"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 8958.2,
-   "balance_after": 8910.2,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/baskets-north-r3-s21/0.png",
-     "sha256": "cbffc97f7a033496a1c0b1e5c3965f832e514ade6c2ef34e2a81896ecd8d4e4e"
-    }
-   ],
-   "verdict": "selected",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "baskets-north-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:30:13.646395+00:00",
-   "job_id": "a1d73d11-7cc3-42db-acf3-a57bd2d7ab5a",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: two empty baskets nested one on another, a basket of brown onions and roots, a small basket of orange fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/baskets-north.png",
-     "sha256": "1e2c950a39fee75bd43c774bd1a4ee4e645d05882195900557408acb97070c96"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 8958.2,
-   "balance_after": 8901.2,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/baskets-north-r3-s22/0.png",
-     "sha256": "ca9129345b68c424b692517022a4ef8d1c81481e7c1f5e9264a22fa3c6f5bdbc"
-    }
-   ],
-   "verdict": "alternate",
-   "note": "round 3: final blockout, text edit"
-  },
-  {
-   "id": "baskets-south-r3-s21",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:30:13.634839+00:00",
-   "job_id": "9a0cc12b-8dc5-4580-8111-df45f8f98bb6",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 21,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: a big lidded stock basket, a carry basket with a handle full of green cabbages and greens, a small basket of red fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/baskets-south.png",
-     "sha256": "52c9892d44b2bfc305ce4400f1044c550aa3b8bdf8999d718cd1f8fb406078fc"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 8958.2,
-   "balance_after": 8916.2,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/baskets-south-r3-s21/0.png",
-     "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
-    }
-   ],
-   "verdict": "base of the selected fix",
-   "note": "round 3: final blockout, text edit | has a small pale cloth in the greens basket (10 near-white px)"
-  },
-  {
-   "id": "baskets-south-r3-s22",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T03:31:00.187015+00:00",
-   "job_id": "c02413e2-eda9-4aa9-af72-bc98acd77ab3",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 22,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: a big lidded stock basket, a carry basket with a handle full of green cabbages and greens, a small basket of red fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/baskets-south.png",
-     "sha256": "52c9892d44b2bfc305ce4400f1044c550aa3b8bdf8999d718cd1f8fb406078fc"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 8916.2,
-   "balance_after": 8855.2,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/baskets-south-r3-s22/0.png",
-     "sha256": "8b75993eee05648aace67ee97c51925ad178976b89d35a9708940414ceb1b9e2"
-    }
-   ],
-   "verdict": "alternate",
-   "note": "round 3: final blockout, text edit | same pale cloth, larger"
-  },
-  {
-   "id": "baskets-south-fix-cloth-s31",
-   "endpoint": "/inpaint-image-pro-flash",
-   "started": "2026-10-27T04:05:34.903252+00:00",
-   "job_id": "e7a7542a-876c-4190-ad74-3947af2ca544",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "description": "the woven wicker rim and side of the basket continue here, with green cabbages and leafy greens heaped inside; no cloth, no white, matte, dark brown 1 pixel outline, same pixel style",
-    "output_method": "Modify current layer",
-    "no_background": true,
-    "seed": 31
-   },
-   "inputs": {
-    "image": {
-     "path": "raw/baskets-south-r3-s21/0.png",
-     "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
+      "id": "gao-r2-text-s11",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:25:52.081905+00:00",
+      "job_id": "35a98097-8bba-4fc6-97b1-5a350ae43bfb",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 11,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wicker weave, wood grain and fruit in a careful hand-drawn pixel style: finished pixel art of a worn wooden market table loaded with fruit, high top-down view on a 2:1 isometric axis, the long edge running from upper left to lower right. matte weathered planks with thin seams, four slim square legs with open gaps and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no gloss, no bevelled plank edges"
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/gao-fruit-table.png",
+          "sha256": "78da04e83680018cf4f4de40c489a9c90d022762d178b9f504bff7a4b1b22fe7"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9193.999999999998,
+      "balance_after": 9138.999999999998,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/gao-r2-text-s11/0.png",
+          "sha256": "5433e3ef5cce179e9809459ac501d9b2840e4b9aebccde689738883d76a1876b"
+        }
+      ],
+      "verdict": "superseded",
+      "note": "round 2: grouped blockout, text edit | grouped blockout; green fruit drifted to grey-brown"
     },
-    "mask_image": {
-     "path": "fixes/baskets-south-cloth-mask.png",
-     "sha256": "c77d11e361739540506fb518fd711a5088392f736e5f6453733e4be64df6bd86"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 7419.5,
-   "balance_after": 7413.5,
-   "gens": 6.0,
-   "outputs": [
     {
-     "path": "raw/baskets-south-fix-cloth-s31/0.png",
-     "sha256": "a532b54a1a65dfbcbe90459ffdae4158246736a38cde5bb181d81fb7b74856dc"
-    }
-   ],
-   "verdict": "selected",
-   "note": "fix requested by the main session: remove the cloth the generator invented in the greens basket | clean rim weave; pixels outside the mask unchanged (checked)"
-  },
-  {
-   "id": "baskets-south-fix-cloth-s32",
-   "endpoint": "/inpaint-image-pro-flash",
-   "started": "2026-10-27T04:05:34.943822+00:00",
-   "job_id": "2970cbf5-e5fc-43ad-aaf1-b20ea2d93f91",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "description": "the woven wicker rim and side of the basket continue here, with green cabbages and leafy greens heaped inside; no cloth, no white, matte, dark brown 1 pixel outline, same pixel style",
-    "output_method": "Modify current layer",
-    "no_background": true,
-    "seed": 32
-   },
-   "inputs": {
-    "image": {
-     "path": "raw/baskets-south-r3-s21/0.png",
-     "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
+      "id": "gao-r2-text-s12",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:25:52.064041+00:00",
+      "job_id": "70d0f7eb-0d64-45dd-8a54-dd44f8f63d41",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 12,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wicker weave, wood grain and fruit in a careful hand-drawn pixel style: finished pixel art of a worn wooden market table loaded with fruit, high top-down view on a 2:1 isometric axis, the long edge running from upper left to lower right. matte weathered planks with thin seams, four slim square legs with open gaps and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no gloss, no bevelled plank edges"
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/gao-fruit-table.png",
+          "sha256": "78da04e83680018cf4f4de40c489a9c90d022762d178b9f504bff7a4b1b22fe7"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9193.999999999998,
+      "balance_after": 9147.999999999998,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/gao-r2-text-s12/0.png",
+          "sha256": "64746e8902632ed473791027278abadf26a61c8aca12de8cc4eed2d32dfe34d6"
+        }
+      ],
+      "verdict": "superseded",
+      "note": "round 2: grouped blockout, text edit, second seed | grouped blockout; kept fruit colours; blockout stretcher joined no legs (fixed in round 3)"
     },
-    "mask_image": {
-     "path": "fixes/baskets-south-cloth-mask.png",
-     "sha256": "c77d11e361739540506fb518fd711a5088392f736e5f6453733e4be64df6bd86"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 7419.5,
-   "balance_after": 7407.5,
-   "gens": 6.0,
-   "outputs": [
     {
-     "path": "raw/baskets-south-fix-cloth-s32/0.png",
-     "sha256": "e46231849cb4ce745ae5a8df6d26bce356665ed3161c63a3b51c372e28ddb418"
+      "id": "gao-fruit-table-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:31:15.272057+00:00",
+      "job_id": "d4b1f502-ccda-479d-9192-dcd12b6ea84b",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table loaded with fruit: matte weathered planks with thin seams, four slim square legs joined by end rails and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/gao-fruit-table.png",
+          "sha256": "195fe33c56066dc99dda44eaf882d0b3f1a90657a09eacd4a59b2ce2a90d04cc"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 8901.2,
+      "balance_after": 8793.2,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/gao-fruit-table-r3-s21/0.png",
+          "sha256": "9c7f62ba0e85686951b34b09c479a975a263948df7d9d78dcff505dae8ff6d4b"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "gao-fruit-table-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:31:47.724475+00:00",
+      "job_id": "96107e19-8a63-4127-bc61-d61cb5e1a383",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table loaded with fruit: matte weathered planks with thin seams, four slim square legs joined by end rails and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/gao-fruit-table.png",
+          "sha256": "195fe33c56066dc99dda44eaf882d0b3f1a90657a09eacd4a59b2ce2a90d04cc"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 8855.2,
+      "balance_after": 8719.2,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/gao-fruit-table-r3-s22/0.png",
+          "sha256": "4027f8eb8250c095103de06b18fa459c0be6b300f27a49a725f297bdf2c4de11"
+        }
+      ],
+      "verdict": "selected",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "south-grain-table-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:33:11.080072+00:00",
+      "job_id": "cfb9b447-ef38-48ba-aa44-05164b22008b",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A grey weathered wooden market table selling dry goods by measure: a small standing wooden balance with two hanging pans at the left end, three burlap sacks with rolled-down mouths full of pale grain, brown beans and dried red pepper, a small clay jar with a wooden scoop, a folded red-brown cloth; a tied burlap sack under the table and an open sack of grain slumped on the ground at the front leg. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/south-grain-table.png",
+          "sha256": "6da3d6e46eb70b753a97a75df6978eda9c89ff1cc7bc7c2e65e0bdf910fc769f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 8730.2,
+      "balance_after": 8625.1,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/south-grain-table-r3-s21/0.png",
+          "sha256": "8119d767619671361176444dd1ec4b75962543d0f666a5b826159e971b94d469"
+        }
+      ],
+      "verdict": "selected, cleaned",
+      "note": "round 3: final blockout, text edit | 44 near-white grain pixels recoloured from their neighbours by tools/clean_white.py -> fixes/south-grain-table-r3-s21-clean.png"
+    },
+    {
+      "id": "south-grain-table-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:33:21.067882+00:00",
+      "job_id": "d4fa46ec-7af9-4165-aee0-dd90aa56c824",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A grey weathered wooden market table selling dry goods by measure: a small standing wooden balance with two hanging pans at the left end, three burlap sacks with rolled-down mouths full of pale grain, brown beans and dried red pepper, a small clay jar with a wooden scoop, a folded red-brown cloth; a tied burlap sack under the table and an open sack of grain slumped on the ground at the front leg. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/south-grain-table.png",
+          "sha256": "6da3d6e46eb70b753a97a75df6978eda9c89ff1cc7bc7c2e65e0bdf910fc769f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 8709.2,
+      "balance_after": 8625.1,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/south-grain-table-r3-s22/0.png",
+          "sha256": "18cda9bf7ea215150479e6cab95c4d60014b1e95d2c3d312835f1aa6f9c5427f"
+        }
+      ],
+      "verdict": "rejected",
+      "note": "round 3: final blockout, text edit | white background-removal speckle around the legs"
+    },
+    {
+      "id": "north-pottery-table-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:28:56.954366+00:00",
+      "job_id": "05bd4849-1add-468a-aeff-a7fd8a056f07",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table of a potter's stock: unglazed terracotta and pale clay storage jars and jugs of different sizes standing close together, one dull green glazed jar, a stack of shallow clay bowls; two clay jars on the ground under the table and a big pale storage jar on the ground at the right end. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/north-pottery-table.png",
+          "sha256": "2d7a9a6e4629bb9de3be0db36a2207ec338980972e527e378eedde117cca7ff5"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9080.199999999999,
+      "balance_after": 8980.2,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/north-pottery-table-r3-s21/0.png",
+          "sha256": "af6ac1e763f7e09005c608fe72fa660c72ce55cf299fe3418dcf677fb95e538b"
+        }
+      ],
+      "verdict": "selected",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "north-pottery-table-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:28:56.874078+00:00",
+      "job_id": "71bd74ff-3ba0-417e-a4b3-a8b32efbf466",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table of a potter's stock: unglazed terracotta and pale clay storage jars and jugs of different sizes standing close together, one dull green glazed jar, a stack of shallow clay bowls; two clay jars on the ground under the table and a big pale storage jar on the ground at the right end. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/north-pottery-table.png",
+          "sha256": "2d7a9a6e4629bb9de3be0db36a2207ec338980972e527e378eedde117cca7ff5"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9080.199999999999,
+      "balance_after": 8980.2,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/north-pottery-table-r3-s22/0.png",
+          "sha256": "e4aa2ba8bee40baebf038ea89de15f47ef7797671fac4ac312b99df03683c440"
+        }
+      ],
+      "verdict": "rejected",
+      "note": "round 3: final blockout, text edit | invented a cloth hanging over the right end"
+    },
+    {
+      "id": "bench-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:28:53.370153+00:00",
+      "job_id": "8f6a096c-8d49-4686-b9f7-9ee5ccab8995",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A plain wooden village bench: one thick worn seat plank on two slab legs joined by a low stretcher, scuffed edges. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/bench.png",
+          "sha256": "d0883244c158559ff852c81e0cf091e231f78c9b360263621d8537d4d1ac6027"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9095.199999999999,
+      "balance_after": 9010.199999999999,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/bench-r3-s21/0.png",
+          "sha256": "3abee4b980d0abdb9c26ee297d4c61283cbdd2e8108d9ad7f9e8000cffa6d34a"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "bench-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:28:53.377004+00:00",
+      "job_id": "d309d82f-277a-4081-8541-e07c8ac65e8a",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A plain wooden village bench: one thick worn seat plank on two slab legs joined by a low stretcher, scuffed edges. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/bench.png",
+          "sha256": "d0883244c158559ff852c81e0cf091e231f78c9b360263621d8537d4d1ac6027"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 9095.199999999999,
+      "balance_after": 8992.2,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/bench-r3-s22/0.png",
+          "sha256": "c3a0a6c4edfd8e786c32b02d8cafeb9598dba6a895d14c2796576d53d948dab9"
+        }
+      ],
+      "verdict": "selected",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "fence-segment-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:28:55.046807+00:00",
+      "job_id": "72688982-805e-4b3f-a148-71455c5f2c17",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. One section of rough split-wood post and rail village fence: two weathered square posts and two split rails. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/fence-segment.png",
+          "sha256": "4e30ffbdef172456a73610160295b8297ebf83837d53954db410586c9eff4d75"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 9092.199999999999,
+      "balance_after": 9019.199999999999,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/fence-segment-r3-s21/0.png",
+          "sha256": "0eb97ad5a338a93a83e94d19aebad145f6e1f9ef4653960c1b8b5cf269228d7e"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "fence-segment-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:31:05.853619+00:00",
+      "job_id": "bd036a81-f1c6-4bfd-ac4b-9ca422c9cfa3",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. One section of rough split-wood post and rail village fence: two weathered square posts and two split rails. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/fence-segment.png",
+          "sha256": "4e30ffbdef172456a73610160295b8297ebf83837d53954db410586c9eff4d75"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 8910.2,
+      "balance_after": 8855.2,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/fence-segment-r3-s22/0.png",
+          "sha256": "444ad2634c8198229ceac0c7df14b0a1ea160e607878993badc3a4039887c083"
+        }
+      ],
+      "verdict": "selected",
+      "note": "round 3: final blockout, text edit | cleaner posts"
+    },
+    {
+      "id": "shop-stack-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:31:48.584824+00:00",
+      "job_id": "f63ae4ab-4860-482e-8ed3-57ebc5187180",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A shopkeeper's outdoor stock: two slatted wooden crates stacked, the top one full of small yellow-green fruit, a low crate of small red peppers, a clay jar on the ground, and behind them a simple wooden rack with three leather waterskins and a string of dried red peppers hanging from its crossbar on cords. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/shop-stack.png",
+          "sha256": "9db6c4351069dfd5a6edcf7f282d1dd89472564a28d054ed96b8ff14edfaf4c9"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 8855.2,
+      "balance_after": 8677.2,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/shop-stack-r3-s21/0.png",
+          "sha256": "0f5f15ebaea86d28de9b29232f4b8b815fba6f60e21f3b10f693f7226c35c412"
+        }
+      ],
+      "verdict": "selected",
+      "note": "round 3: final blockout, text edit | crate wood matches the other tables"
+    },
+    {
+      "id": "shop-stack-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:32:18.664031+00:00",
+      "job_id": "33df24c5-64a4-4297-9d35-eff2cbc22ddb",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A shopkeeper's outdoor stock: two slatted wooden crates stacked, the top one full of small yellow-green fruit, a low crate of small red peppers, a clay jar on the ground, and behind them a simple wooden rack with three leather waterskins and a string of dried red peppers hanging from its crossbar on cords. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/shop-stack.png",
+          "sha256": "9db6c4351069dfd5a6edcf7f282d1dd89472564a28d054ed96b8ff14edfaf4c9"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 8793.2,
+      "balance_after": 8730.2,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/shop-stack-r3-s22/0.png",
+          "sha256": "356c5e8278f9779f7ce6cd4ed5ac4b5974dada5ed3a18fe227edf16c2eeec23c"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "round 3: final blockout, text edit | warmer crates"
+    },
+    {
+      "id": "baskets-north-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:30:13.599753+00:00",
+      "job_id": "a29b8189-7e83-4558-98df-26a2deb779d6",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: two empty baskets nested one on another, a basket of brown onions and roots, a small basket of orange fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/baskets-north.png",
+          "sha256": "1e2c950a39fee75bd43c774bd1a4ee4e645d05882195900557408acb97070c96"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 8958.2,
+      "balance_after": 8910.2,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-north-r3-s21/0.png",
+          "sha256": "cbffc97f7a033496a1c0b1e5c3965f832e514ade6c2ef34e2a81896ecd8d4e4e"
+        }
+      ],
+      "verdict": "selected",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "baskets-north-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:30:13.646395+00:00",
+      "job_id": "a1d73d11-7cc3-42db-acf3-a57bd2d7ab5a",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: two empty baskets nested one on another, a basket of brown onions and roots, a small basket of orange fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/baskets-north.png",
+          "sha256": "1e2c950a39fee75bd43c774bd1a4ee4e645d05882195900557408acb97070c96"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 8958.2,
+      "balance_after": 8901.2,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-north-r3-s22/0.png",
+          "sha256": "ca9129345b68c424b692517022a4ef8d1c81481e7c1f5e9264a22fa3c6f5bdbc"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "round 3: final blockout, text edit"
+    },
+    {
+      "id": "baskets-south-r3-s21",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:30:13.634839+00:00",
+      "job_id": "9a0cc12b-8dc5-4580-8111-df45f8f98bb6",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 21,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: a big lidded stock basket, a carry basket with a handle full of green cabbages and greens, a small basket of red fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/baskets-south.png",
+          "sha256": "52c9892d44b2bfc305ce4400f1044c550aa3b8bdf8999d718cd1f8fb406078fc"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 8958.2,
+      "balance_after": 8916.2,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-south-r3-s21/0.png",
+          "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
+        }
+      ],
+      "verdict": "base of the selected fix",
+      "note": "round 3: final blockout, text edit | has a small pale cloth in the greens basket (10 near-white px)"
+    },
+    {
+      "id": "baskets-south-r3-s22",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T03:31:00.187015+00:00",
+      "job_id": "c02413e2-eda9-4aa9-af72-bc98acd77ab3",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 22,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: a big lidded stock basket, a carry basket with a handle full of green cabbages and greens, a small basket of red fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/baskets-south.png",
+          "sha256": "52c9892d44b2bfc305ce4400f1044c550aa3b8bdf8999d718cd1f8fb406078fc"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 8916.2,
+      "balance_after": 8855.2,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-south-r3-s22/0.png",
+          "sha256": "8b75993eee05648aace67ee97c51925ad178976b89d35a9708940414ceb1b9e2"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "round 3: final blockout, text edit | same pale cloth, larger"
+    },
+    {
+      "id": "baskets-south-fix-cloth-s31",
+      "endpoint": "/inpaint-image-pro-flash",
+      "started": "2026-10-27T04:05:34.903252+00:00",
+      "job_id": "e7a7542a-876c-4190-ad74-3947af2ca544",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "description": "the woven wicker rim and side of the basket continue here, with green cabbages and leafy greens heaped inside; no cloth, no white, matte, dark brown 1 pixel outline, same pixel style",
+        "output_method": "Modify current layer",
+        "no_background": true,
+        "seed": 31
+      },
+      "inputs": {
+        "image": {
+          "path": "raw/baskets-south-r3-s21/0.png",
+          "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
+        },
+        "mask_image": {
+          "path": "fixes/baskets-south-cloth-mask.png",
+          "sha256": "c77d11e361739540506fb518fd711a5088392f736e5f6453733e4be64df6bd86"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 7419.5,
+      "balance_after": 7413.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-south-fix-cloth-s31/0.png",
+          "sha256": "a532b54a1a65dfbcbe90459ffdae4158246736a38cde5bb181d81fb7b74856dc"
+        }
+      ],
+      "verdict": "selected",
+      "note": "fix requested by the main session: remove the cloth the generator invented in the greens basket | clean rim weave; pixels outside the mask unchanged (checked)"
+    },
+    {
+      "id": "baskets-south-fix-cloth-s32",
+      "endpoint": "/inpaint-image-pro-flash",
+      "started": "2026-10-27T04:05:34.943822+00:00",
+      "job_id": "2970cbf5-e5fc-43ad-aaf1-b20ea2d93f91",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "description": "the woven wicker rim and side of the basket continue here, with green cabbages and leafy greens heaped inside; no cloth, no white, matte, dark brown 1 pixel outline, same pixel style",
+        "output_method": "Modify current layer",
+        "no_background": true,
+        "seed": 32
+      },
+      "inputs": {
+        "image": {
+          "path": "raw/baskets-south-r3-s21/0.png",
+          "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
+        },
+        "mask_image": {
+          "path": "fixes/baskets-south-cloth-mask.png",
+          "sha256": "c77d11e361739540506fb518fd711a5088392f736e5f6453733e4be64df6bd86"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 7419.5,
+      "balance_after": 7407.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-south-fix-cloth-s32/0.png",
+          "sha256": "e46231849cb4ce745ae5a8df6d26bce356665ed3161c63a3b51c372e28ddb418"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "fix requested by the main session: remove the cloth the generator invented in the greens basket"
+    },
+    {
+      "id": "barrels-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:24:54.273066+00:00",
+      "job_id": "fc641512-0416-46c2-bfba-43ecf1b49ab4",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two wooden barrels with dark iron hoops and wooden lids, and a short open wooden tub of water. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/barrels.png",
+          "sha256": "66b37757b25c659f7cee459915417a25d97ee173c199b55719a229be4615570a"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "balance_before": 7046.5,
+      "balance_after": 6991.5,
+      "gens": 5.0,
+      "outputs": [
+        {
+          "path": "raw/barrels-f2-s41/0.png",
+          "sha256": "f152ddba0e41742be6f3254ab9960d78c70e2ad57f22f0a8cdbdae07bb6aa4d8"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "banner-pole-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:24:54.221736+00:00",
+      "job_id": "21254fb2-b2f5-44ed-92ec-4f93859c1c04",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden banner pole on a square stone footing, a crossarm with a hanging dull teal cloth banner with a notched hem and a plain ochre diamond mark. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/banner-pole.png",
+          "sha256": "8b79329d6a4b0e79bf48549898faf94ccbb97b0b583d07af137ead44d15b5b29"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 7046.5,
+      "balance_after": 6960.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/banner-pole-f2-s41/0.png",
+          "sha256": "8fc52747adc0efc666326c5ee39662f5ff6db80cedaddaf627e7ff7d27d36567"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "barrels-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:25:24.332831+00:00",
+      "job_id": "1876cda3-4c5f-4115-a937-4e2e4dc1fd38",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two wooden barrels with dark iron hoops and wooden lids, and a short open wooden tub of water. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/barrels.png",
+          "sha256": "66b37757b25c659f7cee459915417a25d97ee173c199b55719a229be4615570a"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "balance_before": 6991.5,
+      "balance_after": 6955.5,
+      "gens": 5.0,
+      "outputs": [
+        {
+          "path": "raw/barrels-f2-s42/0.png",
+          "sha256": "0f8bc2ceb27a308dfc32fc689565edffb2a9788378e13b709002d06470851573"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "banner-pole-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:24:54.222761+00:00",
+      "job_id": "c34a801e-4e32-435a-b700-11dfdc2722ee",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden banner pole on a square stone footing, a crossarm with a hanging dull teal cloth banner with a notched hem and a plain ochre diamond mark. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/banner-pole.png",
+          "sha256": "8b79329d6a4b0e79bf48549898faf94ccbb97b0b583d07af137ead44d15b5b29"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 7046.5,
+      "balance_after": 6843.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/banner-pole-f2-s42/0.png",
+          "sha256": "82e8fb40f834b1900f9672c3501f8cc1ab511013b5ade0371fb9db7c0b9acfc4"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "crates-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:25:55.344380+00:00",
+      "job_id": "c2519dfd-ab06-43b6-9eff-8aca15d077a5",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stack of three plain slatted wooden crates, the top one with its lid pushed askew. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/crates.png",
+          "sha256": "6885b1b0d51daf151e7c0cba108790a90368b8612965e406daed2c680b34b779"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6955.5,
+      "balance_after": 6843.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/crates-f2-s42/0.png",
+          "sha256": "5c98ff056e1d54606d926ce51d37e7446f65553774dac6e1313f62025a3a9886"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "crates-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:25:45.997690+00:00",
+      "job_id": "9e6c6502-9bea-448e-9ef4-df28b7964e72",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stack of three plain slatted wooden crates, the top one with its lid pushed askew. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/crates.png",
+          "sha256": "6885b1b0d51daf151e7c0cba108790a90368b8612965e406daed2c680b34b779"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6960.5,
+      "balance_after": 6837.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/crates-f2-s41/0.png",
+          "sha256": "053533c57fd014c655245093380833d1ee4727a5e4636373a75a21bad98b65b4"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "firewood-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:26:24.823686+00:00",
+      "job_id": "2976f12b-398f-4112-9a3d-236b895265ec",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tidy stack of split firewood showing the round log ends, a wooden chopping block and one split log on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/firewood.png",
+          "sha256": "b06abfe14bf23c9c7f6f06b383208411eee3cb030cd48a9c35a7b55a8c4a66be"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6843.5,
+      "balance_after": 6810.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/firewood-f2-s41/0.png",
+          "sha256": "0d9bb60651f479dbcf7603024131775e1d7b737257080dc6a2cd4e5b77d63bb3"
+        }
+      ],
+      "verdict": "superseded",
+      "note": "family round 2 (Route A at G1): blockout, text edit | firewood too regular / laundry basket contents read as stones; blockout reworked (f3)"
+    },
+    {
+      "id": "firewood-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:26:25.666434+00:00",
+      "job_id": "12d9a599-5338-4c5c-969c-54edec52bc56",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tidy stack of split firewood showing the round log ends, a wooden chopping block and one split log on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/firewood.png",
+          "sha256": "b06abfe14bf23c9c7f6f06b383208411eee3cb030cd48a9c35a7b55a8c4a66be"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6843.5,
+      "balance_after": 6810.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/firewood-f2-s42/0.png",
+          "sha256": "617ce0705c014853e92551f49c671db729a941fd466152de4942fc3c0fed9d34"
+        }
+      ],
+      "verdict": "superseded",
+      "note": "family round 2 (Route A at G1): blockout, text edit | firewood too regular / laundry basket contents read as stones; blockout reworked (f3)"
+    },
+    {
+      "id": "garden-beans-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:26:32.431209+00:00",
+      "job_id": "faa88d2b-402e-429b-a65a-2722ad0e3044",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One row of climbing beans on tied wooden stakes, leafy green with a few small ochre flowers, on a low ridge of dark brown soil. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-beans.png",
+          "sha256": "7aa48ddf2c3115cc20599d07d841ba6fd44c59b9f210efad55f495b4e7997ccb"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6837.5,
+      "balance_after": 6799.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-beans-f2-s41/0.png",
+          "sha256": "19ad95f7f66283c1085dcf9219ce9c60981e57d247180c5d55ae283a5872b7f6"
+        }
+      ],
+      "verdict": "selected, cleaned",
+      "note": "family round 2 (Route A at G1): blockout, text edit | near-white pixels recoloured by tools/clean_white.py -> fixes/garden-beans-f2-s41-clean.png"
+    },
+    {
+      "id": "garden-cabbages-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:27:01.503169+00:00",
+      "job_id": "1c13fb96-444e-4c90-aafe-643a442fea4f",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One row of six green cabbages growing on a low ridge of dark brown soil. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-cabbages.png",
+          "sha256": "79d1ea287e9a029bd3deff57203f2991ada7e39744acd8218e8edee19eada970"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6810.5,
+      "balance_after": 6773.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-cabbages-f2-s41/0.png",
+          "sha256": "0ca9ccb7bd1a4220575bd9083772638b7928f2edcda8f14c31f543848465ce7a"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-beans-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:27:00.192499+00:00",
+      "job_id": "76f9cd18-62b1-4fb7-99dc-e4db93b816e0",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One row of climbing beans on tied wooden stakes, leafy green with a few small ochre flowers, on a low ridge of dark brown soil. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-beans.png",
+          "sha256": "7aa48ddf2c3115cc20599d07d841ba6fd44c59b9f210efad55f495b4e7997ccb"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6810.5,
+      "balance_after": 6676.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-beans-f2-s42/0.png",
+          "sha256": "326d69f95f7e4747dddbf417e8ceacb55a1c2c31062ad8c0ce04adf2b33a0189"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-cabbages-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:27:19.065198+00:00",
+      "job_id": "dd87558f-e894-428a-ac33-e3cb046f2888",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One row of six green cabbages growing on a low ridge of dark brown soil. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-cabbages.png",
+          "sha256": "79d1ea287e9a029bd3deff57203f2991ada7e39744acd8218e8edee19eada970"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6799.5,
+      "balance_after": 6676.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-cabbages-f2-s42/0.png",
+          "sha256": "2492eec744027ee79f4a8cb491268a8baa24570b381190cad2b29a178f4091c2"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-edge-a-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:27:37.942010+00:00",
+      "job_id": "fa9865e9-b1fb-47f4-8bf8-fb917e75faf6",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One straight length of low weathered plank edging for a raised garden bed. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-edge-a.png",
+          "sha256": "af9268df810ea8c98e213691274bd3b587e15f335d128afbf55cb4f0633d7c99"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6773.5,
+      "balance_after": 6645.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-edge-a-f2-s41/0.png",
+          "sha256": "0740aaa9825c1cf01db2446348c98a7d77d1a91e407d5617a6b5752766af8e3d"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-edge-b-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:27:56.233029+00:00",
+      "job_id": "8bb04d93-8578-4284-ba9b-191e7ee3da53",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One straight length of low weathered plank edging for a raised garden bed. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-edge-b.png",
+          "sha256": "6b9406cfbc19c118c2161b19d6fad2c209c7d58667c5d437e90692aa45fbe48c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6676.5,
+      "balance_after": 6608.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-edge-b-f2-s41/0.png",
+          "sha256": "3ac37a16c0000f7948089e78b3b510451843bda734c128bb80b5b5d9dc67d4a0"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-edge-a-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:27:53.816753+00:00",
+      "job_id": "3be11e46-5490-41ba-bde1-496d50f5b3cb",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One straight length of low weathered plank edging for a raised garden bed. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-edge-a.png",
+          "sha256": "af9268df810ea8c98e213691274bd3b587e15f335d128afbf55cb4f0633d7c99"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6676.5,
+      "balance_after": 6608.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-edge-a-f2-s42/0.png",
+          "sha256": "17d436edf80da139d5614b7a25f3f732e5b090612da217c837617579525754d2"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-edge-b-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:28:13.493479+00:00",
+      "job_id": "b1627e1f-0cbc-4c2d-8504-d1d2601a933f",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One straight length of low weathered plank edging for a raised garden bed. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-edge-b.png",
+          "sha256": "6b9406cfbc19c118c2161b19d6fad2c209c7d58667c5d437e90692aa45fbe48c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6645.5,
+      "balance_after": 6602.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-edge-b-f2-s42/0.png",
+          "sha256": "1cbc1e3dc254f0ea217c22040ac316465f2039e0a13b8daa854a2beb403dfd78"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-greens-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:28:42.813051+00:00",
+      "job_id": "b0e69d21-a4a8-43e7-8355-fb4face25cc8",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One row of low leafy green vegetables on a low ridge of dark brown soil. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-greens.png",
+          "sha256": "dd85e51d04ed65a51a7c4fdd8397a1f98195cbe112fc6546bab495dbcc87844f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6608.5,
+      "balance_after": 6596.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-greens-f2-s41/0.png",
+          "sha256": "9a2ec3901f70a602a9ed143e1f10dc3857ee4671cb63f0fd83b701f6b684550d"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-greens-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:28:46.379038+00:00",
+      "job_id": "797dfbf0-2b40-4539-a1c7-f5cefb3abb54",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One row of low leafy green vegetables on a low ridge of dark brown soil. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-greens.png",
+          "sha256": "dd85e51d04ed65a51a7c4fdd8397a1f98195cbe112fc6546bab495dbcc87844f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6608.5,
+      "balance_after": 6590.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/garden-greens-f2-s42/0.png",
+          "sha256": "55c073b678d8d79c52c0be72acd4a4b6237ef1c84bae44021c0e64a0dc5fd3ef"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-post-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:28:59.838707+00:00",
+      "job_id": "f6135820-fd0e-4f15-b581-aa9f41ff7929",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One short square weathered wooden corner post of a garden bed frame. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-post.png",
+          "sha256": "72cef718e822479f96148e771b43c450ceb0a11aa023ef099afa485c244fb94c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "balance_before": 6602.5,
+      "balance_after": 6585.5,
+      "gens": 5.0,
+      "outputs": [
+        {
+          "path": "raw/garden-post-f2-s41/0.png",
+          "sha256": "30f377ed5c0d31d94f63b396f37fa3034828085e7d3bfe95a565348107a4316f"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "garden-post-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:29:12.610677+00:00",
+      "job_id": "ce1f5f08-a1e1-4484-8699-ef8d7341145f",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. One short square weathered wooden corner post of a garden bed frame. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/garden-post.png",
+          "sha256": "72cef718e822479f96148e771b43c450ceb0a11aa023ef099afa485c244fb94c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "balance_before": 6596.5,
+      "balance_after": 6530.5,
+      "gens": 5.0,
+      "outputs": [
+        {
+          "path": "raw/garden-post-f2-s42/0.png",
+          "sha256": "27962effc2a4099af2097f820177da63ce1f2a8bb4d60df786362fb4fd398827"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "handcart-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:29:21.639713+00:00",
+      "job_id": "a5a82733-0a31-46b9-b5c6-428b2aaae44f",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A two-wheeled wooden handcart: a plank bed with low side boards over the axle, two long shafts resting on the ground, spoked wooden wheels, carrying two burlap sacks and a clay jar. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/handcart.png",
+          "sha256": "07cc3142c30b51e99cd648216514d6319a9b4532791ca1efe8432f3b50c540a0"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6590.5,
+      "balance_after": 6481.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/handcart-f2-s41/0.png",
+          "sha256": "8cbcba3137a90cc46e87b013a5d6b5e3cea10f6800096e3b6ab9b032eaa8f5fe"
+        }
+      ],
+      "verdict": "selected, cleaned",
+      "note": "family round 2 (Route A at G1): blockout, text edit | near-white pixels recoloured by tools/clean_white.py -> fixes/handcart-f2-s41-clean.png"
+    },
+    {
+      "id": "handcart-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:29:29.696664+00:00",
+      "job_id": "f0fd7e46-7ae4-4f4e-a312-d0e183f5ed35",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A two-wheeled wooden handcart: a plank bed with low side boards over the axle, two long shafts resting on the ground, spoked wooden wheels, carrying two burlap sacks and a clay jar. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/handcart.png",
+          "sha256": "07cc3142c30b51e99cd648216514d6319a9b4532791ca1efe8432f3b50c540a0"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6585.5,
+      "balance_after": 6481.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/handcart-f2-s42/0.png",
+          "sha256": "389de1753b7cb46a2da8f99f3a36d87794c0999f52bdc537095a0c721f0a31de"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "kiln-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:29:36.786899+00:00",
+      "job_id": "e7127d5f-70c6-450c-b6cc-f384b8c2a3da",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small village pottery kiln: a round brick base, a clay dome, a short brick chimney, an arched fire mouth with dim orange embers inside, and two small unfired pots drying on a board. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/kiln.png",
+          "sha256": "99b9ef976e7cdbe180ab49040ab3c8d03236b895dab65dbc671885a2756b7266"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6530.5,
+      "balance_after": 6475.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/kiln-f2-s41/0.png",
+          "sha256": "e96463c38b779422e2be8169693ff689729e7859feb13a0e1b822174a1e99c02"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "lantern-post-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:30:04.812574+00:00",
+      "job_id": "693ca660-d0d2-4185-99ba-2cb7ccb23c08",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden lantern post on a small stone footing with a bracket arm and a small wooden-framed lantern hanging from it; its panels are warm matte amber, not glowing. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/lantern-post.png",
+          "sha256": "808d6d16adced8543488c63efa6f712baf9a88654447f151117db9325b19122e"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6481.5,
+      "balance_after": 6461.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/lantern-post-f2-s41/0.png",
+          "sha256": "994543ba3f2019fb007c5666e3a5c18ae02ba666e71e512040aa3953141370bf"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "kiln-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:30:03.012679+00:00",
+      "job_id": "eb8f925f-4207-45b9-bd58-7c686f9bba0e",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small village pottery kiln: a round brick base, a clay dome, a short brick chimney, an arched fire mouth with dim orange embers inside, and two small unfired pots drying on a board. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/kiln.png",
+          "sha256": "99b9ef976e7cdbe180ab49040ab3c8d03236b895dab65dbc671885a2756b7266"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6481.5,
+      "balance_after": 6461.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/kiln-f2-s42/0.png",
+          "sha256": "f35673afab55988414fa91b7e900629d9d723c25d7efbdf626c33971e6a84427"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "lantern-post-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:30:17.939054+00:00",
+      "job_id": "a50d52ba-59ce-4514-a8a5-c156d297d3ea",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden lantern post on a small stone footing with a bracket arm and a small wooden-framed lantern hanging from it; its panels are warm matte amber, not glowing. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/lantern-post.png",
+          "sha256": "808d6d16adced8543488c63efa6f712baf9a88654447f151117db9325b19122e"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6475.5,
+      "balance_after": 6455.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/lantern-post-f2-s42/0.png",
+          "sha256": "2d3b92e7cd0804e10a442db6736fd5399da3929dcf38805399fa393452312290"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "laundry-line-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:30:45.749574+00:00",
+      "job_id": "69c19207-01e1-46ac-89a6-9ce28399ed90",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village laundry line: two weathered wooden posts with a sagging rope between them and five plain cloths hung to dry in muted red, oatmeal, ochre, sage green and slate blue, and a wicker laundry basket at the foot of a post. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/laundry-line.png",
+          "sha256": "62c11a835a9d8d37aa298e4d58198968c2a5bc154593049001ffd84731f9e396"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6461.5,
+      "balance_after": 6419.5,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/laundry-line-f2-s41/0.png",
+          "sha256": "573fd3efd5efe486039f29c07eb96bae6508889a404ad38070a373eaefb560cc"
+        }
+      ],
+      "verdict": "superseded",
+      "note": "family round 2 (Route A at G1): blockout, text edit | firewood too regular / laundry basket contents read as stones; blockout reworked (f3)"
+    },
+    {
+      "id": "laundry-line-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:30:49.966619+00:00",
+      "job_id": "8ba80516-af97-401b-b678-d1a7628ee006",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village laundry line: two weathered wooden posts with a sagging rope between them and five plain cloths hung to dry in muted red, oatmeal, ochre, sage green and slate blue, and a wicker laundry basket at the foot of a post. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/laundry-line.png",
+          "sha256": "62c11a835a9d8d37aa298e4d58198968c2a5bc154593049001ffd84731f9e396"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6461.5,
+      "balance_after": 6410.5,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/laundry-line-f2-s42/0.png",
+          "sha256": "aa4b920f57c8873e64d189a601ef81fa519ca4cfecb09325db1ab6ed504660c3"
+        }
+      ],
+      "verdict": "superseded",
+      "note": "family round 2 (Route A at G1): blockout, text edit | firewood too regular / laundry basket contents read as stones; blockout reworked (f3)"
+    },
+    {
+      "id": "low-planter-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:31:52.831371+00:00",
+      "job_id": "06bf3b78-1f65-424a-b3e4-81299a4786af",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and leafy green shrubs with a few small ochre flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter.png",
+          "sha256": "37b7edb86b16e6d2e00623261497df5f4a0efa3ef3e8753bd71243daf1b2da1c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6410.5,
+      "balance_after": 6401.5,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-f2-s41/0.png",
+          "sha256": "52532da740d95f7980d07fda75b31f1d01880e36ce382de4b28cea6a4b15ed67"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "low-planter-1x2-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:31:44.115641+00:00",
+      "job_id": "d97ed4a4-cafb-4365-94fc-fb4fd55a2c6b",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and leafy green shrubs with a few small ochre flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter-1x2.png",
+          "sha256": "e6912a1301ce1b97564ac45732c962eed67dabfe22767bbd553ed4dd3e5e06b2"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6419.5,
+      "balance_after": 6392.5,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-1x2-f2-s42/0.png",
+          "sha256": "410079f17235e72b278a64d322ebb26ff900f364cea7ec153e5c5dcb3c263c06"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "notice-board-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:32:42.065554+00:00",
+      "job_id": "5912f87e-7d87-4a0d-987f-1126a6c7f240",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village notice board: two wooden posts holding a weathered plank board under a small terracotta-tiled gable roof, with a few plain pinned paper sheets that have only faint ruled lines, nothing readable. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/notice-board.png",
+          "sha256": "eb1e25654f533d637974b6358ec5fbf72b410c80c4b0b055f2b8086450ad2a6f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6392.5,
+      "balance_after": 6327.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/notice-board-f2-s41/0.png",
+          "sha256": "0b89603e9278cf2db80b25c457742b7024ec4584bc832f43697914e4b224116e"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "low-planter-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:32:39.190116+00:00",
+      "job_id": "e4214dde-6671-49c3-a36b-b59243f3efc0",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and leafy green shrubs with a few small ochre flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter.png",
+          "sha256": "37b7edb86b16e6d2e00623261497df5f4a0efa3ef3e8753bd71243daf1b2da1c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6392.5,
+      "balance_after": 6327.5,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-f2-s42/0.png",
+          "sha256": "36d2904e1062dbbaefd7901cad2380e1ad384e197d2ffc80a0026ba12cef489e"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "low-planter-1x2-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:30:59.284280+00:00",
+      "job_id": "c3d1b84d-69b3-4457-88a8-76869e1381b0",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and leafy green shrubs with a few small ochre flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter-1x2.png",
+          "sha256": "e6912a1301ce1b97564ac45732c962eed67dabfe22767bbd553ed4dd3e5e06b2"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6455.5,
+      "balance_after": 6318.5,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-1x2-f2-s41/0.png",
+          "sha256": "59b0347e334714e1844a0c8e53d7918c720b242498d631ef84a7c800cfbae06f"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "stone-lantern-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:33:25.601232+00:00",
+      "job_id": "dd3ed099-bb9b-4a4f-8ca6-79f6b09ce80b",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A traditional carved stone garden lantern of pale weathered stone: a square plinth, a shaft, a platform, a firebox with a small warm amber window, and a low pyramid cap with a knob. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/stone-lantern.png",
+          "sha256": "3ff53c09399a81fccdaa2f5b890f2130a7a42dcbd4c902c5f201c98859e58b97"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6327.5,
+      "balance_after": 6312.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/stone-lantern-f2-s41/0.png",
+          "sha256": "3622485b2bbb8c3d9aa5d086f365908abf8c88fc18fec43e5e9ff324542dff1a"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "notice-board-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:33:22.772271+00:00",
+      "job_id": "22526a57-6589-44cc-8ad8-b4b3386165eb",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village notice board: two wooden posts holding a weathered plank board under a small terracotta-tiled gable roof, with a few plain pinned paper sheets that have only faint ruled lines, nothing readable. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/notice-board.png",
+          "sha256": "eb1e25654f533d637974b6358ec5fbf72b410c80c4b0b055f2b8086450ad2a6f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6327.5,
+      "balance_after": 6306.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/notice-board-f2-s42/0.png",
+          "sha256": "827fd1c97e2b8ef8a55a3beaf2c162280ca26c20d2caacd6397f0449e48b8dfb"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "stone-lantern-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:33:41.998423+00:00",
+      "job_id": "f1acc44a-0344-41a6-b595-7127b61aecad",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A traditional carved stone garden lantern of pale weathered stone: a square plinth, a shaft, a platform, a firebox with a small warm amber window, and a low pyramid cap with a knob. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/stone-lantern.png",
+          "sha256": "3ff53c09399a81fccdaa2f5b890f2130a7a42dcbd4c902c5f201c98859e58b97"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6318.5,
+      "balance_after": 6300.2,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/stone-lantern-f2-s42/0.png",
+          "sha256": "bdf02c640d061a20ab53e6d66bc760a18f1ff51ca7c77bafb30c6f19e2a43f98"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "trough-hay-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:33:57.944105+00:00",
+      "job_id": "1d8a7069-9a0d-47e7-93f0-ff2913cd01b4",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A slatted wooden hay rack on four legs heaped with loose golden hay, and beside it a long dry-stone water trough with dark still water and a small wooden bucket. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/trough-hay.png",
+          "sha256": "1a77df8b7ad491418aa24b532ebed51823e256e9f8c6e15ceb2e665c74efe9ae"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6306.5,
+      "balance_after": 6272.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/trough-hay-f2-s42/0.png",
+          "sha256": "d24e1add60d1f5031454551976205e1fec2d2504c58ab3678edcacb76c0da3f9"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "village-well-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:34:11.641138+00:00",
+      "job_id": "7bdd5127-e7d0-438a-8458-ac2a7c633a12",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village well: a round dry-stone well wall with dark water inside, two square wooden posts holding a windlass axle with a crank, a small wooden bucket on a rope, and a gable roof of terracotta tiles. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/village-well.png",
+          "sha256": "bfa498bb65850ac41a45b008dee091fca2e97802328e2c96c22c217065d59c1c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6300.1,
+      "balance_after": 6272.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/village-well-f2-s41/0.png",
+          "sha256": "fe96cd3fbb3d520e42abbcdfff64bc1309d283d615dacd94dcb728c6673c9cfb"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "trough-hay-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:33:55.586113+00:00",
+      "job_id": "3bd29c63-4f68-43f4-8ba7-41b687fa3b74",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A slatted wooden hay rack on four legs heaped with loose golden hay, and beside it a long dry-stone water trough with dark still water and a small wooden bucket. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/trough-hay.png",
+          "sha256": "1a77df8b7ad491418aa24b532ebed51823e256e9f8c6e15ceb2e665c74efe9ae"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6312.5,
+      "balance_after": 6272.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/trough-hay-f2-s41/0.png",
+          "sha256": "64efc62344b2d641ac39dd1911abca1773f10c6482676f181e6b79946490b488"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "water-jars-f2-s41",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:34:58.120992+00:00",
+      "job_id": "8c44ed85-dff1-4884-9f07-b22f7df9cc9f",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 41,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two large clay water jars, one terracotta and one pale clay with a wooden lid, and a small clay dipper jug. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/water-jars.png",
+          "sha256": "48c1d3c5791ef0e93d1214c6cbeb48cbf3ce2b998cd021a96ef6854fd7988a6f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "balance_before": 6272.6,
+      "balance_after": 6261.6,
+      "gens": 5.0,
+      "outputs": [
+        {
+          "path": "raw/water-jars-f2-s41/0.png",
+          "sha256": "ebef035992296d54686691874dfa4dd959b0c5335a058276c35662cffe2962e3"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "water-jars-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:35:00.076975+00:00",
+      "job_id": "22e51d47-ef40-46ef-a50e-14894a81091c",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two large clay water jars, one terracotta and one pale clay with a wooden lid, and a small clay dipper jug. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/water-jars.png",
+          "sha256": "48c1d3c5791ef0e93d1214c6cbeb48cbf3ce2b998cd021a96ef6854fd7988a6f"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "balance_before": 6272.6,
+      "balance_after": 6256.6,
+      "gens": 5.0,
+      "outputs": [
+        {
+          "path": "raw/water-jars-f2-s42/0.png",
+          "sha256": "dde447a0b5f8d729961dbfc8a2e9799006018c176eac44a9f4933b1893789dab"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "village-well-f2-s42",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:34:55.367825+00:00",
+      "job_id": "c8e67813-3f59-4725-80c5-4325c6f8b2b5",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 42,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village well: a round dry-stone well wall with dark water inside, two square wooden posts holding a windlass axle with a crank, a small wooden bucket on a rope, and a gable roof of terracotta tiles. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/village-well.png",
+          "sha256": "bfa498bb65850ac41a45b008dee091fca2e97802328e2c96c22c217065d59c1c"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6272.6,
+      "balance_after": 6238.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/village-well-f2-s42/0.png",
+          "sha256": "87bfd3b8a317d2a9c36be016854bf10607c8af380916b5a8439061627a36a715"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 2 (Route A at G1): blockout, text edit"
+    },
+    {
+      "id": "firewood-f3-s52",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:37:46.786028+00:00",
+      "job_id": "dd4b5673-f901-48b9-ab38-6c8f5300b9f7",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 52,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stack of split firewood between two end posts, uneven round log ends of different sizes, a wooden chopping block and one split log on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/firewood.png",
+          "sha256": "fa21cffba878928390ee02dfae6471ee8317ea6db7c7bf6dfdb6d170a9738d09"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6187.6,
+      "balance_after": 6175.6,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/firewood-f3-s52/0.png",
+          "sha256": "a76b51e9cda841c6f8d4301f6692bd38afe55d25ca310a1b5c5852c27ecbe5a5"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 3: reworked blockout (uneven logs / folded cloths in the basket)"
+    },
+    {
+      "id": "laundry-line-f3-s52",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:37:46.834374+00:00",
+      "job_id": "d9419c47-b676-4a84-bba9-65261126bd54",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 52,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village laundry line: two weathered wooden posts with a sagging rope between them and five plain cloths hung to dry in muted red, oatmeal, ochre, sage green and slate blue, and a wicker laundry basket of folded cloths at the foot of a post. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/laundry-line.png",
+          "sha256": "b5466e32cf32e2c9deba25c014e515d67c0bc5f8748434dc2eb1379a62311cf4"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6187.6,
+      "balance_after": 6151.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/laundry-line-f3-s52/0.png",
+          "sha256": "b95c73cd79a9f0a6e98b8e17c1e1a452af29465acaf4d74a3330365c2a6d8616"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 3: reworked blockout (uneven logs / folded cloths in the basket)"
+    },
+    {
+      "id": "laundry-line-f3-s51",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:37:46.797240+00:00",
+      "job_id": "97b75495-d495-4962-8396-3a916b38bc3c",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 51,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A village laundry line: two weathered wooden posts with a sagging rope between them and five plain cloths hung to dry in muted red, oatmeal, ochre, sage green and slate blue, and a wicker laundry basket of folded cloths at the foot of a post. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/laundry-line.png",
+          "sha256": "b5466e32cf32e2c9deba25c014e515d67c0bc5f8748434dc2eb1379a62311cf4"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6187.6,
+      "balance_after": 6151.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/laundry-line-f3-s51/0.png",
+          "sha256": "35ab184e09c9ab8bccc72f5662e8dd94cb4105f884bc03b21d6141978c2a3adc"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 3: reworked blockout (uneven logs / folded cloths in the basket)"
+    },
+    {
+      "id": "firewood-f3-s51",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:37:46.842678+00:00",
+      "job_id": "714d9482-88da-4c3a-8583-d0bdc40386b1",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 51,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stack of split firewood between two end posts, uneven round log ends of different sizes, a wooden chopping block and one split log on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/firewood.png",
+          "sha256": "fa21cffba878928390ee02dfae6471ee8317ea6db7c7bf6dfdb6d170a9738d09"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6187.6,
+      "balance_after": 6151.6,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/firewood-f3-s51/0.png",
+          "sha256": "da1067d1e0ae06cf06b86e93cda8140fc356605a55207912f918db1077956321"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 3: reworked blockout (uneven logs / folded cloths in the basket)"
     }
-   ],
-   "verdict": "alternate",
-   "note": "fix requested by the main session: remove the cloth the generator invented in the greens basket"
+  ],
+  "account": {
+    "note": "the PixelLab subscription is shared with other sessions that were generating at the same time, so balance_before/after are account-wide readings; gens is the job's own reported usage",
+    "balance_at_start": 9818.0,
+    "balance_at_end": 6151.6
   },
-  {
-   "id": "barrels-f2-s41",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:24:54.273066+00:00",
-   "job_id": "fc641512-0416-46c2-bfba-43ecf1b49ab4",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 41,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two wooden barrels with dark iron hoops and wooden lids, and a short open wooden tub of water. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/barrels.png",
-     "sha256": "66b37757b25c659f7cee459915417a25d97ee173c199b55719a229be4615570a"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 5.0
-   },
-   "balance_before": 7046.5,
-   "balance_after": 6991.5,
-   "gens": 5.0,
-   "outputs": [
-    {
-     "path": "raw/barrels-f2-s41/0.png",
-     "sha256": "f152ddba0e41742be6f3254ab9960d78c70e2ad57f22f0a8cdbdae07bb6aa4d8"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  },
-  {
-   "id": "banner-pole-f2-s41",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:24:54.221736+00:00",
-   "job_id": "21254fb2-b2f5-44ed-92ec-4f93859c1c04",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 41,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden banner pole on a square stone footing, a crossarm with a hanging dull teal cloth banner with a notched hem and a plain ochre diamond mark. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/banner-pole.png",
-     "sha256": "8b79329d6a4b0e79bf48549898faf94ccbb97b0b583d07af137ead44d15b5b29"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 7046.5,
-   "balance_after": 6960.5,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/banner-pole-f2-s41/0.png",
-     "sha256": "8fc52747adc0efc666326c5ee39662f5ff6db80cedaddaf627e7ff7d27d36567"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  },
-  {
-   "id": "barrels-f2-s42",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:25:24.332831+00:00",
-   "job_id": "1876cda3-4c5f-4115-a937-4e2e4dc1fd38",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 42,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two wooden barrels with dark iron hoops and wooden lids, and a short open wooden tub of water. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/barrels.png",
-     "sha256": "66b37757b25c659f7cee459915417a25d97ee173c199b55719a229be4615570a"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 5.0
-   },
-   "balance_before": 6991.5,
-   "balance_after": 6955.5,
-   "gens": 5.0,
-   "outputs": [
-    {
-     "path": "raw/barrels-f2-s42/0.png",
-     "sha256": "0f8bc2ceb27a308dfc32fc689565edffb2a9788378e13b709002d06470851573"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  },
-  {
-   "id": "banner-pole-f2-s42",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:24:54.222761+00:00",
-   "job_id": "c34a801e-4e32-435a-b700-11dfdc2722ee",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 42,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden banner pole on a square stone footing, a crossarm with a hanging dull teal cloth banner with a notched hem and a plain ochre diamond mark. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/banner-pole.png",
-     "sha256": "8b79329d6a4b0e79bf48549898faf94ccbb97b0b583d07af137ead44d15b5b29"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 7046.5,
-   "balance_after": 6843.5,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/banner-pole-f2-s42/0.png",
-     "sha256": "82e8fb40f834b1900f9672c3501f8cc1ab511013b5ade0371fb9db7c0b9acfc4"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  },
-  {
-   "id": "crates-f2-s42",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:25:55.344380+00:00",
-   "job_id": "c2519dfd-ab06-43b6-9eff-8aca15d077a5",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 42,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stack of three plain slatted wooden crates, the top one with its lid pushed askew. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/crates.png",
-     "sha256": "6885b1b0d51daf151e7c0cba108790a90368b8612965e406daed2c680b34b779"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 6955.5,
-   "balance_after": 6843.5,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/crates-f2-s42/0.png",
-     "sha256": "5c98ff056e1d54606d926ce51d37e7446f65553774dac6e1313f62025a3a9886"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  },
-  {
-   "id": "crates-f2-s41",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:25:45.997690+00:00",
-   "job_id": "9e6c6502-9bea-448e-9ef4-df28b7964e72",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 41,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stack of three plain slatted wooden crates, the top one with its lid pushed askew. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/crates.png",
-     "sha256": "6885b1b0d51daf151e7c0cba108790a90368b8612965e406daed2c680b34b779"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 6960.5,
-   "balance_after": 6837.5,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/crates-f2-s41/0.png",
-     "sha256": "053533c57fd014c655245093380833d1ee4727a5e4636373a75a21bad98b65b4"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  },
-  {
-   "id": "firewood-f2-s41",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:26:24.823686+00:00",
-   "job_id": "2976f12b-398f-4112-9a3d-236b895265ec",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 41,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tidy stack of split firewood showing the round log ends, a wooden chopping block and one split log on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/firewood.png",
-     "sha256": "b06abfe14bf23c9c7f6f06b383208411eee3cb030cd48a9c35a7b55a8c4a66be"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 6843.5,
-   "balance_after": 6810.5,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/firewood-f2-s41/0.png",
-     "sha256": "0d9bb60651f479dbcf7603024131775e1d7b737257080dc6a2cd4e5b77d63bb3"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  },
-  {
-   "id": "firewood-f2-s42",
-   "endpoint": "/edit-image-pro-flash",
-   "started": "2026-10-27T04:26:25.666434+00:00",
-   "job_id": "12d9a599-5338-4c5c-969c-54edec52bc56",
-   "object_id": null,
-   "status": "completed",
-   "body": {
-    "method": "text",
-    "seed": 42,
-    "no_background": true,
-    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tidy stack of split firewood showing the round log ends, a wooden chopping block and one split log on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
-   },
-   "inputs": {
-    "image": {
-     "path": "blockouts/firewood.png",
-     "sha256": "b06abfe14bf23c9c7f6f06b383208411eee3cb030cd48a9c35a7b55a8c4a66be"
-    }
-   },
-   "usage": {
-    "type": "generations",
-    "generations": 6.0
-   },
-   "balance_before": 6843.5,
-   "balance_after": 6810.5,
-   "gens": 6.0,
-   "outputs": [
-    {
-     "path": "raw/firewood-f2-s42/0.png",
-     "sha256": "617ce0705c014853e92551f49c671db729a941fd466152de4942fc3c0fed9d34"
-    }
-   ],
-   "verdict": "pending",
-   "note": "family round 2 (Route A at G1): blockout, text edit"
-  }
- ],
- "account": {
-  "note": "the PixelLab subscription is shared with other sessions that were generating at the same time, so balance_before/after are account-wide readings; gens is the job's own reported usage",
-  "balance_at_start": 9818.0,
-  "balance_at_end": 7407.5
- },
- "total_generations": 183.0
+  "total_generations": 489.0
 }
