@@ -1,0 +1,14 @@
+{
+  "id": "probe2-flash-edit-blockout",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 2841,
+    "no_background": true,
+    "description": "repaint this rough blockout as finished pixel art, keeping every shape, size and position exactly: plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges"
+  },
+  "inputs": {
+    "image": "blockouts/fruit-table-256x224.png"
+  },
+  "note": "Pro Flash edit over the 2:1 construction blockout, text method"
+}

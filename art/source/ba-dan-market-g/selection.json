@@ -1,0 +1,39 @@
+{
+  "gao-display": {
+    "blockout": "gao-fruit-table",
+    "path": "raw/gao-fruit-table-r3-s22/0.png",
+    "tiles": [[6, 5]]
+  },
+  "south-market-display": {
+    "blockout": "south-grain-table",
+    "path": "raw/south-grain-table-r3-s21/0.png",
+    "tiles": [[3, 9]]
+  },
+  "north-market-display": {
+    "blockout": "north-pottery-table",
+    "path": "raw/north-pottery-table-r3-s21/0.png",
+    "tiles": [[14, 5]]
+  },
+  "bench-2x1": { "blockout": "bench", "path": "raw/bench-r3-s22/0.png", "tiles": [[3, 5]] },
+  "fence-2x1": {
+    "blockout": "fence-segment",
+    "path": "raw/fence-segment-r3-s22/0.png",
+    "tiles": [[1, 5]],
+    "repeat": 107.33
+  },
+  "shop-stack": {
+    "blockout": "shop-stack",
+    "path": "raw/shop-stack-r3-s21/0.png",
+    "tiles": [[10, 2]]
+  },
+  "baskets (south)": {
+    "blockout": "baskets-south",
+    "path": "raw/baskets-south-r3-s21/0.png",
+    "tiles": [[2, 9]]
+  },
+  "baskets (north)": {
+    "blockout": "baskets-north",
+    "path": "raw/baskets-north-r3-s21/0.png",
+    "tiles": [[14, 6]]
+  }
+}

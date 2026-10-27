@@ -1,0 +1,14 @@
+{
+  "id": "fence-segment-r3-s21",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 21,
+    "no_background": true,
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. One section of rough split-wood post and rail village fence: two weathered square posts and two split rails. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+  },
+  "inputs": {
+    "image": "blockouts/fence-segment.png"
+  },
+  "note": "round 3: final blockout, text edit"
+}

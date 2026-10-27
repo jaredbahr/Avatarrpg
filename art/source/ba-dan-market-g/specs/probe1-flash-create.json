@@ -1,0 +1,32 @@
+{
+  "id": "probe1-flash-create",
+  "endpoint": "/create-object-pro-flash",
+  "body": {
+    "description": "plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges",
+    "name": "badan market g probe1 fruit table",
+    "view": "high top-down",
+    "seed": 2841,
+    "image_size": {
+      "width": 256,
+      "height": 224
+    },
+    "n_directions": 1,
+    "style_image": {
+      "size": {
+        "width": 192,
+        "height": 192
+      },
+      "usage_description": "style reference only: copy its line weight, restrained palette, pixel cluster size and shading; do not draw the person"
+    },
+    "style_options": {
+      "color_palette": false,
+      "outline": true,
+      "detail": true,
+      "shading": true
+    }
+  },
+  "inputs": {
+    "style_image.image": "ref/kaya-idle-south.png"
+  },
+  "note": "Pro Flash create (the generator Kaya G came from), Kaya idle south as style image, text only"
+}

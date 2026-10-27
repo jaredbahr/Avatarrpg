@@ -1,0 +1,14 @@
+{
+  "id": "south-grain-table-r3-s22",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 22,
+    "no_background": true,
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A grey weathered wooden market table selling dry goods by measure: a small standing wooden balance with two hanging pans at the left end, three burlap sacks with rolled-down mouths full of pale grain, brown beans and dried red pepper, a small clay jar with a wooden scoop, a folded red-brown cloth; a tied burlap sack under the table and an open sack of grain slumped on the ground at the front leg. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+  },
+  "inputs": {
+    "image": "blockouts/south-grain-table.png"
+  },
+  "note": "round 3: final blockout, text edit"
+}

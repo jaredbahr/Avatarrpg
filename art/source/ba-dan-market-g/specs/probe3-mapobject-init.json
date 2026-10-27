@@ -1,0 +1,21 @@
+{
+  "id": "probe3-mapobject-init",
+  "endpoint": "/map-objects",
+  "body": {
+    "description": "plain worn wooden market table, seen from a high top-down 2:1 isometric camera, long edge running diagonally from upper left to lower right, thin matte planks, four slim square legs with open gaps between them and a low stretcher; on top three shallow woven baskets of small fruit (muted red, yellow-green, ochre) heaped low, two loose fruit on the planks. dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, no white highlights, no glossy shine, no bevelled plank edges",
+    "image_size": {
+      "width": 320,
+      "height": 256
+    },
+    "view": "high top-down",
+    "outline": "single color outline",
+    "shading": "basic shading",
+    "detail": "medium detail",
+    "init_image_strength": 450,
+    "seed": 2841
+  },
+  "inputs": {
+    "init_image": "blockouts/fruit-table-320x256.png"
+  },
+  "note": "map-objects with the blockout as init image at full 1.65H length"
+}

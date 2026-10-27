@@ -1,0 +1,14 @@
+{
+  "id": "gao-fruit-table-r3-s22",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 22,
+    "no_background": true,
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table loaded with fruit: matte weathered planks with thin seams, four slim square legs joined by end rails and a low stretcher; woven wicker baskets of small red, yellow-green and orange fruit heaped low, a faded blue cloth, two empty stacked shallow baskets, a slatted crate of oranges under the table and a big stock basket of red fruit on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+  },
+  "inputs": {
+    "image": "blockouts/gao-fruit-table.png"
+  },
+  "note": "round 3: final blockout, text edit"
+}

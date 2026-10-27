@@ -1,0 +1,14 @@
+{
+  "id": "shop-stack-r3-s21",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 21,
+    "no_background": true,
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A shopkeeper's outdoor stock: two slatted wooden crates stacked, the top one full of small yellow-green fruit, a low crate of small red peppers, a clay jar on the ground, and behind them a simple wooden rack with three leather waterskins and a string of dried red peppers hanging from its crossbar on cords. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+  },
+  "inputs": {
+    "image": "blockouts/shop-stack.png"
+  },
+  "note": "round 3: final blockout, text edit"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "north-pottery-table-r3-s22",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 22,
+    "no_background": true,
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A worn wooden market table of a potter's stock: unglazed terracotta and pale clay storage jars and jugs of different sizes standing close together, one dull green glazed jar, a stack of shallow clay bowls; two clay jars on the ground under the table and a big pale storage jar on the ground at the right end. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+  },
+  "inputs": {
+    "image": "blockouts/north-pottery-table.png"
+  },
+  "note": "round 3: final blockout, text edit"
+}

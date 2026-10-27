@@ -1,0 +1,14 @@
+{
+  "id": "baskets-north-r3-s21",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 21,
+    "no_background": true,
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, weave, cloth and goods in a careful hand-drawn pixel style. A group of woven wicker baskets on the ground: two empty baskets nested one on another, a basket of brown onions and roots, a small basket of orange fruit. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white highlights, no gloss, no bevelled plank edges, no shine rings on pottery, no text."
+  },
+  "inputs": {
+    "image": "blockouts/baskets-north.png"
+  },
+  "note": "round 3: final blockout, text edit"
+}
