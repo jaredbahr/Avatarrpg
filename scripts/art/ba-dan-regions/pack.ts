@@ -22,7 +22,9 @@ import { format, resolveConfig } from 'prettier';
 import { composeAtlas, maxRectsPack, packTight } from '../lib/atlas';
 import type { Item, Placed } from '../lib/atlas';
 import { readPng } from '../lib/image';
-import { UPRIGHT_WEBP_OPTIONS, encodeUprightWebp, encodeWebp } from '../lib/webp';
+import type { Image } from '../lib/image';
+import { LOSSY_MAX_RGB, LOSSY_MEAN_RGB, lossyError } from '../lib/lossy-compare';
+import { UPRIGHT_WEBP_OPTIONS, decodeWebp, encodeUprightWebp, encodeWebp } from '../lib/webp';
 
 export const OUTPUT_DIR = 'public/art/maps/ba-dan-scene';
 export const TABLE = 'src/content/scenes/baDan.art.ts';
@@ -69,6 +71,13 @@ export function pagePlan(
   return pages;
 }
 
+/** True when `image` meets the uprights' fine-grain contract as lossy WebP at q100. */
+async function holdsLossy(image: Image): Promise<boolean> {
+  const bytes = await encodeWebp(image, 100, true, UPRIGHT_WEBP_OPTIONS);
+  const error = lossyError(image, await decodeWebp(bytes));
+  return error.maxRgb <= LOSSY_MAX_RGB && error.meanRgb < LOSSY_MEAN_RGB;
+}
+
 export interface Packed {
   files: Map<string, Uint8Array>;
   table: string;
@@ -94,7 +103,13 @@ export async function pack(work: string): Promise<Packed> {
   }));
   const bySprite = new Map(report.sprites.map((s) => [s.id, s]));
   const rows: string[] = [];
-  const pages = pagePlan(items);
+  // ADR 0084: an upright of pixel art whose 1 px colour edges the lossy codec cannot hold even at q100 (its 4:2:0
+  // chroma) goes on a lossless page; every other upright stays on the lossy pages as before.
+  const exact = new Set<string>();
+  for (const item of items) if (!(await holdsLossy(item.image))) exact.add(item.name);
+  const lossyPages = pagePlan(items.filter((i) => !exact.has(i.name)));
+  const exactPages = exact.size ? pagePlan(items.filter((i) => exact.has(i.name))) : [];
+  const pages = [...lossyPages, ...exactPages];
   for (const [index, page] of pages.entries()) {
     const atlas = composeAtlas(
       items.filter((i) => page.placed.some((p) => p.name === i.name)),
@@ -103,7 +118,12 @@ export async function pack(work: string): Promise<Packed> {
       page.height,
       GUTTER,
     );
-    files.set(`uprights-${index}.webp`, await encodeUprightWebp(atlas));
+    files.set(
+      `uprights-${index}.webp`,
+      index < lossyPages.length
+        ? await encodeUprightWebp(atlas)
+        : await encodeWebp(atlas, 100, true, { lossless: 1, method: 6, exact: 1 }),
+    );
     for (const p of page.placed) {
       const s = bySprite.get(p.name)!;
       if (p.width !== s.width || p.height !== s.height)
