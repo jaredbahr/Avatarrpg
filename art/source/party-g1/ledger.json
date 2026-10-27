@@ -1,0 +1,1087 @@
+{
+  "task": "party-g1 (issue #284): the party at native G1",
+  "jobs": [
+    {
+      "name": "a-south-bo-s9101",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "9cde3473-a173-4589-af2f-fd4f1ade2935",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character at this exact size, position and pose as clean hand-placed pixel art for a 64 px tall game sprite: crisp 1-pixel dark brown outline, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no blur, no noise, no stray pixels; a simple readable face with two small dark eyes, clear hands and boots. Keep every costume colour, the hair and the proportions. High top-down view. young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "no_background": true,
+        "seed": 9101
+      },
+      "inputs": {
+        "image": "b/bo/idle/south/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png"],
+      "gens": 5.0,
+      "balance_before": 6855.5,
+      "balance_after": 6822.5,
+      "secs": 34,
+      "notes": "variant A: native south redraw from the reduced shipped cel",
+      "verdict": "used: south root for Bo A",
+      "error": null
+    },
+    {
+      "name": "a-south-sura-s9101",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "c04738ba-55ab-436b-aa4d-e4b90ba734d2",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character at this exact size, position and pose as clean hand-placed pixel art for a 64 px tall game sprite: crisp 1-pixel dark brown outline, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no blur, no noise, no stray pixels; a simple readable face with two small dark eyes, clear hands and boots. Keep every costume colour, the hair and the proportions. High top-down view. young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "no_background": true,
+        "seed": 9101
+      },
+      "inputs": {
+        "image": "b/sura/idle/south/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png"],
+      "gens": 5.0,
+      "balance_before": 6855.5,
+      "balance_after": 6822.5,
+      "secs": 35,
+      "notes": "variant A: native south redraw from the reduced shipped cel",
+      "verdict": "used: south root for Sura A (eyes read)",
+      "error": null
+    },
+    {
+      "name": "a-south-kaya-s9101",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "6664aa0e-68c5-4dbb-8d4f-f2e877d25d4e",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character at this exact size, position and pose as clean hand-placed pixel art for a 64 px tall game sprite: crisp 1-pixel dark brown outline, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no blur, no noise, no stray pixels; a simple readable face with two small dark eyes, clear hands and boots. Keep every costume colour, the hair and the proportions. High top-down view. young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "no_background": true,
+        "seed": 9101
+      },
+      "inputs": {
+        "image": "b/kaya/idle/south/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png"],
+      "gens": 5.0,
+      "balance_before": 6855.5,
+      "balance_after": 6822.5,
+      "secs": 34,
+      "notes": "variant A: native south redraw from the reduced shipped cel",
+      "verdict": "rejected: sash and coat brightened to a saturated red, drifts from the shipped palette",
+      "error": null
+    },
+    {
+      "name": "a-south-kaya-s9102",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "1745c447-ca9b-4079-8251-51823e599f2a",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character at this exact size, position and pose as clean hand-placed pixel art for a 64 px tall game sprite: crisp 1-pixel dark brown outline, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no blur, no noise, no stray pixels; a simple readable face with two small dark eyes, clear hands and boots. Keep every costume colour, the hair and the proportions. High top-down view. young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "no_background": true,
+        "seed": 9102
+      },
+      "inputs": {
+        "image": "b/kaya/idle/south/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png"],
+      "gens": 5.0,
+      "balance_before": 6822.5,
+      "balance_after": 6794.5,
+      "secs": 28,
+      "notes": "variant A: native south redraw from the reduced shipped cel",
+      "verdict": "used: south root for Kaya A",
+      "error": null
+    },
+    {
+      "name": "a-south-bo-s9102",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "b88545c0-4155-4068-8767-6fb959608ca1",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character at this exact size, position and pose as clean hand-placed pixel art for a 64 px tall game sprite: crisp 1-pixel dark brown outline, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no blur, no noise, no stray pixels; a simple readable face with two small dark eyes, clear hands and boots. Keep every costume colour, the hair and the proportions. High top-down view. young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "no_background": true,
+        "seed": 9102
+      },
+      "inputs": {
+        "image": "b/bo/idle/south/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png"],
+      "gens": 5.0,
+      "balance_before": 6822.5,
+      "balance_after": 6789.5,
+      "secs": 34,
+      "notes": "variant A: native south redraw from the reduced shipped cel",
+      "verdict": "rejected: face darker and less readable than s9101",
+      "error": null
+    },
+    {
+      "name": "a-south-sura-s9102",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "0420224c-a4c6-4400-b71d-56f927ac31fd",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character at this exact size, position and pose as clean hand-placed pixel art for a 64 px tall game sprite: crisp 1-pixel dark brown outline, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no blur, no noise, no stray pixels; a simple readable face with two small dark eyes, clear hands and boots. Keep every costume colour, the hair and the proportions. High top-down view. young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "no_background": true,
+        "seed": 9102
+      },
+      "inputs": {
+        "image": "b/sura/idle/south/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png"],
+      "gens": 5.0,
+      "balance_before": 6822.5,
+      "balance_after": 6789.5,
+      "secs": 34,
+      "notes": "variant A: native south redraw from the reduced shipped cel",
+      "verdict": "rejected: a bright stray earring blob",
+      "error": null
+    },
+    {
+      "name": "a-rot-kaya-s9201",
+      "endpoint": "/create-character-pro-flash",
+      "job": null,
+      "character_id": "7af9606b-2538-4edf-8bdd-8662a59494c4",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "name": "kaya G1 native (party-g1, a-south-kaya-s9102)",
+        "view": "high top-down",
+        "seed": 9201,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "raw/a-south-kaya-s9102/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": null,
+      "balance_before": null,
+      "balance_after": 6367.5,
+      "secs": null,
+      "notes": "variant A: native rotations at the world-px canvas. Billed, then the client crashed on the image download (403 on the default user agent) before ledgering; job id and reported gens lost (residents billed 5 gens for the same call at 192 px).",
+      "verdict": "used: S/SE/E. Faults: lighter orange-brown boots, gold hem on coat tails, the east coat tail reads as a flat board, ponytail hangs loose in back views",
+      "error": null
+    },
+    {
+      "name": "a-rot-sura-s9201",
+      "endpoint": "/create-character-pro-flash",
+      "job": null,
+      "character_id": "4d21d0db-cd7f-43bb-8f54-2200d3a762e6",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "name": "sura G1 native (party-g1, a-south-sura-s9101)",
+        "view": "high top-down",
+        "seed": 9201,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "raw/a-south-sura-s9101/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": null,
+      "balance_before": null,
+      "balance_after": 6342.5,
+      "secs": null,
+      "notes": "variant A: native rotations at the world-px canvas. Billed, then the client crashed on the image download (403 on the default user agent) before ledgering; job id and reported gens lost (residents billed 5 gens for the same call at 192 px).",
+      "verdict": "used: S/SE/E. Fault: no braid in NE/N/NW (hair reads as a short bob); the prompt had dropped \"visible down her back\" (my error)",
+      "error": null
+    },
+    {
+      "name": "a-rot-bo-s9201",
+      "endpoint": "/create-character-pro-flash",
+      "job": null,
+      "character_id": "7acf2deb-f573-43d7-a92b-7e006007c5fe",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "name": "bo G1 native (party-g1, a-south-bo-s9101)",
+        "view": "high top-down",
+        "seed": 9201,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "raw/a-south-bo-s9101/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": null,
+      "balance_before": null,
+      "balance_after": 6342.5,
+      "secs": null,
+      "notes": "variant A: native rotations at the world-px canvas. Billed, then the client crashed on the image download (403 on the default user agent) before ledgering; job id and reported gens lost (residents billed 5 gens for the same call at 192 px).",
+      "verdict": "used: S/SE/E; back views hold identity",
+      "error": null
+    },
+    {
+      "name": "skeleton-kaya",
+      "endpoint": "/estimate-skeleton",
+      "job": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>"
+      },
+      "inputs": {
+        "image": "a/kaya/rotations/<south|south-east|east>.png (from raw/a-rot-kaya-s9201)"
+      },
+      "outputs": [
+        "a/kaya/rotations/skeleton/south.json",
+        "a/kaya/rotations/skeleton/south-east.json",
+        "a/kaya/rotations/skeleton/east.json"
+      ],
+      "gens": 0.30000000000000004,
+      "balance_before": 6306.5,
+      "balance_after": 6300.2,
+      "secs": 8,
+      "notes": "synchronous; 0.1 generations per call",
+      "verdict": "used",
+      "error": null
+    },
+    {
+      "name": "skeleton-sura",
+      "endpoint": "/estimate-skeleton",
+      "job": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>"
+      },
+      "inputs": {
+        "image": "a/sura/rotations/<south|south-east|east>.png (from raw/a-rot-sura-s9201)"
+      },
+      "outputs": [
+        "a/sura/rotations/skeleton/south.json",
+        "a/sura/rotations/skeleton/south-east.json",
+        "a/sura/rotations/skeleton/east.json"
+      ],
+      "gens": 0.30000000000000004,
+      "balance_before": 6300.2,
+      "balance_after": 6299.9,
+      "secs": 8,
+      "notes": "synchronous; 0.1 generations per call",
+      "verdict": "used",
+      "error": null
+    },
+    {
+      "name": "skeleton-bo",
+      "endpoint": "/estimate-skeleton",
+      "job": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>"
+      },
+      "inputs": {
+        "image": "a/bo/rotations/<south|south-east|east>.png (from raw/a-rot-bo-s9201)"
+      },
+      "outputs": [
+        "a/bo/rotations/skeleton/south.json",
+        "a/bo/rotations/skeleton/south-east.json",
+        "a/bo/rotations/skeleton/east.json"
+      ],
+      "gens": 0.30000000000000004,
+      "balance_before": 6299.9,
+      "balance_after": 6299.6,
+      "secs": 8,
+      "notes": "synchronous; 0.1 generations per call",
+      "verdict": "used",
+      "error": null
+    },
+    {
+      "name": "sura-idle-soft-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4f5d25cc-8d4a-4787-a580-5fe825fe7437",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/sura/rotations/east.png",
+        "keypoints": "a/sura/design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6253.6,
+      "secs": 60,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "bo-idle-soft-south-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8d512313-efdd-49de-b52f-2c0aac70f43d",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/bo/rotations/south.png",
+        "keypoints": "a/bo/design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6253.6,
+      "secs": 60,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "kaya-idle-soft-south-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1b113d0a-563a-4ac9-bade-8a5cbd7e8492",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/kaya/rotations/south-east.png",
+        "keypoints": "a/kaya/design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6238.6,
+      "secs": 68,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "bo-idle-soft-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "75eaa46d-15f6-4674-8003-e548a14e10da",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/bo/rotations/east.png",
+        "keypoints": "a/bo/design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6229.6,
+      "secs": 74,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "kaya-idle-soft-south-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "c63c194f-34bd-4221-af07-ff56aff8106c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/kaya/rotations/south.png",
+        "keypoints": "a/kaya/design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6223.6,
+      "secs": 79,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "sura-idle-soft-south-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "f1bb9df5-f500-4f69-86df-a43ed354b426",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/sura/rotations/south.png",
+        "keypoints": "a/sura/design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6223.6,
+      "secs": 80,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "bo-idle-soft-south-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "0acefc6b-3b9d-4ab8-b3a1-ec432765016c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/bo/rotations/south-east.png",
+        "keypoints": "a/bo/design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6220.6,
+      "secs": 86,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "kaya-idle-soft-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "3916c671-1106-4e74-bd2d-f45504f439af",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/kaya/rotations/east.png",
+        "keypoints": "a/kaya/design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6217.6,
+      "secs": 93,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "sura-idle-soft-south-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "d81344a4-e1b9-4eec-8796-dee0a56a5092",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/sura/rotations/south-east.png",
+        "keypoints": "a/sura/design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6211.6,
+      "secs": 119,
+      "notes": "variant A motion test",
+      "verdict": "superseded: 0.6x idle came back frozen (SE/E cels identical; south has one stray cel)",
+      "error": null
+    },
+    {
+      "name": "bo-walk-12-south-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "f59bc015-2125-48ff-8cbc-ac5ac6b804d5",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<12 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/bo/rotations/south-east.png",
+        "keypoints": "a/bo/design/kp/walk-12-south-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6205.6,
+      "secs": 132,
+      "notes": "variant A motion test",
+      "verdict": "used: walk test (south-east)",
+      "error": null
+    },
+    {
+      "name": "sura-walk-12-south-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "c1b9a327-3a6e-4acf-9ce0-7d88348f1238",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<12 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/sura/rotations/south-east.png",
+        "keypoints": "a/sura/design/kp/walk-12-south-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6193.6,
+      "secs": 171,
+      "notes": "variant A motion test",
+      "verdict": "used: walk test (south-east)",
+      "error": null
+    },
+    {
+      "name": "kaya-walk-12-south-east-s9301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "fe12164f-8920-484d-ad20-9eca1e194bab",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<12 frames>",
+        "template_id": "mannequin",
+        "seed": 9301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/kaya/rotations/south-east.png",
+        "keypoints": "a/kaya/design/kp/walk-12-south-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 6299.6,
+      "balance_after": 6187.6,
+      "secs": 173,
+      "notes": "variant A motion test",
+      "verdict": "used: walk test (south-east)",
+      "error": null
+    },
+    {
+      "name": "sura-idle-east-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "9718e892-7397-42dc-96d4-a70a6aadafcb",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "action": "idle, breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/sura/rotations/east.png",
+        "keypoints": "a/sura/design/kp/idle-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6139.6,
+      "secs": 54,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "bo-idle-south-east-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "5fe7206a-f9ca-47a0-8554-76da93d1945f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "action": "idle, breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/bo/rotations/south-east.png",
+        "keypoints": "a/bo/design/kp/idle-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6136.6,
+      "secs": 60,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "sura-idle-south-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "590355da-e874-4619-8e15-352183585470",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "action": "idle, breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/sura/rotations/south.png",
+        "keypoints": "a/sura/design/kp/idle-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6130.6,
+      "secs": 63,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "kaya-idle-south-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ea858815-e02f-4a1b-85da-7086059dabe7",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "action": "idle, breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/kaya/rotations/south.png",
+        "keypoints": "a/kaya/design/kp/idle-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6130.6,
+      "secs": 63,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "bo-idle-east-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4197ad36-0cfb-4b6a-a398-1d9e1f380724",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "action": "idle, breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/bo/rotations/east.png",
+        "keypoints": "a/bo/design/kp/idle-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6127.6,
+      "secs": 67,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "kaya-idle-east-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "561f32b6-63b9-4409-aa23-0a780af257af",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "action": "idle, breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/kaya/rotations/east.png",
+        "keypoints": "a/kaya/design/kp/idle-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6124.6,
+      "secs": 73,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "sura-idle-south-east-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "30152658-b98b-4e6c-8a6a-fc8d7e1be4cd",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid over her right shoulder tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "action": "idle, breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/sura/rotations/south-east.png",
+        "keypoints": "a/sura/design/kp/idle-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6118.6,
+      "secs": 80,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "bo-idle-south-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1b69f1ac-a83f-4569-9e81-47b07063756c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+        "action": "idle, breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/bo/rotations/south.png",
+        "keypoints": "a/bo/design/kp/idle-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6112.6,
+      "secs": 86,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "kaya-idle-south-east-s9302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8a3aaf38-b158-4b58-ba7a-b5fc92e69f59",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+        "action": "idle, breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 9302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "a/kaya/rotations/south-east.png",
+        "keypoints": "a/kaya/design/kp/idle-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png"],
+      "gens": 3.0,
+      "balance_before": 6139.6,
+      "balance_after": 6112.6,
+      "secs": 86,
+      "notes": "variant A motion test",
+      "verdict": "used: idle (boil 36-54% on the residents measure; mostly 1 px deformation, some detail redraw)",
+      "error": null
+    },
+    {
+      "name": "a-rot-sura-s9202",
+      "endpoint": "/create-character-pro-flash",
+      "job": "6b3598d3-ee6f-4c31-96cb-86b40c097998",
+      "character_id": "9993cbdc-57e6-4c47-bf74-fe8fb4a826e5",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid that hangs over her right shoulder in front views and is visible down her back and side in back and side views, tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+        "name": "sura G1 native (party-g1, a-south-sura-s9101)",
+        "view": "high top-down",
+        "seed": 9202,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "raw/a-south-sura-s9101/00.png"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 2.0,
+      "balance_before": 6112.6,
+      "balance_after": 6080.6,
+      "secs": 162,
+      "notes": "variant A: native rotations at the world-px canvas",
+      "verdict": "probe: full braid prompt. Braid returns in back views but sticks straight out in SE/E/W, and the tunic becomes a skirt from behind; not used",
+      "error": null
+    }
+  ],
+  "summary": {
+    "jobs": 34,
+    "gens_reported": 95.9,
+    "gens_unreported": "three create-character-pro-flash jobs (a-rot-*-s9201) lost their usage line to a download crash; the same call reported 2 gens for a-rot-sura-s9202, so about 6 more",
+    "note": "The PixelLab account is shared with other sessions generating at the same time, so balance_before/after move with their spend; gens is each job's own billed usage."
+  }
+}
