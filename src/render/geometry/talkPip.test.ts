@@ -36,6 +36,36 @@ describe('NPC talk pip placement', () => {
     expect(tall.y).toBeCloseTo(-1.51);
   });
 
+  it('uses the full frame for empty art and excludes alpha 8 while including alpha 9', () => {
+    const pixels = new Uint8ClampedArray(4 * 3 * 4);
+    pixels[3] = 8;
+    pixels[(2 * 4 + 3) * 4 + 3] = 9;
+
+    expect(visiblePixelBounds(new Uint8ClampedArray(4 * 3 * 4), 4, 3)).toEqual({
+      left: 0,
+      top: 0,
+      right: 4,
+      bottom: 3,
+    });
+    expect(visiblePixelBounds(pixels, 4, 3)).toEqual({ left: 3, top: 2, right: 4, bottom: 3 });
+  });
+
+  it('keeps marker clearance conservative when bounds fall back to a full frame', () => {
+    const fullFrame = visiblePixelBounds(new Uint8ClampedArray(8 * 12 * 4), 8, 12);
+    // Source pixels become foot-relative bounds before marker placement, as in
+    // both renderers. Here the foot is at the bottom centre of the empty frame.
+    const bounds = {
+      left: fullFrame.left - 4,
+      top: fullFrame.top - 12,
+      right: fullFrame.right - 4,
+      bottom: fullFrame.bottom - 12,
+    };
+    const position = talkPipPosition({ x: 10, y: 20 }, bounds, 1, 0, 1, 0.5);
+
+    expect(position.y + 1 + 0.5).toBeLessThanOrEqual(20 + bounds.top);
+    expect(position.y).toBe(6.5);
+  });
+
   it('includes actor scale, pose scale, offsets in the foot, lean, radius and gap', () => {
     const base = talkPipPosition(
       { x: 3, y: 8 },
