@@ -173,6 +173,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await page.screenshot({ path: `${folder}/move-fit.png` });
 
     await zoom(page, ZOOM);
+    const zoomedTilePx = await page.evaluate(() => window.fnt!.app.rendererCamera()!.tilePx);
     await centerTile(page, KAYA_AT.x, KAYA_AT.y - 1);
     await page.screenshot({ path: `${folder}/move-96.png` });
     await page.getByRole('button', { name: /^Move/ }).click();
@@ -240,7 +241,20 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const revision = execFileSync('git', ['rev-parse', 'HEAD']).toString().trim();
     writeFileSync(
       `${folder}/provenance.json`,
-      JSON.stringify({ revision, renderer, seed: SEED, tilePx: ZOOM, errors }, null, 2),
+      JSON.stringify(
+        {
+          revision,
+          renderer,
+          seed: SEED,
+          // Asked for, and what the camera drew at (integer zoom, ADR 0088, may differ).
+          requestedTilePx: ZOOM,
+          tilePx: zoomedTilePx,
+          dpr: await page.evaluate(() => window.devicePixelRatio),
+          errors,
+        },
+        null,
+        2,
+      ),
     );
     expect(errors).toEqual([]);
   });
