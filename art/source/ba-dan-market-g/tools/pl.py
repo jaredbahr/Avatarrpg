@@ -134,9 +134,14 @@ def run(spec, recover=None):
     }
     if not files:
         entry["error"] = json.dumps({k: v for k, v in result.items() if k != "last_response"})[:1500] + json.dumps(lr)[:1500]
-    ledger = json.loads(LEDGER.read_text()) if LEDGER.exists() else {"entries": []}
-    ledger["entries"] = [e for e in ledger["entries"] if e["id"] != spec["id"]] + [entry]
-    LEDGER.write_text(json.dumps(ledger, indent=1) + "\n")
+    import fcntl
+    with open(str(LEDGER) + ".lock", "w") as lock:   # parallel runs read-modify-write one ledger
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        ledger = json.loads(LEDGER.read_text()) if LEDGER.exists() else {"entries": []}
+        ledger["entries"] = [e for e in ledger["entries"] if e["id"] != spec["id"]] + [entry]
+        tmp = LEDGER.with_suffix(".tmp")
+        tmp.write_text(json.dumps(ledger, indent=1) + "\n")
+        tmp.replace(LEDGER)
     print(json.dumps({k: entry[k] for k in ("id", "status", "gens", "balance_after", "outputs")} | ({"error": entry["error"]} if "error" in entry else {})))
 
 

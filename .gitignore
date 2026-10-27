@@ -26,3 +26,4 @@ test-results/
 /art/normalised/
 __pycache__/
 *.pyc
+art/source/ba-dan-market-g/ledger.json.lock
