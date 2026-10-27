@@ -68,7 +68,7 @@ node --import tsx scripts/art/ba-dan-regions/pack.ts [DIR] [--check]
   others (29) are the ground only. Per sprite the alpha is the geometry's, unchanged; every pixel under it that the piece owns
   takes the painting's colour (rim included); a pixel under a piece that is ground takes the painting's; a pixel hidden by a front upright or
   beyond the painting comes from the old sprite, moved by the repaint's colour change measured on the sprite's own painted pixels
-  (`hiddenFilledFromSprite`, `hiddenBehindFading`). The report also lists painting that straddles a silhouette edge (`straddles`) and the
+  (`hiddenFilledFromSprite`, `hiddenBehindFading`); that change is sampled only where the piece itself owns the painting. The report also lists painting that straddles a silhouette edge (`straddles`) and the
   plates: `PLATE_GRID` 4 x 3, cuts on multiples of 3 painting px, each plate running `PLATE_OVERLAP` = 2 px into the next.
 - **pack.ts** encodes the plates (opaque lossy WebP, `GROUND_QUALITY` 85) and the uprights (q90 with sharp YUV and an exact alpha
   plane, stepping up only to hold the fine-grain contract), packs the uprights into 2048-pixel pages, writes

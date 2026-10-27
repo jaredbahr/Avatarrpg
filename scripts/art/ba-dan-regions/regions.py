@@ -1070,8 +1070,10 @@ def split_sprites(village: Village, painting: np.ndarray, outdir: Path,
         unreached = edge & ~bled
         unseen = silhouette & ~owner_here
         # the colour change is measured on opaque pixels only: a rim pixel's painted colour is the piece blended
-        # with what lies beside it, not the sprite's own colour moved by the repaint
-        samples = trusted & (alpha >= 254)
+        # with what lies beside it, not the sprite's own colour moved by the repaint. And only where this piece owns
+        # the painting: under a ground piece in front the painting shows that piece, so painted minus own there is
+        # another object's colour, not the repaint's change
+        samples = trusted & (alpha >= 254) & (owner_id == p["index"] + 1)
         if unseen.any() and samples.any():
             out[unseen, :3] = _match_fill(own[..., :3], paint, samples, unseen)
             if fade is not None and inside.any():
