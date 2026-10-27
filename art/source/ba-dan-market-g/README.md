@@ -108,3 +108,20 @@ right), as their footprints do.
   is the probe-round blockout from its first version, kept because probe 2 was made from it (SHA-256 in the ledger).
 - `tools/pl.py`: the PixelLab client and ledger writer.
 - `tools/sheets.py`: the review sheets from `selection.json`. `tools/review.py`: the probe-round sheets.
+
+## Grain ladder exports (G1, G2)
+
+Asked for by the main session on 2026-10-27 for the parallel grain-ladder study (G1: 1 art px = 1 world px, 64 x 32 tiles,
+figures about 76 px; G2: 1 art px = 2 world px, 32 x 16 tiles, figures about 38 px). `tools/grain.py` writes `grain/g1/`,
+`grain/g2/`, `grain/grain.json` and `review/grain-ladder-g1-g2.png` (each object beside Kaya reduced the same way: G1 at 1x
+and 2x nearest, G2 at 1x and 4x nearest).
+
+- **Assumption:** the message gave only the figure height, so G1 is set by Kaya's idle standing 76 px; each object is reduced
+  by `grain_f * 76 / 89` from its source (0.480; 0.529 for the 2x1 tables). G1 is a pixel reduction (majority alpha,
+  contour kept on the silhouette, otherwise each block's most frequent colour; no new colours).
+- **G2** is the exact 2x nearest-neighbour downsample of G1. The cleanup is **automatic, not by hand**: silhouette edges whose
+  2 x 2 block held contour become contour; single-pixel islands and holes are removed.
+- **Faults:** G1 reads cleanly. G2 keeps silhouettes and outlines, but nearest neighbour picks one texture pixel per block,
+  so wood and wicker become noise, fruit and basket contents turn to mush, the fence rails break into stair-step dashes,
+  and Kaya's own G2 face blows out. G2 needs real hand cleanup, or a reduction that groups tones before it picks pixels; as
+  exported it is not a fair test of the G2 grain.
