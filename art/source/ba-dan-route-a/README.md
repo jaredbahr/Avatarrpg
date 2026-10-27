@@ -179,3 +179,37 @@ The ladder used 102 generations (house 9, tree 6, 8 ground tiles at 9, 3 figures
 42 PixelLab jobs, **802 generations** (job usage): 700 for round 1 and 102 for the ladder. The account balance was 9,770
 at the start and 7,413.5 at the end, but another session spent from the same account at the same time, so the
 difference is not this work's cost. 200 of the 802 went to the rejected `a1-slice` pass.
+
+## The G1 world (owner decision, 2026-10-27)
+
+The owner chose Route A at G1 (#284; ADR 0084), and the whole village was redone in this hand. The order, each step
+deterministic after the PixelLab jobs (which are in `ledger.json`):
+
+1. `tools/world.py` reduces the shipped stitched painting (with ADR 0083's calm) to world px (3000 x 1601) and restyles it
+   in 28 tiles of 512 px with `edit-images-v2` `edit_with_text`, one prompt (`world/prompt.txt`) and seed 11, with no
+   reference image. The tiles (`world/tiles/`) are joined with a 64 px feather. Where the input is the flat page colour
+   the generator invented water and foliage with tile-edged steps, so the page colour is put back there (`keep_margin`).
+2. `tools/objects.py` clears the eight oversized pieces: `gao-display`, `south-market-display`, `north-market-display`,
+   the south and north basket groups (`d1`, `d2`), the shop stack (`d8`), the canal bench (`d12`) and the fence (`d13`).
+   The mask is the frozen silhouette dilated 8 px, plus the prism 60 px over the footprint and the baked shadow down-right,
+   minus every pixel another piece owns. The mask is blanked to the ground ring's median, so the generator never sees the
+   old object, then inpainted with Pro Flash (`world/inpaint/`) and tone-matched to the ring. It then sets in #288's G1
+   objects (`objects-288/`, copied from PR #288 at `SOURCE_COMMIT`) by their `g1_anchor_px`, with a mild warm grade
+   (`grade`, until #288's toned set lands), a one-tone key-light shadow down-right and a 1 px contact line. With
+   `--geometry` it points those pieces' frozen sprites at the new silhouettes. Result: `world/world-g1.png`.
+3. `tools/regions_back.py` scales that world to 1.5 painting px (EPX x2, 0.75 Lanczos), crops the twelve regions and
+   accepts each through `regions.py accept` (gates built from the shipped painting first). All twelve passed without
+   `--force`.
+4. `sh scripts/art/ba-dan-regions/regen.sh`.
+
+A first clearing round masked only the silhouettes. The generator redrew the old south table, its basket table and the
+north pottery table from the context it was given (`o1-out-*`, rejected in the ledger).
+
+Known faults:
+
+- The new objects are still paler, cooler and thinner-lined than the world and the figures (#288's own note); the warm
+  grade narrows the gap without closing it.
+- A cleared patch can leave a faint straight tone edge on the paving (the south display's patch most).
+- The stitched picture keeps the restyle's feathered tile joins. Every region overlap matches, but nothing was measured
+  inside a region.
+- A single on-screen pixel grid needs an integer camera zoom (ADR 0084, open).
