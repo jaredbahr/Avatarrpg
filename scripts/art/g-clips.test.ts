@@ -10,7 +10,6 @@ import {
   koClip,
 } from '../../src/content/assets/clips';
 import type { Heading } from '../../src/content/assets/clips';
-import { ASSETS } from '../../src/content/assets/manifest';
 import type { BendCharacter, Registration } from './bend-sprites';
 import { STANCE_TOLERANCE, packCel } from './bend-sprites';
 import {
@@ -19,15 +18,13 @@ import {
   celFile,
   checkClipSources,
   clipBox,
-  clipDataFile,
-  clipDataPath,
   clipTakes,
   frameHolds,
   parseTiming,
   pinClipSources,
   timingFile,
 } from './g-clips';
-import type { ClipCharacter, ClipPins, ClipSet, PackedClip } from './g-clips';
+import type { ClipCharacter, ClipPins, ClipSet } from './g-clips';
 import { FRAME_H, FRAME_W } from './g-sprites';
 import type { Image } from './lib/image';
 import { newImage, setPixel, writePng } from './lib/image';
@@ -253,40 +250,6 @@ describe('G knockout and hit packer (ADR 0059, ADR 0063)', () => {
           expect(hash).toMatch(/^[0-9a-f]{64}$/);
         expect(Object.keys(pins.frames).length).toBeGreaterThan(0);
         expect(Object.keys(pins.frames).every((name) => name.includes(`/${set}`))).toBe(true);
-      }
-    }
-  });
-
-  it('ships the packed clips as the sheet’s clip data, beside the page it loads', () => {
-    for (const who of Object.values(CLIP_CHARACTERS)) {
-      const data = JSON.parse(readFileSync(clipDataPath(who.name), 'utf8')) as Record<
-        string,
-        PackedClip
-      >;
-      const entry = ASSETS[who.key];
-      if (entry?.kind !== 'sheet') throw new Error(`${who.key} is not a sheet`);
-      expect(entry.atlasPages).toContain(`art/units/${who.name}-g-3.json`);
-      expect(entry.atlasPages).toContain(`art/units/${who.name}-g-4.json`);
-      expect(entry.clipData).toBe(clipDataFile(who.name));
-      const takes = [...clipTakes(who, 'ko'), ...clipTakes(who, 'hit')];
-      expect(Object.keys(data)).toEqual(takes.map((t) => t.clip));
-      for (const t of takes) {
-        const pins = JSON.parse(readFileSync(who.pins[t.set], 'utf8')) as ClipPins;
-        const packed = data[t.clip];
-        // Fetched, never bundled: the manifest itself does not carry it.
-        expect(entry.clips[t.clip], t.clip).toBeUndefined();
-        expect(packed?.loop, t.clip).toBe(false);
-        for (const name of packed?.frames ?? []) expect(pins.frames[name], name).toBeDefined();
-      }
-      // One timing per character, its hit-stop on the contact cel (REPORT-3 §3).
-      const [ms, stop] = ({ kaya: [400, 80], sura: [470, 70], bo: [540, 110] } as const)[who.name];
-      for (const heading of HEADINGS) {
-        const hit = data[hitClip(heading)];
-        expect(
-          hit?.frameMs.reduce((sum, t) => sum + t, 0),
-          heading,
-        ).toBe(ms + stop);
-        expect(hit?.frames.at(-1), heading).toBe(hit?.frames[0]);
       }
     }
   });

@@ -1,0 +1,443 @@
+{
+ "_shared": {
+  "walk": {
+   "kind": "walk",
+   "clip": "08_01",
+   "frames": 12,
+   "track": 0.35,
+   "bob": 2.0,
+   "canvas": 96,
+   "root": "idle",
+   "action": "walk",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle, root-locked; track 0.35, pelvis bob x2"
+  }
+ },
+ "kaya": {
+  "bend": {
+   "kind": "pose",
+   "clip": "143_23",
+   "ref": 195,
+   "amp": 1.4,
+   "canvas": 128,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11
+   ],
+   "frames": [
+    212,
+    230,
+    262,
+    295,
+    308,
+    320,
+    336,
+    345,
+    355,
+    365
+   ],
+   "action": "martial arts form, empty hands: a left jab, then a right cross",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+  },
+  "hit": {
+   "kind": "pose",
+   "clip": "79_73",
+   "ref": 48,
+   "amp": 1.35,
+   "canvas": 96,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3
+   ],
+   "frames": [
+    60,
+    72,
+    {
+     "f": 72,
+     "amp": 0.4
+    }
+   ],
+   "action": "hit reaction, flinching back",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+  },
+  "ko": {
+   "kind": "ko",
+   "clip": "90_18",
+   "ref": 64,
+   "amp": 1.0,
+   "root_travel": 0.7,
+   "canvas": 128,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "frames": [
+    86,
+    100,
+    112,
+    128,
+    142,
+    170
+   ],
+   "absw": [
+    0,
+    0.25,
+    0.5,
+    0.8,
+    1,
+    1
+   ],
+   "turn": {
+    "south-east": [
+     0,
+     12,
+     30,
+     48,
+     60,
+     60
+    ],
+    "south-west": [
+     0,
+     -9,
+     -22.5,
+     -36,
+     -45,
+     -45
+    ],
+    "north-east": [
+     0,
+     -3,
+     -7.5,
+     -12,
+     -15,
+     -15
+    ],
+    "north-west": [
+     0,
+     3,
+     7.5,
+     12,
+     15,
+     15
+    ]
+   },
+   "action": "knocked down, falling backwards",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+  }
+ },
+ "sura": {
+  "bend": {
+   "kind": "pose",
+   "clip": "12_04",
+   "ref": 5380,
+   "amp": 1.3,
+   "canvas": 128,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "frames": [
+    5420,
+    5460,
+    5510,
+    5550,
+    5590,
+    5630,
+    5670,
+    {
+     "f": 5700,
+     "amp": 0.6
+    },
+    {
+     "f": 5700,
+     "amp": 0.3
+    }
+   ],
+   "action": "tai chi form, empty hands: the left palm circles low and pushes forward",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 12 trial 4 (tai chi), frames 5380-5700"
+  },
+  "hit": {
+   "kind": "pose",
+   "clip": "76_03",
+   "ref": 256,
+   "amp": 1.35,
+   "canvas": 96,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3
+   ],
+   "frames": [
+    272,
+    288,
+    {
+     "f": 288,
+     "amp": 0.4
+    }
+   ],
+   "action": "hit reaction, flinching away",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 76 trial 3 (avoid attacker), frames 256-288"
+  },
+  "ko": {
+   "kind": "ko",
+   "clip": "90_18",
+   "ref": 64,
+   "amp": 1.0,
+   "root_travel": 0.7,
+   "canvas": 128,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "frames": [
+    86,
+    100,
+    112,
+    128,
+    142,
+    170
+   ],
+   "absw": [
+    0,
+    0.25,
+    0.5,
+    0.8,
+    1,
+    1
+   ],
+   "turn": {
+    "south-east": [
+     0,
+     12,
+     30,
+     48,
+     60,
+     60
+    ],
+    "south-west": [
+     0,
+     -9,
+     -22.5,
+     -36,
+     -45,
+     -45
+    ],
+    "north-east": [
+     0,
+     -3,
+     -7.5,
+     -12,
+     -15,
+     -15
+    ],
+    "north-west": [
+     0,
+     3,
+     7.5,
+     12,
+     15,
+     15
+    ]
+   },
+   "action": "knocked down, falling backwards",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+  }
+ },
+ "bo": {
+  "bend": {
+   "kind": "pose",
+   "clip": "135_04",
+   "ref": 520,
+   "amp": 1.2,
+   "travel": 0.0,
+   "canvas": 128,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "frames": [
+    544,
+    556,
+    548,
+    {
+     "f": 530,
+     "amp": 1.0
+    },
+    {
+     "clip": "143_23",
+     "ref": 195,
+     "f": 215,
+     "amp": 1.0,
+     "travel": 0.0
+    },
+    {
+     "clip": "143_23",
+     "ref": 195,
+     "f": 230,
+     "amp": 1.15,
+     "travel": 0.0
+    },
+    {
+     "clip": "143_23",
+     "ref": 195,
+     "f": 240,
+     "amp": 1.0,
+     "travel": 0.0
+    },
+    {
+     "clip": "143_23",
+     "ref": 195,
+     "f": 250,
+     "amp": 1.0,
+     "travel": 0.0
+    },
+    {
+     "clip": "143_23",
+     "ref": 195,
+     "f": 262,
+     "amp": 1.0,
+     "travel": 0.0
+    },
+    {
+     "clip": "143_23",
+     "ref": 195,
+     "f": 230,
+     "amp": 0.15,
+     "travel": 0.0
+    }
+   ],
+   "action": "martial arts form, empty hands: lift the left knee high and stamp the foot down, then punch forward with the left fist",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): subject 135 trial 4 (front kick), frames 520-556, the knee chamber, then played back down to the stamp (548, 530); then subject 143 trial 23 (punching), frames 195-262, the left jab, as the drive"
+  },
+  "hit": {
+   "kind": "pose",
+   "clip": "77_09",
+   "ref": 212,
+   "amp": 1.35,
+   "canvas": 96,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3
+   ],
+   "frames": [
+    223,
+    234,
+    {
+     "f": 234,
+     "amp": 0.4
+    }
+   ],
+   "action": "hit reaction, ducking",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 77 trial 9 (duck to avoid flying object), frames 212-234"
+  },
+  "ko": {
+   "kind": "ko",
+   "clip": "77_16",
+   "ref": 450,
+   "amp": 1.0,
+   "root_travel": 0.7,
+   "canvas": 128,
+   "root": "stance",
+   "cels": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "frames": [
+    420,
+    390,
+    330,
+    270,
+    210,
+    150
+   ],
+   "absw": [
+    0,
+    0.25,
+    0.5,
+    0.8,
+    1,
+    1
+   ],
+   "turn": {
+    "south-east": [
+     0,
+     12,
+     30,
+     48,
+     60,
+     60
+    ],
+    "south-west": [
+     0,
+     -9,
+     -22.5,
+     -36,
+     -45,
+     -45
+    ],
+    "north-east": [
+     0,
+     -3,
+     -7.5,
+     -12,
+     -15,
+     -15
+    ],
+    "north-west": [
+     0,
+     3,
+     7.5,
+     12,
+     15,
+     15
+    ]
+   },
+   "action": "knocked down, collapsing to the ground",
+   "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 77 trial 16 (laying down, getting up), frames 450-150 played in reverse"
+  }
+ }
+}

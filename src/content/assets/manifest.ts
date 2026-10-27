@@ -31,6 +31,7 @@
 
 import type { ClipDef, ClipName, Heading, LocomotionDef, MeleeDirection } from './clips';
 import { HEADINGS, headingClip } from './clips';
+import { PARTY_G1_TRIMS } from './partyG1';
 import { residentGrid } from './residentGrid';
 
 export type AssetEntry =
@@ -176,7 +177,12 @@ function gWalkMsPerTile(frameCount: number): Record<Heading, number> {
   >;
 }
 
-/** PixelLab G locomotion and fighting stance plus the existing authored action poses. */
+/**
+ * The party's G sheets, on the world's native G1 grid (ADR 0089): 64 px a
+ * tile, a 64x96 cel, eight-way idle, walk, rest and fighting stance, the
+ * mirrored cast and KO (trimmed cels, `partyG1.ts`), and Kaya's and Sura's
+ * riverside wave and tea, all on the same pages and grid.
+ */
 function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): SheetEntry {
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
@@ -193,9 +199,10 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
     fps: 1000 / 150,
     loop: true,
   });
+  const trims = PARTY_G1_TRIMS[name];
   const clips: Partial<Record<ClipName, ClipDef>> = {
-    cast: { frames: frames('cast', 3), fps: 8, loop: false },
-    ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    cast: { frames: frames('cast', 3), fps: 8, loop: false, ...trims.cast },
+    ko: { frames: frames('ko', 1), fps: 1, loop: false, ...trims.ko },
   };
   for (const heading of HEADINGS) {
     clips[headingClip('idle', heading)] = idle(headingClip('idle', heading));
@@ -203,11 +210,9 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
     clips[headingClip('rest', heading)] = rest(headingClip('rest', heading));
     clips[headingClip('stance', heading)] = stance(headingClip('stance', heading));
   }
-  // The riverside draws Kaya and Sura from this sheet too (ADR 0054). Their
-  // wave and seated tea have no G art yet, so the preserved legacy cels ride
-  // on a small lossless page of their own and are mirrored like cast and KO.
-  const riverside = name === 'kaya' || name === 'sura';
-  if (riverside) {
+  // The riverside draws Kaya and Sura from this sheet too (ADR 0054): their
+  // wave and seated tea, reduced onto the same grid, ride on page 1.
+  if (name === 'kaya' || name === 'sura') {
     clips.wave = { frames: frames('wave', 2), fps: 4, loop: true };
     clips.tea = { frames: frames('tea', 2), fps: 0.25, loop: true };
   }
@@ -221,17 +226,16 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
       `art/units/${name}-g-2.json`,
       `art/units/${name}-g-3.json`,
       `art/units/${name}-g-4.json`,
-      ...(riverside ? [`art/units/riverside-${name}.json`] : []),
     ],
     clipData: `art/units/${name}-g-clips.json`,
     // The bend loads on its own, only when something asks for it (ADR 0055).
     bend: `art/units/${name}-bend.json`,
     bendPages: [`art/units/${name}-g-bend.json`],
-    pixelsPerTile: 128,
+    pixelsPerTile: 64,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    // Cel 3 is the first planted passing pose after the wide opening stride.
+    // Cel 3 is the first passing pose after the opening contact.
     locomotion: {
       headings: 8,
       walkMsPerTile: gWalkMsPerTile(12),

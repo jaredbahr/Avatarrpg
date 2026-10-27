@@ -22,17 +22,19 @@ const standing = async (asset: string, clip: string) => {
   if (!rect) throw new Error(`Missing ${asset}/${clip}/0`);
   const body = alphaBounds(crop(pixels, { x: rect.x, y: rect.y, width: rect.w, height: rect.h }));
   if (!body) throw new Error('Empty standing frame');
-  return body.height;
+  // In tiles: the party stands on the world's 64 px G1 grid (ADR 0089), the
+  // enemies on the 128 px G grid.
+  return body.height / entry.pixelsPerTile;
 };
 
 it.each(['thug', 'slinger', 'bruiser', 'quarrybender'])(
   'stands the G %s at the party G body’s height and scale (ADR 0059, ADR 0062)',
   async (name) => {
     const key = `unit.enemy.${name}`;
-    // Same camera, same 75% map: within a few px of Kaya's, 113-121 px.
+    // Same camera: within 8 G px (1/16 tile) of Kaya's standing height.
     const enemy = await standing(key, 'idleSouth');
     expect(Math.abs(enemy - (await standing('unit.fire.kaya', 'idleSouth')))).toBeLessThanOrEqual(
-      8,
+      8 / 128,
     );
     for (const projection of ['oblique', 'orthographic'] as const) {
       expect(enemyScale(key, 1, projection)).toBe(partyScale(projection));

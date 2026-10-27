@@ -16,7 +16,6 @@ import { ASSETS } from '../../src/content/assets/manifest';
 import { bendSetDefSchema, validateBendSets } from '../../src/content/bends';
 import type { BendEffectDef, BendSetDef } from '../../src/content/bends';
 import {
-  BEND_CHARACTERS,
   STANCE_TOLERANCE,
   bendFrameName,
   bendOutputs,
@@ -37,7 +36,7 @@ import type { BendCharacter, BendPins, Registration } from './bend-sprites';
 import { FRAME_H, FRAME_W } from './g-sprites';
 import type { Image } from './lib/image';
 import { newImage, pixelAt, setPixel, writePng } from './lib/image';
-import { BEND_SHEETS, readBendEffects, validateBends } from './validate';
+import { BEND_SHEETS, validateBends } from './validate';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -572,46 +571,9 @@ describe('the effect-check skip', () => {
   });
 });
 
-describe('the packed r10 bends', () => {
-  const PARTY = Object.values(BEND_CHARACTERS);
-
-  for (const who of PARTY) {
-    it(`pins ${who.name}'s eight timings and every cel, and ships a valid set`, () => {
-      const pins = JSON.parse(readFileSync(who.pins, 'utf8')) as BendPins;
-      expect(Object.keys(pins.timing).sort()).toEqual(
-        who.headings.map((h) => timingFile(h.direction)).sort(),
-      );
-      const set = JSON.parse(
-        readFileSync(`public/art/units/${who.name}-bend.json`, 'utf8'),
-      ) as BendSetDef;
-      expect(bendSetDefSchema.safeParse(set).success).toBe(true);
-      const frames = HEADINGS.flatMap((heading) => set.facings[heading].frames);
-      expect(validateBendSets([set], readBendEffects(), Object.keys(ASSETS), frames)).toEqual([]);
-      const celCount = HEADINGS.reduce(
-        (sum, heading) => sum + set.facings[heading].frames.length,
-        0,
-      );
-      expect(Object.keys(pins.cels)).toHaveLength(celCount);
-      expect(Object.keys(pins.frames).sort()).toEqual([...new Set(frames)].sort());
-      expect(BEND_SHEETS[who.key]?.pins).toBe(who.pins);
-      for (const heading of HEADINGS) {
-        const facing = set.facings[heading];
-        // Every heading starts and ends on the one stance cel.
-        expect(facing.frames[facing.frames.length - 1]).toBe(facing.frames[0]);
-        expect(facing.scale).toBe(0.75);
-        expect(facing.sourceSize).toEqual({ width: 320, height: 320 });
-        // The roles and the releases agree: each strike is a contact, and
-        // every r10 release launches on its contact frame.
-        const contacts = Object.values(facing.keyFrames)
-          .filter((key) => key.role === 'contact')
-          .map((key) => key.frame);
-        const releases = facing.attacks.flatMap((attack) => attack.releases);
-        expect(releases.map((release) => release.frame)).toEqual(contacts);
-        for (const release of releases) expect(release.launchFrame).toBe(release.frame);
-      }
-    });
-  }
-
+// The shipped bends are the G1 redraw since ADR 0089 (party-g1.ts); its set,
+// timing and pins are held in party-g1.test.ts. These checks hold for both.
+describe('the packed bends', () => {
   it('keeps Kaya’s cross hold and Sura’s two W4 holds as one cel named twice', () => {
     const kaya = JSON.parse(readFileSync('public/art/units/kaya-bend.json', 'utf8')) as BendSetDef;
     for (const heading of HEADINGS)
