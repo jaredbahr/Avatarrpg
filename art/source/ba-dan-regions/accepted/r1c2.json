@@ -2,18 +2,18 @@
   "region": "r1c2",
   "source": {
     "path": ".review/route-a/candidates/r1c2.png",
-    "sha256": "ebc9f11ee22361cd0db4025c5e663721517999d4f25417009e55b1382a94c3c8"
+    "sha256": "3626953c2243616e361b307f623c2be54607d4545dc1ed58a1c2086f8402e6a7"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r1c2.png",
-    "sha256": "ebc9f11ee22361cd0db4025c5e663721517999d4f25417009e55b1382a94c3c8"
+    "sha256": "3626953c2243616e361b307f623c2be54607d4545dc1ed58a1c2086f8402e6a7"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.5628
+      "corr": 0.7789
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 38540,
         "dx": 0,
         "dy": 0,
-        "corr": 0.5772,
+        "corr": 0.8062,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 272039,
         "dx": 0,
         "dy": 0,
-        "corr": 0.5,
+        "corr": 0.7086,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6515,
+        "corr": 0.8126,
         "status": "ok"
       },
       {
@@ -48,8 +48,8 @@
         "box": [669, 331, 875, 508],
         "area": 7508,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.3705,
+        "dy": 0,
+        "corr": 0.8917,
         "status": "ok"
       },
       {
@@ -58,7 +58,7 @@
         "area": 239585,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6275,
+        "corr": 0.7811,
         "status": "ok"
       },
       {
@@ -67,7 +67,7 @@
         "area": 42790,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6041,
+        "corr": 0.7672,
         "status": "ok"
       },
       {
@@ -76,7 +76,7 @@
         "area": 27043,
         "dx": 0,
         "dy": 0,
-        "corr": 0.5317,
+        "corr": 0.8418,
         "status": "ok"
       },
       {
@@ -84,8 +84,8 @@
         "box": [871, 704, 975, 934],
         "area": 4485,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.716,
+        "dy": 0,
+        "corr": 0.8896,
         "status": "ok"
       },
       {
@@ -93,21 +93,18 @@
         "box": [451, 756, 1104, 1024],
         "area": 65582,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.6539,
+        "dy": 0,
+        "corr": 0.7688,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1417191,
-      "meanAbsDiff": 13.998,
-      "p95": 48.333,
-      "fractionOver16": 0.3417
+      "meanAbsDiff": 0.013,
+      "p95": 0.0,
+      "fractionOver16": 0.0002
     },
-    "warn": [
-      "carried pixels repainted: mean difference 14.0/255",
-      "seam with r1c3: 2.9x the ordinary difference"
-    ],
+    "warn": ["seam with r1c3: 2.9x the ordinary difference"],
     "fail": []
   },
   "prompt": {

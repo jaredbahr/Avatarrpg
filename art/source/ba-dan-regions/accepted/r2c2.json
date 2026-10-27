@@ -12,8 +12,8 @@
     "pass": true,
     "frame": {
       "dx": 0,
-      "dy": 1,
-      "corr": 0.4914
+      "dy": 0,
+      "corr": 0.8056
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 124238,
         "dx": 0,
         "dy": 0,
-        "corr": 0.582,
+        "corr": 0.7419,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 11077,
         "dx": 0,
         "dy": 0,
-        "corr": 0.495,
+        "corr": 0.8441,
         "status": "ok"
       },
       {
@@ -39,8 +39,8 @@
         "box": [871, 17, 975, 247],
         "area": 4485,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.716,
+        "dy": 0,
+        "corr": 0.8896,
         "status": "ok"
       },
       {
@@ -48,18 +48,18 @@
         "box": [223, 69, 1536, 1024],
         "area": 513353,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.5292,
+        "dy": 0,
+        "corr": 0.797,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1269897,
-      "meanAbsDiff": 5.326,
-      "p95": 31.0,
-      "fractionOver16": 0.1207
+      "meanAbsDiff": 0.0,
+      "p95": 0.0,
+      "fractionOver16": 0.0
     },
-    "warn": ["carried pixels repainted: mean difference 5.3/255"],
+    "warn": [],
     "fail": []
   },
   "prompt": {

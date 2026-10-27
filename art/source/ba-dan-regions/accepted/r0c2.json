@@ -2,18 +2,18 @@
   "region": "r0c2",
   "source": {
     "path": ".review/route-a/candidates/r0c2.png",
-    "sha256": "3844014b3747bbbc6151437cc1cd62c08044992c7f4a14017edc329c3f0e8368"
+    "sha256": "66656429f86c906abe9ea039953d6c67755b9cfcd73b90a1d674c92a7db55943"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r0c2.png",
-    "sha256": "3844014b3747bbbc6151437cc1cd62c08044992c7f4a14017edc329c3f0e8368"
+    "sha256": "66656429f86c906abe9ea039953d6c67755b9cfcd73b90a1d674c92a7db55943"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.6951
+      "corr": 0.7762
     },
     "blobs": [
       {
@@ -22,16 +22,16 @@
         "area": 867283,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6951,
+        "corr": 0.7762,
         "status": "ok"
       },
       {
         "n": 2,
         "box": [0, 347, 86, 563],
         "area": 5730,
-        "dx": -1,
+        "dx": 0,
         "dy": 0,
-        "corr": 0.3992,
+        "corr": 0.5816,
         "status": "ok"
       },
       {
@@ -40,15 +40,15 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6515,
+        "corr": 0.8126,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1268574,
-      "meanAbsDiff": 2.677,
-      "p95": 14.667,
-      "fractionOver16": 0.0444
+      "meanAbsDiff": 0.0,
+      "p95": 0.0,
+      "fractionOver16": 0.0
     },
     "warn": [],
     "fail": []

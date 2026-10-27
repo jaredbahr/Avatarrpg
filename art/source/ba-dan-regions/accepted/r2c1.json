@@ -13,7 +13,7 @@
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.5239
+      "corr": 0.8569
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 144201,
         "dx": 0,
         "dy": 0,
-        "corr": 0.5798,
+        "corr": 0.7493,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 101987,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6252,
+        "corr": 0.8472,
         "status": "ok"
       },
       {
@@ -39,8 +39,8 @@
         "box": [1441, 192, 1536, 360],
         "area": 5449,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.4836,
+        "dy": 0,
+        "corr": 0.7984,
         "status": "ok"
       },
       {
@@ -48,8 +48,8 @@
         "box": [1321, 286, 1536, 630],
         "area": 22865,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.407,
+        "dy": 0,
+        "corr": 0.8548,
         "status": "ok"
       },
       {
@@ -58,7 +58,7 @@
         "area": 13552,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6653,
+        "corr": 0.8872,
         "status": "ok"
       },
       {
@@ -66,18 +66,18 @@
         "box": [1213, 581, 1536, 1024],
         "area": 68398,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.199,
+        "dy": 0,
+        "corr": 0.7674,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1269897,
-      "meanAbsDiff": 11.03,
-      "p95": 48.333,
-      "fractionOver16": 0.2583
+      "meanAbsDiff": 0.0,
+      "p95": 0.0,
+      "fractionOver16": 0.0
     },
-    "warn": ["carried pixels repainted: mean difference 11.0/255"],
+    "warn": [],
     "fail": []
   },
   "prompt": {
