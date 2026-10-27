@@ -612,7 +612,7 @@
     },
     {
       "id": "west-planter",
-      "file": "true-low-planter.webp",
+      "file": "g1-west-planter.webp",
       "sourceRect": null,
       "x": 1014,
       "y": 636.6666666666667,
@@ -664,7 +664,7 @@
     },
     {
       "id": "north-garden",
-      "file": "true-low-planter.webp",
+      "file": "g1-north-garden.webp",
       "sourceRect": null,
       "x": 1782,
       "y": 636.6666666666667,
@@ -742,7 +742,7 @@
     },
     {
       "id": "southeast-planter",
-      "file": "true-low-planter-1x2.webp",
+      "file": "g1-southeast-planter.webp",
       "sourceRect": null,
       "x": 1334,
       "y": 828.6666666666667,
@@ -954,13 +954,8 @@
     },
     {
       "id": "d0",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 1058,
-        "y": 2,
-        "width": 222,
-        "height": 269
-      },
+      "file": "g1-d0.webp",
+      "sourceRect": null,
       "x": 886,
       "y": 694.6666666666667,
       "width": 148,
@@ -1025,13 +1020,8 @@
     },
     {
       "id": "d3",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 322,
-        "y": 2,
-        "width": 222,
-        "height": 291
-      },
+      "file": "g1-d3.webp",
+      "sourceRect": null,
       "x": 1526,
       "y": 296,
       "width": 148,
@@ -1052,13 +1042,8 @@
     },
     {
       "id": "d4",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 322,
-        "y": 2,
-        "width": 222,
-        "height": 291
-      },
+      "file": "g1-d4.webp",
+      "sourceRect": null,
       "x": 1462,
       "y": 776,
       "width": 148,
@@ -1079,13 +1064,8 @@
     },
     {
       "id": "d5",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 1506,
-        "y": 2,
-        "width": 222,
-        "height": 250
-      },
+      "file": "g1-d5.webp",
+      "sourceRect": null,
       "x": 1398,
       "y": 707.3333333333334,
       "width": 148,
@@ -1106,13 +1086,8 @@
     },
     {
       "id": "d6",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 1506,
-        "y": 2,
-        "width": 222,
-        "height": 250
-      },
+      "file": "g1-d6.webp",
+      "sourceRect": null,
       "x": 1846,
       "y": 739.3333333333334,
       "width": 148,
@@ -1133,13 +1108,8 @@
     },
     {
       "id": "d7",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 1506,
-        "y": 2,
-        "width": 222,
-        "height": 250
-      },
+      "file": "g1-d7.webp",
+      "sourceRect": null,
       "x": 1654,
       "y": 835.3333333333334,
       "width": 148,
@@ -1182,13 +1152,8 @@
     },
     {
       "id": "d9",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 2,
-        "y": 2,
-        "width": 318,
-        "height": 296
-      },
+      "file": "g1-d9.webp",
+      "sourceRect": null,
       "x": 1910,
       "y": 516.6666666666667,
       "width": 212,
@@ -1213,13 +1178,8 @@
     },
     {
       "id": "d10",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 1282,
-        "y": 2,
-        "width": 222,
-        "height": 263
-      },
+      "file": "g1-d10.webp",
+      "sourceRect": null,
       "x": 1718,
       "y": 666.6666666666667,
       "width": 148,
@@ -1240,13 +1200,8 @@
     },
     {
       "id": "d11",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 642,
-        "y": 300,
-        "width": 414,
-        "height": 224
-      },
+      "file": "g1-d11.webp",
+      "sourceRect": null,
       "x": 1910,
       "y": 724.6666666666667,
       "width": 276,
@@ -1327,13 +1282,8 @@
     },
     {
       "id": "d14",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 546,
-        "y": 2,
-        "width": 510,
-        "height": 272
-      },
+      "file": "g1-d14.webp",
+      "sourceRect": null,
       "x": 374,
       "y": 372.6666666666667,
       "width": 340,
@@ -1374,13 +1324,8 @@
     },
     {
       "id": "d15",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 1378,
-        "y": 300,
-        "width": 222,
-        "height": 205
-      },
+      "file": "g1-d15.webp",
+      "sourceRect": null,
       "x": 566,
       "y": 449.33333333333337,
       "width": 148,
@@ -1401,13 +1346,8 @@
     },
     {
       "id": "d16",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 2,
-        "y": 300,
-        "width": 318,
-        "height": 246
-      },
+      "file": "g1-d16.webp",
+      "sourceRect": null,
       "x": 1526,
       "y": 870,
       "width": 212,

@@ -257,6 +257,11 @@ class Village:
         self.front = load_rgb(self.dir / "front.png")[..., 0]
         self._needed: dict[str, int] | None = None
 
+    # ADR 0085: the pieces drawn as uprights stay the ones the shipped painting had (46), whatever a replaced object's new
+    # silhouette covers: the scene's courtyard props and dressing must stay scenery (their footprints block, and the scene
+    # tests hold them), and the upright set is not a side effect of an object's height.
+    KEEP_UPRIGHT = frozenset({'d11', 'd15', 'north-garden', 'west-planter', 'southeast-planter'})
+
     def needed(self) -> dict[str, int]:
         """For each piece, the number of walkable cells where a figure stands behind it: the figure's
         foot depth (x + y of the foot point) is less than the piece's depth key, and the figure's box
@@ -285,7 +290,7 @@ class Village:
                 y1 = min(h, int((sy + FIGURE_DOWN - oy) * SCALE) - sp["y"])
                 if x1 > x0 and y1 > y0 and alpha[y0:y1, x0:x1].any():
                     hits += 1
-            out[p["id"]] = hits
+            out[p["id"]] = max(hits, 1) if p["id"] in self.KEEP_UPRIGHT else hits
         self._needed = out
         return out
 

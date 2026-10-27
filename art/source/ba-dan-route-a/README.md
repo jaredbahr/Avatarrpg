@@ -226,3 +226,14 @@ Known faults:
 - The stitched picture keeps the restyle's feathered tile joins. Every region overlap matches, but nothing was measured
   inside a region.
 - A single on-screen pixel grid needs an integer camera zoom (ADR 0085, open).
+
+## Completing Ba Dan (2026-10-27, second round)
+
+See ADR 0085's amendment. Order: `tools/ground.py` (writes `world-g1-ground.png` from `world/world-g1.png`), then
+`OBJECTS_BASE=world-g1-ground.png OBJECTS_TAG=o5 tools/objects.py --geometry` (furniture from `objects-g1b/`, families and
+the garden kit from `objects-288/families/`), then `tools/regions_back.py` and `regen.sh`. Sources: `world/ground-tiles/`,
+`world/inpaint/o5-*`, `objects-g1b/`. Review: `review/village/` (Canvas, tile 36 and 56, before and after, same camera;
+`e2e/ba-dan-village.review.ts`).
+
+Known faults: a faint lighter patch can remain on the east road where a post stood; the garden plot reads sparser than the
+old painted bed; Gao's yard cart is the painted one; tables still carry #288's arrangement of goods.

@@ -73,6 +73,11 @@ def tile_paint(x, y):  # painting px of ground corner (x, y)
 # yard post, and clearing the cart made the generator invent a structure there. The cart stays the house's own, for now.
 YARD_CLEAR: list = []
 YARD_PROPS: list = []
+# Round 2 (owner, "complete Ba Dan"): the old cart is redrawn in place as a small handcart at the figures' scale
+YARD_CART = ((1401, 348, 1447, 420), ('In the masked area draw a small two-wheeled wooden handcart standing on the paved yard, '
+             'tipped forward on its handles, carrying one clay water jar: the cart bed about 20 px long and 10 px wide, wheels '
+             '10 px across, sturdy planks, a 1 px dark brown outline (#1b1410), warm wood in 3 flat tones, light from the upper '
+             'left, matching the pixel art style around it. Paving shows around it. No people, no wall, no roof.'))
 
 def piece_at(tile, scene_pieces):
     """The frozen piece whose footprint starts at `tile` (its min-x, min-y cell)."""
@@ -88,22 +93,55 @@ def objects():
     point (tile * 64 + origin_in_footprint_logical_px): world x = lx - ly + 1024, y = (lx + ly) / 2 (+ the pan box offset).
     Entries with no tiles (the garden kit, the house props) are not placed here."""
     scene = json.load(open(f'{GEO}/scene.json'))['pieces']
-    sources = [(json.load(open(f'{M}/grain/grain.json'))['objects'], 'grain/g1-toned')]
-    if '--families' in sys.argv:  # the other families: a follow-up (each new upright also needs its projection pins)
-        sources.append((json.load(open(f'{M}/families/families.json'))['objects'], 'families/g1'))
+    sources = [(json.load(open(f'{M}/grain/grain.json'))['objects'], 'grain/g1-toned'),
+               (json.load(open(f'{M}/families/families.json'))['objects'], 'families/g1')]
+    G1B = 'art/source/ba-dan-route-a/objects-g1b'  # the market furniture redrawn with mass (furniture.py)
     out = []
     for table, folder in sources:
         for key, o in table.items():
             if not o.get('tiles'):
                 continue
-            im = Image.open(f'{M}/{folder}/{key}.png').convert('RGBA')
+            im = Image.open(f'{G1B}/{key}.png' if os.path.exists(f'{G1B}/{key}.png') else f'{M}/{folder}/{key}.png').convert('RGBA')
             for tx, ty in o['tiles']:
                 lx = tx * 64 + o['origin_in_footprint_logical_px'][0]; ly = ty * 64 + o['origin_in_footprint_logical_px'][1]
                 wx, wy = lx - ly + 1024 + 200, (lx + ly) / 2 + 100   # world-of-painting px (pan box corner at 0, 0)
                 ax, ay = o['g1_anchor_px']
                 out.append({'name': key, 'piece': piece_at((tx, ty), scene), 'image': im,
                             'xy': (round(wx - ax), round(wy - ay)), 'src': f'{folder}/{key}.png'})
+    out.append(garden_kit(json.load(open(f'{M}/families/families.json'))['objects'], scene))
     return out
+
+GARDEN = (2, 10, 3, 2)  # d14, the garden plot: tile x, y and footprint (BA_DAN_DRESSING)
+
+def garden_kit(fam, scene):
+    """#288's garden kit laid over the 3x2 plot as one piece: edge-a along +x on the back and front lines, edge-b along +y
+    on the west and east lines, a post at every joint, and three crop rows along +x inside. Each kit image's
+    `g1_anchor_px` goes on the logical ground point it is laid at; drawn back to front by lx + ly."""
+    gx, gy, fw, fd = GARDEN
+    parts = []
+    def put(key, lx, ly):
+        parts.append((lx + ly, key, lx, ly))
+    rows = [('garden-cabbages', 0.28), ('garden-beans', 0.98), ('garden-greens', 1.62)]
+    for key, fy in rows:
+        for i in range(fw): put(key, (gx + i) * 64 + 2, (gy + fy) * 64)
+    for i in range(fw):
+        put('garden-edge-a', (gx + i) * 64, gy * 64); put('garden-edge-a', (gx + i) * 64, (gy + fd) * 64)
+    for j in range(fd):
+        put('garden-edge-b', gx * 64, (gy + j) * 64); put('garden-edge-b', (gx + fw) * 64, (gy + j) * 64)
+    for i in range(fw + 1):
+        for j in (0, fd): put('garden-post', (gx + i) * 64, (gy + j) * 64)
+    for j in range(1, fd): put('garden-post', gx * 64, (gy + j) * 64); put('garden-post', (gx + fw) * 64, (gy + j) * 64)
+    placed = []
+    for _, key, lx, ly in sorted(parts):
+        im = Image.open(f'{M}/families/g1/{key}.png').convert('RGBA'); ax, ay = fam[key]['g1_anchor_px']
+        wx, wy = lx - ly + 1024 + 200, (lx + ly) / 2 + 100
+        placed.append((im, round(wx - ax), round(wy - ay)))
+    x0 = min(x for _, x, _ in placed); y0 = min(y for _, _, y in placed)
+    x1 = max(x + im.width for im, x, _ in placed); y1 = max(y + im.height for im, _, y in placed)
+    kit = Image.new('RGBA', (x1 - x0, y1 - y0))
+    for im, x, y in placed: kit.alpha_composite(im, (x - x0, y - y0))
+    return {'name': 'garden-kit', 'piece': piece_at((gx, gy), scene), 'image': kit, 'xy': (x0, y0),
+            'src': 'families/g1/garden-* (laid out by garden_kit)'}
 
 GROUND = None  # plain ground (no piece owns it), set by main
 raw_world = None  # the restyle before any clearing, set by main: outside the apply mask the ground is put back from it
@@ -197,18 +235,21 @@ def grade(im):
     out[..., :3] = rgb
     return Image.fromarray((np.clip(out, 0, 1) * 255 + 0.5).astype(np.uint8), 'RGBA')
 
+SOIL = {'d14': ('Fill the masked area with a tilled vegetable bed: dark brown soil in furrows running along the bed, 3 flat '
+                 'tones, small clods, the same pixel art style, no plants, no fence, no people.')}
+TAG = os.environ.get('OBJECTS_TAG', 'o4')  # a new base needs a new tag, or the ledger hands back the old inpaints
 PROMPT = ('Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, '
           'continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. '
           'No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.')
 
-def inpaint(world, mask, tag, apply=None):
+def inpaint(world, mask, tag, apply=None, prompt=None):
     ys, xs = np.nonzero(mask)
     if xs.max() - xs.min() + 8 > 256 or ys.max() - ys.min() + 8 > 256:  # in chunks, each seeing the last
         x0, y0 = xs.min(), ys.min(); k = 0
         for cy in range(int(y0), int(ys.max()) + 1, 240):
             for cx in range(int(x0), int(xs.max()) + 1, 240):
                 sub = np.zeros_like(mask); sub[cy:cy + 240, cx:cx + 240] = mask[cy:cy + 240, cx:cx + 240]
-                if sub.any(): inpaint(world, sub, f'{tag}-{k}', apply); k += 1
+                if sub.any(): inpaint(world, sub, f'{tag}-{k}', apply, prompt); k += 1
         return
     ys, xs = np.nonzero(mask); x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
     w = max(32, min(256, ((x1 - x0 + 8 + 3) // 4) * 4)); h = max(32, min(256, ((y1 - y0 + 8 + 3) // 4) * 4))
@@ -220,7 +261,7 @@ def inpaint(world, mask, tag, apply=None):
     ctx_box = (max(0, bx - w), max(0, by - h), max(0, bx - w) + cxw, max(0, by - h) + cyh)
     ctx = world.crop(ctx_box)
     img, h1 = b64(crop.convert('RGB')); mi, h2 = b64(mk); ci, h3 = b64(ctx.convert('RGB'))
-    out = run('/inpaint-image-pro-flash', {'image': img, 'mask_image': mi, 'description': PROMPT, 'context_image': ci,
+    out = run('/inpaint-image-pro-flash', {'image': img, 'mask_image': mi, 'description': prompt or PROMPT, 'context_image': ci,
               'bounding_box': {'x': int(bx - ctx_box[0]), 'y': int(by - ctx_box[1]), 'width': int(w), 'height': int(h)},
               'output_method': 'Modify current layer', 'seed': 11},
               tag, {h1: f'{tag} crop ({bx},{by},{w}x{h}) of world-g1-raw', h2: f'{tag} mask', h3: f'{tag} context {ctx_box}'},
@@ -244,8 +285,9 @@ def inpaint(world, mask, tag, apply=None):
         keep[mm] = np.clip(out + 0.5, 0, 255).astype(np.uint8)[mm]
         world.paste(Image.fromarray(keep), (bx, by))
         return
-    if apply is None: tone_match(world, mask)  # a tight patch is the old footprint only, and keeps its own tone
+    if apply is None and prompt is None: tone_match(world, mask)  # a tight patch keeps its own tone; a drawn object too
 
+TONE_MAX = 30  # levels: the most the tone match moves a channel
 TONE_SIGMA = 10  # world px: the scale of the tone the patch is matched over, above the pixel detail it keeps
 
 def _gauss(x, sigma):
@@ -271,9 +313,14 @@ def tone_match(world, mask):
     x0, x1 = max(0, xs.min() - pad), min(mask.shape[1], xs.max() + pad + 1)
     a = np.asarray(world.convert('RGB')).astype(np.float32)
     sub = a[y0:y1, x0:x1]; m = mask[y0:y1, x0:x1].astype(np.float32)
-    out_tone, _ = _norm_blur(sub, 1 - m, TONE_SIGMA)
+    # only the surroundings that are plain ground count, and only near the patch edge: where little of the window is
+    # surround (the middle of a big patch) the correction fades out, and it never moves a pixel more than TONE_MAX
+    ground = GROUND[y0:y1, x0:x1].astype(np.float32) if GROUND is not None else 1.0
+    out_tone, w_out = _norm_blur(sub, (1 - m) * ground, TONE_SIGMA)
     in_tone, _ = _norm_blur(sub, m, TONE_SIGMA)
-    fixed = sub + (out_tone - in_tone) * m[..., None]
+    trust = np.clip((w_out - 0.05) / 0.25, 0, 1)[..., None]
+    delta = np.clip(out_tone - in_tone, -TONE_MAX, TONE_MAX) * trust
+    fixed = sub + delta * m[..., None]
     a[y0:y1, x0:x1] = np.where(m[..., None] > 0, fixed, sub)
     world.paste(Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)))
 
@@ -299,6 +346,40 @@ def dark_islands(world, patch, min_px=30, drop=45):
         if comp.sum() >= min_px:
             out.append(np.asarray(Image.fromarray(comp.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(7))) > 0)
     return out
+
+def pave_from_grid(world, mask, source, clean):
+    """Where a cleared patch lies in paving, the inpaint draws flat colour, not flags. Each such pixel instead takes the
+    paving a whole number of tiles away along the 2:1 grid ((64k, 32k), (-64k, 32k), (128k, 0) and their opposites,
+    nearest first) from `source`, the first offset that lands on clean paving (`clean`), so the flag lines run on. Only
+    pixels where the paving around (a normalised Gaussian of `clean`, the patch excluded) dominates are filled, so a
+    patch that runs into grass keeps its inpainted grass. Gain-matched to the ring, feathered 2 px. Returns the count."""
+    H, W = mask.shape
+    frac = _gauss(clean.astype(np.float32), 12) / np.maximum(_gauss((~mask).astype(np.float32), 12), 1e-4)
+    todo = mask & (frac > 0.5)
+    if not todo.any(): return 0
+    a = np.asarray(world.convert('RGB')).astype(np.float32); src = np.asarray(source.convert('RGB')).astype(np.float32)
+    fill = np.zeros_like(a); got = np.zeros_like(todo)
+    offs = []
+    for k in range(1, 9):
+        for d in ((64, 32), (-64, 32), (128, 0)):
+            offs += [(d[0] * k, d[1] * k), (-d[0] * k, -d[1] * k)]
+    offs.sort(key=lambda o: o[0] ** 2 + 4 * o[1] ** 2)
+    for dx, dy in offs:
+        ys, xs = np.nonzero(todo & ~got)
+        if not len(ys): break
+        sy, sx = ys + dy, xs + dx
+        ok = (sy >= 0) & (sy < H) & (sx >= 0) & (sx < W)
+        ys, xs, sy, sx = ys[ok], xs[ok], sy[ok], sx[ok]
+        good = clean[sy, sx]
+        fill[ys[good], xs[good]] = src[sy[good], sx[good]]; got[ys[good], xs[good]] = True
+    ring = (np.asarray(Image.fromarray(mask.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(11))) > 0) & ~mask & clean
+    if ring.sum() > 20 and got.sum() > 20:
+        fill[got] *= (a[ring].mean(0) + 1) / (fill[got].mean(0) + 1)
+    f = _gauss(got.astype(np.float32), 1.0) * got
+    f[np.asarray(Image.fromarray(got.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(3))) > 0] = 1
+    a = np.where(got[..., None], a * (1 - f[..., None]) + fill * f[..., None], a)
+    world.paste(Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)))
+    return int(got.sum())
 
 def set_in(world, ob):
     a = np.asarray(world.convert('RGB')).astype(np.float32)
@@ -342,7 +423,7 @@ def geometry_sprite(ob, scene):
     return spr, inside
 
 if __name__ == '__main__':
-    world = Image.open(f'{RA}/world-g1-raw.png').convert('RGB'); raw_world = world.copy()
+    world = Image.open(f"{RA}/{os.environ.get('OBJECTS_BASE', 'world-g1-raw.png')}").convert('RGB'); raw_world = world.copy()
     GROUND = ground_ids((world.height, world.width))
     obs = objects()
     masks = {}
@@ -364,7 +445,21 @@ if __name__ == '__main__':
     for t in small.values(): avoid |= t
     for t in small.values(): prefill(world, t, avoid)
     world.save(f'{RA}/world-g1-prefilled.png')
-    for pid, t in small.items(): inpaint(world, t, f"o4-out-{pid}", t)
+    for pid, t in small.items(): inpaint(world, t, f"{TAG}-out-{pid}", t, SOIL.get(pid))
+    # paving holes: flags from the grid, not the inpaint's flat colour
+    from ground import materials
+    pav, _, _ = materials(np.asarray(raw_world.convert('RGB')))
+    # a paving area, joints included: the flag mask closed over its 1-3 px dark joints
+    pav = np.asarray(Image.fromarray(pav.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))) > 0
+    clean_pav = pav & GROUND
+    for m in small.values(): clean_pav &= ~m
+    clean_pav = np.asarray(Image.fromarray(clean_pav.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(3))) > 0
+    for pid, t in small.items():
+        if pid in SOIL: continue
+        n = pave_from_grid(world, t, raw_world, clean_pav)
+        if n: print(pid, 'paved from grid', n)
+    for pid, t in small.items():  # last, every cleared patch's large-scale tone to the ground around it
+        if pid not in SOIL: tone_match(world, t)
     for tag, (x0, y0, x1, y1) in YARD_CLEAR:  # inside the house sprite: blank the old cart's own pixels, then inpaint
         import colorsys
         box = np.asarray(raw_world.crop((x0, y0, x1, y1)).convert('RGB')).astype(np.float32) / 255
@@ -377,6 +472,8 @@ if __name__ == '__main__':
         ring = np.zeros_like(m); ring[y0 - 6:y1 + 6, x0 - 6:x1 + 6] = True; ring &= ~m
         a_[m] = np.median(a_[ring], axis=0).astype(np.uint8); world.paste(Image.fromarray(a_))
         inpaint(world, m, f"o4-out-{tag}", m)
+    # YARD_CART was tried (o5-gao-yard-cart-small): the generator returned the same cart, which at G1 already stands
+    # about half a figure high, so the painted one stays.
     world.save(f'{RA}/world-g1-cleared.png')
     fam = json.load(open(f'{M}/families/families.json'))['objects']
     for key, (fx, fy) in YARD_PROPS:

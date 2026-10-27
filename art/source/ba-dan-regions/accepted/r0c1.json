@@ -2,53 +2,62 @@
   "region": "r0c1",
   "source": {
     "path": ".review/route-a/candidates/r0c1.png",
-    "sha256": "87d33533128a600dddc8c0f92dee1a75909a0534574734a07860fa1b701944ec"
+    "sha256": "ffb801a5d1f160bc14cebc638ef6ff594de7583add955ec327a8b4946f7e4691"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r0c1.png",
-    "sha256": "87d33533128a600dddc8c0f92dee1a75909a0534574734a07860fa1b701944ec"
+    "sha256": "ffb801a5d1f160bc14cebc638ef6ff594de7583add955ec327a8b4946f7e4691"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7383
+      "corr": 0.7481
     },
     "blobs": [
       {
         "n": 1,
         "box": [0, 0, 1536, 847],
-        "area": 773993,
+        "area": 775702,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7399,
+        "corr": 0.7454,
         "status": "ok"
       },
       {
         "n": 2,
-        "box": [0, 671, 840, 1024],
-        "area": 145191,
+        "box": [220, 671, 424, 863],
+        "area": 9534,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7156,
+        "corr": 0.7426,
         "status": "ok"
       },
       {
         "n": 3,
+        "box": [0, 689, 840, 1024],
+        "area": 109830,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.737,
+        "status": "ok"
+      },
+      {
+        "n": 4,
         "box": [978, 784, 1296, 1010],
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8091,
+        "corr": 0.8265,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1268574,
-      "meanAbsDiff": 0.055,
+      "meanAbsDiff": 0.252,
       "p95": 0.0,
-      "fractionOver16": 0.0013
+      "fractionOver16": 0.0052
     },
     "warn": [],
     "fail": []

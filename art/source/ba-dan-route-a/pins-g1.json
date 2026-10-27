@@ -1,19 +1,19 @@
 {
-  "about": "Ground-line pins for the uprights ADR 0085 replaced with #288 G1 objects, on each piece's canvas (its frozen rectangle at 1.5 painting px per world px, the sprite geometry/sprites/g1-<id>.webp). Each window holds one table leg's foot, read from the lower envelope: front-left, front-right and back-right. The shop stack (d8) has no ground edge longer than its own crates and is not pinned (ba-dan-projection.test.ts says why).",
+  "about": "Ground-line pins for the uprights ADR 0085 replaced with #288 G1 objects, on each piece's canvas (its frozen rectangle at 1.5 painting px per world px, the sprite geometry/sprites/g1-<id>.webp). Tables: `feet` windows round one leg's foot each, read from the lower envelope (front-left, front-right, back-right). Planters and the trough: `fit` windows on the box's own ground edge, inner 60% of each side of the lower hull. Posts, lanterns, the laundry line, the notice board, the handcart and the shop stack stand on points or one line and are not pinned (ba-dan-projection.test.ts says why).",
   "projection": {
     "assets": {
       "gao-display": {
         "measure": {
           "left": {
             "feet": [
-              [88, 93],
-              [204, 209]
+              [87, 92],
+              [201, 212]
             ]
           },
           "right": {
             "feet": [
-              [204, 209],
-              [222, 229]
+              [201, 212],
+              [220, 231]
             ]
           }
         }
@@ -38,18 +38,25 @@
         "measure": {
           "left": {
             "feet": [
-              [89, 96],
-              [202, 209]
+              [88, 96],
+              [202, 210]
             ]
           },
           "right": {
             "feet": [
-              [202, 209],
-              [221, 228]
+              [202, 210],
+              [216, 231]
             ]
           }
         }
-      }
+      },
+      "west-planter": {
+        "measure": { "left": { "fit": [[100, 175]] }, "right": { "fit": [[208, 232]] } }
+      },
+      "north-garden": {
+        "measure": { "left": { "fit": [[100, 175]] }, "right": { "fit": [[208, 232]] } }
+      },
+      "d16": { "measure": { "left": { "fit": [[156, 206]] }, "right": { "fit": [[211, 223]] } } }
     }
   }
 }

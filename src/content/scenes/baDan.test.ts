@@ -351,15 +351,17 @@ it("stands the courtyard planter, turned, on the south-east house's blocked stri
   // (17,12) stands in front of it.
   expect(planter).toBeGreaterThan(house);
   expect(piece.depth).toEqual({ x: 17.5, y: 11.5 });
-  // Its plinth's front corner is the strip's (18,12), exactly: the lowest opaque pixel of the sprite is
-  // the corner, to within the two painting pixels the regional gate allows.
+  // It stands on the strip: the lowest opaque pixel of the sprite lies inside the strip's diamond, whose front
+  // corner is (18,12). (Since ADR 0085 it is #288's planter, centred in the strip, not a plinth filling it.)
   const corner = { x: 1024 + (18 - 12) * 64, y: (18 + 12) * 32 };
   let low = { x: 0, y: -Infinity };
   for (let y = piece.y; y < piece.y + piece.height; y += 1 / BA_DAN_PAINTING.scale)
     for (let x = piece.x; x < piece.x + piece.width; x += 1 / BA_DAN_PAINTING.scale)
       if (alphaAtScenePixel(piece, x, y) > 128 && y > low.y) low = { x, y };
-  expect(Math.abs(low.y - corner.y), 'front corner height').toBeLessThanOrEqual(2);
-  expect(Math.abs(low.x - corner.x), 'front corner column').toBeLessThanOrEqual(2);
+  const back = { x: 1024 + (17 - 10) * 64, y: (17 + 10) * 32 };
+  expect(low.y, 'front corner height').toBeLessThanOrEqual(corner.y + 2);
+  expect(low.y, 'not above the strip').toBeGreaterThan(back.y);
+  expect(Math.abs(low.x - corner.x), 'front corner column').toBeLessThanOrEqual(64);
 });
 
 it('registers the painted canal to every actual permanent-water cell', () => {

@@ -74,21 +74,27 @@ BA_DAN_DRESSING.forEach(([image], i) => {
   if (image !== 'village-well' && BA_DAN_UPRIGHTS[`d${i}`]) PIN_OF[`d${i}`] = [dressingPins, image];
 });
 for (const id of Object.keys(g1Pins)) PIN_OF[id] = [g1Pins, id];
-// ADR 0085: the shop stack is now a rack over two crates, with no ground edge longer than a crate's side (13 px), so it
-// has no tile line to measure; its axis is its #288 blockout's.
-const UNPINNED = new Set(['d8']);
-delete PIN_OF.d8;
+// ADR 0085: #288 G1 objects with no ground line to measure; each one's axis is its #288 blockout's. The shop stack is a
+// rack over two crates (no edge longer than a crate's side); banner poles, lantern posts and the stone lantern stand on
+// a point; the laundry line stands on two posts and the notice board on two legs, on one line; the handcart stands on its
+// wheels and handles.
+const UNPINNED = new Set(['d3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'd11', 'd15']);
+for (const id of UNPINNED) delete PIN_OF[id];
 
 /**
  * A line through two feet is only as exact as the feet: each is a whole pixel, so two of them `span` px apart fix its
  * slope to about 2 / span. Over a long line that is under the degree; over a small table's short side (about 20 px) it
  * is several, so the tolerance is never tighter than the measurement.
  */
-function tolerance(direction: { feet: readonly (readonly number[])[] } | { fit: unknown }): number {
+function tolerance(
+  direction: { feet: readonly (readonly number[])[] } | { fit: unknown },
+  generated = false,
+): number {
   if (!('feet' in direction)) return TOLERANCE_DEGREES;
   const [a, b] = direction.feet.map(([lo, hi]) => ((lo ?? 0) + (hi ?? 0)) / 2);
   const span = Math.abs((b ?? 0) - (a ?? 0));
-  return Math.max(TOLERANCE_DEGREES, (Math.atan(2 / span) * 180) / Math.PI);
+  // A generator-drawn leg's foot is a whole pixel with an antialiased step either side: 1.5 px each, 3 px a line.
+  return Math.max(TOLERANCE_DEGREES, (Math.atan((generated ? 3 : 2) / span) * 180) / Math.PI);
 }
 
 interface FrozenPiece {
@@ -147,10 +153,10 @@ describe.each(Object.keys(PIN_OF))('upright %s', (id) => {
     const m = measurePiece(pins, name, await onCanvas(id), false);
     const spec = pins[name]!.measure!;
     expect(Math.abs(offTile(m.left)), `left ${m.left.degrees}`).toBeLessThanOrEqual(
-      tolerance(spec.left),
+      tolerance(spec.left, pins === g1Pins),
     );
     expect(Math.abs(offTile(m.right)), `right ${m.right.degrees}`).toBeLessThanOrEqual(
-      tolerance(spec.right),
+      tolerance(spec.right, pins === g1Pins),
     );
   });
 });
@@ -161,6 +167,8 @@ it('has a ground measurement for every upright that stands on a tile line', () =
     (id) =>
       !id.startsWith('tree-') && id !== 'canal-bridge-front' && id !== 'd0' && !UNPINNED.has(id),
   );
-  expect(measured.length).toBeGreaterThan(20);
+  // ADR 0085: the houses, the bridge, the tables, the planters, the trough and the walls; the posts and point-standing
+  // objects that replaced the old dressing are in UNPINNED with their reason.
+  expect(measured.length).toBe(13);
   for (const id of measured) expect(PIN_OF[id], `${id} has no projection pin`).toBeDefined();
 });

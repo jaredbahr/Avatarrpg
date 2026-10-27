@@ -77,3 +77,24 @@ filter blotted it. The step and its tests stay, behind the switch.
 - New maps follow the same order: lay out, paint or generate a guide, restyle at G1 in one pass, set the G objects in,
   split.
 - Residents and party animation follow the G standard of #284 (eight-way, CMU or Mixamo motion, ADR 0067 cadence).
+
+## Amendment, 2026-10-27: Ba Dan completed at G1
+
+The owner, after whole-village before/after shots: "This is looking better. Let's complete ba Dan as is." This round:
+
+- **Ground pass** (`tools/ground.py`): the G1 world re-rendered once more by PixelLab (28 tiles, one prompt, seed 11). Only
+  plain ground (no piece owns it, not canal water) takes the result, and paving and grass are levelled per material at large
+  scale, so no tile tint survives. Grass has living texture; paving is even.
+- **Furniture with mass** (`tools/furniture.py`): the three market tables, the bench, both basket groups and the shop stack
+  redrawn by Pro Flash on #288's own G1 canvas and anchor, with thicker legs and tops, a full `#1b1410` contour and goods
+  that read at 1x (fruit 3-4 px with one highlight; no near-white).
+- **Every #288 family set in**: the well, banners, lanterns, the laundry line, the notice board, the handcart, the stone
+  lantern, the trough, the three planters and the garden plot (laid from #288's kit). No old-scale painted object is left
+  outside the houses; Gao's yard cart stays painted (one try returned the same cart, which at G1 stands about half a figure
+  high).
+- **Cleared paving is filled from the tile grid**: each hole pixel takes the paving a whole number of tiles away, so the
+  flag lines run on, then every patch's large-scale tone is matched to the plain ground around it (at most 30 levels).
+- **Uprights**: the set stays the shipped 46 (`Village.KEEP_UPRIGHT`), so the courtyard props and dressing stay scenery.
+  Projection: the new tables, planters and trough are pinned (`pins-g1.json`; a generated leg's feet get atan(3 px / span));
+  posts, lanterns, the laundry line, the notice board, the handcart and the shop stack stand on points or one line and are
+  exempt, with that reason in the test.
