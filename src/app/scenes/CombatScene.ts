@@ -341,7 +341,7 @@ export class CombatScene implements Scene {
     this.renderer = null;
     this.canvas = null;
     this.host = null;
-    // Nothing outside combat bends: let the decoded bend pages go (ADR 0055).
+    // Outside combat only a practice ground bends, and it warms its own: let the decoded bend pages go (ADR 0055).
     sheets.releaseBends();
   }
 

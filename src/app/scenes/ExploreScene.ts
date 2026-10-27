@@ -34,7 +34,7 @@ import { ambientEmitters, waterCells } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
 import type { FollowerRoute } from '../anim/trail';
 import { append, button, clear, el, mark, motionReduced } from '../ui/dom';
-import { UI_MARKS } from '../ui/marks';
+import { ABILITY_MARKS, UI_MARKS } from '../ui/marks';
 import { partyRoster } from '../ui/PartyRoster';
 import { SaveMenu } from '../ui/SaveMenu';
 import { UnitInspector } from '../ui/UnitInspector';
@@ -54,6 +54,15 @@ import { courtyardEnvironment } from '../audio/environment';
 import { partyScale } from '../anim/actorScale';
 import { worldConversationFor } from '../../content/story/presentations';
 import { conversationPanel } from '../ui/ConversationPanel';
+import { sheets } from '../../render/sheets/store';
+import {
+  hasPractice,
+  practiceAt,
+  practiceCasts,
+  practiceEvents,
+  practiceSources,
+  practiceUnits,
+} from '../world/practice';
 
 export class ExploreScene implements Scene {
   readonly name = 'explore';
@@ -104,6 +113,12 @@ export class ExploreScene implements Scene {
   private targets: { readonly at: Vec2; readonly scale: number; readonly to: Vec2 }[] = [];
   /** The markers drawn last frame; the e2e suite reads them. */
   lastNpcs: readonly NpcMarker[] = [];
+  /** This scene warmed the party's bends for a practice ground, and lets them go on leaving. */
+  private warmedBends = false;
+  /** A bending practice is playing (issue #284); presentation only. */
+  private practising = false;
+  /** Whether the HUD last drew the practice action ready, so it redraws once the bends are in. */
+  private practiceShown: boolean | null = null;
 
   constructor(private app: App) {}
 
@@ -176,6 +191,11 @@ export class ExploreScene implements Scene {
     this.life?.destroy();
     this.life = null;
     this.lastLife = null;
+    this.practising = false;
+    this.practiceShown = null;
+    // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
+    if (this.warmedBends) sheets.releaseBends();
+    this.warmedBends = false;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.suspended = false;
@@ -221,6 +241,8 @@ export class ExploreScene implements Scene {
       this.app.animator.clear();
       this.map = map;
       this.app.animator.setProjection(map.projection ?? 'orthographic');
+      this.practising = false;
+      this.warmPractice();
       this.setupLife();
       this.grid = buildGrid(map);
       this.trail = null;
@@ -660,7 +682,13 @@ export class ExploreScene implements Scene {
             : 'Drag to look around · Follow party to recenter'),
       }),
     );
-    if (moving) clear(context);
+    if (moving && !this.practising) clear(context);
+    if (this.practising)
+      context.replaceChildren(
+        mark(ABILITY_MARKS.gust),
+        el('strong', { text: 'Bending practice' }),
+        el('span', { class: 'tiny muted', text: 'Each bender throws toward the open canal.' }),
+      );
     if (this.feedback) context.appendChild(this.feedback);
     this.updateWalkFeedback();
     hud.appendChild(context);
@@ -680,7 +708,11 @@ export class ExploreScene implements Scene {
     primary.appendChild(
       el('span', {
         class: 'action-sub',
-        text: moving ? 'Walking' : (exit?.destination ?? npc?.name ?? 'No one near'),
+        text: moving
+          ? this.practising
+            ? 'Bending'
+            : 'Walking'
+          : (exit?.destination ?? npc?.name ?? 'No one near'),
       }),
     );
     row.appendChild(primary);
@@ -690,21 +722,40 @@ export class ExploreScene implements Scene {
     // height and pushes one off a phone at Largest text. Look around is one
     // step away; away from a seat the journal says where waiting is possible.
     const seat = !moving && seatHere(this.app.content, state);
+    // At a practice ground (issue #284), practice takes it the same way, and
+    // stays put, disabled, while the party bends.
+    const ground =
+      seat || (moving && !this.practising) ? null : practiceAt(this.map?.id, state.location.pos);
+    const ready = ground ? this.practiceReady(state) : false;
+    this.practiceShown = ground ? ready : null;
     const look = seat
       ? button(
           'Wait',
           () => new WaitDialog(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost()),
           { class: 'action-button', title: `Wait until later at ${seat.label}` },
         )
-      : button(
-          'Look around',
-          () => {
-            new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
-          },
-          { class: 'action-button', title: 'Find nearby people and places along this path' },
-        );
-    look.prepend(mark(seat ? UI_MARKS.wait : UI_MARKS.talk));
+      : ground
+        ? button('Practice', () => this.practise(), {
+            class: 'action-button practice-button',
+            disabled: !ready || moving,
+            title: `Practice bending by the ${ground.label.toLowerCase()}`,
+          })
+        : button(
+            'Look around',
+            () => {
+              new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
+            },
+            { class: 'action-button', title: 'Find nearby people and places along this path' },
+          );
+    look.prepend(mark(seat ? UI_MARKS.wait : ground ? ABILITY_MARKS.gust : UI_MARKS.talk));
     if (seat) look.appendChild(el('span', { class: 'action-sub', text: seat.label }));
+    if (ground)
+      look.appendChild(
+        el('span', {
+          class: 'action-sub',
+          text: this.practising ? 'Bending' : ready ? ground.label : 'Getting ready',
+        }),
+      );
     row.appendChild(look);
 
     const leader = state.party[0];
@@ -825,6 +876,7 @@ export class ExploreScene implements Scene {
     // pixel the camera reports has to keep matching the pixels the backend
     // draws, or taps land a tile out.
     this.renderer.onViewportChange = () => this.refit();
+    this.warmPractice();
     this.setupLife();
 
     this.detach = attachPointer(canvas, {
@@ -852,6 +904,54 @@ export class ExploreScene implements Scene {
           : null;
       },
     });
+  }
+
+  /**
+   * A map with a bending practice ground loads the party's bends and the
+   * painted effects on arrival, as combat does at its start, so the first
+   * practice does not wait on them (ADR 0055, step 7).
+   */
+  private warmPractice(): void {
+    const state = this.app.state;
+    if (!state || !hasPractice(this.map?.id)) return;
+    for (const member of state.party) sheets.preloadBend(member.sprite);
+    this.app.preloadBendFx();
+    this.warmedBends = true;
+  }
+
+  /** Whether every bend a practice here would play has loaded. */
+  private practiceReady(state: GameState): boolean {
+    if (!this.app.bendFxReady) return false;
+    return state.party.every((member) => {
+      const load = sheets.bendState(member.sprite);
+      return load === 'loaded' || load === 'none' || load === 'failed';
+    });
+  }
+
+  /**
+   * The party practises at the ground the leader stands on: each bender, in
+   * party order, throws their bend at the mark from where they stand. The
+   * casts go to the animator only; the rules never hear of them.
+   */
+  private practise(): void {
+    const state = this.app.state;
+    const grid = this.grid;
+    const now = performance.now();
+    if (!state || !grid || this.conversationMode || this.app.animator.busy(now)) return;
+    const ground = practiceAt(this.map?.id, state.location.pos);
+    if (!ground) return;
+    const positions = this.ensureTrail(state, grid).positions(state.party.length);
+    const casts = practiceCasts(this.app.content, state.party, positions, ground);
+    if (casts.length === 0) {
+      this.app.toasts.show('Nobody in the party bends.', 'info');
+      return;
+    }
+    this.clearNextWalk();
+    this.app.animator.push(now, practiceEvents(casts), practiceUnits(state.party, positions), {
+      waterSources: practiceSources(casts),
+    });
+    this.practising = true;
+    this.renderHud();
   }
 
   private setupLife(): void {
@@ -1028,7 +1128,12 @@ export class ExploreScene implements Scene {
       }
     }
     if (!this.conversationMode && this.life?.update(now, renderer.camera)) return;
-    if (this.hudMoving !== this.app.animator.busy(now)) this.renderHud();
+    if (this.practising && !this.app.animator.busy(now)) this.practising = false;
+    if (
+      this.hudMoving !== this.app.animator.busy(now) ||
+      (this.practiceShown !== null && this.practiceShown !== this.practiceReady(state))
+    )
+      this.renderHud();
     this.app.stats?.frame(now);
 
     // The whole party walks the village: the leader on the rules' tile, the
@@ -1050,26 +1155,40 @@ export class ExploreScene implements Scene {
           (index === 0 ? state.location.pos : seat),
       ),
     );
-    const units: RenderUnit[] = state.party.map((member, index) => ({
-      id: member.id,
-      pos: index === 0 ? state.location.pos : (seats[index] ?? state.location.pos),
-      size: 1,
-      sprite: member.sprite,
-      name: member.name,
-      faction: 'party',
-      hp: member.hp,
-      maxHp: member.base.maxHp,
-      statuses: [],
-      fallen: false,
-      // A health bar over someone strolling round a village is noise.
-      showHealth: false,
-      shadow: true,
-      scale: partyScale(map.projection),
-      renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
-      offset: this.app.animator.offset(now, member.id, member.sprite),
-      clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
-      ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
-    }));
+    const units: RenderUnit[] = state.party.map((member, index) => {
+      // A practising bender draws their bend's cels, as combat does (ADR 0055).
+      const bend = this.app.animator.bendPose(now, member.id);
+      const unit: RenderUnit = {
+        id: member.id,
+        pos: index === 0 ? state.location.pos : (seats[index] ?? state.location.pos),
+        size: 1,
+        sprite: member.sprite,
+        name: member.name,
+        faction: 'party',
+        hp: member.hp,
+        maxHp: member.base.maxHp,
+        statuses: [],
+        fallen: false,
+        // A health bar over someone strolling round a village is noise.
+        showHealth: false,
+        shadow: true,
+        scale: partyScale(map.projection),
+        renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
+        offset: this.app.animator.offset(now, member.id, member.sprite),
+        clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
+        ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
+      };
+      if (!bend) return unit;
+      return {
+        ...unit,
+        facing: 1,
+        clip: 'stance',
+        bend: { heading: bend.heading, index: bend.index },
+        ...(this.app.animator.unitPose(now, member.id, member.sprite)?.flash
+          ? { flash: this.app.animator.unitPose(now, member.id, member.sprite)?.flash }
+          : {}),
+      };
+    });
 
     // Residents and background roles come from the walks, in their drawn
     // places; signs and other unbound NpcDefs stand where they are defined.
@@ -1163,9 +1282,11 @@ export class ExploreScene implements Scene {
       pathStart: route?.startIndex ?? 0,
       calmPath: true,
       aimArc: null,
-      emitters: ambient,
+      // A practice's casts (issue #284) play their own effects over the ambience.
+      emitters: [...ambient, ...this.app.animator.emitters(now)],
+      bendFx: this.app.animator.bendFx(now),
       floaters: [],
-      cameraNudge: { x: 0, y: 0 },
+      cameraNudge: this.app.animator.cameraNudge(now),
       activeUnitId: leader?.id ?? null,
       selectedUnitId: null,
       hoverTile: this.hover,
