@@ -3,6 +3,14 @@ import { FOREST_GRASS_REGIONS } from './forestRoadGround';
 
 const root = 'art/maps/forest-scene/';
 /**
+ * The forest road at G1 (ADR 0087): every ground piece and upright the board
+ * draws, redrawn at the characters' grain in the PixelLab G family from
+ * `art/source/forest-road-g1/` and packed by `scripts/art/forest-g1-pack.ts`.
+ * Each keeps the rectangle, anchor and footprint its pre-G1 art had, so the
+ * registration below did not move; only the songbirds stay in `root`.
+ */
+const g1 = 'art/maps/forest-g1/';
+/**
  * Water stays on the pond's nine cells (M3 grew the plus sign by (7,5)); the
  * patch widens east to keep the same 16-pixel dry shoreline matte round them.
  */
@@ -168,12 +176,19 @@ export const FOREST_THICKET_CELLS: readonly Vec2[] = [
   { x: 20, y: 9 },
 ];
 
+/**
+ * Two pines, picked per cell by a hash (never the RNG), so the wall is not one
+ * tree stamped: the warmer `pine` and the blue-green, fuller `pine-b`.
+ */
+export const PINE_URLS = [`${g1}pine.webp`, `${g1}pine-b.webp`] as const;
+export const pineUrl = ({ x, y }: Vec2): string =>
+  PINE_URLS[((Math.imul(x + 7, 73856093) ^ Math.imul(y + 3, 19349663)) >>> 0) % 2] ?? PINE_URLS[0];
 function pine({ x, y }: Vec2): SceneScenery {
   const height = 224,
     width = (height * 512) / 1149;
   return {
     id: `forest-pine-${x}-${y}`,
-    url: `${root}pine.webp`,
+    url: pineUrl({ x, y }),
     x: 768 + (x - y) * 64 - width * 0.51,
     y: (x + y + 1) * 32 - height * 0.99,
     width,
@@ -191,14 +206,15 @@ function thicketPine(cell: Vec2): SceneScenery {
 }
 
 /**
- * Art borrowed from the other scenes, by URL, so it costs no bytes: the village
- * tree, the village dwelling and the Quarry Gate's cut timber. Each keeps its
- * own aspect and its own painted foot anchor.
+ * The alder, the lodge and the deadfall were borrowed from the other scenes
+ * (the village tree, the village dwelling, the Quarry Gate's cut timber) until
+ * G1; they are now the forest's own, redrawn on the same silhouettes, so each
+ * keeps the borrowed art's aspect (`width`/`height` here) and painted foot anchor.
  */
 const BORROWED = {
-  alder: { url: 'art/maps/ba-dan-scene/village-tree.webp', width: 750, height: 732 },
-  lodge: { url: 'art/maps/ba-dan-scene/dwelling.webp', width: 602, height: 388 },
-  deadfall: { url: 'art/maps/quarry-gate-scene/cover-timber.webp', width: 224, height: 96 },
+  alder: { url: `${g1}alder.webp`, width: 750, height: 732 },
+  lodge: { url: `${g1}lodge.webp`, width: 602, height: 388 },
+  deadfall: { url: `${g1}deadfall.webp`, width: 224, height: 96 },
 } as const;
 const aspect = (art: keyof typeof BORROWED, width: number): number =>
   (width * BORROWED[art].height) / BORROWED[art].width;
@@ -340,7 +356,7 @@ function roadsideProp(prop: RoadsideProp, bankKeys: ReadonlySet<string>): SceneS
   const lift = bankKeys.has(`${x},${y}`) ? BANK_LIFT_PX : 0;
   return {
     id: `forest-roadside-${prop.id}`,
-    url: `${root}roadside-${prop.art}.webp`,
+    url: `${g1}${prop.art}.webp`,
     x: 768 + (x - y) * 64 - width / 2,
     y: (x + y + 1) * 32 - height * 0.94 - lift,
     width,
@@ -370,7 +386,7 @@ export const FOREST_FLOCK = {
 /** A low, passable flood-bank remnant beside the southern woodland path. */
 export const FOREST_BANK_NEST_REEDS: SceneScenery = {
   id: 'forest-bank-nest-reeds',
-  url: `${root}old-nest-reeds.webp`,
+  url: `${g1}nest-reeds.webp`,
   x: 516,
   y: 454,
   width: 120,
@@ -404,7 +420,7 @@ function bankReed(water: string, { x, y, art, height, foot }: ReedPlacement): Sc
     fy = y + (foot?.y ?? 0.5);
   return {
     id: `forest-${water}-reeds-${x}-${y}`,
-    url: `${root}bank-reed-${art}.webp`,
+    url: `${g1}bank-reed-${art}.webp`,
     x: 768 + (fx - fy) * 64 - width / 2,
     y: (fx + fy) * 32 - height,
     width,
@@ -500,7 +516,7 @@ export const FOREST_APRON_BANDS = [
   { x: 1235, y: 1162, width: 730, height: 182 },
 ] as const;
 export const FOREST_APRON_PIECES: readonly SceneImage[] = FOREST_APRON_BANDS.map((band, index) => ({
-  url: `${root}exterior-apron-${index}.webp`,
+  url: `${g1}exterior-apron-${index}.webp`,
   x: FOREST_EXTERIOR_APRON.x + band.x,
   y: FOREST_EXTERIOR_APRON.y + band.y,
   width: band.width,
@@ -527,6 +543,15 @@ export const rubbleHeapUrl = ({ x, y }: Vec2): string =>
   RUBBLE_HEAP_URLS[
     ((Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0) % RUBBLE_HEAP_URLS.length
   ] ?? RUBBLE_HEAP_URLS[0];
+/**
+ * The forest's own heaps at G1: the same hash, the same rectangle, the forest
+ * road's redrawn plate (`rubble-1`, `rubble-2`; its two cover cells draw no
+ * other). The Cutting and the Driller floor keep the shared plates above.
+ */
+export const forestRubbleHeap = (cell: Vec2): SceneImage => {
+  const heap = rubbleHeap(cell);
+  return { ...heap, url: heap.url.replace(root, g1) };
+};
 export const rubbleHeap = ({ x, y }: Vec2): SceneImage => ({
   url: rubbleHeapUrl({ x, y }),
   x: 768 + (x - y) * 64 - 64,
@@ -543,13 +568,13 @@ export const FOREST_ROAD_SCENE: MapScene = {
   // The shelf plate is painted at the full tier lift: `SHELF_RISE`, 16 of 64.
   reliefLift: 0.25,
   ground: [
-    { url: `${root}grass-north.webp`, ...FOREST_GRASS_REGIONS.north, wind: true },
-    { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south, wind: true },
-    { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
-    { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
-    ...FOREST_CREEK_POOLS.map((pool) => ({ url: `${root}creek-${pool.name}.webp`, ...pool.patch })),
-    { url: `${root}raised-shelf.webp`, ...FOREST_RAISED_SHELF },
-    ...FOREST_RUBBLE_CELLS.map(rubbleHeap),
+    { url: `${g1}grass-north.webp`, ...FOREST_GRASS_REGIONS.north, wind: true },
+    { url: `${g1}grass-south.webp`, ...FOREST_GRASS_REGIONS.south, wind: true },
+    { url: `${g1}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
+    { url: `${g1}pond-bank.webp`, ...FOREST_POND_PATCH },
+    ...FOREST_CREEK_POOLS.map((pool) => ({ url: `${g1}creek-${pool.name}.webp`, ...pool.patch })),
+    { url: `${g1}raised-shelf.webp`, ...FOREST_RAISED_SHELF },
+    ...FOREST_RUBBLE_CELLS.map(forestRubbleHeap),
     // Painted last: transparent everywhere the board can be walked.
     ...FOREST_APRON_PIECES,
   ],
