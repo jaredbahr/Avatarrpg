@@ -1,11 +1,11 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { enemyScale } from '../anim/actorScale';
+import { enemyScale, partyScale } from '../anim/actorScale';
 import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
 
 it('sizes only the small animal discovery below adult NPCs', () => {
   expect(npcPresentationScale('world.turtle_ducks', 'oblique')).toBe(0.6);
-  for (const sprite of ['npc.elder', 'npc.kid', 'world.runoff_marker', 'world.tea_station']) {
+  for (const sprite of ['world.runoff_marker', 'world.tea_station']) {
     expect(npcPresentationScale(sprite, 'oblique')).toBe(1.5);
     expect(npcPresentationScale(sprite, undefined)).toBe(1);
   }
@@ -16,12 +16,23 @@ it('sizes only the small animal discovery below adult NPCs', () => {
   expect(animal).toBeLessThan(35);
 });
 
-it('brings the painted placeholder people down to the illustrated residents’ height', () => {
-  for (const sprite of ['npc.guard', 'npc.household', 'npc.hanru']) {
-    expect(npcPresentationScale(sprite, 'oblique')).toBe(1.4);
-    expect(npcPresentationScale(sprite, undefined)).toBe(1);
+it('brings the painted placeholder person down to the old illustrated residents’ height', () => {
+  expect(npcPresentationScale('npc.hanru', 'oblique')).toBe(1.4);
+  expect(npcPresentationScale('npc.hanru', undefined)).toBe(1);
+});
+
+it('stands every resident on a G sheet at the party’s scale (issue #284)', () => {
+  for (const sprite of [
+    'npc.elder',
+    'npc.shopkeeper',
+    'npc.kid',
+    'npc.dorin',
+    'npc.guard',
+    'npc.household',
+  ]) {
+    expect(npcPresentationScale(sprite, 'oblique')).toBe(partyScale('oblique'));
+    expect(npcPresentationScale(sprite, undefined)).toBe(partyScale(undefined));
   }
-  expect(npcPresentationScale('npc.dorin', 'oblique')).toBe(1.5);
 });
 
 it('uses the existing forest attacker at both crossings without changing their areas', () => {
@@ -40,8 +51,9 @@ it('uses the existing forest attacker at both crossings without changing their a
     );
   }
   expect(map.npcs.find((npc) => npc.id === 'duck_nest')?.pos).toEqual({ x: 2, y: 9 });
+  // A person on a G sheet (the relief watch, issue #284) stands at the party's scale anywhere.
   expect(triggerPresentationScale({ id: 'quarry_gate', projection: 'oblique' }, 'npc.guard')).toBe(
-    1,
+    partyScale('oblique'),
   );
   expect(
     triggerPresentationScale({ id: 'ambush_road', projection: 'oblique' }, 'unit.enemy.thug'),

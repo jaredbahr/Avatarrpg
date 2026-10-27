@@ -1,0 +1,34 @@
+{
+  "south": {
+    "idle": "idle-soft-south-s8102",
+    "walk": "walk-basket-south-s8101"
+  },
+  "south-east": {
+    "idle": "idle-soft-south-east-s8102",
+    "walk": "walk-basket-south-east-s8101"
+  },
+  "east": {
+    "idle": "idle-soft-east-s8102",
+    "walk": "walk-basket-east-s8101"
+  },
+  "north-east": {
+    "idle": "idle-soft-north-east-s8102",
+    "walk": "walk-basket-north-east-s8101"
+  },
+  "north": {
+    "idle": "idle-soft-north-s8102",
+    "walk": "walk-basket-north-s8101"
+  },
+  "north-west": {
+    "idle": "idle-soft-north-west-s8102",
+    "walk": "walk-basket-north-west-s8101"
+  },
+  "west": {
+    "idle": "idle-soft-west-s8102",
+    "walk": "walk-basket-west-s8101"
+  },
+  "south-west": {
+    "idle": "idle-soft-south-west-s8102",
+    "walk": "walk-basket-south-west-s8101"
+  }
+}

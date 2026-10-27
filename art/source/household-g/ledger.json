@@ -1,0 +1,734 @@
+{
+  "character": "household",
+  "task": "ba-dan-residents-g (issue #284)",
+  "balance_before": 9659.0,
+  "jobs": [
+    {
+      "name": "south-edit-s7101",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "bed61bc0-04ba-4466-bd86-d494c5e3288d",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "no_background": true,
+        "seed": 7101
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png (Kaya G base v2, character e8c6638a south rotation)"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_before": 9684.0,
+      "balance_after": 9659.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 53,
+      "balance_delta_shared_account": 25.0,
+      "verdict": "used"
+    },
+    {
+      "name": "rot-south-edit-s7101-s7111",
+      "endpoint": "/create-character-pro-flash",
+      "job": "0a24011e-2bb9-4ee7-9b83-4f310aee6ec7",
+      "character_id": "b258d3ac-e1c2-4c26-8f3e-49f3bdabb706",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "name": "household G base (Ba Dan resident, from Kaya G south edit south-edit-s7101)",
+        "view": "high top-down",
+        "seed": 7111,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-s7101/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 267.0,
+      "balance_before": 9536.0,
+      "balance_after": 9269.0,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 164,
+      "verdict": "used"
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    },
+    {
+      "name": "idle-south-east-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "08d60d06-4eb5-491f-b065-fb622bef7d33",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/idle-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 67.0,
+      "balance_before": 9181.999999999998,
+      "balance_after": 9114.999999999998,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 70,
+      "verdict": "superseded: 1.5x sway, boil 33-52%"
+    },
+    {
+      "name": "walk-basket-south-east-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ac138d72-127a-47a5-aa59-a1832328ec99",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/walk-basket-south-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 76.5,
+      "balance_before": 9181.999999999998,
+      "balance_after": 9105.499999999998,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 123,
+      "verdict": "used (probe)"
+    },
+    {
+      "name": "idle-soft-south-east-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "b423e121-3b64-47b8-9cbc-725d74984240",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 146.0,
+      "balance_before": 9032.199999999999,
+      "balance_after": 8886.2,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 136,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-basket-south-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "d022b170-343f-48b1-91a6-befbccca6679",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/walk-basket-south.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 108.1,
+      "balance_before": 8767.2,
+      "balance_after": 8659.1,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 104,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-basket-north-west-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8b8618b1-fbad-4d99-966e-06872dd0e2e3",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/walk-basket-north-west.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 120.1,
+      "balance_before": 8742.2,
+      "balance_after": 8622.1,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 130,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-basket-north-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "343c950d-af32-4d52-abe5-5ebcfacd289e",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/walk-basket-north.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 153.1,
+      "balance_before": 8767.2,
+      "balance_after": 8614.1,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 148,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-basket-north-east-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ef98e402-3a3c-469e-9167-e13a70cebc44",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/walk-basket-north-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 191.1,
+      "balance_before": 8767.2,
+      "balance_after": 8576.1,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 153,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-south-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "17da000f-655a-4cff-bc96-d03087980c81",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 179.1,
+      "balance_before": 8740.2,
+      "balance_after": 8561.1,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 159,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-basket-south-west-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4c1fab71-32b4-45e4-976b-68a7be3c6793",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/walk-basket-south-west.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 214.9,
+      "balance_before": 8742.2,
+      "balance_after": 8527.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 186,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-east-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "499aff93-8979-4ed6-baf7-244c633dd759",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 131.8,
+      "balance_before": 8659.1,
+      "balance_after": 8527.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-north-east-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "7d930b85-8595-4e41-a9be-fbecd560a37c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/idle-soft-north-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 103.8,
+      "balance_before": 8622.1,
+      "balance_after": 8518.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 79,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-basket-west-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "f8ad62a6-e6ce-4838-ab3e-63ee70813190",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/walk-basket-west.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 229.9,
+      "balance_before": 8742.2,
+      "balance_after": 8512.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 217,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-north-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ffdb85de-fe76-4eba-b324-9f95bae53dcb",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/idle-soft-north.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 107.8,
+      "balance_before": 8614.1,
+      "balance_after": 8506.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-basket-east-s8101",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "13d3feac-45b2-417b-aae4-89305ccfb626",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8101,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-basket-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 236.9,
+      "balance_before": 8740.2,
+      "balance_after": 8503.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 243,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-west-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "695c8c4a-1de5-4ad7-8c21-e51613d17306",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/idle-soft-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 63.8,
+      "balance_before": 8561.1,
+      "balance_after": 8497.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 95,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-south-west-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "18ae0359-f0d3-4c59-aab2-d555892e73d9",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/idle-soft-south-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 46.0,
+      "balance_before": 8527.3,
+      "balance_after": 8481.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 127,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-north-west-s8102",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "5712c3c4-8d5c-4816-b32d-6172b51fa5e8",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8102,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/idle-soft-north-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 141.8,
+      "balance_before": 8576.1,
+      "balance_after": 8434.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 189,
+      "verdict": "used"
+    }
+  ],
+  "balance_after": 7419.5,
+  "gens_total": 62.8,
+  "note": "gens = billed usage of each job. The balance is shared with other sessions on the account, so balance_before/after deltas include their spend."
+}

@@ -18,16 +18,6 @@ import { seatHere } from '../world/waiting';
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
 type Visit = 'otter' | 'tea' | 'shrine' | 'practice' | 'canopy' | 'wait';
-/**
- * How the stage draws each resident's NpcDef sprite: the painted villager
- * figure and palette it has always used here. Placeholder art until the
- * character pipeline (ADR 0047 §7); an unknown sprite gets the generic figure.
- */
-const LOOKS: Readonly<Record<string, readonly [string, string]>> = {
-  'npc.elder': ['elder', 'neutral'],
-  'npc.dorin': ['guard', 'earth'],
-  'npc.kid': ['kid', 'air'],
-};
 export class VillageLife {
   private stage: VillageLayer;
   private activity: Activity | null = null;
@@ -367,12 +357,30 @@ export class VillageLife {
       if (near) this.near.add(who.id);
       else this.near.delete(who.id);
       const since = now - (this.greetings.get(who.id) ?? -Infinity);
-      const [variant, palette] = LOOKS[who.sprite] ?? [who.sprite, 'neutral'];
+      // A resident on a G sheet (issue #284) draws from it as the party does,
+      // at the party's figure scale: its heading walk, else the idle it settled
+      // into. Anyone else keeps the painted villager figure.
+      if (who.clip) {
+        actors.push({
+          id: who.id,
+          pos: at,
+          variant: who.sprite,
+          sprite: who.sprite,
+          palette: 'neutral',
+          facing: who.facing,
+          motion: who.walking ? 'walk' : 'idle',
+          locomotionClip: who.clip,
+          elapsed: who.walking ? riversideWalkTime(who.clipTime) : who.clipTime,
+          label: near ? who.name : '',
+          alpha: who.alpha,
+        });
+        return;
+      }
       actors.push({
         id: who.id,
         pos: at,
-        variant,
-        palette,
+        variant: who.sprite,
+        palette: 'neutral',
         villager: true,
         facing: who.walking ? who.facing : head && head.x < at.x ? -1 : 1,
         motion: who.walking ? 'walk' : since < WAVE_DURATION ? 'wave' : 'idle',

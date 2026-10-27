@@ -1,0 +1,162 @@
+{
+  "south": {
+    "idle": {
+      "heights": [84, 84, 84, 84],
+      "foot_rows": [157, 157, 157, 157],
+      "boil": [0.215, 0.383, 0.294, 0.316],
+      "palette_drift": [1.1, 1.5, 4.9, 5.0],
+      "frame0_vs_rotation_boil": 0.173
+    },
+    "walk": {
+      "heights": [89, 89, 87, 84, 90, 89, 86, 85],
+      "foot_rows": [162, 161, 160, 157, 163, 161, 159, 158],
+      "foot_spread": [32.0, 33.0, 34.0, 35.0, 32.0, 33.0, 35.0, 37.0],
+      "palette_drift": [5.4, 5.1, 1.7, 6.6, 1.1, 3.7, 0.7, 3.7],
+      "stride_axis_off_deg": 83.7,
+      "planted_slide_px": [0.3, 0.5, 0.2, 0.5, 0.1]
+    },
+    "rotation_height": 84,
+    "kaya_height": 118,
+    "rotation_foot_row": 157
+  },
+  "south-east": {
+    "idle": {
+      "heights": [85, 84, 85, 85],
+      "foot_rows": [159, 159, 159, 159],
+      "boil": [0.278, 0.325, 0.295, 0.234],
+      "palette_drift": [8.2, 7.4, 7.3, 8.4],
+      "frame0_vs_rotation_boil": 0.213
+    },
+    "walk": {
+      "heights": [84, 84, 83, 87, 90, 88, 86, 84],
+      "foot_rows": [158, 157, 156, 160, 164, 161, 160, 159],
+      "foot_spread": [40.0, 37.0, 30.0, 21.0, 13.0, 12.0, 17.0, 27.0],
+      "palette_drift": [10.3, 8.9, 8.9, 10.2, 10.4, 6.5, 9.3, 10.9],
+      "stride_axis_off_deg": 31.3,
+      "planted_slide_px": [1.0, 6.0, 5.1, 4.0, 2.7, 3.0]
+    },
+    "rotation_height": 85,
+    "kaya_height": 121,
+    "rotation_foot_row": 159
+  },
+  "east": {
+    "idle": {
+      "heights": [85, 84, 85, 85],
+      "foot_rows": [160, 160, 160, 160],
+      "boil": [0.184, 0.18, 0.249, 0.126],
+      "palette_drift": [4.6, 9.7, 7.0, 3.6],
+      "frame0_vs_rotation_boil": 0.091
+    },
+    "walk": {
+      "heights": [85, 86, 85, 86, 85, 85, 85, 84],
+      "foot_rows": [160, 160, 159, 160, 160, 160, 160, 160],
+      "foot_spread": [30.0, 28.0, 21.0, 19.0, 30.0, 31.0, 22.0, 14.0],
+      "palette_drift": [5.9, 9.5, 7.9, 10.1, 5.1, 6.8, 6.3, 6.2],
+      "stride_axis_off_deg": 22.6,
+      "planted_slide_px": [0.4, 3.0, 1.8, 2.9, 4.9, 2.2]
+    },
+    "rotation_height": 85,
+    "kaya_height": 121,
+    "rotation_foot_row": 160
+  },
+  "north-east": {
+    "idle": {
+      "heights": [84, 84, 84, 84],
+      "foot_rows": [157, 157, 157, 157],
+      "boil": [0.193, 0.28, 0.232, 0.204],
+      "palette_drift": [5.9, 0.7, 0.4, 0.8],
+      "frame0_vs_rotation_boil": 0.068
+    },
+    "walk": {
+      "heights": [88, 86, 84, 84, 84, 84, 83, 84],
+      "foot_rows": [161, 159, 157, 157, 157, 157, 157, 158],
+      "foot_spread": [13.0, 16.0, 22.0, 36.0, 41.0, 41.0, 33.0, 24.0],
+      "palette_drift": [5.1, 3.8, 3.2, 3.5, 4.0, 3.7, 4.9, 5.3],
+      "stride_axis_off_deg": 31.5,
+      "planted_slide_px": [1.9, 3.8, 1.1, 1.3]
+    },
+    "rotation_height": 84,
+    "kaya_height": 115,
+    "rotation_foot_row": 157
+  },
+  "north": {
+    "idle": {
+      "heights": [84, 84, 84, 84],
+      "foot_rows": [157, 157, 157, 157],
+      "boil": [0.168, 0.214, 0.187, 0.012],
+      "palette_drift": [2.1, 6.8, 6.4, 2.0],
+      "frame0_vs_rotation_boil": 0.045
+    },
+    "walk": {
+      "heights": [90, 87, 84, 86, 88, 87, 84, 87],
+      "foot_rows": [163, 160, 157, 159, 161, 160, 157, 160],
+      "foot_spread": [30.0, 30.0, 31.0, 30.0, 31.0, 31.0, 33.0, 33.0],
+      "palette_drift": [7.3, 7.3, 5.4, 8.5, 5.0, 1.4, 8.1, 7.9],
+      "stride_axis_off_deg": 90.0,
+      "planted_slide_px": [0.8, 1.1, 1.2]
+    },
+    "rotation_height": 84,
+    "kaya_height": 113,
+    "rotation_foot_row": 157
+  },
+  "north-west": {
+    "idle": {
+      "heights": [84, 84, 83, 84],
+      "foot_rows": [157, 157, 157, 157],
+      "boil": [0.239, 0.289, 0.231, 0.092],
+      "palette_drift": [5.8, 4.1, 5.4, 5.9],
+      "frame0_vs_rotation_boil": 0.074
+    },
+    "walk": {
+      "heights": [85, 83, 83, 84, 86, 86, 84, 84],
+      "foot_rows": [158, 157, 157, 158, 159, 159, 157, 157],
+      "foot_spread": [39.0, 36.0, 29.0, 17.0, 13.0, 14.0, 21.0, 29.0],
+      "palette_drift": [5.3, 5.7, 10.3, 10.6, 9.6, 10.1, 8.9, 8.2],
+      "stride_axis_off_deg": 27.2,
+      "planted_slide_px": [3.2, 3.2, 0.7, 2.0, 5.5]
+    },
+    "rotation_height": 84,
+    "kaya_height": 115,
+    "rotation_foot_row": 157
+  },
+  "west": {
+    "idle": {
+      "heights": [85, 86, 84, 86],
+      "foot_rows": [160, 160, 160, 160],
+      "boil": [0.133, 0.24, 0.194, 0.24],
+      "palette_drift": [4.0, 4.3, 6.1, 5.6],
+      "frame0_vs_rotation_boil": 0.056
+    },
+    "walk": {
+      "heights": [85, 85, 85, 85, 84, 84, 85, 85],
+      "foot_rows": [160, 160, 160, 160, 159, 158, 158, 159],
+      "foot_spread": [29.0, 27.0, 19.0, 21.0, 30.0, 28.0, 18.0, 16.0],
+      "palette_drift": [9.1, 9.3, 9.2, 10.5, 9.8, 11.5, 12.4, 13.0],
+      "stride_axis_off_deg": null,
+      "planted_slide_px": [2.9, 4.1, 5.6, 3.7, 1.3, 4.2]
+    },
+    "rotation_height": 85,
+    "kaya_height": 122,
+    "rotation_foot_row": 160
+  },
+  "south-west": {
+    "idle": {
+      "heights": [83, 84, 83, 83],
+      "foot_rows": [157, 157, 157, 157],
+      "boil": [0.289, 0.283, 0.25, 0.205],
+      "palette_drift": [4.4, 7.9, 7.8, 6.8],
+      "frame0_vs_rotation_boil": 0.076
+    },
+    "walk": {
+      "heights": [89, 87, 86, 82, 84, 84, 84, 83],
+      "foot_rows": [163, 161, 160, 157, 158, 157, 157, 157],
+      "foot_spread": [16.0, 17.0, 24.0, 36.0, 42.0, 40.0, 36.0, 25.0],
+      "palette_drift": [6.1, 5.5, 7.5, 9.8, 9.5, 10.4, 10.1, 10.0],
+      "stride_axis_off_deg": 30.2,
+      "planted_slide_px": [3.5, 3.0, 4.5, 4.2, 2.2]
+    },
+    "rotation_height": 83,
+    "kaya_height": 122,
+    "rotation_foot_row": 157
+  }
+}

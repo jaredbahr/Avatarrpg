@@ -1618,7 +1618,10 @@ export function validateContent(
       continue;
     }
     if (entry.kind !== 'sheet') continue;
+    // A resident's sheet (`npc.*`, issue #284) only stands and walks on the
+    // map; it is never cast in combat, so it needs no cast.
     for (const clip of REQUIRED_CLIPS) {
+      if (clip === 'cast' && key.startsWith('npc.')) continue;
       if (!entry.clips[clip]) problems.push(`asset ${key}: sheet has no ${clip} clip`);
     }
     // Eight-way locomotion is a declared capability, never inferred: the

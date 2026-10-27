@@ -69,10 +69,12 @@ import {
   paintTerrain,
 } from '../painters/tiles';
 import { npcPose, sprites } from '../spriteCache';
+import { npcPipLift } from '../npcPip';
 import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
   floaterScale,
+  npcClip,
   unitMarkerGroundPoint,
   type AimArc,
   type MapView,
@@ -1296,7 +1298,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.globalAlpha = alpha;
       const { pool } = groundTreatment(actorGrounding(view.scene), {
         castStrength: 1,
-        defaultPool: entry.kind === 'image',
+        defaultPool: entry.kind !== 'painter',
       });
       if (pool) {
         const s = box.size * scale;
@@ -1306,13 +1308,19 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.translate(footX, footY + lift);
       ctx.rotate(npc.lean ?? 0);
       const poseScale = npc.poseScale ?? 1;
-      ctx.scale(scale * poseScale * (npc.facing ?? 1), scale * poseScale);
+      const clip = npcClip(npc);
+      // An eight-way sheet draws its own west and diagonals; only its legacy clips mirror.
+      const facing =
+        entry.kind === 'sheet' && entry.facing === 'both' && authoredForBothSides(clip)
+          ? 1
+          : (npc.facing ?? 1);
+      ctx.scale(scale * poseScale * facing, scale * poseScale);
       ctx.translate(-footX, -footY);
       const frame =
         entry.kind === 'sheet'
           ? sheets.frame(
               npc.sprite,
-              npc.walking ? 'walk' : 'idle',
+              clip,
               npc.clipTime ?? 0,
               undefined,
               box.size * dpr * scale,
@@ -1348,7 +1356,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.beginPath();
       ctx.arc(
         box.x + box.size * width * 0.5,
-        footY + lift - box.size * (FOOT_LINE - 0.08) * scale,
+        footY + lift - box.size * npcPipLift(npc.sprite, scale),
         box.size * 0.07,
         0,
         Math.PI * 2,
@@ -1736,7 +1744,7 @@ export class Canvas2DBackend implements RenderBackend {
       const foot = { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size };
       const frame = sheets.frame(
         npc.sprite,
-        npc.walking ? 'walk' : 'idle',
+        npcClip(npc),
         npc.clipTime ?? 0,
         undefined,
         box.size * dpr * scale,
@@ -1745,7 +1753,7 @@ export class Canvas2DBackend implements RenderBackend {
       const entry = resolveAsset(npc.sprite);
       const { band } = groundTreatment(this.grounding, {
         castStrength: 1,
-        defaultPool: entry.kind === 'image',
+        defaultPool: entry.kind !== 'painter',
       });
       if (frame) {
         const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
