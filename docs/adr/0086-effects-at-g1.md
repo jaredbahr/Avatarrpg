@@ -53,11 +53,13 @@ texel is never blended with its neighbour.
    burning surface, the rim white: the element palette's pinks read as salmon at this size); water `#22566e #3e8fb0
 #7ec8e3 #cdeefb`; lightning and ice on water's light end; earth on the neutral dark and the road browns
    `#4a3a2c #7a5f3e #b39064 #d8cbb0` (earth bends stone, not the nation's green); metal on the wall and stone terrain;
-   air `#9a8e72 #e8dcc0 #fdf6e3`; the flask on the enemy clay. With the ink that is at most five colours a cel. The
-   art bible's effects contract asks for thin dark-brown ink, so every effect keeps the generator's 1 px `#1b1410`
-   outline, interrupted where the key light catches it, as ADR 0085 asks: an outline pixel whose clear neighbours are
-   all above or left of it gives way to the ramp's darkest tone, and so does the outline of any speck of six pixels or
-   fewer, which would otherwise be all ink (`interruptInk`).
+   air `#9a8e72 #e8dcc0 #fdf6e3`; the flask on the enemy clay. With the ink that is at most five colours a cel.
+   **Light carries no ink** (owner review on #291: ink specks made the fire burst read as burnt debris). Fire,
+   lightning, water, ice and air (`EMISSIVE`) never take `#1b1410`; their outer edge is their own darkest tone (deep
+   red for fire). Stone, metal and the flask keep the art bible's thin dark-brown ink, interrupted where the key light
+   catches it, as ADR 0085 asks: an outline pixel whose clear neighbours are all above or left of it gives way to the
+   ramp's darkest tone, and so does the outline of any speck of six pixels or fewer (`interruptInk`). Last, every
+   8-connected piece of one or two pixels is cleared as clean-up debris (`dropOrphans`).
 5. Bend cels go back onto the page at 2 x 2 page px an art px, in exactly the frames the page JSON already has, so
    `bend-effects.json`, pivots, facings, segments, sockets and holds are untouched and `bend-effects.ts` stays the
    source of the data. The page is lossless WebP (method 6, exact alpha); its decoded cels are re-pinned in
@@ -66,6 +68,8 @@ texel is never blended with its neighbour.
 **Particle cells are pixel sprites on a ladder** (`src/render/fx/pixelCells.ts`). Each shape is rasterised at 2, 3, 4,
 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28 and 32 px into its atlas square: white body (the tint's colour exactly), a fixed
 grey shadow side, `#1b1410` ink from 6 px up (lower right only at 6–7 px), none below, where it would be all outline.
+Each square also holds the same ladder without ink, which the fire, water and air palettes draw from
+(`inkedPalette`), so light never carries a dark outline; earth and the rest draw the inked one.
 A particle draws the rung nearest its size by ratio at one art px a world px; it never scales a rung. The glow is a
 solid core and one hard ring at 104/255, not a gradient. Shapes, sizes, counts, tints, blends, timing and the
 emitters' seeds are unchanged; a particle's drawn size moves by at most half a rung step.
@@ -74,13 +78,14 @@ emitters' seeds are unchanged; a particle's drawn size moves by at most half a r
 from 0.3 to 2.2 tiles, and the 96 px master scaled nearest to half size drops every other pixel and comes apart into
 specks (seen in the first combat capture). So each cel is resampled once to the whole number of world pixels it
 draws at: a pixel is solid when 40% of its box in the master is, and takes the colour most of that box has, the ink
-counting one and a half, so the outline survives; larger than the master it is plain nearest. Results are cached by
+counting one and a half, so the outline survives; larger than the master it is plain nearest. A reduction then
+clears pieces of one or two pixels, the same orphan pass as the packer's. Results are cached by
 cel, frame and size (64 at most, on both backends) and drawn unscaled: on WebGL each cel is a pooled sprite between
 the strokes and the shapes rather than a particle, since its texture is its own.
 
 **Strokes are rasterised at the world's grain** (`src/render/fx/pixelStrokes.ts`). Each emitter's sampled shapes are
 drawn into a pooled canvas at one pixel a world pixel, then hardened: a pixel at least half covered becomes the
-emitter's colour or its ink, whichever it is nearer, at the shape's fade in eighths; everything else clears. Both
+emitter's colour or its ink (none for the fire, water and air palettes), whichever it is nearer, at the shape's fade in eighths; everything else clears. Both
 backends draw that raster nearest-sampled where the vector paths went (Canvas `drawImage`, Pixi one pooled sprite an
 emitter on a `CanvasSource`). Geometry and timing come from the same samplers.
 
@@ -91,12 +96,12 @@ particles where they already drew; reduce motion, which still collapses the chor
 
 ## Measured
 
-| what                       |      before |     after |
-| -------------------------- | ----------: | --------: |
-| `bend-fx.webp`             |    54,376 B |   6,374 B |
-| five element cel sheets    | 1,497,073 B | 117,541 B |
-| `fx` family (budget 4 MiB) |     1.52 MB |   0.13 MB |
-| precache (budget 25 MB)    |    24.74 MB |  23.38 MB |
+| what                       |      before |    after |
+| -------------------------- | ----------: | -------: |
+| `bend-fx.webp`             |    54,376 B |  6,086 B |
+| five element cel sheets    | 1,497,073 B | 98,469 B |
+| `fx` family (budget 4 MiB) |     1.52 MB |  0.13 MB |
+| precache (budget 25 MB)    |    24.74 MB | 23.38 MB |
 
 ## Consequences
 
