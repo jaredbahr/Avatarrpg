@@ -1,0 +1,71 @@
+{
+  "character": "dorin",
+  "task": "ba-dan-residents-g (issue #284)",
+  "balance_before": 9605.0,
+  "jobs": [
+    {
+      "name": "south-edit-tex-s7601",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "d9f41ad9-9abb-48d0-bf5f-4506c688b6bd",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, earnest apologetic expression, oversized long green provincial guard coat with a brass clasp and a small brass key hanging at the collar, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head",
+        "no_background": true,
+        "seed": 7601
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png (Kaya G base v2, character e8c6638a south rotation)"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_delta_shared_account": 28.0,
+      "balance_before": 9633.0,
+      "balance_after": 9605.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 45
+    },
+    {
+      "name": "rot-south-edit-tex-s7601-s7611",
+      "endpoint": "/create-character-pro-flash",
+      "job": "fe155c10-de50-481a-8e81-9a9bff75335e",
+      "character_id": "a17fe8df-1b6b-4155-9fd2-e4614107ca67",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, earnest apologetic expression, oversized long green provincial guard coat with a brass clasp and a small brass key hanging at the collar, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head",
+        "name": "dorin G base (Ba Dan resident, from Kaya G south edit south-edit-tex-s7601)",
+        "view": "high top-down",
+        "seed": 7611,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7601/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 286.0,
+      "balance_before": 9536.0,
+      "balance_after": 9250.0,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 182
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    }
+  ],
+  "balance_after": null,
+  "gens_total": 11.8
+}
