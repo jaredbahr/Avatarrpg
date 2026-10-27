@@ -247,7 +247,8 @@ export class App {
   }
 
   /**
-   * Combat warms the painted bend effects at its start: the data, then every
+   * Combat warms the painted bend effects at its start, and a map with a
+   * bending practice ground on arrival: the data, then every
    * page decoded, and only then may a cast bend (ADR 0055, step 7). Until
    * then, and for the session if any of it fails, casts stay legacy.
    */
@@ -260,6 +261,11 @@ export class App {
         if (pages.every(Boolean)) this.bendFx = fx;
       })
       .catch(() => undefined);
+  }
+
+  /** Whether the painted bend effects are in, so a cast may bend (see `preloadBendFx`). */
+  get bendFxReady(): boolean {
+    return this.bendFx !== undefined;
   }
 
   private cancelRoute(): void {
