@@ -53,6 +53,8 @@ describe.each(names)('%s', (name) => {
  */
 const truePins = readProjectionPins(TRUE_PINS);
 const dressingPins = readProjectionPins(DRESSING_PINS);
+// ADR 0085: the pieces whose silhouette is now a #288 G1 object, pinned on their new legs.
+const g1Pins = readProjectionPins('art/source/ba-dan-route-a/pins-g1.json');
 
 const PIN_OF: Record<string, [Record<string, (typeof truePins)[string]>, string]> = {
   'gao-house': [truePins, 'true-merchant-house-4x3'],
@@ -71,6 +73,23 @@ BA_DAN_DRESSING.forEach(([image], i) => {
   // The well's round curb has no tile line to measure; a piece with no sprite is part of the ground.
   if (image !== 'village-well' && BA_DAN_UPRIGHTS[`d${i}`]) PIN_OF[`d${i}`] = [dressingPins, image];
 });
+for (const id of Object.keys(g1Pins)) PIN_OF[id] = [g1Pins, id];
+// ADR 0085: the shop stack is now a rack over two crates, with no ground edge longer than a crate's side (13 px), so it
+// has no tile line to measure; its axis is its #288 blockout's.
+const UNPINNED = new Set(['d8']);
+delete PIN_OF.d8;
+
+/**
+ * A line through two feet is only as exact as the feet: each is a whole pixel, so two of them `span` px apart fix its
+ * slope to about 2 / span. Over a long line that is under the degree; over a small table's short side (about 20 px) it
+ * is several, so the tolerance is never tighter than the measurement.
+ */
+function tolerance(direction: { feet: readonly (readonly number[])[] } | { fit: unknown }): number {
+  if (!('feet' in direction)) return TOLERANCE_DEGREES;
+  const [a, b] = direction.feet.map(([lo, hi]) => ((lo ?? 0) + (hi ?? 0)) / 2);
+  const span = Math.abs((b ?? 0) - (a ?? 0));
+  return Math.max(TOLERANCE_DEGREES, (Math.atan(2 / span) * 180) / Math.PI);
+}
 
 interface FrozenPiece {
   id: string;
@@ -126,11 +145,12 @@ describe.each(Object.keys(PIN_OF))('upright %s', (id) => {
   it('is on the tile lines as shipped', async () => {
     const [pins, name] = PIN_OF[id]!;
     const m = measurePiece(pins, name, await onCanvas(id), false);
+    const spec = pins[name]!.measure!;
     expect(Math.abs(offTile(m.left)), `left ${m.left.degrees}`).toBeLessThanOrEqual(
-      TOLERANCE_DEGREES,
+      tolerance(spec.left),
     );
     expect(Math.abs(offTile(m.right)), `right ${m.right.degrees}`).toBeLessThanOrEqual(
-      TOLERANCE_DEGREES,
+      tolerance(spec.right),
     );
   });
 });
@@ -138,7 +158,8 @@ describe.each(Object.keys(PIN_OF))('upright %s', (id) => {
 it('has a ground measurement for every upright that stands on a tile line', () => {
   // Trees stand on a point; the bridge's near layer is cut from the bridge.
   const measured = Object.keys(BA_DAN_UPRIGHTS).filter(
-    (id) => !id.startsWith('tree-') && id !== 'canal-bridge-front' && id !== 'd0',
+    (id) =>
+      !id.startsWith('tree-') && id !== 'canal-bridge-front' && id !== 'd0' && !UNPINNED.has(id),
   );
   expect(measured.length).toBeGreaterThan(20);
   for (const id of measured) expect(PIN_OF[id], `${id} has no projection pin`).toBeDefined();
