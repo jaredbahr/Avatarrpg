@@ -672,8 +672,49 @@
         "generations": 3.0
       },
       "secs": 162
+    },
+    {
+      "name": "walk-spear-calm-east-s8203",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "e89465b1-1fc8-4493-8cc7-03deada9cfc4",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8203,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-spear-calm-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 16.0,
+      "balance_before": 7457.5,
+      "balance_after": 7441.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 121
     }
   ],
-  "balance_after": 8194.5,
-  "gens_total": 59.8
+  "balance_after": 7441.5,
+  "gens_total": 62.8
 }
