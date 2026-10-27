@@ -127,6 +127,7 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } from './canvas2d';
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
+import { scaleModeFor } from '../pixelSampling';
 import {
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
@@ -1430,6 +1431,7 @@ export class PixiBackend implements RenderBackend {
     );
     this.backdropSprite.width = camera.worldWidth + (left + right) * camera.scale;
     this.backdropSprite.height = camera.worldHeight + (top + bottom) * camera.scale;
+    this.sampleArt(this.backdropSprite, 1);
     return true;
   }
 
@@ -1460,6 +1462,7 @@ export class PixiBackend implements RenderBackend {
       sprite.position.set(chunk.x, chunk.y);
       sprite.width = chunk.width;
       sprite.height = chunk.height;
+      this.sampleArt(sprite, camera.scale);
     }
     const opacities = sceneryOpacities(scene?.scenery ?? [], view, camera, this.squareFootprints);
     for (const item of scene?.scenery ?? []) {
@@ -1487,6 +1490,7 @@ export class PixiBackend implements RenderBackend {
       sprite.width = item.width;
       sprite.height = item.height;
       sprite.scale.x = Math.abs(sprite.scale.x) * (item.flip ? -1 : 1);
+      this.sampleArt(sprite, camera.scale);
       sprite.skew.x = item.wind && !view.reducedMotion ? -sway(view.time, item) : 0;
       // A figure level with a piece of frontage stands in front of it, as on
       // Canvas 2D (depthOrder.ts).
@@ -2449,6 +2453,18 @@ export class PixiBackend implements RenderBackend {
   /* ---------------------------------------------------------------- */
 
   /**
+   * Nearest-neighbour where one texel of the sprite's art covers a whole
+   * number of device pixels, smoothed otherwise (ADR 0088, `pixelSampling`).
+   * `worldScale` is the CSS scale of the sprite's parent layer: the camera's
+   * for the world layers, 1 for a sprite placed in screen space.
+   */
+  private sampleArt(sprite: Sprite, worldScale: number): void {
+    const source = sprite.texture.source;
+    const mode = scaleModeFor(Math.abs(sprite.scale.x) * worldScale * this.viewport.dpr);
+    if (source.scaleMode !== mode) source.scaleMode = mode;
+  }
+
+  /**
    * A texture per cached sprite canvas, least-recently-used first out. The
    * global Pixi cache is skipped: it keys by the canvas object, and a texture
    * destroyed here must not be handed back for the same canvas later.
@@ -2588,6 +2604,7 @@ export class PixiBackend implements RenderBackend {
         sprite.position.set(footX, y + FOOT_LINE * TILE);
         sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale * poseScale;
         sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale * poseScale;
+        this.sampleArt(sprite, camera.scale);
       } else {
         const art = sprites.get(npc.sprite, px * scale, npcPose(npc), width);
         // A painter or single-image resident has no frame; its band is the drawn sprite's soles.
@@ -2778,6 +2795,7 @@ export class PixiBackend implements RenderBackend {
         sprite.width = placed.w;
         sprite.height = placed.h;
         sprite.scale.x = Math.abs(sprite.scale.x) * (bend ? 1 : drawFacing);
+        this.sampleArt(sprite, camera.scale);
       } else {
         const art = sprites.get(unit.sprite, px * scale, { facing }, unit.size, heightTiles);
         bandArt = spriteBandArt(art, heightTiles);

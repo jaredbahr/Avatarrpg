@@ -252,6 +252,7 @@ export class ExploreScene implements Scene {
       this.renderer?.resize({ width: map.width, height: map.height });
       if (this.renderer) {
         this.renderer.camera.projection = map.projection ?? 'orthographic';
+        this.renderer.camera.integerZoom = map.projection === 'oblique';
         this.renderer.camera.centreMargin = map.cameraCentreMargin;
         this.renderer.camera.viewExtent = map.scene?.paintExtent;
       }
@@ -438,6 +439,9 @@ export class ExploreScene implements Scene {
       camera.offsetY += (previous.height - camera.viewport.height) / 2;
     }
     camera.clamp();
+    // A dpr change (a window dragged to another screen) leaves the zoom off the
+    // device-pixel grid; put it back on the nearest whole scale.
+    camera.resnap();
     this.rememberViewSize();
     this.redrawLife();
   }
@@ -866,6 +870,8 @@ export class ExploreScene implements Scene {
     this.renderer = new Renderer(canvas, { width: map.width, height: map.height });
     this.renderer.resize({ width: map.width, height: map.height });
     this.renderer.camera.projection = map.projection ?? 'orthographic';
+    // The oblique maps are pixel art: whole device pixels per world pixel (ADR 0088).
+    this.renderer.camera.integerZoom = map.projection === 'oblique';
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
     this.app.animator.setProjection(this.renderer.camera.projection);
