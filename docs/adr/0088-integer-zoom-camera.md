@@ -94,6 +94,9 @@ Both belong to the art cleanup pass now running on Ba Dan and the forest, so the
 art source, no generated file and no packer. Until they land, those pieces are smoothed at N = 2 exactly as soft as they
 were at 1.5, and crisp at N = 3 (the iPad).
 
+**Landed 2026-10-27:** both now ship at 1 px per world px (ADR 0076, 0085 and 0087 amendments of that date). Ba Dan's folder went
+from 3.61 MB to 2.17 MB.
+
 ## Consequences
 
 - One art pixel is exactly N x N device pixels for every 1 px piece on the oblique boards, and the G1 world and the figures
