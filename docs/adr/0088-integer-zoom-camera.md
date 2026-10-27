@@ -106,4 +106,5 @@ were at 1.5, and crisp at N = 3 (the iPad).
 - Tests: `cameraIntegerZoom.test.ts` (whole scales and device-grid offsets for Ba Dan, the oblique combat board and `fit()`
   at desktop, Surface, iPad both ways, combat canvas and phone; pick round trips including lifted tops; pinch steps,
   wheel floor, sub-pixel drags, dpr resnap, raiseToFit) and `pixelSampling.test.ts`. The e2e viewport, renderer, gestures
-  and combat preview specs pass unchanged.
+  and combat preview specs pass (33 of 33); the one expectation that moved is the 1368 x 912 combat frame at 1 dpr in
+  `gestures.spec.ts` (96 px, now 64 px: combat floors).
