@@ -115,7 +115,7 @@ def build():
     pc = cur.crop(box(k)); p1 = g1f.crop(box(1)).resize((1368, 714), Image.NEAREST); p2 = g2f.crop(box(0.5)).resize((1368, 714), Image.NEAREST)
     for n, im in [('current', pc), ('g1', p1), ('g2', p2)]: im.save(f'{RA}/ladder-{n}-1x.png')
     sheet = Image.new('RGBA', (1368, 3 * 714 + 3 * 22), (24, 24, 24, 255)); d = ImageDraw.Draw(sheet)
-    for j, (lab, im) in enumerate([('current game: shipped painting, G cels 1:1 (Kaya 118 sheet px = 59 world px tall); shown at 2 screen px per world px', pc), ('G1 hi-bit: 1 art px = 1 world px, tile 64x32 art px, Kaya 59 art px tall; shown x2 nearest', p1), ('G2 chunky: 1 art px = 2 world px, tile 32x16 art px, Kaya 30 art px tall; shown x4 nearest', p2)]):
+    for j, (lab, im) in enumerate([('current game: shipped painting, G cels 1:1 (Kaya 118 sheet px = 59 world px tall); shown at 2 screen px per world px', pc), ('G1 hi-bit: 1 art px = 1 world px, tile 128x64 art px, Kaya 59 art px tall; shown x2 nearest', p1), ('G2 chunky: 1 art px = 2 world px, tile 64x32 art px, Kaya 30 art px tall; shown x4 nearest', p2)]):
         d.text((6, j * 736 + 5), lab, fill='white'); sheet.paste(im, (0, j * 736 + 22))
     sheet.save(f'{RA}/ladder-sheet-1x.png')
     # 4x crops of the 1x panels (nearest)

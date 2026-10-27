@@ -131,8 +131,8 @@ once).
 Jared's main session relayed a new owner note ("maybe we go more pixelated"), which reopens the 2026-10-06 "never
 chunky pixels" rule. It asked for two grains, each with its own single pixel grid and no smooth scaling:
 
-- **G1 "hi-bit":** 1 art px = 1 world px (a ground tile is 64x32 art px).
-- **G2 "chunky":** 1 art px = 2 world px (a ground tile is 32x16 art px).
+- **G1 "hi-bit":** 1 art px = 1 world px (a ground tile diamond is 128x64 art px; the relayed brief said 64x32, which was wrong).
+- **G2 "chunky":** 1 art px = 2 world px (a tile diamond is 64x32 art px).
 
 `tools/ladder.py` builds `review/ladder/ladder-sheet-1x.png` (1368x714 per panel) and `ladder-sheet-4x.png` (4x
 nearest crops of those panels). Every panel is shown at **2 screen px per world px**, the nearest integer zoom to the
