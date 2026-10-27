@@ -88,7 +88,7 @@ ledger already holds as completed, and they wait out the 20-concurrent-job cap.
 | `check-grid-route-a.webp`                         | the slice's tile grid drawn over Route A (projection check)                                                 |
 | `out-ground-composition.webp`                     | the ground composition alone at painting px                                                                 |
 
-## Faults, against #284's four questions (round 1)
+## Faults, against #284's four questions (round 1, judged at the game's 1.5 zoom)
 
 **1. Same hand at normal play size? Not yet: closer, but no.**
 
@@ -126,8 +126,51 @@ ledger already holds as completed, and they wait out the 20-concurrent-job cap.
 shipped G cels (unchanged), with no residents, walk clip or frame strip. That work is shared with Route B (#284 says do it
 once).
 
+## Grain ladder (added on request: current | G1 | G2)
+
+Jared's main session relayed a new owner note ("maybe we go more pixelated"), which reopens the 2026-10-06 "never
+chunky pixels" rule. It asked for two grains, each with its own single pixel grid and no smooth scaling:
+
+- **G1 "hi-bit":** 1 art px = 1 world px (a ground tile is 64x32 art px).
+- **G2 "chunky":** 1 art px = 2 world px (a ground tile is 32x16 art px).
+
+`tools/ladder.py` builds `review/ladder/ladder-sheet-1x.png` (1368x714 per panel) and `ladder-sheet-4x.png` (4x
+nearest crops of those panels). Every panel is shown at **2 screen px per world px**, the nearest integer zoom to the
+game's 1.5, so G1 is x2 and G2 x4 nearest-neighbour. The current panel is the shipped painting (Lanczos x4/3, since it is
+a painting) with the shipped G cels at exactly 1:1. `ladder-g1-native.png` and `ladder-g2-native.png` are the
+compositions at their own art resolution.
+
+|     | world and props                                                                                                      | figures                                                                                                        | figure height         |
+| --- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------- |
+| G1  | the round-1 world-px art (house, tree, 6 ground tiles), feathered joins                                              | shipped G cels **box-downsampled 2:1 and alpha-thresholded, no PixelLab**                                      | 59 art px (Kaya idle) |
+| G2  | new PixelLab **Pro Flash** text edits at native size: house 236x172, tree 160x156, 8 ground tiles of 256; hard joins | G cels box-downsampled 4:1 to 32x48, then **cleaned up by PixelLab Pro Flash** (one cel each, identity prompt) | 30 art px             |
+
+Brief correction: in the shipped game an adult is about 59 world px tall (Kaya's idle is 118 sheet px at 128 sheet px
+per 64 px tile; 88–91 screen px at the 1.5 zoom), not 76. So G1 figures are about 59 art px and G2 about 30.
+
+What the ladder shows:
+
+- **On its own grid, G1 is one grain.** World and figures share 1 art px = 1 world px. The "grain coarser than the
+  figures" fault above comes from the game drawing the figures at 0.75 screen px per sheet px; on the G1 grid the figures
+  lose that extra detail instead. The G1 world is the flat round-1 art, with the same flat-ground and scale faults.
+- **G2 is the most uniform by construction.** World and figures come from one tool at one grain and read as one hand at
+  1x. Costs: detail goes (the fruit becomes 3–4 px blobs that no longer read as pears or apples; faces are 2–3 px), and
+  the 4x crops are plainly retro pixel art, the look the owner ruled out on 2026-10-06 and has now reopened.
+- **G2 tiles do not register.** Pro Flash redraws geometry slightly per tile. A feather ghosts the overlaps (a doubled
+  table edge and doubled bank stones), so G2 uses hard joins, which leave a visible seam and doubled canal-bank stones
+  left of the table. A real G2 pass needs one canvas per region, or inpainting across the joins.
+- **Camera consequence.** A pixel route needs an integer zoom. G2 at today's 1.5 zoom is exactly 3 screen px per art px,
+  so it fits as is. G1 at 1.5 would mix 1 and 2 px marks, so the camera would have to snap to 1x or 2x (an ADR; it
+  touches `Camera.fit` and the pinch zoom).
+- **Animation cost.** Only one cel per figure was rebuilt. A G2 party means every cel of every clip goes through the
+  same downsample and clean-up (5 generations a cel through Pro Flash; Kaya alone has hundreds of cels), or a free
+  box-downsample that is muddier than the cleaned cels. G1 figures need no regeneration: a 2:1 downsample is enough.
+  Nothing here tests motion.
+
+The ladder used 102 generations (house 9, tree 6, 8 ground tiles at 9, 3 figures at 5).
+
 ## Cost
 
-29 PixelLab jobs, **700 generations** (job usage). Account balance was 9,770 at the start and 7,585.5 at the end, but
-another session spent from the same account at the same time, so the difference is not this round's cost. 200 of the
-700 went to the rejected `a1-slice` pass.
+42 PixelLab jobs, **802 generations** (job usage): 700 for round 1 and 102 for the ladder. The account balance was 9,770
+at the start and 7,413.5 at the end, but another session spent from the same account at the same time, so the
+difference is not this work's cost. 200 of the 802 went to the rejected `a1-slice` pass.
