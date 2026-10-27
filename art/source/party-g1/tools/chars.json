@@ -2,16 +2,23 @@
   "kaya": {
     "element": "fire",
     "pixellab_character": "e8c6638a-ac14-44d3-9373-b4f632fab7bb",
-    "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers"
+    "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping, red cloth waist sash, red hip panels over long red coat tails, dark baggy trousers, brown leather calf boots with brown crossed leather straps, dark forearm bracers",
+    "root_description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket with thin ochre-gold piping only at the collar and front edge, red cloth waist sash, plain dark red hip panels and long plain dark red coat tails that hang as soft cloth with no gold hem, dark baggy trousers, dark brown leather calf boots with darker brown crossed straps, dark forearm bracers; the back of the jacket is plain dark red with no emblem",
+    "root_back": "From behind the jacket back is plain dark red with no gold marks, emblem or yoke ornament; only a thin piping at the collar. "
   },
   "sura": {
     "element": "water",
     "pixellab_character": "43bde774-4493-494a-a297-578c8ca06e98",
-    "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid that hangs over her right shoulder in front views and is visible down her back and side in back and side views, tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops"
+    "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid that hangs over her right shoulder in front views and is visible down her back and side in back and side views, tied with a small blue bead, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+    "root_description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid tied with a small blue bead; the braid hangs over her right shoulder in front views and hangs straight down the middle of her back to the waist in back views, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops",
+    "root_back": "From behind the skirt panel and its white spiral are hidden: the back of the tunic is plain slate blue with cream trim at the hem; the braid hangs down the middle of her back. ",
+    "clip_description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid tied with a small blue bead; the braid hangs over her right shoulder in front views and hangs straight down the middle of her back to the waist in back views, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs over dark navy under-sleeves, wide brown belt with a round clasp, pale grey-blue front skirt panel with a white spiral, loose dark navy trousers, dark brown boots with cream fur tops; the tunic stays muted slate blue in every frame, only its front skirt panel is pale grey-blue"
   },
   "bo": {
     "element": "earth",
     "pixellab_character": "d8faa425-8143-4531-8ae4-ad6e94df462c",
-    "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots"
+    "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+    "root_description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic with a darker olive collar and thin dull gold trim over an ochre-mustard shirt with sleeves rolled to the elbows, brown cloth forearm wraps, wide brown sash with a long hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots",
+    "root_back": ""
   }
 }

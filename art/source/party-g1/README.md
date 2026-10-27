@@ -1,11 +1,88 @@
-# Party at native G1: a comparison, not a rollout
+# The party at native G1 (ADR 0089)
+
+Kaya, Sura and Bo on the world's own grid: 1 art px = 1 world px, 64 px a tile, a 64x96 cel, about 59 px tall. This
+folder is the whole source of the three shipped sheets, and **the recipe the residents and the bandits follow next**.
+Issue #284; the owner's decision (27 October 2026, "1. Rebuild.") chose #290's variant A, whose comparison is kept below
+as history.
+
+## The recipe, step by step
+
+Every PixelLab call goes through `tools/pl.py`, which writes the job to `ledger.json` (id, settings with images replaced
+by their input names, inputs, billed generations, balance, verdict) and returns a job the ledger already holds instead
+of paying twice. Run everything from the repo root with `python3 -I`; `PIXELLAB_API_KEY` must be set (never printed).
+
+| step | tool                                           | what it does                                                                                                                                                                                                                             | cost                            |
+| ---- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| 0    | `extract.py`, `reduce.py`                      | cut the shipped cels out of the shipped atlases into `ref/` (untracked) and reduce them 2x into `b/` (`b/<char>/palette.png` is each character's shipped palette)                                                                        | 0                               |
+| 1    | `gen_root.py SEED idle\|stance char:dir ...`   | redraw **each heading's own shipped cel** natively at 64x96 (`edit-image-pro-flash`, text). The prompt is the objects' style plus `chars.json` `root_description`; back views add a facing sentence and the character's `root_back` note | 5 a job (2 distinct candidates) |
+| 2    | `curate.json`, `curate.py`                     | pick one candidate per character, kind and heading, with the reason for every non-default pick; the pick is palette-locked (`palette_lock.py`, OKLab nearest shipped colour, binary alpha) into `roots/`                                 | 0                               |
+| 3    | `skeletons_g1.py char:root:canvas ...`         | `estimate-skeleton` on each root padded onto each canvas it is animated on (96: walk and hits; 128: bends and knockouts)                                                                                                                 | 0.1 a call                      |
+| 4    | `motion.json`, `motion.py char cand [dir ...]` | retarget the CMU take onto the root's skeleton (see below); writes `design/<char>/<cand>-<dir>.json` and a preview strip                                                                                                                 | 0                               |
+| 5    | `gen_clip.py SEED char:cand:dir ...`           | `animate-with-skeleton-v3`, first frame the padded root with its skeleton, one CMU skeleton per frame                                                                                                                                    | 2-4 a job                       |
+| 6    | `breath.py`                                    | the idle (4 cels) and the fighting stance (8 cels) from one root each: no generation (below)                                                                                                                                             | 0                               |
+| 7    | `assembly.json`, `assemble.py`                 | which take each clip uses; palette lock, island clean, registration, trimming, sockets; writes `cels/<char>/` and `pack.json`                                                                                                            | 0                               |
+| 8    | `node --import tsx scripts/art/party-g1.ts`    | lay out, encode lossless WebP, write the atlas, clip and bend JSON and `src/content/assets/partyG1.ts`, pin every decoded cel in `pins/` (run `npx prettier --write src/content/assets/partyG1.ts` after)                                | 0                               |
+| 9    | `review_g1.py`                                 | `review/rollout/`: walk strips and GIFs, bends, hits, knockouts, faces, idle and stance, `metrics.json`                                                                                                                                  | 0                               |
+
+`shipped/` freezes the shipped clip data, bend sets and riverside page as of main `cc715e7`: the timing, frame lists,
+holds, key frames and attacks this rebuild keeps exactly. `tools/cmu/` is downloaded by `fetch-cmu.sh` (untracked; add
+any new take there).
+
+### What to copy for another character
+
+1. **Roots from the character's own drawing in every heading**, never a rotation model's back view: redraw each
+   heading's cel (here the shipped G cel reduced 2x) at the target size, then palette-lock to the character's palette.
+   Check the back views for a turned face, invented ornaments and front details moved to the back.
+2. **One retarget scale per character** (`char_scale`: the median over its eight headings).
+3. **Walk legs from the root's leg midpoints** set apart by the performer's own mean pose; gait `track` 0.35 and pelvis
+   `bob` x2. Without it the two steps land rows apart (the standing root has one foot ahead).
+4. **Idle and stance are not generated** at this size: `breath.py`.
+5. **Action text names an empty-hand form**, never an element ("fire bending" painted flames into the cels).
+6. **Registration** (`assemble.py`): ADR 0050's rules with art:validate's bounds scaled to the grid.
+
+## Motion (all CMU Graphics Lab, mocap.cs.cmu.edu; credited in `NOTICE.md`)
+
+| clip                      | take                                                                                               | notes                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| walk, 12 cels, 8 headings | 08_01 walk                                                                                         | one gait cycle from a left-foot contact, root-locked; track 0.35, bob x2               |
+| idle, 4 cels              | 77_02 standing                                                                                     | one breath cycle (frames 377-592) on one root, 1 px chest lift (`breath.py`)           |
+| stance, 8 cels            | 77_03 ready stance                                                                                 | one breath cycle (514-745), as the idle                                                |
+| rest, 1 cel               | the walk                                                                                           | the passing cel (3 or 9) that best overlaps idle cel 0, set on its sole                |
+| hit, 8 headings           | Kaya 79_73 (48-72), Sura 76_03 (256-288), Bo 77_09 (212-234)                                       | as ADR 0063: stance, H1, H2, H3 (H2 at 0.4), stance; amplitude 1.35                    |
+| knockout, 4 diagonals     | Kaya and Sura 90_18 (64-170), Bo 77_16 reversed (450-150)                                          | the thug's bone-rotation retarget (absolute blend, per-diagonal turn, root travel 0.7) |
+| bend, 8 headings          | Kaya 143_23 (195-365), Sura 12_04 (5380-5700), Bo 135_04 (520-556, chamber and stamp) + 143_23 jab | frames, holds, timing, keys and attacks exactly as shipped (`shipped/`)                |
+| cast (legacy, mirrored)   | the east bend                                                                                      | its stance, last wind-up and first strike                                              |
+
+## Measurements (`review/rollout/metrics.json`, world grid)
+
+|                                        | #290 A       | this rollout            |
+| -------------------------------------- | ------------ | ----------------------- |
+| idle boil (max pair, #290's measure)   | 36-54%       | 7-14%                   |
+| stance boil                            | -            | 9-17%                   |
+| walk contact rows (drawn cels 0 and 6) | 5-7 px apart | 0-3 px apart (most 0-1) |
+| head bob                               | none         | about 2 px              |
+| colours a cel                          | 30-49        | 19-33                   |
+
+## Fault list (honest)
+
+- **Sura's east stance and bend read grey.** Seen side-on her pale front panel covers most of her, as in the shipped east
+  stance; three bend seeds (s9502, s9503, s9504 with a "stays slate blue" description) all kept it. s9502 ships.
+- **Kaya's north stance** keeps a few small gold studs across the back (the first seed drew a gold Y ornament).
+- **Sura's north-west walk** shows the skirt spiral on the back three-quarter view.
+- **Bo's north idle** hair is a shade lighter brown than his black elsewhere.
+- **Bends:** a few in-betweens smear a hand (Kaya north-west cel 6); Bo's stamp is a low forward stomp-kick in the east
+  and west views, not a straight-down stamp; Sura's tai chi push rises over her head seen from the east.
+- **Riverside wave and tea** are the shipped cels reduced 2x (#290's B rule), not redrawn: not in this rebuild's scope.
+- **Sockets** are the requested skeleton's points (wrists snapped to the drawn hand), not measured from the drawing.
+- Each `edit-image-pro-flash` job returned its first two candidates byte-identical, so a job is two picks, not three.
+
+## History: the #290 comparison (route A chosen)
 
 Issue #284. The world is being restyled at **G1, 1 art px = 1 world px** (draft #287), and the market objects match it (draft
 #288). The party's G sheets are twice as fine: Kaya's idle is 118 sheet px tall and drawn at 59 world px. This folder asks
 whether the party looks more consistent with the world when it is rebuilt **on the world's own grid**, and how.
 
-**Nothing here ships.** The shipped unit sheets, the manifest and the pins are untouched; every file is a source, a tool or
-a review sheet.
+At the time nothing here shipped. The owner chose variant A on 27 October 2026; the rollout above is what ships.
 
 ## The three versions
 

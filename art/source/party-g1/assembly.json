@@ -1,33 +1,124 @@
 {
-  "note": "Variant A takes used in the review. South roots: a-south-kaya-s9102, a-south-sura-s9101, a-south-bo-s9101; rotations a-rot-<char>-s9201. Idles: the 1.5x CMU 77_02 take (s9302); the 0.6x take (s9301) came back frozen (SE/E identical cels) with one stray cel in the south.",
-  "south": {
-    "kaya": "a-south-kaya-s9102",
-    "sura": "a-south-sura-s9101",
-    "bo": "a-south-bo-s9101"
+ "kaya": {
+  "walk": {
+   "south": "kaya-walk-south-s9501",
+   "south-east": "kaya-walk-south-east-s9501",
+   "east": "kaya-walk-east-s9501",
+   "north-east": "kaya-walk-north-east-s9501",
+   "north": "kaya-walk-north-s9501",
+   "north-west": "kaya-walk-north-west-s9501",
+   "west": "kaya-walk-west-s9501",
+   "south-west": "kaya-walk-south-west-s9501"
   },
-  "rotations": {
-    "kaya": "a-rot-kaya-s9201",
-    "sura": "a-rot-sura-s9201",
-    "bo": "a-rot-bo-s9201"
+  "hit": {
+   "south": "kaya-hit-south-s9501",
+   "south-east": "kaya-hit-south-east-s9501",
+   "east": "kaya-hit-east-s9501",
+   "north-east": "kaya-hit-north-east-s9501",
+   "north": "kaya-hit-north-s9501",
+   "north-west": "kaya-hit-north-west-s9501",
+   "west": "kaya-hit-west-s9501",
+   "south-west": "kaya-hit-south-west-s9501"
   },
-  "a": {
-    "kaya": {
-      "idle/south": "kaya-idle-south-s9302",
-      "idle/south-east": "kaya-idle-south-east-s9302",
-      "idle/east": "kaya-idle-east-s9302",
-      "walk/south-east": "kaya-walk-12-south-east-s9301"
-    },
-    "sura": {
-      "idle/south": "sura-idle-south-s9302",
-      "idle/south-east": "sura-idle-south-east-s9302",
-      "idle/east": "sura-idle-east-s9302",
-      "walk/south-east": "sura-walk-12-south-east-s9301"
-    },
-    "bo": {
-      "idle/south": "bo-idle-south-s9302",
-      "idle/south-east": "bo-idle-south-east-s9302",
-      "idle/east": "bo-idle-east-s9302",
-      "walk/south-east": "bo-walk-12-south-east-s9301"
-    }
+  "bend": {
+   "south": "kaya-bend-south-s9502",
+   "south-east": "kaya-bend-south-east-s9502",
+   "east": "kaya-bend-east-s9502",
+   "north-east": "kaya-bend-north-east-s9502",
+   "north": "kaya-bend-north-s9502",
+   "north-west": "kaya-bend-north-west-s9502",
+   "west": "kaya-bend-west-s9502",
+   "south-west": "kaya-bend-south-west-s9502"
+  },
+  "ko": {
+   "south-east": "kaya-ko-south-east-s9501",
+   "south-west": "kaya-ko-south-west-s9501",
+   "north-east": "kaya-ko-north-east-s9501",
+   "north-west": "kaya-ko-north-west-s9501"
   }
+ },
+ "sura": {
+  "walk": {
+   "south": "sura-walk-south-s9501",
+   "south-east": "sura-walk-south-east-s9501",
+   "east": "sura-walk-east-s9501",
+   "north-east": "sura-walk-north-east-s9501",
+   "north": "sura-walk-north-s9501",
+   "north-west": "sura-walk-north-west-s9501",
+   "west": "sura-walk-west-s9501",
+   "south-west": "sura-walk-south-west-s9501"
+  },
+  "hit": {
+   "south": "sura-hit-south-s9501",
+   "south-east": "sura-hit-south-east-s9501",
+   "east": "sura-hit-east-s9501",
+   "north-east": "sura-hit-north-east-s9501",
+   "north": "sura-hit-north-s9501",
+   "north-west": "sura-hit-north-west-s9501",
+   "west": "sura-hit-west-s9501",
+   "south-west": "sura-hit-south-west-s9501"
+  },
+  "bend": {
+   "south": "sura-bend-south-s9502",
+   "south-east": "sura-bend-south-east-s9502",
+   "east": "sura-bend-east-s9502",
+   "north-east": "sura-bend-north-east-s9502",
+   "north": "sura-bend-north-s9502",
+   "north-west": "sura-bend-north-west-s9502",
+   "west": "sura-bend-west-s9502",
+   "south-west": "sura-bend-south-west-s9502"
+  },
+  "ko": {
+   "south-east": "sura-ko-south-east-s9502",
+   "south-west": "sura-ko-south-west-s9502",
+   "north-east": "sura-ko-north-east-s9502",
+   "north-west": "sura-ko-north-west-s9502"
+  }
+ },
+ "bo": {
+  "walk": {
+   "south": "bo-walk-south-s9501",
+   "south-east": "bo-walk-south-east-s9501",
+   "east": "bo-walk-east-s9501",
+   "north-east": "bo-walk-north-east-s9501",
+   "north": "bo-walk-north-s9501",
+   "north-west": "bo-walk-north-west-s9501",
+   "west": "bo-walk-west-s9501",
+   "south-west": "bo-walk-south-west-s9501"
+  },
+  "hit": {
+   "south": "bo-hit-south-s9501",
+   "south-east": "bo-hit-south-east-s9502",
+   "east": "bo-hit-east-s9501",
+   "north-east": "bo-hit-north-east-s9501",
+   "north": "bo-hit-north-s9501",
+   "north-west": "bo-hit-north-west-s9501",
+   "west": "bo-hit-west-s9501",
+   "south-west": "bo-hit-south-west-s9501"
+  },
+  "bend": {
+   "south": "bo-bend-south-s9502",
+   "south-east": "bo-bend-south-east-s9502",
+   "east": "bo-bend-east-s9502",
+   "north-east": "bo-bend-north-east-s9502",
+   "north": "bo-bend-north-s9502",
+   "north-west": "bo-bend-north-west-s9502",
+   "west": "bo-bend-west-s9502",
+   "south-west": "bo-bend-south-west-s9502"
+  },
+  "ko": {
+   "south-east": "bo-ko-south-east-s9501",
+   "south-west": "bo-ko-south-west-s9501",
+   "north-east": "bo-ko-north-east-s9501",
+   "north-west": "bo-ko-north-west-s9501"
+  }
+ },
+ "note": "The take each clip and heading uses (raw/<take>/). Superseded takes stay in raw/ and ledger.json; reasons in \"why\".",
+ "why": {
+  "bo/hit/south-east": "s9501 failed server-side (520, not billed); s9502 is the retry",
+  "kaya/bend/*": "s9501 painted fire into the cels (the action named fire bending); s9502 names an empty-hand form, and the element stays the painted effect (ADR 0055)",
+  "sura/bend/*": "s9501 painted water smears and turned the east bend grey; s9502 names an empty-hand tai chi form",
+  "bo/bend/*": "s9501 hung on one leg in the south and north (the source front kick steps far toward the camera); s9502 lifts the knee and stamps back down in place, then drives with 143_23's jab",
+  "sura/ko/*": "s9501 (77_18 reversed) crumpled into a ball; s9502 falls to 90_18 like Kaya"
+ }
 }
