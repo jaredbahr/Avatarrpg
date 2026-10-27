@@ -33,7 +33,8 @@ PIECES = {'gao-display': 'gao-display', 'south-market-display': 'south-market-di
 SHADOW = 0.70       # ground value under a cast shadow (multiplied), cooled toward brown
 CONTACT = 0.50      # the 1 px contact line under an object's foot
 COOL = np.array([0.93, 0.96, 1.06])
-SHADOW_KX, SHADOW_KY = 0.45, 0.2  # the key light's fall on the 2:1 ground, per px of height
+SHADOW_KX, SHADOW_KY = 0.35, 0.16
+CONTOUR = 0.8  # how far an object's edge pixel goes toward #1b1410  # the key light's fall on the 2:1 ground, per px of height
 
 def is_contour(p): return p[3] >= 128 and max(p[:3]) < 60
 
@@ -64,6 +65,14 @@ def world_of(px, py):  # painting px -> world-of-painting px (the G1 grid, origi
 
 def tile_paint(x, y):  # painting px of ground corner (x, y)
     return ((x - y + 16) * 96 + 300, (x + y) * 48 + 150)
+
+# Gao's yard (inside the gao-house sprite): the old cart and its jar are cleared and the spot dressed with #288's water
+# jars and barrels at their measured size. #288's handcart is three tiles long and does not fit the strip by the wall.
+# Boxes and feet in world-of-painting px (pan box corner at 0, 0); each prop's foot is its bottom centre.
+# Tried 2026-10-27 (o4-out-gao-yard-cart, rejected): the strip by the wall is too narrow for #288's props beside the
+# yard post, and clearing the cart made the generator invent a structure there. The cart stays the house's own, for now.
+YARD_CLEAR: list = []
+YARD_PROPS: list = []
 
 def piece_at(tile, scene_pieces):
     """The frozen piece whose footprint starts at `tile` (its min-x, min-y cell)."""
@@ -314,6 +323,9 @@ def set_in(world, ob):
     for m, v in ((cast & ~obj, SHADOW), (contact, CONTACT)):
         a[m] = a[m] * v * COOL
     a[obj] = im[al][:, :3]
+    # a 1 px contour on the silhouette's edge toward #1b1410, the weight of the world's own furniture lines
+    edge = obj & ~(np.asarray(Image.fromarray(obj.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(3))) > 0)
+    a[edge] = a[edge] * (1 - CONTOUR) + np.array([27, 20, 16]) * CONTOUR
     world.paste(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)))
     return obj
 
@@ -353,7 +365,24 @@ if __name__ == '__main__':
     for t in small.values(): prefill(world, t, avoid)
     world.save(f'{RA}/world-g1-prefilled.png')
     for pid, t in small.items(): inpaint(world, t, f"o4-out-{pid}", t)
+    for tag, (x0, y0, x1, y1) in YARD_CLEAR:  # inside the house sprite: blank the old cart's own pixels, then inpaint
+        import colorsys
+        box = np.asarray(raw_world.crop((x0, y0, x1, y1)).convert('RGB')).astype(np.float32) / 255
+        hsv = np.array([colorsys.rgb_to_hsv(*p) for p in box.reshape(-1, 3)]).reshape(box.shape)
+        h_, s_, v_ = hsv[..., 0] * 360, hsv[..., 1], hsv[..., 2]
+        cart = ((h_ > 8) & (h_ < 45) & (s_ > 0.35)) | ((s_ < 0.18) & (v_ > 0.72)) | (v_ < 0.2)  # wood, glaze, outline
+        cart = np.asarray(Image.fromarray(cart.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0
+        m = np.zeros((world.height, world.width), bool); m[y0:y1, x0:x1] = cart
+        a_ = np.asarray(world.convert('RGB')).copy()
+        ring = np.zeros_like(m); ring[y0 - 6:y1 + 6, x0 - 6:x1 + 6] = True; ring &= ~m
+        a_[m] = np.median(a_[ring], axis=0).astype(np.uint8); world.paste(Image.fromarray(a_))
+        inpaint(world, m, f"o4-out-{tag}", m)
     world.save(f'{RA}/world-g1-cleared.png')
+    fam = json.load(open(f'{M}/families/families.json'))['objects']
+    for key, (fx, fy) in YARD_PROPS:
+        im = Image.open(f'{M}/families/g1/{key}.png').convert('RGBA'); bb = im.getbbox()
+        obs.append({'name': key, 'piece': None, 'image': im, 'xy': (round(fx - (bb[0] + bb[2]) / 2), fy - bb[3]),
+                    'src': f'families/g1/{key}.png (placed by hand in Gao\'s yard)'})
     for ob in sorted(obs, key=lambda o: o['xy'][1] + o['image'].height):
         set_in(world, ob)
     world.save(f'{RA}/world-g1.png')
@@ -361,6 +390,7 @@ if __name__ == '__main__':
     if '--geometry' in sys.argv:
         scene = json.load(open(f'{GEO}/scene.json'))
         for ob, r in zip(obs, rep):
+            if ob['piece'] is None: continue  # painted into the house sprite; its silhouette is the house's
             p = next(q for q in scene['pieces'] if q['id'] == ob['piece'])
             spr, inside = geometry_sprite(ob, scene); r['inside_old_rect'] = inside
             if not inside:  # grow the piece's world rectangle to hold the new object (footprint and depth unchanged)
