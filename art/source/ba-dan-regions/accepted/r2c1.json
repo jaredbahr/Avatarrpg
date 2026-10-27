@@ -1,88 +1,118 @@
 {
-  "region": "r2c1",
-  "source": {
-    "path": ".review/route-a/candidates/r2c1.png",
-    "sha256": "e223d158e95807b1921168b0bfc0f9549957da7ee3f25c16978ab2f2a5083d27"
+ "region": "r2c1",
+ "source": {
+  "path": ".review/route-a/candidates/r2c1.png",
+  "sha256": "916e05beabb8451689a9845165af78c95bd2d8db8a3e502d27e8bd21b4b7181b"
+ },
+ "stored": {
+  "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r2c1.png",
+  "sha256": "916e05beabb8451689a9845165af78c95bd2d8db8a3e502d27e8bd21b4b7181b"
+ },
+ "gate": {
+  "pass": true,
+  "frame": {
+   "dx": 0,
+   "dy": 0,
+   "corr": 0.8727
   },
-  "stored": {
-    "path": "art/source/ba-dan-regions/accepted/r2c1.png",
-    "sha256": "e223d158e95807b1921168b0bfc0f9549957da7ee3f25c16978ab2f2a5083d27"
-  },
-  "gate": {
-    "pass": true,
-    "frame": {
-      "dx": 0,
-      "dy": 0,
-      "corr": 0.875
-    },
-    "blobs": [
-      {
-        "n": 1,
-        "box": [706, 0, 1536, 286],
-        "area": 133282,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.7341,
-        "status": "ok"
-      },
-      {
-        "n": 2,
-        "box": [0, 29, 500, 542],
-        "area": 101987,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.8499,
-        "status": "ok"
-      },
-      {
-        "n": 3,
-        "box": [1441, 192, 1536, 360],
-        "area": 5449,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.7812,
-        "status": "ok"
-      },
-      {
-        "n": 4,
-        "box": [1321, 286, 1536, 630],
-        "area": 22865,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.8476,
-        "status": "ok"
-      },
-      {
-        "n": 5,
-        "box": [468, 287, 665, 582],
-        "area": 13552,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.8978,
-        "status": "ok"
-      },
-      {
-        "n": 6,
-        "box": [1213, 581, 1536, 1024],
-        "area": 68398,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.7745,
-        "status": "ok"
-      }
+  "blobs": [
+   {
+    "n": 1,
+    "box": [
+     706,
+     0,
+     1536,
+     286
     ],
-    "carry": {
-      "pixels": 1269897,
-      "meanAbsDiff": 0.0,
-      "p95": 0.0,
-      "fractionOver16": 0.0
-    },
-    "warn": [],
-    "fail": []
+    "area": 134154,
+    "dx": 0,
+    "dy": 0,
+    "corr": 0.7338,
+    "status": "ok"
+   },
+   {
+    "n": 2,
+    "box": [
+     0,
+     29,
+     500,
+     542
+    ],
+    "area": 101987,
+    "dx": 0,
+    "dy": 0,
+    "corr": 0.8493,
+    "status": "ok"
+   },
+   {
+    "n": 3,
+    "box": [
+     1441,
+     192,
+     1536,
+     360
+    ],
+    "area": 5449,
+    "dx": 0,
+    "dy": 0,
+    "corr": 0.781,
+    "status": "ok"
+   },
+   {
+    "n": 4,
+    "box": [
+     1321,
+     286,
+     1536,
+     630
+    ],
+    "area": 22865,
+    "dx": 0,
+    "dy": 0,
+    "corr": 0.8465,
+    "status": "ok"
+   },
+   {
+    "n": 5,
+    "box": [
+     468,
+     287,
+     665,
+     582
+    ],
+    "area": 13552,
+    "dx": 0,
+    "dy": 0,
+    "corr": 0.8976,
+    "status": "ok"
+   },
+   {
+    "n": 6,
+    "box": [
+     1213,
+     581,
+     1536,
+     1024
+    ],
+    "area": 68398,
+    "dx": 0,
+    "dy": 0,
+    "corr": 0.7737,
+    "status": "ok"
+   }
+  ],
+  "carry": {
+   "pixels": 1269897,
+   "meanAbsDiff": 0.204,
+   "p95": 1.333,
+   "fractionOver16": 0.0003
   },
-  "prompt": {
-    "path": "art/source/ba-dan-route-a/world/prompt.txt",
-    "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
-  },
-  "forced": false
+  "warn": [],
+  "fail": []
+ },
+ "prompt": {
+  "path": "art/source/ba-dan-route-a/world/prompt.txt",
+  "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
+ },
+ "forced": false
 }
