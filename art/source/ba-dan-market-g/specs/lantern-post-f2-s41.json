@@ -1,0 +1,14 @@
+{
+  "id": "lantern-post-f2-s41",
+  "endpoint": "/edit-image-pro-flash",
+  "body": {
+    "method": "text",
+    "seed": 41,
+    "no_background": true,
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden lantern post on a small stone footing with a bracket arm and a small wooden-framed lantern hanging from it; its panels are warm matte amber, not glowing. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+  },
+  "inputs": {
+    "image": "blockouts/lantern-post.png"
+  },
+  "note": "family round 2 (Route A at G1): blockout, text edit"
+}
