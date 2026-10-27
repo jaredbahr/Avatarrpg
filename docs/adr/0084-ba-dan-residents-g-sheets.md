@@ -26,6 +26,10 @@ for a playable Ba Dan demo with walk and idle animation on 27 October 2026 (Rout
    declare eight-way locomotion and share the enemy G walk's eight-cel stride timing. Hanru keeps his painter figure (his
    look is an owner decision); the returnees keep sharing the household and watch keys, now on these sheets, as do Dema
    (Mira's) and Sen (Gao's).
+   The grid is one number, `RESIDENT_SHEET_PX_PER_WORLD_PX` in `src/content/assets/residentGrid.ts`, which the packer
+   and the manifest both read: 2 is today's 128 px tile, 1 the world's native G1 grid under test for the party
+   (`art/source/party-g1`). Moving the residents to another grid is that change and a re-run of the packer; the
+   placement bounds scale with it.
 2. **No cast for a resident.** `validateContent` requires `idle` and `cast` of every sheet; an `npc.*` sheet only stands
    and walks on the map and is never cast in combat, so it needs `idle` alone.
 3. **A marker draws a heading clip.** `NpcMarker.clip` names the clip an eight-way sheet draws; absent, a sheet draws its
