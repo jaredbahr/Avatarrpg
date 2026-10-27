@@ -1,0 +1,2258 @@
+{
+ "what": "Forest road at G1 (ADR 0086, issue #284): every PixelLab job, in order of the files they were first written to. gens is the job usage reported by the API; balance_before/after are account-wide (other sessions spend concurrently), so their difference is not the job cost.",
+ "total_gens": 778.0,
+ "jobs": [
+  {
+   "tag": "u-flask-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "386f6b26-8111-44d6-8cb9-367c4ae95f9a",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/flask.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A round terracotta clay oil jar with a cork stopper and a dark oil stain at the lip. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-flask-s21-0.png",
+    "u-flask-s21-1.png",
+    "u-flask-s21-2.png"
+   ],
+   "balance_before": 4815.6,
+   "balance_after": 4662.6,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 58,
+   "notes": "G1 upright flask at world px (32, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-barrel-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "61dafdf3-6609-4b28-b735-f7a533acac2a",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/barrel.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. An open wooden water barrel with dark iron hoops, full of dark blue water. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-barrel-s22-0.png",
+    "u-barrel-s22-1.png",
+    "u-barrel-s22-2.png"
+   ],
+   "balance_before": 4815.6,
+   "balance_after": 4637.6,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 60,
+   "notes": "G1 upright barrel at world px (32, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-flask-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "3b5a6afa-ee17-45b7-81c3-e6b01a94797c",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/flask.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A round terracotta clay oil jar with a cork stopper and a dark oil stain at the lip. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-flask-s22-0.png",
+    "u-flask-s22-1.png",
+    "u-flask-s22-2.png"
+   ],
+   "balance_before": 4816.6,
+   "balance_after": 4559.6,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 107,
+   "notes": "G1 upright flask at world px (32, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-barrel-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "44107efd-0b5d-4b8a-9d4f-d8153fec46f2",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/barrel.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. An open wooden water barrel with dark iron hoops, full of dark blue water. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-barrel-s21-0.png",
+    "u-barrel-s21-1.png",
+    "u-barrel-s21-2.png"
+   ],
+   "balance_before": 4815.6,
+   "balance_after": 4456.6,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 156,
+   "notes": "G1 upright barrel at world px (32, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-pine-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "001d526e-9ebf-40d3-9d13-dd1211692d50",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/pine.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tall dark green pine tree with layered drooping boughs and a brown trunk foot. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-pine-s22-0.png",
+    "u-pine-s22-1.png",
+    "u-pine-s22-2.png"
+   ],
+   "balance_before": 4815.6,
+   "balance_after": 4431.6,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 175,
+   "notes": "G1 upright pine at world px (100, 224)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-pine-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "96b1c178-cf18-42f4-a93c-4bf364457834",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/pine.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tall dark green pine tree with layered drooping boughs and a brown trunk foot. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-pine-s21-0.png",
+    "u-pine-s21-1.png",
+    "u-pine-s21-2.png"
+   ],
+   "balance_before": 4815.6,
+   "balance_after": 4333.6,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 194,
+   "notes": "G1 upright pine at world px (100, 224)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "probe-badan",
+   "endpoint": "/edit-images-v2",
+   "job_id": "0980b857-0724-42f4-afa1-b258f482714f",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<probe-in.png (composite 700,300 512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "probe-badan-0.png",
+    "probe-badan-1.png"
+   ],
+   "balance_before": 5122.6,
+   "balance_after": 5072.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 115,
+   "notes": "ground prompt probe: badan",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "probe-living",
+   "endpoint": "/edit-images-v2",
+   "job_id": "e2b9e2d7-9646-46ce-ae38-aabeac236a81",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<probe-in.png (composite 700,300 512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "probe-living-0.png",
+    "probe-living-1.png"
+   ],
+   "balance_before": 5072.6,
+   "balance_after": 5047.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 127,
+   "notes": "ground prompt probe: living",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t7",
+   "endpoint": "/edit-images-v2",
+   "job_id": "d1fb6b16-71e6-439d-a61d-7dea189bda60",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 7 (435,416,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t7-0.png",
+    "w1-t7-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4790.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 117,
+   "notes": "forest G1 ground restyle tile 7 at (435,416)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t4",
+   "endpoint": "/edit-images-v2",
+   "job_id": "d2c1ad2c-4bb1-435e-913d-566b4c85979f",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 4 (1741,0,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t4-0.png",
+    "w1-t4-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4730.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 128,
+   "notes": "forest G1 ground restyle tile 4 at (1741,0)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t8",
+   "endpoint": "/edit-images-v2",
+   "job_id": "0ff6a0e3-dcd9-42e1-a8f0-fd4644827fa1",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 8 (870,416,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t8-0.png",
+    "w1-t8-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4667.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 159,
+   "notes": "forest G1 ground restyle tile 8 at (870,416)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t1",
+   "endpoint": "/edit-images-v2",
+   "job_id": "a4c996eb-0640-421e-9138-fca87bef7c42",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 1 (435,0,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t1-0.png",
+    "w1-t1-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4637.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 166,
+   "notes": "forest G1 ground restyle tile 1 at (435,0)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t6",
+   "endpoint": "/edit-images-v2",
+   "job_id": "3a865363-28f9-4ac4-b704-61d6cb371d9d",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 6 (0,416,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t6-0.png",
+    "w1-t6-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4589.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 192,
+   "notes": "forest G1 ground restyle tile 6 at (0,416)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t2",
+   "endpoint": "/edit-images-v2",
+   "job_id": "983950e4-7b72-4269-829b-3ff07c285c34",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 2 (870,0,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t2-0.png",
+    "w1-t2-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4527.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 223,
+   "notes": "forest G1 ground restyle tile 2 at (870,0)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t10",
+   "endpoint": "/edit-images-v2",
+   "job_id": "3b7eadad-dbd5-4abf-9a69-a6685ae1489e",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 10 (1741,416,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t10-0.png",
+    "w1-t10-1.png"
+   ],
+   "balance_before": 4730.6,
+   "balance_after": 4461.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 116,
+   "notes": "forest G1 ground restyle tile 10 at (1741,416)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t9",
+   "endpoint": "/edit-images-v2",
+   "job_id": "2bbb7646-085b-4719-bafb-b50eab15ff84",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 9 (1306,416,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t9-0.png",
+    "w1-t9-1.png"
+   ],
+   "balance_before": 4790.6,
+   "balance_after": 4392.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 174,
+   "notes": "forest G1 ground restyle tile 9 at (1306,416)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t13",
+   "endpoint": "/edit-images-v2",
+   "job_id": "f2c1a132-e756-431b-b7a9-85b60e461142",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 13 (435,832,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t13-0.png",
+    "w1-t13-1.png"
+   ],
+   "balance_before": 4637.6,
+   "balance_after": 4333.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 133,
+   "notes": "forest G1 ground restyle tile 13 at (435,832)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t3",
+   "endpoint": "/edit-images-v2",
+   "job_id": "7b0ff36d-82d0-4147-911c-df0f70884884",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 3 (1306,0,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t3-0.png",
+    "w1-t3-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4299.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 327,
+   "notes": "forest G1 ground restyle tile 3 at (1306,0)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t14",
+   "endpoint": "/edit-images-v2",
+   "job_id": "99eb9658-cbc8-4028-a1a5-46e36736c05c",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 14 (870,832,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t14-0.png",
+    "w1-t14-1.png"
+   ],
+   "balance_before": 4589.6,
+   "balance_after": 4210.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 151,
+   "notes": "forest G1 ground restyle tile 14 at (870,832)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t11",
+   "endpoint": "/edit-images-v2",
+   "job_id": "10f59d48-aa09-4eba-9aad-a004b0d39186",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 11 (2176,416,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t11-0.png",
+    "w1-t11-1.png"
+   ],
+   "balance_before": 4667.6,
+   "balance_after": 4210.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 188,
+   "notes": "forest G1 ground restyle tile 11 at (2176,416)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t0",
+   "endpoint": "/edit-images-v2",
+   "job_id": "5822f78e-3b09-4364-82db-4dfbf754f401",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 0 (0,0,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t0-0.png",
+    "w1-t0-1.png"
+   ],
+   "balance_before": 4994.6,
+   "balance_after": 4160.6,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 353,
+   "notes": "forest G1 ground restyle tile 0 at (0,0)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t15",
+   "endpoint": "/edit-images-v2",
+   "job_id": "ebd035c8-217f-4372-bb2c-b6754943c2c5",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 15 (1306,832,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t15-0.png",
+    "w1-t15-1.png"
+   ],
+   "balance_before": 4518.6,
+   "balance_after": 4080.6000000000004,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 177,
+   "notes": "forest G1 ground restyle tile 15 at (1306,832)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t17",
+   "endpoint": "/edit-images-v2",
+   "job_id": "7b70cac2-50a3-445a-8bb9-4acf0549624f",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 17 (2176,832,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t17-0.png",
+    "w1-t17-1.png"
+   ],
+   "balance_before": 4383.6,
+   "balance_after": 4055.6000000000004,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 112,
+   "notes": "forest G1 ground restyle tile 17 at (2176,832)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "w1-t16",
+   "endpoint": "/edit-images-v2",
+   "job_id": "55d7444d-3831-45e2-b1db-4a552e4d706f",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite tile 16 (1741,832,512x512)>"
+      },
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "w1-t16-0.png",
+    "w1-t16-1.png"
+   ],
+   "balance_before": 4461.6,
+   "balance_after": 4030.6000000000004,
+   "gens": 25.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 188,
+   "notes": "forest G1 ground restyle tile 16 at (1741,832)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "clear-heap-7",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "93af562f-3b0e-4f48-a19d-dd070245d221",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clear-heap-7 crop (1291,485,104x56) of world-g1 (median pre-fill)>"
+    },
+    "mask_image": {
+     "base64": "<clear-heap-7 mask>"
+    },
+    "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth or cobbles, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No stones heap, no rubble, no objects, no shadows, no people.",
+    "context_image": {
+     "base64": "<clear-heap-7 context (1187, 429, 1499, 597)>"
+    },
+    "bounding_box": {
+     "x": 104,
+     "y": 56,
+     "width": 104,
+     "height": 56
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clear-heap-7-0.png",
+    "clear-heap-7-1.png"
+   ],
+   "balance_before": 3579.6000000000004,
+   "balance_after": 3571.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 22,
+   "notes": "clear the baked rubble heap from the ground under it",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "clear-heap-8",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "457a5cf6-9848-4df9-ada4-3f750b6dba35",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clear-heap-8 crop (969,705,108x60) of world-g1 (median pre-fill)>"
+    },
+    "mask_image": {
+     "base64": "<clear-heap-8 mask>"
+    },
+    "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth or cobbles, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No stones heap, no rubble, no objects, no shadows, no people.",
+    "context_image": {
+     "base64": "<clear-heap-8 context (861, 645, 1185, 825)>"
+    },
+    "bounding_box": {
+     "x": 108,
+     "y": 60,
+     "width": 108,
+     "height": 60
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clear-heap-8-0.png",
+    "clear-heap-8-1.png"
+   ],
+   "balance_before": 3571.6000000000004,
+   "balance_after": 3562.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "clear the baked rubble heap from the ground under it",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "reground-7",
+   "endpoint": "/edit-images-v2",
+   "job_id": "9c0c65cc-5c9b-4e15-96d9-d8f95f76c719",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite without heaps, crop (1215,384,256x256)>"
+      },
+      "width": 256,
+      "height": 256
+     }
+    ],
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "reground-7-0.png",
+    "reground-7-1.png"
+   ],
+   "balance_before": 3561.6000000000004,
+   "balance_after": 3536.6000000000004,
+   "gens": 10.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 61,
+   "notes": "the ground under a rubble heap, for clearing it",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "reground-8",
+   "endpoint": "/edit-images-v2",
+   "job_id": "a6244ef1-ff76-4510-9386-220a7b9538fd",
+   "status": "completed",
+   "request": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": {
+       "base64": "<composite without heaps, crop (895,607,256x256)>"
+      },
+      "width": 256,
+      "height": 256
+     }
+    ],
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Living but calm forest ground: the grass is broad soft patches of three or four rich greens (sunlit yellow-green, mid green, cool shaded green) so it still reads at a distance, with darker tufts and clumps gathered along edges and under the trees; the road is packed brown earth and worn cobbles with moss in the joints; the pond and creek are deep saturated blue-green water, darker in the middle, with a clear wet edge; flat areas of tone with only sparse 1-2 px marks, no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "outputs": [
+    "reground-8-0.png",
+    "reground-8-1.png"
+   ],
+   "balance_before": 3536.6000000000004,
+   "balance_after": 3521.6000000000004,
+   "gens": 10.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 68,
+   "notes": "the ground under a rubble heap, for clearing it",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-deadfall-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "df614d4d-5e75-4169-a721-f8d43b08db47",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/deadfall.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Split timber logs lying in a heap, grey-brown bark and pale cut ends. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-deadfall-s22-0.png",
+    "u-deadfall-s22-1.png",
+    "u-deadfall-s22-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3507.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright deadfall at world px (120, 52)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-deadfall-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "57f8b362-60cd-42f9-9bdf-71dc775ce74f",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/deadfall.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Split timber logs lying in a heap, grey-brown bark and pale cut ends. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-deadfall-s21-0.png",
+    "u-deadfall-s21-1.png",
+    "u-deadfall-s21-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3501.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 41,
+   "notes": "G1 upright deadfall at world px (120, 52)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-alder-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "d9158678-4c77-45d0-8069-01b9236009ce",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/alder.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low broad alder tree with a rounded leafy crown in clustered mid and olive greens and a twisted brown trunk. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-alder-s21-0.png",
+    "u-alder-s21-1.png",
+    "u-alder-s21-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3501.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 41,
+   "notes": "G1 upright alder at world px (152, 148)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-pine-b-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "21a7d81a-6950-4700-93c8-ae0a4e43d190",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/pine-b.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tall pine tree, its boughs a little fuller and more ragged on one side, deep blue-green needles, a brown trunk foot. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-pine-b-s22-0.png",
+    "u-pine-b-s22-1.png",
+    "u-pine-b-s22-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3492.6000000000004,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 48,
+   "notes": "G1 upright pine-b at world px (100, 224)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-alder-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "56acb44d-b506-4721-b186-5fdd623023f1",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/alder.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low broad alder tree with a rounded leafy crown in clustered mid and olive greens and a twisted brown trunk. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-alder-s22-0.png",
+    "u-alder-s22-1.png",
+    "u-alder-s22-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3468.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 50,
+   "notes": "G1 upright alder at world px (152, 148)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-lodge-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "2594a559-64f6-4a86-bdc4-5ee009bc59ef",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/lodge.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small road keeper's lodge: plastered walls on a stone plinth, a tiled roof, a wooden door. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-lodge-s22-0.png",
+    "u-lodge-s22-1.png",
+    "u-lodge-s22-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3468.6000000000004,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 55,
+   "notes": "G1 upright lodge at world px (256, 168)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-lodge-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "f84c4bfa-4855-4299-be4d-d912aa0e69eb",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/lodge.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small road keeper's lodge: plastered walls on a stone plinth, a tiled roof, a wooden door. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-lodge-s21-0.png",
+    "u-lodge-s21-1.png",
+    "u-lodge-s21-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3468.6000000000004,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 56,
+   "notes": "G1 upright lodge at world px (256, 168)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-pine-b-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "0a8b5c18-9c8f-4f79-916b-3cd75fed15a4",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/pine-b.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tall pine tree, its boughs a little fuller and more ragged on one side, deep blue-green needles, a brown trunk foot. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-pine-b-s21-0.png",
+    "u-pine-b-s21-1.png",
+    "u-pine-b-s21-2.png"
+   ],
+   "balance_before": 3521.6000000000004,
+   "balance_after": 3448.6000000000004,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 68,
+   "notes": "G1 upright pine-b at world px (100, 224)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-0-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "765c3ef8-53f4-4834-9575-157e0f2e2f6e",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-0.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A clump of tall green reeds and cattails on a small mud mound. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-bank-reed-0-s21-0.png",
+    "u-bank-reed-0-s21-1.png",
+    "u-bank-reed-0-s21-2.png"
+   ],
+   "balance_before": 3501.6000000000004,
+   "balance_after": 3448.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright bank-reed-0 at world px (40, 56)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-nest-reeds-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "0befa70d-5b50-44cf-ad9a-ef06e3a07645",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/nest-reeds.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low grassy flood-bank mound with reeds and an old twig nest. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-nest-reeds-s21-0.png",
+    "u-nest-reeds-s21-1.png",
+    "u-nest-reeds-s21-2.png"
+   ],
+   "balance_before": 3507.6000000000004,
+   "balance_after": 3448.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "G1 upright nest-reeds at world px (120, 60)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-nest-reeds-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "a7750e22-958f-4d48-b55d-cf9776c92899",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/nest-reeds.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low grassy flood-bank mound with reeds and an old twig nest. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-nest-reeds-s22-0.png",
+    "u-nest-reeds-s22-1.png",
+    "u-nest-reeds-s22-2.png"
+   ],
+   "balance_before": 3501.6000000000004,
+   "balance_after": 3432.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "G1 upright nest-reeds at world px (120, 60)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-2-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "172117b0-ae10-46b2-a8b3-b835922cb297",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-2.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A spreading clump of green reeds leaning out over the bank. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-bank-reed-2-s21-0.png",
+    "u-bank-reed-2-s21-1.png",
+    "u-bank-reed-2-s21-2.png"
+   ],
+   "balance_before": 3468.6000000000004,
+   "balance_after": 3432.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "G1 upright bank-reed-2 at world px (56, 40)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-1-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "5c9c42b0-c055-4958-b8bb-eb1681839592",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-1.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small clump of green reeds on a small mud mound. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-bank-reed-1-s21-0.png",
+    "u-bank-reed-1-s21-1.png",
+    "u-bank-reed-1-s21-2.png"
+   ],
+   "balance_before": 3468.6000000000004,
+   "balance_after": 3432.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright bank-reed-1 at world px (32, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-0-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "bd0129ba-3ac4-4539-b1ea-0ec1b060bd7c",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-0.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A clump of tall green reeds and cattails on a small mud mound. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-bank-reed-0-s22-0.png",
+    "u-bank-reed-0-s22-1.png",
+    "u-bank-reed-0-s22-2.png"
+   ],
+   "balance_before": 3492.6000000000004,
+   "balance_after": 3427.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright bank-reed-0 at world px (40, 56)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-1-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "6cf1f920-e7be-4df4-b278-456a21c7a864",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-1.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small clump of green reeds on a small mud mound. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-bank-reed-1-s22-0.png",
+    "u-bank-reed-1-s22-1.png",
+    "u-bank-reed-1-s22-2.png"
+   ],
+   "balance_before": 3468.6000000000004,
+   "balance_after": 3422.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "G1 upright bank-reed-1 at world px (32, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-2-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "e731fe4a-fd1c-4e6f-b30e-25a067685359",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-2.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A spreading clump of green reeds leaning out over the bank. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-bank-reed-2-s22-0.png",
+    "u-bank-reed-2-s22-1.png",
+    "u-bank-reed-2-s22-2.png"
+   ],
+   "balance_before": 3448.6000000000004,
+   "balance_after": 3417.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright bank-reed-2 at world px (56, 40)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-3-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "28cb6034-93d9-4a88-89b0-54e1548ac482",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-3.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A clump of green reeds and two cattails on a small mud mound. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-bank-reed-3-s21-0.png",
+    "u-bank-reed-3-s21-1.png",
+    "u-bank-reed-3-s21-2.png"
+   ],
+   "balance_before": 3448.6000000000004,
+   "balance_after": 3399.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright bank-reed-3 at world px (44, 48)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-bank-reed-3-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "802cdd04-b967-4675-aba8-1a94b53d48af",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/bank-reed-3.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A clump of green reeds and two cattails on a small mud mound. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-bank-reed-3-s22-0.png",
+    "u-bank-reed-3-s22-1.png",
+    "u-bank-reed-3-s22-2.png"
+   ],
+   "balance_before": 3448.6000000000004,
+   "balance_after": 3399.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright bank-reed-3 at world px (44, 48)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-split-rail-fence-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "0635f166-4230-4805-b689-11e5643bc566",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/split-rail-fence.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A short split-rail wooden fence section, two posts and two rails. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-split-rail-fence-s21-0.png",
+    "u-split-rail-fence-s21-1.png",
+    "u-split-rail-fence-s21-2.png"
+   ],
+   "balance_before": 3427.6000000000004,
+   "balance_after": 3399.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright split-rail-fence at world px (72, 52)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-split-rail-fence-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "ab1bf0cb-b735-401a-9edb-49a29f5f0b41",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/split-rail-fence.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A short split-rail wooden fence section, two posts and two rails. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-split-rail-fence-s22-0.png",
+    "u-split-rail-fence-s22-1.png",
+    "u-split-rail-fence-s22-2.png"
+   ],
+   "balance_before": 3427.6000000000004,
+   "balance_after": 3384.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright split-rail-fence at world px (72, 52)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-signpost-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "c020107f-a618-437b-ba96-10012a6b3a53",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/signpost.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A weathered wooden signpost with two blank pointing boards. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-signpost-s21-0.png",
+    "u-signpost-s21-1.png",
+    "u-signpost-s21-2.png"
+   ],
+   "balance_before": 3432.6000000000004,
+   "balance_after": 3384.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright signpost at world px (52, 76)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-signpost-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "a92be0bc-d61f-4e7f-b901-8b83fd4fc4b9",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/signpost.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A weathered wooden signpost with two blank pointing boards. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-signpost-s22-0.png",
+    "u-signpost-s22-1.png",
+    "u-signpost-s22-2.png"
+   ],
+   "balance_before": 3432.6000000000004,
+   "balance_after": 3384.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright signpost at world px (52, 76)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-woodpile-stump-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "885a31fd-d776-4073-9db2-33125216d932",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/woodpile-stump.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stacked woodpile of split logs beside a chopping stump. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-woodpile-stump-s21-0.png",
+    "u-woodpile-stump-s21-1.png",
+    "u-woodpile-stump-s21-2.png"
+   ],
+   "balance_before": 3417.6000000000004,
+   "balance_after": 3374.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright woodpile-stump at world px (72, 36)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-broken-cart-wheel-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "cb66031c-6654-4041-b4ab-ede3a6ffbed7",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/broken-cart-wheel.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A broken wooden cart wheel leaning on the ground, spokes and an iron rim. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-broken-cart-wheel-s22-0.png",
+    "u-broken-cart-wheel-s22-1.png",
+    "u-broken-cart-wheel-s22-2.png"
+   ],
+   "balance_before": 3399.6000000000004,
+   "balance_after": 3369.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "G1 upright broken-cart-wheel at world px (60, 56)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-milestone-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "eb64dfe2-02cc-4be7-a571-3a2f844c7f65",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/milestone.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A short weathered grey milestone with a rounded top. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-milestone-s21-0.png",
+    "u-milestone-s21-1.png",
+    "u-milestone-s21-2.png"
+   ],
+   "balance_before": 3389.6000000000004,
+   "balance_after": 3369.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "G1 upright milestone at world px (32, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-woodpile-stump-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "91af59f5-80d3-4d67-9605-812014145fca",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/woodpile-stump.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A stacked woodpile of split logs beside a chopping stump. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-woodpile-stump-s22-0.png",
+    "u-woodpile-stump-s22-1.png",
+    "u-woodpile-stump-s22-2.png"
+   ],
+   "balance_before": 3417.6000000000004,
+   "balance_after": 3364.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright woodpile-stump at world px (72, 36)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-milestone-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "0dc88f3a-74dd-4d7b-a86d-6ad1a45c4250",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/milestone.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A short weathered grey milestone with a rounded top. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-milestone-s22-0.png",
+    "u-milestone-s22-1.png",
+    "u-milestone-s22-2.png"
+   ],
+   "balance_before": 3384.6000000000004,
+   "balance_after": 3339.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright milestone at world px (32, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-lantern-post-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "84e35f94-ec6d-4c8a-9be9-5d6e61877b1f",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/lantern-post.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden lantern post with a hanging iron lantern. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-lantern-post-s21-0.png",
+    "u-lantern-post-s21-1.png",
+    "u-lantern-post-s21-2.png"
+   ],
+   "balance_before": 3384.6000000000004,
+   "balance_after": 3339.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright lantern-post at world px (40, 100)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-broken-cart-wheel-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "aa41f052-310d-4279-85c1-e9e98a1cbbc2",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/broken-cart-wheel.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A broken wooden cart wheel leaning on the ground, spokes and an iron rim. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-broken-cart-wheel-s21-0.png",
+    "u-broken-cart-wheel-s21-1.png",
+    "u-broken-cart-wheel-s21-2.png"
+   ],
+   "balance_before": 3399.6000000000004,
+   "balance_after": 3339.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "G1 upright broken-cart-wheel at world px (60, 56)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-lantern-post-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "34b8091c-1b59-4bae-b67e-4eef06c00a19",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/lantern-post.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden lantern post with a hanging iron lantern. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-lantern-post-s22-0.png",
+    "u-lantern-post-s22-1.png",
+    "u-lantern-post-s22-2.png"
+   ],
+   "balance_before": 3384.6000000000004,
+   "balance_after": 3339.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright lantern-post at world px (40, 100)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rope-bound-quarry-blocks-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "ac3337e0-baf4-42ca-a79f-d4ed9b20ea12",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rope-bound-quarry-blocks.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two pale cut quarry stone blocks bound with rope. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-rope-bound-quarry-blocks-s21-0.png",
+    "u-rope-bound-quarry-blocks-s21-1.png",
+    "u-rope-bound-quarry-blocks-s21-2.png"
+   ],
+   "balance_before": 3374.6000000000004,
+   "balance_after": 3329.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright rope-bound-quarry-blocks at world px (48, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-mushroom-fallen-log-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "f6d843ce-300c-43b4-aaf3-a672d8ec8303",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/mushroom-fallen-log.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A mossy fallen log with orange bracket mushrooms. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-mushroom-fallen-log-s21-0.png",
+    "u-mushroom-fallen-log-s21-1.png",
+    "u-mushroom-fallen-log-s21-2.png"
+   ],
+   "balance_before": 3369.6000000000004,
+   "balance_after": 3329.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright mushroom-fallen-log at world px (72, 36)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rope-bound-quarry-blocks-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "65b44d94-9ad4-488f-822c-beb7dc1fbea1",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rope-bound-quarry-blocks.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. Two pale cut quarry stone blocks bound with rope. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-rope-bound-quarry-blocks-s22-0.png",
+    "u-rope-bound-quarry-blocks-s22-1.png",
+    "u-rope-bound-quarry-blocks-s22-2.png"
+   ],
+   "balance_before": 3369.6000000000004,
+   "balance_after": 3316.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "G1 upright rope-bound-quarry-blocks at world px (48, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-mushroom-fallen-log-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "1f07638c-9d1e-4d2e-a506-57417859a0dd",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/mushroom-fallen-log.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A mossy fallen log with orange bracket mushrooms. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-mushroom-fallen-log-s22-0.png",
+    "u-mushroom-fallen-log-s22-1.png",
+    "u-mushroom-fallen-log-s22-2.png"
+   ],
+   "balance_before": 3364.6000000000004,
+   "balance_after": 3316.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright mushroom-fallen-log at world px (72, 36)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rubble-2-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "116c691b-fba4-4175-be54-9467b501e2f3",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rubble-2.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low heap of broken pale stones and grit lying flat on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-rubble-2-s22-0.png",
+    "u-rubble-2-s22-1.png",
+    "u-rubble-2-s22-2.png"
+   ],
+   "balance_before": 3339.6000000000004,
+   "balance_after": 3310.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright rubble-2 at world px (128, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rubble-1-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "01dc8eae-ca95-4b4c-b82c-6fc4b148611d",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rubble-1.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low heap of broken pale stones and grit lying flat on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-rubble-1-s21-0.png",
+    "u-rubble-1-s21-1.png",
+    "u-rubble-1-s21-2.png"
+   ],
+   "balance_before": 3339.6000000000004,
+   "balance_after": 3298.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "G1 upright rubble-1 at world px (128, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rubble-2-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "fd1c08f0-4cce-4582-b18c-b828537ff0a0",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rubble-2.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low heap of broken pale stones and grit lying flat on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-rubble-2-s21-0.png",
+    "u-rubble-2-s21-1.png",
+    "u-rubble-2-s21-2.png"
+   ],
+   "balance_before": 3339.6000000000004,
+   "balance_after": 3288.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 41,
+   "notes": "G1 upright rubble-2 at world px (128, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-hay-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "c7b57881-53de-43a4-9fc1-426e137411f9",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/hay.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tight golden-yellow hay bale bound with two dark cords. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-hay-s21-0.png",
+    "u-hay-s21-1.png",
+    "u-hay-s21-2.png"
+   ],
+   "balance_before": 3329.6000000000004,
+   "balance_after": 3288.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 29,
+   "notes": "G1 upright hay at world px (40, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-hay-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "47a6b582-002b-435c-be86-b442be59ee90",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/hay.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tight golden-yellow hay bale bound with two dark cords. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-hay-s22-0.png",
+    "u-hay-s22-1.png",
+    "u-hay-s22-2.png"
+   ],
+   "balance_before": 3329.6000000000004,
+   "balance_after": 3288.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright hay at world px (40, 32)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rubble-1-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "08a9fb96-1d5f-4606-9409-4edfa866831e",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rubble-1.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A low heap of broken pale stones and grit lying flat on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-rubble-1-s22-0.png",
+    "u-rubble-1-s22-1.png",
+    "u-rubble-1-s22-2.png"
+   ],
+   "balance_before": 3339.6000000000004,
+   "balance_after": 3277.6000000000004,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 54,
+   "notes": "G1 upright rubble-1 at world px (128, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-cart-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "6efbfe72-ceac-4137-a2d1-be0a0f19f29c",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/cart.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden hand cart with one spoked wheel and two shafts, heaped with green cabbages. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-cart-s21-0.png",
+    "u-cart-s21-1.png",
+    "u-cart-s21-2.png"
+   ],
+   "balance_before": 3310.6000000000004,
+   "balance_after": 3267.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright cart at world px (56, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-brazier-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "826a86f6-23d2-4d84-922b-502e254d9b16",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/brazier.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A black iron brazier basket on three legs, heaped with glowing orange coals. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-brazier-s21-0.png",
+    "u-brazier-s21-1.png",
+    "u-brazier-s21-2.png"
+   ],
+   "balance_before": 3316.6000000000004,
+   "balance_after": 3267.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "G1 upright brazier at world px (36, 40)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-cart-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "8e3f0349-f2c4-4d4c-8b4c-9a2d4111413b",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/cart.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A wooden hand cart with one spoked wheel and two shafts, heaped with green cabbages. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-cart-s22-0.png",
+    "u-cart-s22-1.png",
+    "u-cart-s22-2.png"
+   ],
+   "balance_before": 3298.6000000000004,
+   "balance_after": 3262.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright cart at world px (56, 44)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-brazier-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "f269dc07-e3eb-4bd9-9af8-48a7543a54c3",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/brazier.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A black iron brazier basket on three legs, heaped with glowing orange coals. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-brazier-s22-0.png",
+    "u-brazier-s22-1.png",
+    "u-brazier-s22-2.png"
+   ],
+   "balance_before": 3310.6000000000004,
+   "balance_after": 3257.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 41,
+   "notes": "G1 upright brazier at world px (36, 40)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rubble-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "4820ae1f-86f3-4bd9-a5dd-a9b21679531b",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rubble.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tall heap of pale broken quarry stone blocks. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "u-rubble-s21-0.png",
+    "u-rubble-s21-1.png",
+    "u-rubble-s21-2.png"
+   ],
+   "balance_before": 3288.6000000000004,
+   "balance_after": 3257.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "G1 upright rubble at world px (44, 36)",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "u-rubble-s22",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "8eb5594c-8b97-4525-88be-967ec2c441e0",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<uprights-in/rubble.png>"
+    },
+    "method": "text",
+    "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, bark, needles, leaves, stone, straw and metal in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A tall heap of pale broken quarry stone blocks. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, solid and heavy, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text.",
+    "no_background": true,
+    "seed": 22
+   },
+   "outputs": [
+    "u-rubble-s22-0.png",
+    "u-rubble-s22-1.png",
+    "u-rubble-s22-2.png"
+   ],
+   "balance_before": 3288.6000000000004,
+   "balance_after": 3249.6000000000004,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "G1 upright rubble at world px (44, 36)",
+   "verdict": null,
+   "error": null
+  }
+ ]
+}
