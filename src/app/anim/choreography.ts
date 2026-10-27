@@ -14,7 +14,7 @@
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
-import { fxPalette, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
+import { fxPalette, openWaterDraw, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
@@ -94,6 +94,12 @@ export interface ChoreographyInput {
   readonly bends?: BendSources;
   /** How far the ground lifts a unit's drawing at a tile, in tiles; flat without it. */
   readonly liftOf?: (pos: Vec2) => number;
+  /**
+   * Open water a water bender draws from, by unit id (issue #284's practice
+   * by Ba Dan's canal). A water bend from a unit listed here lifts its water
+   * out of that cell through the gather; without it, nothing changes.
+   */
+  readonly waterSources?: Readonly<Record<string, Vec2>>;
   /** Temporary A-4 test hook; defaults to the shipped footprint gate. */
   readonly squareFootprints?: boolean;
 }
@@ -528,6 +534,30 @@ export function choreograph(input: ChoreographyInput): Choreography {
             duration: bend.plan.duration,
           });
           cue(ability.fx, cursor + bend.launchAt, 1, eventIndex);
+          const source = input.waterSources?.[event.unitId];
+          if (source && casterUnit && ability.element === 'water' && bend.launchAt > 0) {
+            emit(
+              openWaterDraw(bend.launchAt),
+              cursor,
+              centre(source),
+              caster,
+              palette,
+              eventIndex,
+              21,
+              0.4,
+              {
+                to: {
+                  pos: { ...casterPos },
+                  sprite: casterUnit.sprite,
+                  size: casterUnit.size,
+                  socket: 'cast-gather',
+                  facing: source.x + 0.5 < caster.x ? -1 : 1,
+                  scale: partyScale(input.projection),
+                  offset: still,
+                },
+              },
+            );
+          }
           // The one rules result shows once, when the damage release lands,
           // and the struck unit holds through that impact's hit-stop.
           pending = {
