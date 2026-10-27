@@ -488,6 +488,30 @@ def case_quiet_ground_calms_and_is_deterministic(work):
 
 
 def case_split_softens_plates_and_not_uprights(work):
+    # ADR 0083's calm, behind its switch (ADR 0084 turns it off for the shipped G1 picture)
+    R.QUIET_GROUND = True
+    try:
+        _split_softens(work)
+    finally:
+        R.QUIET_GROUND = False
+
+
+def case_split_without_calm_ships_the_painting(work):
+    assert R.QUIET_GROUND is False, "ADR 0084: the G1 ground is drawn calm, not filtered"
+    plan, v, painting = split_inputs(work)
+    out = work / "plain"
+    R.save(out / "stitched.png", painting)
+    R.dump(out / "regions.json", plan)
+    assert R.main(["--out", str(out), "split"]) == 0
+    raw = R.fade_into_margin(painting, R.edge_fade(painting))
+    assert np.array_equal(R.load_rgb(out / "quiet.png"), raw)
+    for p in R.json.load(open(out / "split" / "split-report.json"))["plates"]:
+        im = R.load_rgb(out / "split" / p["file"])
+        win = (slice(p["y"], p["y"] + p["height"]), slice(p["x"], p["x"] + p["width"]))
+        assert np.array_equal(im, raw[win]), p["file"]
+
+
+def _split_softens(work):
     import shutil
     from types import SimpleNamespace
     plan, v, painting = split_inputs(work)
