@@ -115,7 +115,7 @@ def build():
     pc = cur.crop(box(k)); p1 = g1f.crop(box(1)).resize((1368, 714), Image.NEAREST); p2 = g2f.crop(box(0.5)).resize((1368, 714), Image.NEAREST)
     for n, im in [('current', pc), ('g1', p1), ('g2', p2)]: im.save(f'{RA}/ladder-{n}-1x.png')
     sheet = Image.new('RGBA', (1368, 3 * 714 + 3 * 22), (24, 24, 24, 255)); d = ImageDraw.Draw(sheet)
-    for j, (lab, im) in enumerate([('current game (shipped painting, G cels)', pc), ('G1 hi-bit: 1 art px = 1 world px, shown x2', p1), ('G2 chunky: 1 art px = 2 world px, shown x4', p2)]):
+    for j, (lab, im) in enumerate([('current game: shipped painting, G cels 1:1 (Kaya 118 sheet px = 59 world px tall); shown at 2 screen px per world px', pc), ('G1 hi-bit: 1 art px = 1 world px, tile 64x32 art px, Kaya 59 art px tall; shown x2 nearest', p1), ('G2 chunky: 1 art px = 2 world px, tile 32x16 art px, Kaya 30 art px tall; shown x4 nearest', p2)]):
         d.text((6, j * 736 + 5), lab, fill='white'); sheet.paste(im, (0, j * 736 + 22))
     sheet.save(f'{RA}/ladder-sheet-1x.png')
     # 4x crops of the 1x panels (nearest)
@@ -133,6 +133,27 @@ def build():
     s4 = Image.new('RGBA', (rows[0].width, sum(r.height for r in rows))); y = 0
     for r in rows: s4.paste(r, (0, y)); y += r.height
     s4.save(f'{RA}/ladder-sheet-4x.png')
+    party_strip()
+
+def party_strip():
+    """The party at each grain on a lawn swatch: at the sheet's 1x (2 screen px per world px), and head and shoulders at 3x of that."""
+    cels = [frame(n, c, i) for n, c, i, _ in FIGS]
+    rows = [('current: G cels 1:1 (192 px frames)', [c for c in cels], 1),
+            ('G1: box 2:1, 64x96 frames, about 59 art px tall, shown x2', [g1_figure(n, c, i) for n, c, i, _ in FIGS], 2),
+            ('G2: box 4:1 then PixelLab clean-up, 32x48 frames, about 30 art px tall, shown x4', [g2_figure(n) for n, _, _, _ in FIGS], 4)]
+    lawn = (128, 142, 82, 255)
+    out = Image.new('RGBA', (3 * 140 + 3 * 3 * 140 + 40, 3 * (220 + 22)), (24, 24, 24, 255)); d = ImageDraw.Draw(out)
+    for r, (lab, figs, z) in enumerate(rows):
+        y = r * 242; d.text((6, y + 4), lab + '   |   head and shoulders at 3x of the left', fill='white')
+        for j, f in enumerate(figs):
+            f1 = f.resize((f.width * z, f.height * z), Image.NEAREST)
+            cell = Image.new('RGBA', (140, 200), lawn); cell.alpha_composite(f1.crop(f1.getbbox()), (70 - (f1.crop(f1.getbbox()).width) // 2, 10))
+            out.paste(cell, (j * 140, y + 22))
+            bb = f1.getbbox(); head = f1.crop((bb[0], bb[1], bb[2], bb[1] + min(60, bb[3] - bb[1])))
+            big = Image.new('RGBA', (head.width * 3, head.height * 3), lawn); big.alpha_composite(head.resize((head.width * 3, head.height * 3), Image.NEAREST))
+            big = big.crop((0, 0, min(big.width, 3 * 140 - 10), min(big.height, 200)))
+            out.paste(big, (3 * 140 + 20 + j * 3 * 140, y + 22))
+    out.save(f'{RA}/ladder-party-legibility.png')
 
 if __name__ == '__main__':
     build()

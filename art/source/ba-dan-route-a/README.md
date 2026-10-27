@@ -156,6 +156,11 @@ What the ladder shows:
 - **G2 is the most uniform by construction.** World and figures come from one tool at one grain and read as one hand at
   1x. Costs: detail goes (the fruit becomes 3–4 px blobs that no longer read as pears or apples; faces are 2–3 px), and
   the 4x crops are plainly retro pixel art, the look the owner ruled out on 2026-10-06 and has now reopened.
+- **G2 party legibility** (`review/ladder/ladder-party-legibility.png`, the party at each grain, with head and shoulders
+  enlarged): at about 30 art px, silhouettes and element colours still separate the three (Bo's mop and green, Kaya's
+  ponytail and red sash, Sura's braid and blue). The **face does not read**: it is a 2–4 px skin patch with no eyes or
+  expression, where G1 keeps a readable face and the current cels a clear one. Hands and props are 1–2 px. Sura's
+  north-west cel shows her back, so her face is not tested.
 - **G2 tiles do not register.** Pro Flash redraws geometry slightly per tile. A feather ghosts the overlaps (a doubled
   table edge and doubled bank stones), so G2 uses hard joins, which leave a visible seam and doubled canal-bank stones
   left of the table. A real G2 pass needs one canvas per region, or inpainting across the joins.
