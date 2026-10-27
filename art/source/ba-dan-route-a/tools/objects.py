@@ -33,6 +33,7 @@ PIECES = {'gao-display': 'gao-display', 'south-market-display': 'south-market-di
 SHADOW = 0.70       # ground value under a cast shadow (multiplied), cooled toward brown
 CONTACT = 0.50      # the 1 px contact line under an object's foot
 COOL = np.array([0.93, 0.96, 1.06])
+SHADOW_KX, SHADOW_KY = 0.45, 0.2  # the key light's fall on the 2:1 ground, per px of height
 
 def is_contour(p): return p[3] >= 128 and max(p[:3]) < 60
 
@@ -94,6 +95,28 @@ def objects():
                 out.append({'name': key, 'piece': piece_at((tx, ty), scene), 'image': im,
                             'xy': (round(wx - ax), round(wy - ay)), 'src': f'{folder}/{key}.png'})
     return out
+
+GROUND = None  # plain ground (no piece owns it), set by main
+raw_world = None  # the restyle before any clearing, set by main: outside the apply mask the ground is put back from it
+
+def tight_mask(piece_id, shape):
+    """Where the inpaint is used: the old frozen silhouette dilated 6 px and its baked shadow down-right (10 px), minus
+    what other pieces own. The wide `old_mask` only conditions the generator; the ground around stays the restyle's."""
+    pj = json.load(open(f'{OLD}/village/pieces.json'))['pieces']
+    p = next(q for q in pj if q['id'] == piece_id); s = p['sprite']
+    a = Image.open(f"{OLD}/village/{s['file']}").getchannel('A')
+    full = Image.new('L', (4500, 2401)); full.paste(a, (s['x'], s['y']))
+    m = np.asarray(full.resize((shape[1], shape[0]), Image.BOX)) > 25
+    m = np.asarray(Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(13))) > 0
+    sh = np.zeros_like(m)
+    for d_ in range(1, 11): sh[d_ // 2:, d_:] |= m[:m.shape[0] - d_ // 2, :m.shape[1] - d_]
+    return (m | sh) & ground_or(piece_id, p['index'], shape)
+
+def ground_or(piece_id, index, shape):
+    ids = np.asarray(Image.open(f'{OLD}/village/ids.png')).astype(np.int32)
+    ids = ids[..., 0] | (ids[..., 1] << 8) | (ids[..., 2] << 16)
+    own = Image.fromarray(((ids == 0) | (ids == index + 1)).astype(np.uint8) * 255).resize((shape[1], shape[0]), Image.BOX)
+    return np.asarray(own) > 200
 
 def old_mask(piece_id, shape):
     """What to clear for a replaced piece: its frozen silhouette dilated 8 px (the painting runs past it in places), the
@@ -169,17 +192,17 @@ PROMPT = ('Fill the masked area with the same ground that surrounds it (grass, w
           'continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. '
           'No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.')
 
-def inpaint(world, mask, tag):
+def inpaint(world, mask, tag, apply=None):
     ys, xs = np.nonzero(mask)
     if xs.max() - xs.min() + 8 > 256 or ys.max() - ys.min() + 8 > 256:  # in chunks, each seeing the last
         x0, y0 = xs.min(), ys.min(); k = 0
         for cy in range(int(y0), int(ys.max()) + 1, 240):
             for cx in range(int(x0), int(xs.max()) + 1, 240):
                 sub = np.zeros_like(mask); sub[cy:cy + 240, cx:cx + 240] = mask[cy:cy + 240, cx:cx + 240]
-                if sub.any(): inpaint(world, sub, f'{tag}-{k}'); k += 1
+                if sub.any(): inpaint(world, sub, f'{tag}-{k}', apply); k += 1
         return
     ys, xs = np.nonzero(mask); x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
-    w = min(256, ((x1 - x0 + 8 + 3) // 4) * 4); h = min(256, ((y1 - y0 + 8 + 3) // 4) * 4)
+    w = max(32, min(256, ((x1 - x0 + 8 + 3) // 4) * 4)); h = max(32, min(256, ((y1 - y0 + 8 + 3) // 4) * 4))
     x0, x1, y0, y1 = int(x0), int(x1), int(y0), int(y1); cx, cy = (x0 + x1) // 2, (y0 + y1) // 2
     bx, by = max(0, cx - w // 2), max(0, cy - h // 2)
     crop = world.crop((bx, by, bx + w, by + h))
@@ -196,15 +219,77 @@ def inpaint(world, mask, tag):
     res = out[0].convert('RGB').resize((w, h), Image.NEAREST)
     keep = np.asarray(crop.convert('RGB')).copy(); new = np.asarray(res)
     mm = mask[by:by + h, bx:bx + w]
-    # tone-match the patch to the ground around it: the inner 6 px band of the patch to the outer 6 px ring
-    mi_ = Image.fromarray(mm.astype(np.uint8) * 255)
-    inner = mm & ~(np.asarray(mi_.filter(ImageFilter.MinFilter(13))) > 0)
-    outer = (np.asarray(mi_.filter(ImageFilter.MaxFilter(13))) > 0) & ~mm
-    if inner.sum() > 20 and outer.sum() > 20:
-        gain = (keep[outer].astype(np.float32).mean(0) + 1) / (new[inner].astype(np.float32).mean(0) + 1)
-        new = np.clip(new.astype(np.float32) * gain + 0.5, 0, 255).astype(np.uint8)
-    keep[mm] = new[mm]  # only masked pixels change
-    world.paste(Image.fromarray(keep), (bx, by))
+    if apply is not None:  # generated over the wide mask; used only where the old object and its shadow were
+        ap = apply[by:by + h, bx:bx + w] & mm
+        raw = np.asarray(raw_world.crop((bx, by, bx + w, by + h)).convert('RGB')).astype(np.float32)
+        nf = new.astype(np.float32)
+        # one gain: the plain ground just outside the patch against the patch's own inner band
+        api = Image.fromarray(ap.astype(np.uint8) * 255)
+        outer = (np.asarray(api.filter(ImageFilter.MaxFilter(11))) > 0) & ~ap & GROUND[by:by + h, bx:bx + w]
+        inner = ap & ~(np.asarray(api.filter(ImageFilter.MinFilter(11))) > 0)
+        if outer.sum() > 30 and inner.sum() > 30:
+            nf = np.clip(nf * (raw[outer].mean(0) + 1) / (nf[inner].mean(0) + 1), 0, 255)
+        a = _gauss(ap.astype(np.float32), 1.0) * (np.asarray(api.filter(ImageFilter.MaxFilter(5))) > 0)
+        a = np.maximum(a, ap * 0.5 + 0.5 * (np.asarray(api.filter(ImageFilter.MinFilter(3))) > 0))
+        out = raw * (1 - a[..., None]) + nf * a[..., None]
+        keep[mm] = np.clip(out + 0.5, 0, 255).astype(np.uint8)[mm]
+        world.paste(Image.fromarray(keep), (bx, by))
+        return
+    if apply is None: tone_match(world, mask)  # a tight patch is the old footprint only, and keeps its own tone
+
+TONE_SIGMA = 10  # world px: the scale of the tone the patch is matched over, above the pixel detail it keeps
+
+def _gauss(x, sigma):
+    """Separable Gaussian of a 2-D float array (edges extended)."""
+    r = int(3 * sigma); k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2); k /= k.sum()
+    p = np.pad(x, r, mode='edge')
+    p = np.apply_along_axis(lambda v: np.convolve(v, k, mode='valid'), 0, p)
+    return np.apply_along_axis(lambda v: np.convolve(v, k, mode='valid'), 1, p)
+
+def _norm_blur(a, w, sigma):
+    def blur(x):
+        return _gauss(x.astype(np.float32), sigma)
+    num = np.stack([blur(a[..., c] * w) for c in range(3)], -1)
+    den = blur(w)[..., None]
+    return num / np.maximum(den, 1e-4), den[..., 0]
+
+def tone_match(world, mask):
+    """Match an inpainted patch's low-frequency tone to the ground around it: inside the mask, add the difference between
+    the surroundings' tone (a normalised Gaussian of the pixels outside the mask) and the patch's own (the same over the
+    mask). The tone then runs on across the patch's edge, while the patch keeps its pixel detail (deterministic)."""
+    ys, xs = np.nonzero(mask); pad = 4 * TONE_SIGMA
+    y0, y1 = max(0, ys.min() - pad), min(mask.shape[0], ys.max() + pad + 1)
+    x0, x1 = max(0, xs.min() - pad), min(mask.shape[1], xs.max() + pad + 1)
+    a = np.asarray(world.convert('RGB')).astype(np.float32)
+    sub = a[y0:y1, x0:x1]; m = mask[y0:y1, x0:x1].astype(np.float32)
+    out_tone, _ = _norm_blur(sub, 1 - m, TONE_SIGMA)
+    in_tone, _ = _norm_blur(sub, m, TONE_SIGMA)
+    fixed = sub + (out_tone - in_tone) * m[..., None]
+    a[y0:y1, x0:x1] = np.where(m[..., None] > 0, fixed, sub)
+    world.paste(Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)))
+
+def dark_islands(world, patch, min_px=30, drop=45):
+    """Islands inside a patch much darker (luminance) than the plain ground just around it: what the generator drew
+    that is not ground (a stray dark shape in an old shadow). Returns their masks, each dilated 3 px."""
+    a = np.asarray(world.convert('L')).astype(np.float32)
+    pi = Image.fromarray(patch.astype(np.uint8) * 255)
+    ring = (np.asarray(pi.filter(ImageFilter.MaxFilter(15))) > 0) & ~patch & GROUND
+    if ring.sum() < 30: return []
+    dark = patch & (a < np.median(a[ring]) - drop)
+    out, seen = [], np.zeros_like(dark)
+    ys, xs = np.nonzero(dark)
+    for y, x in zip(ys, xs):
+        if seen[y, x]: continue
+        comp = np.zeros_like(dark); stack = [(y, x)]; seen[y, x] = True
+        while stack:
+            cy, cx = stack.pop(); comp[cy, cx] = True
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                ny, nx = cy + dy, cx + dx
+                if 0 <= ny < dark.shape[0] and 0 <= nx < dark.shape[1] and dark[ny, nx] and not seen[ny, nx]:
+                    seen[ny, nx] = True; stack.append((ny, nx))
+        if comp.sum() >= min_px:
+            out.append(np.asarray(Image.fromarray(comp.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(7))) > 0)
+    return out
 
 def set_in(world, ob):
     a = np.asarray(world.convert('RGB')).astype(np.float32)
@@ -216,13 +301,14 @@ def set_in(world, ob):
         ys, xs = np.nonzero(m); ys = ys + y + dy; xs = xs + x + dx
         ok = (ys >= 0) & (ys < H) & (xs >= 0) & (xs < W); z[ys[ok], xs[ok]] = True; return z
     obj = region(al)
-    # key-light shadow: the silhouette's lower half flattened onto the ground, falling down-right
+    # key-light shadow from the upper left: a pixel h above the base row stands over the ground at the base row, and its
+    # shadow falls from there down-right along the light (SHADOW_KX * h right, SHADOW_KY * h down), so the shadow starts
+    # at the feet and runs out to the lower right
     cast = np.zeros((H, W), bool)
-    rows = np.nonzero(al.any(1))[0]; base = rows.max()
-    for r in rows:
-        hgt = base - r; cols = np.nonzero(al[r])[0]
-        sx = cols + x + int(hgt * 0.9); sy = np.full_like(cols, y + base - int(hgt * 0.15))
-        ok = (sx >= 0) & (sx < W) & (sy >= 0) & (sy < H); cast[sy[ok], sx[ok]] = True
+    ys_, xs_ = np.nonzero(al); base = ys_.max()
+    hgt = base - ys_
+    sx = xs_ + x + np.round(hgt * SHADOW_KX).astype(int); sy = y + base + np.round(hgt * SHADOW_KY).astype(int)
+    ok = (sx >= 0) & (sx < W) & (sy >= 0) & (sy < H); cast[sy[ok], sx[ok]] = True
     cast = np.asarray(Image.fromarray((cast * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(3))) > 0
     contact = region(al, 0, 1) & ~obj
     for m, v in ((cast & ~obj, SHADOW), (contact, CONTACT)):
@@ -244,15 +330,29 @@ def geometry_sprite(ob, scene):
     return spr, inside
 
 if __name__ == '__main__':
-    world = Image.open(f'{RA}/world-g1-raw.png').convert('RGB')
+    world = Image.open(f'{RA}/world-g1-raw.png').convert('RGB'); raw_world = world.copy()
+    GROUND = ground_ids((world.height, world.width))
     obs = objects()
     masks = {}
     for ob in obs: masks.setdefault(ob['piece'], old_mask(ob['piece'], (world.height, world.width)))
+    # one inpaint per piece over a small mask: the old footprint and silhouette (`tight_mask`) and the old baked shadow
+    # wherever it reaches (raw ground clearly darker than around it); only that is blanked, so the generator sees the
+    # real ground texture up to its edge, and the result is gain-matched and blended 2 px into the restyle
+    small = {}
+    lum = np.asarray(raw_world.convert('L')).astype(np.float32)
+    for pid, m in masks.items():
+        t = tight_mask(pid, m.shape); ti = Image.fromarray(t.astype(np.uint8) * 255)
+        ring = (np.asarray(ti.filter(ImageFilter.MaxFilter(41))) > 0) & ~m & GROUND
+        if ring.sum() > 30:
+            shade = m & GROUND & (lum < np.median(lum[ring]) - 30)
+            t = t | ((np.asarray(Image.fromarray(shade.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0) & m)
+        small[pid] = np.asarray(Image.fromarray(t.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0
+    world = raw_world.copy()
     avoid = np.zeros((world.height, world.width), bool)
-    for m in masks.values(): avoid |= m
-    for pid, m in masks.items(): prefill(world, m, avoid)
+    for t in small.values(): avoid |= t
+    for t in small.values(): prefill(world, t, avoid)
     world.save(f'{RA}/world-g1-prefilled.png')
-    for pid, m in masks.items(): inpaint(world, m, f"o2-out-{pid}")
+    for pid, t in small.items(): inpaint(world, t, f"o4-out-{pid}", t)
     world.save(f'{RA}/world-g1-cleared.png')
     for ob in sorted(obs, key=lambda o: o['xy'][1] + o['image'].height):
         set_in(world, ob)
