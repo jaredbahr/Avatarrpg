@@ -15,15 +15,10 @@ import {
   FOREST_APRON_SEAM,
 } from '../../src/content/scenes/forestRoad';
 import { apronBands, type ApronBand } from './lib/apron-bands';
-import {
-  DIRECTORY as FOREST_DIRECTORY,
-  QUALITY as FOREST_QUALITY,
-  STEM as FOREST_STEM,
-  packSceneApron,
-} from './forest-exterior-apron';
-import { apronPlatePath } from './lib/apron-plates';
+import { STEM as FOREST_STEM, packSceneApron } from './forest-exterior-apron';
+import { FOREST_G1_OUT } from './forest-g1-pack';
 import { crop } from './lib/trim';
-import { encodeWebp } from './lib/webp';
+import { decodeWebp } from './lib/webp';
 import type { Image } from './lib/image';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
@@ -118,29 +113,27 @@ describe('the ring the scene registers', () => {
   it('is the ground the scene itself lists, offset by the ring', () => {
     expect(FOREST_APRON_PIECES).toHaveLength(FOREST_APRON_BANDS.length);
     for (const [index, piece] of FOREST_APRON_PIECES.entries())
-      expect(piece.url).toBe(`art/maps/forest-scene/exterior-apron-${index}.webp`);
+      expect(piece.url).toBe(`art/maps/forest-g1/exterior-apron-${index}.webp`);
   });
 });
 
 describe('the art on disk', () => {
   it('is the packed ring cut into exactly those bands', async () => {
-    const cases = [
-      {
-        label: 'Forest Road',
-        ...forest,
-        directory: FOREST_DIRECTORY,
-        stem: FOREST_STEM,
-        quality: FOREST_QUALITY,
-      },
-    ];
-    for (const scene of cases)
-      for (const [index, band] of scene.bands.entries()) {
-        const path = apronPlatePath(scene.directory, scene.stem, index);
-        const shipped = readFileSync(path);
-        expect(
-          Buffer.from(await encodeWebp(crop(scene.ring, band), scene.quality, true)),
-          path,
-        ).toEqual(shipped);
-      }
+    // What ships is the G1 restyle of the ring (ADR 0086): its colour is the
+    // restyle's, held to its source by `forest-g1-pack.test.ts`, and its alpha
+    // is the packed ring's, band for band, pixel for pixel.
+    for (const [index, band] of forest.bands.entries()) {
+      const path = `${FOREST_G1_OUT}/${FOREST_STEM}-${index}.webp`;
+      const shipped = await decodeWebp(readFileSync(path));
+      const cut = crop(forest.ring, band);
+      expect({ width: shipped.width, height: shipped.height }, path).toEqual({
+        width: cut.width,
+        height: cut.height,
+      });
+      let mismatched = 0;
+      for (let i = 3; i < cut.data.length; i += 4)
+        if (shipped.data[i] !== cut.data[i]) mismatched++;
+      expect(mismatched, `${path} alpha pixels differing from the ring`).toBe(0);
+    }
   });
 });

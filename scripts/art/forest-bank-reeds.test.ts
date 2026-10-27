@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { expect, it, vi } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import {
@@ -7,21 +6,19 @@ import {
   FOREST_POND_REEDS,
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
-import { encodeWebp } from './lib/webp';
 import { alphaBounds, lowestOpaqueRow } from './lib/trim';
-import {
-  BANK_REED_COUNT,
-  BANK_REED_QUALITY,
-  BANK_REED_SIZE,
-  bankReedOutput,
-  packBankReed,
-} from './forest-bank-reeds';
+import { BANK_REED_COUNT, BANK_REED_SIZE, packBankReed } from './forest-bank-reeds';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
-it('ships four reproducible full-bound painted bank reeds', async () => {
+/**
+ * The packer's reeds are the pre-G1 art: since ADR 0086 they are the input the
+ * G1 reeds were redrawn from, at the same registered aspect, and no longer ship.
+ * `forest-g1-pack.test.ts` holds what does.
+ */
+it('packs four reproducible full-bound painted bank reeds', () => {
   expect(BANK_REED_ART).toHaveLength(BANK_REED_COUNT);
   for (let index = 0; index < BANK_REED_COUNT; index++) {
     const { image } = packBankReed(index);
@@ -41,9 +38,6 @@ it('ships four reproducible full-bound painted bank reeds', async () => {
     }
     expect(soft, `reed ${index} soft alpha`).toBeGreaterThan(1_000);
     expect(tones.size, `reed ${index} painted tones`).toBeGreaterThan(100);
-    expect(Buffer.from(await encodeWebp(image, BANK_REED_QUALITY, true))).toEqual(
-      readFileSync(bankReedOutput(index)),
-    );
   }
 });
 
@@ -52,14 +46,14 @@ it('plants a varied bank-reed family without changing passability or contact tre
   expect(reeds).toHaveLength(5);
   expect(FOREST_ROAD_SCENE.scenery).toEqual(expect.arrayContaining(reeds));
   expect(new Set(reeds.map(({ url }) => url))).toEqual(
-    new Set(BANK_REED_ART.map((_, index) => `art/maps/forest-scene/bank-reed-${index}.webp`)),
+    new Set(BANK_REED_ART.map((_, index) => `art/maps/forest-g1/bank-reed-${index}.webp`)),
   );
   expect(reeds.map(({ url }) => url)).toEqual([
-    'art/maps/forest-scene/bank-reed-0.webp',
-    'art/maps/forest-scene/bank-reed-1.webp',
-    'art/maps/forest-scene/bank-reed-3.webp',
-    'art/maps/forest-scene/bank-reed-2.webp',
-    'art/maps/forest-scene/bank-reed-1.webp',
+    'art/maps/forest-g1/bank-reed-0.webp',
+    'art/maps/forest-g1/bank-reed-1.webp',
+    'art/maps/forest-g1/bank-reed-3.webp',
+    'art/maps/forest-g1/bank-reed-2.webp',
+    'art/maps/forest-g1/bank-reed-1.webp',
   ]);
   for (const reed of reeds) {
     const cell = reed.footprint[0];

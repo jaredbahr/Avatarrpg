@@ -9,13 +9,12 @@ import {
   FOREST_ROAD_SCENE,
   FOREST_THICKET_CELLS,
 } from '../../src/content/scenes/forestRoad';
-import { apronPlatePath } from './lib/apron-plates';
+import { FOREST_G1_OUT, FOREST_G1_SOURCE } from './forest-g1-pack';
 import { decodeWebp } from './lib/webp';
 import {
   APRON_FADE,
   APRON_SOLID,
   APRON_SEAM,
-  DIRECTORY,
   GUARD_ALPHA,
   FOREST_APRON_ALPHA_STEPS,
   STEM,
@@ -28,7 +27,7 @@ import {
   loadWatercourseField,
   packApron,
 } from './forest-exterior-apron';
-import { pixelAt, type Image } from './lib/image';
+import { pixelAt, readPng, type Image } from './lib/image';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -88,18 +87,20 @@ it('packs an apron that never overpaints authored ground', () => {
 it('ships a rim with no light fringe from the lossy encoder', async () => {
   // The bands are lossy. A clear pixel's colour still feeds the encoder, and
   // black ones beside the band smeared a light line along the rim, as they did
-  // on Ba Dan's apron.
+  // on Ba Dan's apron. What ships is the G1 restyle (ADR 0086), so the rim is
+  // judged against its own committed source, on the packer's footprint.
   let rim = 0,
     fringe = 0;
   for (const [index, band] of FOREST_APRON_BANDS.entries()) {
-    const shipped = await decodeWebp(readFileSync(apronPlatePath(DIRECTORY, STEM, index)));
+    const shipped = await decodeWebp(readFileSync(`${FOREST_G1_OUT}/${STEM}-${index}.webp`));
+    const source = readPng(`${FOREST_G1_SOURCE}/ground/${STEM}-${index}.png`);
     for (let py = 0; py < band.height; py++)
       for (let px = 0; px < band.width; px++) {
-        const packed = pixelAt(apron, band.x + px, band.y + py);
-        if (packed[3] !== 255) continue;
+        if (pixelAt(apron, band.x + px, band.y + py)[3] !== 255) continue;
         const { x, y } = apronLogical(band.x + px, band.y + py);
         if (apronDepth(x, y) > 0.1) continue;
         rim++;
+        const packed = pixelAt(source, px, py);
         const got = pixelAt(shipped, px, py);
         const luma = (c: readonly number[]): number =>
           0.299 * (c[0] ?? 0) + 0.587 * (c[1] ?? 0) + 0.114 * (c[2] ?? 0);

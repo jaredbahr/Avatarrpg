@@ -2,31 +2,34 @@ import { expect, it, vi } from 'vitest';
 import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt } from './lib/image';
-import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
+import { expectPackerAlpha, readShipped } from './lib/shipped-pin';
 import { loadForestMaterial } from './forest-village-material';
-import {
-  FOREST_ROUTE_GROUND,
-  FOREST_ROUTE_GROUND_OUTPUT,
-  packRouteGround,
-} from './forest-route-ground';
+import { FOREST_ROUTE_GROUND, packRouteGround } from './forest-route-ground';
 import { WINDOW, luma, measure } from './forest-ground-measure';
+import { FOREST_G1_OUT } from './forest-g1-pack';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
-/** DL-2 §3: no 128 px window inside a packed plate may span more than this. */
-const MAX_WINDOW_SPAN = 1.25;
+/**
+ * DL-2 §3: no 128 px window inside a packed plate may span more than this. It
+ * was 1.25; the G1 plate measures 1.28, because ADR 0086 asks for value
+ * structure that still reads at the combat fit (Ba Dan's calm ground went flat
+ * at distance). 1.3 still refuses a baked gradient.
+ */
+const MAX_WINDOW_SPAN = 1.3;
 
 const material = await loadForestMaterial();
 const image = packRouteGround(material);
-const shipped = await readShipped(FOREST_ROUTE_GROUND_OUTPUT);
-
-/** Generated 2026-10-03 (see docs/art/forest-ground-composition.md); not packer output. */
-const ROUTE_PIN = {
-  bytes: 80928,
-  sha256: '8b58560d83532a66092ebeabd9476d7a64be60de820f8a2ab7b6e4de6a2a92be',
-};
+/**
+ * The plate that ships is the G1 restyle of the 2026-10-03 generated plate
+ * (ADR 0086), packed by `forest-g1-pack.ts`, which `forest-g1-pack.test.ts`
+ * holds byte for byte to its committed source. The packer stays the authority
+ * on registration: the G1 plate carries its exact alpha footprint.
+ */
+const SHIPPED = `${FOREST_G1_OUT}/route-ground.webp`;
+const shipped = await readShipped(SHIPPED);
 
 it('ships the generated route plate on the packer footprint, inside the texture cap', async () => {
   expect({ width: image.width, height: image.height }).toEqual({
@@ -34,8 +37,7 @@ it('ships the generated route plate on the packer footprint, inside the texture 
     height: FOREST_ROUTE_GROUND.height,
   });
   expect(Math.max(image.width, image.height)).toBeLessThanOrEqual(2048);
-  expectShippedPin(FOREST_ROUTE_GROUND_OUTPUT, ROUTE_PIN);
-  await expectPackerAlpha(FOREST_ROUTE_GROUND_OUTPUT, image);
+  await expectPackerAlpha(SHIPPED, image);
 });
 
 /** The logical cell a plate pixel lies in. */
@@ -68,7 +70,8 @@ it('shows a green verge and an unmistakably non-green road, not one swatch', () 
   // The Earth family reaches the verges; the old atlas had no green at all.
   expect(share[','].green / share[','].n, 'verge cells are green').toBeGreaterThan(0.9);
   // The road is stone and earth: the green that remains is moss and edge grass.
-  expect(share['='].green / share['='].n, 'road cells are not green').toBeLessThan(0.05);
+  // G1 draws moss in the cobble joints (0.057 measured; it was 0.010).
+  expect(share['='].green / share['='].n, 'road cells are not green').toBeLessThan(0.07);
 });
 
 it('carries no baked gradient and stays in the village tone band', () => {
@@ -82,10 +85,11 @@ it('carries no baked gradient and stays in the village tone band', () => {
   expect(Math.max(village / m.mean, m.mean / village)).toBeLessThan(1.3);
 });
 
-it('leaves plain road/verge boundaries uninked and the holes clear', () => {
-  // The old procedural plate held exactly zero `#1b1410` ink. Lossy generated
-  // art cannot, so the bar is "no ink line": near-black pixels stay a rounding
-  // error (3 of 474,442 measured), far under one in two thousand.
+it('inks the kerbs with a line, not a fill, and leaves the holes clear', () => {
+  // The old procedural plate held exactly zero `#1b1410` ink, and the painted
+  // plate 3 near-black pixels in 474,442. At G1 the kerb stones carry ADR
+  // 0085's 1 px contour (0.74% measured), so the bar is a line, not a fill:
+  // under one pixel in a hundred.
   let dark = 0,
     opaque = 0;
   for (let i = 0; i < shipped.data.length; i += 4) {
@@ -93,7 +97,7 @@ it('leaves plain road/verge boundaries uninked and the holes clear', () => {
     opaque++;
     if (luma(shipped.data[i] ?? 0, shipped.data[i + 1] ?? 0, shipped.data[i + 2] ?? 0) < 40) dark++;
   }
-  expect(dark / opaque, 'near-black ink pixels').toBeLessThan(0.0005);
+  expect(dark / opaque, 'near-black ink pixels').toBeLessThan(0.01);
 
   const centre = (x: number, y: number) => ({
     px: Math.floor(768 + (x - y) * 64 - FOREST_ROUTE_GROUND.x),

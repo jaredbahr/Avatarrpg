@@ -10,8 +10,8 @@ describe('forest wind', () => {
     expect(pines.length).toBeGreaterThan(4);
     expect(pines.every((piece) => piece.id.startsWith('forest-pine-'))).toBe(true);
     expect(FOREST_ROAD_SCENE.ground.filter((piece) => piece.wind).map((p) => p.url)).toEqual([
-      'art/maps/forest-scene/grass-north.webp',
-      'art/maps/forest-scene/grass-south.webp',
+      'art/maps/forest-g1/grass-north.webp',
+      'art/maps/forest-g1/grass-south.webp',
     ]);
   });
 
