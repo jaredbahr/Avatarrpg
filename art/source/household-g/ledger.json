@@ -28,7 +28,8 @@
         "generations": 6.0
       },
       "secs": 53,
-      "balance_delta_shared_account": 25.0
+      "balance_delta_shared_account": 25.0,
+      "verdict": "used"
     },
     {
       "name": "rot-south-edit-s7101-s7111",
@@ -56,7 +57,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 164
+      "secs": 164,
+      "verdict": "used"
     },
     {
       "name": "estimate-skeleton x8",
@@ -98,7 +100,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 70
+      "secs": 70,
+      "verdict": "superseded: 1.5x sway, boil 33-52%"
     },
     {
       "name": "walk-basket-south-east-s8101",
@@ -139,7 +142,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 123
+      "secs": 123,
+      "verdict": "used (probe)"
     },
     {
       "name": "idle-soft-south-east-s8102",
@@ -174,7 +178,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 136
+      "secs": 136,
+      "verdict": "used"
     },
     {
       "name": "walk-basket-south-s8101",
@@ -215,7 +220,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 104
+      "secs": 104,
+      "verdict": "used"
     },
     {
       "name": "walk-basket-north-west-s8101",
@@ -256,7 +262,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 130
+      "secs": 130,
+      "verdict": "used"
     },
     {
       "name": "walk-basket-north-s8101",
@@ -297,7 +304,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 148
+      "secs": 148,
+      "verdict": "used"
     },
     {
       "name": "walk-basket-north-east-s8101",
@@ -338,7 +346,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 153
+      "secs": 153,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-s8102",
@@ -373,7 +382,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 159
+      "secs": 159,
+      "verdict": "used"
     },
     {
       "name": "walk-basket-south-west-s8101",
@@ -414,7 +424,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 186
+      "secs": 186,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-east-s8102",
@@ -449,7 +460,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-east-s8102",
@@ -484,7 +496,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 79
+      "secs": 79,
+      "verdict": "used"
     },
     {
       "name": "walk-basket-west-s8101",
@@ -525,7 +538,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 217
+      "secs": 217,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-s8102",
@@ -560,7 +574,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "walk-basket-east-s8101",
@@ -601,7 +616,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 243
+      "secs": 243,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-west-s8102",
@@ -636,7 +652,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 95
+      "secs": 95,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-west-s8102",
@@ -671,7 +688,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 127
+      "secs": 127,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-west-s8102",
@@ -706,10 +724,11 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 189
+      "secs": 189,
+      "verdict": "used"
     }
   ],
-  "balance_after": 8434.3,
+  "balance_after": 7419.5,
   "gens_total": 62.8,
   "note": "gens = billed usage of each job. The balance is shared with other sessions on the account, so balance_before/after deltas include their spend."
 }
