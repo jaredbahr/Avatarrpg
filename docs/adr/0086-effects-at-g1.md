@@ -70,6 +70,14 @@ A particle draws the rung nearest its size by ratio at one art px a world px; it
 solid core and one hard ring at 104/255, not a gradient. Shapes, sizes, counts, tints, blends, timing and the
 emitters' seeds are unchanged; a particle's drawn size moves by at most half a rung step.
 
+**Element cels are resampled to the size they draw at** (`src/render/fx/celResample.ts`). A cue draws a cel anywhere
+from 0.3 to 2.2 tiles, and the 96 px master scaled nearest to half size drops every other pixel and comes apart into
+specks (seen in the first combat capture). So each cel is resampled once to the whole number of world pixels it
+draws at: a pixel is solid when 40% of its box in the master is, and takes the colour most of that box has, the ink
+counting one and a half, so the outline survives; larger than the master it is plain nearest. Results are cached by
+cel, frame and size (64 at most, on both backends) and drawn unscaled: on WebGL each cel is a pooled sprite between
+the strokes and the shapes rather than a particle, since its texture is its own.
+
 **Strokes are rasterised at the world's grain** (`src/render/fx/pixelStrokes.ts`). Each emitter's sampled shapes are
 drawn into a pooled canvas at one pixel a world pixel, then hardened: a pixel at least half covered becomes the
 emitter's colour or its ink, whichever it is nearer, at the shape's fade in eighths; everything else clears. Both
@@ -94,9 +102,8 @@ particles where they already drew; reduce motion, which still collapses the chor
 
 - Effects and world share a grain, a contour and a palette; at 4x an effect reads as the same medium as Kaya, the
   canal and the paving.
-- The element cels are 96 px masters scaled by their cue size (0.3–2.2 tiles): at most uses a cel texel is 0.4–1.5
-  world px, so it is pixel art at about the world's grain, not exactly 1:1. Exact 1:1 would need a raster per cue
-  size; ADR 0085's open camera item (integer zoom) is the same question for the whole screen.
+- An effect is 1:1 with the world, but the screen is not yet: ADR 0085's open camera item (an integer zoom) still
+  decides whether a world px is a whole number of screen px.
 - A new effect is drawn the same way: paint or generate at world px, clean up through `fx-g1.ts`, ship lossless.
 - The painted prototype pipeline (`bend-effects.ts --source`) still writes the data; its page output is now the
   input of the G1 pass, not what ships.
