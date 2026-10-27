@@ -60,7 +60,7 @@ finished, convincing map, then carry the method to the other maps.
 
 ## Art route (settled)
 
-- **Maps** are drawn at the characters' grain (Route A at G1, owner 2026-10-27, [ADR 0084](adr/0084-route-a-pixel-world-at-g1.md)):
+- **Maps** are drawn at the characters' grain (Route A at G1, owner 2026-10-27, [ADR 0085](adr/0085-route-a-pixel-world-at-g1.md)):
   1 art px = 1 world px, made by the same PixelLab G family as the figures, one hand for the world, its objects and its
   people. A map is still one continuous picture over its true geometry, split into ground plates and upright pieces so
   figures walk behind things ([ba-dan-scene.md](art/ba-dan-scene.md), `scripts/art/ba-dan-regions/`): the layout is laid out and
@@ -102,7 +102,7 @@ pixel approach is looks cleaner." Routes B (hybrid painted world with generated 
 | 2026-10-10 | Keep the current Ba Dan layout; greener, nature-led balance; character work approved                                                                                                                                                       |
 | 2026-10-11 | Gentle village motion approved (shipped 2026-10-13)                                                                                                                                                                                        |
 | 2026-10-13 | Objects must match the characters or the style may pivot; generator objects being proven                                                                                                                                                   |
-| 2026-10-27 | Route A (Pixel) at G1: the world, objects and residents from the PixelLab G family at 1 art px = 1 world px; G2 (2x chunky) and routes B and C closed (ADR 0084)                                                                           |
+| 2026-10-27 | Route A (Pixel) at G1: the world, objects and residents from the PixelLab G family at 1 art px = 1 world px; G2 (2x chunky) and routes B and C closed (ADR 0085)                                                                           |
 
 ## Rejected approaches
 
@@ -129,4 +129,4 @@ pixel approach is looks cleaner." Routes B (hybrid painted world with generated 
 - How to show a character fully hidden behind a house (outline or not).
 - Hanru's look, and whether followers keep a tile away from house walls.
 - The game's final name.
-- Whether the camera snaps to an integer zoom so the world and the figures share one on-screen pixel grid (ADR 0084).
+- Whether the camera snaps to an integer zoom so the world and the figures share one on-screen pixel grid (ADR 0085).

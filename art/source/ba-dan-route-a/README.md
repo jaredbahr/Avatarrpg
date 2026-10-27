@@ -182,7 +182,7 @@ difference is not this work's cost. 200 of the 802 went to the rejected `a1-slic
 
 ## The G1 world (owner decision, 2026-10-27)
 
-The owner chose Route A at G1 (#284; ADR 0084), and the whole village was redone in this hand. The order, each step
+The owner chose Route A at G1 (#284; ADR 0085), and the whole village was redone in this hand. The order, each step
 deterministic after the PixelLab jobs (which are in `ledger.json`):
 
 1. `tools/world.py` reduces the shipped stitched painting (with ADR 0083's calm) to world px (3000 x 1601) and restyles it
@@ -212,4 +212,4 @@ Known faults:
 - A cleared patch can leave a faint straight tone edge on the paving (the south display's patch most).
 - The stitched picture keeps the restyle's feathered tile joins. Every region overlap matches, but nothing was measured
   inside a region.
-- A single on-screen pixel grid needs an integer camera zoom (ADR 0084, open).
+- A single on-screen pixel grid needs an integer camera zoom (ADR 0085, open).

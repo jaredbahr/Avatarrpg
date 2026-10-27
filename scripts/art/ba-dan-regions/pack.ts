@@ -103,7 +103,7 @@ export async function pack(work: string): Promise<Packed> {
   }));
   const bySprite = new Map(report.sprites.map((s) => [s.id, s]));
   const rows: string[] = [];
-  // ADR 0084: an upright of pixel art whose 1 px colour edges the lossy codec cannot hold even at q100 (its 4:2:0
+  // ADR 0085: an upright of pixel art whose 1 px colour edges the lossy codec cannot hold even at q100 (its 4:2:0
   // chroma) goes on a lossless page; every other upright stays on the lossy pages as before.
   const exact = new Set<string>();
   for (const item of items) if (!(await holdsLossy(item.image))) exact.add(item.name);

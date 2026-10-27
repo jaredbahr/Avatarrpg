@@ -1,4 +1,4 @@
-# ADR 0084: Route A: Ba Dan's world drawn at the characters' grain (G1)
+# ADR 0085: Route A: Ba Dan's world drawn at the characters' grain (G1)
 
 **Status:** accepted, 2026-10-27
 

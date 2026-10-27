@@ -47,7 +47,7 @@ approved look. Checkable rules, cross-referenced to where each is decided:
 - **Grid-true geometry.** Every scenery edge that communicates a footprint,
   route or elevation comes from the map guide. Never rotate, skew or resample
   finished art to force it onto the grid.
-- **One grain.** World art is drawn at the characters' grain: 1 art px = 1 world px (G1, ADR 0084), with figures
+- **One grain.** World art is drawn at the characters' grain: 1 art px = 1 world px (G1, ADR 0085), with figures
   about 59 art px tall. Marks are 1–2 art px; 3–5 flat tone groups per material; outlines dark brown, 1 art px,
   `#1b1410` at their darkest, never black. No blur, airbrushed gradient, gloss, all-over stipple, photographic
   texture or lens effect in any class. No square texels larger than one art px (the 2x "G2" grain was rejected).
@@ -81,11 +81,11 @@ Two scenery treatments ship, and each map follows its own.
 
 **Ba Dan village (one continuous picture at G1).** The village is a single picture, not pieces laid on a lawn: twelve
 overlapping regions over a guide rendered from the map's own geometry, joined into one picture and cut back into ground
-plates and the pieces a figure can walk behind (the houses, the trees, the dressing). Since ADR 0084 the picture is
+plates and the pieces a figure can walk behind (the houses, the trees, the dressing). Since ADR 0085 the picture is
 drawn at the characters' grain by the same PixelLab G family: restyled at world px in one pass (one prompt, one seed),
 then scaled to the regions' 1.5 painting px per world px. Walkable ground is calm by design (broad areas of 3–4 tones,
 sparse 1–2 px marks), not filtered. Figure-scale objects (tables, baskets, benches, fences, stock) come from the same
-generator at the measured sizes of `docs/art/object-style-diagnosis.md` section 2 and ADR 0084's scale table, and are set into the
+generator at the measured sizes of `docs/art/object-style-diagnosis.md` section 2 and ADR 0085's scale table, and are set into the
 picture at their footprints with a flat pixel cast shadow and contact line; their frozen silhouettes are the objects'
 own. The silhouette and footprint edges of an upright are forced by the geometry.
 

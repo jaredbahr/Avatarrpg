@@ -356,7 +356,7 @@ def case_uprights_are_the_pieces_figures_stand_behind(work):
     stands = {p["id"] for p in v.pieces if p["sprite"] is not None and needed[p["id"]] > 0}
     assert stands == set(uprights), (stands ^ set(uprights))
     ground = {p["id"] for p in v.pieces if needed[p["id"]] == 0}
-    # ADR 0084: the canal bench and both basket groups are drawn at the brief's size and cover no figure behind them
+    # ADR 0085: the canal bench and both basket groups are drawn at the brief's size and cover no figure behind them
     assert len(ground) == 32 and len(stands) == 46, (len(ground), len(stands))
     # the walkable cells frozen with the geometry are the map's (`baDan.test.ts` holds the map to them)
     assert len(v.walkable) > 200
@@ -428,7 +428,7 @@ def case_shipped_plates_are_continuous(work):
         full[y:y + im.shape[0], x:x + im.shape[1]] = im
     g = full.astype(int).mean(-1)
     # the step over a join, against the steps just either side of it in the same rows
-    # or, where the picture itself has an edge along the join (pixel art runs long straight lines, ADR 0084), the step
+    # or, where the picture itself has an edge along the join (pixel art runs long straight lines, ADR 0085), the step
     # of the picture there: the plate before the join holds both rows (the plates overlap by 2 px), so its own step
     # over them is the picture's, and a seam would add to it
     def own(axis, at):
@@ -519,7 +519,7 @@ def case_quiet_ground_calms_and_is_deterministic(work):
 
 
 def case_split_softens_plates_and_not_uprights(work):
-    # ADR 0083's calm, behind its switch (ADR 0084 turns it off for the shipped G1 picture)
+    # ADR 0083's calm, behind its switch (ADR 0085 turns it off for the shipped G1 picture)
     R.QUIET_GROUND = True
     try:
         _split_softens(work)
@@ -528,7 +528,7 @@ def case_split_softens_plates_and_not_uprights(work):
 
 
 def case_split_without_calm_ships_the_painting(work):
-    assert R.QUIET_GROUND is False, "ADR 0084: the G1 ground is drawn calm, not filtered"
+    assert R.QUIET_GROUND is False, "ADR 0085: the G1 ground is drawn calm, not filtered"
     plan, v, painting = split_inputs(work)
     out = work / "plain"
     R.save(out / "stitched.png", painting)

@@ -50,7 +50,7 @@ PLATE_OVERLAP = 2
 # detail (ADR 0083): a median filter of this size over the full-resolution painting, then these factors for colour
 # saturation and contrast (PIL `ImageEnhance`, 1.0 = unchanged). Only pixels no geometry piece owns are calmed; the
 # pieces (upright or not) and the uprights keep the unsoftened painting.
-# ADR 0084: at G1 the ground is drawn calm, so the calm step is off and the plates are the picture as drawn. The step
+# ADR 0085: at G1 the ground is drawn calm, so the calm step is off and the plates are the picture as drawn. The step
 # stays, behind this switch, for a map that is still a soft painting.
 QUIET_GROUND = False
 QUIET_MEDIAN = 3
@@ -1323,7 +1323,7 @@ def cmd_split(a) -> int:
     if painting.shape[:2] != (vh, vw):
         sys.exit(f"painting is {painting.shape[1]}x{painting.shape[0]}, the village is {vw}x{vh}")
     fade = edge_fade(painting)
-    # the plates: with QUIET_GROUND only the ground is calmed (ADR 0083) and pieces keep the painting; without it (ADR 0084) the
+    # the plates: with QUIET_GROUND only the ground is calmed (ADR 0083) and pieces keep the painting; without it (ADR 0085) the
     # plates are the painting as drawn
     quiet = fade_into_margin(quiet_plates(painting, village) if QUIET_GROUND else painting, fade)
     painting = fade_into_margin(painting, fade)

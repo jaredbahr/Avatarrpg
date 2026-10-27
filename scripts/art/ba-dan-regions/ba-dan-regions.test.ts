@@ -49,7 +49,7 @@ describe('ba-dan-regions', () => {
   it('softens the ground plates and leaves the uprights on the unsoftened painting', () => {
     expect(run('split_softens_plates_and_not_uprights')).toContain('ok');
   }, 180_000);
-  it('ships the painting as drawn when the calm is off (ADR 0084)', () => {
+  it('ships the painting as drawn when the calm is off (ADR 0085)', () => {
     expect(run('split_without_calm_ships_the_painting')).toContain('ok');
   }, 180_000);
   it('reports planting painted across an upright edge', () => {
