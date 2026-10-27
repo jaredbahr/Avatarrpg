@@ -1,10 +1,13 @@
 import type { MapDef } from '../../core/types';
-import { enemyScale } from '../anim/actorScale';
-import { resolveAsset } from '../../content/assets/manifest';
+import { enemyScale, partyScale } from '../anim/actorScale';
+import { resolveAsset, sheetLocomotion } from '../../content/assets/manifest';
 
 /** A small animal discovery must not inherit the adult conversation-figure scale. */
 export function npcPresentationScale(sprite: string, projection: MapDef['projection']): number {
   if (sprite === 'world.turtle_ducks') return 0.6;
+  // A resident on a G sheet (issue #284) is packed at the party's size, so it
+  // stands at the party's scale and casts the party's shadow.
+  if (sheetLocomotion(sprite)?.headings === 8) return partyScale(projection);
   // A painted placeholder person (ADR 0047's relief watch, household adult and
   // Hanru) stands a head taller than the illustrated residents at 1.5; until
   // A1's art lands, bring it down to their height.

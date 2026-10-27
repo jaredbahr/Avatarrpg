@@ -555,20 +555,21 @@ describe('routines (Working Ba Dan)', () => {
     );
   });
 
-  it('uses planted step contacts and eases the first and last walking step', () => {
+  it('walks a G-sheet resident on its own heading clips, with no procedural bob or lean', () => {
     const gao = of(play(walks(), at('morning', AWAY[0]), 0, 12_000), GAO);
     const first = gao.findIndex((figure) => figure.walking);
     const after = gao.findIndex((figure, index) => index > first && !figure.walking);
     if (first < 0 || after < 0) throw new Error('Gao completes a walk in the sample');
     const walk = gao.slice(first, after);
-    const leans = walk.map((figure) => Math.abs(figure.lean ?? 0));
-    const bobs = walk.map((figure) => Math.abs((figure.offset?.y ?? 0) * 64));
     expect(walk.length).toBeGreaterThan(4);
-    expect(leans[0]).toBeLessThan(Math.max(...leans));
-    expect(leans.at(-1)).toBeLessThan(Math.max(...leans));
-    expect(bobs.filter((bob) => bob === 0).length).toBeGreaterThan(1);
-    expect(bobs).toContain(0);
-    expect(bobs).toContain(1);
+    // The sheet authors the stride and its bob (issue #284): eight-way clips, nothing added.
+    expect(walk.every((figure) => /^(walk|idle)/.test(figure.clip ?? ''))).toBe(true);
+    expect(walk.some((figure) => (figure.clip ?? '').startsWith('walk'))).toBe(true);
+    expect(walk.every((figure) => figure.offset === undefined && figure.lean === 0)).toBe(true);
+    // Stopped, he settles into the idle of the heading he walked, on the resident clock.
+    const stopped = gao[after];
+    expect(stopped?.clip).toMatch(/^idle/);
+    expect(stopped?.clip?.slice(4)).toBe((walk.at(-1)?.clip ?? '').replace(/^(walk|idle)/, ''));
   });
 
   it('derives a stable, resident-specific idle phase from the id', () => {

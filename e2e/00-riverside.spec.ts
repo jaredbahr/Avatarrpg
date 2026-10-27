@@ -189,9 +189,11 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.evaluate(() => window.fnt!.app.startVillagePreview());
     await expect(page.getByRole('button', { name: 'Water form', exact: true })).toBeVisible();
     await expect(page.locator('.village-life-canvas')).toHaveCount(1);
+    // Sura and Kaya, and the two residents placed here this afternoon, each drawn
+    // from their G sheet (ADR 0084).
     await expect(page.locator('.village-life-canvas')).toHaveAttribute(
       'data-illustrated-actors',
-      '2',
+      '4',
     );
     await openActivities(page);
     await page.getByRole('button', { name: 'Under the banyan', exact: true }).click();

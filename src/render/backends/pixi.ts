@@ -109,11 +109,13 @@ import type { ResolvedFrame } from '../sheets/store';
 import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
+import { npcPipLift } from '../npcPip';
 import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
   floaterOutlineWidth,
   floaterScale,
+  npcClip,
   unitMarkerGroundPoint,
   type AimArc,
   type BendFxSprite,
@@ -2551,18 +2553,16 @@ export class PixiBackend implements RenderBackend {
       const width = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
       const scale = npc.scale ?? 1;
       const poseScale = npc.poseScale ?? 1;
-      const facing = npc.facing ?? 1;
+      const clip = npcClip(npc);
+      // An eight-way sheet draws its own west and diagonals; only its legacy clips mirror.
+      const facing =
+        entry.kind === 'sheet' && entry.facing === 'both' && authoredForBothSides(clip)
+          ? 1
+          : (npc.facing ?? 1);
       const at = npc.renderPos ?? npc.pos;
       const frame =
         entry.kind === 'sheet'
-          ? sheets.frame(
-              npc.sprite,
-              npc.walking ? 'walk' : 'idle',
-              npc.clipTime ?? 0,
-              undefined,
-              px * scale,
-              width,
-            )
+          ? sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px * scale, width)
           : null;
       const screen = camera.spriteBox(at, width, false);
       const anchor = {
@@ -2607,7 +2607,7 @@ export class PixiBackend implements RenderBackend {
       );
       const treatment = groundTreatment(this.grounding, {
         castStrength: 1,
-        defaultPool: entry.kind === 'image',
+        defaultPool: entry.kind !== 'painter',
       });
       if (treatment.band && bandArt)
         this.projectContact(
@@ -2635,7 +2635,7 @@ export class PixiBackend implements RenderBackend {
       if (!npc.quiet)
         g.circle(
           x + TILE * width * 0.5,
-          y + TILE * (FOOT_LINE - (FOOT_LINE - 0.08) * scale),
+          y + TILE * (FOOT_LINE - npcPipLift(npc.sprite, scale)),
           TILE * 0.07,
         ).fill({
           color: '#f0c674',
