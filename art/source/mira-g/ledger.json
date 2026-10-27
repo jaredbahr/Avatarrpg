@@ -30,7 +30,8 @@
         "type": "generations",
         "generations": 6.0
       },
-      "secs": 45
+      "secs": 45,
+      "verdict": "used: brown skin and striped shawl closest to the portrait"
     },
     {
       "name": "south-edit-tex-s7301",
@@ -57,7 +58,8 @@
         "type": "generations",
         "generations": 6.0
       },
-      "secs": 53
+      "secs": 53,
+      "verdict": "superseded: skin drifted pale"
     },
     {
       "name": "rot-south-edit-ref-s7302-s7311",
@@ -85,7 +87,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 147
+      "secs": 147,
+      "verdict": "used"
     },
     {
       "name": "estimate-skeleton x8",
@@ -133,7 +136,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 140
+      "secs": 140,
+      "verdict": "used"
     },
     {
       "name": "walk-old-south-east-s8301",
@@ -174,7 +178,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 139
+      "secs": 139,
+      "verdict": "used"
     },
     {
       "name": "walk-old-east-s8301",
@@ -215,7 +220,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 151
+      "secs": 151,
+      "verdict": "used"
     },
     {
       "name": "walk-old-north-east-s8301",
@@ -256,7 +262,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 134
+      "secs": 134,
+      "verdict": "used"
     },
     {
       "name": "walk-old-north-west-s8301",
@@ -297,7 +304,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 105
+      "secs": 105,
+      "verdict": "used"
     },
     {
       "name": "walk-old-north-s8301",
@@ -338,7 +346,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 161
+      "secs": 161,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-s8302",
@@ -373,7 +382,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-east-s8302",
@@ -408,7 +418,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 79
+      "secs": 79,
+      "verdict": "used"
     },
     {
       "name": "walk-old-south-west-s8301",
@@ -449,7 +460,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 121
+      "secs": 121,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-east-s8302",
@@ -484,7 +496,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 109
+      "secs": 109,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-s8302",
@@ -519,7 +532,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 78
+      "secs": 78,
+      "verdict": "used"
     },
     {
       "name": "walk-old-west-s8301",
@@ -560,7 +574,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 208
+      "secs": 208,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-west-s8302",
@@ -595,7 +610,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 78
+      "secs": 78,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-west-s8302",
@@ -630,7 +646,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-west-s8302",
@@ -665,7 +682,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 70
+      "secs": 70,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-east-s8302",
@@ -700,9 +718,10 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 223
+      "secs": 223,
+      "verdict": "used"
     }
   ],
-  "balance_after": 7987.5,
+  "balance_after": 7419.5,
   "gens_total": 65.8
 }
