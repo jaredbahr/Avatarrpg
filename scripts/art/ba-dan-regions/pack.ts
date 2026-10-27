@@ -71,6 +71,20 @@ export function pagePlan(
   return pages;
 }
 
+/**
+ * The lossless page's colours on a 5-bit grid per channel (the middle of each step of 8), visible pixels only and alpha
+ * untouched: at most 4 off in any channel, far inside the uprights' fine-grain contract (`lossyError`, max 80), and
+ * about half the bytes of the exact page (ADR 0085). Deterministic.
+ */
+function fiveBit(image: Image): Image {
+  const data = new Uint8Array(image.data);
+  for (let i = 0; i < data.length; i += 4) {
+    if ((data[i + 3] ?? 0) === 0) continue;
+    for (let c = 0; c < 3; c++) data[i + c] = (((data[i + c] ?? 0) >> 3) << 3) + 4;
+  }
+  return { ...image, data };
+}
+
 /** True when `image` meets the uprights' fine-grain contract as lossy WebP at q100. */
 async function holdsLossy(image: Image): Promise<boolean> {
   const bytes = await encodeWebp(image, 100, true, UPRIGHT_WEBP_OPTIONS);
@@ -122,7 +136,7 @@ export async function pack(work: string): Promise<Packed> {
       `uprights-${index}.webp`,
       index < lossyPages.length
         ? await encodeUprightWebp(atlas)
-        : await encodeWebp(atlas, 100, true, { lossless: 1, method: 6, exact: 1 }),
+        : await encodeWebp(fiveBit(atlas), 100, true, { lossless: 1, method: 6, exact: 1 }),
     );
     for (const p of page.placed) {
       const s = bySprite.get(p.name)!;
