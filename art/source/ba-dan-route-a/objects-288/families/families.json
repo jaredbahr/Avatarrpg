@@ -1,0 +1,247 @@
+{
+  "definition": "G1 = 1 art px per world px (toned source reduced by grain_f / 1.5; Kaya 59 px)",
+  "placement": "draw the G1 image with g1_anchor_px on the screen point of logical ground (tile_x * 64 + origin[0], tile_y * 64 + origin[1]) at 1 px per world px (screen x = lx - ly, y = (lx + ly) / 2); the ground origin is the object's own min-x, min-y ground corner",
+  "objects": {
+    "village-well": {
+      "source": "raw/village-well-f2-s41/0.png",
+      "toned": "families/toned/village-well.png",
+      "factor_from_source": 0.375,
+      "g1": [57, 79],
+      "tiles": [[12, 13]],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [28.4, 53.1],
+      "origin_in_footprint_logical_px": [14.1, 14.1],
+      "extent_logical_px": [35.8, 35.8]
+    },
+    "banner-pole": {
+      "source": "raw/banner-pole-f2-s41/0.png",
+      "toned": "families/toned/banner-pole.png",
+      "factor_from_source": 0.375,
+      "g1": [24, 73],
+      "tiles": [
+        [11, 2],
+        [18, 10]
+      ],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [9.2, 61.0],
+      "origin_in_footprint_logical_px": [23.1, 23.1],
+      "extent_logical_px": [17.9, 17.9]
+    },
+    "lantern-post": {
+      "source": "raw/lantern-post-f2-s41/0.png",
+      "toned": "families/toned/lantern-post.png",
+      "factor_from_source": 0.375,
+      "g1": [20, 63],
+      "tiles": [
+        [16, 9],
+        [20, 6],
+        [20, 9]
+      ],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [9.2, 52.4],
+      "origin_in_footprint_logical_px": [23.6, 23.6],
+      "extent_logical_px": [16.7, 16.7]
+    },
+    "laundry-line": {
+      "source": "raw/laundry-line-f3-s52/0.png",
+      "toned": "families/toned/laundry-line.png",
+      "factor_from_source": 0.4133,
+      "g1": [90, 94],
+      "tiles": [[17, 2]],
+      "footprint_tiles": [2, 1],
+      "g1_anchor_px": [5.9, 44.7],
+      "origin_in_footprint_logical_px": [19.3, 26.0],
+      "extent_logical_px": [89.4, 11.9]
+    },
+    "notice-board": {
+      "source": "raw/notice-board-f2-s41/0.png",
+      "toned": "families/toned/notice-board.png",
+      "factor_from_source": 0.375,
+      "g1": [36, 66],
+      "tiles": [[18, 6]],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [11.0, 49.4],
+      "origin_in_footprint_logical_px": [18.3, 25.4],
+      "extent_logical_px": [27.4, 13.1]
+    },
+    "handcart": {
+      "source": "fixes/handcart-f2-s41-clean.png",
+      "toned": "families/toned/handcart.png",
+      "factor_from_source": 0.375,
+      "g1": [65, 33],
+      "tiles": [[19, 4]],
+      "footprint_tiles": [3, 1],
+      "g1_anchor_px": [13.4, 2.9],
+      "origin_in_footprint_logical_px": [62.6, 21.9],
+      "extent_logical_px": [66.8, 20.3]
+    },
+    "garden-edge-a": {
+      "source": "raw/garden-edge-a-f2-s41/0.png",
+      "toned": "families/toned/garden-edge-a.png",
+      "factor_from_source": 0.375,
+      "g1": [66, 39],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [1.4, 5.5],
+      "origin_in_footprint_logical_px": [0.0, 30.5],
+      "extent_logical_px": [64.0, 3.0]
+    },
+    "garden-edge-b": {
+      "source": "raw/garden-edge-b-f2-s41/0.png",
+      "toned": "families/toned/garden-edge-b.png",
+      "factor_from_source": 0.375,
+      "g1": [66, 40],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [63.6, 6.5],
+      "origin_in_footprint_logical_px": [30.5, 0.0],
+      "extent_logical_px": [3.0, 64.0]
+    },
+    "garden-post": {
+      "source": "raw/garden-post-f2-s41/0.png",
+      "toned": "families/toned/garden-post.png",
+      "factor_from_source": 0.375,
+      "g1": [6, 12],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [3.0, 8.9],
+      "origin_in_footprint_logical_px": [30.2, 30.2],
+      "extent_logical_px": [3.6, 3.6]
+    },
+    "garden-cabbages": {
+      "source": "raw/garden-cabbages-f2-s41/0.png",
+      "toned": "families/toned/garden-cabbages.png",
+      "factor_from_source": 0.375,
+      "g1": [66, 35],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [7.0, 0.6],
+      "origin_in_footprint_logical_px": [2.2, 27.8],
+      "extent_logical_px": [59.6, 8.3]
+    },
+    "garden-beans": {
+      "source": "fixes/garden-beans-f2-s41-clean.png",
+      "toned": "families/toned/garden-beans.png",
+      "factor_from_source": 0.375,
+      "g1": [64, 54],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [5.5, 21.2],
+      "origin_in_footprint_logical_px": [2.2, 28.4],
+      "extent_logical_px": [59.6, 7.2]
+    },
+    "garden-greens": {
+      "source": "raw/garden-greens-f2-s41/0.png",
+      "toned": "families/toned/garden-greens.png",
+      "factor_from_source": 0.375,
+      "g1": [64, 34],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [5.5, 1.0],
+      "origin_in_footprint_logical_px": [2.2, 28.4],
+      "extent_logical_px": [59.6, 7.2]
+    },
+    "stone-lantern": {
+      "source": "raw/stone-lantern-f2-s41/0.png",
+      "toned": "families/toned/stone-lantern.png",
+      "factor_from_source": 0.375,
+      "g1": [21, 43],
+      "tiles": [[5, 11]],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [10.4, 30.6],
+      "origin_in_footprint_logical_px": [25.4, 25.4],
+      "extent_logical_px": [13.1, 13.1]
+    },
+    "trough-hay": {
+      "source": "raw/trough-hay-f2-s41/0.png",
+      "toned": "families/toned/trough-hay.png",
+      "factor_from_source": 0.4133,
+      "g1": [89, 81],
+      "tiles": [[19, 10]],
+      "footprint_tiles": [2, 1],
+      "g1_anchor_px": [10.4, 29.0],
+      "origin_in_footprint_logical_px": [19.3, 20.1],
+      "extent_logical_px": [89.4, 23.9]
+    },
+    "low-planter": {
+      "source": "fixes/low-planter-f4-s62-clean.png",
+      "toned": "families/toned/low-planter.png",
+      "factor_from_source": 0.4667,
+      "g1": [110, 69],
+      "tiles": [
+        [11, 10],
+        [17, 4]
+      ],
+      "footprint_tiles": [2, 1],
+      "g1_anchor_px": [26.5, 13.9],
+      "origin_in_footprint_logical_px": [22.3, 18.9],
+      "extent_logical_px": [83.5, 26.2]
+    },
+    "low-planter-1x2": {
+      "source": "fixes/low-planter-1x2-f4-s62-clean.png",
+      "toned": "families/toned/low-planter-1x2.png",
+      "factor_from_source": 0.4667,
+      "g1": [111, 66],
+      "tiles": [[17, 10]],
+      "footprint_tiles": [1, 2],
+      "g1_anchor_px": [83.4, 10.6],
+      "origin_in_footprint_logical_px": [18.9, 22.3],
+      "extent_logical_px": [26.2, 83.5]
+    },
+    "barrels": {
+      "source": "raw/barrels-f2-s41/0.png",
+      "toned": "families/toned/barrels.png",
+      "factor_from_source": 0.375,
+      "g1": [27, 31],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [13.4, 11.9],
+      "origin_in_footprint_logical_px": [18.9, 20.1],
+      "extent_logical_px": [26.2, 23.9]
+    },
+    "crates": {
+      "source": "raw/crates-f2-s42/0.png",
+      "toned": "families/toned/crates.png",
+      "factor_from_source": 0.375,
+      "g1": [33, 44],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [14.1, 19.8],
+      "origin_in_footprint_logical_px": [18.3, 20.1],
+      "extent_logical_px": [27.4, 23.9]
+    },
+    "water-jars": {
+      "source": "raw/water-jars-f2-s41/0.png",
+      "toned": "families/toned/water-jars.png",
+      "factor_from_source": 0.375,
+      "g1": [22, 28],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [8.5, 14.1],
+      "origin_in_footprint_logical_px": [20.1, 21.3],
+      "extent_logical_px": [23.9, 21.5]
+    },
+    "firewood": {
+      "source": "raw/firewood-f3-s52/0.png",
+      "toned": "families/toned/firewood.png",
+      "factor_from_source": 0.375,
+      "g1": [48, 47],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [10.0, 19.8],
+      "origin_in_footprint_logical_px": [12.9, 27.2],
+      "extent_logical_px": [38.2, 9.5]
+    },
+    "kiln": {
+      "source": "raw/kiln-f4-s61/0.png",
+      "toned": "families/toned/kiln.png",
+      "factor_from_source": 0.375,
+      "g1": [31, 54],
+      "tiles": [],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [13.0, 20.9],
+      "origin_in_footprint_logical_px": [12.9, 17.1],
+      "extent_logical_px": [38.2, 29.8]
+    }
+  }
+}

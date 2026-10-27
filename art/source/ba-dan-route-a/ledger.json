@@ -2,8 +2,8 @@
   "what": "Route A (Pixel) round 1 for issue #284: every PixelLab job, in order.",
   "gens": "PixelLab job usage (generations). balance_before/after are the account-wide balance, which another session was spending at the same time, so their difference is not this job's cost.",
   "account_balance_at_start": 9770.0,
-  "account_balance_at_end": 5663.6,
-  "total_gens": 1767.0,
+  "account_balance_at_end": 2922.6000000000004,
+  "total_gens": 2737.0,
   "jobs": [
     {
       "tag": "p1-gao-i2p",
@@ -3719,11 +3719,9 @@
       "gens": 9.0,
       "seconds": 42,
       "notes": "paint out the baked object under o4-out-gao-display",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-gao-display-0.png": "world/inpaint/o4-out-gao-display.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3757,11 +3755,9 @@
       "gens": 9.0,
       "seconds": 55,
       "notes": "paint out the baked object under o4-out-south-market-display",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-south-market-display-0.png": "world/inpaint/o4-out-south-market-display.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3795,11 +3791,9 @@
       "gens": 9.0,
       "seconds": 55,
       "notes": "paint out the baked object under o4-out-north-market-display",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-north-market-display-0.png": "world/inpaint/o4-out-north-market-display.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3833,11 +3827,9 @@
       "gens": 9.0,
       "seconds": 48,
       "notes": "paint out the baked object under o4-out-d12",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-d12-0.png": "world/inpaint/o4-out-d12.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3871,11 +3863,9 @@
       "gens": 9.0,
       "seconds": 42,
       "notes": "paint out the baked object under o4-out-d13",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-d13-0.png": "world/inpaint/o4-out-d13.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3909,11 +3899,9 @@
       "gens": 6.0,
       "seconds": 28,
       "notes": "paint out the baked object under o4-out-d8",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-d8-0.png": "world/inpaint/o4-out-d8.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3947,11 +3935,9 @@
       "gens": 6.0,
       "seconds": 35,
       "notes": "paint out the baked object under o4-out-d1",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-d1-0.png": "world/inpaint/o4-out-d1.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3985,11 +3971,9 @@
       "gens": 6.0,
       "seconds": 35,
       "notes": "paint out the baked object under o4-out-d2",
-      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px; superseded by o5 (the ground pass came first)",
       "error": null,
-      "committed": {
-        "o4-out-d2-0.png": "world/inpaint/o4-out-d2.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -4023,10 +4007,2269 @@
       "gens": 5.0,
       "seconds": 28,
       "notes": "paint out the baked object under o4-out-gao-yard-cart",
-      "verdict": "reject: clearing the cart in Gao's yard made the generator invent a structure; the strip is too narrow for the #288 props",
+      "verdict": "reject: clearing the cart in Gao's yard made the generator invent a structure; the strip is too narrow for the #288 props; superseded by o5 (the ground pass came first)",
       "error": null,
       "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "g5-t8",
+      "endpoint": "/edit-images-v2",
+      "job_id": "74485f1f-20e1-48c2-b2fd-bb3e6878d52b",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<world-g1 tile 8 (415,363)>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: living, calm lawn of 3-4 greens with fine 1-2 px blade marks, small tufts and a few tiny flowers, no flat areas. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g5-t8-0.png", "g5-t8-1.png"],
+      "balance_before": 5147.6,
+      "balance_after": 5122.6,
+      "gens": 25.0,
+      "seconds": 122,
+      "notes": "ground pass probe",
+      "verdict": "probe: grass still flat; prompt revised to g6",
+      "error": null,
+      "committed": null,
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g5-t9",
+      "endpoint": "/edit-images-v2",
+      "job_id": "91231467-03a5-4222-87b2-a4e850fed273",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<world-g1 tile 9 (829,363)>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: living, calm lawn of 3-4 greens with fine 1-2 px blade marks, small tufts and a few tiny flowers, no flat areas. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g5-t9-0.png", "g5-t9-1.png"],
+      "balance_before": 5122.6,
+      "balance_after": 5097.6,
+      "gens": 25.0,
+      "seconds": 122,
+      "notes": "ground pass probe",
+      "verdict": "probe: grass still flat; prompt revised to g6",
+      "error": null,
+      "committed": null,
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t8",
+      "endpoint": "/edit-images-v2",
+      "job_id": "2f3c82f5-d5b8-4a79-8480-1b6861a17431",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<world-g1 tile 8 (415,363)>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t8-0.png", "g6-t8-1.png"],
+      "balance_before": 5072.6,
+      "balance_after": 5022.6,
+      "gens": 25.0,
+      "seconds": 116,
+      "notes": "ground pass probe",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t8-0.png": "world/ground-tiles/g6-t8.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "f1-gao-display",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "d565b77d-caa2-4de5-a17c-02f59a8bbc30",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<objects-288 g1-toned/gao-display.png padded>"
+        },
+        "method": "text",
+        "description": "Keep the same object, position, footprint and camera angle (high top-down, 2:1 isometric), same canvas. Make it sturdier, matching heavy village furniture: thicker legs and plank top (legs 2-3 px wide, top edge 3 px thick), a strong dark brown 1 px outline (#1b1410) all round, warm wood in 3-4 flat tones, light from the upper left. On the table: four woven baskets heaped with fruit drawn as a few clear round clusters, red apples, green pears and yellow citrus, each fruit 3-4 px with one highlight pixel; a basket of apples and a crate on the ground.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["f1-gao-display-0.png", "f1-gao-display-1.png", "f1-gao-display-2.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4988.6,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "G1 furniture redraw: gao-display",
+      "verdict": "take (0): furniture redrawn with mass, goods that read at 1x; near-white clamped to cream",
+      "error": null,
+      "committed": {
+        "f1-gao-display-0.png": "objects-g1b/gao-display.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t5",
+      "endpoint": "/edit-images-v2",
+      "job_id": "0850ab11-bed3-4e97-bee9-f84278acf697",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 5 (2073,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t5-0.png", "g6-t5-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4927.6,
+      "gens": 25.0,
+      "seconds": 110,
+      "notes": "ground pass over world-g1 tile 5 at (2073,0,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t5-0.png": "world/ground-tiles/g6-t5.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "02ce3f61-b2a0-4019-a1fc-4e90b0496f89",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 2 (829,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t2-0.png", "g6-t2-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4902.6,
+      "gens": 25.0,
+      "seconds": 119,
+      "notes": "ground pass over world-g1 tile 2 at (829,0,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t2-0.png": "world/ground-tiles/g6-t2.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "f1-south-market-display",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "d2020284-5e96-419b-9471-f5baec304dac",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<objects-288 g1-toned/south-market-display.png padded>"
+        },
+        "method": "text",
+        "description": "Keep the same object, position, footprint and camera angle (high top-down, 2:1 isometric), same canvas. Make it sturdier, matching heavy village furniture: thicker legs and plank top (legs 2-3 px wide, top edge 3 px thick), a strong dark brown 1 px outline (#1b1410) all round, warm wood in 3-4 flat tones, light from the upper left. On the table: open grain sacks and bowls of rice and beans as clear mounded shapes in 2-3 tones, a small hanging balance; sacks on the ground.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": [
+        "f1-south-market-display-0.png",
+        "f1-south-market-display-1.png",
+        "f1-south-market-display-2.png"
+      ],
+      "balance_before": 4988.6,
+      "balance_after": 4891.6,
+      "gens": 6.0,
+      "seconds": 55,
+      "notes": "G1 furniture redraw: south-market-display",
+      "verdict": "take (0): furniture redrawn with mass, goods that read at 1x; near-white clamped to cream",
+      "error": null,
+      "committed": {
+        "f1-south-market-display-0.png": "objects-g1b/south-market-display.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t4",
+      "endpoint": "/edit-images-v2",
+      "job_id": "2e1cd1c8-a705-48a4-84a9-f54f18480c37",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 4 (1659,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t4-0.png", "g6-t4-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4841.6,
+      "gens": 25.0,
+      "seconds": 131,
+      "notes": "ground pass over world-g1 tile 4 at (1659,0,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t4-0.png": "world/ground-tiles/g6-t4.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "239e0c12-7c7b-49c6-b3ca-41449e170954",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 3 (1244,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t3-0.png", "g6-t3-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4816.6,
+      "gens": 25.0,
+      "seconds": 132,
+      "notes": "ground pass over world-g1 tile 3 at (1244,0,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t3-0.png": "world/ground-tiles/g6-t3.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t6",
+      "endpoint": "/edit-images-v2",
+      "job_id": "6fd3b818-7f9e-4b66-b3ad-34a24bd25a1d",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 6 (2488,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t6-0.png", "g6-t6-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4815.6,
+      "gens": 25.0,
+      "seconds": 136,
+      "notes": "ground pass over world-g1 tile 6 at (2488,0,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t6-0.png": "world/ground-tiles/g6-t6.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "ca78db73-1c91-42d6-8e3a-b0c796377567",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t0-0.png", "g6-t0-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4764.6,
+      "gens": 25.0,
+      "seconds": 150,
+      "notes": "ground pass over world-g1 tile 0 at (0,0,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t0-0.png": "world/ground-tiles/g6-t0.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "f1-north-market-display",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "be31f39e-9c6f-4132-8eaf-1448c8ddf480",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<objects-288 g1-toned/north-market-display.png padded>"
+        },
+        "method": "text",
+        "description": "Keep the same object, position, footprint and camera angle (high top-down, 2:1 isometric), same canvas. Make it sturdier, matching heavy village furniture: thicker legs and plank top (legs 2-3 px wide, top edge 3 px thick), a strong dark brown 1 px outline (#1b1410) all round, warm wood in 3-4 flat tones, light from the upper left. On the table: a row of glazed clay pots and jars in terracotta, ochre and one blue, each a clear rounded shape with a dark rim; larger jars on the ground.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": [
+        "f1-north-market-display-0.png",
+        "f1-north-market-display-1.png",
+        "f1-north-market-display-2.png"
+      ],
+      "balance_before": 4891.6,
+      "balance_after": 4706.6,
+      "gens": 6.0,
+      "seconds": 49,
+      "notes": "G1 furniture redraw: north-market-display",
+      "verdict": "take (0): furniture redrawn with mass, goods that read at 1x; near-white clamped to cream",
+      "error": null,
+      "committed": {
+        "f1-north-market-display-0.png": "objects-g1b/north-market-display.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "f1-bench-2x1",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "82b29e3b-e380-4c69-8e00-87d111ccb778",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<objects-288 g1-toned/bench-2x1.png padded>"
+        },
+        "method": "text",
+        "description": "Keep the same object, position, footprint and camera angle (high top-down, 2:1 isometric), same canvas. Make it sturdier, matching heavy village furniture: thicker legs and plank top (legs 2-3 px wide, top edge 3 px thick), a strong dark brown 1 px outline (#1b1410) all round, warm wood in 3-4 flat tones, light from the upper left. A plain wooden bench: thick seat plank and four sturdy legs.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["f1-bench-2x1-0.png", "f1-bench-2x1-1.png", "f1-bench-2x1-2.png"],
+      "balance_before": 4706.6,
+      "balance_after": 4632.6,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "G1 furniture redraw: bench-2x1",
+      "verdict": "take (0): furniture redrawn with mass, goods that read at 1x; near-white clamped to cream",
+      "error": null,
+      "committed": {
+        "f1-bench-2x1-0.png": "objects-g1b/bench-2x1.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t10",
+      "endpoint": "/edit-images-v2",
+      "job_id": "221de5b7-a676-4bb1-b677-b9dd8a720edd",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 10 (1244,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t10-0.png", "g6-t10-1.png"],
+      "balance_before": 4902.6,
+      "balance_after": 4564.6,
+      "gens": 25.0,
+      "seconds": 110,
+      "notes": "ground pass over world-g1 tile 10 at (1244,363,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t10-0.png": "world/ground-tiles/g6-t10.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "f1-baskets-south",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "7b84393f-b9ca-40e5-9d96-a1e1fdf9dca9",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<objects-288 g1-toned/baskets-south.png padded>"
+        },
+        "method": "text",
+        "description": "Keep the same object, position, footprint and camera angle (high top-down, 2:1 isometric), same canvas. Make it sturdier, matching heavy village furniture: thicker legs and plank top (legs 2-3 px wide, top edge 3 px thick), a strong dark brown 1 px outline (#1b1410) all round, warm wood in 3-4 flat tones, light from the upper left. A group of three sturdy woven baskets on the ground, one lidded stock basket and two open ones heaped with red peppers and green leaves as a few clear clusters.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["f1-baskets-south-0.png", "f1-baskets-south-1.png", "f1-baskets-south-2.png"],
+      "balance_before": 4598.6,
+      "balance_after": 4513.6,
+      "gens": 5.0,
+      "seconds": 36,
+      "notes": "G1 furniture redraw: baskets-south",
+      "verdict": "take (0): furniture redrawn with mass, goods that read at 1x; near-white clamped to cream",
+      "error": null,
+      "committed": {
+        "f1-baskets-south-0.png": "objects-g1b/baskets-south.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t9",
+      "endpoint": "/edit-images-v2",
+      "job_id": "08b55ada-c2e8-4c5a-a573-9043c31c896c",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 9 (829,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t9-0.png", "g6-t9-1.png"],
+      "balance_before": 4927.6,
+      "balance_after": 4488.6,
+      "gens": 25.0,
+      "seconds": 152,
+      "notes": "ground pass over world-g1 tile 9 at (829,363,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t9-0.png": "world/ground-tiles/g6-t9.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t12",
+      "endpoint": "/edit-images-v2",
+      "job_id": "d7ca09b5-0ea4-4515-a7e0-b135f3d203b4",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 12 (2073,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t12-0.png", "g6-t12-1.png"],
+      "balance_before": 4816.6,
+      "balance_after": 4431.6,
+      "gens": 25.0,
+      "seconds": 168,
+      "notes": "ground pass over world-g1 tile 12 at (2073,363,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t12-0.png": "world/ground-tiles/g6-t12.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "1d21647d-6bd5-415b-9db9-97539baf9d24",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 1 (415,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t1-0.png", "g6-t1-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 4333.6,
+      "gens": 25.0,
+      "seconds": 329,
+      "notes": "ground pass over world-g1 tile 1 at (415,0,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t1-0.png": "world/ground-tiles/g6-t1.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t15",
+      "endpoint": "/edit-images-v2",
+      "job_id": "d091fe2f-a8e3-40c4-93c3-2e565c1fe420",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 15 (415,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t15-0.png", "g6-t15-1.png"],
+      "balance_before": 4564.6,
+      "balance_after": 4244.6,
+      "gens": 25.0,
+      "seconds": 141,
+      "notes": "ground pass over world-g1 tile 15 at (415,726,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t15-0.png": "world/ground-tiles/g6-t15.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t11",
+      "endpoint": "/edit-images-v2",
+      "job_id": "28570cf2-7068-4e35-b534-e030ccd654b8",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 11 (1659,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t11-0.png", "g6-t11-1.png"],
+      "balance_before": 4841.6,
+      "balance_after": 4185.6,
+      "gens": 25.0,
+      "seconds": 248,
+      "notes": "ground pass over world-g1 tile 11 at (1659,363,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t11-0.png": "world/ground-tiles/g6-t11.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t13",
+      "endpoint": "/edit-images-v2",
+      "job_id": "2d33ca83-3fba-46e6-9289-a738608d151d",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 13 (2488,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t13-0.png", "g6-t13-1.png"],
+      "balance_before": 4815.6,
+      "balance_after": 4135.6,
+      "gens": 25.0,
+      "seconds": 247,
+      "notes": "ground pass over world-g1 tile 13 at (2488,363,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t13-0.png": "world/ground-tiles/g6-t13.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "f1-baskets-north",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "9d0a4010-cce8-420e-8575-bf3e4cc79f00",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<objects-288 g1-toned/baskets-north.png padded>"
+        },
+        "method": "text",
+        "description": "Keep the same object, position, footprint and camera angle (high top-down, 2:1 isometric), same canvas. Make it sturdier, matching heavy village furniture: thicker legs and plank top (legs 2-3 px wide, top edge 3 px thick), a strong dark brown 1 px outline (#1b1410) all round, warm wood in 3-4 flat tones, light from the upper left. A group of sturdy woven baskets on the ground: nested empty baskets, one of root vegetables and one of apples, as a few clear clusters.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["f1-baskets-north-0.png", "f1-baskets-north-1.png", "f1-baskets-north-2.png"],
+      "balance_before": 4488.6,
+      "balance_after": 4121.6,
+      "gens": 5.0,
+      "seconds": 141,
+      "notes": "G1 furniture redraw: baskets-north",
+      "verdict": "take (0): furniture redrawn with mass, goods that read at 1x; near-white clamped to cream",
+      "error": null,
+      "committed": {
+        "f1-baskets-north-0.png": "objects-g1b/baskets-north.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "f1-shop-stack",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "96f42964-3cfe-4602-9822-593d0c6786b7",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<objects-288 g1-toned/shop-stack.png padded>"
+        },
+        "method": "text",
+        "description": "Keep the same object, position, footprint and camera angle (high top-down, 2:1 isometric), same canvas. Make it sturdier, matching heavy village furniture: thicker legs and plank top (legs 2-3 px wide, top edge 3 px thick), a strong dark brown 1 px outline (#1b1410) all round, warm wood in 3-4 flat tones, light from the upper left. Stacked wooden crates and a small drying rack with hanging peppers and gourds, sturdy planks, clear goods.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["f1-shop-stack-0.png", "f1-shop-stack-1.png", "f1-shop-stack-2.png"],
+      "balance_before": 4121.6,
+      "balance_after": 4080.6000000000004,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "G1 furniture redraw: shop-stack",
+      "verdict": "take (0): furniture redrawn with mass, goods that read at 1x; near-white clamped to cream",
+      "error": null,
+      "committed": {
+        "f1-shop-stack-0.png": "objects-g1b/shop-stack.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t17",
+      "endpoint": "/edit-images-v2",
+      "job_id": "707bdf74-ecd4-4ed1-8971-a142ac93bc2b",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 17 (1244,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t17-0.png", "g6-t17-1.png"],
+      "balance_before": 4431.6,
+      "balance_after": 4030.6000000000004,
+      "gens": 25.0,
+      "seconds": 140,
+      "notes": "ground pass over world-g1 tile 17 at (1244,726,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t17-0.png": "world/ground-tiles/g6-t17.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t18",
+      "endpoint": "/edit-images-v2",
+      "job_id": "99d8f6ca-58ad-414b-8327-1bf42bfa95fc",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 18 (1659,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t18-0.png", "g6-t18-1.png"],
+      "balance_before": 4333.6,
+      "balance_after": 3966.6000000000004,
+      "gens": 25.0,
+      "seconds": 151,
+      "notes": "ground pass over world-g1 tile 18 at (1659,726,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t18-0.png": "world/ground-tiles/g6-t18.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t7",
+      "endpoint": "/edit-images-v2",
+      "job_id": "5932269e-c678-4fd4-8b7b-632d8ea41389",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 7 (0,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t7-0.png", "g6-t7-1.png"],
+      "balance_before": 5004.6,
+      "balance_after": 3933.6000000000004,
+      "gens": 25.0,
+      "seconds": 487,
+      "notes": "ground pass over world-g1 tile 7 at (0,363,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t7-0.png": "world/ground-tiles/g6-t7.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t21",
+      "endpoint": "/edit-images-v2",
+      "job_id": "e556e03b-0f24-4b2b-93ec-e0456b8dd77b",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 21 (0,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t21-0.png", "g6-t21-1.png"],
+      "balance_before": 4135.6,
+      "balance_after": 3873.6000000000004,
+      "gens": 25.0,
+      "seconds": 110,
+      "notes": "ground pass over world-g1 tile 21 at (0,1089,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t21-0.png": "world/ground-tiles/g6-t21.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t20",
+      "endpoint": "/edit-images-v2",
+      "job_id": "64cea8c9-a03f-49f2-a30f-e468bb4fcab1",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 20 (2488,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t20-0.png", "g6-t20-1.png"],
+      "balance_before": 4160.6,
+      "balance_after": 3868.6000000000004,
+      "gens": 25.0,
+      "seconds": 118,
+      "notes": "ground pass over world-g1 tile 20 at (2488,726,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t20-0.png": "world/ground-tiles/g6-t20.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t16",
+      "endpoint": "/edit-images-v2",
+      "job_id": "76bb1140-ae5a-4884-966e-9ef5b0811fce",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 16 (829,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t16-0.png", "g6-t16-1.png"],
+      "balance_before": 4488.6,
+      "balance_after": 3798.6000000000004,
+      "gens": 25.0,
+      "seconds": 299,
+      "notes": "ground pass over world-g1 tile 16 at (829,726,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t16-0.png": "world/ground-tiles/g6-t16.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t22",
+      "endpoint": "/edit-images-v2",
+      "job_id": "f017ca17-1e66-479b-8eb8-de20f3f26076",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 22 (415,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t22-0.png", "g6-t22-1.png"],
+      "balance_before": 4030.6000000000004,
+      "balance_after": 3798.6000000000004,
+      "gens": 25.0,
+      "seconds": 120,
+      "notes": "ground pass over world-g1 tile 22 at (415,1089,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t22-0.png": "world/ground-tiles/g6-t22.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t25",
+      "endpoint": "/edit-images-v2",
+      "job_id": "d9c9476d-2728-40ee-bbe0-e5e470fe4ff2",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 25 (1659,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t25-0.png", "g6-t25-1.png"],
+      "balance_before": 3868.6000000000004,
+      "balance_after": 3771.6000000000004,
+      "gens": 25.0,
+      "seconds": 110,
+      "notes": "ground pass over world-g1 tile 25 at (1659,1089,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t25-0.png": "world/ground-tiles/g6-t25.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t26",
+      "endpoint": "/edit-images-v2",
+      "job_id": "50e71eab-be01-4d78-bcfa-9c0925badc36",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 26 (2073,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t26-0.png", "g6-t26-1.png"],
+      "balance_before": 3863.6000000000004,
+      "balance_after": 3745.6000000000004,
+      "gens": 25.0,
+      "seconds": 131,
+      "notes": "ground pass over world-g1 tile 26 at (2073,1089,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t26-0.png": "world/ground-tiles/g6-t26.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t14",
+      "endpoint": "/edit-images-v2",
+      "job_id": "6a160b22-d212-40f4-9dca-660ea6495ad6",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 14 (0,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t14-0.png", "g6-t14-1.png"],
+      "balance_before": 4764.6,
+      "balance_after": 3714.6000000000004,
+      "gens": 25.0,
+      "seconds": 520,
+      "notes": "ground pass over world-g1 tile 14 at (0,726,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t14-0.png": "world/ground-tiles/g6-t14.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t23",
+      "endpoint": "/edit-images-v2",
+      "job_id": "a2f8652f-5582-41ba-a929-03f0fc37ecab",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 23 (829,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t23-0.png", "g6-t23-1.png"],
+      "balance_before": 3966.6000000000004,
+      "balance_after": 3674.6000000000004,
+      "gens": 25.0,
+      "seconds": 352,
+      "notes": "ground pass over world-g1 tile 23 at (829,1089,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t23-0.png": "world/ground-tiles/g6-t23.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t27",
+      "endpoint": "/edit-images-v2",
+      "job_id": "29c9ce34-7d9e-4421-a0c5-0916fdfd2c5e",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 27 (2488,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t27-0.png", "g6-t27-1.png"],
+      "balance_before": 3798.6000000000004,
+      "balance_after": 3621.6000000000004,
+      "gens": 25.0,
+      "seconds": 293,
+      "notes": "ground pass over world-g1 tile 27 at (2488,1089,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t27-0.png": "world/ground-tiles/g6-t27.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t19",
+      "endpoint": "/edit-images-v2",
+      "job_id": "4a9d49c9-335a-4a91-b304-253ccc837d0f",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 19 (2073,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t19-0.png", "g6-t19-1.png"],
+      "balance_before": 4235.6,
+      "balance_after": 3615.6000000000004,
+      "gens": 25.0,
+      "seconds": 489,
+      "notes": "ground pass over world-g1 tile 19 at (2073,726,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t19-0.png": "world/ground-tiles/g6-t19.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "g6-t24",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c67bfd94-1407-4f50-b807-0548d502d9d2",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<g6 tile 24 (1244,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw only the ground as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Paving: even, clean squared stone flags in one warm grey-beige, crisp dark joints with a little moss, no bleached or blotchy patches. Grass: a living lawn with visible texture everywhere: scattered 1-2 px blade strokes in a lighter and a darker green over a mid green, small tufts, clover and a few tiny flowers, calm and even, never one flat colour. Earth paths stay soft brown. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["g6-t24-0.png", "g6-t24-1.png"],
+      "balance_before": 3933.6000000000004,
+      "balance_after": 3583.6000000000004,
+      "gens": 25.0,
+      "seconds": 419,
+      "notes": "ground pass over world-g1 tile 24 at (1244,1089,512x512)",
+      "verdict": "take (0): ground pass, living grass and even paving; only plain ground takes it, levelled per material",
+      "error": null,
+      "committed": {
+        "g6-t24-0.png": "world/ground-tiles/g6-t24.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-gao-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "f371889b-f64a-4f15-9958-7e7f91e4ad41",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-gao-display crop (1214,407,232x152) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-gao-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-gao-display context (np.int64(982), np.int64(255), np.int64(1678), np.int64(711))>"
+        },
+        "bounding_box": {
+          "x": 232,
+          "y": 152,
+          "width": 232,
+          "height": 152
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-gao-display-0.png", "o5-out-gao-display-1.png"],
+      "balance_before": 3249.6000000000004,
+      "balance_after": 3237.6000000000004,
+      "gens": 9.0,
+      "seconds": 75,
+      "notes": "paint out the baked object under o5-out-gao-display",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-gao-display-0.png": "world/inpaint/o5-out-gao-display.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-south-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "93ca8e49-00b6-46dc-9057-51a02d9d8bee",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-south-market-display crop (762,420,236x172) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-south-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-south-market-display context (np.int64(526), np.int64(248), np.int64(1234), np.int64(764))>"
+        },
+        "bounding_box": {
+          "x": 236,
+          "y": 172,
+          "width": 236,
+          "height": 172
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-south-market-display-0.png", "o5-out-south-market-display-1.png"],
+      "balance_before": 3237.6000000000004,
+      "balance_after": 3228.6000000000004,
+      "gens": 9.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o5-out-south-market-display",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-south-market-display-0.png": "world/inpaint/o5-out-south-market-display.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-north-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "ccc5ea81-3ad4-44ad-8539-fe47f1f7d038",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-north-market-display crop (1730,646,224x168) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-north-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-north-market-display context (np.int64(1506), np.int64(478), np.int64(2178), np.int64(982))>"
+        },
+        "bounding_box": {
+          "x": 224,
+          "y": 168,
+          "width": 224,
+          "height": 168
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-north-market-display-0.png", "o5-out-north-market-display-1.png"],
+      "balance_before": 3228.6000000000004,
+      "balance_after": 3219.6000000000004,
+      "gens": 9.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o5-out-north-market-display",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-north-market-display-0.png": "world/inpaint/o5-out-north-market-display.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d12",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "65261008-f8f6-4b39-ab4d-ef11c56f7787",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d12 crop (1011,303,208x152) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d12 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d12 context (np.int64(803), np.int64(151), np.int64(1427), np.int64(607))>"
+        },
+        "bounding_box": {
+          "x": 208,
+          "y": 152,
+          "width": 208,
+          "height": 152
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d12-0.png", "o5-out-d12-1.png"],
+      "balance_before": 3219.6000000000004,
+      "balance_after": 3213.6000000000004,
+      "gens": 6.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o5-out-d12",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d12-0.png": "world/inpaint/o5-out-d12.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d13",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e7642c27-4257-4e3a-8598-c8464e76617a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d13 crop (902,258,208x140) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d13 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d13 context (np.int64(694), np.int64(118), np.int64(1318), np.int64(538))>"
+        },
+        "bounding_box": {
+          "x": 208,
+          "y": 140,
+          "width": 208,
+          "height": 140
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d13-0.png", "o5-out-d13-1.png"],
+      "balance_before": 3213.6000000000004,
+      "balance_after": 3207.6000000000004,
+      "gens": 6.0,
+      "seconds": 38,
+      "notes": "paint out the baked object under o5-out-d13",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d13-0.png": "world/inpaint/o5-out-d13.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d8",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "7c5725d1-38a0-462e-a9f0-171f9ba9108a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d8 crop (1662,452,168x108) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d8 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d8 context (np.int64(1494), np.int64(344), np.int64(1998), np.int64(668))>"
+        },
+        "bounding_box": {
+          "x": 168,
+          "y": 108,
+          "width": 168,
+          "height": 108
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d8-0.png", "o5-out-d8-1.png"],
+      "balance_before": 3207.6000000000004,
+      "balance_after": 3198.6000000000004,
+      "gens": 6.0,
+      "seconds": 37,
+      "notes": "paint out the baked object under o5-out-d8",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d8-0.png": "world/inpaint/o5-out-d8.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "b13ecf18-ba31-4ac2-9462-7b3f6aa9b1c4",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d1 crop (693,424,176x108) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d1 context (np.int64(517), np.int64(316), np.int64(1045), np.int64(640))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 108,
+          "width": 176,
+          "height": 108
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d1-0.png", "o5-out-d1-1.png"],
+      "balance_before": 3198.6000000000004,
+      "balance_after": 3189.6000000000004,
+      "gens": 6.0,
+      "seconds": 36,
+      "notes": "paint out the baked object under o5-out-d1",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d1-0.png": "world/inpaint/o5-out-d1.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "3c55514f-98df-413a-a422-cd0d8eb8fc1f",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d2 crop (1653,713,176x104) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d2 context (np.int64(1477), np.int64(609), np.int64(2005), np.int64(921))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 104,
+          "width": 176,
+          "height": 104
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d2-0.png", "o5-out-d2-1.png"],
+      "balance_before": 3189.6000000000004,
+      "balance_after": 3183.6000000000004,
+      "gens": 6.0,
+      "seconds": 29,
+      "notes": "paint out the baked object under o5-out-d2",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d2-0.png": "world/inpaint/o5-out-d2.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "7a538c2c-1eeb-4458-9b31-f087ea88a132",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d0 crop (1086,791,164x192) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d0 context (np.int64(922), np.int64(599), np.int64(1414), np.int64(1175))>"
+        },
+        "bounding_box": {
+          "x": 164,
+          "y": 192,
+          "width": 164,
+          "height": 192
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d0-0.png", "o5-out-d0-1.png"],
+      "balance_before": 3183.6000000000004,
+      "balance_after": 3177.6000000000004,
+      "gens": 6.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o5-out-d0",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d0-0.png": "world/inpaint/o5-out-d0.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d3",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "0f6b80cb-34a9-49ff-a0c5-91511f973fb2",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d3 crop (1717,392,176x188) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d3 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d3 context (np.int64(1541), np.int64(204), np.int64(2069), np.int64(768))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 188,
+          "width": 176,
+          "height": 188
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d3-0.png", "o5-out-d3-1.png"],
+      "balance_before": 3177.6000000000004,
+      "balance_after": 3171.6000000000004,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o5-out-d3",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d3-0.png": "world/inpaint/o5-out-d3.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d4",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "69c9f4c8-cc09-4805-94cc-bb43a2535cff",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d4 crop (1658,869,172x208) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d4 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d4 context (np.int64(1486), np.int64(661), np.int64(2002), np.int64(1285))>"
+        },
+        "bounding_box": {
+          "x": 172,
+          "y": 208,
+          "width": 172,
+          "height": 208
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d4-0.png", "o5-out-d4-1.png"],
+      "balance_before": 3171.6000000000004,
+      "balance_after": 3165.6000000000004,
+      "gens": 6.0,
+      "seconds": 68,
+      "notes": "paint out the baked object under o5-out-d4",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d4-0.png": "world/inpaint/o5-out-d4.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d5",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "df0c1624-efdc-49e3-bb32-aaeb80b72443",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d5 crop (1622,802,144x164) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d5 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d5 context (np.int64(1478), np.int64(638), np.int64(1910), np.int64(1130))>"
+        },
+        "bounding_box": {
+          "x": 144,
+          "y": 164,
+          "width": 144,
+          "height": 164
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d5-0.png", "o5-out-d5-1.png"],
+      "balance_before": 3165.6000000000004,
+      "balance_after": 3159.6000000000004,
+      "gens": 6.0,
+      "seconds": 29,
+      "notes": "paint out the baked object under o5-out-d5",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d5-0.png": "world/inpaint/o5-out-d5.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d6",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "9b6b5d6c-5afb-4c98-b71e-6827c09652ed",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d6 crop (2094,842,72x148) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d6 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d6 context (np.int64(2022), np.int64(694), np.int64(2238), np.int64(1138))>"
+        },
+        "bounding_box": {
+          "x": 72,
+          "y": 148,
+          "width": 72,
+          "height": 148
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d6-0.png", "o5-out-d6-1.png"],
+      "balance_before": 3159.6000000000004,
+      "balance_after": 3153.6000000000004,
+      "gens": 6.0,
+      "seconds": 30,
+      "notes": "paint out the baked object under o5-out-d6",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d6-0.png": "world/inpaint/o5-out-d6.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d7",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "1ad5d3b4-1927-4e94-bf5e-34bec32c6f5c",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d7 crop (1845,929,176x168) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d7 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d7 context (np.int64(1669), np.int64(761), np.int64(2197), np.int64(1265))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 168,
+          "width": 176,
+          "height": 168
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d7-0.png", "o5-out-d7-1.png"],
+      "balance_before": 3153.6000000000004,
+      "balance_after": 3147.6000000000004,
+      "gens": 6.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o5-out-d7",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d7-0.png": "world/inpaint/o5-out-d7.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d9",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "d424868a-51e1-41ef-9323-77092fea7421",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d9 crop (2101,619,240x188) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d9 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d9 context (np.int64(1861), np.int64(431), np.int64(2581), np.int64(995))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 188,
+          "width": 240,
+          "height": 188
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d9-0.png", "o5-out-d9-1.png"],
+      "balance_before": 3147.6000000000004,
+      "balance_after": 3135.6000000000004,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "paint out the baked object under o5-out-d9",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d9-0.png": "world/inpaint/o5-out-d9.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d10",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "310e556b-3db0-47ca-b634-2957b406541d",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d10 crop (1909,765,176x168) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d10 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d10 context (np.int64(1733), np.int64(597), np.int64(2261), np.int64(1101))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 168,
+          "width": 176,
+          "height": 168
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d10-0.png", "o5-out-d10-1.png"],
+      "balance_before": 3135.6000000000004,
+      "balance_after": 3129.6000000000004,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o5-out-d10",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d10-0.png": "world/inpaint/o5-out-d10.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d11-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "5863db5b-2f5a-4cf4-9932-1204aa151a43",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d11-0 crop (2101,816,248x164) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d11-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d11-0 context (np.int64(1853), np.int64(652), np.int64(2597), np.int64(1144))>"
+        },
+        "bounding_box": {
+          "x": 248,
+          "y": 164,
+          "width": 248,
+          "height": 164
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d11-0-0.png", "o5-out-d11-0-1.png"],
+      "balance_before": 3129.6000000000004,
+      "balance_after": 3117.6000000000004,
+      "gens": 9.0,
+      "seconds": 61,
+      "notes": "paint out the baked object under o5-out-d11-0",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d11-0-0.png": "world/inpaint/o5-out-d11-0.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d11-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "1fb262f6-34b3-40a2-991f-591327e35e29",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d11-1 crop (2341,851,64x116) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d11-1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d11-1 context (np.int64(2277), np.int64(735), np.int64(2469), np.int64(1083))>"
+        },
+        "bounding_box": {
+          "x": 64,
+          "y": 116,
+          "width": 64,
+          "height": 116
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d11-1-0.png", "o5-out-d11-1-1.png"],
+      "balance_before": 3117.6000000000004,
+      "balance_after": 3111.6000000000004,
+      "gens": 6.0,
+      "seconds": 43,
+      "notes": "paint out the baked object under o5-out-d11-1",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d11-1-0.png": "world/inpaint/o5-out-d11-1.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d15",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "8a007730-e141-41c2-87bf-63c441b9ae40",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d15 crop (757,541,176x128) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d15 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d15 context (np.int64(581), np.int64(413), np.int64(1109), np.int64(797))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 128,
+          "width": 176,
+          "height": 128
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d15-0.png", "o5-out-d15-1.png"],
+      "balance_before": 3111.6000000000004,
+      "balance_after": 3105.6000000000004,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o5-out-d15",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d15-0.png": "world/inpaint/o5-out-d15.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d16",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "bf6d884c-acab-423d-b9e8-eeb8b50b8b4c",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d16 crop (1717,962,240x148) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d16 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-d16 context (np.int64(1477), np.int64(814), np.int64(2197), np.int64(1258))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 148,
+          "width": 240,
+          "height": 148
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d16-0.png", "o5-out-d16-1.png"],
+      "balance_before": 3105.6000000000004,
+      "balance_after": 3093.6000000000004,
+      "gens": 9.0,
+      "seconds": 56,
+      "notes": "paint out the baked object under o5-out-d16",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d16-0.png": "world/inpaint/o5-out-d16.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-west-planter",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e09c26ce-7630-4f40-ab75-950a76dd8801",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-west-planter crop (1204,729,200x128) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-west-planter mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-west-planter context (np.int64(1004), np.int64(601), np.int64(1604), np.int64(985))>"
+        },
+        "bounding_box": {
+          "x": 200,
+          "y": 128,
+          "width": 200,
+          "height": 128
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-west-planter-0.png", "o5-out-west-planter-1.png"],
+      "balance_before": 3093.6000000000004,
+      "balance_after": 3087.6000000000004,
+      "gens": 6.0,
+      "seconds": 29,
+      "notes": "paint out the baked object under o5-out-west-planter",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-west-planter-0.png": "world/inpaint/o5-out-west-planter.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-north-garden",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "6d722a63-872c-4c97-a663-7ad2918d9c95",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-north-garden crop (1974,730,240x156) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-north-garden mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-north-garden context (np.int64(1734), np.int64(574), np.int64(2454), np.int64(1042))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 156,
+          "width": 240,
+          "height": 156
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-north-garden-0.png", "o5-out-north-garden-1.png"],
+      "balance_before": 3087.6000000000004,
+      "balance_after": 3078.6000000000004,
+      "gens": 9.0,
+      "seconds": 48,
+      "notes": "paint out the baked object under o5-out-north-garden",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-north-garden-0.png": "world/inpaint/o5-out-north-garden.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-southeast-planter",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "60c9d10a-4f1d-47e1-8401-1a4d02ab7c0b",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-southeast-planter crop (1533,921,224x156) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-southeast-planter mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o5-out-southeast-planter context (np.int64(1309), np.int64(765), np.int64(1981), np.int64(1233))>"
+        },
+        "bounding_box": {
+          "x": 224,
+          "y": 156,
+          "width": 224,
+          "height": 156
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-southeast-planter-0.png", "o5-out-southeast-planter-1.png"],
+      "balance_before": 3078.6000000000004,
+      "balance_after": 3069.6000000000004,
+      "gens": 9.0,
+      "seconds": 104,
+      "notes": "paint out the baked object under o5-out-southeast-planter",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-southeast-planter-0.png": "world/inpaint/o5-out-southeast-planter.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d14-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "eb51aec0-f7a1-40b0-be53-4b00353c41a5",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d14-0 crop (565,466,248x196) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d14-0 mask>"
+        },
+        "description": "Fill the masked area with a tilled vegetable bed: dark brown soil in furrows running along the bed, 3 flat tones, small clods, the same pixel art style, no plants, no fence, no people.",
+        "context_image": {
+          "base64": "<o5-out-d14-0 context (np.int64(317), np.int64(270), np.int64(1061), np.int64(858))>"
+        },
+        "bounding_box": {
+          "x": 248,
+          "y": 196,
+          "width": 248,
+          "height": 196
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d14-0-0.png", "o5-out-d14-0-1.png"],
+      "balance_before": 3069.6000000000004,
+      "balance_after": 3057.6000000000004,
+      "gens": 9.0,
+      "seconds": 56,
+      "notes": "paint out the baked object under o5-out-d14-0",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d14-0-0.png": "world/inpaint/o5-out-d14-0.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-out-d14-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "fb5f8512-9170-41bb-b9f1-96e62493b84f",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-out-d14-1 crop (805,508,120x144) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-out-d14-1 mask>"
+        },
+        "description": "Fill the masked area with a tilled vegetable bed: dark brown soil in furrows running along the bed, 3 flat tones, small clods, the same pixel art style, no plants, no fence, no people.",
+        "context_image": {
+          "base64": "<o5-out-d14-1 context (np.int64(685), np.int64(364), np.int64(1045), np.int64(796))>"
+        },
+        "bounding_box": {
+          "x": 120,
+          "y": 144,
+          "width": 120,
+          "height": 144
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-out-d14-1-0.png", "o5-out-d14-1-1.png"],
+      "balance_before": 3057.6000000000004,
+      "balance_after": 3051.6000000000004,
+      "gens": 6.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o5-out-d14-1",
+      "verdict": "take (0); paving holes then filled from the tile grid",
+      "error": null,
+      "committed": {
+        "o5-out-d14-1-0.png": "world/inpaint/o5-out-d14-1.png"
+      },
+      "note_outputs": "output -0 is used"
+    },
+    {
+      "tag": "o5-gao-yard-cart-small",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "81b8bd1d-bb08-42ca-a890-8ce782122e11",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o5-gao-yard-cart-small crop (1396,344,56x80) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o5-gao-yard-cart-small mask>"
+        },
+        "description": "In the masked area draw a small two-wheeled wooden handcart standing on the paved yard, tipped forward on its handles, carrying one clay water jar: the cart bed about 20 px long and 10 px wide, wheels 10 px across, sturdy planks, a 1 px dark brown outline (#1b1410), warm wood in 3 flat tones, light from the upper left, matching the pixel art style around it. Paving shows around it. No people, no wall, no roof.",
+        "context_image": {
+          "base64": "<o5-gao-yard-cart-small context (np.int64(1340), np.int64(264), np.int64(1508), np.int64(504))>"
+        },
+        "bounding_box": {
+          "x": 56,
+          "y": 80,
+          "width": 56,
+          "height": 80
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o5-gao-yard-cart-small-0.png", "o5-gao-yard-cart-small-1.png"],
+      "balance_before": 2979.6000000000004,
+      "balance_after": 2974.6000000000004,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o5-gao-yard-cart-small",
+      "verdict": "no change: the generator returned the same cart; the painted one stays",
+      "error": null,
+      "committed": null,
+      "note_outputs": "output -0 is used"
     }
   ]
 }
