@@ -816,8 +816,78 @@
         "generations": 3.0
       },
       "secs": 181
+    },
+    {
+      "name": "idle-still-south-s8503",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "a4abd7b1-0810-4e20-8063-8e42db8a46cd",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8503,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/idle-still-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 42.0,
+      "balance_before": 7487.5,
+      "balance_after": 7445.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87
+    },
+    {
+      "name": "idle8-south-s8504",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "7b92c4c3-ff3e-4597-a09a-270c0d181333",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8504,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/idle8-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 46.0,
+      "balance_before": 7487.5,
+      "balance_after": 7441.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 147
     }
   ],
-  "balance_after": 7891.5,
-  "gens_total": 82.4
+  "balance_after": 7441.5,
+  "gens_total": 88.4
 }
