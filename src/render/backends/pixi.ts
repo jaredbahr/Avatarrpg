@@ -2562,14 +2562,7 @@ export class PixiBackend implements RenderBackend {
       const at = npc.renderPos ?? npc.pos;
       const frame =
         entry.kind === 'sheet'
-          ? sheets.frame(
-              npc.sprite,
-              clip,
-              npc.clipTime ?? 0,
-              undefined,
-              px * scale,
-              width,
-            )
+          ? sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px * scale, width)
           : null;
       const screen = camera.spriteBox(at, width, false);
       const anchor = {

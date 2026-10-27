@@ -683,9 +683,7 @@ export class ResidentWalks {
     if (figure.walking && figure.clip) return { ...rest, lean: 0, clip: figure.clip };
     const clip =
       this.idles.get(figure.id) ?? (figure.facing === 1 ? 'idleSouthEast' : 'idleSouthWest');
-    const clipTime = this.reduced()
-      ? 0
-      : this.clock + residentPhase(figure.id, G_IDLE_CYCLE_MS);
+    const clipTime = this.reduced() ? 0 : this.clock + residentPhase(figure.id, G_IDLE_CYCLE_MS);
     // A work stop keeps its lean: it is the routine's only work beat until the
     // sheets carry a work idle.
     return { ...rest, lean: figure.lean ?? 0, clip, clipTime };
