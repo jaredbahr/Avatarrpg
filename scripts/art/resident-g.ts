@@ -14,7 +14,10 @@
  * Kaya's are: the residents were edited from her untoned G south.
  *
  * Every cel goes through the G build's own map (`normalise`, 75%
- * nearest-neighbour into the 128x192 cel). The placement is not hand set:
+ * nearest-neighbour into the 128x192 cel), scaled to the resident grid
+ * (`RESIDENT_SHEET_PX_PER_WORLD_PX`, `src/content/assets/residentGrid.ts`):
+ * at 2 sheet px per world px, today's sheet, exactly that map; at 1, the
+ * native G1 grid, half of it, with every bound below halved too. The placement is not hand set:
  * `placeHeading` solves it per heading against the bounds `art:validate`
  * holds every eight-way sheet to (ADR 0050, 0051, 0052), in the order the
  * enemy packer records (`enemy-g.ts`):
@@ -45,7 +48,12 @@ import type { ClipName, Heading } from '../../src/content/assets/clips';
 import { headingClip } from '../../src/content/assets/clips';
 import { atlasJsonText } from '../../src/render/sheets/atlasJson';
 import { layoutSheet } from '../../src/render/sheets/layout';
-import { FRAME_H, FRAME_W, WEBP_QUALITY, checkSources, normalise, sha256 } from './g-sprites';
+import {
+  RESIDENT_SHEET_PX_PER_WORLD_PX,
+  residentGrid,
+} from '../../src/content/assets/residentGrid';
+import type { ResidentGrid } from '../../src/content/assets/residentGrid';
+import { WEBP_QUALITY, checkSources, sha256 } from './g-sprites';
 import type { Image } from './lib/image';
 import { newImage, pixelAt, readPng, setPixel } from './lib/image';
 import { alphaBounds, lowestOpaqueRow } from './lib/trim';
@@ -63,11 +71,72 @@ import {
 
 export const IDLE_CELS = 4;
 export const WALK_CELS = 8;
-/** The anchor (0.5, 0.85) of a 128x192 cel. */
-export const FOOT_LINE = Math.round(0.85 * FRAME_H);
-export const COLUMN = 0.5 * FRAME_W;
 /** The packer keeps the walk's mean lowest row this close to idle's (validate allows 4). */
 const MEAN_TOLERANCE = 3.5;
+
+/**
+ * The cel geometry and `art:validate`'s bounds on a resident grid. The bounds
+ * are written for the 128x192 cel (2 sheet px per world px) and scale with it.
+ */
+export interface Cel {
+  readonly grid: ResidentGrid;
+  /** The anchor (0.5, 0.85): its foot line and column. */
+  readonly line: number;
+  readonly column: number;
+  readonly standTolerance: number;
+  readonly strideAbove: number;
+  readonly strideBelow: number;
+  readonly standCentre: number;
+  readonly strideCentre: number;
+  readonly restCentre: number;
+  readonly meanTolerance: number;
+  readonly restRow: number;
+  readonly alignDx: number;
+}
+
+export function celGeometry(pxPerWorldPx = RESIDENT_SHEET_PX_PER_WORLD_PX): Cel {
+  const grid = residentGrid(pxPerWorldPx);
+  const k = pxPerWorldPx / 2;
+  return {
+    grid,
+    line: Math.round(0.85 * grid.frameH),
+    column: 0.5 * grid.frameW,
+    standTolerance: STAND_TOLERANCE * k,
+    strideAbove: STRIDE_ABOVE * k,
+    strideBelow: STRIDE_BELOW * k,
+    standCentre: STAND_CENTRE * k,
+    strideCentre: STRIDE_CENTRE * k,
+    restCentre: REST_CENTRE * k,
+    meanTolerance: MEAN_TOLERANCE * k,
+    restRow: 3 * k,
+    alignDx: 2 * k,
+  };
+}
+
+/**
+ * A 192 px PixelLab cel on the resident grid: the G build's map (`normalise`
+ * in `g-sprites.ts`: 75% nearest-neighbour, x -8, y 31 into 128x192) scaled to
+ * the grid, so 2 sheet px per world px reproduces it exactly.
+ */
+export function placeCel(source: Image, cel: Cel, dx = 0, dy = 0): Image {
+  if (source.width !== 192 || source.height !== 192)
+    throw new Error(`Expected a 192x192 PixelLab cel; got ${source.width}x${source.height}.`);
+  const k = cel.grid.pxPerWorldPx / 2;
+  const scale = 0.75 * k;
+  const out = newImage(cel.grid.frameW, cel.grid.frameH);
+  const scaled = Math.round(192 * scale);
+  const ox = Math.round(-8 * k) + dx;
+  const oy = Math.round(31 * k) + dy;
+  for (let y = 0; y < scaled; y++)
+    for (let x = 0; x < scaled; x++) {
+      const rgba = pixelAt(source, Math.floor(x / scale), Math.floor(y / scale));
+      const tx = ox + x;
+      const ty = oy + y;
+      if (tx < 0 || ty < 0 || tx >= out.width || ty >= out.height) continue;
+      setPixel(out, tx, ty, rgba[3] === 0 ? [0, 0, 0, 0] : rgba);
+    }
+  return out;
+}
 
 export type ResidentName = 'household' | 'watch' | 'mira' | 'gao' | 'pella' | 'dorin';
 export const RESIDENT_NAMES: readonly ResidentName[] = [
@@ -183,21 +252,26 @@ function nearest(from: number, ok: (d: number) => boolean): number | undefined {
  * bounds `art:validate` holds an eight-way sheet to. Throws when no shift can
  * satisfy them: such a take needs a retake, not a placement.
  */
-export function placeHeading(idleSrc: readonly Image[], walkSrc: readonly Image[]): Placement {
-  const idle0 = normalise(idleSrc[0] as Image, 0, 0);
-  const centre0 = footCentre(idle0) ?? COLUMN;
+export function placeHeading(
+  idleSrc: readonly Image[],
+  walkSrc: readonly Image[],
+  cel: Cel = celGeometry(),
+): Placement {
+  const { column } = cel;
+  const idle0 = placeCel(idleSrc[0] as Image, cel);
+  const centre0 = footCentre(idle0) ?? column;
   const base =
-    Math.abs(centre0 - COLUMN) <= STAND_CENTRE
+    Math.abs(centre0 - column) <= cel.standCentre
       ? 0
-      : Math.round(COLUMN - centre0 + Math.sign(centre0 - COLUMN) * STAND_CENTRE);
+      : Math.round(column - centre0 + Math.sign(centre0 - column) * cel.standCentre);
   // A prop on the ground (a spear butt) pulls the feet's centre off the
   // column; when no walk cel then stands close enough to rest on, the whole
   // heading moves the fewest further pixels toward the column that gives one.
-  const toward = Math.sign(COLUMN - centre0) || 1;
+  const toward = Math.sign(column - centre0) || 1;
   let last: Error | undefined;
   for (let extra = 0; extra <= 8; extra++) {
     try {
-      return placeAt(idleSrc, walkSrc, base + toward * extra);
+      return placeAt(idleSrc, walkSrc, base + toward * extra, cel);
     } catch (error) {
       last = error as Error;
       if (!last.message.startsWith('no walk cel')) throw last;
@@ -210,26 +284,28 @@ function placeAt(
   idleSrc: readonly Image[],
   walkSrc: readonly Image[],
   headingDx: number,
+  cel: Cel,
 ): Placement {
-  const at = (src: Image, dx: number, dy: number) => normalise(src, dx, dy);
+  const { line, column } = cel;
+  const at = (src: Image, dx: number, dy: number) => placeCel(src, cel, dx, dy);
 
-  const idleRows = idleSrc.map((cel) => lowestOpaqueRow(at(cel, headingDx, 0)));
+  const idleRows = idleSrc.map((src) => lowestOpaqueRow(at(src, headingDx, 0)));
   const idleDy = nearest(0, (d) =>
-    idleRows.every((row) => Math.abs(row + d - FOOT_LINE) <= STAND_TOLERANCE),
+    idleRows.every((row) => Math.abs(row + d - line) <= cel.standTolerance),
   );
   if (idleDy === undefined) throw new Error(`idle feet ${idleRows.join(',')} cannot meet the line`);
   const idle = at(idleSrc[0] as Image, headingDx, idleDy);
   const idleRow = lowestOpaqueRow(idle);
 
   // Head and torso: the upper 60% of the idle silhouette.
-  const raw = walkSrc.map((cel) => at(cel, headingDx, idleDy));
+  const raw = walkSrc.map((src) => at(src, headingDx, idleDy));
   const bodyTop = alphaBounds(idle)?.y ?? 0;
   const torsoEnd = Math.round(bodyTop + (idleRow - bodyTop) * 0.6);
-  const bestDx = raw.map((cel) => {
+  const bestDx = raw.map((drawn) => {
     let best = 0;
     let score = -1;
     for (let dx = -10; dx <= 10; dx++) {
-      const s = overlap(idle, cel, dx, 0, bodyTop, torsoEnd);
+      const s = overlap(idle, drawn, dx, 0, bodyTop, torsoEnd);
       if (s > score + 1e-9 || (Math.abs(s - score) <= 1e-9 && Math.abs(dx) < Math.abs(best))) {
         score = s;
         best = dx;
@@ -238,34 +314,34 @@ function placeAt(
     return best;
   });
   const meanDx = bestDx.reduce((a, b) => a + b, 0) / bestDx.length;
-  const alignDx = Math.abs(meanDx) > 2 ? Math.round(meanDx) : 0;
+  const alignDx = Math.abs(meanDx) > cel.alignDx ? Math.round(meanDx) : 0;
   // Then the fewest further pixels that keep every stride's feet within the column bound.
-  const centres = raw.map((cel) => footCentre(cel) ?? COLUMN);
+  const centres = raw.map((c) => footCentre(c) ?? column);
   const walkDx = nearest(alignDx, (d) =>
-    centres.every((c) => Math.abs(c + d - COLUMN) <= STRIDE_CENTRE),
+    centres.every((c) => Math.abs(c + d - column) <= cel.strideCentre),
   );
   if (walkDx === undefined) throw new Error(`walk feet ${centres.join(',')} straddle the column`);
 
-  const walkRows = walkSrc.map((cel) => lowestOpaqueRow(at(cel, headingDx + walkDx, idleDy)));
-  const stands = Math.max(FOOT_LINE - STAND_TOLERANCE, Math.min(FOOT_LINE, idleRow));
+  const walkRows = walkSrc.map((src) => lowestOpaqueRow(at(src, headingDx + walkDx, idleDy)));
+  const stands = Math.max(line - cel.standTolerance, Math.min(line, idleRow));
   const mean = walkRows.reduce((a, b) => a + b, 0) / walkRows.length;
   const walkDy = nearest(0, (d) => {
     const inside = walkRows.every(
-      (row) => row + d >= stands - STRIDE_ABOVE && row + d <= FOOT_LINE + STRIDE_BELOW,
+      (row) => row + d >= stands - cel.strideAbove && row + d <= line + cel.strideBelow,
     );
-    return inside && Math.abs(mean + d - idleRow) <= MEAN_TOLERANCE;
+    return inside && Math.abs(mean + d - idleRow) <= cel.meanTolerance;
   });
   if (walkDy === undefined)
     throw new Error(`walk feet ${walkRows.join(',')} cannot fit the stride envelope`);
 
-  const walk = walkSrc.map((cel) => at(cel, headingDx + walkDx, idleDy + walkDy));
+  const walk = walkSrc.map((src) => at(src, headingDx + walkDx, idleDy + walkDy));
   let restCel = -1;
   let restScore = -1;
-  walk.forEach((cel, i) => {
-    const row = lowestOpaqueRow(cel);
-    const centre = footCentre(cel) ?? -999;
-    if (Math.abs(row - idleRow) > 3 || Math.abs(centre - COLUMN) > REST_CENTRE) return;
-    const s = overlap(idle, cel, 0, 0);
+  walk.forEach((drawn, i) => {
+    const row = lowestOpaqueRow(drawn);
+    const centre = footCentre(drawn) ?? -999;
+    if (Math.abs(row - idleRow) > cel.restRow || Math.abs(centre - column) > cel.restCentre) return;
+    const s = overlap(idle, drawn, 0, 0);
     if (s > restScore) {
       restScore = s;
       restCel = i;
@@ -298,6 +374,8 @@ export async function buildResident(
     readonly outDir?: string;
     /** Where the pins are read and the decoded-cel pins written; the resident's own by default. */
     readonly pinsPath?: string;
+    /** The grid to pack on; the shipped `RESIDENT_SHEET_PX_PER_WORLD_PX` by default. */
+    readonly pxPerWorldPx?: number;
     readonly log?: (s: string) => void;
   } = {},
 ): Promise<ResidentBuild> {
@@ -314,6 +392,7 @@ export async function buildResident(
     throw new Error(`${name} G sources do not match ${pinsPath}:\n${problems.join('\n')}`);
 
   const key = RESIDENT_KEYS[name];
+  const cel = celGeometry(options.pxPerWorldPx);
   const cels = new Map<string, Image>();
   const placements: Record<string, Placement> = {};
   for (const [direction, heading] of DIRECTIONS) {
@@ -323,24 +402,26 @@ export async function buildResident(
     const walkSrc = Array.from({ length: WALK_CELS }, (_, i) => read(take.walk, i));
     let p: Placement;
     try {
-      p = placeHeading(idleSrc, walkSrc);
+      p = placeHeading(idleSrc, walkSrc, cel);
     } catch (error) {
       throw new Error(`${name} ${direction}: ${(error as Error).message}`);
     }
     placements[direction] = p;
-    idleSrc.forEach((cel, i) =>
+    idleSrc.forEach((src, i) =>
       cels.set(
         `${key}/${headingClip('idle', heading)}/${i}`,
-        normalise(cel, p.headingDx, p.idleDy),
+        placeCel(src, cel, p.headingDx, p.idleDy),
       ),
     );
-    const walk = walkSrc.map((cel) => normalise(cel, p.headingDx + p.walkDx, p.idleDy + p.walkDy));
+    const walk = walkSrc.map((src) =>
+      placeCel(src, cel, p.headingDx + p.walkDx, p.idleDy + p.walkDy),
+    );
     walk.forEach((cel, i) => cels.set(`${key}/${headingClip('walk', heading)}/${i}`, cel));
     cels.set(`${key}/${headingClip('rest', heading)}/0`, walk[p.restCel] as Image);
   }
 
   const image = `${name}-g.webp`;
-  const layout = layoutSheet(key, residentCounts(), FRAME_W, FRAME_H);
+  const layout = layoutSheet(key, residentCounts(), cel.grid.frameW, cel.grid.frameH);
   const atlas = newImage(layout.width, layout.height);
   for (const [frame, rect] of layout.frames) {
     const pixels = cels.get(frame);

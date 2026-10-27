@@ -31,6 +31,7 @@
 
 import type { ClipDef, ClipName, Heading, LocomotionDef, MeleeDirection } from './clips';
 import { HEADINGS, headingClip } from './clips';
+import { residentGrid } from './residentGrid';
 
 export type AssetEntry =
   | {
@@ -336,10 +337,13 @@ function residentGSheet(name: ResidentGName, key: string, palette: string): Shee
       loop: true,
     };
   }
+  // The grid the packer used (`residentGrid.ts`): 128 px a tile today.
+  const grid = residentGrid();
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
-    pixelsPerTile: 128,
+    pixelsPerTile: grid.pixelsPerTile,
+    ...(grid.frameW === 128 ? {} : { frameSize: { w: grid.frameW, h: grid.frameH } }),
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',

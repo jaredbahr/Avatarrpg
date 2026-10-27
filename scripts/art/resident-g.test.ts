@@ -69,6 +69,25 @@ describe('Ba Dan resident G sheets (issue #284)', () => {
     }
   });
 
+  it('packs on the native G1 grid (1 sheet px per world px) by a re-run alone', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'resident-g1-'));
+    TEMP.push(dir);
+    const pinsPath = join(dir, 'pins.json');
+    copyFileSync(residentPins('pella'), pinsPath);
+    const built = await buildResident('pella', {
+      outDir: dir,
+      pinsPath,
+      pxPerWorldPx: 1,
+      log: () => {},
+    });
+    const atlas = JSON.parse(readFileSync(join(dir, 'pella-g.json'), 'utf8')) as {
+      frames: Record<string, { frame: { w: number; h: number } }>;
+    };
+    const first = Object.values(atlas.frames)[0];
+    expect(first?.frame).toMatchObject({ w: 64, h: 96 });
+    expect(Object.keys(built.placements)).toHaveLength(8);
+  });
+
   it('refuses a source cel that does not match its pin', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'resident-g-'));
     TEMP.push(dir);
