@@ -1,0 +1,133 @@
+# Ba Dan Route A (Pixel), round 1: sources and review
+
+Issue #284, Route A: the world in the demo slice redone in the PixelLab rendering, so it follows the G figures. The layout
+is kept (locked 2026-10-10) and only the rendering changes. **Nothing here is shipped.** The Ba Dan plates, uprights and
+`baDan.art.ts` are untouched; this folder holds sources, a ledger and a static review mock.
+
+## Slice
+
+Tiles **x 0..13, y 0..9** of `src/content/scenes/baDan.ts`, the diamond from tile corner (0,0) to (14,10). Painting px
+(1.5 per world px, from the pan box corner (-200,-100)): top (1836,150), right (3180,822), bottom (2220,1302),
+left (876,630). It contains Gao's house `gao-house` (6,1) 4x3, the north house's west edge (12,1), the canopy tree
+`tree-5-5`, the fruit table `gao-display` (6,5), the bench and fence, the canal y 6 with the bridge (9,6), road rows 7–8,
+verges and planted beds. The composition box is painting px x 945..3105, y 0..1320. It covers the slice except for the
+last ~70 painting px at the far west and east tips.
+
+## What was generated
+
+| file                                       | what                                                                                                                                         | job                |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `generated/gao-house.png` (468x339)        | Gao's house with its yard, doorway, awning and roof, on the frozen `gao-house` sprite rectangle                                              | `p1-gao-editref`   |
+| `generated/canopy-tree.png` (320x312)      | the canopy tree on the frozen `tree-5-5` rectangle                                                                                           | `a1-tree-s11`      |
+| `generated/ground-tile-0..5.png` (512x512) | the slice-sized ground composition at world px: grass and verges, paving and road, canal bank and water, and the props baked into the ground | `a2-ground-t0..t5` |
+| `generated/rejected/`                      | the probe variants that lost, kept for comparison                                                                                            | see ledger         |
+
+Every image is **1 generated px = 1 world px = 1.5 screen px** at game zoom. Each one is a PixelLab `edit-images-v2` restyle
+of the matching crop of the shipped painting, scaled to world px. The house and tree used `edit_with_reference` with the
+party strip (Kaya, Sura and Bo idle cels) as the style. The ground used `edit_with_text` (see "Why", below). Seed 11 was
+used throughout, plus 23 for the second tree. `tools/style.py` holds the prompts, and `ledger.json` holds every request (images as
+input references), its job id, its cost and the verdict.
+
+The material swatches (`review/swatches-4x.png`) are cut from the generated ground composition, not generated
+separately. They show what the ground is in context.
+
+## Why this method (the probe)
+
+Probe on Gao's house, judged at 1x and 4x beside Kaya (`review/probe-1-gao-variants.webp`,
+`review/probe-2-gao-painting-res.webp`):
+
+- **World px (468 px)** gave a strong restyle with the composition kept. `edit_with_reference` was flattest: 1 px
+  `#1b1410`-like contour, 3–5 tone groups, matte, no glints. **Taken.** `edit_with_text` kept more painted mottling.
+  `generate-image-v2` (composition reference plus style image) drifted from the layout. `image-to-pixelart-pro` chose a
+  216 px grid (3.25x on screen): chunky, so rejected.
+- **Painting px (702 px, two tiles)** and **figure density (936 px, four tiles)**: the edit barely changed the painting.
+  With the party as reference, it also **pasted ghost copies of the party into the scene**.
+- **Two-stage** (restyle at world px, upscale, then a full-resolution "crisp to 1 px" edit): PixelLab snapped back to its
+  own coarse grid, so no finer marks.
+- **Whole slice with the party reference** (`a1-slice`, 8 tiles): ghost figures all over the ground again, and a weak
+  restyle. Rejected. The ground was redone with `edit_with_text`, which never leaked a figure.
+
+So in this tool a restyle strong enough to change the rendering only happens at about world px, and the reference image
+leaks its content once the canvas has room for it.
+
+## Composing the mock
+
+`tools/build_mock.py` rebuilds the mock from the committed files and makes no PixelLab calls:
+
+1. The ground tiles are stitched (gain-matched, feathered 64 px overlaps) and scaled x1.5 to painting px by **EPX x2,
+   then a 0.75 Lanczos**: the same kind of downsample the G sheets get on screen (128 sheet px per 96 px tile), so edges
+   antialias like the figures.
+2. The house and tree replace the ground pass inside their **frozen silhouettes** (`geometry/`, rendered by `regions.py
+render`; only the front-most owner per `ids.png`).
+3. Kaya (8,4) walking south-west, Bo (6,4) idle south-east and Sura (10,7) idle north-west are placed at game scale
+   (anchor 0.5/0.85, 0.75 screen px per sheet px, so about 88–91 px tall), with a small contact shadow. They are
+   depth-sorted against every frozen upright by `x + y`, exactly as both backends sort.
+4. The "current" composite is built the same way from the shipped painting (`quiet.png` ground, `faded.png` uprights):
+   same framing, poses and occlusion.
+
+```sh
+python scripts/art/ba-dan-regions/regions.py --out .review/regions plan
+python scripts/art/ba-dan-regions/regions.py --out .review/regions render
+python scripts/art/ba-dan-regions/regions.py --out .review/regions stitch --complete
+python scripts/art/ba-dan-regions/regions.py --out .review/regions split
+python art/source/ba-dan-route-a/tools/build_mock.py   # -> .review/route-a/
+python art/source/ba-dan-route-a/tools/sheets.py
+```
+
+The generators (`pl.py`, `tiles.py`, `probe2.py`, `pass1.py`, `pass2.py`) need `PIXELLAB_API_KEY`. They skip a job the
+ledger already holds as completed, and they wait out the 20-concurrent-job cap.
+
+## Review files (`review/`)
+
+| file                                              | what                                                                                                        |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `mock-route-a-ipad.png` / `mock-current-ipad.png` | 1368x714 at game zoom (1 painting px = 1 screen px), same framing and poses                                 |
+| `mock-route-a.webp` / `mock-current.webp`         | the whole composition box (2160x1320), lossless                                                             |
+| `sheet-4x-crops.png`                              | current and Route A at 4x nearest: Kaya and doorway, roof edge, baskets, table leg, trunk, bridge with Sura |
+| `swatches-4x.png`                                 | grass verge, paving, canal bank and water from the generated ground                                         |
+| `check-grid-route-a.webp`                         | the slice's tile grid drawn over Route A (projection check)                                                 |
+| `out-ground-composition.webp`                     | the ground composition alone at painting px                                                                 |
+
+## Faults, against #284's four questions (round 1)
+
+**1. Same hand at normal play size? Not yet: closer, but no.**
+
+- Contour, matte tone groups and no glints now match the figures much better than the painting does. The roof, plaster,
+  table and baskets lost their gloss.
+- **Grain is coarser than the figures.** One generated px is 1.5 screen px, so the contour is 1–2 px where Kaya's is about
+  1 px, and the tone clusters (roof tiles, vines, ground patches) are 2–4 px. At 4x this reads as a lower resolution than
+  the people. No tested setting gave finer marks with a real restyle (see "Why").
+- **The ground is now very flat.** The verges and paving are broad 3–4 tone areas with large blotchy patches. They are
+  calm, but emptier than the figures' detail level and than ADR 0083's calm ground. The water lost its depth.
+- The six ground tiles were edited separately. Colour is gain-matched, but tone and detail density can differ between tiles.
+  The tile joins are at painting x ≈ 696 and 1392, and y ≈ 552, in the composition box; I did not measure them.
+- Not every in-slice piece had a dedicated pass. The table, bench, fence, bridge, planters and the north house's edge
+  are only as good as the ground pass. Outside the slice, nothing changed.
+
+**2. Could these people use, carry and build these things? No, scale was not addressed.**
+
+- The rendering pass keeps the silhouettes, so the scale faults the diagnosis measured remain: fruit about head-sized,
+  oversized baskets, thick table. Route A as briefed ("keep the composition, change only the rendering") cannot fix them.
+  A round 2 needs new silhouettes (and repainting their region) for the goods.
+- Construction stays readable (supported table corners, door at about 1.3H). Nothing new is broken, but nothing
+  improved either.
+
+**3. Does everything sit in this place? Partly.**
+
+- Projection holds: everything inherits the painting's 26.57° geometry, and the tile grid lands on the paving, the
+  bridge and the house plinth (`check-grid-route-a.webp`).
+- The house and tree registered to their frozen silhouettes by eye. This was not measured with the region gate,
+  because the gate needs a whole 1536x1024 region.
+- Contact and cast shadows survive from the painting, but flattened: the darker pool under the table and beside the house
+  is weaker than before. There is less sign of use (worn earth, joints) on the calmed ground.
+- Static only. There is no in-game cutout check (crossing behind and in front), which a static composite cannot prove.
+
+**4. Do the residents and party move like the same game? Not tested.** This round is static art only. The figures are the
+shipped G cels (unchanged), with no residents, walk clip or frame strip. That work is shared with Route B (#284 says do it
+once).
+
+## Cost
+
+29 PixelLab jobs, **700 generations** (job usage). Account balance was 9,770 at the start and 7,585.5 at the end, but
+another session spent from the same account at the same time, so the difference is not this round's cost. 200 of the
+700 went to the rejected `a1-slice` pass.
