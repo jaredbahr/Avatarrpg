@@ -138,9 +138,13 @@ if __name__ == '__main__':
             m = np.asarray(Image.fromarray(m.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(7))) > 0
             world = reground(world, m, n, scene)
     world = unglyph(world)
+    from clean import apply as clean  # polish: invented fern, lily pads, kerb ink
+    world = clean(world, f'{RA}/layers')
     world.save(f'{RA}/world-g1-clear.png')
     comp_a = np.asarray(Image.open(f'{RA}/composite.png').getchannel('A')).astype(np.float32) / 255
     colour = ground_colour(world, comp_a)
+    from clean import faces
+    colour = faces(colour)
     os.makedirs(f'{RA}/pieces', exist_ok=True)
     for n, piece in enumerate(scene['ground']):
         if is_heap(piece): continue

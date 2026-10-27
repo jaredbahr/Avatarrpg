@@ -1,6 +1,6 @@
 {
  "what": "Forest road at G1 (ADR 0087, issue #284): every PixelLab job, in order of the files they were first written to. gens is the job usage reported by the API; balance_before/after are account-wide (other sessions spend concurrently), so their difference is not the job cost.",
- "total_gens": 778.0,
+ "total_gens": 925.0,
  "jobs": [
   {
    "tag": "u-flask-s21",
@@ -2252,6 +2252,860 @@
    "seconds": 35,
    "notes": "G1 upright rubble at world px (44, 36)",
    "verdict": null,
+   "error": null
+  },
+  {
+   "tag": "clean-west-bushes-a",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "9745b54c-ba7b-472e-a8e9-c05018b1eb95",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-west-bushes-a crop (202,379,168x100) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-west-bushes-a mask>"
+    },
+    "description": "Fill the masked area with the meadow grass around it, fading out the same way at the edge: broad patches of three greens with sparse 1-2 px blade marks. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No bushes, no shrubs, no ferns, no trees, no people.",
+    "context_image": {
+     "base64": "<clean-west-bushes-a context (34, 279, 538, 579)>"
+    },
+    "bounding_box": {
+     "x": 168,
+     "y": 100,
+     "width": 168,
+     "height": 100
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-west-bushes-a-0.png",
+    "clean-west-bushes-a-1.png"
+   ],
+   "balance_before": 2031.3999999999796,
+   "balance_after": 2025.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 34,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "not used: the bushes lie outside every ground piece (alpha 0) and never ship",
+   "error": null
+  },
+  {
+   "tag": "clean-west-bushes-b",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "16d76d89-407f-46ad-b648-4c9f06eb2ccb",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-west-bushes-b crop (385,319,104x60) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-west-bushes-b mask>"
+    },
+    "description": "Fill the masked area with the meadow grass around it, fading out the same way at the edge: broad patches of three greens with sparse 1-2 px blade marks. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No bushes, no shrubs, no ferns, no trees, no people.",
+    "context_image": {
+     "base64": "<clean-west-bushes-b context (281, 259, 593, 439)>"
+    },
+    "bounding_box": {
+     "x": 104,
+     "y": 60,
+     "width": 104,
+     "height": 60
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-west-bushes-b-0.png",
+    "clean-west-bushes-b-1.png"
+   ],
+   "balance_before": 2025.3999999999796,
+   "balance_after": 2019.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "not used: the bushes lie outside every ground piece (alpha 0) and never ship",
+   "error": null
+  },
+  {
+   "tag": "clean-east-fern",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "958f1ee3-12fd-4e51-a2bd-9a76e0206cdd",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-east-fern crop (2341,730,108x88) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-east-fern mask>"
+    },
+    "description": "Fill the masked area with the meadow grass around it, fading out the same way at the edge: broad patches of three greens with sparse 1-2 px blade marks. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No bushes, no shrubs, no ferns, no trees, no people.",
+    "context_image": {
+     "base64": "<clean-east-fern context (2233, 642, 2557, 906)>"
+    },
+    "bounding_box": {
+     "x": 108,
+     "y": 88,
+     "width": 108,
+     "height": 88
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-east-fern-0.png",
+    "clean-east-fern-1.png"
+   ],
+   "balance_before": 2019.3999999999796,
+   "balance_after": 2013.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "taken (output 0)",
+   "error": null
+  },
+  {
+   "tag": "clean-south-face-w",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "6e3f66bc-0854-447f-8d41-022d88bd7c6d",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-south-face-w crop (1370,1164,240x124) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-south-face-w mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-south-face-w context (1130, 1040, 1850, 1344)>"
+    },
+    "bounding_box": {
+     "x": 240,
+     "y": 124,
+     "width": 240,
+     "height": 124
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-south-face-w-0.png",
+    "clean-south-face-w-1.png"
+   ],
+   "balance_before": 2013.3999999999796,
+   "balance_after": 2004.3999999999796,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 41,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: the polygon cut the facets diagonally (redone as clean-face-1..4)",
+   "error": null
+  },
+  {
+   "tag": "clean-south-face-e",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "dcec0d87-1dbf-4d2d-9ce3-284786e22dcb",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-south-face-e crop (1590,1164,220x144) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-south-face-e mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-south-face-e context (1370, 1020, 2030, 1344)>"
+    },
+    "bounding_box": {
+     "x": 220,
+     "y": 144,
+     "width": 220,
+     "height": 144
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-south-face-e-0.png",
+    "clean-south-face-e-1.png"
+   ],
+   "balance_before": 2004.3999999999796,
+   "balance_after": 1995.3999999999796,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 41,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: the polygon cut the facets diagonally (redone as clean-face-1..4)",
+   "error": null
+  },
+  {
+   "tag": "clean-face-1",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "3635637e-8a87-4e0d-a349-3ce5236ce06b",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face-1 crop (1351,1183,116x76) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face-1 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face-1 context (1235, 1107, 1583, 1335)>"
+    },
+    "bounding_box": {
+     "x": 116,
+     "y": 76,
+     "width": 116,
+     "height": 76
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face-1-0.png",
+    "clean-face-1-1.png"
+   ],
+   "balance_before": 1995.3999999999796,
+   "balance_after": 1989.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: continued the stripes from the context (redone blanked to soil, clean-face2-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face-2",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "c4460abd-ccd9-469d-8194-44d25f859761",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face-2 crop (1454,1168,152x92) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face-2 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face-2 context (1302, 1076, 1758, 1344)>"
+    },
+    "bounding_box": {
+     "x": 152,
+     "y": 92,
+     "width": 152,
+     "height": 92
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face-2-0.png",
+    "clean-face-2-1.png"
+   ],
+   "balance_before": 1989.3999999999796,
+   "balance_after": 1983.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: continued the stripes from the context (redone blanked to soil, clean-face2-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face-3",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "9d82f6b0-6446-4a5d-aea5-77604c976fdb",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face-3 crop (1592,1168,156x140) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face-3 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face-3 context (1436, 1028, 1904, 1344)>"
+    },
+    "bounding_box": {
+     "x": 156,
+     "y": 140,
+     "width": 156,
+     "height": 140
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face-3-0.png",
+    "clean-face-3-1.png"
+   ],
+   "balance_before": 1983.3999999999796,
+   "balance_after": 1977.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 42,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: continued the stripes from the context (redone blanked to soil, clean-face2-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face-4",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "0366125d-ad4b-4d2a-bde5-f119062a64a2",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face-4 crop (1735,1194,96x64) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face-4 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face-4 context (1639, 1130, 1927, 1322)>"
+    },
+    "bounding_box": {
+     "x": 96,
+     "y": 64,
+     "width": 96,
+     "height": 64
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face-4-0.png",
+    "clean-face-4-1.png"
+   ],
+   "balance_before": 1977.3999999999796,
+   "balance_after": 1972.3999999999796,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: continued the stripes from the context (redone blanked to soil, clean-face2-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-1",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "f5ec12f9-886f-4f8c-8467-97a36428cccf",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-1 crop (1351,1183,116x76) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-1 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-1 context (1235, 1107, 1583, 1335)>"
+    },
+    "bounding_box": {
+     "x": 116,
+     "y": 76,
+     "width": 116,
+     "height": 76
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-1-0.png",
+    "clean-face2-1-1.png"
+   ],
+   "balance_before": 1972.3999999999796,
+   "balance_after": 1966.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-2",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "95cfe530-2f72-4b55-b547-ad92aa0465ca",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-2 crop (1454,1168,152x92) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-2 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-2 context (1302, 1076, 1758, 1344)>"
+    },
+    "bounding_box": {
+     "x": 152,
+     "y": 92,
+     "width": 152,
+     "height": 92
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-2-0.png",
+    "clean-face2-2-1.png"
+   ],
+   "balance_before": 1966.3999999999796,
+   "balance_after": 1960.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-3",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "a9bfafaf-4c5f-4a99-b5fe-77f53692cccf",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-3 crop (1592,1167,156x140) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-3 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-3 context (1436, 1027, 1904, 1344)>"
+    },
+    "bounding_box": {
+     "x": 156,
+     "y": 140,
+     "width": 156,
+     "height": 140
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-3-0.png",
+    "clean-face2-3-1.png"
+   ],
+   "balance_before": 1960.3999999999796,
+   "balance_after": 1954.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-4",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "797dee9b-5c70-4b05-8f67-0347a6f7566d",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-4 crop (1735,1194,96x64) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-4 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-4 context (1639, 1130, 1927, 1322)>"
+    },
+    "bounding_box": {
+     "x": 96,
+     "y": 64,
+     "width": 96,
+     "height": 64
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-4-0.png",
+    "clean-face2-4-1.png"
+   ],
+   "balance_before": 1954.3999999999796,
+   "balance_after": 1949.3999999999796,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 23,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-1",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "535368cd-0eef-45e0-ba2d-9ebbb54b5431",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-1 crop (1351,1183,116x76) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-1 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-1 context (1235, 1107, 1583, 1335)>"
+    },
+    "bounding_box": {
+     "x": 116,
+     "y": 76,
+     "width": 116,
+     "height": 76
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-1-0.png",
+    "clean-face2-1-1.png"
+   ],
+   "balance_before": 1949.3999999999796,
+   "balance_after": 1943.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-2",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "34a5a7a9-1622-4214-8deb-0af461c9c6dd",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-2 crop (1454,1168,152x92) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-2 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-2 context (1302, 1076, 1758, 1344)>"
+    },
+    "bounding_box": {
+     "x": 152,
+     "y": 92,
+     "width": 152,
+     "height": 92
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-2-0.png",
+    "clean-face2-2-1.png"
+   ],
+   "balance_before": 1943.3999999999796,
+   "balance_after": 1937.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-3",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "4de54e2c-03f0-4fe5-bc37-356f663ea783",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-3 crop (1592,1167,156x140) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-3 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-3 context (1436, 1027, 1904, 1344)>"
+    },
+    "bounding_box": {
+     "x": 156,
+     "y": 140,
+     "width": 156,
+     "height": 140
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-3-0.png",
+    "clean-face2-3-1.png"
+   ],
+   "balance_before": 1937.3999999999796,
+   "balance_after": 1931.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face2-4",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "ae7e6681-125c-4798-a868-a5d6618ee76f",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face2-4 crop (1735,1194,96x64) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face2-4 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face2-4 context (1639, 1130, 1927, 1322)>"
+    },
+    "bounding_box": {
+     "x": 96,
+     "y": 64,
+     "width": 96,
+     "height": 64
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face2-4-0.png",
+    "clean-face2-4-1.png"
+   ],
+   "balance_before": 1931.3999999999796,
+   "balance_after": 1926.3999999999796,
+   "gens": 5.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 21,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "rejected: drawn on the world, where the face is under the pieces' alpha and does not show (run twice by a tooling slip; redone on the carried colour, clean-face3-*)",
+   "error": null
+  },
+  {
+   "tag": "clean-face3-1",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "4bceadab-8e22-40d6-8d49-622cb0b81596",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face3-1 crop (1351,1176,116x168) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face3-1 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face3-1 context (1235, 1008, 1583, 1344)>"
+    },
+    "bounding_box": {
+     "x": 116,
+     "y": 168,
+     "width": 116,
+     "height": 168
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face3-1-0.png",
+    "clean-face3-1-1.png"
+   ],
+   "balance_before": 1926.3999999999796,
+   "balance_after": 1920.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "taken (output 0)",
+   "error": null
+  },
+  {
+   "tag": "clean-face3-2",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "5cf7901a-128c-4807-a90c-3a74aa7022d6",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face3-2 crop (1454,1160,152x184) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face3-2 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face3-2 context (1302, 976, 1758, 1344)>"
+    },
+    "bounding_box": {
+     "x": 152,
+     "y": 184,
+     "width": 152,
+     "height": 184
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face3-2-0.png",
+    "clean-face3-2-1.png"
+   ],
+   "balance_before": 1920.3999999999796,
+   "balance_after": 1914.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "taken (output 0)",
+   "error": null
+  },
+  {
+   "tag": "clean-face3-3",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "e7b4d77e-e0a6-44ca-aeb7-6d61614e32b2",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face3-3 crop (1592,1160,156x184) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face3-3 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face3-3 context (1436, 976, 1904, 1344)>"
+    },
+    "bounding_box": {
+     "x": 156,
+     "y": 184,
+     "width": 156,
+     "height": 184
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face3-3-0.png",
+    "clean-face3-3-1.png"
+   ],
+   "balance_before": 1914.3999999999796,
+   "balance_after": 1908.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 35,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "taken (output 0)",
+   "error": null
+  },
+  {
+   "tag": "clean-face3-4",
+   "endpoint": "/inpaint-image-pro-flash",
+   "job_id": "87b9c14e-334a-4aa5-acfb-9b632ef2fe0f",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<clean-face3-4 crop (1735,1184,96x160) of world-g1-clear>"
+    },
+    "mask_image": {
+     "base64": "<clean-face3-4 mask>"
+    },
+    "description": "Fill the masked area with the cut earth face under the meadow's edge: dark brown soil in shade with a few small stones and fine roots, grass overhanging the top lip, darker toward the bottom. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. No stripes, no people.",
+    "context_image": {
+     "base64": "<clean-face3-4 context (1639, 1024, 1927, 1344)>"
+    },
+    "bounding_box": {
+     "x": 96,
+     "y": 160,
+     "width": 96,
+     "height": 160
+    },
+    "output_method": "Modify current layer",
+    "seed": 11
+   },
+   "outputs": [
+    "clean-face3-4-0.png",
+    "clean-face3-4-1.png"
+   ],
+   "balance_before": 1908.3999999999796,
+   "balance_after": 1902.3999999999796,
+   "gens": 6.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 28,
+   "notes": "polish: redraw what the restyle invented",
+   "verdict": "taken (output 0)",
+   "error": null
+  },
+  {
+   "tag": "foot-pine-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "a4c3de5d-960c-4fc3-99e5-6c88d14c849e",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<the chosen pine on its canvas>"
+    },
+    "method": "text",
+    "description": "Keep the tree exactly as drawn: every bough, needle, colour and the trunk. Only redraw the very foot of the trunk: it flares into three or four short thick roots that sink into the ground, with a small tuft of grass, a fern frond and a little dark soil around the base, so the tree grows out of the forest floor. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps, warm light from the upper left, matte, no white pixels, no text, transparent background.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "foot-pine-s21-0.png",
+    "foot-pine-s21-1.png",
+    "foot-pine-s21-2.png"
+   ],
+   "balance_before": 1902.3999999999796,
+   "balance_after": 1893.3999999999796,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 47,
+   "notes": "polish: root the pine",
+   "verdict": "taken (output 0)",
+   "error": null
+  },
+  {
+   "tag": "foot-pine-b-s21",
+   "endpoint": "/edit-image-pro-flash",
+   "job_id": "587dfc1e-8994-4910-b1b0-e76b523ff6ab",
+   "status": "completed",
+   "request": {
+    "image": {
+     "base64": "<the chosen pine-b on its canvas>"
+    },
+    "method": "text",
+    "description": "Keep the tree exactly as drawn: every bough, needle, colour and the trunk. Only redraw the very foot of the trunk: it flares into three or four short thick roots that sink into the ground, with a small tuft of grass, a fern frond and a little dark soil around the base, so the tree grows out of the forest floor. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps, warm light from the upper left, matte, no white pixels, no text, transparent background.",
+    "no_background": true,
+    "seed": 21
+   },
+   "outputs": [
+    "foot-pine-b-s21-0.png",
+    "foot-pine-b-s21-1.png",
+    "foot-pine-b-s21-2.png"
+   ],
+   "balance_before": 1893.3999999999796,
+   "balance_after": 1884.3999999999796,
+   "gens": 9.0,
+   "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+   "seconds": 41,
+   "notes": "polish: root the pine",
+   "verdict": "taken (output 0)",
    "error": null
   }
  ]

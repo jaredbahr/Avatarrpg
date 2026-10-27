@@ -101,6 +101,8 @@ def toward_pine(img):
 def upright(pid, tag):
     path, size, _ = PIECES[pid]
     out = Image.open(f'{JOBS}/{tag}-0.png').convert('RGBA')
+    from feet import foot
+    out = foot(pid, out)  # polish: the pines' trunks root into the floor
     canvas = source(pid)
     assert out.size == canvas.size, (pid, out.size, canvas.size)
     if size is None:  # a prop keeps its own trim
