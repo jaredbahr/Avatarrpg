@@ -191,11 +191,12 @@ deterministic after the PixelLab jobs (which are in `ledger.json`):
    the generator invented water and foliage with tile-edged steps, so the page colour is put back there (`keep_margin`).
 2. `tools/objects.py` clears the eight oversized pieces: `gao-display`, `south-market-display`, `north-market-display`,
    the south and north basket groups (`d1`, `d2`), the shop stack (`d8`), the canal bench (`d12`) and the fence (`d13`).
-   The mask is the frozen silhouette dilated 8 px, plus the prism 60 px over the footprint and the baked shadow down-right,
+   The mask is the old frozen silhouette (the geometry before ADR 0085, rendered by main's `regions.py render` into
+   `BA_DAN_OLD_WORK`) dilated 8 px, plus the prism 60 px over the footprint and the baked shadow down-right,
    minus every pixel another piece owns. The mask is blanked to the ground ring's median, so the generator never sees the
    old object, then inpainted with Pro Flash (`world/inpaint/`) and tone-matched to the ring. It then sets in #288's G1
-   objects (`objects-288/`, copied from PR #288 at `SOURCE_COMMIT`) by their `g1_anchor_px`, with a mild warm grade
-   (`grade`, until #288's toned set lands), a one-tone key-light shadow down-right and a 1 px contact line. With
+   objects (`objects-288/`, the toned set `grain/g1-toned`, copied from PR #288 at `SOURCE_COMMIT`) by their
+   `g1_anchor_px`, with a one-tone key-light shadow down-right and a 1 px contact line. With
    `--geometry` it points those pieces' frozen sprites at the new silhouettes. Result: `world/world-g1.png`.
 3. `tools/regions_back.py` scales that world to 1.5 painting px (EPX x2, 0.75 Lanczos), crops the twelve regions and
    accepts each through `regions.py accept` (gates built from the shipped painting first). All twelve passed without
@@ -207,8 +208,14 @@ north pottery table from the context it was given (`o1-out-*`, rejected in the l
 
 Known faults:
 
-- The new objects are still paler, cooler and thinner-lined than the world and the figures (#288's own note); the warm
-  grade narrows the gap without closing it.
+- The new objects are lighter-lined and thinner than the world's own furniture; #288's tone pass (warmer, darker,
+  Kaya's outline hue) narrows the gap without closing it.
+- An inpainted patch can sit a shade darker or lighter than the grass around it (right of the canopy tree most).
+- The projection test pins the three new tables' legs (`pins-g1.json`). Their short sides are about 20 px, so a pair of
+  whole-pixel feet fixes them only to about 6 degrees; the shop stack (a rack over crates) has no ground edge to measure.
+- Not done here: #288's other families (well, banners, lanterns, laundry line, notice board, handcart, stone lantern,
+  trough, planters; `--families`). Each new upright also needs projection pins, so they are a follow-up. The garden kit
+  and the untiled house props need a hand layout. Until then the restyled painting keeps its own versions.
 - A cleared patch can leave a faint straight tone edge on the paving (the south display's patch most).
 - The stitched picture keeps the restyle's feathered tile joins. Every region overlap matches, but nothing was measured
   inside a region.
