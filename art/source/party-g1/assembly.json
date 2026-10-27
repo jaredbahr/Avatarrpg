@@ -1,0 +1,33 @@
+{
+  "note": "Variant A takes used in the review. South roots: a-south-kaya-s9102, a-south-sura-s9101, a-south-bo-s9101; rotations a-rot-<char>-s9201. Idles: the 1.5x CMU 77_02 take (s9302); the 0.6x take (s9301) came back frozen (SE/E identical cels) with one stray cel in the south.",
+  "south": {
+    "kaya": "a-south-kaya-s9102",
+    "sura": "a-south-sura-s9101",
+    "bo": "a-south-bo-s9101"
+  },
+  "rotations": {
+    "kaya": "a-rot-kaya-s9201",
+    "sura": "a-rot-sura-s9201",
+    "bo": "a-rot-bo-s9201"
+  },
+  "a": {
+    "kaya": {
+      "idle/south": "kaya-idle-south-s9302",
+      "idle/south-east": "kaya-idle-south-east-s9302",
+      "idle/east": "kaya-idle-east-s9302",
+      "walk/south-east": "kaya-walk-12-south-east-s9301"
+    },
+    "sura": {
+      "idle/south": "sura-idle-south-s9302",
+      "idle/south-east": "sura-idle-south-east-s9302",
+      "idle/east": "sura-idle-east-s9302",
+      "walk/south-east": "sura-walk-12-south-east-s9301"
+    },
+    "bo": {
+      "idle/south": "bo-idle-south-s9302",
+      "idle/south-east": "bo-idle-south-east-s9302",
+      "idle/east": "bo-idle-east-s9302",
+      "walk/south-east": "bo-walk-12-south-east-s9301"
+    }
+  }
+}
