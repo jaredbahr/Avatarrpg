@@ -551,7 +551,9 @@ export class CombatScene implements Scene {
         // 96px frame; Huge text needs the larger allowance.
         this.preferredCombatTilePx = preferredTilePx;
       }
-      camera.fitExplore(this.preferredCombatTilePx ?? 96);
+      // Combat rounds its tuned tile down onto whole device pixels (ADR 0088),
+      // so the fight stays at least as much in view as it was tuned to show.
+      camera.fitExplore(this.preferredCombatTilePx ?? 96, 12, 'floor');
     } else camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos, unit.size);
@@ -634,7 +636,8 @@ export class CombatScene implements Scene {
     this.renderer.camera.clampToProgrammaticReachableSet =
       this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull';
     this.app.animator.setProjection(this.renderer.camera.projection);
-    if (this.renderer.camera.projection === 'oblique') this.renderer.camera.fitExplore(96);
+    if (this.renderer.camera.projection === 'oblique')
+      this.renderer.camera.fitExplore(96, 12, 'floor');
     else this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size

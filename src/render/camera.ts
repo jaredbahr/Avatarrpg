@@ -256,9 +256,12 @@ export class Camera {
     return wholeDeviceScale(scale, this.viewport.dpr, mode) / this.viewport.dpr;
   }
 
-  /** The largest whole device scale `maxScale` allows, and never less than one. */
+  /**
+   * The largest whole device scale: the one at or above `maxScale`, so a 1 dpr
+   * screen still has a step in past the 2x a view may open at.
+   */
   private get maxDeviceScale(): number {
-    return Math.max(1, wholeDeviceScale(this.maxScale, this.viewport.dpr, 'floor'));
+    return wholeDeviceScale(this.maxScale, this.viewport.dpr, 'ceil');
   }
 
   /** The smallest whole device scale at which a tile is still a fingertip (`MIN_TILE_PX`). */
@@ -273,10 +276,30 @@ export class Camera {
       : 1;
   }
 
-  /** Sets a whole device scale, anchored on a screen point, inside the scale limits. */
-  private setDeviceScale(device: number, at: ScreenPoint): void {
-    const next = Math.max(this.extentDeviceScale, Math.min(this.maxDeviceScale, device));
-    const scale = next / this.viewport.dpr;
+  /**
+   * Below one device pixel per world pixel there is no whole scale, so a board
+   * that only fits there gets one stop of its own: the continuous fit, drawn
+   * smoothed (`pixelSampling`), which keeps "zoom out to the whole board" and
+   * Recentre's fitted state. Null when the fit is at or above one device pixel
+   * or a painted extent stops the zoom first.
+   */
+  private get overviewScale(): number | null {
+    const fit = Math.max(Math.min(this.fitScale(), this.maxScale), this.minContinuousExtentScale);
+    return fit * this.viewport.dpr < 1 - WHOLE_EPSILON ? fit : null;
+  }
+
+  /**
+   * True when `resnap` should leave the scale alone: a whole device scale, or
+   * anything under one device pixel. The overview drawn there is smoothed
+   * anyway, and a HUD reflow that moves the fit must not pull a zoomed-out
+   * board in (`raiseToFit` handles a fit that grew).
+   */
+  private get onIntegerStop(): boolean {
+    return this.onWholeDevicePixels || this.deviceScale < 1 - WHOLE_EPSILON;
+  }
+
+  /** Sets a CSS scale anchored on a screen point. */
+  private setScaleAt(scale: number, at: ScreenPoint): void {
     const ratio = scale / this.scale;
     if (ratio === 1) return;
     // Anchored on what is drawn (the snapped offsets), so the ground under the
@@ -287,14 +310,32 @@ export class Camera {
   }
 
   /**
-   * Puts a scale left off the grid (a dpr change, a tween stopped part way)
-   * back on the nearest whole device scale about the view centre, then clamps.
-   * A no-op when integer zoom is off or the scale is already whole.
+   * The integer-zoom stop nearest a continuous `scale` (by ratio): a whole
+   * device scale inside the limits, or the overview below one device pixel.
+   */
+  private integerStop(scale: number): number {
+    const dpr = this.viewport.dpr;
+    const overview = this.overviewScale;
+    if (overview !== null && scale * dpr < 1)
+      return scale < Math.sqrt(overview / dpr) ? overview : 1 / dpr;
+    const low = Math.max(
+      wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
+      this.extentDeviceScale,
+    );
+    const high = Math.max(low, this.maxDeviceScale);
+    return Math.max(low, Math.min(high, wholeDeviceScale(scale, dpr, 'nearest'))) / dpr;
+  }
+
+  /**
+   * Puts a scale left between whole device scales (a dpr change, a tween
+   * stopped part way) on the nearest integer-zoom stop about
+   * the view centre, then clamps. A no-op when integer zoom is off or the
+   * scale is already on a stop.
    */
   resnap(): void {
-    if (!this.integerZoom || this.onWholeDevicePixels) return;
+    if (!this.integerZoom || this.onIntegerStop) return;
     this.zoomIntent = null;
-    this.setDeviceScale(wholeDeviceScale(this.scale, this.viewport.dpr, 'nearest'), {
+    this.setScaleAt(this.integerStop(this.scale), {
       x: this.viewport.width / 2,
       y: this.viewport.height / 2,
     });
@@ -303,11 +344,13 @@ export class Camera {
 
   /**
    * Raises a zoomed-out board back to its fit after the viewport grew, keeping
-   * a closer zoom as it is; the integer grid's fit is the whole scale at or
-   * under the continuous one, so the board still fits.
+   * a closer zoom as it is. Under integer zoom the fit is the whole scale at or
+   * under the continuous one (so the board still fits), or the overview.
    */
   raiseToFit(): void {
-    const fit = this.snapScale(this.fitScale(), 'floor');
+    const fit = this.integerZoom
+      ? (this.overviewScale ?? this.snapScale(this.fitScale(), 'floor'))
+      : this.fitScale();
     if (this.scale < fit) {
       this.zoomIntent = null;
       this.scale = fit;
@@ -381,7 +424,7 @@ export class Camera {
    * Scales so a tile is comfortably tappable even if that means the map is
    * larger than the viewport, then clamps. Used for explore maps.
    */
-  fitExplore(preferredTilePx = 48, margin = 12): void {
+  fitExplore(preferredTilePx = 48, margin = 12, snap: ScaleSnap = 'nearest'): void {
     const wanted = preferredTilePx / TILE;
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
@@ -391,13 +434,13 @@ export class Camera {
     );
     this.zoomIntent = null;
     if (this.integerZoom) {
-      // The whole device scale nearest the preferred tile (by ratio, so 1.5
-      // CSS at 1 dpr is 2, not 1), a small board's fit if that is larger, and
-      // never under a fingertip: the explore and combat views are both read
-      // up close, and a pinch reaches the rest.
+      // The whole device scale `snap` gives for the preferred tile (nearest by
+      // ratio, so 1.5 CSS at 1 dpr is 2; combat floors, so the fight it was
+      // tuned to show stays in view), a small board's fit if that is larger,
+      // and never under a fingertip. A pinch reaches the rest.
       const dpr = this.viewport.dpr;
       const device = Math.max(
-        wholeDeviceScale(wanted, dpr, 'nearest'),
+        wholeDeviceScale(wanted, dpr, snap),
         wholeDeviceScale(fitScale, dpr, 'floor'),
         this.tappableDeviceScale,
         this.extentDeviceScale,
@@ -652,20 +695,22 @@ export class Camera {
    * Integer-zoom pinch and wheel: the gesture moves a continuous request, and
    * the board steps to the whole device scale nearest it (by ratio), anchored
    * on the pointer. Out stops at the whole scale that still shows the fitted
-   * board, never under one device pixel per world pixel.
+   * board, or, where that is under one device pixel, at the overview.
    */
   private zoomIntegerAt(at: ScreenPoint, factor: number): void {
     const dpr = this.viewport.dpr;
-    const low = Math.max(
-      wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
-      this.extentDeviceScale,
-    );
-    const high = Math.max(low, this.maxDeviceScale);
+    const overview = this.overviewScale;
+    const low =
+      overview ??
+      Math.max(
+        wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
+        this.extentDeviceScale,
+      ) / dpr;
+    const high = Math.max(low, this.maxDeviceScale / dpr);
     const from =
       this.zoomIntent && this.zoomIntent.scale === this.scale ? this.zoomIntent.intent : this.scale;
-    const intent = Math.max(low / dpr, Math.min(high / dpr, from * factor));
-    const device = Math.max(low, Math.min(high, wholeDeviceScale(intent, dpr, 'nearest')));
-    this.setDeviceScale(device, at);
+    const intent = Math.max(low, Math.min(high, from * factor));
+    this.setScaleAt(this.integerStop(intent), at);
     this.zoomIntent = { scale: this.scale, intent };
     this.clampToPanBounds();
   }

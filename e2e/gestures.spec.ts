@@ -214,9 +214,12 @@ async function expectActorOnScreen(page: Page): Promise<void> {
 
 test.describe('zoom and pan', () => {
   test('normal-text combat framing reserves room for the decision dock', async ({ page }) => {
+    // Integer zoom (ADR 0088): combat floors its tuned tile onto whole device
+    // pixels, so at 1 dpr both the compact 64 px and the roomy 96 px frames
+    // open at 64 px (one device pixel per world pixel), never closer.
     for (const profile of [
       { width: 1194, height: 834, tilePx: 64 },
-      { width: 1368, height: 912, tilePx: 96 },
+      { width: 1368, height: 912, tilePx: 64 },
     ]) {
       await page.setViewportSize({ width: profile.width, height: profile.height });
       await openFight(page);

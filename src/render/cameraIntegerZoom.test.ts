@@ -97,7 +97,7 @@ describe('integer zoom: the settled views', () => {
     it(`frames the oblique combat board on whole device pixels (${viewport.name})`, () => {
       for (const preferred of [96, 64, 40]) {
         const camera = integerCamera(viewport, FOREST_ROAD);
-        camera.fitExplore(preferred);
+        camera.fitExplore(preferred, 12, 'floor');
         camera.centreOn({ x: 4, y: 6 });
         expectSettled(camera);
         expect(TILE * camera.scale).toBeGreaterThanOrEqual(MIN_TILE_PX);
@@ -212,6 +212,34 @@ describe('integer zoom: gestures', () => {
     camera.zoomAt({ x: 600, y: 400 }, Math.exp(100 * 0.002));
     camera.zoomAt({ x: 600, y: 400 }, Math.exp(100 * 0.002));
     expect(camera.deviceScale).toBe(out + 1);
+  });
+
+  it('at 1 dpr, zooms out past one device pixel to the whole board, and back', () => {
+    const camera = integerCamera({ width: 1368, height: 612, dpr: 1 }, FOREST_ROAD);
+    camera.fitExplore(96, 12, 'floor');
+    expect(camera.deviceScale).toBe(1);
+    expect(camera.fitted).toBe(false);
+    for (let i = 0; i < 6; i++) camera.zoomAt({ x: 600, y: 300 }, 0.8);
+    // The overview: the continuous fit, the one stop under a device pixel.
+    expect(camera.scale).toBeCloseTo(camera.fitScale(), 9);
+    expect(camera.fitted).toBe(true);
+    // A HUD reflow keeps it, and a dpr-less refit does not pull it back to 1x.
+    camera.raiseToFit();
+    expect(camera.fitted).toBe(true);
+    for (let i = 0; i < 6; i++) camera.zoomAt({ x: 600, y: 300 }, 1.25);
+    expectSettled(camera);
+    // And in past the 2x the explore view opens at, to the third step.
+    for (let i = 0; i < 20; i++) camera.zoomAt({ x: 600, y: 300 }, 1.25);
+    expect(camera.deviceScale).toBe(3);
+  });
+
+  it('combat floors its tuned tile, exploration rounds it', () => {
+    const viewport = { width: 1368, height: 912, dpr: 1 };
+    const combat = integerCamera(viewport, FOREST_ROAD);
+    combat.fitExplore(96, 12, 'floor');
+    const explore = integerCamera(viewport, FOREST_ROAD);
+    explore.fitExplore(96);
+    expect([combat.deviceScale, explore.deviceScale]).toEqual([1, 2]);
   });
 
   it('keeps sub-pixel drags: the exact offset survives the snap', () => {
