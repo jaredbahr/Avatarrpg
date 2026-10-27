@@ -337,8 +337,8 @@
           "sha256": "8119d767619671361176444dd1ec4b75962543d0f666a5b826159e971b94d469"
         }
       ],
-      "verdict": "selected",
-      "note": "round 3: final blockout, text edit"
+      "verdict": "selected, cleaned",
+      "note": "round 3: final blockout, text edit | 44 near-white grain pixels recoloured from their neighbours by tools/clean_white.py -> fixes/south-grain-table-r3-s21-clean.png"
     },
     {
       "id": "south-grain-table-r3-s22",
@@ -757,7 +757,7 @@
           "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
         }
       ],
-      "verdict": "selected",
+      "verdict": "base of the selected fix",
       "note": "round 3: final blockout, text edit | has a small pale cloth in the greens basket (10 near-white px)"
     },
     {
@@ -794,12 +794,90 @@
       ],
       "verdict": "alternate",
       "note": "round 3: final blockout, text edit | same pale cloth, larger"
+    },
+    {
+      "id": "baskets-south-fix-cloth-s31",
+      "endpoint": "/inpaint-image-pro-flash",
+      "started": "2026-10-27T04:05:34.903252+00:00",
+      "job_id": "e7a7542a-876c-4190-ad74-3947af2ca544",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "description": "the woven wicker rim and side of the basket continue here, with green cabbages and leafy greens heaped inside; no cloth, no white, matte, dark brown 1 pixel outline, same pixel style",
+        "output_method": "Modify current layer",
+        "no_background": true,
+        "seed": 31
+      },
+      "inputs": {
+        "image": {
+          "path": "raw/baskets-south-r3-s21/0.png",
+          "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
+        },
+        "mask_image": {
+          "path": "fixes/baskets-south-cloth-mask.png",
+          "sha256": "c77d11e361739540506fb518fd711a5088392f736e5f6453733e4be64df6bd86"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 7419.5,
+      "balance_after": 7413.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-south-fix-cloth-s31/0.png",
+          "sha256": "a532b54a1a65dfbcbe90459ffdae4158246736a38cde5bb181d81fb7b74856dc"
+        }
+      ],
+      "verdict": "selected",
+      "note": "fix requested by the main session: remove the cloth the generator invented in the greens basket | clean rim weave; pixels outside the mask unchanged (checked)"
+    },
+    {
+      "id": "baskets-south-fix-cloth-s32",
+      "endpoint": "/inpaint-image-pro-flash",
+      "started": "2026-10-27T04:05:34.943822+00:00",
+      "job_id": "2970cbf5-e5fc-43ad-aaf1-b20ea2d93f91",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "description": "the woven wicker rim and side of the basket continue here, with green cabbages and leafy greens heaped inside; no cloth, no white, matte, dark brown 1 pixel outline, same pixel style",
+        "output_method": "Modify current layer",
+        "no_background": true,
+        "seed": 32
+      },
+      "inputs": {
+        "image": {
+          "path": "raw/baskets-south-r3-s21/0.png",
+          "sha256": "0a8e92e1d5aeabf876ae9c75e000a36581100aa0cf2a6be7e5342b1ed6d20840"
+        },
+        "mask_image": {
+          "path": "fixes/baskets-south-cloth-mask.png",
+          "sha256": "c77d11e361739540506fb518fd711a5088392f736e5f6453733e4be64df6bd86"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 7419.5,
+      "balance_after": 7407.5,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/baskets-south-fix-cloth-s32/0.png",
+          "sha256": "e46231849cb4ce745ae5a8df6d26bce356665ed3161c63a3b51c372e28ddb418"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "fix requested by the main session: remove the cloth the generator invented in the greens basket"
     }
   ],
   "account": {
     "note": "the PixelLab subscription is shared with other sessions that were generating at the same time, so balance_before/after are account-wide readings; gens is the job's own reported usage",
     "balance_at_start": 9818.0,
-    "balance_at_end": 8625.1
+    "balance_at_end": 7407.5
   },
-  "total_generations": 171.0
+  "total_generations": 183.0
 }

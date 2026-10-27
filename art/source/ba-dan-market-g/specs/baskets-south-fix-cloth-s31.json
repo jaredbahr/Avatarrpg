@@ -1,0 +1,15 @@
+{
+  "id": "baskets-south-fix-cloth-s31",
+  "endpoint": "/inpaint-image-pro-flash",
+  "body": {
+    "description": "the woven wicker rim and side of the basket continue here, with green cabbages and leafy greens heaped inside; no cloth, no white, matte, dark brown 1 pixel outline, same pixel style",
+    "output_method": "Modify current layer",
+    "no_background": true,
+    "seed": 31
+  },
+  "inputs": {
+    "image": "raw/baskets-south-r3-s21/0.png",
+    "mask_image": "fixes/baskets-south-cloth-mask.png"
+  },
+  "note": "fix requested by the main session: remove the cloth the generator invented in the greens basket"
+}

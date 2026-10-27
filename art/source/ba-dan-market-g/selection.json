@@ -6,7 +6,7 @@
   },
   "south-market-display": {
     "blockout": "south-grain-table",
-    "path": "raw/south-grain-table-r3-s21/0.png",
+    "path": "fixes/south-grain-table-r3-s21-clean.png",
     "tiles": [[3, 9]]
   },
   "north-market-display": {
@@ -28,7 +28,7 @@
   },
   "baskets (south)": {
     "blockout": "baskets-south",
-    "path": "raw/baskets-south-r3-s21/0.png",
+    "path": "raw/baskets-south-fix-cloth-s31/0.png",
     "tiles": [[2, 9]]
   },
   "baskets (north)": {

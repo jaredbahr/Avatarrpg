@@ -19,7 +19,7 @@ and key-light shadow) is the next step.
 - Generated: 2026-10-27. Terms: https://pixellab.ai/termsofservice
 - Style references: `ref/kaya-idle-*.png` (Kaya's G idle rotations) and `ref/thug-*.png` (the thug G base), downloaded from
   the same account; used for judging and for the one reference-method trial.
-- Generations: **171** reported by the jobs, plus one map-objects probe whose cost the API did not return. The account is
+- Generations: **183** reported by the jobs (171 for the set, 12 for the cloth fix), plus one map-objects probe whose cost the API did not return. The account is
   shared with other sessions that were generating at the same time, so the balance readings in the ledger are account-wide.
 
 Shared prompt (each object adds its own sentence, see `specs/`):
@@ -45,16 +45,16 @@ source px: 0.5625 (the characters' own) for everything up to one tile; **0.62 fo
 edits at most 256 px wide and a table of brief length does not fit at 0.5625. The 10% coarser source pixel is under one
 screen pixel either way. `blockouts/meta.json` records each object's canvas, grain, ground anchor and footprint offset.
 
-| Object (`baDan.ts` id, tile)           | Selected                         | Built size at the game camera                                                                                                     | Brief (§2)                                                  |
-| -------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `gao-display` fruit table (6,5)        | `raw/gao-fruit-table-r3-s22`     | top 140 long (**1.57H**), 34 deep, **46 high (0.52H)**; baskets 21–26 (**0.24–0.29H**); stock basket 30 (0.34H); fruit **4.5 px** | length 1.5–2H; top 0.45–0.55H; basket 0.22–0.32H; fruit 3–6 |
-| `south-market-display` dry goods (3,9) | `raw/south-grain-table-r3-s21`   | top 138 x 34, 46 high (0.52H); sacks 18–20 wide; balance post 30 above the top                                                    | as above                                                    |
-| `north-market-display` pottery (14,5)  | `raw/north-pottery-table-r3-s21` | top 138 x 36, 44 high (0.49H); jars 9–16 wide, 10–22 high; storage jar on the ground 22 x 28                                      | as above                                                    |
-| `bench-2x1` (3,5)                      | `raw/bench-r3-s22`               | 110 long (1.24H), seat **23 high (0.26H)**                                                                                        | —                                                           |
-| `fence-2x1` (1,5)                      | `raw/fence-segment-r3-s22` x 2   | one tile segment drawn twice sharing a post; posts 40 high (0.45H), two rails                                                     | —                                                           |
-| `shop-stack`, Gao's shopfront (10,2)   | `raw/shop-stack-r3-s21`          | crates 28 x 24 x 18 and 20 x 20 x 12; rack 55 high (0.62H); waterskins 8–9 x 12–14; peppers 3–3.5 px                              | —                                                           |
-| `baskets` south group (2,9)            | `raw/baskets-south-r3-s21`       | lidded stock basket 32 (**0.36H**, a stock basket), carry basket with handle 25 (0.28H), small basket 22 (0.25H)                  | basket 0.22–0.32H; stock larger                             |
-| `baskets` north group (14,6)           | `raw/baskets-north-r3-s21`       | nested empties 26 (0.29H), roots 27 (0.30H), fruit 22 (0.25H)                                                                     | as above                                                    |
+| Object (`baDan.ts` id, tile)           | Selected                                   | Built size at the game camera                                                                                                     | Brief (§2)                                                  |
+| -------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `gao-display` fruit table (6,5)        | `raw/gao-fruit-table-r3-s22`               | top 140 long (**1.57H**), 34 deep, **46 high (0.52H)**; baskets 21–26 (**0.24–0.29H**); stock basket 30 (0.34H); fruit **4.5 px** | length 1.5–2H; top 0.45–0.55H; basket 0.22–0.32H; fruit 3–6 |
+| `south-market-display` dry goods (3,9) | `fixes/south-grain-table-r3-s21-clean.png` | top 138 x 34, 46 high (0.52H); sacks 18–20 wide; balance post 30 above the top                                                    | as above                                                    |
+| `north-market-display` pottery (14,5)  | `raw/north-pottery-table-r3-s21`           | top 138 x 36, 44 high (0.49H); jars 9–16 wide, 10–22 high; storage jar on the ground 22 x 28                                      | as above                                                    |
+| `bench-2x1` (3,5)                      | `raw/bench-r3-s22`                         | 110 long (1.24H), seat **23 high (0.26H)**                                                                                        | —                                                           |
+| `fence-2x1` (1,5)                      | `raw/fence-segment-r3-s22` x 2             | one tile segment drawn twice sharing a post; posts 40 high (0.45H), two rails                                                     | —                                                           |
+| `shop-stack`, Gao's shopfront (10,2)   | `raw/shop-stack-r3-s21`                    | crates 28 x 24 x 18 and 20 x 20 x 12; rack 55 high (0.62H); waterskins 8–9 x 12–14; peppers 3–3.5 px                              | —                                                           |
+| `baskets` south group (2,9)            | `raw/baskets-south-fix-cloth-s31`          | lidded stock basket 32 (**0.36H**, a stock basket), carry basket with handle 25 (0.28H), small basket 22 (0.25H)                  | basket 0.22–0.32H; stock larger                             |
+| `baskets` north group (14,6)           | `raw/baskets-north-r3-s21`                 | nested empties 26 (0.29H), roots 27 (0.30H), fruit 22 (0.25H)                                                                     | as above                                                    |
 
 Sizes are the blockout's geometry, which the edit kept (compare the blockout and candidate columns in
 `review/candidates-1x-2x.png`). Every object is on the 2:1 axis: tables, bench and fence run along +x (upper left to lower
@@ -80,9 +80,11 @@ right), as their footprints do.
 - Colour treatment differs: the edit quantises each object to 27–51 colours, while Kaya's cel carries about 3,900 (soft
   anti-aliased edges). Both are smoothed by the 0.5625 reduction, but the objects' flatter clusters are visible at 4x.
 - Wood is cooler and greyer than the warm earth of the figures (the south table most).
-- Near-white pixels: none in five objects; 44 in the south table (pale grain in the open sack mouths), 10 in the south baskets
-  (a pale cloth the generator invented in the greens basket), 2 in the pottery. No white fruit glints, no golden plank bevels
-  and no shine rings on the pottery.
+- Near-white pixels: none left in any selected object. Two fixes on 2026-10-27, asked for by the main session: the south
+  table's 44 near-white grain pixels were recoloured from their own neighbours (`tools/clean_white.py`, deterministic, no
+  new colours), and the cloth the generator invented in the greens basket was repainted as basket rim with Pro Flash
+  inpaint (`specs/baskets-south-fix-cloth-s31.json`, mask `fixes/baskets-south-cloth-mask.png`; pixels outside the mask
+  are unchanged). No white fruit glints, no golden plank bevels and no shine rings on the pottery.
 - The fence has the least surface work; its rails read plain.
 
 **2. Could these people use, carry and build these things?** Mostly yes.
@@ -107,21 +109,22 @@ right), as their footprints do.
 - `tools/blockout.py`: the construction blockouts and `blockouts/meta.json` (deterministic). `blockouts/fruit-table-256x224.png`
   is the probe-round blockout from its first version, kept because probe 2 was made from it (SHA-256 in the ledger).
 - `tools/pl.py`: the PixelLab client and ledger writer.
-- `tools/sheets.py`: the review sheets from `selection.json`. `tools/review.py`: the probe-round sheets.
+- `tools/sheets.py`: the review sheets from `selection.json`. `tools/clean_white.py`: the near-white cleanup. `tools/review.py`: the probe-round sheets.
 
 ## Grain ladder exports (G1, G2)
 
-Asked for by the main session on 2026-10-27 for the parallel grain-ladder study (G1: 1 art px = 1 world px, 64 x 32 tiles,
-figures about 76 px; G2: 1 art px = 2 world px, 32 x 16 tiles, figures about 38 px). `tools/grain.py` writes `grain/g1/`,
-`grain/g2/`, `grain/grain.json` and `review/grain-ladder-g1-g2.png` (each object beside Kaya reduced the same way: G1 at 1x
-and 2x nearest, G2 at 1x and 4x nearest).
+Asked for by the main session on 2026-10-27 for the parallel grain-ladder study (G1: 1 art px = 1 world px, 64 x 32 tiles;
+G2: 1 art px = 2 world px, 32 x 16 tiles). `tools/grain.py` writes `grain/g1/`, `grain/g2/`, `grain/grain.json` and
+`review/grain-ladder-g1-g2.png` (each object beside Kaya reduced the same way: G1 at 1x and 2x nearest, G2 at 1x and 4x
+nearest).
 
-- **Assumption:** the message gave only the figure height, so G1 is set by Kaya's idle standing 76 px; each object is reduced
-  by `grain_f * 76 / 89` from its source (0.480; 0.529 for the 2x1 tables). G1 is a pixel reduction (majority alpha,
-  contour kept on the silhouette, otherwise each block's most frequent colour; no new colours).
-- **G2** is the exact 2x nearest-neighbour downsample of G1. The cleanup is **automatic, not by hand**: silhouette edges whose
-  2 x 2 block held contour become contour; single-pixel islands and holes are removed.
-- **Faults:** G1 reads cleanly. G2 keeps silhouettes and outlines, but nearest neighbour picks one texture pixel per block,
-  so wood and wicker become noise, fruit and basket contents turn to mush, the fence rails break into stair-step dashes,
-  and Kaya's own G2 face blows out. G2 needs real hand cleanup, or a reduction that groups tones before it picks pixels; as
-  exported it is not a fair test of the G2 grain.
+- **Scale:** G1 is the shipped game's world px: each object is reduced by `grain_f / 1.5` from its source (0.375; 0.413 for
+  the 2x1 tables), so Kaya's idle stands 59 px, as the shipped sheet draws her (118 sheet px at 128 per 64 px tile). A first
+  export the same day used a relayed figure height of 76 px; it was corrected. The main 1x sheets were never affected: they
+  are drawn at the explore camera's 1.5 screen px per world px, so H = 89 screen px = 59 world px.
+- G1 is a pixel reduction (majority alpha, contour kept on the silhouette, otherwise each block's most frequent colour; no
+  new colours). **G2** is the exact 2x nearest-neighbour downsample of G1, with **automatic** cleanup, not by hand:
+  silhouette edges whose 2 x 2 block held contour become contour; single-pixel islands and holes are removed.
+- **Faults:** G1 keeps construction and silhouettes, but fruit is 2–3 px and basket contents start to merge. G2 is
+  diagnostic only: outlines hold, but wood and wicker become noise, goods turn to mush, the fence rails break into
+  stair-step dashes, and Kaya's face blows out.
