@@ -1,90 +1,70 @@
 {
- "region": "r0c2",
- "source": {
-  "path": ".review/route-a/candidates/r0c2.png",
-  "sha256": "316f43e6ba9756f3cbfb146df8a82073eccf25c1592cdf0d5b9ae902df782532"
- },
- "stored": {
-  "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c2.png",
-  "sha256": "316f43e6ba9756f3cbfb146df8a82073eccf25c1592cdf0d5b9ae902df782532"
- },
- "gate": {
-  "pass": true,
-  "frame": {
-   "dx": 0,
-   "dy": 0,
-   "corr": 0.7723
+  "region": "r0c2",
+  "source": {
+    "path": ".review/route-a/candidates/r0c2.png",
+    "sha256": "316f43e6ba9756f3cbfb146df8a82073eccf25c1592cdf0d5b9ae902df782532"
   },
-  "blobs": [
-   {
-    "n": 1,
-    "box": [
-     0,
-     0,
-     1536,
-     1024
-    ],
-    "area": 860322,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.7723,
-    "status": "ok"
-   },
-   {
-    "n": 2,
-    "box": [
-     0,
-     347,
-     86,
-     563
-    ],
-    "area": 5730,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.7382,
-    "status": "ok"
-   },
-   {
-    "n": 3,
-    "box": [
-     0,
-     661,
-     104,
-     809
-    ],
-    "area": 4630,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.953,
-    "status": "ok"
-   },
-   {
-    "n": 4,
-    "box": [
-     0,
-     784,
-     306,
-     1010
-    ],
-    "area": 22567,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.8195,
-    "status": "ok"
-   }
-  ],
-  "carry": {
-   "pixels": 1268574,
-   "meanAbsDiff": 0.321,
-   "p95": 0.0,
-   "fractionOver16": 0.0064
+  "stored": {
+    "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c2.png",
+    "sha256": "316f43e6ba9756f3cbfb146df8a82073eccf25c1592cdf0d5b9ae902df782532"
   },
-  "warn": [],
-  "fail": []
- },
- "prompt": {
-  "path": "art/source/ba-dan-route-a/world/prompt.txt",
-  "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
- },
- "forced": false
+  "gate": {
+    "pass": true,
+    "frame": {
+      "dx": 0,
+      "dy": 0,
+      "corr": 0.7723
+    },
+    "blobs": [
+      {
+        "n": 1,
+        "box": [0, 0, 1536, 1024],
+        "area": 860322,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7723,
+        "status": "ok"
+      },
+      {
+        "n": 2,
+        "box": [0, 347, 86, 563],
+        "area": 5730,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7382,
+        "status": "ok"
+      },
+      {
+        "n": 3,
+        "box": [0, 661, 104, 809],
+        "area": 4630,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.953,
+        "status": "ok"
+      },
+      {
+        "n": 4,
+        "box": [0, 784, 306, 1010],
+        "area": 22567,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8195,
+        "status": "ok"
+      }
+    ],
+    "carry": {
+      "pixels": 1268574,
+      "meanAbsDiff": 0.321,
+      "p95": 0.0,
+      "fractionOver16": 0.0064
+    },
+    "warn": [],
+    "fail": []
+  },
+  "prompt": {
+    "path": "art/source/ba-dan-route-a/world/prompt.txt",
+    "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
+  },
+  "forced": false
 }

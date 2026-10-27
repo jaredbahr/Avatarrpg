@@ -1,64 +1,52 @@
 {
- "region": "r0c0",
- "source": {
-  "path": ".review/route-a/candidates/r0c0.png",
-  "sha256": "55b75f9ddf4122cbf20139d6c59da3cfe0631e2f816822f09cefc87a3829afa1"
- },
- "stored": {
-  "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c0.png",
-  "sha256": "55b75f9ddf4122cbf20139d6c59da3cfe0631e2f816822f09cefc87a3829afa1"
- },
- "gate": {
-  "pass": true,
-  "frame": {
-   "dx": 0,
-   "dy": 0,
-   "corr": 0.7649
+  "region": "r0c0",
+  "source": {
+    "path": ".review/route-a/candidates/r0c0.png",
+    "sha256": "55b75f9ddf4122cbf20139d6c59da3cfe0631e2f816822f09cefc87a3829afa1"
   },
-  "blobs": [
-   {
-    "n": 1,
-    "box": [
-     0,
-     0,
-     1536,
-     1024
-    ],
-    "area": 950631,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.7649,
-    "status": "ok"
-   },
-   {
-    "n": 2,
-    "box": [
-     1207,
-     671,
-     1411,
-     863
-    ],
-    "area": 9534,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.7478,
-    "status": "ok"
-   }
-  ],
-  "carry": {
-   "pixels": 891834,
-   "meanAbsDiff": 0.0,
-   "p95": 0.0,
-   "fractionOver16": 0.0
+  "stored": {
+    "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c0.png",
+    "sha256": "55b75f9ddf4122cbf20139d6c59da3cfe0631e2f816822f09cefc87a3829afa1"
   },
-  "warn": [
-   "seam with r1c0: 2.1x the ordinary difference"
-  ],
-  "fail": []
- },
- "prompt": {
-  "path": "art/source/ba-dan-route-a/world/prompt.txt",
-  "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
- },
- "forced": false
+  "gate": {
+    "pass": true,
+    "frame": {
+      "dx": 0,
+      "dy": 0,
+      "corr": 0.7649
+    },
+    "blobs": [
+      {
+        "n": 1,
+        "box": [0, 0, 1536, 1024],
+        "area": 950631,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7649,
+        "status": "ok"
+      },
+      {
+        "n": 2,
+        "box": [1207, 671, 1411, 863],
+        "area": 9534,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7478,
+        "status": "ok"
+      }
+    ],
+    "carry": {
+      "pixels": 891834,
+      "meanAbsDiff": 0.0,
+      "p95": 0.0,
+      "fractionOver16": 0.0
+    },
+    "warn": ["seam with r1c0: 2.1x the ordinary difference"],
+    "fail": []
+  },
+  "prompt": {
+    "path": "art/source/ba-dan-route-a/world/prompt.txt",
+    "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
+  },
+  "forced": false
 }
