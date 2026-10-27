@@ -109,16 +109,17 @@ def main():
     (OUT / "g1").mkdir(parents=True, exist_ok=True)
     (OUT / "g2").mkdir(parents=True, exist_ok=True)
     k = WORLD_PER_SCREEN
-    items = [("kaya (sheet only)", Image.open(ROOT / "ref/kaya-idle-south.png"), 0.5625 * k)]
+    items = [("kaya (sheet only)", Image.open(ROOT / "ref/kaya-idle-south.png"), 0.5625 * k, None, None)]
     for name, s in sel.items():
         im = Image.open(ROOT / s["path"]).convert("RGBA")
         f = meta[s["blockout"]]["grain_f"]
-        items.append((name, im, f * k))
+        items.append((name, im, f * k, s, meta[s["blockout"]]))
     rows = []
     record = {}
-    for name, im, factor in items:
+    for name, im, factor, s, m in items:
         g1 = reduce_pixel(im, factor)
-        g1 = g1.crop(g1.split()[3].getbbox())
+        bb = g1.split()[3].getbbox()
+        g1 = g1.crop(bb)
         if name.startswith("fence"):     # the 2x1 fence: the segment twice, sharing its post
             step = sel[name]["repeat"] * k
             dx, dy = round(step * 2 / math.sqrt(5)), round(step / math.sqrt(5))
@@ -130,9 +131,24 @@ def main():
         slug = name.split(" (")[0].replace(" ", "-") + ("-" + name.split("(")[1].rstrip(")").split()[0] if "(" in name and "kaya" not in name else "")
         if not name.startswith("kaya"):
             g1.save(OUT / "g1" / f"{slug}.png"); g2.save(OUT / "g2" / f"{slug}.png")
-            record[slug] = {"factor_from_source": round(factor, 4), "g1": list(g1.size), "g2": list(g2.size)}
+            ax, ay = m["ground_anchor_src_px"]
+            a0, b0 = m["offset_in_footprint_screen_px"]
+            if s.get("repeat"):
+                a0 = (2 * 107.33 - (m["extent_screen_px"]["along_a"] + s["repeat"])) / 2
+            per_logical = 1.5 * math.sqrt(5) / 2       # screen length of one logical px along a ground axis
+            record[slug] = {
+                "source": s["path"], "factor_from_source": round(factor, 4), "g1": list(g1.size), "g2": list(g2.size),
+                "tiles": s["tiles"], "footprint_tiles": m["footprint_tiles"],
+                # the G1 pixel where the object's ground origin is drawn (G2: halve it)
+                "g1_anchor_px": [round(ax * factor - bb[0], 1), round(ay * factor - bb[1], 1)],
+                # the ground origin, in logical px from the footprint's (min x, min y) corner along +x and +y
+                "origin_in_footprint_logical_px": [round(a0 / per_logical, 1), round(b0 / per_logical, 1)],
+                "extent_logical_px": [round(m["extent_screen_px"]["along_a"] / per_logical, 1),
+                                      round(m["extent_screen_px"]["along_b"] / per_logical, 1)],
+            }
         rows.append((name, g1, g2))
     (OUT / "grain.json").write_text(json.dumps({"definition": "G1 = 1 art px per world px (source reduced by grain_f / 1.5; Kaya 59 px); G2 = exact 2x NN of G1 + automatic cleanup",
+                                                "placement": "draw the G1 image with g1_anchor_px on the screen point of logical ground (tile_x * 64 + origin[0], tile_y * 64 + origin[1]) at 1 px per world px; the ground origin is the object's own min-x, min-y ground corner (the back, top vertex of its 2:1 footprint)",
                                                 "objects": record}, indent=1) + "\n")
     sheet(rows)
 
