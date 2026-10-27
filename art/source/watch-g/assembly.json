@@ -9,7 +9,7 @@
   },
   "east": {
     "idle": "idle-soft-east-s8202",
-    "walk": "walk-spear-east-s8201"
+    "walk": "walk-spear-calm-east-s8203"
   },
   "north-east": {
     "idle": "idle-soft-north-east-s8202",

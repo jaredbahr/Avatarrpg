@@ -28,7 +28,8 @@
         "type": "generations",
         "generations": 6.0
       },
-      "secs": 36
+      "secs": 36,
+      "verdict": "used"
     },
     {
       "name": "rot-south-edit-tex-s7201-s7211",
@@ -56,7 +57,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 148
+      "secs": 148,
+      "verdict": "used"
     },
     {
       "name": "estimate-skeleton x8",
@@ -104,7 +106,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 138
+      "secs": 138,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-south-east-s8201",
@@ -145,7 +148,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 147
+      "secs": 147,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-north-east-s8201",
@@ -186,7 +190,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 139
+      "secs": 139,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-north-west-s8201",
@@ -227,7 +232,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 165
+      "secs": 165,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-north-s8201",
@@ -268,7 +274,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 181
+      "secs": 181,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-s8202",
@@ -303,7 +310,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 88
+      "secs": 88,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-south-west-s8201",
@@ -344,7 +352,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 131
+      "secs": 131,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-east-s8202",
@@ -379,7 +388,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-east-s8201",
@@ -420,7 +430,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 246
+      "secs": 246,
+      "verdict": "superseded: free arm swung forward to horizontal"
     },
     {
       "name": "idle-soft-south-east-s8202",
@@ -455,7 +466,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 113
+      "secs": 113,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-west-s8201",
@@ -496,7 +508,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 158
+      "secs": 158,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-west-s8202",
@@ -531,7 +544,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 79
+      "secs": 79,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-east-s8202",
@@ -566,7 +580,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 112
+      "secs": 112,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-west-s8202",
@@ -601,7 +616,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 96
+      "secs": 96,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-s8202",
@@ -636,7 +652,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 135
+      "secs": 135,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-west-s8202",
@@ -671,7 +688,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 162
+      "secs": 162,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-calm-east-s8203",
@@ -712,9 +730,10 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 121
+      "secs": 121,
+      "verdict": "used: 0.55x arm swing; cel 7 faint ghost leg"
     }
   ],
-  "balance_after": 7441.5,
+  "balance_after": 7419.5,
   "gens_total": 62.8
 }
