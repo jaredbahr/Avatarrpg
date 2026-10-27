@@ -48,7 +48,8 @@ def materials(rgb):
     hue = np.degrees(np.arctan2(np.sqrt(3) * (g - b), 2 * r - g - b)) % 360
     water = (hue > 170) & (hue < 230) & (s > 0.3)
     grass = (hue > 55) & (hue < 150) & (s > 0.22) & ~water
-    paving = (s < 0.22) & (v > 0.45) & ~water
+    # Ba Dan's paving is a warm grey-beige (hue 15-55, saturation up to about 0.45, light); earth paths are darker
+    paving = ((hue >= 15) & (hue <= 55) & (s < 0.45) & (v > 0.55) | (s < 0.15) & (v > 0.5)) & ~water & ~grass
     return paving, grass, water
 
 def level(rgb, mask, sigma=LEVEL_SIGMA, pull=LEVEL_PULL):

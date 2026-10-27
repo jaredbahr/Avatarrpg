@@ -73,6 +73,11 @@ def tile_paint(x, y):  # painting px of ground corner (x, y)
 # yard post, and clearing the cart made the generator invent a structure there. The cart stays the house's own, for now.
 YARD_CLEAR: list = []
 YARD_PROPS: list = []
+# Round 2 (owner, "complete Ba Dan"): the old cart is redrawn in place as a small handcart at the figures' scale
+YARD_CART = ((1401, 348, 1447, 420), ('In the masked area draw a small two-wheeled wooden handcart standing on the paved yard, '
+             'tipped forward on its handles, carrying one clay water jar: the cart bed about 20 px long and 10 px wide, wheels '
+             '10 px across, sturdy planks, a 1 px dark brown outline (#1b1410), warm wood in 3 flat tones, light from the upper '
+             'left, matching the pixel art style around it. Paving shows around it. No people, no wall, no roof.'))
 
 def piece_at(tile, scene_pieces):
     """The frozen piece whose footprint starts at `tile` (its min-x, min-y cell)."""
@@ -280,7 +285,7 @@ def inpaint(world, mask, tag, apply=None, prompt=None):
         keep[mm] = np.clip(out + 0.5, 0, 255).astype(np.uint8)[mm]
         world.paste(Image.fromarray(keep), (bx, by))
         return
-    if apply is None: tone_match(world, mask)  # a tight patch is the old footprint only, and keeps its own tone
+    if apply is None and prompt is None: tone_match(world, mask)  # a tight patch keeps its own tone; a drawn object too
 
 TONE_SIGMA = 10  # world px: the scale of the tone the patch is matched over, above the pixel detail it keeps
 
@@ -335,6 +340,40 @@ def dark_islands(world, patch, min_px=30, drop=45):
         if comp.sum() >= min_px:
             out.append(np.asarray(Image.fromarray(comp.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(7))) > 0)
     return out
+
+def pave_from_grid(world, mask, source, clean):
+    """Where a cleared patch lies in paving, the inpaint draws flat colour, not flags. Each such pixel instead takes the
+    paving a whole number of tiles away along the 2:1 grid ((64k, 32k), (-64k, 32k), (128k, 0) and their opposites,
+    nearest first) from `source`, the first offset that lands on clean paving (`clean`), so the flag lines run on. Only
+    pixels where the paving around (a normalised Gaussian of `clean`, the patch excluded) dominates are filled, so a
+    patch that runs into grass keeps its inpainted grass. Gain-matched to the ring, feathered 2 px. Returns the count."""
+    H, W = mask.shape
+    frac = _gauss(clean.astype(np.float32), 12) / np.maximum(_gauss((~mask).astype(np.float32), 12), 1e-4)
+    todo = mask & (frac > 0.5)
+    if not todo.any(): return 0
+    a = np.asarray(world.convert('RGB')).astype(np.float32); src = np.asarray(source.convert('RGB')).astype(np.float32)
+    fill = np.zeros_like(a); got = np.zeros_like(todo)
+    offs = []
+    for k in range(1, 9):
+        for d in ((64, 32), (-64, 32), (128, 0)):
+            offs += [(d[0] * k, d[1] * k), (-d[0] * k, -d[1] * k)]
+    offs.sort(key=lambda o: o[0] ** 2 + 4 * o[1] ** 2)
+    for dx, dy in offs:
+        ys, xs = np.nonzero(todo & ~got)
+        if not len(ys): break
+        sy, sx = ys + dy, xs + dx
+        ok = (sy >= 0) & (sy < H) & (sx >= 0) & (sx < W)
+        ys, xs, sy, sx = ys[ok], xs[ok], sy[ok], sx[ok]
+        good = clean[sy, sx]
+        fill[ys[good], xs[good]] = src[sy[good], sx[good]]; got[ys[good], xs[good]] = True
+    ring = (np.asarray(Image.fromarray(mask.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(11))) > 0) & ~mask & clean
+    if ring.sum() > 20 and got.sum() > 20:
+        fill[got] *= (a[ring].mean(0) + 1) / (fill[got].mean(0) + 1)
+    f = _gauss(got.astype(np.float32), 1.0) * got
+    f[np.asarray(Image.fromarray(got.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(3))) > 0] = 1
+    a = np.where(got[..., None], a * (1 - f[..., None]) + fill * f[..., None], a)
+    world.paste(Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)))
+    return int(got.sum())
 
 def set_in(world, ob):
     a = np.asarray(world.convert('RGB')).astype(np.float32)
@@ -401,6 +440,18 @@ if __name__ == '__main__':
     for t in small.values(): prefill(world, t, avoid)
     world.save(f'{RA}/world-g1-prefilled.png')
     for pid, t in small.items(): inpaint(world, t, f"{TAG}-out-{pid}", t, SOIL.get(pid))
+    # paving holes: flags from the grid, not the inpaint's flat colour
+    from ground import materials
+    pav, _, _ = materials(np.asarray(raw_world.convert('RGB')))
+    # a paving area, joints included: the flag mask closed over its 1-3 px dark joints
+    pav = np.asarray(Image.fromarray(pav.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))) > 0
+    clean_pav = pav & GROUND
+    for m in small.values(): clean_pav &= ~m
+    clean_pav = np.asarray(Image.fromarray(clean_pav.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(3))) > 0
+    for pid, t in small.items():
+        if pid in SOIL: continue
+        n = pave_from_grid(world, t, raw_world, clean_pav)
+        if n: print(pid, 'paved from grid', n)
     for tag, (x0, y0, x1, y1) in YARD_CLEAR:  # inside the house sprite: blank the old cart's own pixels, then inpaint
         import colorsys
         box = np.asarray(raw_world.crop((x0, y0, x1, y1)).convert('RGB')).astype(np.float32) / 255
@@ -413,6 +464,8 @@ if __name__ == '__main__':
         ring = np.zeros_like(m); ring[y0 - 6:y1 + 6, x0 - 6:x1 + 6] = True; ring &= ~m
         a_[m] = np.median(a_[ring], axis=0).astype(np.uint8); world.paste(Image.fromarray(a_))
         inpaint(world, m, f"o4-out-{tag}", m)
+    # YARD_CART was tried (o5-gao-yard-cart-small): the generator returned the same cart, which at G1 already stands
+    # about half a figure high, so the painted one stays.
     world.save(f'{RA}/world-g1-cleared.png')
     fam = json.load(open(f'{M}/families/families.json'))['objects']
     for key, (fx, fy) in YARD_PROPS:
