@@ -7,8 +7,8 @@ Writes ../<char>-g/review/sheet-<dir-group>.png, review/gates.json and review/fa
 
 Gates (measured on the placed cels, alpha > 0):
 - height / foot row: idle cel 0 height and lowest row against the rotation's; walk lowest-row spread (bob / sunk feet).
-- boil: share of opaque pixels that change between consecutive idle cels inside the head and torso box beyond a 1 px
-  shift search; PixelLab redraws every frame, so a still idle that boils shows here.
+- boil: share of opaque pixels that change between consecutive idle cels inside the head and torso box after the best
+  whole-body shift of up to 3 px; PixelLab redraws every frame, so a still idle that boils shows here.
 - identity: mean colour distance of each cel's 12-colour palette to the rotation's (drift between directions or frames).
 - stride axis: the angle of the foot-separation vector at the widest stride against the heading's screen travel axis.
 - slide: the planted (lowest) foot's x drift across consecutive cels where it stays lowest, root-locked cels should hold it.
@@ -56,8 +56,8 @@ def pal_dist(a, b):
 
 def boil(a, b, box):
     x0, y0, x1, y1 = box; A = np.array(a).astype(int); Bm = np.array(b).astype(int); best = 1.0
-    for dx in (-1, 0, 1):
-        for dy in (-1, 0, 1):
+    for dx in range(-3, 4):          # a whole-body sway of up to 3 px is motion, not boil
+        for dy in range(-3, 4):
             Bs = np.roll(np.roll(Bm, dy, 0), dx, 1)
             sa = A[y0:y1, x0:x1]; sb = Bs[y0:y1, x0:x1]; m = (sa[:, :, 3] > 0) | (sb[:, :, 3] > 0)
             if m.sum() == 0: continue

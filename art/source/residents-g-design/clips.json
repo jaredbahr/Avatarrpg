@@ -76,5 +76,36 @@
     "amp": 0.6,
     "action": "idle, standing still and breathing",
     "attribution": "CMU 77_02 standing"
+  },
+  "idle-still": {
+    "kind": "idle",
+    "clip": "77_02",
+    "frames": 4,
+    "start": 2.0,
+    "step": 0.5,
+    "amp": 0.3,
+    "action": "idle, standing still and breathing",
+    "attribution": "CMU 77_02 standing"
+  },
+  "idle8": {
+    "kind": "idle",
+    "clip": "77_02",
+    "frames": 8,
+    "start": 2.0,
+    "step": 0.25,
+    "amp": 0.6,
+    "action": "idle, standing still and breathing",
+    "attribution": "CMU 77_02 standing"
+  },
+  "walk-spear-calm": {
+    "kind": "walk",
+    "clip": "08_01",
+    "frames": 8,
+    "amp": 1.0,
+    "locked": ["RW+REL"],
+    "locked_amp": 0.3,
+    "action": "walk",
+    "attribution": "CMU 08_01 walk",
+    "arm_amp": 0.55
   }
 }
