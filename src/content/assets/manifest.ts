@@ -307,6 +307,54 @@ function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
   };
 }
 
+type ResidentGName = 'household' | 'watch' | 'mira' | 'gao' | 'pella' | 'dorin';
+
+/**
+ * A Ba Dan resident on a G sheet (issue #284, `scripts/art/resident-g.ts`):
+ * PixelLab art edited from Kaya's G south, eight-way idle, walk and rest at
+ * the party's scale and walk rate, with no combat clips. The walk is eight
+ * cels like the enemies', so it shares their stride timing.
+ */
+function residentGSheet(name: ResidentGName, key: string, palette: string): SheetEntry {
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const clips: Partial<Record<ClipName, ClipDef>> = {};
+  for (const heading of HEADINGS) {
+    clips[headingClip('idle', heading)] = {
+      frames: frames(headingClip('idle', heading), 4),
+      fps: 4,
+      loop: true,
+    };
+    clips[headingClip('walk', heading)] = {
+      frames: frames(headingClip('walk', heading), 8),
+      fps: 1000 / 114,
+      loop: true,
+    };
+    clips[headingClip('rest', heading)] = {
+      frames: frames(headingClip('rest', heading), 1),
+      fps: 1,
+      loop: true,
+    };
+  }
+  return {
+    kind: 'sheet',
+    atlas: `art/units/${name}-g.json`,
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'both',
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: gWalkMsPerTile(8),
+      walkStartMs: 2 * 114,
+      walkCycleMs: 8 * 114,
+      authoredBob: true,
+    },
+    palette,
+    clips,
+  };
+}
+
 /** Compact illustrated enemy clips preserve the procedural clip rates. */
 function quarryEnemySheet(name: string, palette: string): SheetEntry {
   const key = `unit.enemy.${name}`;
@@ -423,18 +471,21 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
-  'npc.elder': image('art/npcs/mira.png', 'neutral'),
-  'npc.shopkeeper': image('art/npcs/gao.png', 'earth'),
+  // The residents' G sheets (issue #284). Dema and the shrine figure share Mira's,
+  // and Sen Gao's, as they shared the old images (owner decision pending).
+  'npc.elder': residentGSheet('mira', 'npc.elder', 'neutral'),
+  'npc.shopkeeper': residentGSheet('gao', 'npc.shopkeeper', 'earth'),
   'world.turtle_ducks': image('art/world/turtle-ducks-nest.webp', 'earth'),
   'world.runoff_marker': image('art/world/runoff-marker.png', 'neutral'),
   'world.tea_station': image('art/props/tea-station.png', 'earth'),
-  'npc.kid': image('art/npcs/pella.png', 'air'),
-  'npc.dorin': image('art/npcs/dorin.png', 'earth'),
-  'npc.guard': painter('villager', 'earth', 'guard'),
-  // ADR 0047 placeholders until A1's art: Hanru, distinct from both of
-  // Dorin's sprites (D7), and an adult of Pella's household who is no named person.
+  'npc.kid': residentGSheet('pella', 'npc.kid', 'air'),
+  'npc.dorin': residentGSheet('dorin', 'npc.dorin', 'earth'),
+  'npc.guard': residentGSheet('watch', 'npc.guard', 'earth'),
+  // ADR 0047's placeholder until A1's art: Hanru, distinct from both of Dorin's
+  // sprites (D7). His look is an owner decision, so he keeps the painted figure.
   'npc.hanru': painter('villager', 'nonbender', 'guard'),
-  'npc.household': painter('villager', 'earth'),
+  // An adult of Pella's household who is no named person; the returnees share it.
+  'npc.household': residentGSheet('household', 'npc.household', 'earth'),
   // Until A1's notice art: a marker stone.
   'world.school_notice': painter('discovery', 'neutral', 'marker'),
   'world.route_sign': image('art/world/route-sign.png', 'neutral'),

@@ -933,7 +933,8 @@ describe('content', () => {
       if (entry.kind === 'sheet') {
         expect(entry.clips.idle?.frames.length, `${key} idle`).toBeGreaterThanOrEqual(2);
         const cast = entry.clips.cast;
-        expect(cast, `${key} cast`).toBeDefined();
+        // A resident's sheet never fights, so it has no cast (issue #284).
+        if (!key.startsWith('npc.')) expect(cast, `${key} cast`).toBeDefined();
         if (cast) {
           const bounds = isTimedBareClip('cast', cast)
             ? { min: CLIP_FRAME_COUNTS.cast.min, max: 12 }
