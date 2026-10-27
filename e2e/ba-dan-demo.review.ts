@@ -13,12 +13,17 @@
  * - slice-1x.png: the whole slice at game zoom (77 px tiles), the party in it;
  * - stop-NN-<name>.png and -walking.png: fixed walk beats through the slice;
  * - crop-<name>-4x.png: nearest-neighbour 4x enlargements of fixed regions;
+ * - practice-ready.png, then practice-<character>-gather.png, -release.png and
+ *   -impact.png: the bending practice on the south canal bank, each bender
+ *   frozen mid wind-up, at their bend's first release and at its impact (the
+ *   video shows it in real time first);
  * - provenance.json: revision, renderer, seed, tile size, day phase, errors.
  * Playwright records the run as video (see the config) for the walk-through clip.
  *
  * Local review fixture only: not a playthrough, not a CI check.
  *
  * FNT_DEMO_LABEL=before npx playwright test -c playwright.ba-dan-demo.config.ts
+ * (FNT_DEMO_PRACTICE_ONLY=1 skips the walk stops and re-shoots only the practice.)
  */
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -26,6 +31,7 @@ import { PNG } from 'pngjs';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import type * as ChoreoModule from '../src/app/anim/bendChoreo';
 
 const TILE_PX = 77;
 
@@ -148,6 +154,130 @@ function crop4x(source: string, cx: number, cy: number, w: number, h: number, ou
   writeFileSync(out, PNG.sync.write(dst));
 }
 
+/**
+ * Makes `performance.now` pausable, so a still can be taken at an exact moment
+ * of a bend without a fake clock: frozen, every frame draws that moment; let
+ * go, time resumes from it. Presentation reads only this clock.
+ */
+async function installPausableClock(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const real = performance.now.bind(performance);
+    const clock = { offset: 0, frozen: null as number | null };
+    (window as unknown as { reviewClock: unknown }).reviewClock = {
+      freeze(at: number) {
+        clock.frozen = at;
+      },
+      resume() {
+        if (clock.frozen === null) return;
+        clock.offset = real() - clock.frozen;
+        clock.frozen = null;
+      },
+    };
+    performance.now = () => clock.frozen ?? real() - clock.offset;
+  });
+}
+
+/** Sets the frozen page clock to `at` (performance.now ms) and waits for that frame to draw. */
+async function freezeAt(page: Page, at: number): Promise<void> {
+  await page.evaluate(async (at) => {
+    const clock = (window as unknown as { reviewClock: { freeze: (t: number) => void } })
+      .reviewClock;
+    clock.freeze(at);
+    for (let i = 0; i < 3; i++) await new Promise((done) => requestAnimationFrame(done));
+  }, at);
+}
+
+async function resumeClock(page: Page): Promise<void> {
+  await page.evaluate(() =>
+    (window as unknown as { reviewClock: { resume: () => void } }).reviewClock.resume(),
+  );
+}
+
+/**
+ * The practice ground (`BA_DAN_PRACTICE.anchor`), walked to from the east so
+ * the followers trail along the open road, and the tile the beat is framed on.
+ */
+const PRACTICE_AT = [10, 8] as const;
+const PRACTICE_FROM = [14, 8] as const;
+const PRACTICE_FRAME = [9, 6] as const;
+
+/**
+ * The practice beat: stand the party on the south bank, wait for the bends to
+ * load, practise once in real time for the video, then again with each bender
+ * frozen at their first release and at their impact.
+ */
+async function practice(page: Page, folder: string): Promise<string[]> {
+  await place(page, ...PRACTICE_FROM);
+  await centerTile(page, ...PRACTICE_FRAME);
+  await page
+    .locator('.map-canvas')
+    .click({ position: await tilePoint(page, ...PRACTICE_AT), timeout: 5_000 });
+  await expect
+    .poll(() => page.evaluate(() => window.fnt!.app.state!.location.pos), { timeout: 20_000 })
+    .toEqual({ x: PRACTICE_AT[0], y: PRACTICE_AT[1] });
+  await waitForIdle(page, 30_000);
+  await centerTile(page, ...PRACTICE_FRAME);
+  const button = page.getByRole('button', { name: /^Practice/ });
+  await expect(button).toBeEnabled({ timeout: 60_000 });
+  await page.screenshot({ path: `${folder}/practice-ready.png` });
+  await button.click();
+  await waitForIdle(page, 30_000);
+  await page.waitForTimeout(400);
+
+  // Press Practice and stop the clock in the same tick, so a slow software
+  // WebGL frame cannot carry the first bend past its release before the still.
+  const plan = await page.evaluate(async () => {
+    const choreo = (await import(
+      /* @vite-ignore */ `/src/app/anim/${'bendChoreo'}.ts`
+    )) as typeof ChoreoModule;
+    const app = window.fnt!.app;
+    const clock = (window as unknown as { reviewClock: { freeze: (t: number) => void } })
+      .reviewClock;
+    document.querySelector<HTMLButtonElement>('.practice-button')!.click();
+    clock.freeze(performance.now());
+    const { tracks } = (
+      app.animator as unknown as {
+        timeline: {
+          tracks: {
+            kind: string;
+            unitId: string;
+            start: number;
+            plan: ChoreoModule.BendPlan;
+          }[];
+        };
+      }
+    ).timeline;
+    return tracks
+      .filter((t) => t.kind === 'bend')
+      .map((t) => {
+        const last = t.plan.shot.releases.length - 1;
+        const first = t.plan.shot.releases[0]!.launchAt;
+        const arrival = t.plan.arrivals[last] ?? t.plan.shot.releases[last]!.launchAt;
+        const member = app.state!.party.find((m) => m.id === t.unitId)!;
+        const release = t.start + choreo.bendSceneAt(t.plan, first);
+        return {
+          name: member.characterId,
+          // Halfway through the wind-up, when Sura's water is on its way up from the canal.
+          gather: t.start + (release - t.start) * 0.55,
+          release: release + 10,
+          impact: t.start + choreo.bendSceneAt(t.plan, arrival) + 10,
+        };
+      });
+  });
+  expect(plan.map((p) => p.name)).toEqual(['kaya', 'sura', 'bo']);
+  const shots: string[] = [];
+  for (const bend of plan)
+    for (const moment of ['gather', 'release', 'impact'] as const) {
+      await freezeAt(page, bend[moment]);
+      const file = `${folder}/practice-${bend.name}-${moment}.png`;
+      await page.locator('.map-canvas').screenshot({ path: file });
+      shots.push(file);
+    }
+  await resumeClock(page);
+  await waitForIdle(page, 30_000);
+  return shots;
+}
+
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`${renderer} Ba Dan demo slice`, async ({ page }) => {
     test.setTimeout(300_000);
@@ -181,9 +311,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       crop4x(slice, p.x, p.y, w, h, `${folder}/crop-${name}-4x.png`);
     }
 
-    for (const [index, [name, from, to]] of STOPS.entries()) {
+    // FNT_DEMO_PRACTICE_ONLY=1 re-shoots the practice beat without the walk-through.
+    const stops = process.env.FNT_DEMO_PRACTICE_ONLY ? [] : STOPS;
+    for (const [index, [name, from, to]] of stops.entries()) {
       await walk(page, from, to, `${folder}/stop-${String(index + 1).padStart(2, '0')}-${name}`);
     }
+
+    await installPausableClock(page);
+    const practiceShots = await practice(page, folder);
 
     writeFileSync(
       `${folder}/provenance.json`,
@@ -196,6 +331,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           seed: 'ba-dan-demo',
           tilePx: TILE_PX,
           slice: { x: [0, 13], y: [0, 9], centre: SLICE_CENTRE },
+          practice: { at: PRACTICE_AT, shots: practiceShots.map((f) => f.split('/').pop()) },
           dayPhase: await page.evaluate(() => {
             const s = window.fnt!.app.state as unknown as Record<string, unknown>;
             return s.dayPhase ?? (s.world as Record<string, unknown> | undefined)?.phase ?? null;
