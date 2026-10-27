@@ -1,0 +1,1145 @@
+{
+  "what": "Route A (Pixel) round 1 for issue #284: every PixelLab job, in order.",
+  "gens": "PixelLab job usage (generations). balance_before/after are the account-wide balance, which another session was spending at the same time, so their difference is not this job's cost.",
+  "account_balance_at_start": 9770.0,
+  "account_balance_at_end": 7585.5,
+  "total_gens": 700.0,
+  "jobs": [
+    {
+      "tag": "p1-gao-i2p",
+      "endpoint": "/image-to-pixelart-pro",
+      "job_id": "7fa0a3ec-7dda-418d-aac9-487dc6f22137",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<inputs/gao-crop-paint.png>"
+        },
+        "description": "fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p1-gao-i2p-0.png", "p1-gao-i2p-1.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9547.0,
+      "gens": 20.0,
+      "seconds": 61,
+      "notes": "image-to-pixelart-pro on the painting-res crop",
+      "verdict": "reject: chunky (3.25x)",
+      "error": null,
+      "committed": {
+        "p1-gao-i2p-0.png": "generated/rejected/p1-gao-i2p-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p1-gao-editref",
+      "endpoint": "/edit-images-v2",
+      "job_id": "eca60b6b-b62e-493d-a061-724a0ef32bab",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-crop-world.png>"
+            },
+            "width": 468,
+            "height": 339
+          }
+        ],
+        "image_size": {
+          "width": 468,
+          "height": 339
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), roof line, walls, door, windows, awning and yard layout; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p1-gao-editref-0.png", "p1-gao-editref-1.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9471.0,
+      "gens": 25.0,
+      "seconds": 114,
+      "notes": "edit with party reference, world-px size",
+      "verdict": "take (output 0): strongest figure-like restyle, composition kept; world-px grain",
+      "error": null,
+      "committed": {
+        "p1-gao-editref-0.png": "generated/gao-house.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p1-gao-edittext",
+      "endpoint": "/edit-images-v2",
+      "job_id": "4b5dc124-b0b4-47bb-9ed4-428cff49cb17",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-crop-world.png>"
+            },
+            "width": 468,
+            "height": 339
+          }
+        ],
+        "image_size": {
+          "width": 468,
+          "height": 339
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), roof line, walls, door, windows, awning and yard layout; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["p1-gao-edittext-0.png", "p1-gao-edittext-1.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9446.0,
+      "gens": 25.0,
+      "seconds": 121,
+      "notes": "edit with text, world-px size",
+      "verdict": "alternative: keeps more painted texture",
+      "error": null,
+      "committed": {
+        "p1-gao-edittext-0.png": "generated/rejected/p1-gao-edittext-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p1-gao-gen",
+      "endpoint": "/generate-image-v2",
+      "job_id": "971bdcac-dca0-45ab-945c-7c5b24d7ef75",
+      "status": "completed",
+      "request": {
+        "description": "A small East-Asian timber merchant house with green tiled roof, white plaster walls, wooden shop front with a striped awning, stone plinth, side yard with barrels and crates, on grass. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), roof line, walls, door, windows, awning and yard layout; change only the rendering.",
+        "image_size": {
+          "width": 468,
+          "height": 340
+        },
+        "seed": 11,
+        "no_background": false,
+        "reference_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-crop-world.png>"
+            },
+            "size": {
+              "width": 468,
+              "height": 339
+            },
+            "usage_description": "exact composition and layout to keep"
+          }
+        ],
+        "style_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "size": {
+            "width": 300,
+            "height": 121
+          }
+        },
+        "style_options": {
+          "color_palette": false,
+          "outline": true,
+          "detail": true,
+          "shading": true
+        }
+      },
+      "outputs": ["p1-gao-gen-0.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9339.0,
+      "gens": 25.0,
+      "seconds": 193,
+      "notes": "generate with composition reference + party style image",
+      "verdict": "reject: composition drifted",
+      "error": null,
+      "committed": {
+        "p1-gao-gen-0.png": "generated/rejected/p1-gao-gen-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "858ceaf5-9864-4287-891c-b1dce4e06c06",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 3 (424,165,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t3-0.png", "p2-gao-ref13-t3-1.png"],
+      "balance_before": 9250.0,
+      "balance_after": 9032.199999999999,
+      "gens": 25.0,
+      "seconds": 314,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 3 at (424,165,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-txt10-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "4b34e001-4cd0-43d6-a1b1-a83efc2c78df",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-txt10 tile 0 (0,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-txt10-t0-0.png", "p2-gao-txt10-t0-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8855.2,
+      "gens": 25.0,
+      "seconds": 124,
+      "notes": "edittext at painting res tile 0 at (0,0,512x508)",
+      "verdict": "reject: near copy of the painting at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref10-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "b8d423ac-8588-4c64-ace3-8a492f7bb213",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref10 tile 1 (190,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref10-t1-0.png", "p2-gao-ref10-t1-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8802.2,
+      "gens": 25.0,
+      "seconds": 133,
+      "notes": "editref at painting res (1 gen px = 1 screen px) tile 1 at (190,0,512x508)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "8b2f9343-609a-423e-a537-d00c0b2e6c8a",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 1 (424,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t1-0.png", "p2-gao-ref13-t1-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8802.2,
+      "gens": 25.0,
+      "seconds": 134,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 1 at (424,0,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref10-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "ec5d9b08-bc3b-40ae-b5af-15c397aba3d9",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref10 tile 0 (0,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref10-t0-0.png", "p2-gao-ref10-t0-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8740.2,
+      "gens": 25.0,
+      "seconds": 177,
+      "notes": "editref at painting res (1 gen px = 1 screen px) tile 0 at (0,0,512x508)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-txt10-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "73f63eb2-fcf1-4d74-a965-f36840a7c173",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-txt10 tile 1 (190,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-txt10-t1-0.png", "p2-gao-txt10-t1-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8740.2,
+      "gens": 25.0,
+      "seconds": 177,
+      "notes": "edittext at painting res tile 1 at (190,0,512x508)",
+      "verdict": "reject: near copy of the painting at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "987ca2f3-7b6f-46b2-b3a9-1fb5e6f50966",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 2 (0,165,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t2-0.png", "p2-gao-ref13-t2-1.png"],
+      "balance_before": 8802.2,
+      "balance_after": 8625.1,
+      "gens": 25.0,
+      "seconds": 146,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 2 at (0,165,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "faafadb2-d95b-46aa-aba5-82009f859d94",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t0-0.png", "p2-gao-ref13-t0-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8576.1,
+      "gens": 25.0,
+      "seconds": 324,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 0 at (0,0,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p3-gao-crisp-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "3ed092cd-a49c-40ac-9b42-9da738dbfaa0",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-s1-up15.png crop (0,0,512,508)>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "description": "Clean up this image into crisp fine pixel art at its native resolution: every edge and mark one or two pixels, 1 px dark brown outline (#1b1410) on silhouettes, flat tone groups, no blur, no soft gradients, no anti-aliasing smear. Keep everything exactly where it is: same composition, shapes, colours and layout.",
+        "seed": 11
+      },
+      "outputs": ["p3-gao-crisp-t0-0.png", "p3-gao-crisp-t0-1.png"],
+      "balance_before": 8524.3,
+      "balance_after": 8440.3,
+      "gens": 25.0,
+      "seconds": 133,
+      "notes": "stage 2: crisp the 1.5x lanczos upscale of p1-gao-editref-0 at painting res",
+      "verdict": "reject: snapped back to the coarse grid; no finer marks",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-tree-s23",
+      "endpoint": "/edit-images-v2",
+      "job_id": "9b7ab5ce-630b-4f5f-96e4-afb397a1dbda",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/tree-crop-world.png>"
+            },
+            "width": 320,
+            "height": 312
+          }
+        ],
+        "image_size": {
+          "width": 320,
+          "height": 312
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. A broad canopy tree with a gnarled trunk. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Leaves as clustered masses of 3-4 greens with a few 1-2 px leaf marks at the lit edge, no all-over noise.",
+        "seed": 23
+      },
+      "outputs": ["a1-tree-s23-0.png", "a1-tree-s23-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8322.5,
+      "gens": 15.0,
+      "seconds": 111,
+      "notes": "canopy tree (tree-5-5) at world px",
+      "verdict": "reject: barely restyled",
+      "error": null,
+      "committed": {
+        "a1-tree-s23-0.png": "generated/rejected/a1-tree-s23-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "204b8b1e-1f3c-4dd2-b82f-ec1f77bde647",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 2 (717,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t2-0.png", "a1-slice-t2-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8291.5,
+      "gens": 25.0,
+      "seconds": 150,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 2 at (717,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "bad065e9-c3b8-4e72-9fd8-5497230e8d06",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 1 (358,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t1-0.png", "a1-slice-t1-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8266.5,
+      "gens": 25.0,
+      "seconds": 155,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 1 at (358,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c711a1dd-9ba7-403a-871a-9161ff483ce4",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t0-0.png", "a1-slice-t0-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8235.5,
+      "gens": 25.0,
+      "seconds": 169,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 0 at (0,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "540d3a80-6784-48f2-bc31-5ee8246cfa3d",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 3 (1075,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t3-0.png", "a1-slice-t3-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8203.5,
+      "gens": 25.0,
+      "seconds": 207,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 3 at (1075,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t4",
+      "endpoint": "/edit-images-v2",
+      "job_id": "80ec5148-b385-4cfc-8526-b2ecb5359ffa",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 4 (0,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t4-0.png", "a1-slice-t4-1.png"],
+      "balance_before": 8291.5,
+      "balance_after": 8154.5,
+      "gens": 25.0,
+      "seconds": 114,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 4 at (0,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t5",
+      "endpoint": "/edit-images-v2",
+      "job_id": "3fdef615-0651-40e8-a87f-1e8507cec7c4",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 5 (358,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t5-0.png", "a1-slice-t5-1.png"],
+      "balance_before": 8266.5,
+      "balance_after": 8114.5,
+      "gens": 25.0,
+      "seconds": 153,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 5 at (358,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t6",
+      "endpoint": "/edit-images-v2",
+      "job_id": "32090232-4746-4b9e-b195-4495c435203e",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 6 (717,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t6-0.png", "a1-slice-t6-1.png"],
+      "balance_before": 8235.5,
+      "balance_after": 8089.5,
+      "gens": 25.0,
+      "seconds": 143,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 6 at (717,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-tree-s11",
+      "endpoint": "/edit-images-v2",
+      "job_id": "06776fff-d000-46bc-8f7c-81da348dcf3e",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/tree-crop-world.png>"
+            },
+            "width": 320,
+            "height": 312
+          }
+        ],
+        "image_size": {
+          "width": 320,
+          "height": 312
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. A broad canopy tree with a gnarled trunk. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Leaves as clustered masses of 3-4 greens with a few 1-2 px leaf marks at the lit edge, no all-over noise.",
+        "seed": 11
+      },
+      "outputs": ["a1-tree-s11-0.png", "a1-tree-s11-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8071.5,
+      "gens": 15.0,
+      "seconds": 327,
+      "notes": "canopy tree (tree-5-5) at world px",
+      "verdict": "take: flat tone groups, calm ground",
+      "error": null,
+      "committed": {
+        "a1-tree-s11-0.png": "generated/canopy-tree.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t7",
+      "endpoint": "/edit-images-v2",
+      "job_id": "5477d6d8-6081-4ffd-9ae1-aaaad8b90b35",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 7 (1075,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t7-0.png", "a1-slice-t7-1.png"],
+      "balance_before": 8203.5,
+      "balance_after": 8037.5,
+      "gens": 25.0,
+      "seconds": 130,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 7 at (1075,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t5",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c8558faa-a2a8-4ed7-b9c2-d36af9a7bd4e",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 5 (928,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t5-0.png", "a2-ground-t5-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7947.5,
+      "gens": 25.0,
+      "seconds": 108,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 5 at (928,368,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t5-0.png": "generated/ground-tile-5.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "cca61697-aae5-4064-bb1c-e7d460ae6993",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 2 (928,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t2-0.png", "a2-ground-t2-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7922.5,
+      "gens": 25.0,
+      "seconds": 126,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 2 at (928,0,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t2-0.png": "generated/ground-tile-2.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "70ffc7ce-567a-402b-84bc-7ef1f38b072a",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 1 (464,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t1-0.png", "a2-ground-t1-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7897.5,
+      "gens": 25.0,
+      "seconds": 131,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 1 at (464,0,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t1-0.png": "generated/ground-tile-1.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t4",
+      "endpoint": "/edit-images-v2",
+      "job_id": "3940110f-2497-46e4-8060-60ba7bb33ef9",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 4 (464,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t4-0.png", "a2-ground-t4-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7857.5,
+      "gens": 25.0,
+      "seconds": 171,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 4 at (464,368,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t4-0.png": "generated/ground-tile-4.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "1ee0d3e2-a549-4f70-b06e-550956c3bd11",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t0-0.png", "a2-ground-t0-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7680.5,
+      "gens": 25.0,
+      "seconds": 309,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 0 at (0,0,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t0-0.png": "generated/ground-tile-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "6aa96c4e-ef5c-467b-9ace-2e8d9a765ccd",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 3 (0,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t3-0.png", "a2-ground-t3-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7680.5,
+      "gens": 25.0,
+      "seconds": 310,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 3 at (0,368,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t3-0.png": "generated/ground-tile-3.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    }
+  ]
+}
