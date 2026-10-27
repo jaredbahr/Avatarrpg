@@ -28,7 +28,8 @@
         "type": "generations",
         "generations": 6.0
       },
-      "secs": 44
+      "secs": 44,
+      "verdict": "used"
     },
     {
       "name": "rot-south-edit-tex-s7401-s7411",
@@ -56,7 +57,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 173
+      "secs": 173,
+      "verdict": "used"
     },
     {
       "name": "estimate-skeleton x8",
@@ -104,7 +106,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 113
+      "secs": 113,
+      "verdict": "used"
     },
     {
       "name": "walk-relaxed-south-east-s8401",
@@ -145,7 +148,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 130
+      "secs": 130,
+      "verdict": "used"
     },
     {
       "name": "walk-relaxed-east-s8401",
@@ -186,7 +190,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 138
+      "secs": 138,
+      "verdict": "used"
     },
     {
       "name": "walk-relaxed-north-west-s8401",
@@ -227,7 +232,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 121
+      "secs": 121,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-s8402",
@@ -262,7 +268,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 79
+      "secs": 79,
+      "verdict": "used"
     },
     {
       "name": "walk-relaxed-north-east-s8401",
@@ -303,7 +310,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 165
+      "secs": 165,
+      "verdict": "used"
     },
     {
       "name": "walk-relaxed-west-s8401",
@@ -344,7 +352,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 164
+      "secs": 164,
+      "verdict": "used"
     },
     {
       "name": "walk-relaxed-south-west-s8401",
@@ -385,7 +394,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 121
+      "secs": 121,
+      "verdict": "used"
     },
     {
       "name": "walk-relaxed-north-s8401",
@@ -426,7 +436,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 191
+      "secs": 191,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-east-s8402",
@@ -461,7 +472,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-east-s8402",
@@ -496,7 +508,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 136
+      "secs": 136,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-s8402",
@@ -531,7 +544,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 95
+      "secs": 95,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-west-s8402",
@@ -566,7 +580,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 109
+      "secs": 109,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-west-s8402",
@@ -601,7 +616,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 88
+      "secs": 88,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-west-s8402",
@@ -636,7 +652,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-east-s8402",
@@ -671,9 +688,10 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 170
+      "secs": 170,
+      "verdict": "used"
     }
   ],
-  "balance_after": 7693.5,
+  "balance_after": 7419.5,
   "gens_total": 59.8
 }
