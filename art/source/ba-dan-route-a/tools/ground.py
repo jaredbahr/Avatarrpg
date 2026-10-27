@@ -84,7 +84,12 @@ if __name__ == '__main__':
             x, y, tw, th = boxes[i]; img, h = b64(world.crop((x, y, x + tw, y + th)))
             run(*payload(img, tw, th), f'{os.environ.get("GROUND_TAG", "g5")}-t{i}', {h: f'world-g1 tile {i} ({x},{y})'}, 'ground pass probe')
         sys.exit(0)
-    gen = edit_tiled(world, 'g6', payload, {}, 'ground pass over world-g1', min_ov=48, workers=8)
-    gen.save(f'{RA}/world-g1-ground-gen.png')
-    out = compose(world, gen, ids_world(reg, (H, W)))
+    gp = f'{RA}/world-g1-ground-gen.png'
+    if os.path.exists(gp) and os.environ.get('GROUND_REUSE'):
+        gen = Image.open(gp).convert('RGB')
+    else:
+        gen = edit_tiled(world, 'g6', payload, {}, 'ground pass over world-g1', min_ov=48, workers=8)
+        gen.save(gp)
+    from world import keep_margin
+    out = keep_margin(world, compose(world, gen, ids_world(reg, (H, W))))  # the page margin stays the page colour
     out.save(f'{RA}/world-g1-ground.png')
