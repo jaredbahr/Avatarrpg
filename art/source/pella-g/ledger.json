@@ -28,7 +28,8 @@
         "type": "generations",
         "generations": 6.0
       },
-      "secs": 44
+      "secs": 44,
+      "verdict": "superseded: 123 px (64% of canvas), taller than her 58%"
     },
     {
       "name": "south-edit-tex-s7502",
@@ -56,7 +57,8 @@
         "type": "generations",
         "generations": 6.0
       },
-      "secs": 79
+      "secs": 79,
+      "verdict": "used: 113 px"
     },
     {
       "name": "rot-south-edit-tex-s7502-s7511",
@@ -73,7 +75,8 @@
         "first_frame": "design/south-edit-tex-s7502/00.png"
       },
       "error": "429 {\"detail\":\"Maximum 20 concurrent background jobs allowed (Tier 3). You have 20 active jobs.\"}",
-      "gens": 0
+      "gens": 0,
+      "verdict": "rejected: detached yellow and magenta strokes in five views"
     },
     {
       "name": "rot-south-edit-tex-s7502-s7511",
@@ -101,7 +104,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 181
+      "secs": 181,
+      "verdict": "rejected: detached yellow and magenta strokes in five views"
     },
     {
       "name": "estimate-skeleton x8",
@@ -136,7 +140,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 169
+      "secs": 169,
+      "verdict": "rejected: motion swooshes around the cabbage"
     },
     {
       "name": "estimate-skeleton x8",
@@ -171,7 +176,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 121
+      "secs": 121,
+      "verdict": "rejected: swooshes above the head in seven views"
     },
     {
       "name": "rot-v3-south-edit-tex-s7502-s7514",
@@ -200,7 +206,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 212
+      "secs": 212,
+      "verdict": "used after clean.py removed detached blobs"
     },
     {
       "name": "estimate-skeleton x8",
@@ -248,7 +255,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 147
+      "secs": 147,
+      "verdict": "used"
     },
     {
       "name": "walk-child-east-s8501",
@@ -289,7 +297,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 167
+      "secs": 167,
+      "verdict": "used"
     },
     {
       "name": "walk-child-south-east-s8501",
@@ -330,7 +339,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 184
+      "secs": 184,
+      "verdict": "used"
     },
     {
       "name": "walk-child-north-s8501",
@@ -371,7 +381,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 191
+      "secs": 191,
+      "verdict": "used"
     },
     {
       "name": "walk-child-north-east-s8501",
@@ -412,7 +423,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 214
+      "secs": 214,
+      "verdict": "used"
     },
     {
       "name": "walk-child-south-west-s8501",
@@ -453,7 +465,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 239
+      "secs": 239,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-s8502",
@@ -488,7 +501,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 96
+      "secs": 96,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-east-s8502",
@@ -523,7 +537,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-east-s8502",
@@ -558,7 +573,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 95
+      "secs": 95,
+      "verdict": "used"
     },
     {
       "name": "walk-child-west-s8501",
@@ -599,7 +615,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 289
+      "secs": 289,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-east-s8502",
@@ -634,7 +651,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 101
+      "secs": 101,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-s8502",
@@ -669,7 +687,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "walk-child-north-west-s8501",
@@ -710,7 +729,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 319
+      "secs": 319,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-west-s8502",
@@ -745,7 +765,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 90
+      "secs": 90,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-west-s8502",
@@ -780,7 +801,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 79
+      "secs": 79,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-west-s8502",
@@ -815,7 +837,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 181
+      "secs": 181,
+      "verdict": "used"
     },
     {
       "name": "idle-still-south-s8503",
@@ -850,7 +873,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "test: 0.3x motion, boil 29-35%, not better"
     },
     {
       "name": "idle8-south-s8504",
@@ -885,9 +909,10 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 147
+      "secs": 147,
+      "verdict": "test: 8 cels, alternating halves 25-35%, not better"
     }
   ],
-  "balance_after": 7441.5,
+  "balance_after": 7419.5,
   "gens_total": 88.4
 }
