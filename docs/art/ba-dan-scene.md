@@ -2,9 +2,10 @@
 
 ## Ba Dan: one continuous painting (integration of 10 October 2026)
 
-The village is **one painting**: twelve region paintings (`art/source/ba-dan-regions/accepted/`), each painted
-over a guide rendered from the map's own geometry at 1.5 image px per world px and registered to it within
-two pixels, stitched into one 4500 x 2401 picture (the pan box, 3000 x 1600 world px from (-200, -100)), cut
+The village is **one painting**: region paintings (`art/source/ba-dan-regions/accepted/`; six since ADR 0088, crops of the
+G1 master), each registered within two pixels to a guide rendered from the map's own geometry, stitched into one
+3000 x 1600 picture at 1 image px per world px (the pan box, 3000 x 1600 world px from (-200, -100); it was 4500 x 2401 at
+1.5 px per world px until ADR 0088, see "1 px per world px" below), cut
 on a regular 4 x 3 grid into twelve **ground plates**, with the pieces a figure can walk behind cut back
 out of it by their geometry as **uprights**. The painting already holds the light, the cast shadow, the contact
 under every foot, the worn ground, the joins between materials and the canal, so the game draws none of them
@@ -12,15 +13,15 @@ for Ba Dan. Everything under "History" describes the piece-and-plate village thi
 
 ### What ships
 
-| files in `public/art/maps/ba-dan-scene/` | what                                                                                                                        |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `ground-00.webp` .. `ground-11.webp`     | the painting in twelve plates, opaque lossy WebP q85, 1127 x 803 px (the edge ones 1125 x 799), 1.5 px per world px         |
-| `uprights-0.webp`, `uprights-1.webp`     | 49 sprites, trimmed to what they draw and packed into two pages (2048 x 2040, 2048 x 1450), lossy with an exact alpha plane |
-| `dwelling.webp`, `village-tree.webp`     | the lodge and the alder the **Forest Road** still borrows (`ba-dan-restyle.ts`); not the village's                          |
+| files in `public/art/maps/ba-dan-scene/` | what                                                                                                                                                                                            |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ground-00.webp` .. `ground-11.webp`     | the painting in twelve plates, opaque lossy WebP q85, 752 x 536 px (the edge ones 750 x 532), 1 px per world px                                                                                 |
+| `uprights-0.webp`, `uprights-1.webp`     | 46 sprites, trimmed to what they draw and packed into two pages (1600 x 1342, 864 x 974), lossy with an exact alpha plane, or lossless on a 5-bit grid where 1 px pixel art needs it (ADR 0085) |
+| `dwelling.webp`, `village-tree.webp`     | the lodge and the alder the **Forest Road** still borrows (`ba-dan-restyle.ts`); not the village's                                                                                              |
 
 `src/content/scenes/baDan.art.ts` is generated: each plate's rectangle and each sprite's page, source
-rectangle and rectangle in painting pixels. `baDan.ts` turns those into the scene (painting px / 1.5 +
-(-200, -100) = world px) and adds what the art does not say: ids, footprints, depth keys, fade flags. The
+rectangle and rectangle in painting pixels. `baDan.ts` turns those into the scene (painting px / `BA_DAN_PAINTING.scale`
+(1) + (-200, -100) = world px) and adds what the art does not say: ids, footprints, depth keys, fade flags. The
 scene is a **complete scene** (no `groundMode: 'partial'`): 14 images (12 ground pieces and 2 pages) against
 the schema's 32 ground pieces, 80 scenery entries and the 40-image cap. `paintedWater: true` keeps the
 film off the permanent water; ice, fire and steam still draw over it.
@@ -110,7 +111,12 @@ stair in one paver edge near village px (3300, 1545) where a seam crosses it.
 
 ### Resolution and quality
 
-1.5 px per world px is shipped for everything. The game shows a world pixel at about 1.5 screen px, so the painting is drawn
+**Since ADR 0088, 1 px per world px is shipped for everything**: the camera draws at a whole number N of device px per world
+px and samples art nearest wherever one art px covers a whole number of device px, so 1 px art is crisp at every N, and
+1.5 px art was crisp only at N = 3 (smoothed at N = 2, desktop and Surface). The paragraph below is the reasoning for 1.5 under
+the old fractional 1.5 camera; it no longer holds.
+
+(Before ADR 0088) 1.5 px per world px is shipped for everything. The game shows a world pixel at about 1.5 screen px, so the painting is drawn
 1:1, as the characters are (they are drawn from pixel art at that scale and are sharp). At 1 px per world px
 the same painting is resampled by the browser and loses the mesh in the windows, the lantern glass, the roof
 courses and the small flowers: visibly softer than the characters beside it. The comparison at 2x is in
@@ -216,7 +222,14 @@ The owner chose route A of #284 (ADR 0085). The whole stitched painting was rest
 family (one prompt, one seed; `art/source/ba-dan-route-a/tools/world.py`). The oversized market objects were inpainted
 out and the #288 objects set in at their footprints with a flat pixel cast shadow and contact line (`objects.py`), and
 the twelve regions were written back as crops of that one picture (`regions_back.py`), so every overlap is the same
-pixels on both sides. The replaced pieces' frozen sprites are now the new objects' silhouettes (`geometry/sprites/g1-*.webp`;
+pixels on both sides.
+
+**1 px per world px (ADR 0088, 27 October 2026).** The G1 master is drawn at world px, and the regions used to scale it to 1.5
+(EPX x2, then a 0.75 Lanczos), which integer zoom then smoothed at N = 2. `regions.py` now works at `SCALE = 1`: six 1536 x 1024
+regions (3 x 2) cut straight from `world-g1-polish.png`, the frozen geometry area-averaged down to the 1 px grid, the fade and
+plate cuts restated in world px. The upright set (46), every footprint, depth key and flag are unchanged (`baDan.test.ts`,
+`baDanDepth.test.ts`); the projection pins, read on the 1.5 px canvases, are scaled to the painting's scale by the test. The
+shipped folder fell from 3.61 MB to 2.17 MB. The replaced pieces' frozen sprites are now the new objects' silhouettes (`geometry/sprites/g1-*.webp`;
 footprints, depth keys and flags unchanged). The calm step below is off (`QUIET_GROUND = False`): the ground is drawn
 calm.
 
