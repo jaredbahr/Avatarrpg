@@ -1,0 +1,4 @@
+# regenerable: extract.py cuts these from the shipped atlases
+ref/
+tools/cmu/
+tools/__pycache__/
