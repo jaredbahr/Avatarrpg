@@ -238,6 +238,8 @@ export class Animator {
       delayMs?: number;
       /** Stable fraction of the authored walk loop; presentation only. */
       walkPhase?: number;
+      /** Open water a water bend in this push draws from, by unit id (see `choreograph`). */
+      waterSources?: Readonly<Record<string, Vec2>>;
     } = {},
   ): void {
     const base = options.alongside
@@ -260,6 +262,7 @@ export class Animator {
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
       ...(bends ? { bends } : {}),
       ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
+      ...(options.waterSources ? { waterSources: options.waterSources } : {}),
     });
     for (const event of events) {
       if (event.type === 'partyWalked')
