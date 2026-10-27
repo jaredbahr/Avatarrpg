@@ -287,6 +287,7 @@ def inpaint(world, mask, tag, apply=None, prompt=None):
         return
     if apply is None and prompt is None: tone_match(world, mask)  # a tight patch keeps its own tone; a drawn object too
 
+TONE_MAX = 30  # levels: the most the tone match moves a channel
 TONE_SIGMA = 10  # world px: the scale of the tone the patch is matched over, above the pixel detail it keeps
 
 def _gauss(x, sigma):
@@ -312,9 +313,14 @@ def tone_match(world, mask):
     x0, x1 = max(0, xs.min() - pad), min(mask.shape[1], xs.max() + pad + 1)
     a = np.asarray(world.convert('RGB')).astype(np.float32)
     sub = a[y0:y1, x0:x1]; m = mask[y0:y1, x0:x1].astype(np.float32)
-    out_tone, _ = _norm_blur(sub, 1 - m, TONE_SIGMA)
+    # only the surroundings that are plain ground count, and only near the patch edge: where little of the window is
+    # surround (the middle of a big patch) the correction fades out, and it never moves a pixel more than TONE_MAX
+    ground = GROUND[y0:y1, x0:x1].astype(np.float32) if GROUND is not None else 1.0
+    out_tone, w_out = _norm_blur(sub, (1 - m) * ground, TONE_SIGMA)
     in_tone, _ = _norm_blur(sub, m, TONE_SIGMA)
-    fixed = sub + (out_tone - in_tone) * m[..., None]
+    trust = np.clip((w_out - 0.05) / 0.25, 0, 1)[..., None]
+    delta = np.clip(out_tone - in_tone, -TONE_MAX, TONE_MAX) * trust
+    fixed = sub + delta * m[..., None]
     a[y0:y1, x0:x1] = np.where(m[..., None] > 0, fixed, sub)
     world.paste(Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)))
 
