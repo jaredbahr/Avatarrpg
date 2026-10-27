@@ -1,6 +1,6 @@
 # The forest road at G1: sources, tools and ledger
 
-Issue #284, ADR 0085 (Route A at G1) and ADR 0086 (this pass). The first fight's board (`forest_road`,
+Issue #284, ADR 0085 (Route A at G1) and ADR 0087 (this pass). The first fight's board (`forest_road`,
 `src/content/scenes/forestRoad.ts`) redrawn at the characters' grain, 1 art px = 1 world px, in the PixelLab G family that
 made Ba Dan's G1 world. Gameplay geometry is untouched: every ground piece keeps its rectangle and alpha, every upright
 its rectangle, anchor and depth key.
@@ -35,7 +35,7 @@ files to `pieces/` byte for byte.
 
 - **Prompts** (`tools/style.py`): Ba Dan's `STYLE` and `KEEP` unchanged, and the forest's own ground sentence. Ba Dan's
   (`GROUND_BADAN`) was probed first on one tile: it bleached the grass to a single olive, the fault the owner saw in Ba
-  Dan at a distance (probe jobs `probe-badan`, `probe-living`; numbers in ADR 0086).
+  Dan at a distance (probe jobs `probe-badan`, `probe-living`; numbers in ADR 0087).
 - **Colour** (`tools/tone.py`): the restyle drifted salmon on the road and yellow on the grass, tile by tile. Its low
   frequencies are moved back to the painting's (YCbCr, sigma 12 px; chroma fully, luma 60%), then one 192-colour
   palette, no dither. The shelf is taken down 10% in luma.
@@ -53,7 +53,7 @@ files to `pieces/` byte for byte.
 ## Faults (judged at the fit and at the 1.5 camera, Canvas)
 
 - The ground ships at 1 file px per world px (budget), so at the 1.5 camera it is softer than the 1.5x uprights and
-  the figures; the lossy codec softens moss and kerb colour edges a little more. See ADR 0086.
+  the figures; the lossy codec softens moss and kerb colour edges a little more. See ADR 0087.
 - The figures are still finer-grained than the world (ADR 0085's open camera question).
 - The restyle invented a few things in the apron's fade: bushes past the west corner and the east shelf, and a striped
   sliver at the bottom corner (a streak was there before too). They sit in faded, out-of-play ground.

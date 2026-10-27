@@ -14,7 +14,7 @@ import { BANK_REED_COUNT, BANK_REED_SIZE, packBankReed } from './forest-bank-ree
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /**
- * The packer's reeds are the pre-G1 art: since ADR 0086 they are the input the
+ * The packer's reeds are the pre-G1 art: since ADR 0087 they are the input the
  * G1 reeds were redrawn from, at the same registered aspect, and no longer ship.
  * `forest-g1-pack.test.ts` holds what does.
  */

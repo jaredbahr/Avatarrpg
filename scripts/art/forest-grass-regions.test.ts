@@ -18,7 +18,7 @@ import {
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /**
- * What ships is the G1 restyle of the 2026-10-03 generated packs (ADR 0086),
+ * What ships is the G1 restyle of the 2026-10-03 generated packs (ADR 0087),
  * held to its committed source by `forest-g1-pack.test.ts`; the packer stays
  * the authority on the footprint.
  */

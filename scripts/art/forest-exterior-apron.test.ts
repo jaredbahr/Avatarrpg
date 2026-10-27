@@ -87,7 +87,7 @@ it('packs an apron that never overpaints authored ground', () => {
 it('ships a rim with no light fringe from the lossy encoder', async () => {
   // The bands are lossy. A clear pixel's colour still feeds the encoder, and
   // black ones beside the band smeared a light line along the rim, as they did
-  // on Ba Dan's apron. What ships is the G1 restyle (ADR 0086), so the rim is
+  // on Ba Dan's apron. What ships is the G1 restyle (ADR 0087), so the rim is
   // judged against its own committed source, on the packer's footprint.
   let rim = 0,
     fringe = 0;

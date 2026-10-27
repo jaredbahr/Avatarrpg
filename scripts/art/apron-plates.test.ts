@@ -119,7 +119,7 @@ describe('the ring the scene registers', () => {
 
 describe('the art on disk', () => {
   it('is the packed ring cut into exactly those bands', async () => {
-    // What ships is the G1 restyle of the ring (ADR 0086): its colour is the
+    // What ships is the G1 restyle of the ring (ADR 0087): its colour is the
     // restyle's, held to its source by `forest-g1-pack.test.ts`, and its alpha
     // is the packed ring's, band for band, pixel for pixel.
     for (const [index, band] of forest.bands.entries()) {

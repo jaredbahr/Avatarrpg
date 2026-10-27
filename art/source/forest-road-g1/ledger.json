@@ -1,5 +1,5 @@
 {
- "what": "Forest road at G1 (ADR 0086, issue #284): every PixelLab job, in order of the files they were first written to. gens is the job usage reported by the API; balance_before/after are account-wide (other sessions spend concurrently), so their difference is not the job cost.",
+ "what": "Forest road at G1 (ADR 0087, issue #284): every PixelLab job, in order of the files they were first written to. gens is the job usage reported by the API; balance_before/after are account-wide (other sessions spend concurrently), so their difference is not the job cost.",
  "total_gens": 778.0,
  "jobs": [
   {

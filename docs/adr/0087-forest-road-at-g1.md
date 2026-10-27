@@ -1,4 +1,4 @@
-# ADR 0086: The forest road at G1, and the combat props with it
+# ADR 0087: The forest road at G1, and the combat props with it
 
 **Status:** proposed, 2026-10-27 (draft PR for the owner's review, issue #284)
 

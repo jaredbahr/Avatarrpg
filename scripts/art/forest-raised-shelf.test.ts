@@ -18,7 +18,7 @@ import { SHELF_RISE, packRaisedShelf, shelfTiers } from './forest-raised-shelf';
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const LIP_STEP = 15;
-/** The G1 restyle (ADR 0086), held to its committed source by `forest-g1-pack.test.ts`. */
+/** The G1 restyle (ADR 0087), held to its committed source by `forest-g1-pack.test.ts`. */
 const OUTPUT = `${FOREST_G1_OUT}/raised-shelf.webp`;
 const EXIT = { x: 19, y: 4 };
 const raised = new Set(
@@ -131,7 +131,7 @@ it('stands the top above a darker face, with a light rim along the lip', async (
     }
   }
   expect(columns).toBeGreaterThan(200);
-  // G1 (ADR 0086) draws some lips with the 1 px contour instead of a pale rim:
+  // G1 (ADR 0087) draws some lips with the 1 px contour instead of a pale rim:
   // 0.58 of columns keep the rim (the painted plate was over 0.6), and the face
   // to top luma ratio is 0.64 against the painted 0.635, so the step reads as before.
   expect(rimmedLips / columns).toBeGreaterThan(0.5);

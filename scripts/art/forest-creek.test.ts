@@ -16,7 +16,7 @@ const material = await loadForestMaterial();
 const packed = FOREST_CREEK_POOLS.map((pool) => ({ pool, ...packCreekPool(material, pool) }));
 
 /**
- * What ships is the G1 restyle (ADR 0086) of the plates generated 2026-10-03
+ * What ships is the G1 restyle (ADR 0087) of the plates generated 2026-10-03
  * and repainted 2026-10-04, at their 2 px per world px with their exact alpha,
  * held to its committed source by `forest-g1-pack.test.ts`.
  */
@@ -77,7 +77,7 @@ it('shows blue water at every creek cell centre and nothing wet on dry ground', 
           if (sample[3] === 255 && sample[2] - sample[0] > 20) blue++;
         }
       expect(blueMinusRed / n, `${pool.name} ${x},${y} blue minus red`).toBeGreaterThan(50);
-      // G1 (ADR 0086) set a lily pad near west 6,11's centre: 0.90 there, 0.98+ elsewhere.
+      // G1 (ADR 0087) set a lily pad near west 6,11's centre: 0.90 there, 0.98+ elsewhere.
       expect(blue / n, `${pool.name} ${x},${y} opaque blue share`).toBeGreaterThan(0.85);
     }
     let dry = 0,

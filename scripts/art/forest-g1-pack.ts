@@ -1,5 +1,5 @@
 /**
- * Packs the forest road at G1 (ADR 0086) from its committed sources in
+ * Packs the forest road at G1 (ADR 0087) from its committed sources in
  * `art/source/forest-road-g1/pieces/` (made by that folder's tools, which call
  * PixelLab; this script calls nothing):
  *

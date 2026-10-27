@@ -14,7 +14,7 @@ vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /**
  * DL-2 §3: no 128 px window inside a packed plate may span more than this. It
- * was 1.25; the G1 plate measures 1.28, because ADR 0086 asks for value
+ * was 1.25; the G1 plate measures 1.28, because ADR 0087 asks for value
  * structure that still reads at the combat fit (Ba Dan's calm ground went flat
  * at distance). 1.3 still refuses a baked gradient.
  */
@@ -24,7 +24,7 @@ const material = await loadForestMaterial();
 const image = packRouteGround(material);
 /**
  * The plate that ships is the G1 restyle of the 2026-10-03 generated plate
- * (ADR 0086), packed by `forest-g1-pack.ts`, which `forest-g1-pack.test.ts`
+ * (ADR 0087), packed by `forest-g1-pack.ts`, which `forest-g1-pack.test.ts`
  * holds byte for byte to its committed source. The packer stays the authority
  * on registration: the G1 plate carries its exact alpha footprint.
  */

@@ -245,7 +245,7 @@ export const CREDITS: readonly CreditEntry[] = [
       'art/props/flask.png',
       'art/props/hay.png',
     ],
-    note: "One matched family of transparent combat props, first selected for the approved village and quarry art direction (docs/art/prop-family-v1.md), then redrawn at the characters' grain with PixelLab Pro Flash from that family (ADR 0086): every job, prompt and selection in art/source/forest-road-g1/. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.",
+    note: "One matched family of transparent combat props, first selected for the approved village and quarry art direction (docs/art/prop-family-v1.md), then redrawn at the characters' grain with PixelLab Pro Flash from that family (ADR 0087): every job, prompt and selection in art/source/forest-road-g1/. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.",
   },
   {
     what: 'The Act 1 environments',
@@ -288,7 +288,7 @@ export const CREDITS: readonly CreditEntry[] = [
     licence: 'own work',
     source: '',
     covers: ['art/maps/forest-g1'],
-    note: 'The layered Forest Road (OpenAI image generation, PixelLab reeds) redrawn at 1 art pixel per world pixel in the PixelLab G family (ADR 0085, ADR 0086): the ground in one edit-images pass, the uprights with Pro Flash, on the same footprints. Every job, prompt, input and selection: art/source/forest-road-g1/. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.',
+    note: 'The layered Forest Road (OpenAI image generation, PixelLab reeds) redrawn at 1 art pixel per world pixel in the PixelLab G family (ADR 0085, ADR 0087): the ground in one edit-images pass, the uprights with Pro Flash, on the same footprints. Every job, prompt, input and selection: art/source/forest-road-g1/. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The forest turtle-duck nest',

@@ -3,7 +3,7 @@ import { FOREST_GRASS_REGIONS } from './forestRoadGround';
 
 const root = 'art/maps/forest-scene/';
 /**
- * The forest road at G1 (ADR 0086): every ground piece and upright the board
+ * The forest road at G1 (ADR 0087): every ground piece and upright the board
  * draws, redrawn at the characters' grain in the PixelLab G family from
  * `art/source/forest-road-g1/` and packed by `scripts/art/forest-g1-pack.ts`.
  * Each keeps the rectangle, anchor and footprint its pre-G1 art had, so the

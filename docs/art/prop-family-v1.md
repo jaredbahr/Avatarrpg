@@ -32,7 +32,7 @@ Run `npm run art:prop-family`. The family wrapper sends only the six shipped nam
 
 At the renderer's 128-world-pixel tile scale, the packed visible heights are intended to be: barrel 87 px (0.58 of a 151 px G adult), cart 84.5 px (0.56), brazier 79.5 px (0.53), rubble 71.5 px (0.47), flask 51 px (0.34), and hay 61.5 px (0.41). Final integer alpha bounds are reported from the generated PNGs after packing.
 
-## G1 (ADR 0086)
+## G1 (ADR 0087)
 
 On 2026-10-27 the six shipped props were redrawn at the characters' grain with PixelLab Pro Flash from this family:
 each prop's packed sprite was reduced to its size in world px (frame px / 4), edited at that size (seeds 21 and 22, no

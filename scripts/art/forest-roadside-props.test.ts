@@ -7,7 +7,7 @@ import { ROADSIDE_ART, packRoadside } from './forest-roadside-props';
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /**
- * The packer's sprites are the pre-G1 art: since ADR 0086 they are the input the
+ * The packer's sprites are the pre-G1 art: since ADR 0087 they are the input the
  * G1 dressing was redrawn from, at the registered sizes, and no longer ship.
  * `forest-g1-pack.test.ts` holds what does.
  */
