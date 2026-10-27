@@ -72,6 +72,8 @@ export function drawBendFx(
     ctx.rotate(p.rotation);
     if (p.sy < 0) ctx.scale(1, -1);
     ctx.globalAlpha = sprite.alpha;
+    // The cels are pixel art at the world's grain (ADR 0086): never blended between texels.
+    ctx.imageSmoothingEnabled = false;
     if (sprite.blend === 'add') ctx.globalCompositeOperation = 'lighter';
     ctx.drawImage(
       source.image,

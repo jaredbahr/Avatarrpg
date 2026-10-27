@@ -1,0 +1,688 @@
+{
+  "sheet": 256,
+  "gutter": 12,
+  "bend": [
+    {
+      "name": "fx.fire.fireball/jab-launch/0",
+      "sheet": "bend-fire-0",
+      "x": 12,
+      "y": 12,
+      "w": 21,
+      "h": 20
+    },
+    {
+      "name": "fx.fire.fireball/jab-ball/0",
+      "sheet": "bend-fire-0",
+      "x": 45,
+      "y": 12,
+      "w": 27,
+      "h": 22
+    },
+    {
+      "name": "fx.fire.fireball/cross-launch/0",
+      "sheet": "bend-fire-0",
+      "x": 84,
+      "y": 12,
+      "w": 22,
+      "h": 25
+    },
+    {
+      "name": "fx.fire.fireball/cross-ball/0",
+      "sheet": "bend-fire-0",
+      "x": 118,
+      "y": 12,
+      "w": 21,
+      "h": 23
+    },
+    {
+      "name": "fx.fire.fireball/burst/0",
+      "sheet": "bend-fire-0",
+      "x": 151,
+      "y": 12,
+      "w": 32,
+      "h": 25
+    },
+    {
+      "name": "fx.fire.fireball/burst/1",
+      "sheet": "bend-fire-0",
+      "x": 195,
+      "y": 12,
+      "w": 37,
+      "h": 29
+    },
+    {
+      "name": "fx.fire.fireball/burst/2",
+      "sheet": "bend-fire-0",
+      "x": 12,
+      "y": 53,
+      "w": 41,
+      "h": 31
+    },
+    {
+      "name": "fx.earth.rock/crack/0",
+      "sheet": "bend-earth-0",
+      "x": 12,
+      "y": 12,
+      "w": 50,
+      "h": 32
+    },
+    {
+      "name": "fx.earth.rock/crack/1",
+      "sheet": "bend-earth-0",
+      "x": 74,
+      "y": 12,
+      "w": 56,
+      "h": 32
+    },
+    {
+      "name": "fx.earth.rock/crack/2",
+      "sheet": "bend-earth-0",
+      "x": 142,
+      "y": 12,
+      "w": 56,
+      "h": 32
+    },
+    {
+      "name": "fx.earth.rock/crack/3",
+      "sheet": "bend-earth-0",
+      "x": 12,
+      "y": 56,
+      "w": 56,
+      "h": 32
+    },
+    {
+      "name": "fx.earth.rock/crack/4",
+      "sheet": "bend-earth-0",
+      "x": 80,
+      "y": 56,
+      "w": 56,
+      "h": 32
+    },
+    {
+      "name": "fx.earth.rock/emerge/0",
+      "sheet": "bend-earth-0",
+      "x": 148,
+      "y": 56,
+      "w": 40,
+      "h": 39
+    },
+    {
+      "name": "fx.earth.rock/hang/0",
+      "sheet": "bend-earth-0",
+      "x": 200,
+      "y": 56,
+      "w": 39,
+      "h": 36
+    },
+    {
+      "name": "fx.earth.rock/tumble/0",
+      "sheet": "bend-earth-0",
+      "x": 12,
+      "y": 107,
+      "w": 36,
+      "h": 39
+    },
+    {
+      "name": "fx.earth.rock/tumble/1",
+      "sheet": "bend-earth-0",
+      "x": 60,
+      "y": 107,
+      "w": 39,
+      "h": 36
+    },
+    {
+      "name": "fx.earth.rock/tumble/2",
+      "sheet": "bend-earth-0",
+      "x": 111,
+      "y": 107,
+      "w": 36,
+      "h": 39
+    },
+    {
+      "name": "fx.earth.rock/tumble/3",
+      "sheet": "bend-earth-0",
+      "x": 159,
+      "y": 107,
+      "w": 39,
+      "h": 36
+    },
+    {
+      "name": "fx.earth.rock/shatter/0",
+      "sheet": "bend-earth-0",
+      "x": 12,
+      "y": 158,
+      "w": 39,
+      "h": 36
+    },
+    {
+      "name": "fx.earth.rock/shatter/1",
+      "sheet": "bend-earth-0",
+      "x": 63,
+      "y": 158,
+      "w": 45,
+      "h": 43
+    },
+    {
+      "name": "fx.earth.rock/shatter/2",
+      "sheet": "bend-earth-0",
+      "x": 120,
+      "y": 158,
+      "w": 48,
+      "h": 43
+    },
+    {
+      "name": "fx.water.bolt/gather-lead/0",
+      "sheet": "bend-water-0",
+      "x": 12,
+      "y": 12,
+      "w": 47,
+      "h": 13
+    },
+    {
+      "name": "fx.water.bolt/gather-lead/1",
+      "sheet": "bend-water-0",
+      "x": 71,
+      "y": 12,
+      "w": 46,
+      "h": 13
+    },
+    {
+      "name": "fx.water.bolt/gather-lead/2",
+      "sheet": "bend-water-0",
+      "x": 129,
+      "y": 12,
+      "w": 56,
+      "h": 14
+    },
+    {
+      "name": "fx.water.bolt/gather-trail/0",
+      "sheet": "bend-water-0",
+      "x": 197,
+      "y": 12,
+      "w": 41,
+      "h": 13
+    },
+    {
+      "name": "fx.water.bolt/gather-trail/1",
+      "sheet": "bend-water-0",
+      "x": 12,
+      "y": 38,
+      "w": 65,
+      "h": 14
+    },
+    {
+      "name": "fx.water.bolt/coil/0",
+      "sheet": "bend-water-0",
+      "x": 89,
+      "y": 38,
+      "w": 21,
+      "h": 21
+    },
+    {
+      "name": "fx.water.bolt/lash/0",
+      "sheet": "bend-water-0",
+      "x": 122,
+      "y": 38,
+      "w": 53,
+      "h": 18
+    },
+    {
+      "name": "fx.water.bolt/bolt/0",
+      "sheet": "bend-water-0",
+      "x": 12,
+      "y": 71,
+      "w": 60,
+      "h": 24
+    },
+    {
+      "name": "fx.water.bolt/bolt/1",
+      "sheet": "bend-water-0",
+      "x": 84,
+      "y": 71,
+      "w": 57,
+      "h": 24
+    },
+    {
+      "name": "fx.water.bolt/splash/0",
+      "sheet": "bend-water-0",
+      "x": 153,
+      "y": 71,
+      "w": 48,
+      "h": 43
+    },
+    {
+      "name": "fx.water.bolt/splash/1",
+      "sheet": "bend-water-0",
+      "x": 12,
+      "y": 126,
+      "w": 46,
+      "h": 34
+    },
+    {
+      "name": "fx.water.bolt/puddle/0",
+      "sheet": "bend-water-0",
+      "x": 70,
+      "y": 126,
+      "w": 48,
+      "h": 30
+    }
+  ],
+  "cels": [
+    {
+      "name": "flame/0",
+      "sheet": "cel-flame",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "flame/1",
+      "sheet": "cel-flame",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "flame/2",
+      "sheet": "cel-flame",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "flame/3",
+      "sheet": "cel-flame",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "fire-burst/0",
+      "sheet": "cel-fire-burst",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "fire-burst/1",
+      "sheet": "cel-fire-burst",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "fire-burst/2",
+      "sheet": "cel-fire-burst",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "fire-burst/3",
+      "sheet": "cel-fire-burst",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "lightning/0",
+      "sheet": "cel-lightning",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "lightning/1",
+      "sheet": "cel-lightning",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "lightning/2",
+      "sheet": "cel-lightning",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "lightning/3",
+      "sheet": "cel-lightning",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "splash/0",
+      "sheet": "cel-splash",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "splash/1",
+      "sheet": "cel-splash",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "splash/2",
+      "sheet": "cel-splash",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "splash/3",
+      "sheet": "cel-splash",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "ice/0",
+      "sheet": "cel-ice",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "ice/1",
+      "sheet": "cel-ice",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "ice/2",
+      "sheet": "cel-ice",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "ice/3",
+      "sheet": "cel-ice",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "healing/0",
+      "sheet": "cel-healing",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "healing/1",
+      "sheet": "cel-healing",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "healing/2",
+      "sheet": "cel-healing",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "healing/3",
+      "sheet": "cel-healing",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "boulder/0",
+      "sheet": "cel-boulder",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "boulder/1",
+      "sheet": "cel-boulder",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "boulder/2",
+      "sheet": "cel-boulder",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "boulder/3",
+      "sheet": "cel-boulder",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "earth-rise/0",
+      "sheet": "cel-earth-rise",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "earth-rise/1",
+      "sheet": "cel-earth-rise",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "earth-rise/2",
+      "sheet": "cel-earth-rise",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "earth-rise/3",
+      "sheet": "cel-earth-rise",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "metal/0",
+      "sheet": "cel-metal",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "metal/1",
+      "sheet": "cel-metal",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "metal/2",
+      "sheet": "cel-metal",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "metal/3",
+      "sheet": "cel-metal",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "wind/0",
+      "sheet": "cel-wind",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "wind/1",
+      "sheet": "cel-wind",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "wind/2",
+      "sheet": "cel-wind",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "wind/3",
+      "sheet": "cel-wind",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cyclone/0",
+      "sheet": "cel-cyclone",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cyclone/1",
+      "sheet": "cel-cyclone",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cyclone/2",
+      "sheet": "cel-cyclone",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cyclone/3",
+      "sheet": "cel-cyclone",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cushion/0",
+      "sheet": "cel-cushion",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cushion/1",
+      "sheet": "cel-cushion",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cushion/2",
+      "sheet": "cel-cushion",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "cushion/3",
+      "sheet": "cel-cushion",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "flask/0",
+      "sheet": "cel-flask",
+      "x": 21,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "flask/1",
+      "sheet": "cel-flask",
+      "x": 138,
+      "y": 21,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "flask/2",
+      "sheet": "cel-flask",
+      "x": 21,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "name": "flask/3",
+      "sheet": "cel-flask",
+      "x": 138,
+      "y": 138,
+      "w": 96,
+      "h": 96
+    }
+  ]
+}

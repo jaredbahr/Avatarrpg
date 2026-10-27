@@ -49,7 +49,7 @@ pseudo-letters the generator wrote on the grass west of the lodge are closed ove
 The forest's own alder, lodge and deadfall replace the art it borrowed from Ba Dan and the Quarry Gate (those files still
 ship for their own scenes). Two pines (`pine`, `pine-b`, picked per cell by a hash, never the RNG) replace one stamp. The
 forest's two heaps are its own (`forestRubbleHeap`); the Cutting and the Driller floor keep the shared plates. The
-thrown oil flask's cels are re-cut from the new flask (`scripts/art/flask-cels.ts`), so what flies is what stood.
+thrown oil flask's cels are ADR 0086's own G1 drawing (effects at G1), not cut from the prop.
 
 **Ground stays at 1 file px per world px.** At the 1.5 camera a ground pixel is 1.5 screen px, filtered, so the ground
 is softer up close than the 1.5x uprights and the figures. A 1.5x ground would cost about 0.4 MB more for the route
@@ -58,7 +58,7 @@ decides the delivery scale for every map at once.
 
 **Budgets (measured, no limit raised).** The forest's G1 folder is 45 files, 1,009,808 bytes; it replaces 799,474
 bytes of retired forest art (the forest-scene folder keeps its heaps, songbirds and water swatch, 61,970 bytes). The
-props drop from 157,424 to 21,395 bytes and the flask cels from 27,597 to 4,242. Maps family 7.01 MiB of 7.5;
+props drop from 157,424 to 21,395 bytes. Maps family 7.01 MiB of 7.5;
 precache 24.85 MB of 25.
 
 **Tests.** `forest-g1-pack.test.ts` holds every shipped G1 file to its committed source byte for byte, every scene URL
