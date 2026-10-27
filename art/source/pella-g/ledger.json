@@ -1,0 +1,788 @@
+{
+  "character": "pella",
+  "task": "ba-dan-residents-g (issue #284)",
+  "balance_before": 9599.0,
+  "jobs": [
+    {
+      "name": "south-edit-tex-s7501",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "624fe476-7c8a-4583-837a-82654105ea4b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "no_background": true,
+        "seed": 7501
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png (Kaya G base v2, character e8c6638a south rotation)"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_delta_shared_account": 28.0,
+      "balance_before": 9633.0,
+      "balance_after": 9605.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 44
+    },
+    {
+      "name": "south-edit-tex-s7502",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "9f639b44-dbb7-44ff-bf83-3ce3d377663d",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: Pella, a small nine-year-old girl with natural child proportions, about five heads tall, drawn much smaller than this figure: her head top only reaches the adult figure's chest, so she stands about two thirds of the adult height, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "no_background": true,
+        "seed": 7502
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png",
+        "note": "retake: s7501 stood 123 px (64% of canvas); asked for ~2/3 adult height"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_delta_shared_account": 151.0,
+      "balance_before": 9541.0,
+      "balance_after": 9390.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 79
+    },
+    {
+      "name": "rot-south-edit-tex-s7502-s7511",
+      "endpoint": "/create-character-pro-flash",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "name": "pella G base (Ba Dan resident, from Kaya G south edit south-edit-tex-s7502)",
+        "view": "high top-down",
+        "seed": 7511,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7502/00.png"
+      },
+      "error": "429 {\"detail\":\"Maximum 20 concurrent background jobs allowed (Tier 3). You have 20 active jobs.\"}",
+      "gens": 0
+    },
+    {
+      "name": "rot-south-edit-tex-s7502-s7511",
+      "endpoint": "/create-character-pro-flash",
+      "job": "8bc8cc01-607c-4d49-bf4b-84a979bc924a",
+      "character_id": "95eadb99-544c-41ff-b493-1779679a72e6",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "name": "pella G base (Ba Dan resident, from Kaya G south edit south-edit-tex-s7502)",
+        "view": "high top-down",
+        "seed": 7511,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7502/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 107.0,
+      "balance_before": 9218.999999999998,
+      "balance_after": 9111.999999999998,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 181
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    },
+    {
+      "name": "rot-south-edit-tex-s7502-s7512",
+      "endpoint": "/create-character-pro-flash",
+      "job": "262a3753-f216-4706-9869-486a709c5ab2",
+      "character_id": "3111e5ad-5bfd-445b-8f65-c9b2da7f2c89",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "name": "pella G base (Ba Dan resident, from Kaya G south edit south-edit-tex-s7502)",
+        "view": "high top-down",
+        "seed": 7512,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7502/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 217.1,
+      "balance_before": 8793.2,
+      "balance_after": 8576.1,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 169
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    },
+    {
+      "name": "rot-flash-south-edit-tex-s7502-s7513",
+      "endpoint": "/create-character-pro-flash",
+      "job": "37a25545-d439-429d-b4af-983a63c4e899",
+      "character_id": "3b2e505d-9c99-4006-92d2-795baea7701c",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms. Plain still figure only: no effects, no motion lines, no sparkles, no magic, no floating marks",
+        "name": "pella G base flash s7513",
+        "view": "high top-down",
+        "seed": 7513,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7502/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 50.0,
+      "balance_before": 8518.3,
+      "balance_after": 8468.3,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 121
+    },
+    {
+      "name": "rot-v3-south-edit-tex-s7502-s7514",
+      "endpoint": "/create-character-v3",
+      "job": "f44ab80b-1827-450c-8d85-f5947f27206f",
+      "character_id": "ac976e3c-799e-4c14-a522-9cc4394bd03c",
+      "status": "completed",
+      "settings": {
+        "reference_image": "<png>",
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms. Plain still figure only: no effects, no motion lines, no sparkles, no magic, no floating marks",
+        "name": "pella G base v3 s7514",
+        "view": "high top-down",
+        "seed": 7514,
+        "template_id": "mannequin",
+        "n_directions": 8
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7502/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 114.0,
+      "balance_before": 8518.3,
+      "balance_after": 8404.3,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 212
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    },
+    {
+      "name": "walk-child-south-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4837f0ea-72a4-4f1a-aa14-07c8b101657b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/walk-child-south.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 152.0,
+      "balance_before": 8340.5,
+      "balance_after": 8188.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 147
+    },
+    {
+      "name": "walk-child-east-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "0772956b-62c8-48b8-8795-39184c3dad3d",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-child-east.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 186.0,
+      "balance_before": 8340.5,
+      "balance_after": 8154.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 167
+    },
+    {
+      "name": "walk-child-south-east-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8fe87363-50ae-45c1-a0f8-a1b443879c1d",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/walk-child-south-east.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 189.0,
+      "balance_before": 8340.5,
+      "balance_after": 8151.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 184
+    },
+    {
+      "name": "walk-child-north-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ed9cd891-432f-4420-9a5e-fdddf6519cc1",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/walk-child-north.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 192.0,
+      "balance_before": 8340.5,
+      "balance_after": 8148.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 191
+    },
+    {
+      "name": "walk-child-north-east-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "0fba5170-bfce-46e7-867e-87bf7e2324af",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/walk-child-north-east.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 251.0,
+      "balance_before": 8340.5,
+      "balance_after": 8089.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 214
+    },
+    {
+      "name": "walk-child-south-west-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ce56350c-a267-46e0-89c6-d14cff0b22cd",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/walk-child-south-west.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 303.0,
+      "balance_before": 8340.5,
+      "balance_after": 8037.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 239
+    },
+    {
+      "name": "idle-soft-south-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1d247256-11fb-4465-97d9-75ae63c5d777",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 151.0,
+      "balance_before": 8188.5,
+      "balance_after": 8037.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 96
+    },
+    {
+      "name": "idle-soft-south-east-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "e4e546bf-9f5c-4108-bec7-9fa673cf783e",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 123.0,
+      "balance_before": 8154.5,
+      "balance_after": 8031.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87
+    },
+    {
+      "name": "idle-soft-east-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "aa8c4ff6-d216-48b5-901a-fec6650746ed",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 129.0,
+      "balance_before": 8151.5,
+      "balance_after": 8022.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 95
+    },
+    {
+      "name": "walk-child-west-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "33a69142-4563-4b0e-9d5c-cf6962d4917e",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/walk-child-west.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 327.0,
+      "balance_before": 8340.5,
+      "balance_after": 8013.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 289
+    },
+    {
+      "name": "idle-soft-north-east-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "49d1f55b-6d20-48c1-8400-334d9aad6292",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/idle-soft-north-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 138.0,
+      "balance_before": 8148.5,
+      "balance_after": 8010.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 101
+    },
+    {
+      "name": "idle-soft-north-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "0b319825-ecf4-4823-b8e2-1b9e33f9ed1f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/idle-soft-north.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 87.0,
+      "balance_before": 8089.5,
+      "balance_after": 8002.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87
+    },
+    {
+      "name": "walk-child-north-west-s8501",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "61c87db9-9e78-40f8-a98d-db4ff9c54ab2",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "walk",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8501,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/walk-child-north-west.json",
+        "motion": "CMU 142_01 Childish",
+        "cycle": {
+          "p": 4510,
+          "per": 163,
+          "straight": 0.984,
+          "turn": 20.92,
+          "speed": 11.884
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 341.0,
+      "balance_before": 8340.5,
+      "balance_after": 7999.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 319
+    },
+    {
+      "name": "idle-soft-north-west-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "0e207f14-6d43-40e4-a898-5edd9ad7c782",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/idle-soft-north-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 41.0,
+      "balance_before": 8037.5,
+      "balance_after": 7996.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 90
+    },
+    {
+      "name": "idle-soft-south-west-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "b01a0053-afc5-4e11-a88f-ac44b6ae1d0c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/idle-soft-south-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 32.0,
+      "balance_before": 8028.5,
+      "balance_after": 7996.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 79
+    }
+  ],
+  "balance_after": 7996.5,
+  "gens_total": 79.4
+}

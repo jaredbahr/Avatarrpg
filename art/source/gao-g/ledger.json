@@ -1,0 +1,153 @@
+{
+  "character": "gao",
+  "task": "ba-dan-residents-g (issue #284)",
+  "balance_before": 9599.0,
+  "jobs": [
+    {
+      "name": "south-edit-tex-s7401",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "08dd2f73-4ad2-41e7-8008-131ca96e2568",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "no_background": true,
+        "seed": 7401
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png (Kaya G base v2, character e8c6638a south rotation)"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_delta_shared_account": 28.0,
+      "balance_before": 9633.0,
+      "balance_after": 9605.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 44
+    },
+    {
+      "name": "rot-south-edit-tex-s7401-s7411",
+      "endpoint": "/create-character-pro-flash",
+      "job": "ece058bf-37cc-4e7c-8aa4-709ebd8aa649",
+      "character_id": "054df1d6-d47b-4d42-83d9-11fbed48cf69",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "name": "gao G base (Ba Dan resident, from Kaya G south edit south-edit-tex-s7401)",
+        "view": "high top-down",
+        "seed": 7411,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7401/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 274.0,
+      "balance_before": 9536.0,
+      "balance_after": 9262.0,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 173
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    },
+    {
+      "name": "walk-relaxed-south-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "7916ccf1-5b30-45de-8025-09723742a792",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/walk-relaxed-south.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 78.0,
+      "balance_before": 8068.5,
+      "balance_after": 7990.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 113
+    },
+    {
+      "name": "walk-relaxed-south-east-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "c6dff10f-1052-428d-b59c-0eed1db83077",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/walk-relaxed-south-east.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 56.0,
+      "balance_before": 8037.5,
+      "balance_after": 7981.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 130
+    }
+  ],
+  "balance_after": 7981.5,
+  "gens_total": 17.8
+}

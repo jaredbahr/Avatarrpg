@@ -1,0 +1,708 @@
+{
+  "character": "mira",
+  "task": "ba-dan-residents-g (issue #284)",
+  "balance_before": 9599.0,
+  "jobs": [
+    {
+      "name": "south-edit-ref-s7302",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "85426014-fa56-40ad-876d-6781eeb3c4e5",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "reference",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "no_background": true,
+        "seed": 7302,
+        "reference_image": "<png>"
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png (Kaya G base v2, character e8c6638a south rotation)",
+        "reference_image": "portrait-ref-192.png (public/art/npcs portrait, fitted)"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_delta_shared_account": 34.0,
+      "balance_before": 9633.0,
+      "balance_after": 9599.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 45
+    },
+    {
+      "name": "south-edit-tex-s7301",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "596ea3df-0d91-4389-a330-6baa2d6e02f4",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "no_background": true,
+        "seed": 7301
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png (Kaya G base v2, character e8c6638a south rotation)"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_delta_shared_account": 51.0,
+      "balance_before": 9633.0,
+      "balance_after": 9582.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 53
+    },
+    {
+      "name": "rot-south-edit-ref-s7302-s7311",
+      "endpoint": "/create-character-pro-flash",
+      "job": "ba24630f-2d32-4262-96ce-91146499905d",
+      "character_id": "f54d39ca-7af4-4d4d-b61e-e998f143d2fc",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "name": "mira G base (Ba Dan resident, from Kaya G south edit south-edit-ref-s7302)",
+        "view": "high top-down",
+        "seed": 7311,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-ref-s7302/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 242.0,
+      "balance_before": 9541.0,
+      "balance_after": 9299.0,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 147
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    },
+    {
+      "name": "walk-old-south-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "e31dd194-abfa-4eca-b938-0922e136d8ac",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/walk-old-south.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 155.7,
+      "balance_before": 8359.2,
+      "balance_after": 8203.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 140
+    },
+    {
+      "name": "walk-old-south-east-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "e009c1b5-03c7-4fbe-946d-b381b146b7e9",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/walk-old-south-east.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 149.5,
+      "balance_before": 8350.0,
+      "balance_after": 8200.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 139
+    },
+    {
+      "name": "walk-old-east-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "47c7b862-3db5-403f-b337-8c36a0bffe10",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-old-east.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 155.5,
+      "balance_before": 8350.0,
+      "balance_after": 8194.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 151
+    },
+    {
+      "name": "walk-old-north-east-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "c5e727ce-d1eb-45be-98af-4a0c4c1a7e07",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/walk-old-north-east.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 137.0,
+      "balance_before": 8322.5,
+      "balance_after": 8185.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 134
+    },
+    {
+      "name": "walk-old-north-west-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "82a03eda-4ef2-47e8-b055-94365296bbfb",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/walk-old-north-west.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 106.0,
+      "balance_before": 8260.5,
+      "balance_after": 8154.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 105
+    },
+    {
+      "name": "walk-old-north-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "6072fd30-cc53-4a98-a2da-bacd15cddcf5",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/walk-old-north.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 177.0,
+      "balance_before": 8319.5,
+      "balance_after": 8142.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 161
+    },
+    {
+      "name": "idle-soft-south-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "a7936250-6e5b-4abb-898d-178d53607165",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 58.0,
+      "balance_before": 8200.5,
+      "balance_after": 8142.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87
+    },
+    {
+      "name": "idle-soft-north-east-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "558f6193-228a-4596-807d-bcbdcd31e57d",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/idle-soft-north-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 114.0,
+      "balance_before": 8185.5,
+      "balance_after": 8071.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 79
+    },
+    {
+      "name": "walk-old-south-west-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "6c1e71dc-ff21-47bb-a5e2-ac961168943f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/walk-old-south-west.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 132.0,
+      "balance_before": 8203.5,
+      "balance_after": 8071.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 121
+    },
+    {
+      "name": "idle-soft-east-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "24518f54-03e1-49a7-81e9-dea3d0a5985f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 157.0,
+      "balance_before": 8194.5,
+      "balance_after": 8037.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 109
+    },
+    {
+      "name": "idle-soft-north-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "e6b990a4-26ff-4b01-9fd3-fa5438e4f3bb",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/idle-soft-north.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 123.0,
+      "balance_before": 8154.5,
+      "balance_after": 8031.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 78
+    },
+    {
+      "name": "walk-old-west-s8301",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "df3246f7-17ec-415f-bf9b-74ebd0352a6f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "slow walk with a walking stick",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8301,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/walk-old-west.json",
+        "motion": "CMU 142_07 Elderlyman",
+        "cycle": {
+          "p": 5508,
+          "per": 90,
+          "straight": 0.981,
+          "turn": 14.046,
+          "speed": 10.068
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 235.0,
+      "balance_before": 8260.5,
+      "balance_after": 8025.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 208
+    },
+    {
+      "name": "idle-soft-north-west-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ed5f90f9-4c0b-4245-995e-721304bed7d1",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/idle-soft-north-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 120.0,
+      "balance_before": 8142.5,
+      "balance_after": 8022.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 78
+    },
+    {
+      "name": "idle-soft-west-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "b73c1263-b2b5-422f-83bc-265cf3fcbb20",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/idle-soft-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 129.0,
+      "balance_before": 8142.5,
+      "balance_after": 8013.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87
+    },
+    {
+      "name": "idle-soft-south-west-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "154abd35-43f4-4dad-9485-254bb3c06018",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/idle-soft-south-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 69.0,
+      "balance_before": 8071.5,
+      "balance_after": 8002.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 70
+    },
+    {
+      "name": "idle-soft-south-east-s8302",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ed990c3f-f2a8-4436-9ffe-badb0fe44e0e",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, carved pale stone pendant on a cord, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8302,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 207.0,
+      "balance_before": 8194.5,
+      "balance_after": 7987.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 223
+    }
+  ],
+  "balance_after": 7987.5,
+  "gens_total": 65.8
+}
