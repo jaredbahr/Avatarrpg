@@ -11,3 +11,13 @@
 - north walk: a foot sinks 14 px below the standing line
 - west idle: boiling, 31% of head/torso pixels change between cels (gate 20%; Kaya measures 8-17%)
 - south-west idle: boiling, 23% of head/torso pixels change between cels (gate 20%; Kaya measures 8-17%)
+
+## Eye review
+
+Flags the gates cannot see, from the sheets at game scale and 3x.
+
+- Idle boil 21-46% (worst south): collar clasp, key and face re-drawn each cel; the expression changes between cels.
+- East walk: retaken at 0.55x arm swing (s8603, used) after s8601 swung the free arm forward to horizontal.
+- South and north walks: the leading foot reaches 13-14 px below the standing line, past art:validate's 10 px stride bound; packing would need a 3-4 px walkDy, as the thug's south-west did.
+- Spear hand ambiguous in the west rotation.
+- G2: only the long green coat and spear survive; moustache, ears and key are lost, so he converges on the relief watch (whose cap and belt still separate them).

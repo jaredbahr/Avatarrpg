@@ -28,7 +28,8 @@
         "type": "generations",
         "generations": 6.0
       },
-      "secs": 45
+      "secs": 45,
+      "verdict": "used"
     },
     {
       "name": "rot-south-edit-tex-s7601-s7611",
@@ -56,7 +57,8 @@
         "type": "generations",
         "generations": 5.0
       },
-      "secs": 182
+      "secs": 182,
+      "verdict": "used"
     },
     {
       "name": "estimate-skeleton x8",
@@ -104,7 +106,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 138
+      "secs": 138,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-south-east-s8601",
@@ -145,7 +148,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 178
+      "secs": 178,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-north-east-s8601",
@@ -186,7 +190,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 130
+      "secs": 130,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-north-s8601",
@@ -227,7 +232,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 121
+      "secs": 121,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-north-west-s8601",
@@ -268,7 +274,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 148
+      "secs": 148,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-south-west-s8601",
@@ -309,7 +316,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 130
+      "secs": 130,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-east-s8601",
@@ -350,7 +358,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 209
+      "secs": 209,
+      "verdict": "superseded: free arm swung forward to horizontal"
     },
     {
       "name": "idle-soft-south-s8602",
@@ -385,7 +394,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 113
+      "secs": 113,
+      "verdict": "used"
     },
     {
       "name": "walk-spear-west-s8601",
@@ -426,7 +436,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 169
+      "secs": 169,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-east-s8602",
@@ -461,7 +472,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 79
+      "secs": 79,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-east-s8602",
@@ -496,7 +508,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 95
+      "secs": 95,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-east-s8602",
@@ -531,7 +544,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 104
+      "secs": 104,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-s8602",
@@ -566,7 +580,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 78
+      "secs": 78,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-north-west-s8602",
@@ -601,7 +616,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 87
+      "secs": 87,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-west-s8602",
@@ -636,7 +652,8 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 96
+      "secs": 96,
+      "verdict": "used"
     },
     {
       "name": "idle-soft-south-west-s8602",
@@ -671,9 +688,52 @@
         "type": "generations",
         "generations": 3.0
       },
-      "secs": 104
+      "secs": 104,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-calm-east-s8603",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1aac88a0-aab2-4cc6-b809-dddabfd36bbc",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, earnest apologetic expression, oversized long green provincial guard coat with a brass clasp and a small brass key hanging at the collar, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8603,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-spear-calm-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 23.0,
+      "balance_before": 7457.5,
+      "balance_after": 7434.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 138,
+      "verdict": "used: 0.55x arm swing"
     }
   ],
-  "balance_after": 7589.5,
-  "gens_total": 59.8
+  "balance_after": 7419.5,
+  "gens_total": 62.8
 }
