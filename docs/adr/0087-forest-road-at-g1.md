@@ -53,13 +53,14 @@ thrown oil flask's cels are ADR 0086's own G1 drawing (effects at G1), not cut f
 
 **Ground stays at 1 file px per world px.** At the 1.5 camera a ground pixel is 1.5 screen px, filtered, so the ground
 is softer up close than the 1.5x uprights and the figures. A 1.5x ground would cost about 0.4 MB more for the route
-plate alone; the precache has 0.15 MB left. That waits for the camera ADR ADR 0085 leaves open (an integer zoom), which
+plate alone. When this was measured the precache had 0.15 MB left; since ADR 0086's effects pass it has 1.5 MB, so a
+1.5x ground is now affordable, but it is a delivery-scale choice for every map at once and waits for the camera ADR ADR 0085 leaves open (an integer zoom), which
 decides the delivery scale for every map at once.
 
 **Budgets (measured, no limit raised).** The forest's G1 folder is 45 files, 1,009,808 bytes; it replaces 799,474
 bytes of retired forest art (the forest-scene folder keeps its heaps, songbirds and water swatch, 61,970 bytes). The
 props drop from 157,424 to 21,395 bytes. Maps family 7.01 MiB of 7.5;
-precache 24.85 MB of 25.
+precache 24.85 MB of 25 on main 5a41f98, and 23.50 MB merged with ADR 0086's effects pass (main 1641a8e).
 
 **Tests.** `forest-g1-pack.test.ts` holds every shipped G1 file to its committed source byte for byte, every scene URL
 to a shipped file and back, every upright to 1.5x its drawn rectangle, and every prop to its old foot at 4 frame px per
@@ -87,4 +88,4 @@ The pin tests (byte size and SHA-256 of each 2026-10-03 plate) go with the plate
   size and foot.
 - The old procedural packers for the forest plates (`forest-route-ground.ts`, `forest-grass-regions.ts`, ...) still
   build the pre-G1 art and still own the footprints; their output no longer ships.
-- **Open:** the ground's delivery scale (above) and the camera's integer zoom. The precache has 0.15 MB left.
+- **Open:** the ground's delivery scale (above) and the camera's integer zoom. The precache has 1.5 MB left after ADR 0086.
