@@ -1,0 +1,386 @@
+[
+  {
+    "tag": "bend-fire-0-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "10c9b9eb-cdaa-4a22-be62-973d67d6b245",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/bend-fire-0.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; fire as flat flame ribbons and licks in 3-4 flat tones: deep red #8c2416, red #d1462f, coral #f0785c, pale peach core #ffb27a; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["bend-fire-0-s11-0.png", "bend-fire-0-s11-1.png", "bend-fire-0-s11-2.png"],
+    "balance_before": 5072.6,
+    "balance_after": 5013.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 49,
+    "notes": "G1 effects clean-up of bend-fire-0",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-flame-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "2902e146-155f-42c3-b928-328a81c2b874",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-flame.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; fire as flat flame ribbons and licks in 3-4 flat tones: deep red #8c2416, red #d1462f, coral #f0785c, pale peach core #ffb27a; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-flame-s11-0.png", "cel-flame-s11-1.png", "cel-flame-s11-2.png"],
+    "balance_before": 5072.6,
+    "balance_after": 5004.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 56,
+    "notes": "G1 effects clean-up of cel-flame",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "bend-water-0-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "c17dfda6-2c5b-42cf-87bd-641e01fbd883",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/bend-water-0.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; water as flat crests, whips, sheets and droplets in 3-4 flat tones: deep teal #22566e, blue #3e8fb0, sky #7ec8e3, foam #cdeefb; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["bend-water-0-s11-0.png", "bend-water-0-s11-1.png", "bend-water-0-s11-2.png"],
+    "balance_before": 5004.6,
+    "balance_after": 4970.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 69,
+    "notes": "G1 effects clean-up of bend-water-0",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-lightning-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "afdb3030-aebe-4f83-98c7-a54d5f53c6d5",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-lightning.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; pale lightning bolts in 3 flat tones: steel blue #3e8fb0, sky #7ec8e3, near-white #cdeefb; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-lightning-s11-0.png", "cel-lightning-s11-1.png", "cel-lightning-s11-2.png"],
+    "balance_before": 5004.6,
+    "balance_after": 4970.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 69,
+    "notes": "G1 effects clean-up of cel-lightning",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-fire-burst-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "94b60ed7-79c3-4df5-a251-c195a36aad03",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-fire-burst.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; fire as flat flame ribbons and licks in 3-4 flat tones: deep red #8c2416, red #d1462f, coral #f0785c, pale peach core #ffb27a; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-fire-burst-s11-0.png", "cel-fire-burst-s11-1.png", "cel-fire-burst-s11-2.png"],
+    "balance_before": 5004.6,
+    "balance_after": 4952.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 81,
+    "notes": "G1 effects clean-up of cel-fire-burst",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "bend-earth-0-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "3f80318f-496e-447b-af56-819d07b647b4",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/bend-earth-0.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; earth as broad stone slabs, shards and cracks in 3-4 flat tones: dark brown #4a3a2c, stone #8d7d69, light stone #bfae97, highlight #f4e9d8; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["bend-earth-0-s11-0.png", "bend-earth-0-s11-1.png", "bend-earth-0-s11-2.png"],
+    "balance_before": 5004.6,
+    "balance_after": 4927.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 84,
+    "notes": "G1 effects clean-up of bend-earth-0",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-healing-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "7e562c0d-a3e4-43a0-bfe3-e0f79c5ce546",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-healing.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; water as flat crests, whips, sheets and droplets in 3-4 flat tones: deep teal #22566e, blue #3e8fb0, sky #7ec8e3, foam #cdeefb; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-healing-s11-0.png", "cel-healing-s11-1.png", "cel-healing-s11-2.png"],
+    "balance_before": 4952.6,
+    "balance_after": 4721.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 56,
+    "notes": "G1 effects clean-up of cel-healing",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-ice-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "837c1dc8-f4f6-47f6-bf0a-98505b8bce63",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-ice.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; ice as pointed flat facets in 3-4 flat tones: blue #3e8fb0, sky #7ec8e3, pale #cdeefb, white; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-ice-s11-0.png", "cel-ice-s11-1.png", "cel-ice-s11-2.png"],
+    "balance_before": 4970.6,
+    "balance_after": 4721.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 69,
+    "notes": "G1 effects clean-up of cel-ice",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-boulder-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "ea95de43-52ed-4622-9bce-aa6238d7da15",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-boulder.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; earth as broad stone slabs, shards and cracks in 3-4 flat tones: dark brown #4a3a2c, stone #8d7d69, light stone #bfae97, highlight #f4e9d8; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-boulder-s11-0.png", "cel-boulder-s11-1.png", "cel-boulder-s11-2.png"],
+    "balance_before": 4927.6,
+    "balance_after": 4706.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 62,
+    "notes": "G1 effects clean-up of cel-boulder",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-splash-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "a83e047f-bfa4-4675-bf20-7acfd6c23969",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-splash.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; water as flat crests, whips, sheets and droplets in 3-4 flat tones: deep teal #22566e, blue #3e8fb0, sky #7ec8e3, foam #cdeefb; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-splash-s11-0.png", "cel-splash-s11-1.png", "cel-splash-s11-2.png"],
+    "balance_before": 4970.6,
+    "balance_after": 4662.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 101,
+    "notes": "G1 effects clean-up of cel-splash",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-earth-rise-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "098efb8c-b9dd-4177-b376-5088332dfbf4",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-earth-rise.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; earth as broad stone slabs, shards and cracks in 3-4 flat tones: dark brown #4a3a2c, stone #8d7d69, light stone #bfae97, highlight #f4e9d8; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-earth-rise-s11-0.png", "cel-earth-rise-s11-1.png", "cel-earth-rise-s11-2.png"],
+    "balance_before": 4721.6,
+    "balance_after": 4623.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 55,
+    "notes": "G1 effects clean-up of cel-earth-rise",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-metal-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "0c207bef-f9d4-4e8b-91b5-e0dc7a37829e",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-metal.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; metal as folded flat bands in 3 flat tones: grey-brown #9a8c72, stone #b3a488, pale #d8cbb0; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-metal-s11-0.png", "cel-metal-s11-1.png", "cel-metal-s11-2.png"],
+    "balance_before": 4721.6,
+    "balance_after": 4564.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 64,
+    "notes": "G1 effects clean-up of cel-metal",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-cyclone-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "2fd712e0-ddcc-495e-b95d-df6a2a72d83b",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-cyclone.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; air as thin open streamlines and arcs with clear transparent space between them, 2-3 flat tones: shadow #9a8e72, cream #e8dcc0, pale #fdf6e3; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-cyclone-s11-0.png", "cel-cyclone-s11-1.png", "cel-cyclone-s11-2.png"],
+    "balance_before": 4662.6,
+    "balance_after": 4518.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 61,
+    "notes": "G1 effects clean-up of cel-cyclone",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-flask-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "9ac183a2-41b4-4b01-b593-643bbaf6a94b",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-flask.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; a small clay flask with a cork in 3 flat tones: dark #4d241b, clay #8a4b3c, light #b8705c, cork #c7a87d; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-flask-s11-0.png", "cel-flask-s11-1.png", "cel-flask-s11-2.png"],
+    "balance_before": 4564.6,
+    "balance_after": 4324.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 110,
+    "notes": "G1 effects clean-up of cel-flask",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-cushion-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "2e0def5b-51c7-45ce-be85-f9193a56f7e8",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-cushion.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; air as thin open streamlines and arcs with clear transparent space between them, 2-3 flat tones: shadow #9a8e72, cream #e8dcc0, pale #fdf6e3; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-cushion-s11-0.png", "cel-cushion-s11-1.png", "cel-cushion-s11-2.png"],
+    "balance_before": 4623.6,
+    "balance_after": 4160.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 164,
+    "notes": "G1 effects clean-up of cel-cushion",
+    "verdict": null,
+    "error": null
+  },
+  {
+    "tag": "cel-wind-s11",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "e44dc6c4-f14f-4af5-b03f-0c19cef84c3f",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<inputs/cel-wind.png>"
+      },
+      "method": "text",
+      "description": "Clean up this sheet of small spell-effect sprites into crisp pixel art at this exact size, one art pixel per pixel: keep every sprite exactly where it is, at the same size and silhouette, nothing added or removed; air as thin open streamlines and arcs with clear transparent space between them, 2-3 flat tones: shadow #9a8e72, cream #e8dcc0, pale #fdf6e3; 1 px dark brown outline (#1b1410) on the outer silhouette, interrupted where the light catches it; flat fills, hard pixel edges, no gradients, no glow, no blur, no anti-aliasing, no dithering noise; transparent background.",
+      "no_background": true,
+      "seed": 11
+    },
+    "outputs": ["cel-wind-s11-0.png", "cel-wind-s11-1.png", "cel-wind-s11-2.png"],
+    "balance_before": 4706.6,
+    "balance_after": 4121.6,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 229,
+    "notes": "G1 effects clean-up of cel-wind",
+    "verdict": null,
+    "error": null
+  }
+]

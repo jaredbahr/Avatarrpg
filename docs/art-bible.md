@@ -109,7 +109,8 @@ tone and one highlight tone, thin dark-brown ink, and no gradients, glows,
 blurry smoke, photographic texture or lens effects. Fire forms ribbons and
 licks; water forms whips, sheets and droplets; earth forms slabs and shards;
 air leaves open transparent space between spirals and arcs. Keep each effect
-inside its cell and readable at 64 px.
+inside its cell and readable at 64 px. Effects are drawn at the world's grain, 1 art px = 1 world px, on the
+element ramps and sampled nearest (ADR 0086).
 
 ### Illustrated cast art and portraits
 

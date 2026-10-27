@@ -50,6 +50,7 @@ import { imageSize, readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
 import { decodeWebp, isLosslessWebp, webpSize } from './lib/webp';
 import { BEND_FX, CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
+import { CEL_MARGIN } from './fx-g1';
 import type { BendEffectDef } from '../../src/content/bends';
 import {
   bendEffectDefSchema,
@@ -891,7 +892,10 @@ export function validateFlocks(publicDir = 'public', maps = ALL_MAPS): string[] 
   return problems;
 }
 
-/** Cels need clear gutters so adjacent frames cannot bleed into a GPU sample. */
+/**
+ * Cels need clear gutters so adjacent frames cannot bleed into a GPU sample: the
+ * 192 px cels' 8 px, at the 96 px pixel-art masters (ADR 0086).
+ */
 export function validateFxCels(publicDir = 'public'): string[] {
   const problems: string[] = [];
   for (const sheet of FX_CEL_SHEETS) {
@@ -908,7 +912,8 @@ export function validateFxCels(publicDir = 'public'): string[] {
     sheet.clips.forEach((clip, row) => {
       for (let col = 0; col < CEL_FRAMES; col++) {
         const frame = { x: col * CEL_SIZE, y: row * CEL_SIZE, w: CEL_SIZE, h: CEL_SIZE };
-        if (borderTouched(image, frame, MARGIN)) problems.push(`${clip}/${col} touches its gutter`);
+        if (borderTouched(image, frame, CEL_MARGIN))
+          problems.push(`${clip}/${col} touches its gutter`);
         let ink = 0;
         for (let y = frame.y; y < frame.y + frame.h; y++)
           for (let x = frame.x; x < frame.x + frame.w; x++)
