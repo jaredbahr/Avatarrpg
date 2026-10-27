@@ -50,6 +50,7 @@ import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
+import { drawArt } from '../pixelSampling';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
@@ -474,12 +475,14 @@ export class Canvas2DBackend implements RenderBackend {
     if (camera.projection === 'oblique') {
       const padding = view.backdrop?.padding;
       const scale = (camera.scale * 64) / (view.backdrop?.pixelsPerTile ?? 64);
-      this.ctx.drawImage(
-        image,
-        -camera.offsetX - (padding?.left ?? 0) * camera.scale,
-        -camera.offsetY - (padding?.top ?? 0) * camera.scale,
-        image.naturalWidth * scale,
-        image.naturalHeight * scale,
+      drawArt(this.ctx, 1, scale, () =>
+        this.ctx.drawImage(
+          image,
+          -camera.offsetX - (padding?.left ?? 0) * camera.scale,
+          -camera.offsetY - (padding?.top ?? 0) * camera.scale,
+          image.naturalWidth * scale,
+          image.naturalHeight * scale,
+        ),
       );
       return;
     }
@@ -1331,16 +1334,18 @@ export class Canvas2DBackend implements RenderBackend {
         const fw = (frame.frame.w / frame.pixelsPerTile) * box.size;
         const fh = (frame.frame.h / frame.pixelsPerTile) * box.size;
         const f = frame.frame;
-        ctx.drawImage(
-          frame.source,
-          f.x,
-          f.y,
-          f.w,
-          f.h,
-          footX - frame.anchor.x * fw,
-          footY - frame.anchor.y * fh,
-          fw,
-          fh,
+        drawArt(ctx, f.w, fw, () =>
+          ctx.drawImage(
+            frame.source,
+            f.x,
+            f.y,
+            f.w,
+            f.h,
+            footX - frame.anchor.x * fw,
+            footY - frame.anchor.y * fh,
+            fw,
+            fh,
+          ),
         );
       } else {
         const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
@@ -2131,12 +2136,15 @@ export class Canvas2DBackend implements RenderBackend {
           ctx.translate(-ax, 0);
         }
         const f = frame.frame;
-        ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
-        // The white mask is a copy of the whole page: never for a bend page.
-        if (unit.flash && unit.flash > 0 && !bend) {
-          ctx.globalAlpha *= Math.min(1, unit.flash);
-          ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
-        }
+        // A sheet pixel on a whole block of device pixels draws nearest (ADR 0088).
+        drawArt(ctx, f.w, fw, () => {
+          ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+          // The white mask is a copy of the whole page: never for a bend page.
+          if (unit.flash && unit.flash > 0 && !bend) {
+            ctx.globalAlpha *= Math.min(1, unit.flash);
+            ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+          }
+        });
       } else {
         const drawWidth = width * scale;
         const drawHeight = box.size * heightTiles * scale;

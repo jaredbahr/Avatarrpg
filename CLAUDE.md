@@ -255,6 +255,12 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   changes that box on most turns. `CombatScene.refit()` refits only when the
   board was fitted, or a rotation has left it smaller than it could be, and
   otherwise clamps; never wire `onViewportChange` straight to `camera.fit()`.
+- **The oblique boards draw at integer zoom** (ADR 0088): `camera.integerZoom` puts a whole number of device pixels on
+  each world pixel and reads the offsets back on the device-pixel grid, and art is sampled nearest only where one of
+  its pixels covers a whole number of device pixels (`src/render/pixelSampling.ts`, both backends). Never write
+  `camera.scale` from a scene to a computed value; go through `fit`, `fitExplore`, `zoomAt`, `raiseToFit` or
+  `snapScale` (the battle opening's ease is the one deliberate exception), or the board resamples. New map art ships
+  at 1 art px per world px: 1.5 px art (Ba Dan, the forest uprights) is crisp only at N = 3.
 - **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
   the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
   tappable tile and pans instead; that is the one exception to "combat never

@@ -1,4 +1,5 @@
 import { resolveAsset } from '../content/assets/manifest';
+import { drawArt } from './pixelSampling';
 import { tileAt } from '../core/rules/grid';
 import { SQUARE_FOOTPRINTS } from '../core/rules/footprint';
 import type { Grid, MapScene, SceneImage, SceneScenery } from '../core/types';
@@ -189,9 +190,12 @@ export function drawSceneImage(
   if (!rect) return;
   const source = sceneDrawable(piece, image);
   if (!source) return;
-  if (source === image)
-    context.drawImage(image, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
-  else context.drawImage(source, 0, 0, rect.width, rect.height, x, y, width, height);
+  // Nearest-neighbour where a painting pixel is a whole block of device pixels (ADR 0088).
+  drawArt(context, rect.width, width, () => {
+    if (source === image)
+      context.drawImage(image, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
+    else context.drawImage(source, 0, 0, rect.width, rect.height, x, y, width, height);
+  });
 }
 
 function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number): boolean {

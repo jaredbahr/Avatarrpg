@@ -448,10 +448,9 @@ export class CombatScene implements Scene {
       return;
     }
     if (!this.manualCamera) this.recentre();
-    else {
-      camera.scale = Math.max(camera.scale, camera.fitScale());
-      camera.clampToPanBounds();
-    }
+    // A zoomed board keeps its zoom; one a rotation left under its fit rises
+    // to it, on whole device pixels on the pixel-art boards (ADR 0088).
+    else camera.raiseToFit();
     this.revealPendingMoveAfterViewportChange();
     this.syncRecentre();
     if (this.moreOpen) this.measureMoreRoom();
@@ -552,7 +551,9 @@ export class CombatScene implements Scene {
         // 96px frame; Huge text needs the larger allowance.
         this.preferredCombatTilePx = preferredTilePx;
       }
-      camera.fitExplore(this.preferredCombatTilePx ?? 96);
+      // Combat rounds its tuned tile down onto whole device pixels (ADR 0088),
+      // so the fight stays at least as much in view as it was tuned to show.
+      camera.fitExplore(this.preferredCombatTilePx ?? 96, 12, 'floor');
     } else camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos, unit.size);
@@ -629,10 +630,14 @@ export class CombatScene implements Scene {
       bottom: 0,
       left: 0,
     };
+    // The oblique boards are pixel art at one art px per world px (ADR 0085):
+    // they draw at a whole number of device pixels per world pixel (ADR 0088).
+    this.renderer.camera.integerZoom = this.renderer.camera.projection === 'oblique';
     this.renderer.camera.clampToProgrammaticReachableSet =
       this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull';
     this.app.animator.setProjection(this.renderer.camera.projection);
-    if (this.renderer.camera.projection === 'oblique') this.renderer.camera.fitExplore(96);
+    if (this.renderer.camera.projection === 'oblique')
+      this.renderer.camera.fitExplore(96, 12, 'floor');
     else this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size
@@ -947,7 +952,12 @@ export class CombatScene implements Scene {
     const active = this.active()!;
     camera.centreOn(active.pos, active.size);
     const focus = this.openingFrame(camera);
-    camera.scale = Math.max(0.35, Math.min(camera.scale, camera.fitScale(32)));
+    // The formation hold is a still frame, so it stands on whole device pixels
+    // too (ADR 0088); only the ease from it to the actor passes between them.
+    camera.scale = camera.snapScale(
+      Math.max(0.35, Math.min(camera.scale, camera.fitScale(32))),
+      'floor',
+    );
     camera.centre();
     this.cameraFollow = { kind: 'idle' };
     this.battleOpening = {

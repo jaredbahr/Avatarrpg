@@ -10,7 +10,8 @@
  *
  * For each backend it writes, under FNT_DEMO_REVIEW_DIR (default
  * .shots/ba-dan-demo/<label>/<renderer>):
- * - slice-1x.png: the whole slice at game zoom (77 px tiles), the party in it;
+ * - slice-1x.png: the whole slice at game zoom (77 px tiles asked for; the
+ *   camera's integer zoom may land elsewhere, and provenance records it), the party in it;
  * - stop-NN-<name>.png and -walking.png: fixed walk beats through the slice;
  * - crop-<name>-4x.png: nearest-neighbour 4x enlargements of fixed regions;
  * - practice-ready.png, then practice-<character>-gather.png, -release.png and
@@ -33,7 +34,12 @@ import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 import type * as ChoreoModule from '../src/app/anim/bendChoreo';
 
-const TILE_PX = 77;
+/**
+ * The zoom the captures ask for (FNT_DEMO_TILE_PX overrides it). Under integer
+ * zoom (ADR 0088) the camera lands on the nearest whole device scale instead,
+ * and the captures record the tile size it actually drew at.
+ */
+const TILE_PX = Number(process.env.FNT_DEMO_TILE_PX ?? 77);
 
 async function zoom(page: Page, target: number): Promise<void> {
   const current = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);
@@ -41,9 +47,15 @@ async function zoom(page: Page, target: number): Promise<void> {
   if (!current || !box) throw new Error('Missing camera');
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.wheel(0, Math.log(current / target) / 0.002);
+  let last = 0;
   await expect
-    .poll(() => page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx))
-    .toBeCloseTo(target, 0);
+    .poll(async () => {
+      const now = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx ?? 0);
+      const still = now === last;
+      last = now;
+      return still;
+    })
+    .toBe(true);
   await settleLayout(page);
 }
 
@@ -306,9 +318,19 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await page.locator('.map-canvas').screenshot({ path: slice });
     await page.screenshot({ path: `${folder}/slice-with-ui.png` });
 
+    // The crops keep covering the same ground at whatever zoom the camera drew.
+    const tilePx = await page.evaluate(() => window.fnt!.app.rendererCamera()!.tilePx);
+    const ground = tilePx / 77;
     for (const [name, tile, w, h] of CROPS) {
       const p = await tilePoint(page, tile[0], tile[1]);
-      crop4x(slice, p.x, p.y, w, h, `${folder}/crop-${name}-4x.png`);
+      crop4x(
+        slice,
+        p.x,
+        p.y,
+        Math.round(w * ground),
+        Math.round(h * ground),
+        `${folder}/crop-${name}-4x.png`,
+      );
     }
 
     // FNT_DEMO_PRACTICE_ONLY=1 re-shoots the practice beat without the walk-through.
@@ -329,7 +351,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           revision,
           renderer,
           seed: 'ba-dan-demo',
-          tilePx: TILE_PX,
+          tilePx,
+          requestedTilePx: TILE_PX,
+          dpr: await page.evaluate(() => window.devicePixelRatio),
           slice: { x: [0, 13], y: [0, 9], centre: SLICE_CENTRE },
           practice: { at: PRACTICE_AT, shots: practiceShots.map((f) => f.split('/').pop()) },
           dayPhase: await page.evaluate(() => {
