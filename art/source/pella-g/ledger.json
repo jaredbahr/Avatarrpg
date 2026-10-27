@@ -781,8 +781,43 @@
         "generations": 3.0
       },
       "secs": 79
+    },
+    {
+      "name": "idle-soft-west-s8502",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "c1893fde-c767-442f-8e88-d62e52b1cf9c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, gap-toothed grin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms",
+        "action": "idle, standing still and breathing",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8502,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/idle-soft-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 143.0,
+      "balance_before": 8034.5,
+      "balance_after": 7891.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 181
     }
   ],
-  "balance_after": 7996.5,
-  "gens_total": 79.4
+  "balance_after": 7891.5,
+  "gens_total": 82.4
 }

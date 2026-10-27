@@ -146,8 +146,166 @@
         "generations": 3.0
       },
       "secs": 130
+    },
+    {
+      "name": "walk-relaxed-east-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "af1fb8bd-a6ce-41b8-b21f-5277a8b4bf93",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-relaxed-east.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 84.0,
+      "balance_before": 8031.5,
+      "balance_after": 7947.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 138
+    },
+    {
+      "name": "walk-relaxed-north-west-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8a2ec891-803b-4912-b3a8-b2ce5443a32f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/walk-relaxed-north-west.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 119.0,
+      "balance_before": 8013.5,
+      "balance_after": 7894.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 121
+    },
+    {
+      "name": "idle-soft-south-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4ea57aa6-ab6a-4d75-b4e5-ca4ad50c0e3b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 102.0,
+      "balance_before": 7987.5,
+      "balance_after": 7885.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 79
+    },
+    {
+      "name": "walk-relaxed-north-east-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "6b227b8e-09d1-42af-aaec-5b052039aa9c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/walk-relaxed-north-east.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 140.0,
+      "balance_before": 8025.5,
+      "balance_after": 7885.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 165
     }
   ],
-  "balance_after": 7981.5,
-  "gens_total": 17.8
+  "balance_after": 7885.5,
+  "gens_total": 29.8
 }
