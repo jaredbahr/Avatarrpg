@@ -1,45 +1,45 @@
 {
-  "assumption": "G1 has Kaya's idle at 76 px; G2 = exact 2x NN of G1 + automatic cleanup",
+  "definition": "G1 = 1 art px per world px (source reduced by grain_f / 1.5; Kaya 59 px); G2 = exact 2x NN of G1 + automatic cleanup",
   "objects": {
     "gao-display": {
-      "factor_from_source": 0.5294,
-      "g1": [134, 102],
-      "g2": [67, 51]
+      "factor_from_source": 0.4133,
+      "g1": [104, 80],
+      "g2": [52, 40]
     },
     "south-market-display": {
-      "factor_from_source": 0.5294,
-      "g1": [134, 124],
-      "g2": [67, 62]
+      "factor_from_source": 0.4133,
+      "g1": [104, 96],
+      "g2": [52, 48]
     },
     "north-market-display": {
-      "factor_from_source": 0.5294,
-      "g1": [134, 112],
-      "g2": [67, 56]
+      "factor_from_source": 0.4133,
+      "g1": [106, 86],
+      "g2": [53, 43]
     },
     "bench-2x1": {
-      "factor_from_source": 0.4803,
-      "g1": [96, 62],
-      "g2": [48, 31]
+      "factor_from_source": 0.375,
+      "g1": [76, 48],
+      "g2": [38, 24]
     },
     "fence-2x1": {
-      "factor_from_source": 0.4803,
-      "g1": [168, 120],
-      "g2": [84, 60]
+      "factor_from_source": 0.375,
+      "g1": [130, 94],
+      "g2": [65, 47]
     },
     "shop-stack": {
-      "factor_from_source": 0.4803,
-      "g1": [68, 86],
-      "g2": [34, 43]
+      "factor_from_source": 0.375,
+      "g1": [52, 68],
+      "g2": [26, 34]
     },
     "baskets-south": {
-      "factor_from_source": 0.4803,
-      "g1": [46, 46],
-      "g2": [23, 23]
+      "factor_from_source": 0.375,
+      "g1": [36, 36],
+      "g2": [18, 18]
     },
     "baskets-north": {
-      "factor_from_source": 0.4803,
-      "g1": [44, 38],
-      "g2": [22, 19]
+      "factor_from_source": 0.375,
+      "g1": [34, 30],
+      "g2": [17, 15]
     }
   }
 }

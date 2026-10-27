@@ -1,13 +1,14 @@
 """G1 / G2 grain-ladder exports of the selected objects (and Kaya, for the sheet only).
 
 Requested by the main session on 2026-10-27, for the parallel grain-ladder study:
-  G1: 1 art px = 1 world px, 64 x 32 tiles, figures about 76 px tall.
-  G2: 1 art px = 2 world px, 32 x 16 tiles, figures about 38 px tall: an exact 2x nearest-neighbour
+  G1: 1 art px = 1 world px, 64 x 32 tiles, figures 59 px tall (Kaya, as shipped).
+  G2: 1 art px = 2 world px, 32 x 16 tiles, figures about 30 px tall: an exact 2x nearest-neighbour
       downsample of G1, cleaned so outlines hold at 1 art px.
 
-Assumption (recorded because the message gave only the figure height): G1 is set by Kaya's idle standing
-76 px, so a G1 px is 89 / 76 game screen px, and each object is reduced by grain_f * 76 / 89 from its
-PixelLab source (0.480 at the characters' grain, 0.529 for the 2x1 tables).
+G1 is 1 art px = 1 world px of the shipped game: the explore camera draws 1.5 screen px per world px, so
+each object is reduced by grain_f / 1.5 from its PixelLab source (0.375 at the characters' grain, 0.413
+for the 2x1 tables) and Kaya's idle stands 59 px, as the shipped sheet draws her (118 sheet px at 128 per
+64 px tile). (A first export on 2026-10-27 used a relayed figure height of 76 px; corrected the same day.)
 
 G1 is a pixel reduction, not a smooth resize: each G1 pixel takes the source block it covers; alpha by
 majority; colour is the contour colour when the block is mostly contour or the pixel is on the silhouette
@@ -25,8 +26,7 @@ from PIL import Image, ImageDraw
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "grain"
 REVIEW = ROOT / "review"
-FIG_G1 = 76
-SCREEN_H = 89
+WORLD_PER_SCREEN = 1 / 1.5
 GROUND = (118, 122, 84, 255)
 PAPER = (40, 36, 32, 255)
 INK = (230, 222, 200, 255)
@@ -108,8 +108,8 @@ def main():
     meta = json.loads((ROOT / "blockouts/meta.json").read_text())
     (OUT / "g1").mkdir(parents=True, exist_ok=True)
     (OUT / "g2").mkdir(parents=True, exist_ok=True)
-    k = FIG_G1 / SCREEN_H
-    items = [("kaya (sheet only)", Image.open(ROOT / "ref/kaya-idle-south.png"), FIG_G1 / 158)]
+    k = WORLD_PER_SCREEN
+    items = [("kaya (sheet only)", Image.open(ROOT / "ref/kaya-idle-south.png"), 0.5625 * k)]
     for name, s in sel.items():
         im = Image.open(ROOT / s["path"]).convert("RGBA")
         f = meta[s["blockout"]]["grain_f"]
@@ -132,7 +132,7 @@ def main():
             g1.save(OUT / "g1" / f"{slug}.png"); g2.save(OUT / "g2" / f"{slug}.png")
             record[slug] = {"factor_from_source": round(factor, 4), "g1": list(g1.size), "g2": list(g2.size)}
         rows.append((name, g1, g2))
-    (OUT / "grain.json").write_text(json.dumps({"assumption": "G1 has Kaya's idle at 76 px; G2 = exact 2x NN of G1 + automatic cleanup",
+    (OUT / "grain.json").write_text(json.dumps({"definition": "G1 = 1 art px per world px (source reduced by grain_f / 1.5; Kaya 59 px); G2 = exact 2x NN of G1 + automatic cleanup",
                                                 "objects": record}, indent=1) + "\n")
     sheet(rows)
 
