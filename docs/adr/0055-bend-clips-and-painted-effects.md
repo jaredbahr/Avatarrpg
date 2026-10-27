@@ -4,7 +4,10 @@
 packed data), again 2026-09-28 (manifest plumbing, lazy bend loading and the
 socket convention), again 2026-09-28 (the painted effects), and again
 2026-09-28 (drawing them: trajectories, sprites and the flash; playback
-follows), and again 2026-09-29 (the combat handoff, step 7)
+follows), and again 2026-09-29 (the combat handoff, step 7). The page's
+pixels are redrawn at the world's grain by ADR 0086 (2026-10-27): same
+frames, pivots, data, timing and sockets; `bend-effects.ts` still writes the
+data, `scripts/art/fx-g1.ts` the shipped page and its cel pins.
 
 ## Context
 
