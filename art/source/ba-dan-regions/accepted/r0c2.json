@@ -2,18 +2,18 @@
   "region": "r0c2",
   "source": {
     "path": ".review/route-a/candidates/r0c2.png",
-    "sha256": "66656429f86c906abe9ea039953d6c67755b9cfcd73b90a1d674c92a7db55943"
+    "sha256": "569d408ac67026d846c0ee2e4e5dd7de4db0d393926b71c94d88688f4606d4da"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r0c2.png",
-    "sha256": "66656429f86c906abe9ea039953d6c67755b9cfcd73b90a1d674c92a7db55943"
+    "sha256": "569d408ac67026d846c0ee2e4e5dd7de4db0d393926b71c94d88688f4606d4da"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7762
+      "corr": 0.7702
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 867283,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7762,
+        "corr": 0.7702,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8126,
+        "corr": 0.7939,
         "status": "ok"
       }
     ],

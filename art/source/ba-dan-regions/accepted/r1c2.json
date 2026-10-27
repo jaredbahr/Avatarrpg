@@ -2,18 +2,18 @@
   "region": "r1c2",
   "source": {
     "path": ".review/route-a/candidates/r1c2.png",
-    "sha256": "3626953c2243616e361b307f623c2be54607d4545dc1ed58a1c2086f8402e6a7"
+    "sha256": "7b6a89669b7cf700e83e127d08edab6f0a9e43ff65c06ef4cc7bdf693ddbefe3"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r1c2.png",
-    "sha256": "3626953c2243616e361b307f623c2be54607d4545dc1ed58a1c2086f8402e6a7"
+    "sha256": "7b6a89669b7cf700e83e127d08edab6f0a9e43ff65c06ef4cc7bdf693ddbefe3"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7789
+      "corr": 0.7631
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 38540,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8062,
+        "corr": 0.7546,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 272039,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7086,
+        "corr": 0.6813,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8126,
+        "corr": 0.7939,
         "status": "ok"
       },
       {
@@ -48,8 +48,8 @@
         "box": [669, 331, 875, 508],
         "area": 7508,
         "dx": 0,
-        "dy": 0,
-        "corr": 0.8917,
+        "dy": 1,
+        "corr": 0.7178,
         "status": "ok"
       },
       {
@@ -58,7 +58,7 @@
         "area": 239585,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7811,
+        "corr": 0.7635,
         "status": "ok"
       },
       {
@@ -67,7 +67,7 @@
         "area": 42790,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7672,
+        "corr": 0.7655,
         "status": "ok"
       },
       {
@@ -100,11 +100,11 @@
     ],
     "carry": {
       "pixels": 1417191,
-      "meanAbsDiff": 0.013,
+      "meanAbsDiff": 0.358,
       "p95": 0.0,
-      "fractionOver16": 0.0002
+      "fractionOver16": 0.0094
     },
-    "warn": ["seam with r1c3: 2.9x the ordinary difference"],
+    "warn": ["seam with r1c3: 3.1x the ordinary difference"],
     "fail": []
   },
   "prompt": {

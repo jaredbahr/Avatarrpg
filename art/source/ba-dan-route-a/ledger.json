@@ -2,8 +2,8 @@
   "what": "Route A (Pixel) round 1 for issue #284: every PixelLab job, in order.",
   "gens": "PixelLab job usage (generations). balance_before/after are the account-wide balance, which another session was spending at the same time, so their difference is not this job's cost.",
   "account_balance_at_start": 9770.0,
-  "account_balance_at_end": 5853.6,
-  "total_gens": 1613.0,
+  "account_balance_at_end": 5673.6,
+  "total_gens": 1762.0,
   "jobs": [
     {
       "tag": "p1-gao-i2p",
@@ -2819,11 +2819,9 @@
       "gens": 9.0,
       "seconds": 49,
       "notes": "paint out the baked object under o2-out-gao-display",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
       "error": null,
-      "committed": {
-        "o2-out-gao-display-0.png": "world/inpaint/o2-out-gao-display.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -2857,11 +2855,9 @@
       "gens": 9.0,
       "seconds": 49,
       "notes": "paint out the baked object under o2-out-south-market-display",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
       "error": null,
-      "committed": {
-        "o2-out-south-market-display-0.png": "world/inpaint/o2-out-south-market-display.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -2895,11 +2891,9 @@
       "gens": 9.0,
       "seconds": 35,
       "notes": "paint out the baked object under o2-out-north-market-display",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
       "error": null,
-      "committed": {
-        "o2-out-north-market-display-0.png": "world/inpaint/o2-out-north-market-display.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -2933,11 +2927,9 @@
       "gens": 9.0,
       "seconds": 55,
       "notes": "paint out the baked object under o2-out-d12",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
       "error": null,
-      "committed": {
-        "o2-out-d12-0.png": "world/inpaint/o2-out-d12.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -2971,11 +2963,9 @@
       "gens": 9.0,
       "seconds": 35,
       "notes": "paint out the baked object under o2-out-d13",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
       "error": null,
-      "committed": {
-        "o2-out-d13-0.png": "world/inpaint/o2-out-d13.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3009,11 +2999,9 @@
       "gens": 6.0,
       "seconds": 28,
       "notes": "paint out the baked object under o2-out-d8",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
       "error": null,
-      "committed": {
-        "o2-out-d8-0.png": "world/inpaint/o2-out-d8.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3047,11 +3035,9 @@
       "gens": 6.0,
       "seconds": 28,
       "notes": "paint out the baked object under o2-out-d1",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
       "error": null,
-      "committed": {
-        "o2-out-d1-0.png": "world/inpaint/o2-out-d1.png"
-      },
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     },
     {
@@ -3085,10 +3071,924 @@
       "gens": 6.0,
       "seconds": 28,
       "notes": "paint out the baked object under o2-out-d2",
-      "verdict": "take (0): the old object painted out (prefilled flat, tone-matched to the ring)",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "5c46d500-ccee-4ea9-bf75-05bf3ff3e9c3",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-0 crop (783,509,36x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-0 context (np.int64(747), 477, np.int64(855), 573)>"
+        },
+        "bounding_box": {
+          "x": 36,
+          "y": 32,
+          "width": 36,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-0-0.png", "o3-fix-south-market-display-0-1.png"],
+      "balance_before": 5843.6,
+      "balance_after": 5836.6,
+      "gens": 5.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o3-fix-south-market-display-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e4e1caa3-c065-4b9f-a3b1-dbcad6c7b902",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-1 crop (871,536,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-1 context (839, 504, 935, 600)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-1-0.png", "o3-fix-south-market-display-1-1.png"],
+      "balance_before": 5836.6,
+      "balance_after": 5829.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-south-market-display-1",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-north-market-display-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "9cd9cc36-005e-4942-9f96-5a6d1983446a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-north-market-display-0 crop (1799,749,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-north-market-display-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-north-market-display-0 context (1767, 717, 1863, 813)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-north-market-display-0-0.png", "o3-fix-north-market-display-0-1.png"],
+      "balance_before": 5829.6,
+      "balance_after": 5824.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-north-market-display-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "39c9f554-457f-4801-9ca9-945e0c7bfec4",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-0 crop (1747,728,52x36) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-0 context (np.int64(1695), np.int64(692), np.int64(1851), np.int64(800))>"
+        },
+        "bounding_box": {
+          "x": 52,
+          "y": 36,
+          "width": 52,
+          "height": 36
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-0-0.png", "o3-fix-d2-0-1.png"],
+      "balance_before": 5824.6,
+      "balance_after": 5819.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d2-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "bfa52cdd-5a32-4a23-881f-af7121c3b0ab",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-1 crop (1756,737,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-1 context (1724, 705, 1820, 801)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-1-0.png", "o3-fix-d2-1-1.png"],
+      "balance_before": 5819.6,
+      "balance_after": 5814.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d2-1",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "557c1525-8e7b-454e-92f7-9c65be1b892e",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-2 crop (1743,778,52x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-2 context (np.int64(1691), 746, np.int64(1847), 842)>"
+        },
+        "bounding_box": {
+          "x": 52,
+          "y": 32,
+          "width": 52,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-2-0.png", "o3-fix-d2-2-1.png"],
+      "balance_before": 5814.6,
+      "balance_after": 5809.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-d2-2",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-3",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e395ec50-cb3d-44e6-b0ec-5c7aa51b368c",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-3 crop (1738,788,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-3 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-3 context (1706, 756, 1802, 852)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-3-0.png", "o3-fix-d2-3-1.png"],
+      "balance_before": 5809.6,
+      "balance_after": 5804.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d2-3",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "6459ce37-360d-4886-afbb-2fb05b483a6a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-2 crop (774,507,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-2 context (742, 475, 838, 571)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-2-0.png", "o3-fix-south-market-display-2-1.png"],
+      "balance_before": 5787.6,
+      "balance_after": 5782.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-south-market-display-2",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-3",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "9706da01-d364-4d54-b341-e071b3ccd931",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-3 crop (788,515,116x56) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-3 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-3 context (np.int64(672), np.int64(459), np.int64(1020), np.int64(627))>"
+        },
+        "bounding_box": {
+          "x": 116,
+          "y": 56,
+          "width": 116,
+          "height": 56
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-3-0.png", "o3-fix-south-market-display-3-1.png"],
+      "balance_before": 5782.6,
+      "balance_after": 5776.6,
+      "gens": 6.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o3-fix-south-market-display-3",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-4",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "0aa7e2ab-f794-438c-aea7-f933ad054fff",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-4 crop (956,539,40x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-4 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-4 context (np.int64(916), 507, np.int64(1036), 603)>"
+        },
+        "bounding_box": {
+          "x": 40,
+          "y": 32,
+          "width": 40,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-4-0.png", "o3-fix-south-market-display-4-1.png"],
+      "balance_before": 5776.6,
+      "balance_after": 5771.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-south-market-display-4",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-5",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "79faaac0-609e-4f33-98e1-66d999344532",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-5 crop (923,555,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-5 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-5 context (891, 523, 987, 619)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-5-0.png", "o3-fix-south-market-display-5-1.png"],
+      "balance_before": 5771.6,
+      "balance_after": 5766.6,
+      "gens": 5.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o3-fix-south-market-display-5",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-6",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "26a8603b-9245-41df-a593-8344802b3364",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-6 crop (888,567,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-6 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-6 context (856, 535, 952, 631)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-6-0.png", "o3-fix-south-market-display-6-1.png"],
+      "balance_before": 5766.6,
+      "balance_after": 5761.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-south-market-display-6",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d12-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "43fe1524-c39f-47e0-94fb-f583162eebe7",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d12-0 crop (1009,353,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d12-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d12-0 context (977, 321, 1073, 417)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d12-0-0.png", "o3-fix-d12-0-1.png"],
+      "balance_before": 5761.6,
+      "balance_after": 5756.6,
+      "gens": 5.0,
+      "seconds": 16,
+      "notes": "paint out the baked object under o3-fix-d12-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d1-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "f2b31a02-f102-47c8-972b-ed1c06b659b9",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d1-0 crop (718,455,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d1-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d1-0 context (686, 423, 782, 519)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d1-0-0.png", "o3-fix-d1-0-1.png"],
+      "balance_before": 5756.6,
+      "balance_after": 5751.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d1-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d1-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "7f315b4c-7f90-4607-a4a1-2bbde5405e30",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d1-1 crop (770,477,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d1-1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d1-1 context (738, 445, 834, 541)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d1-1-0.png", "o3-fix-d1-1-1.png"],
+      "balance_before": 5751.6,
+      "balance_after": 5746.6,
+      "gens": 5.0,
+      "seconds": 16,
+      "notes": "paint out the baked object under o3-fix-d1-1",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d1-2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "ae3dbff1-8292-4512-958c-b2d45f9777eb",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d1-2 crop (778,506,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d1-2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d1-2 context (746, 474, 842, 570)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d1-2-0.png", "o3-fix-d1-2-1.png"],
+      "balance_before": 5746.6,
+      "balance_after": 5741.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-d1-2",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-4",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e9fe5e5b-4080-4241-bc96-e9f848ee1cb1",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-4 crop (1740,790,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-4 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-4 context (1708, 758, 1804, 854)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-4-0.png", "o3-fix-d2-4-1.png"],
+      "balance_before": 5741.6,
+      "balance_after": 5736.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-d2-4",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-gao-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "f173690f-bfff-4094-966b-133d5310b656",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-gao-display crop (1205,403,240x156) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-gao-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-gao-display context (np.int64(965), np.int64(247), np.int64(1685), np.int64(715))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 156,
+          "width": 240,
+          "height": 156
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-gao-display-0.png", "o4-out-gao-display-1.png"],
+      "balance_before": 5736.6,
+      "balance_after": 5727.6,
+      "gens": 9.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o4-out-gao-display",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
       "error": null,
       "committed": {
-        "o2-out-d2-0.png": "world/inpaint/o2-out-d2.png"
+        "o4-out-gao-display-0.png": "world/inpaint/o4-out-gao-display.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-south-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "8e137597-058b-4a3f-9cef-8885d9d55dec",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-south-market-display crop (757,419,240x180) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-south-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-south-market-display context (np.int64(517), np.int64(239), np.int64(1237), np.int64(779))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 180,
+          "width": 240,
+          "height": 180
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-south-market-display-0.png", "o4-out-south-market-display-1.png"],
+      "balance_before": 5727.6,
+      "balance_after": 5718.6,
+      "gens": 9.0,
+      "seconds": 55,
+      "notes": "paint out the baked object under o4-out-south-market-display",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-south-market-display-0.png": "world/inpaint/o4-out-south-market-display.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-north-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "004aa7b8-70dd-47e7-9bcc-8015efa27f49",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-north-market-display crop (1721,646,236x172) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-north-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-north-market-display context (np.int64(1485), np.int64(474), np.int64(2193), np.int64(990))>"
+        },
+        "bounding_box": {
+          "x": 236,
+          "y": 172,
+          "width": 236,
+          "height": 172
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-north-market-display-0.png", "o4-out-north-market-display-1.png"],
+      "balance_before": 5718.6,
+      "balance_after": 5709.6,
+      "gens": 9.0,
+      "seconds": 55,
+      "notes": "paint out the baked object under o4-out-north-market-display",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-north-market-display-0.png": "world/inpaint/o4-out-north-market-display.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d12",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "6b2aec57-06d6-49b2-8121-d3a7ebc77cf2",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d12 crop (1011,303,240x168) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d12 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d12 context (np.int64(771), np.int64(135), np.int64(1491), np.int64(639))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 168,
+          "width": 240,
+          "height": 168
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d12-0.png", "o4-out-d12-1.png"],
+      "balance_before": 5709.6,
+      "balance_after": 5700.6,
+      "gens": 9.0,
+      "seconds": 48,
+      "notes": "paint out the baked object under o4-out-d12",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d12-0.png": "world/inpaint/o4-out-d12.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d13",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "5efeef42-c4bc-4a70-91f5-53640c270d72",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d13 crop (900,257,224x148) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d13 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d13 context (np.int64(676), np.int64(109), np.int64(1348), np.int64(553))>"
+        },
+        "bounding_box": {
+          "x": 224,
+          "y": 148,
+          "width": 224,
+          "height": 148
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d13-0.png", "o4-out-d13-1.png"],
+      "balance_before": 5700.6,
+      "balance_after": 5691.6,
+      "gens": 9.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o4-out-d13",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d13-0.png": "world/inpaint/o4-out-d13.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d8",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "87777231-e361-4455-87ed-74368f065ce9",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d8 crop (1661,452,168x100) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d8 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d8 context (np.int64(1493), np.int64(352), np.int64(1997), np.int64(652))>"
+        },
+        "bounding_box": {
+          "x": 168,
+          "y": 100,
+          "width": 168,
+          "height": 100
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d8-0.png", "o4-out-d8-1.png"],
+      "balance_before": 5691.6,
+      "balance_after": 5685.6,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o4-out-d8",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d8-0.png": "world/inpaint/o4-out-d8.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "1aa2c3c8-2289-465f-9bdb-504f73d9fa98",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d1 crop (693,424,176x108) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d1 context (np.int64(517), np.int64(316), np.int64(1045), np.int64(640))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 108,
+          "width": 176,
+          "height": 108
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d1-0.png", "o4-out-d1-1.png"],
+      "balance_before": 5685.6,
+      "balance_after": 5679.6,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o4-out-d1",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d1-0.png": "world/inpaint/o4-out-d1.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "94595dab-b0e6-457c-9f33-64f592da2953",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d2 crop (1653,714,176x108) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d2 context (np.int64(1477), np.int64(606), np.int64(2005), np.int64(930))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 108,
+          "width": 176,
+          "height": 108
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d2-0.png", "o4-out-d2-1.png"],
+      "balance_before": 5679.6,
+      "balance_after": 5673.6,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o4-out-d2",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d2-0.png": "world/inpaint/o4-out-d2.png"
       },
       "note_outputs": "two identical outputs per job; output -0 is used"
     }
