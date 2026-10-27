@@ -304,8 +304,376 @@
         "generations": 3.0
       },
       "secs": 165
+    },
+    {
+      "name": "walk-relaxed-west-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "07008cd1-ad54-474e-871d-cb7f09eed10c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/walk-relaxed-west.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 171.0,
+      "balance_before": 8002.5,
+      "balance_after": 7831.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 164
+    },
+    {
+      "name": "walk-relaxed-south-west-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "c5a25406-601b-4808-b1cc-cf5c57f9fc6e",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/walk-relaxed-south-west.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 162.0,
+      "balance_before": 7990.5,
+      "balance_after": 7828.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 121
+    },
+    {
+      "name": "walk-relaxed-north-s8401",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "b7939f9c-38c2-488b-ba92-9622a9ecb8fe",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "walk",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8401,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/walk-relaxed-north.json",
+        "motion": "CMU 142_13 Relaxed",
+        "cycle": {
+          "p": 4147,
+          "per": 200,
+          "straight": 0.997,
+          "turn": 11.148,
+          "speed": 11.985
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 194.0,
+      "balance_before": 8019.5,
+      "balance_after": 7825.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 191
+    },
+    {
+      "name": "idle-soft-east-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1b2108c9-05bf-4ec1-a9dc-76f56087c9ee",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 122.0,
+      "balance_before": 7947.5,
+      "balance_after": 7825.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87
+    },
+    {
+      "name": "idle-soft-south-east-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "bd3f5e4c-9078-439d-ac05-edcdf1b530f4",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 200.0,
+      "balance_before": 7981.5,
+      "balance_after": 7781.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 136
+    },
+    {
+      "name": "idle-soft-north-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "cf791abc-0052-4b14-8196-3fe75fed5888",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/idle-soft-north.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 109.0,
+      "balance_before": 7885.5,
+      "balance_after": 7776.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 95
+    },
+    {
+      "name": "idle-soft-north-west-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "48860e0e-9743-4ab3-a48e-d4fbabecd3a8",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/idle-soft-north-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 95.0,
+      "balance_before": 7860.5,
+      "balance_after": 7765.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 109
+    },
+    {
+      "name": "idle-soft-west-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1bf34629-6bef-4d91-b4f2-828eda3fd7ea",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/idle-soft-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 66.0,
+      "balance_before": 7831.5,
+      "balance_after": 7765.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 88
+    },
+    {
+      "name": "idle-soft-south-west-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "a779e8e3-07ae-45c3-9aa8-ef190a688e26",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/idle-soft-south-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 63.0,
+      "balance_before": 7828.5,
+      "balance_after": 7765.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87
+    },
+    {
+      "name": "idle-soft-north-east-s8402",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "665eb1d4-825d-47a0-8617-bdc9e313e9a0",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+        "action": "idle, standing still and breathing",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8402,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/idle-soft-north-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 200.0,
+      "balance_before": 7893.5,
+      "balance_after": 7693.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 170
     }
   ],
-  "balance_after": 7885.5,
-  "gens_total": 29.8
+  "balance_after": 7693.5,
+  "gens_total": 59.8
 }
