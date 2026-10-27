@@ -1,24 +1,25 @@
 /**
  * The effects atlas.
  *
- * Every particle is one of a handful of shapes drawn once, in white with the
- * art bible's ink edge, into a small canvas: a soft glow, a flat disc, a
- * ring, a spark streak, a shard, a leaf, a puff of smoke, a droplet and a
- * square of stone. Tinting does the colour, so one atlas serves every
- * element on both backends; the WebGL layer uploads it once and the Canvas
- * 2D layer tints cells into small cached copies.
+ * Every particle is one of a handful of shapes, each rasterised as pixel art
+ * at every rung of a short ladder of sizes (`pixelCells.ts`), in white with
+ * the art bible's ink edge: a stepped glow, a flat disc, a ring, a spark
+ * streak, a shard, a leaf, a puff of smoke, a droplet and a square of stone.
+ * Tinting does the colour, so one atlas serves every element on both
+ * backends; the WebGL layer uploads it once, nearest-sampled, and the Canvas
+ * 2D layer tints cells into small cached copies. The element cels sit in
+ * their own slots at their 96 px master size (ADR 0086).
  */
 
 import type { FxCell } from '../../content/fx';
 import { FX_CELLS } from '../../content/fx';
 import { CEL_FRAMES, CEL_SIZE, FX_CELS, FX_CEL_SHEETS, type FxCel } from '../../content/fxCels';
+import { PIXEL_LADDER, ladderOffset, ladderSize, rasterCell } from './pixelCells';
 
-/** Nine tinted shapes plus 48 coloured animation cels in one 1024px texture. */
+/** Nine tinted shape ladders plus 52 coloured animation cels in one 1024px texture. */
 export const ATLAS_COLUMNS = 8;
 export const ATLAS_CELL = 128;
 export const ATLAS_SIZE = ATLAS_COLUMNS * ATLAS_CELL;
-
-const INK = '#1b1410';
 
 export interface CellFrame {
   readonly x: number;
@@ -43,8 +44,10 @@ let loading: Promise<void> | null = null;
 const ready = new Set<FxCel>();
 const listeners = new Set<() => void>();
 
+/** A cel's square in the atlas: its master at one art px a pixel, in the slot's corner. */
 export function celAtlasFrame(cel: FxCel, frame: number): CellFrame {
-  return frameAt(FX_CELLS.length + FX_CELS.indexOf(cel) * CEL_FRAMES + frame);
+  const slot = frameAt(FX_CELLS.length + FX_CELS.indexOf(cel) * CEL_FRAMES + frame);
+  return { x: slot.x, y: slot.y, size: CEL_SIZE };
 }
 
 export const celReady = (cel: FxCel): boolean => ready.has(cel);
@@ -102,8 +105,8 @@ export function fxAtlas(): HTMLCanvasElement {
                     CEL_SIZE,
                     frame.x,
                     frame.y,
-                    frame.size,
-                    frame.size,
+                    CEL_SIZE,
+                    CEL_SIZE,
                   );
                 }
                 ready.add(clip);
@@ -120,125 +123,25 @@ export function fxAtlas(): HTMLCanvasElement {
   return canvas;
 }
 
-/** Draws one shape, white on transparent, inside a `size` square at the origin. */
+/**
+ * Draws one shape's pixel ladder, white on transparent, into its `size`
+ * square at the origin: every rung of `PIXEL_LADDER` at one art px a pixel
+ * (`pixelCells.ts`). A particle draws the rung nearest its size, unscaled.
+ */
 export function paintCell(ctx: CanvasRenderingContext2D, cell: FxCell, size: number): void {
-  const c = size / 2;
-  const ink = Math.max(1.5, size * 0.045);
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-
-  switch (cell) {
-    case 'glow': {
-      const g = ctx.createRadialGradient(c, c, 0, c, c, c * 0.95);
-      g.addColorStop(0, 'rgba(255,255,255,1)');
-      g.addColorStop(0.45, 'rgba(255,255,255,0.55)');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, size, size);
-      break;
-    }
-    case 'disc': {
-      ctx.beginPath();
-      ctx.arc(c, c, c * 0.72, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = ink;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      break;
-    }
-    case 'ring': {
-      ctx.beginPath();
-      ctx.arc(c, c, c * 0.7, 0, Math.PI * 2);
-      ctx.lineWidth = size * 0.12;
-      ctx.strokeStyle = '#ffffff';
-      ctx.stroke();
-      break;
-    }
-    case 'spark': {
-      ctx.beginPath();
-      ctx.moveTo(size * 0.08, c);
-      ctx.lineTo(c, c - size * 0.09);
-      ctx.lineTo(size * 0.92, c);
-      ctx.lineTo(c, c + size * 0.09);
-      ctx.closePath();
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      break;
-    }
-    case 'shard': {
-      ctx.beginPath();
-      ctx.moveTo(size * 0.5, size * 0.1);
-      ctx.lineTo(size * 0.86, size * 0.62);
-      ctx.lineTo(size * 0.56, size * 0.9);
-      ctx.lineTo(size * 0.16, size * 0.7);
-      ctx.closePath();
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = ink;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      break;
-    }
-    case 'leaf': {
-      ctx.beginPath();
-      ctx.moveTo(size * 0.12, size * 0.6);
-      ctx.quadraticCurveTo(size * 0.4, size * 0.05, size * 0.9, size * 0.3);
-      ctx.quadraticCurveTo(size * 0.6, size * 0.92, size * 0.12, size * 0.6);
-      ctx.closePath();
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = ink;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      break;
-    }
-    case 'puff': {
-      ctx.fillStyle = '#ffffff';
-      const lobes: [number, number, number][] = [
-        [0.5, 0.55, 0.32],
-        [0.3, 0.6, 0.24],
-        [0.7, 0.62, 0.24],
-        [0.42, 0.38, 0.22],
-        [0.62, 0.4, 0.2],
-      ];
-      ctx.beginPath();
-      for (const [x, y, r] of lobes) {
-        ctx.moveTo(size * (x + r), size * y);
-        ctx.arc(size * x, size * y, size * r, 0, Math.PI * 2);
-      }
-      ctx.fill();
-      ctx.lineWidth = ink;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      break;
-    }
-    case 'drop': {
-      ctx.beginPath();
-      ctx.moveTo(c, size * 0.1);
-      ctx.bezierCurveTo(size * 0.85, size * 0.55, size * 0.75, size * 0.9, c, size * 0.9);
-      ctx.bezierCurveTo(size * 0.25, size * 0.9, size * 0.15, size * 0.55, c, size * 0.1);
-      ctx.closePath();
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = ink;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      break;
-    }
-    case 'square': {
-      ctx.beginPath();
-      ctx.moveTo(size * 0.2, size * 0.22);
-      ctx.lineTo(size * 0.82, size * 0.18);
-      ctx.lineTo(size * 0.8, size * 0.8);
-      ctx.lineTo(size * 0.18, size * 0.78);
-      ctx.closePath();
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = ink;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      break;
-    }
+  for (const rung of PIXEL_LADDER) {
+    const at = ladderOffset(rung);
+    if (at.x + rung > size || at.y + rung > size) continue;
+    const pixels = new ImageData(new Uint8ClampedArray(rasterCell(cell, rung)), rung, rung);
+    const t = ctx.getTransform();
+    ctx.putImageData(pixels, t.e + at.x, t.f + at.y);
   }
+}
+
+/** The rung of a shape a `px` world-pixel particle draws, in atlas pixels. */
+export function rungFrame(cell: FxCell, px: number): CellFrame & { readonly rung: number } {
+  const rung = ladderSize(px);
+  const base = cellFrame(cell);
+  const at = ladderOffset(rung);
+  return { x: base.x + at.x, y: base.y + at.y, size: rung, rung };
 }

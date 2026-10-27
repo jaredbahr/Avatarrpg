@@ -2,7 +2,8 @@
  * Effects on Canvas 2D.
  *
  * The same sampled particles and strokes as the WebGL layer, drawn with
- * `drawImage` from tinted copies of the atlas cells and plain paths. Bounded
+ * `drawImage`, smoothing off, from tinted copies of the atlas cells' pixel
+ * rungs and from the hardened stroke rasters (ADR 0086). Bounded
  * by a per-frame cap, because this is the fallback for machines without a
  * GPU: the board stays correct and the effects stay legible, and that is
  * what ADR 0002 asks of it.
@@ -10,7 +11,9 @@
 
 import type { Vec2 } from '../../core/types';
 import type { FxCell } from '../../content/fx';
-import { ATLAS_CELL, cellFrame, fxAtlas, celAtlasFrame, celReady } from './atlas';
+import { ATLAS_CELL, cellFrame, fxAtlas, celAtlasFrame, celReady, rungFrame } from './atlas';
+import { TILE } from '../camera';
+import { StrokeRasterer } from './pixelStrokes';
 import { celFrameIndex } from '../../content/fxCels';
 import { roleColor } from './colors';
 import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
@@ -30,6 +33,7 @@ export class CanvasFxLayer {
     fxAtlas();
   }
   private tinted = new Map<string, HTMLCanvasElement>();
+  private strokeRaster = new StrokeRasterer();
   private scratch = new Float32Array(MAX_PARTICLES * PARTICLE_STRIDE);
   /** A still emitter's particles, sampled once rather than every frame, by instance key. */
   private stills = new Map<string, { readonly def: EmitterInstance['def']; data: Float32Array }>();
@@ -80,11 +84,16 @@ export class CanvasFxLayer {
           : this.cell(def.cell, roleColor(def.color, instance.palette));
         ctx.save();
         ctx.globalCompositeOperation = def.blend === 'add' ? 'lighter' : 'source-over';
+        // Pixel art at the world's grain (ADR 0086): never blended between texels.
+        ctx.imageSmoothingEnabled = false;
         for (let i = 0; i < Math.min(n, room); i++) {
           const at = i * PARTICLE_STRIDE;
           const px = origin.x + (data[at] ?? 0) * size;
           const py = origin.y + (data[at + 1] ?? 0) * size;
-          const s = (data[at + 2] ?? 0) * size;
+          const tiles = data[at + 2] ?? 0;
+          // A shape draws the rung nearest its size at one art px a world px; a cel scales its master.
+          const rung = frame ? null : rungFrame(def.cell, tiles * TILE);
+          const s = rung ? (rung.size / TILE) * size : tiles * size;
           const rotation = data[at + 3] ?? 0;
           ctx.globalAlpha = Math.max(0, Math.min(1, data[at + 4] ?? 0));
           const base = ctx.getTransform();
@@ -98,7 +107,20 @@ export class CanvasFxLayer {
           );
           if (frame)
             ctx.drawImage(cell, frame.x, frame.y, frame.size, frame.size, -s / 2, -s / 2, s, s);
-          else ctx.drawImage(cell, -s / 2, -s / 2, s, s);
+          else if (rung) {
+            const base = cellFrame(def.cell);
+            ctx.drawImage(
+              cell,
+              rung.x - base.x,
+              rung.y - base.y,
+              rung.size,
+              rung.size,
+              -s / 2,
+              -s / 2,
+              s,
+              s,
+            );
+          }
           ctx.setTransform(base);
         }
         ctx.restore();
@@ -115,36 +137,26 @@ export class CanvasFxLayer {
         );
         const color = roleColor(def.color, instance.palette);
         const ink = roleColor('ink', instance.palette);
+        const kept = shapes.slice(0, Math.max(0, MAX_STROKES - strokes));
+        strokes += kept.length;
+        // Drawn straight away, so one pooled raster serves every emitter.
+        const raster = this.strokeRaster.raster(0, kept, color, def.ink ? ink : null);
+        if (!raster) continue;
+        const k = size / TILE;
         ctx.save();
         ctx.globalCompositeOperation = def.blend === 'add' ? 'lighter' : 'source-over';
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        for (const shape of shapes) {
-          if (strokes >= MAX_STROKES) break;
-          strokes += 1;
-          ctx.beginPath();
-          for (let i = 0; i < shape.points.length; i += 2) {
-            const x = origin.x + (shape.points[i] ?? 0) * size;
-            const y = origin.y + (shape.points[i + 1] ?? 0) * size;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          if (shape.closed) ctx.closePath();
-          ctx.globalAlpha = Math.max(0, Math.min(1, shape.alpha));
-          if (def.ink) {
-            ctx.strokeStyle = ink;
-            ctx.lineWidth = (shape.width + 0.05) * size;
-            ctx.stroke();
-          }
-          if (shape.fill) {
-            ctx.fillStyle = color;
-            ctx.fill();
-          } else {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = Math.max(1, shape.width * size);
-            ctx.stroke();
-          }
-        }
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(
+          raster.canvas,
+          0,
+          0,
+          raster.width,
+          raster.height,
+          origin.x + raster.x * k,
+          origin.y + raster.y * k,
+          raster.width * k,
+          raster.height * k,
+        );
         ctx.restore();
       }
     }
