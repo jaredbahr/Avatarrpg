@@ -2,8 +2,8 @@
   "what": "Route A (Pixel) round 1 for issue #284: every PixelLab job, in order.",
   "gens": "PixelLab job usage (generations). balance_before/after are the account-wide balance, which another session was spending at the same time, so their difference is not this job's cost.",
   "account_balance_at_start": 9770.0,
-  "account_balance_at_end": 7585.5,
-  "total_gens": 700.0,
+  "account_balance_at_end": 7413.5,
+  "total_gens": 802.0,
   "jobs": [
     {
       "tag": "p1-gao-i2p",
@@ -1140,6 +1140,357 @@
         "a2-ground-t3-0.png": "generated/ground-tile-3.png"
       },
       "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "g2-gao-flash",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "f2d04340-d008-4370-a1bd-99046e135f78",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<inputs/g2-gao.png (painting crop / 3, padded to 236x172)>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-gao-flash-0.png", "g2-gao-flash-1.png", "g2-gao-flash-2.png"],
+      "balance_before": 7565.5,
+      "balance_after": 7556.5,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "G2 (1 art px = 2 world px) house, pro-flash text edit",
+      "verdict": "take (0): clean G2 pixel art, layout kept",
+      "error": null,
+      "committed": {
+        "g2-gao-flash-0.png": "generated/ladder/g2-gao-house.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t3",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8f75a17c-20b9-4af7-936c-64e90b5dd0dc",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 3 at (464,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t3-0.png", "g2-ground-t3-1.png", "g2-ground-t3-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7505.5,
+      "gens": 9.0,
+      "seconds": 48,
+      "notes": "G2 ground tile 3 at (464,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t3-0.png": "generated/ladder/g2-ground-tile-3.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t0",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "019a7261-5341-4cff-91f7-96f287ada2ed",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 0 at (0,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t0-0.png", "g2-ground-t0-1.png", "g2-ground-t0-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7505.5,
+      "gens": 9.0,
+      "seconds": 48,
+      "notes": "G2 ground tile 0 at (0,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t0-0.png": "generated/ladder/g2-ground-tile-0.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t4",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8bca8650-4015-40cb-bfd2-1307fa0a805e",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 4 at (0,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t4-0.png", "g2-ground-t4-1.png", "g2-ground-t4-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7505.5,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "G2 ground tile 4 at (0,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t4-0.png": "generated/ladder/g2-ground-tile-4.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t2",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8832d407-aa1a-4966-a31f-744037f476e1",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 2 at (309,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t2-0.png", "g2-ground-t2-1.png", "g2-ground-t2-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7496.5,
+      "gens": 9.0,
+      "seconds": 55,
+      "notes": "G2 ground tile 2 at (309,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t2-0.png": "generated/ladder/g2-ground-tile-2.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t1",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "6b158a5c-4341-41ad-81df-c30a67ef7bd2",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 1 at (155,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t1-0.png", "g2-ground-t1-1.png", "g2-ground-t1-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7487.5,
+      "gens": 9.0,
+      "seconds": 62,
+      "notes": "G2 ground tile 1 at (155,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t1-0.png": "generated/ladder/g2-ground-tile-1.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t5",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "3aaafb81-27bf-4c9d-bc17-feb7154324d0",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 5 at (155,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t5-0.png", "g2-ground-t5-1.png", "g2-ground-t5-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7487.5,
+      "gens": 9.0,
+      "seconds": 62,
+      "notes": "G2 ground tile 5 at (155,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t5-0.png": "generated/ladder/g2-ground-tile-5.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-tree",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8ab4824c-4489-4b9e-9e8f-62133664a000",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 canopy tree, inputs/g2-tree.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. A broad canopy tree, leaves as clustered masses of 3 greens. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-tree-0.png", "g2-tree-1.png", "g2-tree-2.png"],
+      "balance_before": 7505.5,
+      "balance_after": 7481.5,
+      "gens": 6.0,
+      "seconds": 29,
+      "notes": "G2 canopy tree, inputs/g2-tree.png",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-tree-0.png": "generated/ladder/g2-canopy-tree.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-fig-kaya",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "c17093b5-02a3-4578-9c9b-864d43319f78",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 figure kaya walkSouthWest/3 box-downsampled 4:1>"
+        },
+        "method": "text",
+        "description": "Clean up this tiny character sprite into crisp pixel art at this exact size: keep the same person, pose, costume colours, hair and facing; 1 px dark brown outline (#1b1410), 2-3 tones per material, light from the upper left, transparent background.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["g2-fig-kaya-0.png", "g2-fig-kaya-1.png", "g2-fig-kaya-2.png"],
+      "balance_before": 7496.5,
+      "balance_after": 7476.5,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "G2 figure kaya walkSouthWest/3 box-downsampled 4:1",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-fig-kaya-0.png": "generated/ladder/g2-fig-kaya.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-fig-bo",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "2ab98d24-6868-44ac-b978-adba75ebdce9",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 figure bo idleSouthEast/0 box-downsampled 4:1>"
+        },
+        "method": "text",
+        "description": "Clean up this tiny character sprite into crisp pixel art at this exact size: keep the same person, pose, costume colours, hair and facing; 1 px dark brown outline (#1b1410), 2-3 tones per material, light from the upper left, transparent background.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["g2-fig-bo-0.png", "g2-fig-bo-1.png", "g2-fig-bo-2.png"],
+      "balance_before": 7487.5,
+      "balance_after": 7462.5,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "G2 figure bo idleSouthEast/0 box-downsampled 4:1",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-fig-bo-0.png": "generated/ladder/g2-fig-bo.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t6",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "507835e4-c59a-4bb9-a6e5-0d06d7009689",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 6 at (309,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t6-0.png", "g2-ground-t6-1.png", "g2-ground-t6-2.png"],
+      "balance_before": 7505.5,
+      "balance_after": 7462.5,
+      "gens": 9.0,
+      "seconds": 42,
+      "notes": "G2 ground tile 6 at (309,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t6-0.png": "generated/ladder/g2-ground-tile-6.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-fig-sura",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "1adac99e-e79b-4ca7-97ce-e6cdc6e65394",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 figure sura idleNorthWest/0 box-downsampled 4:1>"
+        },
+        "method": "text",
+        "description": "Clean up this tiny character sprite into crisp pixel art at this exact size: keep the same person, pose, costume colours, hair and facing; 1 px dark brown outline (#1b1410), 2-3 tones per material, light from the upper left, transparent background.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["g2-fig-sura-0.png", "g2-fig-sura-1.png", "g2-fig-sura-2.png"],
+      "balance_before": 7487.5,
+      "balance_after": 7448.5,
+      "gens": 5.0,
+      "seconds": 34,
+      "notes": "G2 figure sura idleNorthWest/0 box-downsampled 4:1",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-fig-sura-0.png": "generated/ladder/g2-fig-sura.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t7",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "abf93725-465d-4250-b67c-9d4e0dbcb759",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 7 at (464,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t7-0.png", "g2-ground-t7-1.png", "g2-ground-t7-2.png"],
+      "balance_before": 7505.5,
+      "balance_after": 7448.5,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "G2 ground tile 7 at (464,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t7-0.png": "generated/ladder/g2-ground-tile-7.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
     }
   ]
 }
