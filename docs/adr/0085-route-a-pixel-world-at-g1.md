@@ -4,7 +4,7 @@
 
 Supersedes the rendering parts of ADR 0076 (Ba Dan is one continuous painting) and ADR 0083 (Ba Dan: calm ground plates).
 The continuous-painting pipeline itself (regions, stitch, frozen geometry, split, pack) stands. The maps family budget
-(7.5 MiB) is unchanged: the family measures 7.41 MiB.
+(7.5 MiB) is unchanged: the family measures 6.75 MiB.
 
 ## Context
 
@@ -57,12 +57,11 @@ px, as before.
 
 **Some upright pages are lossless.** The packer tests each upright as lossy WebP at q100 against the uprights'
 fine-grain contract (`lossyError`, max 80, mean under 4). Pixel art whose 1 px colour edges 4:2:0 chroma subsampling
-cannot hold goes onto its own exact-lossless page (libwebp method 6, so the silhouette's alpha stays exact). Every
-other upright stays on lossy pages, encoded by `encodeUprightWebp` as before. Measured: 8 of the 46 uprights (five trees
-just over the max, 81 to 117, and the fruit table, the shop stack and a planter over the mean) make page 2, 1.34 MB
-lossless; pages 0 and 1 are 0.79 and 0.21 MB lossy. The ground plates shrank (1.97 to 1.83 MB), because the ground is
-drawn calm and no longer filtered. Ba Dan's folder is 15 files and 4,170,544 bytes; the maps family is 7.41 MiB, inside
-its budget.
+cannot hold goes onto its own lossless page (libwebp method 6, alpha exact), its colours first put on a 5-bit grid per
+channel (`fiveBit`: at most 4 off). Every other upright stays on lossy pages, encoded by `encodeUprightWebp` as before.
+Measured: 8 of the 46 uprights (five trees, the fruit table, the shop stack and a planter) make page 2, 0.65 MB (1.34 MB
+exact). Ba Dan's folder is 15 files and 3,483,970 bytes; the maps family is 6.75 MiB, inside 7.5. The 5-bit step is
+there for the precache total (25 MB), which with the residents (ADR 0084) leaves under 0.4 MB of room: 24.74 MB.
 
 **ADR 0083's calm is off** (`QUIET_GROUND = False` in `regions.py`). At G1 the ground is drawn calm, and the median
 filter blotted it. The step and its tests stay, behind the switch.
