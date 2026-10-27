@@ -2,8 +2,8 @@
   "what": "Route A (Pixel) round 1 for issue #284: every PixelLab job, in order.",
   "gens": "PixelLab job usage (generations). balance_before/after are the account-wide balance, which another session was spending at the same time, so their difference is not this job's cost.",
   "account_balance_at_start": 9770.0,
-  "account_balance_at_end": 5673.6,
-  "total_gens": 1762.0,
+  "account_balance_at_end": 5663.6,
+  "total_gens": 1767.0,
   "jobs": [
     {
       "tag": "p1-gao-i2p",
@@ -3990,6 +3990,42 @@
       "committed": {
         "o4-out-d2-0.png": "world/inpaint/o4-out-d2.png"
       },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-gao-yard-cart",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "42544cd6-b458-4b39-8e67-abc8090958a7",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-gao-yard-cart crop (1396,344,56x80) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-gao-yard-cart mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-gao-yard-cart context (np.int64(1340), np.int64(264), np.int64(1508), np.int64(504))>"
+        },
+        "bounding_box": {
+          "x": 56,
+          "y": 80,
+          "width": 56,
+          "height": 80
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-gao-yard-cart-0.png", "o4-out-gao-yard-cart-1.png"],
+      "balance_before": 5668.6,
+      "balance_after": 5663.6,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o4-out-gao-yard-cart",
+      "verdict": "reject: clearing the cart in Gao's yard made the generator invent a structure; the strip is too narrow for the #288 props",
+      "error": null,
+      "committed": null,
       "note_outputs": "two identical outputs per job; output -0 is used"
     }
   ]

@@ -197,7 +197,8 @@ deterministic after the PixelLab jobs (which are in `ledger.json`):
    ring's median, so the generator sees the real ground up to its edge. Then one Pro Flash inpaint per piece
    (`world/inpaint/o4-out-*`), gain-matched to the ground ring and blended 2 px. It then sets in #288's toned G1 objects
    (`objects-288/grain/g1-toned`, copied from PR #288 at `SOURCE_COMMIT`) by their `g1_anchor_px`, with a key-light
-   shadow (a pixel h above the base falls 0.45h right and 0.2h down of its foot, one tone) and a 1 px contact line. With
+   shadow (a pixel h above the base falls 0.35h right and 0.16h down of its foot, one tone), a 1 px contact line and a 1 px
+   contour toward `#1b1410` (`CONTOUR` 0.8) to bring the outline toward the world furniture's weight. With
    `--geometry` it points those pieces' frozen sprites at the new silhouettes. Result: `world/world-g1.png`.
 3. `tools/regions_back.py` scales that world to 1.5 painting px (EPX x2, 0.75 Lanczos), crops the twelve regions and
    accepts each through `regions.py accept` (gates built from the shipped painting first). All twelve passed without
@@ -212,8 +213,10 @@ Three earlier clearing rounds are in the ledger as rejected or superseded:
 
 Known faults:
 
-- The new objects are lighter-lined and thinner than the world's own furniture; #288's tone pass (warmer, darker,
-  Kaya's outline hue) narrows the gap without closing it.
+- The new objects are still slighter than the world's own furniture (the bridge rails, the houses' benches and yard
+  carts); the contour pass narrows the gap in line weight, not in mass.
+- Gao's yard keeps its painted cart and jars: clearing them made the generator invent a structure, and #288's handcart
+  is three tiles long (`o4-out-gao-yard-cart`, rejected).
 - The projection test pins the three new tables' legs (`pins-g1.json`). Their short sides are about 20 px, so a pair of
   whole-pixel feet fixes them only to about 6 degrees; the shop stack (a rack over crates) has no ground edge to measure.
 - Not done here: #288's other families (well, banners, lanterns, laundry line, notice board, handcart, stone lantern,

@@ -2,18 +2,18 @@
   "region": "r0c1",
   "source": {
     "path": ".review/route-a/candidates/r0c1.png",
-    "sha256": "c887e7461373f448a95a1fbdbdc8eb1a8a820781d11ca77a4a2e2f07f4f939b8"
+    "sha256": "87d33533128a600dddc8c0f92dee1a75909a0534574734a07860fa1b701944ec"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r0c1.png",
-    "sha256": "c887e7461373f448a95a1fbdbdc8eb1a8a820781d11ca77a4a2e2f07f4f939b8"
+    "sha256": "87d33533128a600dddc8c0f92dee1a75909a0534574734a07860fa1b701944ec"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7126
+      "corr": 0.7383
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 773993,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7093,
+        "corr": 0.7399,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 145191,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6585,
+        "corr": 0.7156,
         "status": "ok"
       },
       {
@@ -40,15 +40,15 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7947,
+        "corr": 0.8091,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1268574,
-      "meanAbsDiff": 0.834,
+      "meanAbsDiff": 0.055,
       "p95": 0.0,
-      "fractionOver16": 0.0194
+      "fractionOver16": 0.0013
     },
     "warn": [],
     "fail": []

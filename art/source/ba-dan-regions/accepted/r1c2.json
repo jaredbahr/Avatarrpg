@@ -2,18 +2,18 @@
   "region": "r1c2",
   "source": {
     "path": ".review/route-a/candidates/r1c2.png",
-    "sha256": "7b6a89669b7cf700e83e127d08edab6f0a9e43ff65c06ef4cc7bdf693ddbefe3"
+    "sha256": "c61bcc1c16cd5e972f0fa8b23e5119ff085ea157aaf5a10184cccae006c8d169"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r1c2.png",
-    "sha256": "7b6a89669b7cf700e83e127d08edab6f0a9e43ff65c06ef4cc7bdf693ddbefe3"
+    "sha256": "c61bcc1c16cd5e972f0fa8b23e5119ff085ea157aaf5a10184cccae006c8d169"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7631
+      "corr": 0.7765
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 38540,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7546,
+        "corr": 0.7897,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 272039,
         "dx": 0,
         "dy": 0,
-        "corr": 0.6813,
+        "corr": 0.7017,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7939,
+        "corr": 0.8074,
         "status": "ok"
       },
       {
@@ -48,8 +48,8 @@
         "box": [669, 331, 875, 508],
         "area": 7508,
         "dx": 0,
-        "dy": 1,
-        "corr": 0.7178,
+        "dy": 0,
+        "corr": 0.835,
         "status": "ok"
       },
       {
@@ -58,7 +58,7 @@
         "area": 239585,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7635,
+        "corr": 0.7808,
         "status": "ok"
       },
       {
@@ -67,7 +67,7 @@
         "area": 42790,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7655,
+        "corr": 0.7671,
         "status": "ok"
       },
       {
@@ -100,9 +100,9 @@
     ],
     "carry": {
       "pixels": 1417191,
-      "meanAbsDiff": 0.358,
+      "meanAbsDiff": 0.028,
       "p95": 0.0,
-      "fractionOver16": 0.0094
+      "fractionOver16": 0.0006
     },
     "warn": ["seam with r1c3: 3.1x the ordinary difference"],
     "fail": []
