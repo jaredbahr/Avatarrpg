@@ -452,6 +452,8 @@ if __name__ == '__main__':
         if pid in SOIL: continue
         n = pave_from_grid(world, t, raw_world, clean_pav)
         if n: print(pid, 'paved from grid', n)
+    for pid, t in small.items():  # last, every cleared patch's large-scale tone to the ground around it
+        if pid not in SOIL: tone_match(world, t)
     for tag, (x0, y0, x1, y1) in YARD_CLEAR:  # inside the house sprite: blank the old cart's own pixels, then inpaint
         import colorsys
         box = np.asarray(raw_world.crop((x0, y0, x1, y1)).convert('RGB')).astype(np.float32) / 255
