@@ -1,0 +1,80 @@
+{
+  "walk-n": {
+    "kind": "walk",
+    "clip": "08_01",
+    "frames": 8,
+    "amp": 1.0,
+    "action": "walk",
+    "attribution": "CMU 08_01 walk"
+  },
+  "walk-old": {
+    "kind": "walk",
+    "clip": "142_07",
+    "frames": 8,
+    "amp": 1.0,
+    "locked": ["RW+REL"],
+    "locked_amp": 0.35,
+    "action": "slow walk with a walking stick",
+    "attribution": "CMU 142_07 Elderlyman"
+  },
+  "walk-relaxed": {
+    "kind": "walk",
+    "clip": "142_13",
+    "frames": 8,
+    "amp": 1.0,
+    "locked": ["LW+LEL"],
+    "locked_amp": 0.3,
+    "action": "walk",
+    "attribution": "CMU 142_13 Relaxed"
+  },
+  "walk-child": {
+    "kind": "walk",
+    "clip": "142_01",
+    "frames": 8,
+    "amp": 1.0,
+    "locked": ["RW+REL", "LW+LEL"],
+    "locked_amp": 0.25,
+    "action": "walk",
+    "attribution": "CMU 142_01 Childish"
+  },
+  "walk-spear": {
+    "kind": "walk",
+    "clip": "08_01",
+    "frames": 8,
+    "amp": 1.0,
+    "locked": ["RW+REL"],
+    "locked_amp": 0.3,
+    "action": "walk",
+    "attribution": "CMU 08_01 walk"
+  },
+  "walk-basket": {
+    "kind": "walk",
+    "clip": "08_01",
+    "frames": 8,
+    "amp": 1.0,
+    "locked": ["LW+LEL"],
+    "locked_amp": 0.3,
+    "action": "walk",
+    "attribution": "CMU 08_01 walk"
+  },
+  "idle": {
+    "kind": "idle",
+    "clip": "77_02",
+    "frames": 4,
+    "start": 2.0,
+    "step": 0.5,
+    "amp": 1.5,
+    "action": "idle, breathing",
+    "attribution": "CMU 77_02 standing"
+  },
+  "idle-soft": {
+    "kind": "idle",
+    "clip": "77_02",
+    "frames": 4,
+    "start": 2.0,
+    "step": 0.5,
+    "amp": 0.6,
+    "action": "idle, standing still and breathing",
+    "attribution": "CMU 77_02 standing"
+  }
+}
