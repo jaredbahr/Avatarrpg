@@ -271,8 +271,10 @@ describe("what a figure's feet get", () => {
   // The kinds the backends tell apart: what each draws as its radial pool in a default scene.
   const kinds = {
     'sheet frame': { sprite: 'unit.fire.tenzo', frame: true, unit: false, pool: false },
-    'painter resident': { sprite: 'npc.guard', frame: true, unit: false, pool: false },
-    'single-image resident': { sprite: 'npc.shopkeeper', frame: false, unit: false, pool: true },
+    'painter resident': { sprite: 'npc.hanru', frame: true, unit: false, pool: false },
+    'single-image resident': { sprite: 'world.tea_station', frame: false, unit: false, pool: true },
+    // A Ba Dan resident on a G sheet keeps the party's pool (issue #284).
+    'G-sheet resident': { sprite: 'npc.shopkeeper', frame: true, unit: false, pool: true },
     'painter-fallback unit': { sprite: 'unit.fire.tenzo', frame: false, unit: true, pool: true },
   } as const;
 

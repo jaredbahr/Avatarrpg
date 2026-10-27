@@ -27,6 +27,8 @@ import { buildGrid, distance, samePos } from '../../core/rules/grid';
 import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
+import { idlePhase } from '../../render/sheets/store';
+import { sheetLocomotion } from '../../content/assets/manifest';
 import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
@@ -1083,6 +1085,10 @@ export class ExploreScene implements Scene {
           sprite: npc.sprite,
           name: npc.name,
           scale: npcPresentationScale(npc.sprite, map.projection),
+          // Someone at a post on a G sheet faces the camera on its idle loop.
+          ...(sheetLocomotion(npc.sprite)?.headings === 8
+            ? { clip: 'idleSouthEast' as const, clipTime: now + idlePhase(npc.id) }
+            : {}),
         })),
       ...people.map((who) => ({
         id: who.id,
@@ -1096,6 +1102,7 @@ export class ExploreScene implements Scene {
         alpha: who.alpha,
         clipTime: who.clipTime,
         walking: who.walking,
+        ...(who.clip ? { clip: who.clip } : {}),
         poseScale: who.poseScale,
         lean: who.lean,
         quiet: !who.npcId || !who.pos,
