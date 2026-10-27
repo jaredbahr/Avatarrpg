@@ -336,12 +336,16 @@ def case_straddle_detects_added_clutter(work):
     solid = v.up[:vh, :vw, 3] >= 128
     # a vertical edge of the mask: solid on the left, ground on the right
     edge = solid[:, :-1] & ~solid[:, 1:]
-    ys, xs = np.nonzero(edge[40:-40, 60:-60])
+    # only an edge where the piece's own sprite is plainly not the planting's colour, or the planting would read as
+    # the piece and rightly not be reported (the middle edge moves whenever a silhouette changes)
+    clutter = np.array([90, 120, 70])
+    unlike = np.abs(v.up[:vh, :vw - 1, :3].astype(int) - clutter).max(-1) > 90
+    ys, xs = np.nonzero((edge & unlike)[40:-40, 60:-60])
     pick = len(ys) // 2
     cy, cx = int(ys[pick]) + 40, int(xs[pick]) + 60
     # ground cover painted over the edge: the colour of the ground beside it, where the piece's own sprite
     # is something else
-    painting[cy - 20:cy + 20, cx - 20:cx + 20] = (90, 120, 70)
+    painting[cy - 20:cy + 20, cx - 20:cx + 20] = clutter
     rows = R.straddle_report(v, painting)
     hit = [s for s in rows if s["box"]["x"] - 8 <= cx <= s["box"]["x"] + s["box"]["width"] + 8
            and s["box"]["y"] - 8 <= cy <= s["box"]["y"] + s["box"]["height"] + 8]
