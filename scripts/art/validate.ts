@@ -99,6 +99,13 @@ export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
     'art/source/bruiser-actions-g/pins.json',
   ],
   'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
+  // The Ba Dan residents (issue #284, `resident-g.ts`).
+  'npc.household': ['art/source/household-g/pins.json'],
+  'npc.guard': ['art/source/watch-g/pins.json'],
+  'npc.elder': ['art/source/mira-g/pins.json'],
+  'npc.shopkeeper': ['art/source/gao-g/pins.json'],
+  'npc.kid': ['art/source/pella-g/pins.json'],
+  'npc.dorin': ['art/source/dorin-g/pins.json'],
 };
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
@@ -149,7 +156,7 @@ export function celHash(
 }
 
 /** The x centre of the opaque pixels in the lowest `rows` rows of a cel. */
-function footCentre(cel: Image, rows = 6): number | null {
+export function footCentre(cel: Image, rows = 6): number | null {
   const bottom = lowestOpaqueRow(cel);
   let sum = 0;
   let count = 0;
