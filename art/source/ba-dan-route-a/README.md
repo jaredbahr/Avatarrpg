@@ -237,3 +237,34 @@ the garden kit from `objects-288/families/`), then `tools/regions_back.py` and `
 
 Known faults: a faint lighter patch can remain on the east road where a post stood; the garden plot reads sparser than the
 old painted bed; Gao's yard cart is the painted one; tables still carry #288's arrangement of goods.
+
+## Polish pass (2026-10-27, third round)
+
+Owner: "Do a pass and clean up visuals. Tree roots and other items are off." See ADR 0085's second amendment.
+
+```sh
+python art/source/ba-dan-route-a/tools/polish.py --geometry      # world-g1.png -> world/world-g1-polish.png (PixelLab cached in polish/)
+WORLD_G1=art/source/ba-dan-route-a/world/world-g1-polish.png python art/source/ba-dan-route-a/tools/regions_back.py
+sh scripts/art/ba-dan-regions/regen.sh
+```
+
+Run `polish.py` against the geometry as it stands before the pass (`git show 38e271b:art/source/ba-dan-regions/geometry`):
+its masks read the piece map `regen.sh` renders from that geometry, and `--geometry` then grows the resized props' rectangles.
+
+| step   | tool                       | what                                                                                                                                                                                                                                                                            |
+| ------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| roots  | `roots.py`                 | 14 trunk feet, one Pro Flash inpaint each over the root spread; two retries with a new seed (`SEED`, `EXTRA`) and one stump the generator added filled as lawn (`TOUCH`)                                                                                                        |
+| props  | `props.py`, `props_set.py` | lantern posts, banners, notice board, handcart, trough redrawn larger by Pro Flash (seeds 21 and 22, output 0 of seed 21 taken); old props and their shadows lifted, the holes cloned from the ground a whole number of tiles away; bench and fence casts shortened (`reshade`) |
+| garden | `garden.py`                | kit, furrows and the see-through box lifted; a guide drawn on the plot's diamond and rendered by one `edit-images-v2` pass (`p1-garden-bed`); the verges around inpainted                                                                                                       |
+| paving | `paving.py`                | per-flag calm (median, `CALM`, `FLAG_PULL`, `CHROMA_PULL`), joints and cracks kept; three small inpaints for a post's ghost on the east road                                                                                                                                    |
+| rim    | `rim.py`                   | pale ghosts at the page edge to the page colour; the paving behind the north wall redrawn as woods                                                                                                                                                                              |
+
+Review: `review/polish/` (village wide and mid, Canvas, before over after; 2x and 4x crops of each fixed fault from the world).
+
+Known faults after the pass:
+
+- Gao's yard cart is still the painted one.
+- The bench and fence keep #288's drawing; only their shadows changed.
+- Where a tree's frozen silhouette traced a long root, the tree's upright now carries the grass there (as it carried the root).
+- Rim trees whose feet stand behind other canopies were not redrawn (`tree-18-0`, `tree-23-3`, the clumps behind the east and south rims).
+- The paving's flag lines are the restyle's own: some flags are irregular, and the calm does not straighten them.

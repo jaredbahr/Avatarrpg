@@ -89,3 +89,18 @@ The pin tests (byte size and SHA-256 of each 2026-10-03 plate) go with the plate
 - The old procedural packers for the forest plates (`forest-route-ground.ts`, `forest-grass-regions.ts`, ...) still
   build the pre-G1 art and still own the footprints; their output no longer ships.
 - **Open:** the ground's delivery scale (above) and the camera's integer zoom. The precache has 1.5 MB left after ADR 0086.
+
+## Amendment, 2026-10-27: the polish pass
+
+Owner: "Do a pass and clean up visuals." `tools/clean.py` (called by `cut.py`) and `tools/feet.py` (called by `select.py`);
+jobs `clean-*` and `foot-*` in the ledger (23 jobs, 147 generations; 99 of them on tries that were rejected or not used, including one batch re-run by a tooling slip).
+
+- **The south edge's cut face** showed as horizontal stripes: the pieces are below alpha 0.35 there, so what shows is
+  `cut.py`'s colour carried outward. The four facets are redrawn on that carried colour as a shaded earth bank.
+- **Lily pads** more than 10 px from a bank take the water's own colour, so the water cells read as open water.
+- **Kerb ink**: on the route plate, away from the pond, the creeks and the shelf, near-black contour pixels take the road's
+  own dark joint tone, so the kerbs no longer draw a stepped black line at the 1.5 camera. The route plate's near-black
+  share falls, inside its limit.
+- **Pine feet**: both pines' trunks root into a soil mound with grass; only the rows below the lowest bough change.
+- An invented fern past the east shelf is redrawn as meadow. The bushes past the west corner lie where every ground piece is
+  transparent and never show.

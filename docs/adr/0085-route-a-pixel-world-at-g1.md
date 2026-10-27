@@ -98,3 +98,26 @@ The owner, after whole-village before/after shots: "This is looking better. Let'
   Projection: the new tables, planters and trough are pinned (`pins-g1.json`; a generated leg's feet get atan(3 px / span));
   posts, lanterns, the laundry line, the notice board, the handcart and the shop stack stand on points or one line and are
   exempt, with that reason in the test.
+
+## Amendment, 2026-10-27: the polish pass
+
+Owner: "Do a pass and clean up visuals. Tree roots and other items are off." `tools/polish.py` runs on the completed G1 world
+(`world/world-g1.png`, the exact source of the shipped regions) and writes `world/world-g1-polish.png`, which `regions_back.py`
+(`WORLD_G1=...`) and `regen.sh` turn into the shipped art. All twelve regions pass the registration gate without `--force`.
+PixelLab jobs and outputs are in `polish/` (41 jobs, 270 generations, 44 of them on rejected tries).
+
+- **Roots**: 14 trunk feet (the court tree (5,5), the canal and rim trees) are redrawn by one Pro Flash inpaint each over the
+  root spread their frozen silhouettes trace, so the roots sink into soil with grass, earth and a contact shade. The frozen
+  silhouettes do not change: where a long root was, the tree's upright now carries grass, exactly as it carried the root.
+- **Props at mass**: the lantern posts (x1.6, about 1.5 figure heights), banners and notice board (x1.4), handcart (x1.6)
+  and trough (x1.3) are redrawn by Pro Flash at their new size and set on the same ground point, with a contact pool and
+  the key-light cast. Their pieces' world rectangles grow to hold them; footprint, depth key and flags are unchanged. The
+  bench's and fence's long cast bars (one lay over the canal) are shortened.
+- **Garden plot**: #288's kit and the old furrows and see-through box are lifted; the bed is drawn as a guide on the plot's
+  exact diamond and rendered in the world's hand by one `edit-images-v2` pass.
+- **Paving**: every flag (paving between its joints) is calmed toward its own median and its colour toward the paving's,
+  so the pink squares, light patches and smudges go and the joints stay; the ghost of a post on the east road is
+  inpainted.
+- **Rim**: the pale ghosts of paving at the page edge (top-left) are put back to the page colour; the paving ghosted into
+  the woods behind the north wall is redrawn as woodland floor.
+- Gao's yard cart stays the painted one (it fits the house sprite and was not redrawn in this pass).
