@@ -1,9 +1,10 @@
 import { expect, it, vi } from 'vitest';
 import { FOREST_CREEK_POOLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt } from './lib/image';
-import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
+import { expectPackerAlpha, readShipped } from './lib/shipped-pin';
+import { FOREST_G1_OUT } from './forest-g1-pack';
 import { loadForestMaterial } from './forest-village-material';
-import { creekOutput, packCreekPool } from './forest-creek';
+import { packCreekPool } from './forest-creek';
 import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
 import { shoreDistance, shorePosition } from './forest-shoreline';
 
@@ -15,25 +16,14 @@ const material = await loadForestMaterial();
 const packed = FOREST_CREEK_POOLS.map((pool) => ({ pool, ...packCreekPool(material, pool) }));
 
 /**
- * Generated 2026-10-03 (see docs/art/forest-pond-shoreline.md); not packer output.
- * Repainted 2026-10-04 to the pond's turquoise on the same alpha footprint.
+ * What ships is the G1 restyle (ADR 0087) of the plates generated 2026-10-03
+ * and repainted 2026-10-04, at their 2 px per world px with their exact alpha,
+ * held to its committed source by `forest-g1-pack.test.ts`.
  */
-const CREEK_PINS: Record<string, { bytes: number; sha256: string }> = {
-  west: {
-    bytes: 46064,
-    sha256: '8c617ee037e792d5ec787d5a61ef3ecb6dbbbace6624d620f79c2cccc9f5253e',
-  },
-  east: {
-    bytes: 44370,
-    sha256: 'bf2bd10d89202aad66f6f7bf762c547216729f675b3ca1d12213106b392829c9',
-  },
-};
+const creekOutput = (name: string): string => `${FOREST_G1_OUT}/creek-${name}.webp`;
 
 it('ships the generated creek plates on the packer footprint', async () => {
   for (const { pool, image } of packed) {
-    const pin = CREEK_PINS[pool.name];
-    expect(pin, `${pool.name} has a recorded pin`).toBeDefined();
-    if (pin) expectShippedPin(creekOutput(pool.name), pin);
     await expectPackerAlpha(creekOutput(pool.name), image);
   }
 });
@@ -87,7 +77,8 @@ it('shows blue water at every creek cell centre and nothing wet on dry ground', 
           if (sample[3] === 255 && sample[2] - sample[0] > 20) blue++;
         }
       expect(blueMinusRed / n, `${pool.name} ${x},${y} blue minus red`).toBeGreaterThan(50);
-      expect(blue / n, `${pool.name} ${x},${y} opaque blue share`).toBeGreaterThan(0.95);
+      // G1 (ADR 0087) set a lily pad near west 6,11's centre: 0.90 there, 0.98+ elsewhere.
+      expect(blue / n, `${pool.name} ${x},${y} opaque blue share`).toBeGreaterThan(0.85);
     }
     let dry = 0,
       wetOnDry = 0;
