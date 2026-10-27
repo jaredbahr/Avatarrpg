@@ -83,8 +83,8 @@ async function place(page: Page, x: number, y: number): Promise<void> {
 
 /**
  * Stand the party on `from`, keep the camera on the slice centre, tap `to`,
- * photograph it on the way and at the stop. The camera does not follow, so
- * every beat frames the same ground and a before and an after compare directly.
+ * photograph it on the way and at the stop. The stop is re-framed on the slice
+ * centre, so every beat frames the same ground and a before and an after compare.
  */
 async function walk(
   page: Page,
@@ -103,6 +103,8 @@ async function walk(
     .poll(() => page.evaluate(() => window.fnt!.app.state!.location.pos), { timeout: 10_000 })
     .toEqual({ x: to[0], y: to[1] });
   await waitForIdle(page);
+  // Walking pans the camera after the party; frame the slice again so every stop compares.
+  await centerTile(page, ...SLICE_CENTRE);
   await page.waitForTimeout(600);
   await page.locator('.map-canvas').screenshot({ path: `${shot}.png` });
 }
