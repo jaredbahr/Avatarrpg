@@ -21,6 +21,9 @@ from pl import RA, run, b64
 
 M = os.environ.get('MARKET_G', 'art/source/ba-dan-route-a/objects-288')  # copied from PR 288, see SOURCE_COMMIT
 REG = os.environ.get('BA_DAN_WORK', '.review/regions')
+# What to clear is the OLD objects: their silhouettes from the geometry as it stood before ADR 0085 (the frozen geometry
+# at main 1983138), rendered by that tree's `regions.py render` into this folder. The current geometry holds the new ones.
+OLD = os.environ.get('BA_DAN_OLD_WORK', '.review/regions-orig')
 GEO = 'art/source/ba-dan-regions/geometry'
 AX = (2 / math.sqrt(5), 1 / math.sqrt(5)); AY = (-2 / math.sqrt(5), 1 / math.sqrt(5))
 # selection key in #288 -> the frozen piece it replaces
@@ -61,31 +64,44 @@ def world_of(px, py):  # painting px -> world-of-painting px (the G1 grid, origi
 def tile_paint(x, y):  # painting px of ground corner (x, y)
     return ((x - y + 16) * 96 + 300, (x + y) * 48 + 150)
 
+def piece_at(tile, scene_pieces):
+    """The frozen piece whose footprint starts at `tile` (its min-x, min-y cell)."""
+    for q in scene_pieces:
+        fp = q['footprint']
+        if (min(c['x'] for c in fp), min(c['y'] for c in fp)) == tuple(tile) and not q['id'].startswith(('tree', 'north-terrace')):
+            return q['id']
+    raise KeyError(tile)
+
 def objects():
-    """#288's G1 images placed by its grain.json: g1_anchor_px on the projected logical ground point
-    (tile * 64 + origin_in_footprint_logical_px), world x = lx - ly + 1024, y = (lx + ly) / 2 (+ the pan box offset)."""
-    g = json.load(open(f'{M}/grain/grain.json'))['objects']
-    slug = {'gao-display': 'gao-display', 'south-market-display': 'south-market-display', 'north-market-display': 'north-market-display',
-            'bench-2x1': 'bench-2x1', 'fence-2x1': 'fence-2x1', 'shop-stack': 'shop-stack', 'baskets (south)': 'baskets-south',
-            'baskets (north)': 'baskets-north'}
+    """#288's G1 objects placed by its own data: the market set (`grain/grain.json`, the toned images of `grain/g1-toned`)
+    and the other families (`families/families.json`, `families/g1`). `g1_anchor_px` goes on the projected logical ground
+    point (tile * 64 + origin_in_footprint_logical_px): world x = lx - ly + 1024, y = (lx + ly) / 2 (+ the pan box offset).
+    Entries with no tiles (the garden kit, the house props) are not placed here."""
+    scene = json.load(open(f'{GEO}/scene.json'))['pieces']
+    sources = [(json.load(open(f'{M}/grain/grain.json'))['objects'], 'grain/g1-toned')]
+    if '--families' in sys.argv:  # the other families: a follow-up (each new upright also needs its projection pins)
+        sources.append((json.load(open(f'{M}/families/families.json'))['objects'], 'families/g1'))
     out = []
-    for name, key in slug.items():
-        o = g[key]; im = Image.open(f'{M}/grain/g1/{key}.png').convert('RGBA')
-        for tx, ty in o['tiles']:
-            lx = tx * 64 + o['origin_in_footprint_logical_px'][0]; ly = ty * 64 + o['origin_in_footprint_logical_px'][1]
-            wx, wy = lx - ly + 1024 + 200, (lx + ly) / 2 + 100   # world-of-painting px (pan box corner at 0, 0)
-            ax, ay = o['g1_anchor_px']
-            out.append({'name': name, 'piece': PIECES[name], 'image': im, 'xy': (round(wx - ax), round(wy - ay)),
-                        'src': f"grain/g1/{key}.png ({o['source']})"})
+    for table, folder in sources:
+        for key, o in table.items():
+            if not o.get('tiles'):
+                continue
+            im = Image.open(f'{M}/{folder}/{key}.png').convert('RGBA')
+            for tx, ty in o['tiles']:
+                lx = tx * 64 + o['origin_in_footprint_logical_px'][0]; ly = ty * 64 + o['origin_in_footprint_logical_px'][1]
+                wx, wy = lx - ly + 1024 + 200, (lx + ly) / 2 + 100   # world-of-painting px (pan box corner at 0, 0)
+                ax, ay = o['g1_anchor_px']
+                out.append({'name': key, 'piece': piece_at((tx, ty), scene), 'image': im,
+                            'xy': (round(wx - ax), round(wy - ay)), 'src': f'{folder}/{key}.png'})
     return out
 
 def old_mask(piece_id, shape):
     """What to clear for a replaced piece: its frozen silhouette dilated 8 px (the painting runs past it in places), the
     prism over its footprint up to the top of its sprite (goods painted on a table inside its volume), and the baked cast
     shadow down-right of both."""
-    pj = json.load(open(f'{REG}/village/pieces.json'))['pieces']
+    pj = json.load(open(f'{OLD}/village/pieces.json'))['pieces']
     p = next(q for q in pj if q['id'] == piece_id); s = p['sprite']
-    a = Image.open(f"{REG}/village/{s['file']}").getchannel('A')
+    a = Image.open(f"{OLD}/village/{s['file']}").getchannel('A')
     full = Image.new('L', (4500, 2401)); full.paste(a, (s['x'], s['y']))
     m = np.asarray(full.resize((shape[1], shape[0]), Image.BOX)) > 25
     m = np.asarray(Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(17))) > 0
@@ -108,13 +124,13 @@ def old_mask(piece_id, shape):
     sh = np.zeros_like(m)  # the baked cast shadow lies down-right of the old object
     for d_ in range(1, 11): sh[d_ // 2:, d_:] |= m[:m.shape[0] - d_ // 2, :m.shape[1] - d_]
     # never clear a pixel another piece owns (a canopy, a roof, a wall in front or behind): only ground and the piece itself
-    ids = np.asarray(Image.open(f'{REG}/village/ids.png'))
+    ids = np.asarray(Image.open(f'{OLD}/village/ids.png'))
     ids = ids[..., 0].astype(np.int32) + ids[..., 1].astype(np.int32) * 256 if ids.ndim == 3 else ids.astype(np.int32)
     own = Image.fromarray(((ids == 0) | (ids == p['index'] + 1)).astype(np.uint8) * 255).resize((shape[1], shape[0]), Image.BOX)
     return (m | sh) & (np.asarray(own) > 200)
 
 def ground_ids(shape):
-    ids = np.asarray(Image.open(f'{REG}/village/ids.png')).astype(np.int32)
+    ids = np.asarray(Image.open(f'{OLD}/village/ids.png')).astype(np.int32)
     ids = ids[..., 0] | (ids[..., 1] << 8) | (ids[..., 2] << 16)
     g = Image.fromarray((ids == 0).astype(np.uint8) * 255).resize((shape[1], shape[0]), Image.BOX)
     return np.asarray(g) > 200
@@ -230,7 +246,6 @@ def geometry_sprite(ob, scene):
 if __name__ == '__main__':
     world = Image.open(f'{RA}/world-g1-raw.png').convert('RGB')
     obs = objects()
-    for ob in obs: ob['image'] = grade(ob['image'])
     masks = {}
     for ob in obs: masks.setdefault(ob['piece'], old_mask(ob['piece'], (world.height, world.width)))
     avoid = np.zeros((world.height, world.width), bool)
