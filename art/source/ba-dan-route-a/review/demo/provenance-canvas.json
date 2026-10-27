@@ -1,0 +1,30 @@
+{
+  "issue": 284,
+  "label": "route-a",
+  "revision": "7fde5be",
+  "renderer": "canvas",
+  "seed": "ba-dan-demo",
+  "tilePx": 77,
+  "slice": {
+    "x": [0, 13],
+    "y": [0, 9],
+    "centre": [7, 5]
+  },
+  "practice": {
+    "at": [10, 8],
+    "shots": [
+      "practice-kaya-gather.png",
+      "practice-kaya-release.png",
+      "practice-kaya-impact.png",
+      "practice-sura-gather.png",
+      "practice-sura-release.png",
+      "practice-sura-impact.png",
+      "practice-bo-gather.png",
+      "practice-bo-release.png",
+      "practice-bo-impact.png"
+    ]
+  },
+  "dayPhase": null,
+  "diff": "",
+  "errors": []
+}
