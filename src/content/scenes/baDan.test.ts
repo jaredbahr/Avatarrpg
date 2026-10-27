@@ -123,7 +123,8 @@ it('keeps the uprights to the pieces a figure can stand behind, and the rest in 
   // and the geometry; `ba-dan-regions.test.ts` recomputes it. It leaves 29 of the 78 pieces the painting
   // had in the ground: the four backdrops and six wall strips (not listed here at all, they only paint),
   // the six terrace planters outside the board, the frame's tree clumps, two far trees of the west rim
-  // and one fence.
+  // and one fence. Since ADR 0084 the canal bench and both basket groups are drawn at the brief's size: low
+  // enough that no figure on a cell behind them is covered, so they are ground too (32 of 78).
   const ground = BA_DAN_STANDING.filter((piece) => !BA_DAN_UPRIGHTS[piece.id]).map((p) => p.id);
   expect(ground.sort()).toEqual(
     [
@@ -135,6 +136,9 @@ it('keeps the uprights to the pieces a figure can stand behind, and the rest in 
       'north-terrace-5',
       'tree-0-6',
       'tree-0-10',
+      'd1',
+      'd2',
+      'd12',
       'd13',
       'tree-c0',
       'tree-c1',
@@ -145,8 +149,8 @@ it('keeps the uprights to the pieces a figure can stand behind, and the rest in 
   // scenery any more, only painting.
   expect(BA_DAN_SCENE.scenery.some((piece) => /backdrop|^wall-/.test(piece.id))).toBe(false);
   expect(BA_DAN_SCENE.scenery).toHaveLength(Object.keys(BA_DAN_UPRIGHTS).length);
-  expect(BA_DAN_SCENE.scenery).toHaveLength(49);
-  expect(BA_DAN_STANDING).toHaveLength(49 + ground.length);
+  expect(BA_DAN_SCENE.scenery).toHaveLength(46);
+  expect(BA_DAN_STANDING).toHaveLength(46 + ground.length);
 });
 
 interface Frozen {

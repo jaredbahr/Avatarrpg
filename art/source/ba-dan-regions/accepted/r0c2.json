@@ -1,67 +1,61 @@
 {
   "region": "r0c2",
   "source": {
-    "path": "nature2-r0c2-sol-002/best.png with the jar and barrel from prop-fix-jar-sol-001/attempt-6.png",
-    "sha256": "1722835894102177e5401e33b64929d2cc40c96931cb0c9eae5b8c5b74302e3d"
+    "path": ".review/route-a/candidates/r0c2.png",
+    "sha256": "3844014b3747bbbc6151437cc1cd62c08044992c7f4a14017edc329c3f0e8368"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r0c2.png",
-    "sha256": "1722835894102177e5401e33b64929d2cc40c96931cb0c9eae5b8c5b74302e3d"
+    "sha256": "3844014b3747bbbc6151437cc1cd62c08044992c7f4a14017edc329c3f0e8368"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.819
+      "corr": 0.6951
     },
     "blobs": [
       {
         "n": 1,
         "box": [0, 0, 1536, 1024],
-        "area": 870970,
+        "area": 867283,
         "dx": 0,
         "dy": 0,
-        "corr": 0.819,
+        "corr": 0.6951,
         "status": "ok"
       },
       {
         "n": 2,
         "box": [0, 347, 86, 563],
         "area": 5730,
-        "dx": 1,
+        "dx": -1,
         "dy": 0,
-        "corr": 0.4363,
+        "corr": 0.3992,
         "status": "ok"
       },
       {
         "n": 3,
-        "box": [0, 630, 158, 835],
-        "area": 12139,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.6971,
-        "status": "ok"
-      },
-      {
-        "n": 4,
         "box": [0, 784, 306, 1010],
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8158,
+        "corr": 0.6515,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1268574,
-      "meanAbsDiff": 11.751,
-      "p95": 41.667,
-      "fractionOver16": 0.2168
+      "meanAbsDiff": 2.677,
+      "p95": 14.667,
+      "fractionOver16": 0.0444
     },
-    "warn": ["carried pixels repainted: mean difference 11.8/255"],
+    "warn": [],
     "fail": []
   },
-  "prompt": null,
+  "prompt": {
+    "path": "art/source/ba-dan-route-a/world/prompt.txt",
+    "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
+  },
   "forced": false
 }

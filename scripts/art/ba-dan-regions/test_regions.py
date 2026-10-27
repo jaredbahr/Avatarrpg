@@ -356,7 +356,8 @@ def case_uprights_are_the_pieces_figures_stand_behind(work):
     stands = {p["id"] for p in v.pieces if p["sprite"] is not None and needed[p["id"]] > 0}
     assert stands == set(uprights), (stands ^ set(uprights))
     ground = {p["id"] for p in v.pieces if needed[p["id"]] == 0}
-    assert len(ground) == 29 and len(stands) == 49, (len(ground), len(stands))
+    # ADR 0084: the canal bench and both basket groups are drawn at the brief's size and cover no figure behind them
+    assert len(ground) == 32 and len(stands) == 46, (len(ground), len(stands))
     # the walkable cells frozen with the geometry are the map's (`baDan.test.ts` holds the map to them)
     assert len(v.walkable) > 200
 
@@ -380,7 +381,7 @@ def case_shipped_uprights_are_the_geometry_silhouette(work):
         assert (got[0] > 0).any() and (got[-1] > 0).any() and (got[:, 0] > 0).any() and (got[:, -1] > 0).any(), pid
         assert int((own > 0).sum()) == int((got > 0).sum()), pid
         checked += 1
-    assert checked == 49
+    assert checked == 46
 
 
 def case_shipped_plates_are_continuous(work):
@@ -427,14 +428,44 @@ def case_shipped_plates_are_continuous(work):
         full[y:y + im.shape[0], x:x + im.shape[1]] = im
     g = full.astype(int).mean(-1)
     # the step over a join, against the steps just either side of it in the same rows
+    # or, where the picture itself has an edge along the join (pixel art runs long straight lines, ADR 0084), the step
+    # of the picture there: the plate before the join holds both rows (the plates overlap by 2 px), so its own step
+    # over them is the picture's, and a seam would add to it
+    def own(axis, at):
+        steps = []
+        for _, (px, py, im) in ims.items():
+            lo, n = (px, im.shape[1]) if axis == 1 else (py, im.shape[0])
+            if lo <= at - 1 and at < lo + n:
+                a = im.astype(int).mean(-1)
+                steps.append(np.abs(a[:, at - lo] - a[:, at - 1 - lo]).mean() if axis == 1 else np.abs(a[at - lo] - a[at - 1 - lo]).mean())
+        return steps
+    def joined(step, near, axis, at):
+        if step < 1.15 * near + 0.5:
+            return True
+        # every plate holding both rows covers only part of the join's length, so compare like with like: the
+        # composite's step over that plate's span against the plate's own step there
+        for _, (px, py, im) in ims.items():
+            lo, n = (px, im.shape[1]) if axis == 1 else (py, im.shape[0])
+            if not (lo <= at - 1 and at < lo + n):
+                continue
+            a = im.astype(int).mean(-1)
+            if axis == 1:
+                mine = np.abs(a[:, at - lo] - a[:, at - 1 - lo]).mean()
+                comp = np.abs(g[py:py + im.shape[0], at] - g[py:py + im.shape[0], at - 1]).mean()
+            else:
+                mine = np.abs(a[at - lo] - a[at - 1 - lo]).mean()
+                comp = np.abs(g[at, px:px + im.shape[1]] - g[at - 1, px:px + im.shape[1]]).mean()
+            if comp >= 1.15 * mine + 0.5:
+                return False
+        return True
     for x in xs:
         step = np.abs(g[:, x] - g[:, x - 1]).mean()
         near = np.mean([np.abs(g[:, c] - g[:, c - 1]).mean() for c in (*range(x - 8, x - 2), *range(x + 3, x + 9))])
-        assert step < 1.15 * near + 0.5, (x, step, near)
+        assert joined(step, near, 1, x), (x, step, near, own(1, x))
     for y in ys:
         step = np.abs(g[y] - g[y - 1]).mean()
         near = np.mean([np.abs(g[r] - g[r - 1]).mean() for r in (*range(y - 8, y - 2), *range(y + 3, y + 9))])
-        assert step < 1.15 * near + 0.5, (y, step, near)
+        assert joined(step, near, 0, y), (y, step, near, own(0, y))
 
 
 def case_shipped_plate_perimeter_is_the_margin(work):
