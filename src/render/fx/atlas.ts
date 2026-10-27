@@ -15,6 +15,8 @@ import type { FxCell } from '../../content/fx';
 import { FX_CELLS } from '../../content/fx';
 import { CEL_FRAMES, CEL_SIZE, FX_CELS, FX_CEL_SHEETS, type FxCel } from '../../content/fxCels';
 import { PIXEL_LADDER, ladderOffset, ladderSize, rasterCell } from './pixelCells';
+import { resampleCel } from './celResample';
+import { TILE } from '../camera';
 
 /** Nine tinted shape ladders plus 52 coloured animation cels in one 1024px texture. */
 export const ATLAS_COLUMNS = 8;
@@ -144,4 +146,58 @@ export function rungFrame(cell: FxCell, px: number): CellFrame & { readonly rung
   const base = cellFrame(cell);
   const at = ladderOffset(rung);
   return { x: base.x + at.x, y: base.y + at.y, size: rung, rung };
+}
+
+/** Resampled cels kept: a fight shows a handful of cue sizes at a time. */
+const MAX_SIZED = 64;
+const masters = new Map<string, Uint8ClampedArray>();
+const sized = new Map<string, HTMLCanvasElement>();
+
+/** The whole world-pixel size a cel `tiles` across draws at. */
+export const celPx = (tiles: number): number => Math.max(1, Math.round(tiles * TILE));
+
+/**
+ * A cel's `frame`, resampled to `px` x `px` world pixels (`celResample.ts`),
+ * for both backends to draw unscaled. Null until its sheet has loaded.
+ * `key` in the result changes only with the cel, frame and size.
+ */
+export function celAtSize(
+  cel: FxCel,
+  frame: number,
+  px: number,
+): { readonly canvas: HTMLCanvasElement; readonly key: string } | null {
+  if (!ready.has(cel)) return null;
+  const key = `${cel}/${frame}/${px}`;
+  const kept = sized.get(key);
+  if (kept) {
+    sized.delete(key);
+    sized.set(key, kept);
+    return { canvas: kept, key };
+  }
+  const masterKey = `${cel}/${frame}`;
+  let master = masters.get(masterKey);
+  if (!master) {
+    const at = celAtlasFrame(cel, frame);
+    const ctx = fxAtlas().getContext('2d');
+    if (!ctx) return null;
+    master = ctx.getImageData(at.x, at.y, CEL_SIZE, CEL_SIZE).data;
+    masters.set(masterKey, master);
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = px;
+  canvas.height = px;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.putImageData(
+    new ImageData(new Uint8ClampedArray(resampleCel(master, CEL_SIZE, px)), px, px),
+    0,
+    0,
+  );
+  sized.set(key, canvas);
+  while (sized.size > MAX_SIZED) {
+    const oldest = sized.keys().next().value;
+    if (oldest === undefined) break;
+    sized.delete(oldest);
+  }
+  return { canvas, key };
 }

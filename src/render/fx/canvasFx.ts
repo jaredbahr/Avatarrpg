@@ -11,7 +11,7 @@
 
 import type { Vec2 } from '../../core/types';
 import type { FxCell } from '../../content/fx';
-import { ATLAS_CELL, cellFrame, fxAtlas, celAtlasFrame, celReady, rungFrame } from './atlas';
+import { ATLAS_CELL, cellFrame, fxAtlas, celAtSize, celPx, celReady, rungFrame } from './atlas';
 import { TILE } from '../camera';
 import { StrokeRasterer } from './pixelStrokes';
 import { celFrameIndex } from '../../content/fxCels';
@@ -75,13 +75,9 @@ export class CanvasFxLayer {
               0,
               instance.arc,
             );
-        const frame =
-          def.cel && celReady(def.cel)
-            ? celAtlasFrame(def.cel, celFrameIndex(def.cel, instance.elapsed, def.duration))
-            : null;
-        const cell = frame
-          ? fxAtlas()
-          : this.cell(def.cell, roleColor(def.color, instance.palette));
+        const cel = def.cel && celReady(def.cel) ? def.cel : null;
+        const celFrame = cel ? celFrameIndex(cel, instance.elapsed, def.duration) : 0;
+        const cell = cel ? null : this.cell(def.cell, roleColor(def.color, instance.palette));
         ctx.save();
         ctx.globalCompositeOperation = def.blend === 'add' ? 'lighter' : 'source-over';
         // Pixel art at the world's grain (ADR 0086): never blended between texels.
@@ -91,9 +87,12 @@ export class CanvasFxLayer {
           const px = origin.x + (data[at] ?? 0) * size;
           const py = origin.y + (data[at + 1] ?? 0) * size;
           const tiles = data[at + 2] ?? 0;
-          // A shape draws the rung nearest its size at one art px a world px; a cel scales its master.
-          const rung = frame ? null : rungFrame(def.cell, tiles * TILE);
-          const s = rung ? (rung.size / TILE) * size : tiles * size;
+          // A shape draws the rung nearest its size, a cel its master resampled to its size:
+          // either way one art px a world px, never a scaled texel.
+          const sized = cel ? celAtSize(cel, celFrame, celPx(tiles)) : null;
+          if (cel && !sized) continue;
+          const rung = cel ? null : rungFrame(def.cell, tiles * TILE);
+          const s = ((rung ? rung.size : (sized?.canvas.width ?? 0)) / TILE) * size;
           const rotation = data[at + 3] ?? 0;
           ctx.globalAlpha = Math.max(0, Math.min(1, data[at + 4] ?? 0));
           const base = ctx.getTransform();
@@ -105,9 +104,8 @@ export class CanvasFxLayer {
               .rotate(up ? Math.PI / 4 : rotation)
               .scale(up ? Math.SQRT2 : 1, up ? Math.SQRT1_2 : 1),
           );
-          if (frame)
-            ctx.drawImage(cell, frame.x, frame.y, frame.size, frame.size, -s / 2, -s / 2, s, s);
-          else if (rung) {
+          if (sized) ctx.drawImage(sized.canvas, -s / 2, -s / 2, s, s);
+          else if (rung && cell) {
             const base = cellFrame(def.cell);
             ctx.drawImage(
               cell,
