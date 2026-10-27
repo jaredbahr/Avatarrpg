@@ -791,7 +791,11 @@ export class PixiBackend implements RenderBackend {
     const bendFx = view.bendFx ?? [];
     const bendTexture = (sprite: BendFxSprite) => {
       const source = bendFxSource(sprite);
-      return source ? this.frameTexture({ source: source.image, frame: source.frame }) : null;
+      if (!source) return null;
+      const texture = this.frameTexture({ source: source.image, frame: source.frame });
+      // The cels are pixel art at the world's grain (ADR 0086): never blended between texels.
+      if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+      return texture;
     };
     syncBendFx(
       this.bendUnder,
