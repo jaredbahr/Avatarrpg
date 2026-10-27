@@ -22,7 +22,9 @@ import { format, resolveConfig } from 'prettier';
 import { composeAtlas, maxRectsPack, packTight } from '../lib/atlas';
 import type { Item, Placed } from '../lib/atlas';
 import { readPng } from '../lib/image';
-import { UPRIGHT_WEBP_OPTIONS, encodeUprightWebp, encodeWebp } from '../lib/webp';
+import type { Image } from '../lib/image';
+import { LOSSY_MAX_RGB, LOSSY_MEAN_RGB, lossyError } from '../lib/lossy-compare';
+import { UPRIGHT_WEBP_OPTIONS, decodeWebp, encodeUprightWebp, encodeWebp } from '../lib/webp';
 
 export const OUTPUT_DIR = 'public/art/maps/ba-dan-scene';
 export const TABLE = 'src/content/scenes/baDan.art.ts';
@@ -69,6 +71,27 @@ export function pagePlan(
   return pages;
 }
 
+/**
+ * The lossless page's colours on a 5-bit grid per channel (the middle of each step of 8), visible pixels only and alpha
+ * untouched: at most 4 off in any channel, far inside the uprights' fine-grain contract (`lossyError`, max 80), and
+ * about half the bytes of the exact page (ADR 0085). Deterministic.
+ */
+function fiveBit(image: Image): Image {
+  const data = new Uint8Array(image.data);
+  for (let i = 0; i < data.length; i += 4) {
+    if ((data[i + 3] ?? 0) === 0) continue;
+    for (let c = 0; c < 3; c++) data[i + c] = (((data[i + c] ?? 0) >> 3) << 3) + 4;
+  }
+  return { ...image, data };
+}
+
+/** True when `image` meets the uprights' fine-grain contract as lossy WebP at q100. */
+async function holdsLossy(image: Image): Promise<boolean> {
+  const bytes = await encodeWebp(image, 100, true, UPRIGHT_WEBP_OPTIONS);
+  const error = lossyError(image, await decodeWebp(bytes));
+  return error.maxRgb <= LOSSY_MAX_RGB && error.meanRgb < LOSSY_MEAN_RGB;
+}
+
 export interface Packed {
   files: Map<string, Uint8Array>;
   table: string;
@@ -94,7 +117,13 @@ export async function pack(work: string): Promise<Packed> {
   }));
   const bySprite = new Map(report.sprites.map((s) => [s.id, s]));
   const rows: string[] = [];
-  const pages = pagePlan(items);
+  // ADR 0085: an upright of pixel art whose 1 px colour edges the lossy codec cannot hold even at q100 (its 4:2:0
+  // chroma) goes on a lossless page; every other upright stays on the lossy pages as before.
+  const exact = new Set<string>();
+  for (const item of items) if (!(await holdsLossy(item.image))) exact.add(item.name);
+  const lossyPages = pagePlan(items.filter((i) => !exact.has(i.name)));
+  const exactPages = exact.size ? pagePlan(items.filter((i) => exact.has(i.name))) : [];
+  const pages = [...lossyPages, ...exactPages];
   for (const [index, page] of pages.entries()) {
     const atlas = composeAtlas(
       items.filter((i) => page.placed.some((p) => p.name === i.name)),
@@ -103,7 +132,12 @@ export async function pack(work: string): Promise<Packed> {
       page.height,
       GUTTER,
     );
-    files.set(`uprights-${index}.webp`, await encodeUprightWebp(atlas));
+    files.set(
+      `uprights-${index}.webp`,
+      index < lossyPages.length
+        ? await encodeUprightWebp(atlas)
+        : await encodeWebp(fiveBit(atlas), 100, true, { lossless: 1, method: 6, exact: 1 }),
+    );
     for (const p of page.placed) {
       const s = bySprite.get(p.name)!;
       if (p.width !== s.width || p.height !== s.height)

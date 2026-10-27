@@ -1,0 +1,4032 @@
+{
+  "what": "Route A (Pixel) round 1 for issue #284: every PixelLab job, in order.",
+  "gens": "PixelLab job usage (generations). balance_before/after are the account-wide balance, which another session was spending at the same time, so their difference is not this job's cost.",
+  "account_balance_at_start": 9770.0,
+  "account_balance_at_end": 5663.6,
+  "total_gens": 1767.0,
+  "jobs": [
+    {
+      "tag": "p1-gao-i2p",
+      "endpoint": "/image-to-pixelart-pro",
+      "job_id": "7fa0a3ec-7dda-418d-aac9-487dc6f22137",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<inputs/gao-crop-paint.png>"
+        },
+        "description": "fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p1-gao-i2p-0.png", "p1-gao-i2p-1.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9547.0,
+      "gens": 20.0,
+      "seconds": 61,
+      "notes": "image-to-pixelart-pro on the painting-res crop",
+      "verdict": "reject: chunky (3.25x)",
+      "error": null,
+      "committed": {
+        "p1-gao-i2p-0.png": "generated/rejected/p1-gao-i2p-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p1-gao-editref",
+      "endpoint": "/edit-images-v2",
+      "job_id": "eca60b6b-b62e-493d-a061-724a0ef32bab",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-crop-world.png>"
+            },
+            "width": 468,
+            "height": 339
+          }
+        ],
+        "image_size": {
+          "width": 468,
+          "height": 339
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), roof line, walls, door, windows, awning and yard layout; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p1-gao-editref-0.png", "p1-gao-editref-1.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9471.0,
+      "gens": 25.0,
+      "seconds": 114,
+      "notes": "edit with party reference, world-px size",
+      "verdict": "take (output 0): strongest figure-like restyle, composition kept; world-px grain",
+      "error": null,
+      "committed": {
+        "p1-gao-editref-0.png": "generated/gao-house.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p1-gao-edittext",
+      "endpoint": "/edit-images-v2",
+      "job_id": "4b5dc124-b0b4-47bb-9ed4-428cff49cb17",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-crop-world.png>"
+            },
+            "width": 468,
+            "height": 339
+          }
+        ],
+        "image_size": {
+          "width": 468,
+          "height": 339
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), roof line, walls, door, windows, awning and yard layout; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["p1-gao-edittext-0.png", "p1-gao-edittext-1.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9446.0,
+      "gens": 25.0,
+      "seconds": 121,
+      "notes": "edit with text, world-px size",
+      "verdict": "alternative: keeps more painted texture",
+      "error": null,
+      "committed": {
+        "p1-gao-edittext-0.png": "generated/rejected/p1-gao-edittext-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p1-gao-gen",
+      "endpoint": "/generate-image-v2",
+      "job_id": "971bdcac-dca0-45ab-945c-7c5b24d7ef75",
+      "status": "completed",
+      "request": {
+        "description": "A small East-Asian timber merchant house with green tiled roof, white plaster walls, wooden shop front with a striped awning, stone plinth, side yard with barrels and crates, on grass. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), roof line, walls, door, windows, awning and yard layout; change only the rendering.",
+        "image_size": {
+          "width": 468,
+          "height": 340
+        },
+        "seed": 11,
+        "no_background": false,
+        "reference_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-crop-world.png>"
+            },
+            "size": {
+              "width": 468,
+              "height": 339
+            },
+            "usage_description": "exact composition and layout to keep"
+          }
+        ],
+        "style_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "size": {
+            "width": 300,
+            "height": 121
+          }
+        },
+        "style_options": {
+          "color_palette": false,
+          "outline": true,
+          "detail": true,
+          "shading": true
+        }
+      },
+      "outputs": ["p1-gao-gen-0.png"],
+      "balance_before": 9633.0,
+      "balance_after": 9339.0,
+      "gens": 25.0,
+      "seconds": 193,
+      "notes": "generate with composition reference + party style image",
+      "verdict": "reject: composition drifted",
+      "error": null,
+      "committed": {
+        "p1-gao-gen-0.png": "generated/rejected/p1-gao-gen-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "858ceaf5-9864-4287-891c-b1dce4e06c06",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 3 (424,165,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t3-0.png", "p2-gao-ref13-t3-1.png"],
+      "balance_before": 9250.0,
+      "balance_after": 9032.199999999999,
+      "gens": 25.0,
+      "seconds": 314,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 3 at (424,165,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-txt10-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "4b34e001-4cd0-43d6-a1b1-a83efc2c78df",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-txt10 tile 0 (0,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-txt10-t0-0.png", "p2-gao-txt10-t0-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8855.2,
+      "gens": 25.0,
+      "seconds": 124,
+      "notes": "edittext at painting res tile 0 at (0,0,512x508)",
+      "verdict": "reject: near copy of the painting at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref10-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "b8d423ac-8588-4c64-ace3-8a492f7bb213",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref10 tile 1 (190,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref10-t1-0.png", "p2-gao-ref10-t1-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8802.2,
+      "gens": 25.0,
+      "seconds": 133,
+      "notes": "editref at painting res (1 gen px = 1 screen px) tile 1 at (190,0,512x508)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "8b2f9343-609a-423e-a537-d00c0b2e6c8a",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 1 (424,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t1-0.png", "p2-gao-ref13-t1-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8802.2,
+      "gens": 25.0,
+      "seconds": 134,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 1 at (424,0,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref10-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "ec5d9b08-bc3b-40ae-b5af-15c397aba3d9",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref10 tile 0 (0,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref10-t0-0.png", "p2-gao-ref10-t0-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8740.2,
+      "gens": 25.0,
+      "seconds": 177,
+      "notes": "editref at painting res (1 gen px = 1 screen px) tile 0 at (0,0,512x508)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-txt10-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "73f63eb2-fcf1-4d74-a965-f36840a7c173",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-txt10 tile 1 (190,0,512,508) of source>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-txt10-t1-0.png", "p2-gao-txt10-t1-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8740.2,
+      "gens": 25.0,
+      "seconds": 177,
+      "notes": "edittext at painting res tile 1 at (190,0,512x508)",
+      "verdict": "reject: near copy of the painting at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "987ca2f3-7b6f-46b2-b3a9-1fb5e6f50966",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 2 (0,165,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t2-0.png", "p2-gao-ref13-t2-1.png"],
+      "balance_before": 8802.2,
+      "balance_after": 8625.1,
+      "gens": 25.0,
+      "seconds": 146,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 2 at (0,165,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p2-gao-ref13-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "faafadb2-d95b-46aa-aba5-82009f859d94",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<p2-gao-ref13 tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground",
+        "seed": 11
+      },
+      "outputs": ["p2-gao-ref13-t0-0.png", "p2-gao-ref13-t0-1.png"],
+      "balance_before": 9010.199999999999,
+      "balance_after": 8576.1,
+      "gens": 25.0,
+      "seconds": 324,
+      "notes": "editref at 4/3 painting res (figure density), downsample after tile 0 at (0,0,512x512)",
+      "verdict": "reject: reference leaked ghost figures; weak restyle at painting res",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "p3-gao-crisp-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "3ed092cd-a49c-40ac-9b42-9da738dbfaa0",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/gao-s1-up15.png crop (0,0,512,508)>"
+            },
+            "width": 512,
+            "height": 508
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 508
+        },
+        "description": "Clean up this image into crisp fine pixel art at its native resolution: every edge and mark one or two pixels, 1 px dark brown outline (#1b1410) on silhouettes, flat tone groups, no blur, no soft gradients, no anti-aliasing smear. Keep everything exactly where it is: same composition, shapes, colours and layout.",
+        "seed": 11
+      },
+      "outputs": ["p3-gao-crisp-t0-0.png", "p3-gao-crisp-t0-1.png"],
+      "balance_before": 8524.3,
+      "balance_after": 8440.3,
+      "gens": 25.0,
+      "seconds": 133,
+      "notes": "stage 2: crisp the 1.5x lanczos upscale of p1-gao-editref-0 at painting res",
+      "verdict": "reject: snapped back to the coarse grid; no finer marks",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-tree-s23",
+      "endpoint": "/edit-images-v2",
+      "job_id": "9b7ab5ce-630b-4f5f-96e4-afb397a1dbda",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/tree-crop-world.png>"
+            },
+            "width": 320,
+            "height": 312
+          }
+        ],
+        "image_size": {
+          "width": 320,
+          "height": 312
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. A broad canopy tree with a gnarled trunk. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Leaves as clustered masses of 3-4 greens with a few 1-2 px leaf marks at the lit edge, no all-over noise.",
+        "seed": 23
+      },
+      "outputs": ["a1-tree-s23-0.png", "a1-tree-s23-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8322.5,
+      "gens": 15.0,
+      "seconds": 111,
+      "notes": "canopy tree (tree-5-5) at world px",
+      "verdict": "reject: barely restyled",
+      "error": null,
+      "committed": {
+        "a1-tree-s23-0.png": "generated/rejected/a1-tree-s23-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "204b8b1e-1f3c-4dd2-b82f-ec1f77bde647",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 2 (717,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t2-0.png", "a1-slice-t2-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8291.5,
+      "gens": 25.0,
+      "seconds": 150,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 2 at (717,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "bad065e9-c3b8-4e72-9fd8-5497230e8d06",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 1 (358,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t1-0.png", "a1-slice-t1-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8266.5,
+      "gens": 25.0,
+      "seconds": 155,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 1 at (358,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c711a1dd-9ba7-403a-871a-9161ff483ce4",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t0-0.png", "a1-slice-t0-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8235.5,
+      "gens": 25.0,
+      "seconds": 169,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 0 at (0,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "540d3a80-6784-48f2-bc31-5ee8246cfa3d",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 3 (1075,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t3-0.png", "a1-slice-t3-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8203.5,
+      "gens": 25.0,
+      "seconds": 207,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 3 at (1075,0,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t4",
+      "endpoint": "/edit-images-v2",
+      "job_id": "80ec5148-b385-4cfc-8526-b2ecb5359ffa",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 4 (0,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t4-0.png", "a1-slice-t4-1.png"],
+      "balance_before": 8291.5,
+      "balance_after": 8154.5,
+      "gens": 25.0,
+      "seconds": 114,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 4 at (0,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t5",
+      "endpoint": "/edit-images-v2",
+      "job_id": "3fdef615-0651-40e8-a87f-1e8507cec7c4",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 5 (358,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t5-0.png", "a1-slice-t5-1.png"],
+      "balance_before": 8266.5,
+      "balance_after": 8114.5,
+      "gens": 25.0,
+      "seconds": 153,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 5 at (358,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t6",
+      "endpoint": "/edit-images-v2",
+      "job_id": "32090232-4746-4b9e-b195-4495c435203e",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 6 (717,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t6-0.png", "a1-slice-t6-1.png"],
+      "balance_before": 8235.5,
+      "balance_after": 8089.5,
+      "gens": 25.0,
+      "seconds": 143,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 6 at (717,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-tree-s11",
+      "endpoint": "/edit-images-v2",
+      "job_id": "06776fff-d000-46bc-8f7c-81da348dcf3e",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<inputs/tree-crop-world.png>"
+            },
+            "width": 320,
+            "height": 312
+          }
+        ],
+        "image_size": {
+          "width": 320,
+          "height": 312
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. A broad canopy tree with a gnarled trunk. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Leaves as clustered masses of 3-4 greens with a few 1-2 px leaf marks at the lit edge, no all-over noise.",
+        "seed": 11
+      },
+      "outputs": ["a1-tree-s11-0.png", "a1-tree-s11-1.png"],
+      "balance_before": 8407.3,
+      "balance_after": 8071.5,
+      "gens": 15.0,
+      "seconds": 327,
+      "notes": "canopy tree (tree-5-5) at world px",
+      "verdict": "take: flat tone groups, calm ground",
+      "error": null,
+      "committed": {
+        "a1-tree-s11-0.png": "generated/canopy-tree.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a1-slice-t7",
+      "endpoint": "/edit-images-v2",
+      "job_id": "5477d6d8-6081-4ffd-9ae1-aaaad8b90b35",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_reference",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a1-slice tile 7 (1075,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "reference_image": {
+          "image": {
+            "base64": "<inputs/party-style.png>"
+          },
+          "width": 300,
+          "height": 121
+        },
+        "description": "Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering. fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal and its banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple.",
+        "seed": 11
+      },
+      "outputs": ["a1-slice-t7-0.png", "a1-slice-t7-1.png"],
+      "balance_before": 8203.5,
+      "balance_after": 8037.5,
+      "gens": 25.0,
+      "seconds": 130,
+      "notes": "slice ground composition at world px from the shipped (quiet) painting tile 7 at (1075,368,512x512)",
+      "verdict": "reject: reference leaked ghost party figures into the ground; weak restyle",
+      "error": null,
+      "committed": null,
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t5",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c8558faa-a2a8-4ed7-b9c2-d36af9a7bd4e",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 5 (928,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t5-0.png", "a2-ground-t5-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7947.5,
+      "gens": 25.0,
+      "seconds": 108,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 5 at (928,368,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t5-0.png": "generated/ground-tile-5.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "cca61697-aae5-4064-bb1c-e7d460ae6993",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 2 (928,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t2-0.png", "a2-ground-t2-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7922.5,
+      "gens": 25.0,
+      "seconds": 126,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 2 at (928,0,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t2-0.png": "generated/ground-tile-2.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "70ffc7ce-567a-402b-84bc-7ef1f38b072a",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 1 (464,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t1-0.png", "a2-ground-t1-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7897.5,
+      "gens": 25.0,
+      "seconds": 131,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 1 at (464,0,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t1-0.png": "generated/ground-tile-1.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t4",
+      "endpoint": "/edit-images-v2",
+      "job_id": "3940110f-2497-46e4-8060-60ba7bb33ef9",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 4 (464,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t4-0.png", "a2-ground-t4-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7857.5,
+      "gens": 25.0,
+      "seconds": 171,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 4 at (464,368,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t4-0.png": "generated/ground-tile-4.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "1ee0d3e2-a549-4f70-b06e-550956c3bd11",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t0-0.png", "a2-ground-t0-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7680.5,
+      "gens": 25.0,
+      "seconds": 309,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 0 at (0,0,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t0-0.png": "generated/ground-tile-0.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "a2-ground-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "6aa96c4e-ef5c-467b-9ace-2e8d9a765ccd",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<a2-ground tile 3 (0,368,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["a2-ground-t3-0.png", "a2-ground-t3-1.png"],
+      "balance_before": 8025.5,
+      "balance_after": 7680.5,
+      "gens": 25.0,
+      "seconds": 310,
+      "notes": "slice ground composition at world px, text edit, from the shipped (quiet) painting; crop painting x 945..3105 y 0..1320 tile 3 at (0,368,512x512)",
+      "verdict": "take: calm, coherent, no figures leaked",
+      "error": null,
+      "committed": {
+        "a2-ground-t3-0.png": "generated/ground-tile-3.png"
+      },
+      "note_outputs": "PixelLab returns two identical images per edit job; output -0 is used"
+    },
+    {
+      "tag": "g2-gao-flash",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "f2d04340-d008-4370-a1bd-99046e135f78",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<inputs/g2-gao.png (painting crop / 3, padded to 236x172)>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-gao-flash-0.png", "g2-gao-flash-1.png", "g2-gao-flash-2.png"],
+      "balance_before": 7565.5,
+      "balance_after": 7556.5,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "G2 (1 art px = 2 world px) house, pro-flash text edit",
+      "verdict": "take (0): clean G2 pixel art, layout kept",
+      "error": null,
+      "committed": {
+        "g2-gao-flash-0.png": "generated/ladder/g2-gao-house.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t3",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8f75a17c-20b9-4af7-936c-64e90b5dd0dc",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 3 at (464,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t3-0.png", "g2-ground-t3-1.png", "g2-ground-t3-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7505.5,
+      "gens": 9.0,
+      "seconds": 48,
+      "notes": "G2 ground tile 3 at (464,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t3-0.png": "generated/ladder/g2-ground-tile-3.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t0",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "019a7261-5341-4cff-91f7-96f287ada2ed",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 0 at (0,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t0-0.png", "g2-ground-t0-1.png", "g2-ground-t0-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7505.5,
+      "gens": 9.0,
+      "seconds": 48,
+      "notes": "G2 ground tile 0 at (0,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t0-0.png": "generated/ladder/g2-ground-tile-0.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t4",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8bca8650-4015-40cb-bfd2-1307fa0a805e",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 4 at (0,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t4-0.png", "g2-ground-t4-1.png", "g2-ground-t4-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7505.5,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "G2 ground tile 4 at (0,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t4-0.png": "generated/ladder/g2-ground-tile-4.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t2",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8832d407-aa1a-4966-a31f-744037f476e1",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 2 at (309,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t2-0.png", "g2-ground-t2-1.png", "g2-ground-t2-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7496.5,
+      "gens": 9.0,
+      "seconds": 55,
+      "notes": "G2 ground tile 2 at (309,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t2-0.png": "generated/ladder/g2-ground-tile-2.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t1",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "6b158a5c-4341-41ad-81df-c30a67ef7bd2",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 1 at (155,0,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t1-0.png", "g2-ground-t1-1.png", "g2-ground-t1-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7487.5,
+      "gens": 9.0,
+      "seconds": 62,
+      "notes": "G2 ground tile 1 at (155,0,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t1-0.png": "generated/ladder/g2-ground-tile-1.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t5",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "3aaafb81-27bf-4c9d-bc17-feb7154324d0",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 5 at (155,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t5-0.png", "g2-ground-t5-1.png", "g2-ground-t5-2.png"],
+      "balance_before": 7556.5,
+      "balance_after": 7487.5,
+      "gens": 9.0,
+      "seconds": 62,
+      "notes": "G2 ground tile 5 at (155,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t5-0.png": "generated/ladder/g2-ground-tile-5.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-tree",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "8ab4824c-4489-4b9e-9e8f-62133664a000",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 canopy tree, inputs/g2-tree.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. A broad canopy tree, leaves as clustered masses of 3 greens. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-tree-0.png", "g2-tree-1.png", "g2-tree-2.png"],
+      "balance_before": 7505.5,
+      "balance_after": 7481.5,
+      "gens": 6.0,
+      "seconds": 29,
+      "notes": "G2 canopy tree, inputs/g2-tree.png",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-tree-0.png": "generated/ladder/g2-canopy-tree.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-fig-kaya",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "c17093b5-02a3-4578-9c9b-864d43319f78",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 figure kaya walkSouthWest/3 box-downsampled 4:1>"
+        },
+        "method": "text",
+        "description": "Clean up this tiny character sprite into crisp pixel art at this exact size: keep the same person, pose, costume colours, hair and facing; 1 px dark brown outline (#1b1410), 2-3 tones per material, light from the upper left, transparent background.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["g2-fig-kaya-0.png", "g2-fig-kaya-1.png", "g2-fig-kaya-2.png"],
+      "balance_before": 7496.5,
+      "balance_after": 7476.5,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "G2 figure kaya walkSouthWest/3 box-downsampled 4:1",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-fig-kaya-0.png": "generated/ladder/g2-fig-kaya.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-fig-bo",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "2ab98d24-6868-44ac-b978-adba75ebdce9",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 figure bo idleSouthEast/0 box-downsampled 4:1>"
+        },
+        "method": "text",
+        "description": "Clean up this tiny character sprite into crisp pixel art at this exact size: keep the same person, pose, costume colours, hair and facing; 1 px dark brown outline (#1b1410), 2-3 tones per material, light from the upper left, transparent background.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["g2-fig-bo-0.png", "g2-fig-bo-1.png", "g2-fig-bo-2.png"],
+      "balance_before": 7487.5,
+      "balance_after": 7462.5,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "G2 figure bo idleSouthEast/0 box-downsampled 4:1",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-fig-bo-0.png": "generated/ladder/g2-fig-bo.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t6",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "507835e4-c59a-4bb9-a6e5-0d06d7009689",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 6 at (309,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t6-0.png", "g2-ground-t6-1.png", "g2-ground-t6-2.png"],
+      "balance_before": 7505.5,
+      "balance_after": 7462.5,
+      "gens": 9.0,
+      "seconds": 42,
+      "notes": "G2 ground tile 6 at (309,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t6-0.png": "generated/ladder/g2-ground-tile-6.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-fig-sura",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "1adac99e-e79b-4ca7-97ce-e6cdc6e65394",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 figure sura idleNorthWest/0 box-downsampled 4:1>"
+        },
+        "method": "text",
+        "description": "Clean up this tiny character sprite into crisp pixel art at this exact size: keep the same person, pose, costume colours, hair and facing; 1 px dark brown outline (#1b1410), 2-3 tones per material, light from the upper left, transparent background.",
+        "no_background": true,
+        "seed": 11
+      },
+      "outputs": ["g2-fig-sura-0.png", "g2-fig-sura-1.png", "g2-fig-sura-2.png"],
+      "balance_before": 7487.5,
+      "balance_after": 7448.5,
+      "gens": 5.0,
+      "seconds": 34,
+      "notes": "G2 figure sura idleNorthWest/0 box-downsampled 4:1",
+      "verdict": "take (0)",
+      "error": null,
+      "committed": {
+        "g2-fig-sura-0.png": "generated/ladder/g2-fig-sura.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "g2-ground-t7",
+      "endpoint": "/edit-image-pro-flash",
+      "job_id": "abf93725-465d-4250-b67c-9d4e0dbcb759",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<G2 ground tile 7 at (464,184,256x256) of inputs/g2-ground.png>"
+        },
+        "method": "text",
+        "description": "Redraw as crisp low-resolution pixel art at this exact size, one art pixel per pixel: 1 px dark brown outline (#1b1410) on silhouettes, 3-4 flat tone groups per material from shared warm earth ramps, matte, no glints, no dithering noise, warm key light from the upper left, cool brown shadows down-right, calm flat walkable ground. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "no_background": false,
+        "seed": 11
+      },
+      "outputs": ["g2-ground-t7-0.png", "g2-ground-t7-1.png", "g2-ground-t7-2.png"],
+      "balance_before": 7505.5,
+      "balance_after": 7448.5,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "G2 ground tile 7 at (464,184,256x256) of inputs/g2-ground.png",
+      "verdict": "take (0); tiles do not register exactly at the joins",
+      "error": null,
+      "committed": {
+        "g2-ground-t7-0.png": "generated/ladder/g2-ground-tile-7.png"
+      },
+      "note_outputs": "Pro Flash returns three variants per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t6",
+      "endpoint": "/edit-images-v2",
+      "job_id": "54afe9f4-2d4d-43e5-b99c-4226ef5d3731",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 6 (2488,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t6-0.png", "w1-t6-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 7311.5,
+      "gens": 25.0,
+      "seconds": 94,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 6 at (2488,0,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t6-0.png": "world/tiles/w1-t6.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t0",
+      "endpoint": "/edit-images-v2",
+      "job_id": "2c53d806-754e-4748-8691-03b65922b9ed",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 0 (0,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t0-0.png", "w1-t0-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 7286.5,
+      "gens": 25.0,
+      "seconds": 109,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 0 at (0,0,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t0-0.png": "world/tiles/w1-t0.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t2",
+      "endpoint": "/edit-images-v2",
+      "job_id": "d229cfab-30bf-4483-acfd-7abcd11d8822",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 2 (829,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t2-0.png", "w1-t2-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 7261.5,
+      "gens": 25.0,
+      "seconds": 116,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 2 at (829,0,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t2-0.png": "world/tiles/w1-t2.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t7",
+      "endpoint": "/edit-images-v2",
+      "job_id": "3caeb052-4b04-45c1-8622-53382145d3cf",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 7 (0,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t7-0.png", "w1-t7-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 7236.5,
+      "gens": 25.0,
+      "seconds": 122,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 7 at (0,363,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t7-0.png": "world/tiles/w1-t7.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t3",
+      "endpoint": "/edit-images-v2",
+      "job_id": "7c6393e9-850b-473f-ba90-c975ba0e7bb5",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 3 (1244,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t3-0.png", "w1-t3-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 7211.5,
+      "gens": 25.0,
+      "seconds": 148,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 3 at (1244,0,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t3-0.png": "world/tiles/w1-t3.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t9",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c05936b0-af32-4c6b-8495-0c73dfa2b475",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 9 (829,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t9-0.png", "w1-t9-1.png"],
+      "balance_before": 7286.5,
+      "balance_after": 7166.5,
+      "gens": 25.0,
+      "seconds": 107,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 9 at (829,363,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t9-0.png": "world/tiles/w1-t9.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t8",
+      "endpoint": "/edit-images-v2",
+      "job_id": "b1d279c7-3256-428d-8012-3318e0412dc5",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 8 (415,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t8-0.png", "w1-t8-1.png"],
+      "balance_before": 7311.5,
+      "balance_after": 7121.5,
+      "gens": 25.0,
+      "seconds": 130,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 8 at (415,363,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t8-0.png": "world/tiles/w1-t8.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t10",
+      "endpoint": "/edit-images-v2",
+      "job_id": "aa074355-ad82-4665-bc51-8b6baa38addb",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 10 (1244,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t10-0.png", "w1-t10-1.png"],
+      "balance_before": 7261.5,
+      "balance_after": 7096.5,
+      "gens": 25.0,
+      "seconds": 128,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 10 at (1244,363,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t10-0.png": "world/tiles/w1-t10.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t11",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c27ac4bc-2f79-4050-9e26-793198cd1815",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 11 (1659,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t11-0.png", "w1-t11-1.png"],
+      "balance_before": 7236.5,
+      "balance_after": 7071.5,
+      "gens": 25.0,
+      "seconds": 127,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 11 at (1659,363,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t11-0.png": "world/tiles/w1-t11.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t12",
+      "endpoint": "/edit-images-v2",
+      "job_id": "8dfa3611-3d87-4af9-9e58-15a98d603910",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 12 (2073,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t12-0.png", "w1-t12-1.png"],
+      "balance_before": 7211.5,
+      "balance_after": 7046.5,
+      "gens": 25.0,
+      "seconds": 114,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 12 at (2073,363,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t12-0.png": "world/tiles/w1-t12.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t4",
+      "endpoint": "/edit-images-v2",
+      "job_id": "dbe6c511-5ce1-4e47-b8af-f8c9e64da182",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 4 (1659,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t4-0.png", "w1-t4-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 6996.5,
+      "gens": 25.0,
+      "seconds": 305,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 4 at (1659,0,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t4-0.png": "world/tiles/w1-t4.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t1",
+      "endpoint": "/edit-images-v2",
+      "job_id": "70d8c927-dbfe-450e-9932-b260013aa60a",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 1 (415,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t1-0.png", "w1-t1-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 6996.5,
+      "gens": 25.0,
+      "seconds": 307,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 1 at (415,0,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t1-0.png": "world/tiles/w1-t1.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t13",
+      "endpoint": "/edit-images-v2",
+      "job_id": "d17aa845-31e7-47a3-98bd-15a86ac005b1",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 13 (2488,363,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t13-0.png", "w1-t13-1.png"],
+      "balance_before": 7166.5,
+      "balance_after": 6960.5,
+      "gens": 25.0,
+      "seconds": 114,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 13 at (2488,363,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t13-0.png": "world/tiles/w1-t13.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t14",
+      "endpoint": "/edit-images-v2",
+      "job_id": "c2ec4fee-ff5b-4d2a-8075-dc2cefb5dadd",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 14 (0,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t14-0.png", "w1-t14-1.png"],
+      "balance_before": 7121.5,
+      "balance_after": 6905.5,
+      "gens": 25.0,
+      "seconds": 121,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 14 at (0,726,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t14-0.png": "world/tiles/w1-t14.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t15",
+      "endpoint": "/edit-images-v2",
+      "job_id": "2822bf02-78f2-4760-920b-991825693615",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 15 (415,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t15-0.png", "w1-t15-1.png"],
+      "balance_before": 7096.5,
+      "balance_after": 6905.5,
+      "gens": 25.0,
+      "seconds": 107,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 15 at (415,726,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t15-0.png": "world/tiles/w1-t15.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t17",
+      "endpoint": "/edit-images-v2",
+      "job_id": "aa70a5e5-c257-480b-8f82-769732794933",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 17 (1244,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t17-0.png", "w1-t17-1.png"],
+      "balance_before": 7046.5,
+      "balance_after": 6855.5,
+      "gens": 25.0,
+      "seconds": 101,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 17 at (1244,726,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t17-0.png": "world/tiles/w1-t17.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t16",
+      "endpoint": "/edit-images-v2",
+      "job_id": "989f3192-e258-49fe-9223-1e88e553f348",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 16 (829,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t16-0.png", "w1-t16-1.png"],
+      "balance_before": 7071.5,
+      "balance_after": 6855.5,
+      "gens": 25.0,
+      "seconds": 115,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 16 at (829,726,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t16-0.png": "world/tiles/w1-t16.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t20",
+      "endpoint": "/edit-images-v2",
+      "job_id": "43d7d6ff-b1db-4d60-aec2-a53447100c70",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 20 (2488,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t20-0.png", "w1-t20-1.png"],
+      "balance_before": 6960.5,
+      "balance_after": 6698.5,
+      "gens": 25.0,
+      "seconds": 127,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 20 at (2488,726,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t20-0.png": "world/tiles/w1-t20.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t22",
+      "endpoint": "/edit-images-v2",
+      "job_id": "eda68400-8b0f-4fcf-b672-e0e9f920a529",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 22 (415,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t22-0.png", "w1-t22-1.png"],
+      "balance_before": 6905.5,
+      "balance_after": 6676.5,
+      "gens": 25.0,
+      "seconds": 107,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 22 at (415,1089,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t22-0.png": "world/tiles/w1-t22.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t21",
+      "endpoint": "/edit-images-v2",
+      "job_id": "44af34e8-a42e-42df-b278-cde8fe4edfcf",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 21 (0,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t21-0.png", "w1-t21-1.png"],
+      "balance_before": 6905.5,
+      "balance_after": 6676.5,
+      "gens": 25.0,
+      "seconds": 114,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 21 at (0,1089,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t21-0.png": "world/tiles/w1-t21.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t5",
+      "endpoint": "/edit-images-v2",
+      "job_id": "47b3c5f8-b81f-42f9-872b-ffc193af07b5",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 5 (2073,0,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t5-0.png", "w1-t5-1.png"],
+      "balance_before": 7381.5,
+      "balance_after": 6651.5,
+      "gens": 25.0,
+      "seconds": 469,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 5 at (2073,0,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t5-0.png": "world/tiles/w1-t5.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t23",
+      "endpoint": "/edit-images-v2",
+      "job_id": "cc3c00fd-d5e9-4ff2-93f9-c392a33ce610",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 23 (829,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t23-0.png", "w1-t23-1.png"],
+      "balance_before": 6855.5,
+      "balance_after": 6620.5,
+      "gens": 25.0,
+      "seconds": 133,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 23 at (829,1089,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t23-0.png": "world/tiles/w1-t23.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t25",
+      "endpoint": "/edit-images-v2",
+      "job_id": "b2cbf0cf-763c-4694-948a-d3562880fafa",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 25 (1659,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t25-0.png", "w1-t25-1.png"],
+      "balance_before": 6682.5,
+      "balance_after": 6530.5,
+      "gens": 25.0,
+      "seconds": 102,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 25 at (1659,1089,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t25-0.png": "world/tiles/w1-t25.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t26",
+      "endpoint": "/edit-images-v2",
+      "job_id": "4d48739e-5eb6-44e0-ac2e-cf199179718b",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 26 (2073,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t26-0.png", "w1-t26-1.png"],
+      "balance_before": 6676.5,
+      "balance_after": 6530.5,
+      "gens": 25.0,
+      "seconds": 102,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 26 at (2073,1089,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t26-0.png": "world/tiles/w1-t26.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t19",
+      "endpoint": "/edit-images-v2",
+      "job_id": "00baff51-251d-4627-bdc3-134aa4673c58",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 19 (2073,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t19-0.png", "w1-t19-1.png"],
+      "balance_before": 6996.5,
+      "balance_after": 6481.5,
+      "gens": 25.0,
+      "seconds": 288,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 19 at (2073,726,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t19-0.png": "world/tiles/w1-t19.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t24",
+      "endpoint": "/edit-images-v2",
+      "job_id": "13c9cfb7-0705-48bd-8e8b-a9d61a2ff090",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 24 (1244,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t24-0.png", "w1-t24-1.png"],
+      "balance_before": 6855.5,
+      "balance_after": 6428.5,
+      "gens": 25.0,
+      "seconds": 299,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 24 at (1244,1089,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t24-0.png": "world/tiles/w1-t24.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t27",
+      "endpoint": "/edit-images-v2",
+      "job_id": "6c183d72-405d-4131-9150-56bdaa90a471",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 27 (2488,1089,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t27-0.png", "w1-t27-1.png"],
+      "balance_before": 6676.5,
+      "balance_after": 6367.5,
+      "gens": 25.0,
+      "seconds": 293,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 27 at (2488,1089,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t27-0.png": "world/tiles/w1-t27.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "w1-t18",
+      "endpoint": "/edit-images-v2",
+      "job_id": "5706a131-f3ce-4931-94c4-9e20d7583f84",
+      "status": "completed",
+      "request": {
+        "method": "edit_with_text",
+        "edit_images": [
+          {
+            "image": {
+              "base64": "<w1 tile 18 (1659,726,512,512) of source>"
+            },
+            "width": 512,
+            "height": 512
+          }
+        ],
+        "image_size": {
+          "width": 512,
+          "height": 512
+        },
+        "description": "Redraw as fine-grain pixel art matching the character reference: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Walkable ground stays calm: grass, paving stones, the canal water and its stone banks are broad flat areas of 3-4 tones with only sparse 1-2 px marks; no all-over noise or stipple. No people. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+        "seed": 11
+      },
+      "outputs": ["w1-t18-0.png", "w1-t18-1.png"],
+      "balance_before": 6996.5,
+      "balance_after": 6342.5,
+      "gens": 25.0,
+      "seconds": 477,
+      "notes": "Ba Dan G1 world restyle from quiet.png at world px tile 18 at (1659,726,512x512)",
+      "verdict": "take (0): the G1 world, one prompt one seed",
+      "error": null,
+      "committed": {
+        "w1-t18-0.png": "world/tiles/w1-t18.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-gao-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "ee14efa5-2d29-4151-a096-ee0487c864f1",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-gao-display crop (1226,413,200x140) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-gao-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-gao-display context (np.int64(1026), np.int64(273), np.int64(1626), np.int64(693))>"
+        },
+        "bounding_box": {
+          "x": 200,
+          "y": 140,
+          "width": 200,
+          "height": 140
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-gao-display-0.png", "o1-out-gao-display-1.png"],
+      "balance_before": 6272.6,
+      "balance_after": 6261.6,
+      "gens": 6.0,
+      "seconds": 29,
+      "notes": "paint out the baked object under o1-out-gao-display",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-south-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "81a465aa-8576-4176-b192-a2bde33f691d",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-south-market-display crop (778,430,200x156) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-south-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-south-market-display context (np.int64(578), np.int64(274), np.int64(1178), np.int64(742))>"
+        },
+        "bounding_box": {
+          "x": 200,
+          "y": 156,
+          "width": 200,
+          "height": 156
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-south-market-display-0.png", "o1-out-south-market-display-1.png"],
+      "balance_before": 6261.6,
+      "balance_after": 6229.6,
+      "gens": 6.0,
+      "seconds": 36,
+      "notes": "paint out the baked object under o1-out-south-market-display",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-north-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "a0128738-4c3f-4853-80e8-c4e8294cabe1",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-north-market-display crop (1738,657,200x152) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-north-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-north-market-display context (np.int64(1538), np.int64(505), np.int64(2138), np.int64(961))>"
+        },
+        "bounding_box": {
+          "x": 200,
+          "y": 152,
+          "width": 200,
+          "height": 152
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-north-market-display-0.png", "o1-out-north-market-display-1.png"],
+      "balance_before": 6229.6,
+      "balance_after": 6211.6,
+      "gens": 6.0,
+      "seconds": 29,
+      "notes": "paint out the baked object under o1-out-north-market-display",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-d12",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "34a6f3ed-66ab-4dac-8356-ec945695694a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-d12 crop (1048,302,168x148) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-d12 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-d12 context (np.int64(880), np.int64(154), np.int64(1384), np.int64(598))>"
+        },
+        "bounding_box": {
+          "x": 168,
+          "y": 148,
+          "width": 168,
+          "height": 148
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-d12-0.png", "o1-out-d12-1.png"],
+      "balance_before": 6211.6,
+      "balance_after": 6199.6,
+      "gens": 6.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o1-out-d12",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-d13",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "2f5c329a-df78-4845-873b-ff82227f6b6a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-d13 crop (926,269,160x116) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-d13 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-d13 context (np.int64(766), np.int64(153), np.int64(1246), np.int64(501))>"
+        },
+        "bounding_box": {
+          "x": 160,
+          "y": 116,
+          "width": 160,
+          "height": 116
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-d13-0.png", "o1-out-d13-1.png"],
+      "balance_before": 6199.6,
+      "balance_after": 6187.6,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o1-out-d13",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-d8",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "5fb6cd47-f1d9-49d9-9c64-0fc5c4e8360a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-d8 crop (1684,451,124x96) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-d8 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-d8 context (np.int64(1560), np.int64(355), np.int64(1932), np.int64(643))>"
+        },
+        "bounding_box": {
+          "x": 124,
+          "y": 96,
+          "width": 124,
+          "height": 96
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-d8-0.png", "o1-out-d8-1.png"],
+      "balance_before": 6187.6,
+      "balance_after": 6181.6,
+      "gens": 6.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o1-out-d8",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-d1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "c1c41dc1-def2-4e53-afbb-06d14c562859",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-d1 crop (714,433,136x92) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-d1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-d1 context (np.int64(578), np.int64(341), np.int64(986), np.int64(617))>"
+        },
+        "bounding_box": {
+          "x": 136,
+          "y": 92,
+          "width": 136,
+          "height": 92
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-d1-0.png", "o1-out-d1-1.png"],
+      "balance_before": 6181.6,
+      "balance_after": 6145.6,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o1-out-d1",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o1-out-d2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "3c29f071-b136-4101-af6d-a01b97814e03",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o1-out-d2 crop (1674,721,136x92) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o1-out-d2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o1-out-d2 context (np.int64(1538), np.int64(629), np.int64(1946), np.int64(905))>"
+        },
+        "bounding_box": {
+          "x": 136,
+          "y": 92,
+          "width": 136,
+          "height": 92
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o1-out-d2-0.png", "o1-out-d2-1.png"],
+      "balance_before": 6145.6,
+      "balance_after": 6139.6,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o1-out-d2",
+      "verdict": "reject: masked on the silhouette only; the generator redrew the old object from its own context (south display, d1 and the north display survived)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-gao-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "a01cd426-d9fd-4da8-8df4-7e85ddba8370",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-gao-display crop (1207,405,236x160) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-gao-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-gao-display context (np.int64(971), np.int64(245), np.int64(1679), np.int64(725))>"
+        },
+        "bounding_box": {
+          "x": 236,
+          "y": 160,
+          "width": 236,
+          "height": 160
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-gao-display-0.png", "o2-out-gao-display-1.png"],
+      "balance_before": 5992.6,
+      "balance_after": 5983.6,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "paint out the baked object under o2-out-gao-display",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-south-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "2b8569e6-c3ae-47f7-800a-216187484194",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-south-market-display crop (759,421,236x176) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-south-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-south-market-display context (np.int64(523), np.int64(245), np.int64(1231), np.int64(773))>"
+        },
+        "bounding_box": {
+          "x": 236,
+          "y": 176,
+          "width": 236,
+          "height": 176
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-south-market-display-0.png", "o2-out-south-market-display-1.png"],
+      "balance_before": 5983.6,
+      "balance_after": 5974.6,
+      "gens": 9.0,
+      "seconds": 49,
+      "notes": "paint out the baked object under o2-out-south-market-display",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-north-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "30222941-be4a-4458-ba92-b42879662ad2",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-north-market-display crop (1719,648,236x172) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-north-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-north-market-display context (np.int64(1483), np.int64(476), np.int64(2191), np.int64(992))>"
+        },
+        "bounding_box": {
+          "x": 236,
+          "y": 172,
+          "width": 236,
+          "height": 172
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-north-market-display-0.png", "o2-out-north-market-display-1.png"],
+      "balance_before": 5974.6,
+      "balance_after": 5965.6,
+      "gens": 9.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o2-out-north-market-display",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-d12",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "4a6d6780-a160-4b16-ba3b-bd381b0dfaeb",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-d12 crop (1015,300,236x168) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-d12 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-d12 context (np.int64(779), np.int64(132), np.int64(1487), np.int64(636))>"
+        },
+        "bounding_box": {
+          "x": 236,
+          "y": 168,
+          "width": 236,
+          "height": 168
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-d12-0.png", "o2-out-d12-1.png"],
+      "balance_before": 5965.6,
+      "balance_after": 5956.6,
+      "gens": 9.0,
+      "seconds": 55,
+      "notes": "paint out the baked object under o2-out-d12",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-d13",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "9e410915-82cd-4cc9-9b5b-1988f3f7b3bc",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-d13 crop (903,260,220x144) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-d13 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-d13 context (np.int64(683), np.int64(116), np.int64(1343), np.int64(548))>"
+        },
+        "bounding_box": {
+          "x": 220,
+          "y": 144,
+          "width": 220,
+          "height": 144
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-d13-0.png", "o2-out-d13-1.png"],
+      "balance_before": 5956.6,
+      "balance_after": 5947.6,
+      "gens": 9.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o2-out-d13",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-d8",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "9b265cfe-ac85-467f-b18a-be55b9a48249",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-d8 crop (1663,453,164x112) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-d8 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-d8 context (np.int64(1499), np.int64(341), np.int64(1991), np.int64(677))>"
+        },
+        "bounding_box": {
+          "x": 164,
+          "y": 112,
+          "width": 164,
+          "height": 112
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-d8-0.png", "o2-out-d8-1.png"],
+      "balance_before": 5947.6,
+      "balance_after": 5941.6,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o2-out-d8",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-d1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "2463e3ca-9488-4d5d-b65f-0a84a4979c43",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-d1 crop (695,426,172x104) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-d1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-d1 context (np.int64(523), np.int64(322), np.int64(1039), np.int64(634))>"
+        },
+        "bounding_box": {
+          "x": 172,
+          "y": 104,
+          "width": 172,
+          "height": 104
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-d1-0.png", "o2-out-d1-1.png"],
+      "balance_before": 5941.6,
+      "balance_after": 5935.6,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o2-out-d1",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o2-out-d2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "c334f9b8-51c1-47c4-877a-ddc50503a06f",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o2-out-d2 crop (1655,716,172x104) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o2-out-d2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o2-out-d2 context (np.int64(1483), np.int64(612), np.int64(1999), np.int64(924))>"
+        },
+        "bounding_box": {
+          "x": 172,
+          "y": 104,
+          "width": 172,
+          "height": 104
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o2-out-d2-0.png", "o2-out-d2-1.png"],
+      "balance_before": 5935.6,
+      "balance_after": 5929.6,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o2-out-d2",
+      "verdict": "superseded by o4: a wide prefilled mask made the generator draw flat ground that showed as patches in game",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "5c46d500-ccee-4ea9-bf75-05bf3ff3e9c3",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-0 crop (783,509,36x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-0 context (np.int64(747), 477, np.int64(855), 573)>"
+        },
+        "bounding_box": {
+          "x": 36,
+          "y": 32,
+          "width": 36,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-0-0.png", "o3-fix-south-market-display-0-1.png"],
+      "balance_before": 5843.6,
+      "balance_after": 5836.6,
+      "gens": 5.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o3-fix-south-market-display-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e4e1caa3-c065-4b9f-a3b1-dbcad6c7b902",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-1 crop (871,536,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-1 context (839, 504, 935, 600)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-1-0.png", "o3-fix-south-market-display-1-1.png"],
+      "balance_before": 5836.6,
+      "balance_after": 5829.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-south-market-display-1",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-north-market-display-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "9cd9cc36-005e-4942-9f96-5a6d1983446a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-north-market-display-0 crop (1799,749,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-north-market-display-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-north-market-display-0 context (1767, 717, 1863, 813)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-north-market-display-0-0.png", "o3-fix-north-market-display-0-1.png"],
+      "balance_before": 5829.6,
+      "balance_after": 5824.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-north-market-display-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "39c9f554-457f-4801-9ca9-945e0c7bfec4",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-0 crop (1747,728,52x36) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-0 context (np.int64(1695), np.int64(692), np.int64(1851), np.int64(800))>"
+        },
+        "bounding_box": {
+          "x": 52,
+          "y": 36,
+          "width": 52,
+          "height": 36
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-0-0.png", "o3-fix-d2-0-1.png"],
+      "balance_before": 5824.6,
+      "balance_after": 5819.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d2-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "bfa52cdd-5a32-4a23-881f-af7121c3b0ab",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-1 crop (1756,737,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-1 context (1724, 705, 1820, 801)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-1-0.png", "o3-fix-d2-1-1.png"],
+      "balance_before": 5819.6,
+      "balance_after": 5814.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d2-1",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "557c1525-8e7b-454e-92f7-9c65be1b892e",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-2 crop (1743,778,52x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-2 context (np.int64(1691), 746, np.int64(1847), 842)>"
+        },
+        "bounding_box": {
+          "x": 52,
+          "y": 32,
+          "width": 52,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-2-0.png", "o3-fix-d2-2-1.png"],
+      "balance_before": 5814.6,
+      "balance_after": 5809.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-d2-2",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-3",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e395ec50-cb3d-44e6-b0ec-5c7aa51b368c",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-3 crop (1738,788,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-3 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-3 context (1706, 756, 1802, 852)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-3-0.png", "o3-fix-d2-3-1.png"],
+      "balance_before": 5809.6,
+      "balance_after": 5804.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d2-3",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "6459ce37-360d-4886-afbb-2fb05b483a6a",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-2 crop (774,507,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-2 context (742, 475, 838, 571)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-2-0.png", "o3-fix-south-market-display-2-1.png"],
+      "balance_before": 5787.6,
+      "balance_after": 5782.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-south-market-display-2",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-3",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "9706da01-d364-4d54-b341-e071b3ccd931",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-3 crop (788,515,116x56) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-3 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-3 context (np.int64(672), np.int64(459), np.int64(1020), np.int64(627))>"
+        },
+        "bounding_box": {
+          "x": 116,
+          "y": 56,
+          "width": 116,
+          "height": 56
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-3-0.png", "o3-fix-south-market-display-3-1.png"],
+      "balance_before": 5782.6,
+      "balance_after": 5776.6,
+      "gens": 6.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o3-fix-south-market-display-3",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-4",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "0aa7e2ab-f794-438c-aea7-f933ad054fff",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-4 crop (956,539,40x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-4 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-4 context (np.int64(916), 507, np.int64(1036), 603)>"
+        },
+        "bounding_box": {
+          "x": 40,
+          "y": 32,
+          "width": 40,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-4-0.png", "o3-fix-south-market-display-4-1.png"],
+      "balance_before": 5776.6,
+      "balance_after": 5771.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-south-market-display-4",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-5",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "79faaac0-609e-4f33-98e1-66d999344532",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-5 crop (923,555,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-5 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-5 context (891, 523, 987, 619)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-5-0.png", "o3-fix-south-market-display-5-1.png"],
+      "balance_before": 5771.6,
+      "balance_after": 5766.6,
+      "gens": 5.0,
+      "seconds": 22,
+      "notes": "paint out the baked object under o3-fix-south-market-display-5",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-south-market-display-6",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "26a8603b-9245-41df-a593-8344802b3364",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-south-market-display-6 crop (888,567,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-south-market-display-6 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-south-market-display-6 context (856, 535, 952, 631)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-south-market-display-6-0.png", "o3-fix-south-market-display-6-1.png"],
+      "balance_before": 5766.6,
+      "balance_after": 5761.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-south-market-display-6",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d12-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "43fe1524-c39f-47e0-94fb-f583162eebe7",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d12-0 crop (1009,353,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d12-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d12-0 context (977, 321, 1073, 417)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d12-0-0.png", "o3-fix-d12-0-1.png"],
+      "balance_before": 5761.6,
+      "balance_after": 5756.6,
+      "gens": 5.0,
+      "seconds": 16,
+      "notes": "paint out the baked object under o3-fix-d12-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d1-0",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "f2b31a02-f102-47c8-972b-ed1c06b659b9",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d1-0 crop (718,455,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d1-0 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d1-0 context (686, 423, 782, 519)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d1-0-0.png", "o3-fix-d1-0-1.png"],
+      "balance_before": 5756.6,
+      "balance_after": 5751.6,
+      "gens": 5.0,
+      "seconds": 15,
+      "notes": "paint out the baked object under o3-fix-d1-0",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d1-1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "7f315b4c-7f90-4607-a4a1-2bbde5405e30",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d1-1 crop (770,477,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d1-1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d1-1 context (738, 445, 834, 541)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d1-1-0.png", "o3-fix-d1-1-1.png"],
+      "balance_before": 5751.6,
+      "balance_after": 5746.6,
+      "gens": 5.0,
+      "seconds": 16,
+      "notes": "paint out the baked object under o3-fix-d1-1",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d1-2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "ae3dbff1-8292-4512-958c-b2d45f9777eb",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d1-2 crop (778,506,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d1-2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d1-2 context (746, 474, 842, 570)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d1-2-0.png", "o3-fix-d1-2-1.png"],
+      "balance_before": 5746.6,
+      "balance_after": 5741.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-d1-2",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o3-fix-d2-4",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "e9fe5e5b-4080-4241-bc96-e9f848ee1cb1",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o3-fix-d2-4 crop (1740,790,32x32) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o3-fix-d2-4 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o3-fix-d2-4 context (1708, 758, 1804, 854)>"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o3-fix-d2-4-0.png", "o3-fix-d2-4-1.png"],
+      "balance_before": 5741.6,
+      "balance_after": 5736.6,
+      "gens": 5.0,
+      "seconds": 21,
+      "notes": "paint out the baked object under o3-fix-d2-4",
+      "verdict": "superseded by o4 (a dark-island pass over the wide patches; it also caught paving joints)",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-gao-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "f173690f-bfff-4094-966b-133d5310b656",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-gao-display crop (1205,403,240x156) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-gao-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-gao-display context (np.int64(965), np.int64(247), np.int64(1685), np.int64(715))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 156,
+          "width": 240,
+          "height": 156
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-gao-display-0.png", "o4-out-gao-display-1.png"],
+      "balance_before": 5736.6,
+      "balance_after": 5727.6,
+      "gens": 9.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o4-out-gao-display",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-gao-display-0.png": "world/inpaint/o4-out-gao-display.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-south-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "8e137597-058b-4a3f-9cef-8885d9d55dec",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-south-market-display crop (757,419,240x180) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-south-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-south-market-display context (np.int64(517), np.int64(239), np.int64(1237), np.int64(779))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 180,
+          "width": 240,
+          "height": 180
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-south-market-display-0.png", "o4-out-south-market-display-1.png"],
+      "balance_before": 5727.6,
+      "balance_after": 5718.6,
+      "gens": 9.0,
+      "seconds": 55,
+      "notes": "paint out the baked object under o4-out-south-market-display",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-south-market-display-0.png": "world/inpaint/o4-out-south-market-display.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-north-market-display",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "004aa7b8-70dd-47e7-9bcc-8015efa27f49",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-north-market-display crop (1721,646,236x172) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-north-market-display mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-north-market-display context (np.int64(1485), np.int64(474), np.int64(2193), np.int64(990))>"
+        },
+        "bounding_box": {
+          "x": 236,
+          "y": 172,
+          "width": 236,
+          "height": 172
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-north-market-display-0.png", "o4-out-north-market-display-1.png"],
+      "balance_before": 5718.6,
+      "balance_after": 5709.6,
+      "gens": 9.0,
+      "seconds": 55,
+      "notes": "paint out the baked object under o4-out-north-market-display",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-north-market-display-0.png": "world/inpaint/o4-out-north-market-display.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d12",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "6b2aec57-06d6-49b2-8121-d3a7ebc77cf2",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d12 crop (1011,303,240x168) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d12 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d12 context (np.int64(771), np.int64(135), np.int64(1491), np.int64(639))>"
+        },
+        "bounding_box": {
+          "x": 240,
+          "y": 168,
+          "width": 240,
+          "height": 168
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d12-0.png", "o4-out-d12-1.png"],
+      "balance_before": 5709.6,
+      "balance_after": 5700.6,
+      "gens": 9.0,
+      "seconds": 48,
+      "notes": "paint out the baked object under o4-out-d12",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d12-0.png": "world/inpaint/o4-out-d12.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d13",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "5efeef42-c4bc-4a70-91f5-53640c270d72",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d13 crop (900,257,224x148) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d13 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d13 context (np.int64(676), np.int64(109), np.int64(1348), np.int64(553))>"
+        },
+        "bounding_box": {
+          "x": 224,
+          "y": 148,
+          "width": 224,
+          "height": 148
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d13-0.png", "o4-out-d13-1.png"],
+      "balance_before": 5700.6,
+      "balance_after": 5691.6,
+      "gens": 9.0,
+      "seconds": 42,
+      "notes": "paint out the baked object under o4-out-d13",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d13-0.png": "world/inpaint/o4-out-d13.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d8",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "87777231-e361-4455-87ed-74368f065ce9",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d8 crop (1661,452,168x100) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d8 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d8 context (np.int64(1493), np.int64(352), np.int64(1997), np.int64(652))>"
+        },
+        "bounding_box": {
+          "x": 168,
+          "y": 100,
+          "width": 168,
+          "height": 100
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d8-0.png", "o4-out-d8-1.png"],
+      "balance_before": 5691.6,
+      "balance_after": 5685.6,
+      "gens": 6.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o4-out-d8",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d8-0.png": "world/inpaint/o4-out-d8.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d1",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "1aa2c3c8-2289-465f-9bdb-504f73d9fa98",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d1 crop (693,424,176x108) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d1 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d1 context (np.int64(517), np.int64(316), np.int64(1045), np.int64(640))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 108,
+          "width": 176,
+          "height": 108
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d1-0.png", "o4-out-d1-1.png"],
+      "balance_before": 5685.6,
+      "balance_after": 5679.6,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o4-out-d1",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d1-0.png": "world/inpaint/o4-out-d1.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-d2",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "94595dab-b0e6-457c-9f33-64f592da2953",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-d2 crop (1653,714,176x108) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-d2 mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-d2 context (np.int64(1477), np.int64(606), np.int64(2005), np.int64(930))>"
+        },
+        "bounding_box": {
+          "x": 176,
+          "y": 108,
+          "width": 176,
+          "height": 108
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-d2-0.png", "o4-out-d2-1.png"],
+      "balance_before": 5679.6,
+      "balance_after": 5673.6,
+      "gens": 6.0,
+      "seconds": 35,
+      "notes": "paint out the baked object under o4-out-d2",
+      "verdict": "take (0): the old object, footprint and baked shadow only, inpainted with the real ground around it, gain-matched and blended 2 px",
+      "error": null,
+      "committed": {
+        "o4-out-d2-0.png": "world/inpaint/o4-out-d2.png"
+      },
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    },
+    {
+      "tag": "o4-out-gao-yard-cart",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job_id": "42544cd6-b458-4b39-8e67-abc8090958a7",
+      "status": "completed",
+      "request": {
+        "image": {
+          "base64": "<o4-out-gao-yard-cart crop (1396,344,56x80) of world-g1-raw>"
+        },
+        "mask_image": {
+          "base64": "<o4-out-gao-yard-cart mask>"
+        },
+        "description": "Fill the masked area with the same ground that surrounds it (grass, worn earth, paving stones or the stone canal bank, continuing their lines and colours) as calm walkable ground in the same pixel art style: 1 px marks, 3-4 flat tones. No objects, no furniture, no baskets, no fence, no shadows of removed objects, no people.",
+        "context_image": {
+          "base64": "<o4-out-gao-yard-cart context (np.int64(1340), np.int64(264), np.int64(1508), np.int64(504))>"
+        },
+        "bounding_box": {
+          "x": 56,
+          "y": 80,
+          "width": 56,
+          "height": 80
+        },
+        "output_method": "Modify current layer",
+        "seed": 11
+      },
+      "outputs": ["o4-out-gao-yard-cart-0.png", "o4-out-gao-yard-cart-1.png"],
+      "balance_before": 5668.6,
+      "balance_after": 5663.6,
+      "gens": 5.0,
+      "seconds": 28,
+      "notes": "paint out the baked object under o4-out-gao-yard-cart",
+      "verdict": "reject: clearing the cart in Gao's yard made the generator invent a structure; the strip is too narrow for the #288 props",
+      "error": null,
+      "committed": null,
+      "note_outputs": "two identical outputs per job; output -0 is used"
+    }
+  ]
+}

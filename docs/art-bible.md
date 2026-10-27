@@ -47,10 +47,10 @@ approved look. Checkable rules, cross-referenced to where each is decided:
 - **Grid-true geometry.** Every scenery edge that communicates a footprint,
   route or elevation comes from the map guide. Never rotate, skew or resample
   finished art to force it onto the grid.
-- **One grain.** No visible square texels and no asset blurrier than the
-  characters at the default camera. Outlines are dark brown, one to two screen
-  pixels wide, `#1b1410` at their darkest; never black or texel-stamped. No
-  photographic texture or lens effects in any class.
+- **One grain.** World art is drawn at the characters' grain: 1 art px = 1 world px (G1, ADR 0085), with figures
+  about 59 art px tall. Marks are 1–2 art px; 3–5 flat tone groups per material; outlines dark brown, 1 art px,
+  `#1b1410` at their darkest, never black. No blur, airbrushed gradient, gloss, all-over stipple, photographic
+  texture or lens effect in any class. No square texels larger than one art px (the 2x "G2" grain was rejected).
 - **Grid seams.** Square construction seams should disappear in normal
   presentation; the tactical overlay is the exception, not the default view.
 - **HUD.** The world occupies most of the screen; a compact dock holds
@@ -79,22 +79,22 @@ the single unioned cast-shadow layer. Overlaps must not double-darken.
 
 Two scenery treatments ship, and each map follows its own.
 
-**Ba Dan village (one continuous painting).** The village is a single painting, not pieces laid on a
-lawn: twelve overlapping region paintings, each painted over a guide rendered from the map's own geometry
-and registered to it within two pixels, stitched into one picture and cut back into ground plates and
-the pieces a figure can walk behind (the houses, the trees, the dressing). Painted ramps, restrained
-material variation and fine grain, authored at 1.5 painting pixels per world pixel and shown at the
-camera's 1.5 screen pixels per world pixel, so a painted pixel is a screen pixel. The silhouette and
-footprint edges of an upright are forced by the geometry (its alpha is the guide's silhouette); ridges,
-eaves, corners, openings, steps and plinths are painted over the guide's lines, and roof-course count
-and spacing are free surface paint.
+**Ba Dan village (one continuous picture at G1).** The village is a single picture, not pieces laid on a lawn: twelve
+overlapping regions over a guide rendered from the map's own geometry, joined into one picture and cut back into ground
+plates and the pieces a figure can walk behind (the houses, the trees, the dressing). Since ADR 0085 the picture is
+drawn at the characters' grain by the same PixelLab G family: restyled at world px in one pass (one prompt, one seed),
+then scaled to the regions' 1.5 painting px per world px. Walkable ground is calm by design (broad areas of 3–4 tones,
+sparse 1–2 px marks), not filtered. Figure-scale objects (tables, baskets, benches, fences, stock) come from the same
+generator at the measured sizes of `docs/art/object-style-diagnosis.md` section 2 and ADR 0085's scale table, and are set into the
+picture at their footprints with a flat pixel cast shadow and contact line; their frozen silhouettes are the objects'
+own. The silhouette and footprint edges of an upright are forced by the geometry.
 
-The painting already holds the upper-left light, the cast shadow, the contact under every foot, the worn
-ground, the joins between materials and the canal. So Ba Dan is a complete scene: the runtime draws no
-contact ring, no projected cast (ADR 0071's cast stays off for all of its scenery), no ground-join wash and
-no film over the permanent water; actors keep their own shadows. Follow
+The picture already holds the upper-left light, the cast shadow, the contact under every foot, the worn ground, the
+joins between materials and the canal. So Ba Dan is a complete scene: the runtime draws no contact ring, no projected
+cast (ADR 0071's cast stays off for all of its scenery), no ground-join wash and no film over the permanent water;
+actors keep their own shadows. Follow
 [Ba Dan: one continuous painting](art/ba-dan-scene.md#ba-dan-one-continuous-painting-integration-of-10-october-2026)
-for the construction and the pipeline rather than duplicating them here.
+for the construction and the pipeline, and `art/source/ba-dan-route-a/README.md` for the G1 pass.
 
 **Forest road and quarry.** Ground keeps the DL-2 material table below: two
 flat tones per material plus the rim or detail colour, enforced by the route

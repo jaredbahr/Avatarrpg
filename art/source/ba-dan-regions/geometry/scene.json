@@ -638,7 +638,7 @@
     },
     {
       "id": "gao-display",
-      "file": "true-merchant-display.webp",
+      "file": "g1-gao-display.webp",
       "sourceRect": null,
       "x": 1014,
       "y": 310,
@@ -690,7 +690,7 @@
     },
     {
       "id": "north-market-display",
-      "file": "true-merchant-display-b.webp",
+      "file": "g1-north-market-display.webp",
       "sourceRect": null,
       "x": 1526,
       "y": 552.6666666666667,
@@ -716,7 +716,7 @@
     },
     {
       "id": "south-market-display",
-      "file": "true-merchant-display-c.webp",
+      "file": "g1-south-market-display.webp",
       "sourceRect": null,
       "x": 566,
       "y": 327.33333333333337,
@@ -981,13 +981,8 @@
     },
     {
       "id": "d1",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 226,
-        "y": 548,
-        "width": 222,
-        "height": 141
-      },
+      "file": "g1-d1.webp",
+      "sourceRect": null,
       "x": 502,
       "y": 332,
       "width": 148,
@@ -1008,13 +1003,8 @@
     },
     {
       "id": "d2",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 226,
-        "y": 548,
-        "width": 222,
-        "height": 141
-      },
+      "file": "g1-d2.webp",
+      "sourceRect": null,
       "x": 1462,
       "y": 620,
       "width": 148,
@@ -1170,13 +1160,8 @@
     },
     {
       "id": "d8",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 2,
-        "y": 548,
-        "width": 222,
-        "height": 162
-      },
+      "file": "g1-d8.webp",
+      "sourceRect": null,
       "x": 1462,
       "y": 350,
       "width": 148,
@@ -1290,13 +1275,8 @@
     },
     {
       "id": "d12",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 322,
-        "y": 300,
-        "width": 318,
-        "height": 243
-      },
+      "file": "g1-d12.webp",
+      "sourceRect": null,
       "x": 822,
       "y": 200,
       "width": 212,
@@ -1321,13 +1301,8 @@
     },
     {
       "id": "d13",
-      "file": "true-dressing.webp",
-      "sourceRect": {
-        "x": 1602,
-        "y": 300,
-        "width": 318,
-        "height": 200
-      },
+      "file": "g1-d13.webp",
+      "sourceRect": null,
       "x": 694,
       "y": 164.66666666666669,
       "width": 212,

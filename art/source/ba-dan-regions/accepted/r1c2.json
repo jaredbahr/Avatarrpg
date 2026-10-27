@@ -1,37 +1,37 @@
 {
   "region": "r1c2",
   "source": {
-    "path": "nature3-r1c2-sol-001/best.png with the jar and barrel from prop-fix-jar-sol-001/attempt-6.png",
-    "sha256": "44a36a9e6f37a56af28a8e23ad629bbad77f55d3519585533e29770d3bcf8605"
+    "path": ".review/route-a/candidates/r1c2.png",
+    "sha256": "c61bcc1c16cd5e972f0fa8b23e5119ff085ea157aaf5a10184cccae006c8d169"
   },
   "stored": {
     "path": "art/source/ba-dan-regions/accepted/r1c2.png",
-    "sha256": "44a36a9e6f37a56af28a8e23ad629bbad77f55d3519585533e29770d3bcf8605"
+    "sha256": "c61bcc1c16cd5e972f0fa8b23e5119ff085ea157aaf5a10184cccae006c8d169"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.8442
+      "corr": 0.7765
     },
     "blobs": [
       {
         "n": 1,
-        "box": [0, 0, 158, 145],
-        "area": 10781,
+        "box": [146, 0, 724, 157],
+        "area": 38540,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7881,
+        "corr": 0.7897,
         "status": "ok"
       },
       {
         "n": 2,
-        "box": [146, 0, 1536, 510],
-        "area": 314266,
+        "box": [602, 0, 1536, 510],
+        "area": 272039,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8512,
+        "corr": 0.7017,
         "status": "ok"
       },
       {
@@ -40,16 +40,16 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8847,
+        "corr": 0.8074,
         "status": "ok"
       },
       {
         "n": 4,
-        "box": [520, 280, 926, 534],
-        "area": 34857,
+        "box": [669, 331, 875, 508],
+        "area": 7508,
         "dx": 0,
         "dy": 0,
-        "corr": 0.9071,
+        "corr": 0.835,
         "status": "ok"
       },
       {
@@ -58,7 +58,7 @@
         "area": 239585,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8783,
+        "corr": 0.7808,
         "status": "ok"
       },
       {
@@ -67,7 +67,7 @@
         "area": 42790,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8383,
+        "corr": 0.7671,
         "status": "ok"
       },
       {
@@ -76,7 +76,7 @@
         "area": 27043,
         "dx": 0,
         "dy": 0,
-        "corr": 0.728,
+        "corr": 0.8418,
         "status": "ok"
       },
       {
@@ -85,7 +85,7 @@
         "area": 4485,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8921,
+        "corr": 0.8896,
         "status": "ok"
       },
       {
@@ -94,19 +94,22 @@
         "area": 65582,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8248,
+        "corr": 0.7688,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1417191,
-      "meanAbsDiff": 12.501,
-      "p95": 38.0,
-      "fractionOver16": 0.2311
+      "meanAbsDiff": 0.028,
+      "p95": 0.0,
+      "fractionOver16": 0.0006
     },
-    "warn": ["carried pixels repainted: mean difference 12.5/255"],
+    "warn": ["seam with r1c3: 3.1x the ordinary difference"],
     "fail": []
   },
-  "prompt": null,
+  "prompt": {
+    "path": "art/source/ba-dan-route-a/world/prompt.txt",
+    "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
+  },
   "forced": false
 }

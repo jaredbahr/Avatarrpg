@@ -1,0 +1,55 @@
+{
+  "about": "Ground-line pins for the uprights ADR 0085 replaced with #288 G1 objects, on each piece's canvas (its frozen rectangle at 1.5 painting px per world px, the sprite geometry/sprites/g1-<id>.webp). Each window holds one table leg's foot, read from the lower envelope: front-left, front-right and back-right. The shop stack (d8) has no ground edge longer than its own crates and is not pinned (ba-dan-projection.test.ts says why).",
+  "projection": {
+    "assets": {
+      "gao-display": {
+        "measure": {
+          "left": {
+            "feet": [
+              [88, 93],
+              [204, 209]
+            ]
+          },
+          "right": {
+            "feet": [
+              [204, 209],
+              [222, 229]
+            ]
+          }
+        }
+      },
+      "north-market-display": {
+        "measure": {
+          "left": {
+            "feet": [
+              [90, 95],
+              [202, 208]
+            ]
+          },
+          "right": {
+            "feet": [
+              [202, 208],
+              [223, 229]
+            ]
+          }
+        }
+      },
+      "south-market-display": {
+        "measure": {
+          "left": {
+            "feet": [
+              [89, 96],
+              [202, 209]
+            ]
+          },
+          "right": {
+            "feet": [
+              [202, 209],
+              [221, 228]
+            ]
+          }
+        }
+      }
+    }
+  }
+}

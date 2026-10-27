@@ -210,7 +210,17 @@ removed at the integration; they are in git history at `7925789c`. The painted m
 worked from are still under `art/source/` and `scripts/art/ba-dan-guides/`, and the sprites they packed
 (the frozen geometry's `sprites/`) are the silhouettes the uprights are cut by.
 
-## Calm ground plates (20 October 2026)
+## G1: the village at the characters' grain (27 October 2026)
+
+The owner chose route A of #284 (ADR 0085). The whole stitched painting was restyled once at world px by the PixelLab G
+family (one prompt, one seed; `art/source/ba-dan-route-a/tools/world.py`). The oversized market objects were inpainted
+out and the #288 objects set in at their footprints with a flat pixel cast shadow and contact line (`objects.py`), and
+the twelve regions were written back as crops of that one picture (`regions_back.py`), so every overlap is the same
+pixels on both sides. The replaced pieces' frozen sprites are now the new objects' silhouettes (`geometry/sprites/g1-*.webp`;
+footprints, depth keys and flags unchanged). The calm step below is off (`QUIET_GROUND = False`): the ground is drawn
+calm.
+
+## Calm ground plates (20 October 2026, off since ADR 0085)
 
 The ground is softened so it reads as a backdrop while buildings, objects and characters keep the detail (ADR 0083). In
 `regions.py split`, `quiet_plates` blends `quiet_ground` (`MedianFilter(QUIET_MEDIAN = 3)`, colour `QUIET_SATURATION = 0.85`, contrast
