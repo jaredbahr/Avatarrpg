@@ -51,15 +51,14 @@ edited from, ships untoned. Packing (the `enemy-g.ts` placement rules and pins) 
 
 ## Results (2026-10-27)
 
-| Character | Gens | Review                           | Main faults (full list in `review/faults.md`)                                                 |
-| --------- | ---: | -------------------------------- | --------------------------------------------------------------------------------------------- |
-| household | 62.8 | `household-g/review/sheet-*.png` | idle boil 20-29%                                                                              |
-| watch     | 62.8 | `watch-g/review/sheet-*.png`     | idle boil 20-32%; east walk retaken (arm swing); faint ghost leg in east cel 7; spear tilt    |
-| mira      | 65.8 | `mira-g/review/sheet-*.png`      | idle boil 20-35%; short shuffle may slide; stick hand ambiguous W/SW                          |
-| gao       | 59.8 | `gao-g/review/sheet-*.png`       | idle boil 21-47%                                                                              |
-| pella     | 88.4 | `pella-g/review/sheet-*.png`     | rotation strays (cleaned); cabbage hugged vs held out between headings; idle boil 21-38%      |
-| dorin     | 62.8 | `dorin-g/review/sheet-*.png`     | idle boil 21-46%; N/S stride 13-14 px below line (needs walkDy); converges on the watch at G2 |
+| Character | Gens | Review                           | Main faults (full list in `review/faults.md`)                                              |
+| --------- | ---: | -------------------------------- | ------------------------------------------------------------------------------------------ |
+| household | 62.8 | `household-g/review/sheet-*.png` | idle boil 20-29%                                                                           |
+| watch     | 62.8 | `watch-g/review/sheet-*.png`     | idle boil 20-32%; east walk retaken (arm swing); faint ghost leg in east cel 7; spear tilt |
+| mira      | 65.8 | `mira-g/review/sheet-*.png`      | idle boil 20-35%; short shuffle may slide; stick hand ambiguous W/SW                       |
+| gao       | 59.8 | `gao-g/review/sheet-*.png`       | idle boil 21-47%                                                                           |
+| pella     | 88.4 | `pella-g/review/sheet-*.png`     | rotation strays (cleaned); cabbage hugged vs held out between headings; idle boil 21-38%   |
+| dorin     | 62.8 | `dorin-g/review/sheet-*.png`     | idle boil 21-46%; N/S stride 13-14 px below line (packed 4-5 px higher)                    |
 
 Idle boil is measured after the best whole-body shift of up to 3 px; Kaya's shipped idles measure 6-17%. It is PixelLab
-redrawing small detail each cel, not the motion: a quieter motion and an 8-cel take did not lower it on Pella. Every sheet
-also has `sheet-g2.png`, the 2x nearest-downsampled preview for the G2 grain under test.
+redrawing small detail each cel, not the motion: a quieter motion and an 8-cel take did not lower it on Pella.

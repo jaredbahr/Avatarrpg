@@ -20,4 +20,3 @@ Flags the gates cannot see, from the sheets at game scale and 3x.
 - East walk: retaken at 0.55x arm swing (s8603, used) after s8601 swung the free arm forward to horizontal.
 - South and north walks: the leading foot reaches 13-14 px below the standing line, past art:validate's 10 px stride bound; packing would need a 3-4 px walkDy, as the thug's south-west did.
 - Spear hand ambiguous in the west rotation.
-- G2: only the long green coat and spear survive; moustache, ears and key are lost, so he converges on the relief watch (whose cap and belt still separate them).

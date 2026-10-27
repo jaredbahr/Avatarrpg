@@ -102,7 +102,7 @@ def strip(cels, scale=1.25):
 def main(char):
     root = HERE.parent / f'{char}-g'; asm = json.load(open(root / 'assembly.json'))
     out = root / 'review'; out.mkdir(exist_ok=True); G = {}; faults = []
-    rows = []; g2 = []
+    rows = []
     for d in DIRS:
         if d not in asm: continue
         a = asm[d]; rot = place(Image.open(root / f'rotations/{d}.png'))
@@ -154,7 +154,6 @@ def main(char):
         lab = Image.new('RGBA', (160, 240), FIELD); ImageDraw.Draw(lab).text((6, 6), f'{d}\nKaya | {char}\nidle 4, walk 8', fill=(255, 255, 255, 255))
         row = [ki, rot] + idle + [None] + kw + [None] + walk
         rows.append((d, strip(row)))
-        g2.append((d, [ki, rot] + idle[:1] + walk[::2]))
     for gi, grp in enumerate([DIRS[:4], DIRS[4:]]):
         rs = [r for d, r in rows if d in grp]
         if not rs: continue
@@ -164,16 +163,6 @@ def main(char):
             dr.text((4, y + 2), f'{d}:  Kaya idle0 | rotation | idle x4 | . | Kaya walk 0,3,6,9 | . | {char} walk x8   (game scale 1.25x)', fill=(230, 230, 230, 255))
             sh.alpha_composite(r, (0, y + 16)); y += r.height + 18
         sh.convert('RGB').save(out / f'sheet-{"south-to-north-east" if gi == 0 else "north-to-south-west"}.png')
-    if g2:   # G2: the chunky 2x grain under test (figures ~38 px): every cel nearest-downsampled 2x, Kaya's the same way
-        Z = 3; cw = 64 * Z; ch = 96 * Z
-        sh = Image.new('RGBA', (cw * max(len(c) for _, c in g2), (ch + 16) * len(g2) + 40), (40, 44, 40, 255)); dr = ImageDraw.Draw(sh)
-        dr.text((4, 4), f'G2 preview: 2x nearest downsample (64x96 cel), shown at {Z}x.  Kaya idle0 | {char} rotation | idle0 | walk 0,2,4,6', fill=(230, 230, 230, 255))
-        for r, (d, cels) in enumerate(g2):
-            y = 40 + r * (ch + 16); dr.text((4, y - 12), d, fill=(230, 230, 230, 255))
-            for i, c in enumerate(cels):
-                small = c.resize((64, 96), Image.NEAREST); tile = Image.new('RGBA', (64, 96), FIELD); tile.alpha_composite(small)
-                sh.alpha_composite(tile.resize((cw, ch), Image.NEAREST), (i * cw, y))
-        sh.convert('RGB').save(out / 'sheet-g2.png')
     json.dump(G, open(out / 'gates.json', 'w'), indent=1)
     open(out / 'faults.md', 'w').write(f'# {char} G review: measured flags\n\n' + ('\n'.join(f'- {f}' for f in faults) or '- none past the gates') + '\n')
     print('\n'.join(faults) or 'no flags')

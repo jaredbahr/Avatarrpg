@@ -16,4 +16,3 @@ Flags the gates cannot see, from the sheets at game scale and 3x.
 - East walk: the s8201 take swung the free arm forward to horizontal (CMU 08_01 is brisk); retaken at 0.55x arm swing (s8203, used). s8203 cel 7 has a faint ghost of the trailing leg drawn in opaque, faded colour.
 - Spear tilts a few degrees off vertical between cels on the side and diagonal walks (east, west); the hand keeps hold.
 - Height swings 121-140 px on the north/south walks are the leading foot reaching toward or away from the camera, not a collapsed cel.
-- G2: cap, belted olive coat and spear survive.

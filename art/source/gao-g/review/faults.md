@@ -12,4 +12,3 @@ Flags the gates cannot see, from the sheets at game scale and 3x.
 
 - Idle boil 21-47% (worst south): abacus beads, pepper string and waterskins re-drawn each cel.
 - Walks (CMU 142_13 Relaxed) read well; abacus arm holds.
-- G2: red peppers, cream apron, cap and round build survive; the abacus becomes a dark blob.
