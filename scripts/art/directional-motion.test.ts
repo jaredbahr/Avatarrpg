@@ -33,28 +33,25 @@ describe('directional art compatibility', () => {
         const decoded = await decodeWebp(
           new Uint8Array(readFileSync(`public/art/units/${atlas.image}`)),
         );
-        const cut = (im: typeof oldImage, r: { x: number; y: number; w: number; h: number }) =>
-          crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });
         const cel = (id: string) => {
           const r = atlas.frames.get(id);
           if (!r) throw new Error(`Missing ${id}`);
           return crop(decoded, { x: r.x, y: r.y, width: r.w, height: r.h });
         };
-        // The retained action cels: the checked-in sources are the original
-        // poses to the pixel, and the lossy atlas keeps their silhouette and feet.
-        for (const [id, r] of oldAtlas.frames) {
-          const [, clip, index] = id.slice(key.length + 1).match(/^(\w+)\/(\d+)$/) ?? [];
-          if (clip !== 'cast' && clip !== 'ko') continue;
-          const original = cut(oldImage, r);
-          const source = readPng(`art/source/${originalStem}-actions/${clip}/${index}.png`);
-          expect(Buffer.from(source.data).equals(Buffer.from(original.data)), id).toBe(true);
-          const shipped = cel(id);
-          expect(lowestOpaqueRow(shipped), id).toBe(lowestOpaqueRow(original));
-          const want = alphaBounds(original);
-          const got = alphaBounds(shipped);
-          if (!want || !got) throw new Error(`Empty ${id}`);
-          for (const side of ['x', 'y', 'width', 'height'] as const)
-            expect(Math.abs(got[side] - want[side]), `${id} ${side}`).toBeLessThanOrEqual(1);
+        // On the world's G1 grid (ADR 0089) the legacy cast and KO cels are
+        // redrawn, not retained: the cast is the east bend's stance, wind-up and
+        // strike, and the KO the south-east knockout's last cel, each a trimmed
+        // cel standing by its own foot anchor.
+        const g = entry.pixelsPerTile / 128;
+        expect(entry.pixelsPerTile).toBe(64);
+        for (const clip of ['cast', 'ko'] as const) {
+          const def = entry.clips[clip];
+          if (!def?.frameSize || !def.anchor) throw new Error(`${key} ${clip} is not trimmed`);
+          for (const id of def.frames) {
+            const r = atlas.frames.get(id);
+            expect(r && [r.w, r.h], id).toEqual([def.frameSize.w, def.frameSize.h]);
+            expect(alphaBounds(cel(id)), id).toBeTruthy();
+          }
         }
         for (const direction of [
           '',
@@ -74,11 +71,12 @@ describe('directional art compatibility', () => {
           expect(walk?.def.frames).toHaveLength(12);
           for (const id of [...(idle?.def.frames ?? []), ...(walk?.def.frames ?? [])]) {
             const rect = atlas.frames.get(id);
-            expect(rect && [rect.w, rect.h], id).toEqual([128, 192]);
+            expect(rect && [rect.w, rect.h], id).toEqual([128 * g, 192 * g]);
           }
           for (const id of idle?.def.frames ?? []) {
-            expect(Math.abs(lowestOpaqueRow(cel(id)) - 163), id).toBeLessThanOrEqual(
-              STAND_TOLERANCE,
+            const line = Math.round(0.85 * 192 * g);
+            expect(Math.abs(lowestOpaqueRow(cel(id)) - line), id).toBeLessThanOrEqual(
+              STAND_TOLERANCE * g,
             );
           }
           const strides = new Set(
