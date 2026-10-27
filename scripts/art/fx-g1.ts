@@ -40,6 +40,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
+import { dropOrphanPixels } from '../../src/render/fx/celResample';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import type { Image } from './lib/image';
 import { newImage, parseHex, readPng, writePng } from './lib/image';
@@ -287,9 +288,12 @@ export function cleanCel(
       const source = fromGenerated ? generated : painted;
       const colour = [source.data[i] ?? 0, source.data[i + 1] ?? 0, source.data[i + 2] ?? 0];
       // A strand is one or two pixels thick: ink or the deepest tone would turn it into a dark line.
-      out.data.set([...snap(colour, ramp, fromGenerated ? shift : 0, thin ? 2 : 0), level], i);
+      // Light carries no dark ink: an emissive cel's darkest choice is its element's darkest tone.
+      const skip = thin ? 2 : EMISSIVE.has(ramp) ? 1 : 0;
+      out.data.set([...snap(colour, ramp, fromGenerated ? shift : 0, skip), level], i);
     }
-  if (!thin) interruptInk(out, ramp);
+  if (!thin && !EMISSIVE.has(ramp)) interruptInk(out, ramp);
+  dropOrphans(out);
   return out;
 }
 
@@ -299,6 +303,27 @@ export function cleanCel(
  * itself, reduced and snapped like the rest.
  */
 export const PAINTED_ONLY: readonly string[] = ['fx.earth.rock/crack/'];
+
+/**
+ * Ramps of light: fire, lightning, water, ice and air glow or catch the light
+ * and take no `#1b1410` at all, only their own tones (the darkest on the outer
+ * edge). Stone, metal and the flask keep the ink.
+ */
+export const EMISSIVE: ReadonlySet<Ramp> = new Set<Ramp>([
+  'fire',
+  'lightning',
+  'water',
+  'ice',
+  'air',
+]);
+
+/** Pieces this small, with nothing else touching them, are clean-up debris and go. */
+export const ORPHAN = 2;
+
+/** Clears every 8-connected piece of `ORPHAN` pixels or fewer (shared with the runtime resample). */
+export function dropOrphans(cel: Image): void {
+  dropOrphanPixels(cel.data, cel.width, cel.height, ORPHAN);
+}
 
 /** Specks this small take no outline: a droplet would be all ink. */
 export const SPECK = 6;

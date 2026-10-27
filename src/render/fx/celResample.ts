@@ -72,5 +72,42 @@ export function resampleCel(
       out[o + 2] = best & 255;
       out[o + 3] = alpha;
     }
+  // A reduction leaves fragments a pixel or two across: debris, not drawing.
+  if (step > 1) dropOrphanPixels(out, px, px, ORPHAN);
   return out;
+}
+
+/** Pieces this small, touching nothing else, are cleared after a reduction. */
+export const ORPHAN = 2;
+
+/** Clears, in place, every 8-connected piece of at most `limit` opaque pixels. */
+export function dropOrphanPixels(
+  data: Uint8Array | Uint8ClampedArray,
+  w: number,
+  h: number,
+  limit: number,
+): void {
+  const opaque = (x: number, y: number) =>
+    x >= 0 && y >= 0 && x < w && y < h && (data[(y * w + x) * 4 + 3] ?? 0) > 0;
+  const seen = new Uint8Array(w * h);
+  for (let start = 0; start < w * h; start++) {
+    if (seen[start] || !opaque(start % w, Math.floor(start / w))) continue;
+    const piece: number[] = [];
+    const stack = [start];
+    seen[start] = 1;
+    while (stack.length > 0) {
+      const at = stack.pop() ?? 0;
+      piece.push(at);
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const x = (at % w) + dx;
+          const y = Math.floor(at / w) + dy;
+          if (opaque(x, y) && !seen[y * w + x]) {
+            seen[y * w + x] = 1;
+            stack.push(y * w + x);
+          }
+        }
+    }
+    if (piece.length <= limit) for (const at of piece) data.fill(0, at * 4, at * 4 + 4);
+  }
 }

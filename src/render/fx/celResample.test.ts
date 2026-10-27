@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resampleCel } from './celResample';
+import { dropOrphanPixels, resampleCel } from './celResample';
 
 /** A size x size master: a solid square of `fill`, an ink outline, clear outside. */
 function master(size: number, inset: number): Uint8ClampedArray {
@@ -42,6 +42,21 @@ describe('resampling a cel to its drawn size', () => {
     expect([...up.subarray((5 * 16 + 5) * 4, (5 * 16 + 5) * 4 + 4)]).toEqual([
       0x1b, 0x14, 0x10, 224,
     ]);
+  });
+
+  it('clears pieces of one or two pixels and keeps anything larger', () => {
+    const px = new Uint8ClampedArray(6 * 6 * 4);
+    const put = (x: number, y: number) => px.set([9, 9, 9, 255], (y * 6 + x) * 4);
+    put(0, 0); // a lone pixel
+    put(5, 5);
+    put(4, 4); // a diagonal pair
+    put(2, 0);
+    put(3, 0);
+    put(3, 1); // three in a corner
+    dropOrphanPixels(px, 6, 6, 2);
+    const alive = (x: number, y: number) => px[(y * 6 + x) * 4 + 3] === 255;
+    expect([alive(0, 0), alive(5, 5), alive(4, 4)]).toEqual([false, false, false]);
+    expect([alive(2, 0), alive(3, 0), alive(3, 1)]).toEqual([true, true, true]);
   });
 
   it('is deterministic', () => {

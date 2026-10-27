@@ -4,10 +4,13 @@ import { resolveFx } from '../../src/content/fx';
 import { CEL_FRAMES, CEL_SIZE, FX_CELS, FX_CEL_SHEETS } from '../../src/content/fxCels';
 import { ATLAS_CELL, ATLAS_SIZE } from '../../src/render/fx/atlas';
 import { FX_CELLS } from '../../src/content/fx';
+import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { parseHex, readPng } from './lib/image';
 import { decodeWebp, isLosslessWebp } from './lib/webp';
 import {
   BEND_PAGE,
+  BEND_PAGE_JSON,
+  EMISSIVE,
   INK,
   RAMPS,
   SHEET_RAMP,
@@ -75,6 +78,37 @@ describe('the G1 effects packer', () => {
         }
       });
     }
+  });
+
+  it('gives light no ink: fire, lightning, water, ice and air cels hold no #1b1410', () => {
+    const ink = parseHex(INK).join(',');
+    for (const def of FX_CEL_SHEETS) {
+      const image = build.sheets.get(`public/${def.url}`)!;
+      def.clips.forEach((clip, row) => {
+        if (!EMISSIVE.has(SHEET_RAMP[`cel-${clip}`]!)) return;
+        for (let y = row * CEL_SIZE; y < (row + 1) * CEL_SIZE; y++)
+          for (let x = 0; x < image.width; x++) {
+            const i = (y * image.width + x) * 4;
+            if (image.data[i + 3])
+              expect(`${image.data[i]},${image.data[i + 1]},${image.data[i + 2]}`).not.toBe(ink);
+          }
+      });
+    }
+    // The bend page: the fireball and the water bolt are light, the rock keeps its ink.
+    const frames = parseAtlasJson(
+      JSON.parse(readFileSync(BEND_PAGE_JSON, 'utf8')) as unknown,
+    ).frames;
+    const inkIn = { fire: 0, water: 0, earth: 0 } as Record<string, number>;
+    for (const [name, f] of frames)
+      for (let y = f.y; y < f.y + f.h; y++)
+        for (let x = f.x; x < f.x + f.w; x++) {
+          const i = (y * build.page.width + x) * 4;
+          const d = build.page.data;
+          if (d[i + 3] && `${d[i]},${d[i + 1]},${d[i + 2]}` === ink)
+            inkIn[name.split('.')[1]!] = (inkIn[name.split('.')[1]!] ?? 0) + 1;
+        }
+    expect([inkIn.fire, inkIn.water]).toEqual([0, 0]);
+    expect(inkIn.earth).toBeGreaterThan(0);
   });
 
   it('passes art:validate, the bend page against its re-written pins', async () => {
