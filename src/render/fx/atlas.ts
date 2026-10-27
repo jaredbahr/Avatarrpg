@@ -14,7 +14,7 @@
 import type { FxCell } from '../../content/fx';
 import { FX_CELLS } from '../../content/fx';
 import { CEL_FRAMES, CEL_SIZE, FX_CELS, FX_CEL_SHEETS, type FxCel } from '../../content/fxCels';
-import { PIXEL_LADDER, ladderOffset, ladderSize, rasterCell } from './pixelCells';
+import { LIGHT_ROW, PIXEL_LADDER, ladderOffset, ladderSize, rasterCell } from './pixelCells';
 import { resampleCel } from './celResample';
 import { TILE } from '../camera';
 
@@ -131,21 +131,31 @@ export function fxAtlas(): HTMLCanvasElement {
  * (`pixelCells.ts`). A particle draws the rung nearest its size, unscaled.
  */
 export function paintCell(ctx: CanvasRenderingContext2D, cell: FxCell, size: number): void {
-  for (const rung of PIXEL_LADDER) {
-    const at = ladderOffset(rung);
-    if (at.x + rung > size || at.y + rung > size) continue;
-    const pixels = new ImageData(new Uint8ClampedArray(rasterCell(cell, rung)), rung, rung);
-    const t = ctx.getTransform();
-    ctx.putImageData(pixels, t.e + at.x, t.f + at.y);
-  }
+  for (const ink of [true, false])
+    for (const rung of PIXEL_LADDER) {
+      const at = ladderOffset(rung);
+      const y = at.y + (ink ? 0 : LIGHT_ROW);
+      if (at.x + rung > size || y + rung > size) continue;
+      const pixels = new ImageData(new Uint8ClampedArray(rasterCell(cell, rung, ink)), rung, rung);
+      const t = ctx.getTransform();
+      ctx.putImageData(pixels, t.e + at.x, t.f + y);
+    }
 }
 
-/** The rung of a shape a `px` world-pixel particle draws, in atlas pixels. */
-export function rungFrame(cell: FxCell, px: number): CellFrame & { readonly rung: number } {
+/**
+ * The rung of a shape a `px` world-pixel particle draws, in atlas pixels:
+ * the inked ladder, or with `ink` false the copy without an outline, which
+ * light (fire, water, air) draws from (ADR 0086).
+ */
+export function rungFrame(
+  cell: FxCell,
+  px: number,
+  ink = true,
+): CellFrame & { readonly rung: number } {
   const rung = ladderSize(px);
   const base = cellFrame(cell);
   const at = ladderOffset(rung);
-  return { x: base.x + at.x, y: base.y + at.y, size: rung, rung };
+  return { x: base.x + at.x, y: base.y + at.y + (ink ? 0 : LIGHT_ROW), size: rung, rung };
 }
 
 /** Resampled cels kept: a fight shows a handful of cue sizes at a time. */

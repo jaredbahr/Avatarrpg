@@ -4,6 +4,7 @@ import {
   BODY,
   GLOW_HALO_ALPHA,
   INK,
+  LIGHT_ROW,
   PIXEL_LADDER,
   SHADE,
   ladderOffset,
@@ -59,6 +60,20 @@ describe('the particle pixel ladder', () => {
 
   it('is deterministic', () => {
     expect(rasterCell('puff', 16)).toEqual(rasterCell('puff', 16));
+  });
+
+  it('has an uninked copy for light that fits under the inked one and holds no ink', () => {
+    for (const rung of PIXEL_LADDER) {
+      const at = ladderOffset(rung);
+      expect(at.y + rung).toBeLessThanOrEqual(LIGHT_ROW);
+      expect(at.y + LIGHT_ROW + rung).toBeLessThanOrEqual(ATLAS_CELL);
+    }
+    for (const cell of FX_CELLS)
+      for (const rung of PIXEL_LADDER) {
+        const px = rasterCell(cell, rung, false);
+        for (let i = 0; i < px.length; i += 4)
+          if (px[i + 3]) expect(`${px[i]},${px[i + 1]},${px[i + 2]}`).not.toBe(INK.join(','));
+      }
   });
 });
 

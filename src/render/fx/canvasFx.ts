@@ -15,7 +15,7 @@ import { ATLAS_CELL, cellFrame, fxAtlas, celAtSize, celPx, celReady, rungFrame }
 import { TILE } from '../camera';
 import { StrokeRasterer } from './pixelStrokes';
 import { celFrameIndex } from '../../content/fxCels';
-import { roleColor } from './colors';
+import { inkedPalette, roleColor } from './colors';
 import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
 import type { EmitterInstance } from '../view';
 
@@ -78,6 +78,7 @@ export class CanvasFxLayer {
         const cel = def.cel && celReady(def.cel) ? def.cel : null;
         const celFrame = cel ? celFrameIndex(cel, instance.elapsed, def.duration) : 0;
         const cell = cel ? null : this.cell(def.cell, roleColor(def.color, instance.palette));
+        const ink = inkedPalette(instance.palette);
         ctx.save();
         ctx.globalCompositeOperation = def.blend === 'add' ? 'lighter' : 'source-over';
         // Pixel art at the world's grain (ADR 0086): never blended between texels.
@@ -91,7 +92,7 @@ export class CanvasFxLayer {
           // either way one art px a world px, never a scaled texel.
           const sized = cel ? celAtSize(cel, celFrame, celPx(tiles)) : null;
           if (cel && !sized) continue;
-          const rung = cel ? null : rungFrame(def.cell, tiles * TILE);
+          const rung = cel ? null : rungFrame(def.cell, tiles * TILE, ink);
           const s = ((rung ? rung.size : (sized?.canvas.width ?? 0)) / TILE) * size;
           const rotation = data[at + 3] ?? 0;
           ctx.globalAlpha = Math.max(0, Math.min(1, data[at + 4] ?? 0));
@@ -138,7 +139,12 @@ export class CanvasFxLayer {
         const kept = shapes.slice(0, Math.max(0, MAX_STROKES - strokes));
         strokes += kept.length;
         // Drawn straight away, so one pooled raster serves every emitter.
-        const raster = this.strokeRaster.raster(0, kept, color, def.ink ? ink : null);
+        const raster = this.strokeRaster.raster(
+          0,
+          kept,
+          color,
+          def.ink && inkedPalette(instance.palette) ? ink : null,
+        );
         if (!raster) continue;
         const k = size / TILE;
         ctx.save();

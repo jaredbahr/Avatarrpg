@@ -27,7 +27,7 @@ import {
 } from './atlas';
 import { PIXEL_LADDER } from './pixelCells';
 import { type FxCel, celFrameIndex } from '../../content/fxCels';
-import { hexToNumber, roleColor } from './colors';
+import { hexToNumber, inkedPalette, roleColor } from './colors';
 import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
 import { StrokeRasterer } from './pixelStrokes';
 import type { EmitterInstance } from '../view';
@@ -70,16 +70,17 @@ export class ParticleLayer {
     this.unsubscribe = onFxAtlasChange(() => this.source.update());
     const atlas = new Texture({ source: this.source });
     for (const cell of FX_CELLS)
-      for (const rung of PIXEL_LADDER) {
-        const frame = rungFrame(cell, rung);
-        this.rungs.set(
-          `${cell}/${rung}`,
-          new Texture({
-            source: this.source,
-            frame: new Rectangle(frame.x, frame.y, frame.size, frame.size),
-          }),
-        );
-      }
+      for (const rung of PIXEL_LADDER)
+        for (const ink of [true, false]) {
+          const frame = rungFrame(cell, rung, ink);
+          this.rungs.set(
+            `${cell}/${rung}/${ink}`,
+            new Texture({
+              source: this.source,
+              frame: new Rectangle(frame.x, frame.y, frame.size, frame.size),
+            }),
+          );
+        }
     for (const cell of FX_CELLS) {
       const frame = cellFrame(cell);
       this.cells.set(
@@ -147,6 +148,7 @@ export class ParticleLayer {
         const cel = def.cel && celReady(def.cel) ? def.cel : undefined;
         const celFrame = cel ? celFrameIndex(cel, instance.elapsed, def.duration) : 0;
         const tint = hexToNumber(roleColor(def.color, instance.palette));
+        const ink = inkedPalette(instance.palette);
         const list = def.blend === 'add' ? additive : normal;
         // Stretched along the ground diagonal the oblique camera halves, so it lands round.
         const up = oblique && def.upright;
@@ -174,7 +176,7 @@ export class ParticleLayer {
           }
           // A shape draws the rung nearest its size at one art px a world px.
           const rung = rungFrame(def.cell, tiles * TILE);
-          const texture = this.rungs.get(`${def.cell}/${rung.rung}`);
+          const texture = this.rungs.get(`${def.cell}/${rung.rung}/${ink}`);
           if (!texture) continue;
           const particle = this.particle(used++);
           particle.texture = texture;
@@ -200,7 +202,7 @@ export class ParticleLayer {
           rasters,
           shapes,
           roleColor(def.color, instance.palette),
-          def.ink ? roleColor('ink', instance.palette) : null,
+          def.ink && inkedPalette(instance.palette) ? roleColor('ink', instance.palette) : null,
         );
         if (!raster) continue;
         const slot = this.rasterSlot(rasters++, raster.canvas);

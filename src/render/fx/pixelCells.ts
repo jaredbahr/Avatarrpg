@@ -43,6 +43,9 @@ export function ladderOffset(size: number): { x: number; y: number } {
   throw new Error(`${size} px is not on the pixel ladder`);
 }
 
+/** The uninked copy of the ladder sits this far below the inked one in a shape's square. */
+export const LIGHT_ROW = 50;
+
 /** The body, its shadow side and the ink, before tinting. */
 export const BODY = [255, 255, 255] as const;
 export const SHADE = [184, 184, 184] as const;
@@ -160,7 +163,7 @@ function coverage(cell: FxCell, size: number): Uint8Array {
  * split along the down-right diagonal through the shape's own centre; the ink
  * runs on silhouette pixels from 8 px up (only down and right at 6–7 px).
  */
-export function rasterCell(cell: FxCell, size: number): Uint8ClampedArray {
+export function rasterCell(cell: FxCell, size: number, ink = true): Uint8ClampedArray {
   const mask = coverage(cell, size);
   const out = new Uint8ClampedArray(size * size * 4);
   let cx = 0;
@@ -176,7 +179,7 @@ export function rasterCell(cell: FxCell, size: number): Uint8ClampedArray {
   cy /= Math.max(1, n);
   const solid = (x: number, y: number) =>
     x >= 0 && y >= 0 && x < size && y < size && (mask[y * size + x] ?? 0) === 2;
-  const inked = INKED.has(cell) && size >= 6;
+  const inked = ink && INKED.has(cell) && size >= 6;
   for (let y = 0; y < size; y++)
     for (let x = 0; x < size; x++) {
       const m = mask[y * size + x] ?? 0;
