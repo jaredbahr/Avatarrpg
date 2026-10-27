@@ -11,13 +11,15 @@ treatment, and the sheets:
   review/families-crops-4x.png    4x crops at game scale: figure beside the well, a lantern, a cart wheel, the kiln
   review/families-candidates.png  every candidate beside its blockout at game scale
 
-    python3 -I art/source/ba-dan-market-g/tools/families.py
+    python3 -I art/source/ba-dan-market-g/tools/families.py                    # soft 2 px outline (default)
+    TONE_OUTLINE=crisp1 python3 -I art/source/ba-dan-market-g/tools/families.py  # crisp 1 px #1b1410 on the G1 grid
 """
 import json, math, pathlib, sys
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from tone import tone                      # noqa: E402
+import tone as tone_mod                    # noqa: E402
+from tone import tone, crisp_outline       # noqa: E402
 from grain import reduce_pixel             # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -48,6 +50,8 @@ def kaya_g1():
 def g1_export(im, m, s):
     factor = m["grain_f"] / 1.5
     g1 = reduce_pixel(im, factor)
+    if tone_mod.OUTLINE == "crisp1":
+        g1 = crisp_outline(g1)
     bb = g1.getbbox()
     g1 = g1.crop(bb)
     ax, ay = m["ground_anchor_src_px"]
@@ -131,6 +135,8 @@ def market_toned():
         s = sel[name]
         im = tone(Image.open(ROOT / s["path"]))
         g1 = reduce_pixel(im, rec["factor_from_source"])
+        if tone_mod.OUTLINE == "crisp1":
+            g1 = crisp_outline(g1)
         g1 = g1.crop(g1.getbbox())
         if s.get("repeat"):
             step = s["repeat"] / 1.5
@@ -180,4 +186,6 @@ def candidates(sel):
 
 
 if __name__ == "__main__":
+    import os
+    tone_mod.OUTLINE = os.environ.get("TONE_OUTLINE", "soft2")   # soft2 (default) or crisp1
     main()

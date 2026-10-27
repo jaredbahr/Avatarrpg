@@ -10,7 +10,13 @@ deterministic and using no colour the object does not already imply:
    edge reads two px soft, as Kaya's does (about 60% of the edge after the pass, measured below);
 3. value and warmth: non-contour pixels are scaled by `VALUE` and warmed (red up, blue down) by `WARM`.
 
-    python3 -I tools/tone.py in.png out.png
+Two outline modes (`OUTLINE`, or `--outline` on the command line):
+  soft2   (default) the two-px soft edge above, applied on the source before the G1 reduction;
+  crisp1  for a party redrawn with a crisp 1 px outline on the native G1 grid (art/source/party-g1/): the source gets
+          only the value and warmth step, and `crisp_outline` then draws one px of #1b1410 on every silhouette edge
+          of the G1 image, after the reduction, so the line lands on the G1 grid.
+
+    python3 -I tools/tone.py in.png out.png [--outline soft2|none]
 """
 import sys
 from PIL import Image
@@ -25,7 +31,30 @@ def dark(q):
     return q[3] >= 128 and max(q[:3]) < 75
 
 
-def tone(im):
+OUTLINE = "soft2"
+CRISP_LINE = (27, 20, 16)   # #1b1410
+
+
+def crisp_outline(g1):
+    """One px of #1b1410 on every silhouette-edge pixel of a G1 image (alpha unchanged)."""
+    g1 = g1.convert("RGBA")
+    p = g1.load()
+    W, H = g1.size
+    out = g1.copy()
+    o = out.load()
+    for y in range(H):
+        for x in range(W):
+            if p[x, y][3] < 128:
+                continue
+            if any(not (0 <= x + dx < W and 0 <= y + dy < H) or p[x + dx, y + dy][3] < 128
+                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = CRISP_LINE + (p[x, y][3],)
+    return out
+
+
+def tone(im, outline=None):
+    """outline: 'soft2' (contour hue + two-px soft edge) or 'none' (value and warmth only, for crisp1)."""
+    outline = outline or ("none" if OUTLINE == "crisp1" else OUTLINE)
     im = im.convert("RGBA")
     p = im.load()
     W, H = im.size
@@ -39,7 +68,7 @@ def tone(im):
             if q[3] < 128:
                 continue
             sides = [(dx, dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) if trans(x + dx, y + dy)]
-            if sides and dark(q):
+            if sides and dark(q) and outline == "soft2":
                 lum = max(q[:3]) / max(KAYA_LINE)
                 o[x, y] = tuple(min(255, round(c * min(lum, 1.6))) for c in KAYA_LINE) + (q[3],)
                 for dx, dy in sides:
@@ -60,4 +89,5 @@ def tone(im):
 
 
 if __name__ == "__main__":
-    tone(Image.open(sys.argv[1])).save(sys.argv[2])
+    mode = sys.argv[sys.argv.index("--outline") + 1] if "--outline" in sys.argv else None
+    tone(Image.open(sys.argv[1]), mode).save(sys.argv[2])

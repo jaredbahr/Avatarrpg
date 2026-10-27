@@ -78,7 +78,7 @@
   },
   "low-planter": {
     "blockout": "low-planter",
-    "path": "raw/low-planter-f2-s41/0.png",
+    "path": "fixes/low-planter-f4-s62-clean.png",
     "tiles": [
       [11, 10],
       [17, 4]
@@ -86,7 +86,7 @@
   },
   "low-planter-1x2": {
     "blockout": "low-planter-1x2",
-    "path": "raw/low-planter-1x2-f2-s41/0.png",
+    "path": "fixes/low-planter-1x2-f4-s62-clean.png",
     "tiles": [[17, 10]]
   },
   "barrels": {
@@ -111,7 +111,7 @@
   },
   "kiln": {
     "blockout": "kiln",
-    "path": "raw/kiln-f2-s41/0.png",
+    "path": "raw/kiln-f4-s61/0.png",
     "tiles": []
   }
 }

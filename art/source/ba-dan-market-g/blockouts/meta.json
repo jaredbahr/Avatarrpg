@@ -242,9 +242,9 @@
     "offset_in_footprint_screen_px": [32.33, 33.66]
   },
   "low-planter": {
-    "canvas": [244, 152],
+    "canvas": [244, 156],
     "grain_f": 0.7,
-    "ground_anchor_src_px": [61, 27],
+    "ground_anchor_src_px": [61, 34],
     "extent_screen_px": {
       "along_a": 140,
       "along_b": 44
@@ -308,9 +308,9 @@
     "offset_in_footprint_screen_px": [21.66, 45.66]
   },
   "kiln": {
-    "canvas": [104, 140],
+    "canvas": [92, 156],
     "grain_f": 0.5625,
-    "ground_anchor_src_px": [55, 49],
+    "ground_anchor_src_px": [40, 61],
     "extent_screen_px": {
       "along_a": 64,
       "along_b": 50

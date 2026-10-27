@@ -1675,8 +1675,8 @@
           "sha256": "e96463c38b779422e2be8169693ff689729e7859feb13a0e1b822174a1e99c02"
         }
       ],
-      "verdict": "selected",
-      "note": "family round 2 (Route A at G1): blockout, text edit"
+      "verdict": "superseded",
+      "note": "family round 2 (Route A at G1): blockout, text edit | kiln dome squat / planter shrubs read as cabbages; redrawn in f4"
     },
     {
       "id": "lantern-post-f2-s41",
@@ -1885,8 +1885,8 @@
           "sha256": "52532da740d95f7980d07fda75b31f1d01880e36ce382de4b28cea6a4b15ed67"
         }
       ],
-      "verdict": "selected",
-      "note": "family round 2 (Route A at G1): blockout, text edit"
+      "verdict": "superseded",
+      "note": "family round 2 (Route A at G1): blockout, text edit | kiln dome squat / planter shrubs read as cabbages; redrawn in f4"
     },
     {
       "id": "low-planter-1x2-f2-s42",
@@ -2025,8 +2025,8 @@
           "sha256": "59b0347e334714e1844a0c8e53d7918c720b242498d631ef84a7c800cfbae06f"
         }
       ],
-      "verdict": "selected",
-      "note": "family round 2 (Route A at G1): blockout, text edit"
+      "verdict": "superseded",
+      "note": "family round 2 (Route A at G1): blockout, text edit | kiln dome squat / planter shrubs read as cabbages; redrawn in f4"
     },
     {
       "id": "stone-lantern-f2-s41",
@@ -2482,12 +2482,222 @@
       ],
       "verdict": "alternate",
       "note": "family round 3: reworked blockout (uneven logs / folded cloths in the basket)"
+    },
+    {
+      "id": "kiln-f4-s62",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:43:25.251158+00:00",
+      "job_id": "0e14a5ae-9a53-45c5-bd9b-f15b67e790fa",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 62,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small beehive pottery kiln: a low round brick wall under a clay dome, a short brick flue at the crown, an arched fire mouth with dim orange embers inside, and two small unfired pots drying on a board. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/kiln.png",
+          "sha256": "e63302432505f4dd8becbe1b82afe9c136dc3eca4cae6fda5491e58f42d08ca0"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6112.6,
+      "balance_after": 6100.6,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/kiln-f4-s62/0.png",
+          "sha256": "bacddde58e86dc6bc6d9315b48426bb6942e05ed78f003f24e0a570a2e0fa974"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 4: kiln redrawn as a beehive kiln / planters with loose mixed herbs (main session request)"
+    },
+    {
+      "id": "kiln-f4-s61",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:43:25.268684+00:00",
+      "job_id": "d4f049bc-41ef-4124-ab4c-e9bc849fc90a",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 61,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A small beehive pottery kiln: a low round brick wall under a clay dome, a short brick flue at the crown, an arched fire mouth with dim orange embers inside, and two small unfired pots drying on a board. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/kiln.png",
+          "sha256": "e63302432505f4dd8becbe1b82afe9c136dc3eca4cae6fda5491e58f42d08ca0"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "balance_before": 6112.6,
+      "balance_after": 6100.6,
+      "gens": 6.0,
+      "outputs": [
+        {
+          "path": "raw/kiln-f4-s61/0.png",
+          "sha256": "0596cc70cdae70b66d50d7c10e6ecdc3d3b4f1ddbec382ec223122680e69d8c9"
+        }
+      ],
+      "verdict": "selected",
+      "note": "family round 4: kiln redrawn as a beehive kiln / planters with loose mixed herbs (main session request)"
+    },
+    {
+      "id": "low-planter-1x2-f4-s61",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:43:25.241556+00:00",
+      "job_id": "3803961c-d532-49c7-b471-599f79679f95",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 61,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and a loose mixed planting of herb sprigs, small low shrubs and a few muted ochre and dusty violet flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter-1x2.png",
+          "sha256": "a32568c65d4504087d1df2abf400a044e60b287e6792331442f877b0aa9e3bf7"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6112.6,
+      "balance_after": 6091.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-1x2-f4-s61/0.png",
+          "sha256": "5b083232cb72cb41ad5f9a1902d5070f2f24d90417a3af028ddd5058965a3505"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 4: kiln redrawn as a beehive kiln / planters with loose mixed herbs (main session request)"
+    },
+    {
+      "id": "low-planter-1x2-f4-s62",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:44:01.043595+00:00",
+      "job_id": "746095d2-78a9-435e-b1e7-a22fd84b012b",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 62,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and a loose mixed planting of herb sprigs, small low shrubs and a few muted ochre and dusty violet flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter-1x2.png",
+          "sha256": "a32568c65d4504087d1df2abf400a044e60b287e6792331442f877b0aa9e3bf7"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6100.6,
+      "balance_after": 6080.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-1x2-f4-s62/0.png",
+          "sha256": "496b7e78b6acc21583a6688a1d2cebdc2eb26c99fe048d8604322e583f9f6adb"
+        }
+      ],
+      "verdict": "selected, cleaned",
+      "note": "family round 4: kiln redrawn as a beehive kiln / planters with loose mixed herbs (main session request) | near-white pixels recoloured by tools/clean_white.py -> fixes/low-planter-1x2-f4-s62-clean.png"
+    },
+    {
+      "id": "low-planter-f4-s61",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:44:01.447088+00:00",
+      "job_id": "69455227-5bff-4ced-a5eb-1e284dc3f6b3",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 61,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and a loose mixed planting of herb sprigs, small low shrubs and a few muted ochre and dusty violet flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter.png",
+          "sha256": "6fe16cedf49f87e9cb297eb9f2942f42eb60920af81247f3005d29197702ed78"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6100.6,
+      "balance_after": 6071.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-f4-s61/0.png",
+          "sha256": "dc9fb74dd3c7620bbc94e49415c72fe028c422de05caeac0ecc82642d2fff787"
+        }
+      ],
+      "verdict": "alternate",
+      "note": "family round 4: kiln redrawn as a beehive kiln / planters with loose mixed herbs (main session request)"
+    },
+    {
+      "id": "low-planter-f4-s62",
+      "endpoint": "/edit-image-pro-flash",
+      "started": "2026-10-27T04:44:17.896598+00:00",
+      "job_id": "9108ab2a-ea55-4733-a75f-586ec798d41c",
+      "object_id": null,
+      "status": "completed",
+      "body": {
+        "method": "text",
+        "seed": 62,
+        "no_background": true,
+        "description": "Keep every shape, size, position and the camera angle exactly as drawn; only redraw the surfaces, wood grain, stone, weave, cloth and plants in a careful hand-drawn pixel style. Do not add any object, cloth, sign, lettering or decoration that is not in the drawing. A long low raised planter built of pale dry-stone blocks, filled with dark soil and a loose mixed planting of herb sprigs, small low shrubs and a few muted ochre and dusty violet flowers. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, matte, no white or near-white pixels, no gloss, no bevelled plank edges, no text."
+      },
+      "inputs": {
+        "image": {
+          "path": "blockouts/low-planter.png",
+          "sha256": "6fe16cedf49f87e9cb297eb9f2942f42eb60920af81247f3005d29197702ed78"
+        }
+      },
+      "usage": {
+        "type": "generations",
+        "generations": 9.0
+      },
+      "balance_before": 6091.6,
+      "balance_after": 6062.6,
+      "gens": 9.0,
+      "outputs": [
+        {
+          "path": "raw/low-planter-f4-s62/0.png",
+          "sha256": "28c99561c00732b081b11665760aa6f2955ffc2e1fb95e56540f1d798d81a36f"
+        }
+      ],
+      "verdict": "selected, cleaned",
+      "note": "family round 4: kiln redrawn as a beehive kiln / planters with loose mixed herbs (main session request) | near-white pixels recoloured by tools/clean_white.py -> fixes/low-planter-f4-s62-clean.png"
     }
   ],
   "account": {
     "note": "the PixelLab subscription is shared with other sessions that were generating at the same time, so balance_before/after are account-wide readings; gens is the job's own reported usage",
     "balance_at_start": 9818.0,
-    "balance_at_end": 6151.6
+    "balance_at_end": 6062.6
   },
-  "total_generations": 489.0
+  "total_generations": 537.0
 }

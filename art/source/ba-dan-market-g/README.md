@@ -148,29 +148,45 @@ edit, two seeds, judged beside Kaya). Designs follow the pieces in the current p
 - Sheets: `review/families-1x.png` (beside Kaya at the game camera), `review/families-g1.png` (G1 beside Kaya's G1, 1x and
   4x), `review/families-crops-4x.png`, `review/families-candidates.png`.
 
-| Family (tiles in `baDan.ts`)                             | Selected                                    | Built size (H = 89 screen px)                               |
-| -------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------- |
-| village well (12,13)                                     | `village-well-f2-s41`                       | wall 46 across, 26 high (0.29H); posts to 80; roof ridge 94 |
-| banner pole (11,2), (18,10)                              | `banner-pole-f2-s41`                        | post 102 (1.15H) on a stone footing; banner 17 x 38         |
-| lantern post (16,9), (20,6), (20,9)                      | `lantern-post-f2-s41`                       | post 88 (0.99H); lantern 7 x 11, matte amber                |
-| laundry line (17,2)                                      | `laundry-line-f3-s52`                       | posts 72 (0.81H), 150 apart; cloths 12–16 wide              |
-| notice board (18,6)                                      | `notice-board-f2-s41`                       | board 38 wide, 36–64 high; sheets blank (ruled only)        |
-| handcart (19,4)                                          | `fixes/handcart-f2-s41-clean`               | bed 52 x 22 at 16; wheels 24 across                         |
-| garden plot (2,10), 3x2: a kit laid on the painted soil  | `garden-*-f2-s41` (6 pieces)                | edges 9 high, a tile long; post 14; crop rows a tile long   |
-| stone lantern (5,11)                                     | `stone-lantern-f2-s41`                      | 55 high (0.62H)                                             |
-| trough with hay (19,10)                                  | `trough-hay-f2-s41`                         | rack 47 x 17, 40 high plus hay; trough 58 x 22, 14 high     |
-| low planter (11,10), (17,4); 1x2 (17,10)                 | `low-planter(-1x2)-f2-s41`                  | 140 x 44 x 16 high (0.18H), shrubs above                    |
-| house props: barrels, crates, water jars, firewood, kiln | `*-f2-s41`, crates `s42`, firewood `f3-s52` | barrels 18–20 x 24–26; jars 17–20 x 25–30; kiln 0.6H        |
+| Family (tiles in `baDan.ts`)                             | Selected                                                   | Built size (H = 89 screen px)                               |
+| -------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
+| village well (12,13)                                     | `village-well-f2-s41`                                      | wall 46 across, 26 high (0.29H); posts to 80; roof ridge 94 |
+| banner pole (11,2), (18,10)                              | `banner-pole-f2-s41`                                       | post 102 (1.15H) on a stone footing; banner 17 x 38         |
+| lantern post (16,9), (20,6), (20,9)                      | `lantern-post-f2-s41`                                      | post 88 (0.99H); lantern 7 x 11, matte amber                |
+| laundry line (17,2)                                      | `laundry-line-f3-s52`                                      | posts 72 (0.81H), 150 apart; cloths 12–16 wide              |
+| notice board (18,6)                                      | `notice-board-f2-s41`                                      | board 38 wide, 36–64 high; sheets blank (ruled only)        |
+| handcart (19,4)                                          | `fixes/handcart-f2-s41-clean`                              | bed 52 x 22 at 16; wheels 24 across                         |
+| garden plot (2,10), 3x2: a kit laid on the painted soil  | `garden-*-f2-s41` (6 pieces)                               | edges 9 high, a tile long; post 14; crop rows a tile long   |
+| stone lantern (5,11)                                     | `stone-lantern-f2-s41`                                     | 55 high (0.62H)                                             |
+| trough with hay (19,10)                                  | `trough-hay-f2-s41`                                        | rack 47 x 17, 40 high plus hay; trough 58 x 22, 14 high     |
+| low planter (11,10), (17,4); 1x2 (17,10)                 | `fixes/low-planter(-1x2)-f4-s62-clean`                     | 140 x 44 x 16 high (0.18H), shrubs above                    |
+| house props: barrels, crates, water jars, firewood, kiln | `*-f2-s41`, crates `s42`, firewood `f3-s52`, kiln `f4-s61` | barrels 18–20 x 24–26; jars 17–20 x 25–30; kiln 0.6H        |
 
 Faults:
 
 - The 3x2 garden plot is wider than the edit limit at any usable grain, so it is a kit; its look depends on the compositor's
   layout and the painted soil.
-- Firewood and the laundry basket were redrawn once (the first stack was a regular grid of log ends; the basket's
-  contents read as stones). The kiln dome is still squat, and the planter shrubs read as heaped cabbages.
+- Redrawn once each: the firewood (the first stack was a regular grid of log ends), the laundry basket (its contents read
+  as stones), the kiln (the first dome was squat; now a small beehive kiln, wall 0.27H under a dome rising about as high
+  again, `kiln-f4-s61`) and the planters (the first shrubs read as heaped cabbages; now loose mixed herbs, small shrubs and
+  a few muted flowers, `low-planter(-1x2)-f4-s62`, 6 and 11 near-white px recoloured).
 - At G1 the object grain comes from the reduction, not the generator: all sources are reduced (0.375–0.47), so small goods
   merge (fruit 2–3 px, cabbage rows 3 px).
 - Near-white: none in any selected object (handcart 1 px and beans 6 px recoloured by `tools/clean_white.py`).
 - Contact shadows, grass over the feet and ground wear are still the compositor's.
 
-Generations this round: **306** reported by the jobs (42 candidates, then 4 to redraw two). Running total: **489**.
+Generations this round: **354** reported by the jobs (42 candidates for 276, 4 to redraw the firewood and laundry line for
+30, 6 to redraw the kiln and planters for 48). Running total: **537**.
+
+### Switching the outline (soft 2 px or crisp 1 px)
+
+The tone pass is parameterised for the party test in `art/source/party-g1/` (party rebuilt with a crisp 1 px outline on
+the native G1 grid). If that is chosen, re-run the exports with the crisp outline; nothing else changes:
+
+```bash
+TONE_OUTLINE=crisp1 python3 -I art/source/ba-dan-market-g/tools/families.py   # families/g1/ and grain/g1-toned/
+```
+
+`crisp1` applies only the value and warmth step to the source, reduces to G1, then draws one px of `#1b1410` on every
+silhouette edge of the G1 image (`tone.crisp_outline`), so the line sits on the G1 grid. Sizes and anchors do not change.
+The default (`soft2`, or no variable) reproduces the committed files exactly.

@@ -436,13 +436,39 @@ def trough_hay(seed=1):
     return c
 
 
+def herbs(c, a0, a1, b0, b1, z, n, seed):
+    """Mixed planting: spiky herb sprigs, small loose shrubs and a few flower heads, varied heights."""
+    rnd = random.Random(seed)
+    greens = [[rgb("#6f8a4a"), rgb("#4f6834")], [rgb("#7d8f56"), rgb("#5b6b3c")], [rgb("#5f7d4a"), rgb("#445c35")]]
+    pts = sorted(((rnd.uniform(a0, a1), rnd.uniform(b0, b1), rnd.random()) for _ in range(n)), key=lambda t: t[0] + t[1])
+    for a, b, kind in pts:
+        g = rnd.choice(greens)
+        x, y = c.p(a, b, z)
+        if kind < 0.45:                                     # a sprig: a fan of narrow leaves
+            hgt = c.s(rnd.uniform(8, 15))
+            for k in range(5):
+                dx = (k - 2) * c.s(1.6) + rnd.uniform(-1, 1)
+                c.d.line([(x, y), (x + dx, y - hgt * rnd.uniform(0.7, 1.0))], fill=g[1 if k % 2 else 0], width=2)
+        elif kind < 0.85:                                   # a loose low shrub: three small overlapping lobes
+            for k in range(3):
+                ox, oy = rnd.uniform(-1, 1) * c.s(3), -rnd.uniform(0, 1) * c.s(3)
+                rr = c.s(rnd.uniform(3, 5))
+                c.d.ellipse([x + ox - rr, y + oy - rr * 1.1, x + ox + rr, y + oy + rr * 0.4], fill=g[1], outline=LINE)
+                c.d.ellipse([x + ox - rr + 1, y + oy - rr, x + ox, y + oy - rr * 0.2], fill=g[0])
+        else:                                               # a flowering stem: muted ochre or dusty violet heads
+            hgt = c.s(rnd.uniform(10, 16))
+            c.d.line([(x, y), (x, y - hgt)], fill=g[1], width=1)
+            col = rnd.choice([FLOWER[0], rgb("#8a6a86"), rgb("#b07a4a")])
+            c.d.rectangle([x - 1, y - hgt - 1, x + 1, y - hgt + 1], fill=col)
+
+
 def low_planter(seed=1):
     f = 0.7
     L, D = 140, 44
     c = canvas_for(256, 136, f, L, D, margin_bottom=4)
     stone_box(c, 0, L, 0, D, 0, 16, STONE_PALE, course=8, block=14)
     c.poly([c.p(3, 3, 16), c.p(L - 3, 3, 16), c.p(L - 3, D - 3, 16), c.p(3, D - 3, 16)], SOIL[1])
-    shrubs(c, 8, L - 8, 8, D - 8, 16, 26, seed, size=(12, 18), flowers=6)
+    herbs(c, 6, L - 6, 6, D - 6, 16, 60, seed)
     return c
 
 
@@ -452,7 +478,7 @@ def low_planter_1x2(seed=1):
     c = canvas_for(256, 136, f, L, D, margin_bottom=4)
     stone_box(c, 0, L, 0, D, 0, 16, STONE_PALE, course=8, block=14)
     c.poly([c.p(3, 3, 16), c.p(L - 3, 3, 16), c.p(L - 3, D - 3, 16), c.p(3, D - 3, 16)], SOIL[1])
-    shrubs(c, 8, L - 8, 8, D - 8, 16, 26, seed + 5, size=(12, 18), flowers=6)
+    herbs(c, 6, L - 6, 6, D - 6, 16, 60, seed + 5)
     return c
 
 
@@ -523,24 +549,32 @@ def firewood(seed=1):
 
 
 def kiln(seed=1):
+    """A small beehive pottery kiln: a low brick wall (0.27H) under a clay dome rising about as high again, a short
+    flue at the crown, an arched fire mouth with dim embers on the lit face, pots drying on a board."""
     f = 0.5625
     c = canvas_for(160, 168, f, 64, 50, margin_bottom=4)
-    A, B = 26, 24
-    # brick base drum, clay dome, stack, arched fire mouth with embers; pots drying on a board
-    c.cylinder(A, B, 0, 44, 14, BRICK)
-    x, y = c.p(A, B, 14)
-    r = c.s(44) / 2
-    c.d.chord([x - r, y - r * 1.25, x + r, y + r * 0.5], 180, 360, fill=CLAY[1], outline=LINE)
-    c.d.chord([x - r * 0.9, y - r * 1.15, x + r * 0.1, y + r * 0.2], 180, 270, fill=CLAY[0])
-    c.d.rectangle([x - r, y - 1, x + r, y + 1], fill=CLAY[1])
-    c.cylinder(A + 8, B - 6, 24, 9, 22, BRICK)
-    xm, ym = c.p(A - 4, B + 22, 0)
-    c.d.chord([xm - c.s(7), ym - c.s(16), xm + c.s(7), ym + c.s(2)], 180, 360, fill=LINE)
-    c.d.rectangle([xm - c.s(7), ym - c.s(7), xm + c.s(7), ym], fill=LINE)
-    c.d.ellipse([xm - c.s(4), ym - c.s(5), xm + c.s(4), ym], fill=AMBER[2])
-    c.box(46, 62, 34, 46, 0, 2.5, WOOD_OLD)
-    c.jar(50, 40, 2.5, 7, 9, CLAY_PALE)
-    c.jar(57, 41, 2.5, 6, 7, CLAY_PALE, neck=0.5)
+    A, B, R, Hd, rise = 26, 24, 22, 24, 22
+    c.cylinder(A, B, 0, 2 * R, Hd, BRICK)
+    x, y = c.p(A, B, 0)
+    r = c.s(2 * R) / 2
+    for k in range(1, 4):                                   # brick courses follow the drum
+        yy = y - c.s(Hd) * k / 4
+        c.d.arc([x - r, yy - r / 2, x + r, yy + r / 2], 0, 180, fill=BRICK[2])
+    xd, yd = c.p(A, B, Hd)
+    rh = c.s(rise)
+    c.d.chord([xd - r, yd - rh, xd + r, yd + rh], 180, 360, fill=CLAY[1], outline=LINE)   # dome above the rim
+    c.d.chord([xd - r, yd - r / 2, xd + r, yd + r / 2], 0, 180, fill=CLAY[1])
+    c.d.chord([xd - r * 0.85, yd - rh * 0.9, xd + r * 0.05, yd + rh * 0.3], 180, 270, fill=CLAY[0])
+    c.d.arc([xd - r, yd - r / 2, xd + r, yd + r / 2], 0, 180, fill=LINE)
+    c.cylinder(A + 3, B - 3, Hd + rise - 3, 8, 9, BRICK)    # flue at the crown
+    c.ell(A + 3, B - 3, Hd + rise + 6, 5, LINE, line=False)
+    xm, ym = c.p(A + R * 0.3, B + R * 0.8, 0)               # arched fire mouth on the drum's lit face
+    c.d.chord([xm - c.s(6), ym - c.s(18), xm + c.s(6), ym - c.s(6)], 180, 360, fill=LINE)
+    c.d.rectangle([xm - c.s(6), ym - c.s(12), xm + c.s(6), ym], fill=LINE)
+    c.d.ellipse([xm - c.s(3.5), ym - c.s(5), xm + c.s(3.5), ym], fill=AMBER[2])
+    c.box(48, 64, 34, 46, 0, 2.5, WOOD_OLD)
+    c.jar(52, 40, 2.5, 7, 9, CLAY_PALE)
+    c.jar(59, 41, 2.5, 6, 7, CLAY_PALE, neck=0.5)
     return c
 
 

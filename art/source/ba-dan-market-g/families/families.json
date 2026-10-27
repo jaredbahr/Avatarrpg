@@ -164,21 +164,21 @@
       "extent_logical_px": [89.4, 23.9]
     },
     "low-planter": {
-      "source": "raw/low-planter-f2-s41/0.png",
+      "source": "fixes/low-planter-f4-s62-clean.png",
       "toned": "families/toned/low-planter.png",
       "factor_from_source": 0.4667,
-      "g1": [111, 66],
+      "g1": [110, 69],
       "tiles": [
         [11, 10],
         [17, 4]
       ],
       "footprint_tiles": [2, 1],
-      "g1_anchor_px": [26.5, 10.6],
+      "g1_anchor_px": [26.5, 13.9],
       "origin_in_footprint_logical_px": [22.3, 18.9],
       "extent_logical_px": [83.5, 26.2]
     },
     "low-planter-1x2": {
-      "source": "raw/low-planter-1x2-f2-s41/0.png",
+      "source": "fixes/low-planter-1x2-f4-s62-clean.png",
       "toned": "families/toned/low-planter-1x2.png",
       "factor_from_source": 0.4667,
       "g1": [111, 66],
@@ -233,13 +233,13 @@
       "extent_logical_px": [38.2, 9.5]
     },
     "kiln": {
-      "source": "raw/kiln-f2-s41/0.png",
+      "source": "raw/kiln-f4-s61/0.png",
       "toned": "families/toned/kiln.png",
       "factor_from_source": 0.375,
-      "g1": [36, 49],
+      "g1": [31, 54],
       "tiles": [],
       "footprint_tiles": [1, 1],
-      "g1_anchor_px": [18.6, 16.4],
+      "g1_anchor_px": [13.0, 20.9],
       "origin_in_footprint_logical_px": [12.9, 17.1],
       "extent_logical_px": [38.2, 29.8]
     }

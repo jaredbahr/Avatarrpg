@@ -143,6 +143,10 @@ def run(spec, recover=None):
         tmp = LEDGER.with_suffix(".tmp")
         tmp.write_text(json.dumps(ledger, indent=1) + "\n")
         tmp.replace(LEDGER)
+        # keep the ledger in the repository's Prettier format (format:check runs over art/source)
+        import subprocess
+        subprocess.run(["npx", "--no-install", "prettier", "--write", str(LEDGER)], cwd=ROOT,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
     print(json.dumps({k: entry[k] for k in ("id", "status", "gens", "balance_after", "outputs")} | ({"error": entry["error"]} if "error" in entry else {})))
 
 
