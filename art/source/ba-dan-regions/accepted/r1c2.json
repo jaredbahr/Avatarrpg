@@ -2,18 +2,18 @@
   "region": "r1c2",
   "source": {
     "path": ".review/route-a/candidates/r1c2.png",
-    "sha256": "4be24a3555040229510cac41a0df7dd2f3f18d96ce34da36e121d6db4647b651"
+    "sha256": "c74af72d0e5977c00e4d27d4d14e71a12d2acd88ce032a537b7f77d2116c29ff"
   },
   "stored": {
-    "path": "art/source/ba-dan-regions/accepted/r1c2.png",
-    "sha256": "4be24a3555040229510cac41a0df7dd2f3f18d96ce34da36e121d6db4647b651"
+    "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r1c2.png",
+    "sha256": "c74af72d0e5977c00e4d27d4d14e71a12d2acd88ce032a537b7f77d2116c29ff"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7841
+      "corr": 0.7874
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 4600,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8427,
+        "corr": 0.9511,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 38861,
         "dx": 0,
         "dy": 0,
-        "corr": 0.818,
+        "corr": 0.8224,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 257372,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7013,
+        "corr": 0.7142,
         "status": "ok"
       },
       {
@@ -49,7 +49,7 @@
         "area": 22567,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8232,
+        "corr": 0.8195,
         "status": "ok"
       },
       {
@@ -58,16 +58,16 @@
         "area": 9406,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7577,
+        "corr": 0.8643,
         "status": "ok"
       },
       {
         "n": 6,
         "box": [0, 394, 590, 973],
-        "area": 209557,
+        "area": 213434,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7502,
+        "corr": 0.7473,
         "status": "ok"
       },
       {
@@ -76,33 +76,51 @@
         "area": 8137,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7385,
+        "corr": 0.8132,
         "status": "ok"
       },
       {
         "n": 8,
-        "box": [1398, 604, 1536, 933],
-        "area": 12357,
+        "box": [953, 516, 1077, 702],
+        "area": 4857,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8144,
+        "corr": 0.7622,
         "status": "ok"
       },
       {
         "n": 9,
-        "box": [451, 815, 1104, 1024],
-        "area": 57384,
+        "box": [1304, 592, 1508, 723],
+        "area": 5909,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7596,
+        "corr": 0.7497,
+        "status": "ok"
+      },
+      {
+        "n": 10,
+        "box": [1398, 604, 1536, 933],
+        "area": 12357,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8185,
+        "status": "ok"
+      },
+      {
+        "n": 11,
+        "box": [451, 801, 1104, 1024],
+        "area": 59542,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7794,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1417191,
-      "meanAbsDiff": 2.626,
-      "p95": 15.333,
-      "fractionOver16": 0.0471
+      "meanAbsDiff": 1.88,
+      "p95": 6.333,
+      "fractionOver16": 0.0318
     },
     "warn": [],
     "fail": []

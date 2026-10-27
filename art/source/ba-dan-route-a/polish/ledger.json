@@ -1,0 +1,1365 @@
+[
+  {
+    "tag": "p1-root-tree-5-5",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "9a5caa17-d8fc-4842-a169-9eeb7a9d8d05",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-tree-5-5 crop (1157,399,140x80) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-tree-5-5 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-tree-5-5 context (1017, 319, 1437, 559)>"
+      },
+      "bounding_box": {
+        "x": 140,
+        "y": 80,
+        "width": 140,
+        "height": 80
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-tree-5-5-0.png", "p1-root-tree-5-5-1.png"],
+    "balance_before": 2787.6000000000004,
+    "balance_after": 2751.6000000000004,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 29,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "probe on the first mask (superseded by p1-root-court-5-5)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-tree-3-15",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "600e1dc6-4b09-48ad-914a-b0a51bb4bee7",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-tree-3-15 crop (362,653,188x84) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-tree-3-15 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-tree-3-15 context (174, 569, 738, 821)>"
+      },
+      "bounding_box": {
+        "x": 188,
+        "y": 84,
+        "width": 188,
+        "height": 84
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-tree-3-15-0.png", "p1-root-tree-3-15-1.png"],
+    "balance_before": 2751.6000000000004,
+    "balance_after": 2710.6000000000004,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "probe (superseded by p1-root-rim-sw)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-court-5-5",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "c21a2435-3b4a-4684-8994-40eaebaf4e35",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-court-5-5 crop (1149,398,148x76) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-court-5-5 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-court-5-5 context (1001, 322, 1445, 550)>"
+      },
+      "bounding_box": {
+        "x": 148,
+        "y": 76,
+        "width": 148,
+        "height": 76
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-court-5-5-0.png", "p1-root-court-5-5-1.png"],
+    "balance_before": 2645.6000000000004,
+    "balance_after": 2634.6000000000004,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 35,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-canal-nw",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "e179ee9e-f35d-4c29-bdf9-406c4641c6bb",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-canal-nw crop (736,272,212x96) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-canal-nw mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-canal-nw context (524, 176, 1160, 464)>"
+      },
+      "bounding_box": {
+        "x": 212,
+        "y": 96,
+        "width": 212,
+        "height": 96
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-canal-nw-0.png", "p1-root-canal-nw-1.png"],
+    "balance_before": 2634.6000000000004,
+    "balance_after": 2605.6000000000004,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 54,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-canal-w",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "35c0189a-f2be-4402-956b-55f5b63d2225",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-canal-w crop (539,379,188x96) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-canal-w mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-canal-w context (351, 283, 915, 571)>"
+      },
+      "bounding_box": {
+        "x": 188,
+        "y": 96,
+        "width": 188,
+        "height": 96
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-canal-w-0.png", "p1-root-canal-w-1.png"],
+    "balance_before": 2605.6000000000004,
+    "balance_after": 2599.6000000000004,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 35,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "rejected: invented a furrowed garden bed by the trunk (retried as -s12)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-n1",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "f382f425-4076-4368-85db-85309c4bd773",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-n1 crop (966,169,164x92) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-n1 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-n1 context (802, 77, 1294, 353)>"
+      },
+      "bounding_box": {
+        "x": 164,
+        "y": 92,
+        "width": 164,
+        "height": 92
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-n1-0.png", "p1-root-rim-n1-1.png"],
+    "balance_before": 2599.6000000000004,
+    "balance_after": 2593.6000000000004,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-n2",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "de01ad4c-b3c4-4426-8bd7-dbbed5706586",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-n2 crop (1038,142,144x88) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-n2 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-n2 context (894, 54, 1326, 318)>"
+      },
+      "bounding_box": {
+        "x": 144,
+        "y": 88,
+        "width": 144,
+        "height": 88
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-n2-0.png", "p1-root-rim-n2-1.png"],
+    "balance_before": 2593.6000000000004,
+    "balance_after": 2587.6000000000004,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 29,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-n3",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "f642bd7f-3a7d-4f71-87dc-2f33a18d4c5c",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-n3 crop (1122,129,160x92) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-n3 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-n3 context (962, 37, 1442, 313)>"
+      },
+      "bounding_box": {
+        "x": 160,
+        "y": 92,
+        "width": 160,
+        "height": 92
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-n3-0.png", "p1-root-rim-n3-1.png"],
+    "balance_before": 2587.6000000000004,
+    "balance_after": 2581.6000000000004,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-n4",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "8ba57e11-b9c8-441d-8c52-8646253aefb7",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-n4 crop (1208,129,164x92) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-n4 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-n4 context (1044, 37, 1536, 313)>"
+      },
+      "bounding_box": {
+        "x": 164,
+        "y": 92,
+        "width": 164,
+        "height": 92
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-n4-0.png", "p1-root-rim-n4-1.png"],
+    "balance_before": 2581.6000000000004,
+    "balance_after": 2568.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 113,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-n5",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "b494a20c-ed35-432f-bbca-d3ab42c63665",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-n5 crop (1281,130,140x88) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-n5 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-n5 context (1141, 42, 1561, 306)>"
+      },
+      "bounding_box": {
+        "x": 140,
+        "y": 88,
+        "width": 140,
+        "height": 88
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-n5-0.png", "p1-root-rim-n5-1.png"],
+    "balance_before": 2568.3999999999796,
+    "balance_after": 2562.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 22,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-n6",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "3884ce13-d8a0-4913-a390-c08e93a02e53",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-n6 crop (1355,151,128x92) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-n6 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-n6 context (1227, 59, 1611, 335)>"
+      },
+      "bounding_box": {
+        "x": 128,
+        "y": 92,
+        "width": 128,
+        "height": 92
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-n6-0.png", "p1-root-rim-n6-1.png"],
+    "balance_before": 2562.3999999999796,
+    "balance_after": 2556.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-sw",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "6033be1c-1eb0-421b-8dcd-fcfe8419dab3",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-sw crop (329,645,232x88) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-sw mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-sw context (97, 557, 793, 821)>"
+      },
+      "bounding_box": {
+        "x": 232,
+        "y": 88,
+        "width": 232,
+        "height": 88
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-sw-0.png", "p1-root-rim-sw-1.png"],
+    "balance_before": 2556.3999999999796,
+    "balance_after": 2547.3999999999796,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 42,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "rejected: invented a crate beside the trunk (retried as -s12)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-w1",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "aa822bac-5d98-410e-b47f-de69f2945266",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-w1 crop (25,793,148x80) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-w1 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-w1 context (0, 713, 321, 953)>"
+      },
+      "bounding_box": {
+        "x": 25,
+        "y": 80,
+        "width": 148,
+        "height": 80
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-w1-0.png", "p1-root-rim-w1-1.png"],
+    "balance_before": 2547.3999999999796,
+    "balance_after": 2541.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-w2",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "e939c224-a4ed-4262-8ae3-caa5afab926d",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-w2 crop (135,816,124x88) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-w2 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-w2 context (11, 728, 383, 992)>"
+      },
+      "bounding_box": {
+        "x": 124,
+        "y": 88,
+        "width": 124,
+        "height": 88
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-w2-0.png", "p1-root-rim-w2-1.png"],
+    "balance_before": 2541.3999999999796,
+    "balance_after": 2535.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 22,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-se1",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "b3986b8b-5db8-4ca3-849f-6e06484cf81c",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-se1 crop (2547,1041,204x108) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-se1 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-se1 context (2343, 933, 2955, 1257)>"
+      },
+      "bounding_box": {
+        "x": 204,
+        "y": 108,
+        "width": 204,
+        "height": 108
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-se1-0.png", "p1-root-rim-se1-1.png"],
+    "balance_before": 2535.3999999999796,
+    "balance_after": 2529.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 35,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "rejected: redrew the trunk as a sapling; the rim tree keeps its painted foot",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-se2",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "a0bb83bc-0926-4755-bf5f-195bafb3196e",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-se2 crop (2729,1026,216x104) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-se2 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects.",
+      "context_image": {
+        "base64": "<p1-root-rim-se2 context (2513, 922, 3000, 1234)>"
+      },
+      "bounding_box": {
+        "x": 216,
+        "y": 104,
+        "width": 216,
+        "height": 104
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-root-rim-se2-0.png", "p1-root-rim-se2-1.png"],
+    "balance_before": 2529.3999999999796,
+    "balance_after": 2518.3999999999796,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 42,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-canal-w-s12",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "7cd271b4-6bd6-4b8e-8b60-27c2d48afe2f",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-canal-w-s12 crop (539,379,188x96) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-canal-w-s12 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects. No garden bed, no furrows, no fence, no planks.",
+      "context_image": {
+        "base64": "<p1-root-canal-w-s12 context (351, 283, 915, 571)>"
+      },
+      "bounding_box": {
+        "x": 188,
+        "y": 96,
+        "width": 188,
+        "height": 96
+      },
+      "output_method": "Modify current layer",
+      "seed": 12
+    },
+    "outputs": ["p1-root-canal-w-s12-0.png", "p1-root-canal-w-s12-1.png"],
+    "balance_before": 2512.3999999999796,
+    "balance_after": 2493.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 35,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-root-rim-sw-s12",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "82ace3b6-e193-427f-be81-74d2d1795f2e",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-root-rim-sw-s12 crop (329,645,232x88) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-root-rim-sw-s12 mask>"
+      },
+      "description": "Redraw the foot of the tree trunk and the ground around it: the trunk flares into three or four short thick roots that sink into the soil within a few pixels of the trunk, no long roots running over the ground; tufts of grass, a few small ferns and a little bare dark earth hug the base; a soft dark contact shadow on the ground at the lower right of the trunk; the grass, the dirt path, the paving and the stone canal bank around it continue unchanged. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No people, no objects. No crates, no boxes, no tools on the ground.",
+      "context_image": {
+        "base64": "<p1-root-rim-sw-s12 context (97, 557, 793, 821)>"
+      },
+      "bounding_box": {
+        "x": 232,
+        "y": 88,
+        "width": 232,
+        "height": 88
+      },
+      "output_method": "Modify current layer",
+      "seed": 12
+    },
+    "outputs": ["p1-root-rim-sw-s12-0.png", "p1-root-rim-sw-s12-1.png"],
+    "balance_before": 2493.3999999999796,
+    "balance_after": 2468.3999999999796,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 48,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-touch-rim-sw-stump",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "dc64f48b-cf05-458b-bd5f-c4316ac5f418",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-touch-rim-sw-stump crop (520,674,72x52) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-touch-rim-sw-stump mask>"
+      },
+      "description": "Fill the masked area with the ground around it (grass, dirt path, paving stones or the stone canal bank), continuing their lines and colours, calm, 1 px marks and 3-4 flat tones. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No roots, no objects, no people.",
+      "context_image": {
+        "base64": "<p1-touch-rim-sw-stump context (448, 622, 664, 778)>"
+      },
+      "bounding_box": {
+        "x": 72,
+        "y": 52,
+        "width": 72,
+        "height": 52
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-touch-rim-sw-stump-0.png", "p1-touch-rim-sw-stump-1.png"],
+    "balance_before": 2468.3999999999796,
+    "balance_after": 2460.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 22,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "rejected: drew a stump again (retried as -s13)",
+    "error": null
+  },
+  {
+    "tag": "p1-touch-rim-sw-stump-s13",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "88b34af8-5b2d-4a22-9ff8-84ed03b33c12",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-touch-rim-sw-stump-s13 crop (503,670,80x60) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-touch-rim-sw-stump-s13 mask>"
+      },
+      "description": "Plain grass lawn continuing the grass around it. Fill the masked area with the ground around it (grass, dirt path, paving stones or the stone canal bank), continuing their lines and colours, calm, 1 px marks and 3-4 flat tones. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No roots, no objects, no people.",
+      "context_image": {
+        "base64": "<p1-touch-rim-sw-stump-s13 context (423, 610, 663, 790)>"
+      },
+      "bounding_box": {
+        "x": 80,
+        "y": 60,
+        "width": 80,
+        "height": 60
+      },
+      "output_method": "Modify current layer",
+      "seed": 13
+    },
+    "outputs": ["p1-touch-rim-sw-stump-s13-0.png", "p1-touch-rim-sw-stump-s13-1.png"],
+    "balance_before": 2445.3999999999796,
+    "balance_after": 2437.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 24,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-banner-pole-s22",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "2c6b2c19-f342-4ea0-b189-1048fa9482e8",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<banner-pole x1.4 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A sturdy timber banner pole, the pole 4 px thick on a broad stone foot, a cloth banner hanging from a cross-arm, plain cloth with no symbol. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 22
+    },
+    "outputs": [
+      "p1-prop-banner-pole-s22-0.png",
+      "p1-prop-banner-pole-s22-1.png",
+      "p1-prop-banner-pole-s22-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2365.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 27,
+    "notes": "larger banner-pole at world px (36, 104)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-banner-pole-s21",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "22111e9d-7fbd-4df8-869a-b5ee3aa6a340",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<banner-pole x1.4 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A sturdy timber banner pole, the pole 4 px thick on a broad stone foot, a cloth banner hanging from a cross-arm, plain cloth with no symbol. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 21
+    },
+    "outputs": [
+      "p1-prop-banner-pole-s21-0.png",
+      "p1-prop-banner-pole-s21-1.png",
+      "p1-prop-banner-pole-s21-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2365.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "larger banner-pole at world px (36, 104)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-lantern-post-s21",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "1b8de96f-bafb-4de8-97de-ff70f50016c1",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<lantern-post x1.6 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A sturdy square timber lantern post, the post 4 to 5 px thick with a broad stone foot, an iron arm and a hanging iron lantern with a warm amber glass. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 21
+    },
+    "outputs": [
+      "p1-prop-lantern-post-s21-0.png",
+      "p1-prop-lantern-post-s21-1.png",
+      "p1-prop-lantern-post-s21-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2365.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "larger lantern-post at world px (32, 104)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-trough-hay-s22",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "a2adae9d-e844-47ec-8001-7cd64130e179",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<trough-hay x1.3 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A heavy wooden water trough and a timber hay rack with golden hay. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 22
+    },
+    "outputs": [
+      "p1-prop-trough-hay-s22-0.png",
+      "p1-prop-trough-hay-s22-1.png",
+      "p1-prop-trough-hay-s22-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2340.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 34,
+    "notes": "larger trough-hay at world px (116, 108)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-handcart-s22",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "9dab98e5-fb9a-4947-995f-4830a08098c1",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<handcart x1.6 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A wooden two-wheeled handcart with plank sides, spoked wheels and two long handles resting on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 22
+    },
+    "outputs": [
+      "p1-prop-handcart-s22-0.png",
+      "p1-prop-handcart-s22-1.png",
+      "p1-prop-handcart-s22-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2340.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 34,
+    "notes": "larger handcart at world px (104, 56)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-lantern-post-s22",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "76bacc5d-fccf-4a6a-9e3f-cdaf64d8a958",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<lantern-post x1.6 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A sturdy square timber lantern post, the post 4 to 5 px thick with a broad stone foot, an iron arm and a hanging iron lantern with a warm amber glass. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 22
+    },
+    "outputs": [
+      "p1-prop-lantern-post-s22-0.png",
+      "p1-prop-lantern-post-s22-1.png",
+      "p1-prop-lantern-post-s22-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2340.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 34,
+    "notes": "larger lantern-post at world px (32, 104)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-notice-board-s21",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "a2ff9826-1f0a-4895-bf57-806ac0bd53e4",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<notice-board x1.4 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A village notice board: two thick timber posts, a plank board under a small shingled roof, a few blank pinned papers with no writing. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 21
+    },
+    "outputs": [
+      "p1-prop-notice-board-s21-0.png",
+      "p1-prop-notice-board-s21-1.png",
+      "p1-prop-notice-board-s21-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2340.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 34,
+    "notes": "larger notice-board at world px (52, 92)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-handcart-s21",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "e8fbcd76-fa9f-491e-a104-e12c015e97e4",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<handcart x1.6 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A wooden two-wheeled handcart with plank sides, spoked wheels and two long handles resting on the ground. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 21
+    },
+    "outputs": [
+      "p1-prop-handcart-s21-0.png",
+      "p1-prop-handcart-s21-1.png",
+      "p1-prop-handcart-s21-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2334.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 41,
+    "notes": "larger handcart at world px (104, 56)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-notice-board-s22",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "50daf3be-4d1a-4998-9463-e3505db2f4a9",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<notice-board x1.4 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A village notice board: two thick timber posts, a plank board under a small shingled roof, a few blank pinned papers with no writing. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 22
+    },
+    "outputs": [
+      "p1-prop-notice-board-s22-0.png",
+      "p1-prop-notice-board-s22-1.png",
+      "p1-prop-notice-board-s22-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2327.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 52,
+    "notes": "larger notice-board at world px (52, 92)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-prop-trough-hay-s21",
+    "endpoint": "/edit-image-pro-flash",
+    "job_id": "7721e460-5742-4526-b30a-c8eead909a5b",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<trough-hay x1.3 nearest>"
+      },
+      "method": "text",
+      "description": "Keep the object, its shape, its pose and the camera angle exactly as drawn; redraw it at this size as a solid, heavy, well-built object in careful fine-grain pixel art. A heavy wooden water trough and a timber hay rack with golden hay. High top-down view on a 2:1 isometric axis. Dark brown 1 pixel outline (#1b1410) on the silhouette, muted warm earth colours, 3 to 4 flat tone steps per material, warm light from the upper left, cool brown shade on the lower right, matte, no white or near-white pixels, no gloss, no text, no letters, no ground, no shadow, transparent background.",
+      "no_background": true,
+      "seed": 21
+    },
+    "outputs": [
+      "p1-prop-trough-hay-s21-0.png",
+      "p1-prop-trough-hay-s21-1.png",
+      "p1-prop-trough-hay-s21-2.png"
+    ],
+    "balance_before": 2389.3999999999796,
+    "balance_after": 2321.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 67,
+    "notes": "larger trough-hay at world px (116, 108)",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-garden-bed",
+    "endpoint": "/edit-images-v2",
+    "job_id": "832797f8-0ba3-4a5b-a809-ec1ea1604aa9",
+    "status": "completed",
+    "request": {
+      "method": "edit_with_text",
+      "edit_images": [
+        {
+          "image": {
+            "base64": "<garden guide crop (488,308,512x512)>"
+          },
+          "width": 512,
+          "height": 512
+        }
+      ],
+      "image_size": {
+        "width": 512,
+        "height": 512
+      },
+      "description": "Redraw as fine-grain pixel art matching the image around it: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, warm key light from the upper left, cool brown shadows down-right. In the middle is a tended vegetable garden bed set into the ground: a low frame of thick wooden boards on edge, dark tilled soil in neat ridges, rows of round green cabbages, bean plants climbing short stakes and leafy greens, well kept. Grass, paving and trees around it stay as they are. No people, no fence. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+      "seed": 11
+    },
+    "outputs": ["p1-garden-bed-0.png", "p1-garden-bed-1.png"],
+    "balance_before": 2211.3999999999796,
+    "balance_after": 2178.3999999999796,
+    "gens": 25.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 505,
+    "notes": "the garden bed from its guide",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-garden-box",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "82f6f536-7afd-4929-bd65-5998f904b6cc",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-garden-box crop (684,417,144x200) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-garden-box mask>"
+      },
+      "description": "Fill the masked area with the ground around it: the paved court of squared stone flags in one warm grey-beige with dark mossy joints to the north and east, a narrow strip of grass along the wooden garden frame; continue every joint line and colour, calm and even. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no shadows, no people.",
+      "context_image": {
+        "base64": "<p1-garden-box context (540, 217, 972, 817)>"
+      },
+      "bounding_box": {
+        "x": 144,
+        "y": 200,
+        "width": 144,
+        "height": 200
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-garden-box-0.png", "p1-garden-box-1.png"],
+    "balance_before": 2178.3999999999796,
+    "balance_after": 2172.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "superseded by p1-garden-box2 (wider box)",
+    "error": null
+  },
+  {
+    "tag": "p1-garden-box2",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "3f62d207-0760-4b51-b649-6ab3853356fa",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-garden-box2 crop (684,417,252x204) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-garden-box2 mask>"
+      },
+      "description": "Fill the masked area with the ground around it: the paved court of squared stone flags in one warm grey-beige with dark mossy joints to the north and east, a narrow strip of grass along the wooden garden frame; continue every joint line and colour, calm and even. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no shadows, no people.",
+      "context_image": {
+        "base64": "<p1-garden-box2 context (432, 213, 1188, 825)>"
+      },
+      "bounding_box": {
+        "x": 252,
+        "y": 204,
+        "width": 252,
+        "height": 204
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-garden-box2-0.png", "p1-garden-box2-1.png"],
+    "balance_before": 2172.3999999999796,
+    "balance_after": 2163.3999999999796,
+    "gens": 9.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 42,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-pave-east-road-ghost-post",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "3e9ace14-8b51-45a6-921d-b6ddfd1b925d",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-pave-east-road-ghost-post crop (1691,890,72x60) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-pave-east-road-ghost-post mask>"
+      },
+      "description": "Fill the masked area with the paving around it: even squared stone flags in one warm grey-beige with crisp dark joints and a little moss, continuing the joint lines exactly. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no posts, no shadows, no people.",
+      "context_image": {
+        "base64": "<p1-pave-east-road-ghost-post context (1619, 830, 1835, 1010)>"
+      },
+      "bounding_box": {
+        "x": 72,
+        "y": 60,
+        "width": 72,
+        "height": 60
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-pave-east-road-ghost-post-0.png", "p1-pave-east-road-ghost-post-1.png"],
+    "balance_before": 2163.3999999999796,
+    "balance_after": 2158.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 15,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-pave-east-road-ghost-line",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "c17781b3-5722-4029-9936-527cbcdc88ac",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-pave-east-road-ghost-line crop (1710,907,32x84) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-pave-east-road-ghost-line mask>"
+      },
+      "description": "Fill the masked area with the paving around it: even squared stone flags in one warm grey-beige with crisp dark joints and a little moss, continuing the joint lines exactly. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no posts, no shadows, no people.",
+      "context_image": {
+        "base64": "<p1-pave-east-road-ghost-line context (1678, 823, 1774, 1075)>"
+      },
+      "bounding_box": {
+        "x": 32,
+        "y": 84,
+        "width": 32,
+        "height": 84
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-pave-east-road-ghost-line-0.png", "p1-pave-east-road-ghost-line-1.png"],
+    "balance_before": 2158.3999999999796,
+    "balance_after": 2153.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 16,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-pave-east-road-smudge",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "fa0454d0-23b3-455e-90ce-cac69f966c08",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-pave-east-road-smudge crop (1659,862,40x44) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-pave-east-road-smudge mask>"
+      },
+      "description": "Fill the masked area with the paving around it: even squared stone flags in one warm grey-beige with crisp dark joints and a little moss, continuing the joint lines exactly. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no posts, no shadows, no people.",
+      "context_image": {
+        "base64": "<p1-pave-east-road-smudge context (1619, 818, 1739, 950)>"
+      },
+      "bounding_box": {
+        "x": 40,
+        "y": 44,
+        "width": 40,
+        "height": 44
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-pave-east-road-smudge-0.png", "p1-pave-east-road-smudge-1.png"],
+    "balance_before": 2153.3999999999796,
+    "balance_after": 2148.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 21,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-garden-nw-verge",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "a99dd183-16d9-444b-8b70-b6edd4d7334e",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-garden-nw-verge crop (556,461,164x80) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-garden-nw-verge mask>"
+      },
+      "description": "Fill the masked area with the lawn around it: a living grass lawn in three greens with scattered 1-2 px blade marks and a few small tufts, running up to the wooden garden frame with a little dark soil at its foot. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no people, no paths.",
+      "context_image": {
+        "base64": "<p1-garden-nw-verge context (392, 381, 884, 621)>"
+      },
+      "bounding_box": {
+        "x": 164,
+        "y": 80,
+        "width": 164,
+        "height": 80
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-garden-nw-verge-0.png", "p1-garden-nw-verge-1.png"],
+    "balance_before": 2103.3999999999796,
+    "balance_after": 2088.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 35,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-garden-west-court-pink",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "f4e286e3-c762-4c04-b867-dbaa367be467",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-garden-west-court-pink crop (685,414,92x56) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-garden-west-court-pink mask>"
+      },
+      "description": "Fill the masked area with the paved court around it: squared stone flags in one warm grey-beige with dark mossy joints continuing the joint lines exactly. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no shadows, no people.",
+      "context_image": {
+        "base64": "<p1-garden-west-court-pink context (593, 358, 869, 526)>"
+      },
+      "bounding_box": {
+        "x": 92,
+        "y": 56,
+        "width": 92,
+        "height": 56
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-garden-west-court-pink-0.png", "p1-garden-west-court-pink-1.png"],
+    "balance_before": 2088.3999999999796,
+    "balance_after": 2074.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 15,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-garden-east-verge",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "4e09ff88-a125-41fd-a582-8c0388fa6a00",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-garden-east-verge crop (875,558,96x72) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-garden-east-verge mask>"
+      },
+      "description": "Fill the masked area with the lawn around it: a living grass lawn in three greens with scattered 1-2 px blade marks and a few small tufts, running up to the wooden garden frame with a little dark soil at its foot. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no people, no paths.",
+      "context_image": {
+        "base64": "<p1-garden-east-verge context (779, 486, 1067, 702)>"
+      },
+      "bounding_box": {
+        "x": 96,
+        "y": 72,
+        "width": 96,
+        "height": 72
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-garden-east-verge-0.png", "p1-garden-east-verge-1.png"],
+    "balance_before": 2074.3999999999796,
+    "balance_after": 2069.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 22,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-garden-south-verge",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "b3a769f4-0730-4dde-bc5e-002475544e37",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-garden-south-verge crop (763,614,72x52) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-garden-south-verge mask>"
+      },
+      "description": "Fill the masked area with the lawn around it: a living grass lawn in three greens with scattered 1-2 px blade marks and a few small tufts, running up to the wooden garden frame with a little dark soil at its foot. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No objects, no people, no paths.",
+      "context_image": {
+        "base64": "<p1-garden-south-verge context (691, 562, 907, 718)>"
+      },
+      "bounding_box": {
+        "x": 72,
+        "y": 52,
+        "width": 72,
+        "height": 52
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-garden-south-verge-0.png", "p1-garden-south-verge-1.png"],
+    "balance_before": 2069.3999999999796,
+    "balance_after": 2061.3999999999796,
+    "gens": 5.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  },
+  {
+    "tag": "p1-rim-behind-wall",
+    "endpoint": "/inpaint-image-pro-flash",
+    "job_id": "659e86b2-2213-486e-9ff6-a2cd86fcc13f",
+    "status": "completed",
+    "request": {
+      "image": {
+        "base64": "<p1-rim-behind-wall crop (2087,350,152x88) of the world>"
+      },
+      "mask_image": {
+        "base64": "<p1-rim-behind-wall mask>"
+      },
+      "description": "Fill the masked area with the shaded woodland floor beyond a garden wall: dark green shrubs, ferns and low foliage in deep shade, continuing the trees around it. fine-grain pixel art matching the image around it exactly: 1 px dark brown outline (#1b1410) only on silhouettes, 3-5 flat tone groups per material, matte, no glossy highlights, warm key light from the upper left, cool brown shadows down-right. No paving, no stones, no path, no people.",
+      "context_image": {
+        "base64": "<p1-rim-behind-wall context (1935, 262, 2391, 526)>"
+      },
+      "bounding_box": {
+        "x": 152,
+        "y": 88,
+        "width": 152,
+        "height": 88
+      },
+      "output_method": "Modify current layer",
+      "seed": 11
+    },
+    "outputs": ["p1-rim-behind-wall-0.png", "p1-rim-behind-wall-1.png"],
+    "balance_before": 2043.3999999999796,
+    "balance_after": 2037.3999999999796,
+    "gens": 6.0,
+    "balance_note": "balance is account-wide (another session spends concurrently); gens is the job usage",
+    "seconds": 28,
+    "notes": "polish pass (owner: \"clean up visuals\")",
+    "verdict": "taken (output 0)",
+    "error": null
+  }
+]

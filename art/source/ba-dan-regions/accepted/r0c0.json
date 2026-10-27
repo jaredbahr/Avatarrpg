@@ -2,27 +2,27 @@
   "region": "r0c0",
   "source": {
     "path": ".review/route-a/candidates/r0c0.png",
-    "sha256": "bd3f83c8d5957e6045968fc3fe75632f3e2c37af48e0acd5d6b74f7aa798e4db"
+    "sha256": "55b75f9ddf4122cbf20139d6c59da3cfe0631e2f816822f09cefc87a3829afa1"
   },
   "stored": {
-    "path": "art/source/ba-dan-regions/accepted/r0c0.png",
-    "sha256": "bd3f83c8d5957e6045968fc3fe75632f3e2c37af48e0acd5d6b74f7aa798e4db"
+    "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c0.png",
+    "sha256": "55b75f9ddf4122cbf20139d6c59da3cfe0631e2f816822f09cefc87a3829afa1"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7888
+      "corr": 0.7649
     },
     "blobs": [
       {
         "n": 1,
         "box": [0, 0, 1536, 1024],
-        "area": 917605,
+        "area": 950631,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7888,
+        "corr": 0.7649,
         "status": "ok"
       },
       {
@@ -31,7 +31,7 @@
         "area": 9534,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7426,
+        "corr": 0.7478,
         "status": "ok"
       }
     ],
@@ -41,7 +41,7 @@
       "p95": 0.0,
       "fractionOver16": 0.0
     },
-    "warn": ["seam with r1c0: 2.2x the ordinary difference"],
+    "warn": ["seam with r1c0: 2.1x the ordinary difference"],
     "fail": []
   },
   "prompt": {

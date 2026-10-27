@@ -2,18 +2,18 @@
   "region": "r1c3",
   "source": {
     "path": ".review/route-a/candidates/r1c3.png",
-    "sha256": "fc5925e534b8722d1425adb832985a45b2555fff13241d76f2c7c7e1467a1431"
+    "sha256": "9e178bc14215096b21add936d2a1d270f67c4a568acbd97b05189731833f834e"
   },
   "stored": {
-    "path": "art/source/ba-dan-regions/accepted/r1c3.png",
-    "sha256": "fc5925e534b8722d1425adb832985a45b2555fff13241d76f2c7c7e1467a1431"
+    "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r1c3.png",
+    "sha256": "9e178bc14215096b21add936d2a1d270f67c4a568acbd97b05189731833f834e"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7588
+      "corr": 0.7504
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 892743,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7588,
+        "corr": 0.7504,
         "status": "ok"
       },
       {
@@ -31,24 +31,42 @@
         "area": 8137,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7385,
+        "corr": 0.8132,
         "status": "ok"
       },
       {
         "n": 3,
+        "box": [0, 516, 90, 702],
+        "area": 4738,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7348,
+        "status": "ok"
+      },
+      {
+        "n": 4,
+        "box": [317, 592, 521, 723],
+        "area": 5909,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.7497,
+        "status": "ok"
+      },
+      {
+        "n": 5,
         "box": [0, 883, 117, 1024],
         "area": 4875,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8219,
+        "corr": 0.8186,
         "status": "ok"
       }
     ],
     "carry": {
       "pixels": 1224453,
-      "meanAbsDiff": 0.009,
+      "meanAbsDiff": 0.536,
       "p95": 0.0,
-      "fractionOver16": 0.0001
+      "fractionOver16": 0.0091
     },
     "warn": [],
     "fail": []

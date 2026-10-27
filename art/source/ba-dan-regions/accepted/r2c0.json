@@ -2,18 +2,18 @@
   "region": "r2c0",
   "source": {
     "path": ".review/route-a/candidates/r2c0.png",
-    "sha256": "0ed380c937084464093c5a41d836af815a4e22f9bbd866cf2e2a62d9db2ca213"
+    "sha256": "05a0075a398563cc47fc57b00a999f66ac84c3892707a0b6b10673c841e5852c"
   },
   "stored": {
-    "path": "art/source/ba-dan-regions/accepted/r2c0.png",
-    "sha256": "0ed380c937084464093c5a41d836af815a4e22f9bbd866cf2e2a62d9db2ca213"
+    "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r2c0.png",
+    "sha256": "05a0075a398563cc47fc57b00a999f66ac84c3892707a0b6b10673c841e5852c"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.9161
+      "corr": 0.9155
     },
     "blobs": [
       {
@@ -22,7 +22,7 @@
         "area": 14838,
         "dx": 0,
         "dy": 0,
-        "corr": 0.871,
+        "corr": 0.8708,
         "status": "ok"
       },
       {
@@ -40,7 +40,7 @@
         "area": 101987,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8528,
+        "corr": 0.8522,
         "status": "ok"
       }
     ],

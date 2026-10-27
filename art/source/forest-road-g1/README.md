@@ -61,3 +61,13 @@ files to `pieces/` byte for byte.
 - The kerb stones carry a 1 px contour where the painting had none; at the fit it reads as a crisp road edge, at the
   1.5 camera as a stepped dark line.
 - The thicket floor under the pines is busier than the meadow; it is never walked.
+
+## Polish pass (2026-10-27)
+
+ADR 0087's amendment. `tools/clean.py` runs inside `cut.py` (the invented fern, lily pads, kerb ink, and the south edge's
+facets on the carried colour); `tools/feet.py` runs inside `select.py` (the pines' feet). Jobs `clean-*` and `foot-*` in
+the ledger; outputs in `jobs/`. Review: `review/polish/` (the fit and the 96 px frames, before over after, Canvas; 4x
+crops of each fix).
+
+Remaining: the streaky fade at the board's north-west edge (the procedural apron's own), a pale patch on the east road
+near the shelf, and the thicket floor under the pines.
