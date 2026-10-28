@@ -1,6 +1,7 @@
 # ADR 0088: Integer zoom: the pixel-art boards draw on whole device pixels
 
-**Status:** accepted, 2026-10-27 (owner: _"2. Do it."_, issue #284)
+**Status:** accepted, 2026-10-27 (owner: _"2. Do it."_, issue #284). Default zoom owner-confirmed 2026-10-28 (_"Keep as is"_):
+128 px tiles in exploration and 64 px in combat at 1 dpr.
 
 Closes the open camera item in ADR 0085 (_"a single on-screen pixel grid needs the camera to snap to 1x or 2x"_) and the
 delivery-scale item ADR 0087 left waiting on it. Changes a rendering contract (how art is sampled) and the camera's fit and
