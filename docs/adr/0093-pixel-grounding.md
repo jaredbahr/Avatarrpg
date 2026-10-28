@@ -147,3 +147,48 @@ stretching.
   caster sprite (`steadyCaster`) on the idle cel's texture with the body's transform. Props and scenery are unchanged.
 - `actorGrounding.test.ts` holds it: for every eight-way sheet in the manifest, every cel of every walk and jog clip
   resolves to the one idle cel of its heading, and both backends route figures and residents through `castFrame`.
+
+## Amendment, 2026-10-28: a figure's shadow is a calm pool in the painting's tone
+
+The owner, relayed, on the world-style figure test (#317): **"the sharper pixels are better. we need to fix their
+shadows though. the shadows make them look off."** Next to the painting's own shadows (Gao's door barrel, the market
+table), a figure's was a dark, stair-stepped stain clinging to its feet: its silhouette sheared along the key at 0.5,
+with its sole band at 0.8 under it, in the bible ink. The painting shades its objects lighter and calmer.
+
+1. **A figure casts a pool, not its silhouette.** `figureShadow` (`lighting.ts`) rasterises, on the world-pixel grid,
+   an ellipse under the feet (`FIGURE_SHADOW.pool`, 2:1 like the ground) swept a short way along the scene's
+   `castKey` and tapering, at the cast level, with a smaller core under the soles (`FIGURE_SHADOW.core`) at the
+   contact level. The sweep is the key times 0.6 tiles, capped at a quarter of a 1.15-tile figure, so the cast is
+   about ¼ of the figure's height or less on every board. Every pixel is in or out by its centre: the edge steps a
+   whole world pixel, as the painting's do. `figureShadowArt.ts` turns it into two canvases (cast, contact) both
+   backends draw into the union at their levels, one canvas pixel a world pixel, nearest; the union still keeps
+   the stronger of overlapping casters.
+2. **It reads nothing of the figure's art.** Its size comes from the figure's scale and width (a two-tile body's
+   pool is twice as wide), its place from the ground point under the feet (the walk bob lifts the figure off it).
+   So it is the same shape on every cel of every clip, bends, hits and knockouts included. This replaces the steady
+   cast's idle cel (`castFrame`, the off-stage `steadyCaster` on WebGL) and the sole band (`contactBandRows`,
+   `CONTACT_BAND`, `spriteBandArt`), which are removed. A knocked-out figure lies over its pool at
+   `FALLEN_SHADOW_ALPHA`, no longer on its own sheared body.
+3. **A painted scene names its shadow tone.** `actorGrounding.ink` (0–255 a channel, validated) tints the union in
+   place of the bible ink `SHADOW_RGB`; WebGL takes it as a uniform. The painting multiplies the ground by
+   `SHADOW` × `COOL` under a cast and `CONTACT` × `COOL` under a contact line (`objects.py`: 0.70, 0.50, cooled
+   0.93/0.96/1.06); measured over the 8,294 pixels its shadows darken in `world-g1-grounded.png`, the median ratio is
+   0.653 / 0.674 / 0.742. `art/source/grounding/tools/figure_shadow_tone.py` fits one ink and two levels to that over
+   the ground those shadows fall on: ink (0, 3, 11), cast 0.335, contact 0.535, 1.6 levels RMS. Ba Dan sets them
+   (`BA_DAN_ACTOR_GROUNDING`, was cast 0.5 and contact 0.8 in the bible ink: about 41% and 66% darker against the
+   painting's 30% and 52%). `canvas2dShadowUnion.test.ts` composites them over the mean ground and holds the result
+   within 3 levels of the painting's multiply.
+4. **Props and scenery are unchanged.** Their cast from their own base and their contact line stay as above; in Ba
+   Dan they share the scene's ink, which is the painting's tone. The forest road and the quarry set no ink and keep
+   their levels; their figures get the pool shape at those levels.
+
+`actorGrounding.test.ts` holds the new premise: on every oblique board a figure's cast is at most a quarter of its
+height, and neither backend draws a figure's shadow from its frame (`projectFigureShadow` for residents and units,
+no `castFrame`, `steadyCaster`, `contactBandRows` or `projectContactMask`). `lighting.test.ts` holds the shape:
+three levels only, the core under the feet inside the pool, the cast down-right and short along both keys, one run
+a row (no gap between legs), larger for a larger or two-tile figure. Before and after crops are in
+`art/source/grounding/review/figure-shadows/`.
+
+Known faults: the pool does not follow a figure's stance, so a wide-legged action pose can show a boot past it; the
+painted world has no figures to sample, so the pool's size is judged by eye against the barrel's and the table's;
+the forest's tone is not fitted (it names no ink).
