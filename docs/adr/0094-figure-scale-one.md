@@ -3,7 +3,8 @@
 **Status:** accepted by the owner, 2026-10-28 ("1.0x, matching the world"); draft PR for the coordinator's review
 
 Amends ADR 0089 (the party at native G1), whose figures were drawn at 1.25, and applies ADR 0088 (integer zoom) to
-them. Changes a rendering contract (the size every figure is drawn at on an oblique board), so it is recorded here.
+them; also amends ADR 0074 (the JavaScript budget). Changes a rendering contract (the size every figure is drawn at on
+an oblique board) and a budget, so it is recorded here.
 
 ## Context
 
@@ -38,6 +39,14 @@ trees and was not taken.
 **Test.** `src/app/anim/actorScale.test.ts` holds every G1 unit and resident sheet to nearest sampling at N = 1-4 through
 the same ratio both backends compute (device px a tile over the sheet's px a tile, times the figure's scale), and the old
 1.25 to smoothing; and every other adult level with the G1 adults.
+
+## The JavaScript budget: 380 KB gzipped
+
+**Owner decision, 2026-10-28:** the gate in `scripts/check-bundle-size.mjs` rises from 360 KB to 380 KB gzipped
+(amends ADR 0074). After #301 merged, main measured 11 bytes under 360 KB (the residents' credit was folded into the
+party's and a guard's message shortened to fit), so any further feature would have failed the gate. The measurement is
+unchanged: the gzip size of every shipped `.js` file under `dist/`, all chunks included. This change does not spend the
+headroom; the figure scale adds no bytes of note.
 
 ## Consequences
 
