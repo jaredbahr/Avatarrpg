@@ -16,7 +16,7 @@ SHEETS = {
     'feet-forest': ['forest-bank-enemy-bandit-thug-N2-4x.png', 'forest-road-party-bo-N2-4x.png',
                     'forest-bank-enemy-bandit-slinger-N3-4x.png'],
     'props-forest': ['forest-bank-prop-oil-flask-13-6-N2-4x.png', 'forest-bank-prop-hay-bale-12-5-N2-4x.png',
-                     'forest-bank-prop-water-barrel-14-4-N2-4x.png'],
+                     'forest-bank-prop-water-barrel-14-4-N2-4x.png', 'forest-bank-prop-water-barrel-15-3-N2-4x.png'],
 }
 
 
