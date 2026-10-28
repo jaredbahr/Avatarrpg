@@ -22,6 +22,7 @@
  * Local review fixture only: not a playthrough, not a CI check.
  *
  * FNT_FOREST_G1_LABEL=before npx playwright test -c playwright.forest-g1.config.ts
+ * (FNT_FOREST_G1_ZOOM=128 takes the zoomed frames at N = 2 on a 1 dpr screen, ADR 0088.)
  */
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -31,7 +32,7 @@ import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 const SEED = 'forest-g1';
-const ZOOM = 96;
+const ZOOM = Number(process.env.FNT_FOREST_G1_ZOOM ?? 96);
 
 async function zoom(page: Page, target: number): Promise<void> {
   const current = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);

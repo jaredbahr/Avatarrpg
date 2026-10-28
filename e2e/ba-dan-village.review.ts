@@ -4,6 +4,7 @@
  * not a CI check.
  *
  * FNT_VILLAGE_LABEL=before npx playwright test -c playwright.ba-dan-village.config.ts
+ * (FNT_VILLAGE_MID_TILE_PX=128 shoots the three mid frames at N = 2 on a 1 dpr screen, ADR 0088.)
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -47,11 +48,12 @@ async function centerTile(page: Page, tx: number, ty: number): Promise<void> {
   await settleLayout(page);
 }
 
+const MID = Number(process.env.FNT_VILLAGE_MID_TILE_PX ?? 56);
 const FRAMES = [
   ['wide', 36, [12, 8]],
-  ['mid-west', 56, [5, 7]],
-  ['mid-centre', 56, [12, 8]],
-  ['mid-east', 56, [18, 7]],
+  ['mid-west', MID, [5, 7]],
+  ['mid-centre', MID, [12, 8]],
+  ['mid-east', MID, [18, 7]],
 ] as const;
 
 test('Ba Dan whole village (canvas)', async ({ page }) => {

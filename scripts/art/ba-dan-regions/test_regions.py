@@ -15,8 +15,9 @@ R = importlib.util.module_from_spec(spec)
 sys.modules["regions"] = R
 spec.loader.exec_module(R)
 
-ONE = (1150, 60, 1024, 682)  # one region: the trial's north view
-TWO = (1000, 60, 1500, 682)  # two regions side by side, 822 px of overlap
+# world px boxes (at SCALE 1 a region is 1536 x 1024 world px, ADR 0088)
+ONE = (1150, 60, 1024, 682)  # inside one region: the trial's north view
+TWO = (600, 60, 2200, 1024)  # two regions side by side, 872 px of overlap
 SHIPPED = ROOT / "public" / "art" / "maps" / "ba-dan-scene"
 TABLE = ROOT / "src" / "content" / "scenes" / "baDan.art.ts"
 
@@ -46,21 +47,28 @@ def table():
     return uprights, plates
 
 
+def painting_size():
+    """The shipped painting's width and height in painting px, read from the generated table."""
+    m = re.search(r"size: \{ width: (\d+), height: (\d+) \}", TABLE.read_text())
+    return int(m.group(1)), int(m.group(2))
+
+
 def case_plan_covers_pan_box(work):
     plan = R.make_plan()
-    assert len(plan["regions"]) == 12
+    assert len(plan["regions"]) == 6  # 3 x 2 at 1 painting px per world px
     assert R.check_plan(plan) == []
-    mo = 288
+    mo = R.px(192)
     xs = sorted({r["px"]["x"] for r in plan["regions"]})
     ys = sorted({r["px"]["y"] for r in plan["regions"]})
     assert all(R.RW - (b - a) >= mo for a, b in zip(xs, xs[1:])), xs
     assert all(R.RH - (b - a) >= mo for a, b in zip(ys, ys[1:])), ys
-    assert xs[-1] + R.RW >= 4500 and ys[-1] + R.RH >= 2400
+    assert xs[-1] + R.RW >= R.px(3000) and ys[-1] + R.RH >= R.px(1600)
+    assert all(x % R.GRID == 0 for x in xs + ys), (xs, ys)
     orders = sorted(r["order"] for r in plan["regions"])
-    assert orders == list(range(1, 13))
+    assert orders == list(range(1, len(plan["regions"]) + 1))
     # the first region is the one nearest the village centre; each later one has a painted side neighbour
     first = next(r for r in plan["regions"] if r["order"] == 1)
-    assert first["id"] in ("r1c1", "r1c2"), first["id"]
+    assert first["id"] in ("r0c1", "r1c1"), first["id"]
     # other pan boxes, and a broken plan is caught
     for box in [(-200, -100, 3000, 1600), (0, 0, 2600, 1300), (-100, -100, 5000, 3000), (10, 10, 1000, 600)]:
         p = R.make_plan(box)
@@ -322,7 +330,7 @@ def case_split_plates_cover_and_overlap(work):
         assert im.shape[:2] == (p["height"], p["width"])
         assert np.array_equal(im, painting[p["y"]:p["y"] + p["height"], p["x"]:p["x"] + p["width"]])
         cover[p["y"]:p["y"] + p["height"], p["x"]:p["x"] + p["width"]] += 1
-        assert p["x"] % 3 == 0 and p["y"] % 3 == 0
+        assert p["x"] % R.GRID == 0 and p["y"] % R.GRID == 0  # whole, even world px
     assert cover.min() == 1 + 0 or cover.min() >= 1, "a gap"
     assert (cover > 1).any() and cover.max() <= 4
     cols, rows = R.PLATE_GRID
@@ -390,7 +398,7 @@ def case_shipped_uprights_are_the_geometry_silhouette(work):
 
 def case_shipped_plates_are_continuous(work):
     _, plates = table()
-    painting_w, painting_h = 4500, 2401
+    painting_w, painting_h = painting_size()
     ims = {}
     cover = np.zeros((painting_h, painting_w), np.uint8)
     for index, x, y, w, h in plates:
@@ -474,16 +482,17 @@ def case_shipped_plates_are_continuous(work):
 
 def case_shipped_plate_perimeter_is_the_margin(work):
     _, plates = table()
-    w, h = 4500, 2401
+    w, h = painting_size()
     full = np.zeros((h, w, 3), np.uint8)
     for index, x, y, pw, ph in plates:
         full[y:y + ph, x:x + pw] = np.asarray(Image.open(SHIPPED / f"ground-{index:02d}.webp").convert("RGB"))
     margin = np.array(R.MARGIN_RGB, int)
     edge = np.concatenate([full[0], full[-1], full[:, 0], full[:, -1]]).astype(int)
     assert np.abs(edge - margin).max() <= 3, np.abs(edge - margin).max()  # lossy encode, nothing more
-    # and it is a ramp, not a band: 12 px in, still margin; 150 px in, the painting is back in places
-    assert np.abs(full[12, 12:-12].astype(int) - margin).mean() < 4
-    assert (np.abs(full[150, :].astype(int) - margin).max(-1) > 20).any()
+    # and it is a ramp, not a band: FADE_FLAT px in, still margin; 100 world px in, the painting is back in places
+    f = R.FADE_FLAT
+    assert np.abs(full[f, f:-f].astype(int) - margin).mean() < 4
+    assert (np.abs(full[R.px(100), :].astype(int) - margin).max(-1) > 20).any()
 
 
 def case_edge_fade_is_flat_bounded_irregular_and_deterministic(work):

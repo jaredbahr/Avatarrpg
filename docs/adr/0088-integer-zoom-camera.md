@@ -1,6 +1,7 @@
 # ADR 0088: Integer zoom: the pixel-art boards draw on whole device pixels
 
-**Status:** accepted, 2026-10-27 (owner: _"2. Do it."_, issue #284)
+**Status:** accepted, 2026-10-27 (owner: _"2. Do it."_, issue #284). Default zoom owner-confirmed 2026-10-28 (_"Keep as is"_):
+128 px tiles in exploration and 64 px in combat at 1 dpr.
 
 Closes the open camera item in ADR 0085 (_"a single on-screen pixel grid needs the camera to snap to 1x or 2x"_) and the
 delivery-scale item ADR 0087 left waiting on it. Changes a rendering contract (how art is sampled) and the camera's fit and
@@ -93,6 +94,10 @@ crisp at every N. Today two kinds of art still ship at 1.5:
 Both belong to the art cleanup pass now running on Ba Dan and the forest, so they are not done here: this change touches no
 art source, no generated file and no packer. Until they land, those pieces are smoothed at N = 2 exactly as soft as they
 were at 1.5, and crisp at N = 3 (the iPad).
+
+**Landed 2026-10-27, owner-approved 2026-10-28:** both now ship at 1 px per world px (ADR 0090; ADR 0076, 0085 and 0087
+amendments). Ba Dan's folder went
+from 3.61 MB to 2.17 MB.
 
 ## Consequences
 

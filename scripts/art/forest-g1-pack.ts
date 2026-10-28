@@ -6,10 +6,11 @@
  * - ground/<name>.png, world px: the board's ground pieces, lossy q90 with
  *   sharp YUV and an exact alpha plane (as Ba Dan's ground plates), at 1 px
  *   per world px;
- * - uprights-1.5x/<id>.png: the uprights at Ba Dan's delivery scale, 1.5 px
- *   per world px. Each is lossy (`encodeUprightWebp`) when its decoded pixels
- *   meet the uprights' fine-grain contract at q100, and otherwise lossless on a
- *   5-bit colour grid, the rule of ADR 0085;
+ * - uprights/<id>.png, world px: the uprights at 1 px per world px, so they
+ *   are sampled nearest and crisp at every integer zoom (ADR 0088; they were
+ *   shipped at 1.5 px, smoothed at N = 2). Each is lossy (`encodeUprightWebp`)
+ *   when its decoded pixels meet the uprights' fine-grain contract at q100, and
+ *   otherwise lossless on a 5-bit colour grid, the rule of ADR 0085;
  * - props/<id>.png, world px: the six combat props, enlarged 4x by nearest
  *   neighbour into the 256 px frame the renderer draws into one 64 world px
  *   sprite box, so 1 art px is 1 world px, standing on each prop's old foot.
@@ -103,10 +104,10 @@ export async function packForestG1(): Promise<Map<string, Uint8Array>> {
       `${FOREST_G1_OUT}/${name}.webp`,
       await encodeGround(readPng(`${FOREST_G1_SOURCE}/ground/${name}.png`)),
     );
-  for (const name of names('uprights-1.5x'))
+  for (const name of names('uprights'))
     files.set(
       `${FOREST_G1_OUT}/${name}.webp`,
-      await encodeUpright(readPng(`${FOREST_G1_SOURCE}/uprights-1.5x/${name}.png`)),
+      await encodeUpright(readPng(`${FOREST_G1_SOURCE}/uprights/${name}.png`)),
     );
   for (const name of names('props'))
     files.set(

@@ -121,3 +121,22 @@ PixelLab jobs and outputs are in `polish/` (41 jobs, 270 generations, 44 of them
 - **Rim**: the pale ghosts of paving at the page edge (top-left) are put back to the page colour; the paving ghosted into
   the woods behind the north wall is redrawn as woodland floor.
 - Gao's yard cart stays the painted one (it fits the house sprite and was not redrawn in this pass).
+
+## Amendment, 2026-10-27: the regions at 1 px per world px (ADR 0088)
+
+The G1 world was scaled to the regions' 1.5 painting px per world px by EPX x2 then a 0.75 Lanczos (`compose.up15`), and
+under the integer-zoom camera that art is smoothed at N = 2. The world is now cut as it is drawn: `regions.py` runs at
+`SCALE = 1`, the region size stays the image tool's 1536 x 1024 (a 3 x 2 grid now), and `regions_back.py` crops
+`world/world-g1-polish.png` without resampling. It first clears `accepted/` (the 1.5 regions must not be stitched with the
+new ones), renders the frozen geometry at 1 px (`render-village.ts` area-averages its 1.5 px sprites), and builds every guide
+over the master itself (`guide all --ground`), so each crop is gated against the frozen uprights; all six pass without
+`--force`. Origins and plate cuts sit on whole, even world px (`GRID`), and the fade is restated in world px (8 flat, 48 to 96
+reach). Nothing was generated: this is a re-cut, and the master is the polish pass's.
+
+- The 46 uprights, their footprints, depth keys and flags are unchanged (`baDan.test.ts`, `baDanDepth.test.ts`). Their alpha is
+  the frozen silhouette rasterised at 1 px.
+- `ba-dan-projection.test.ts` keeps the pins read on the 1.5 px canvases (`pins-g1.json`, `ba-dan-true/pins*.json`) and scales
+  each window to the painting's scale, rounded inward (a widened window took in the next leg of `gao-display`).
+- Fixed on the way, ahead of the re-cut: the colour change a hidden upright pixel takes was also sampled where a ground piece in
+  front owns the painting, which is that piece's colour, not the repaint's change (`split_sprites`).
+- Before and after at N = 2 (1368 x 912, 1 dpr): see the PR.

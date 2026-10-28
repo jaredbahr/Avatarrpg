@@ -333,7 +333,7 @@ export const BA_DAN_DEPTH_OVERRIDES: Readonly<Record<string, Vec2>> = {
   'tree-3-15': { x: 3.25, y: 15 },
 };
 
-/** A sprite, drawn where the painting has it: the sprite's rectangle in painting pixels is the world rectangle times 1.5. */
+/** A sprite, drawn where the painting has it: the sprite's rectangle in painting pixels is the world rectangle times the painting's scale (1 since ADR 0088). */
 function upright(piece: Standing): SceneScenery | null {
   const art = BA_DAN_UPRIGHTS[piece.id];
   if (!art) return null;
