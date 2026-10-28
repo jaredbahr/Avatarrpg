@@ -1,0 +1,35 @@
+{
+  "_style": "Flat cel-shaded 2D anime illustration with clean dark brown ink lines, one soft shadow tone per material, warm light from the upper left, matching the surrounding painting exactly. Not pixel art.",
+  "kaya": {
+    "file": "kaya.png",
+    "who": "a young fire-nation woman with tan skin, amber eyes and dark brown hair",
+    "moods": {
+      "angry": {
+        "mask": "face",
+        "text": "Her face is angry and determined: brows drawn hard down and together, eyes narrowed, mouth a tight frown with clenched jaw",
+        "crop": [200, 150, 192]
+      },
+      "worried": {
+        "mask": "eyesmouth",
+        "crop": [240, 178, 128],
+        "text": "Her face is worried and sad: inner ends of the brows raised and pinched upward, eyes wide and glistening looking slightly down, mouth small, closed and turned down"
+      }
+    }
+  },
+  "mira": {
+    "file": "mira.png",
+    "who": "an elderly earth-kingdom woman with deep brown wrinkled skin, dark brown eyes and white hair in a bun",
+    "moods": {
+      "warm": {
+        "mask": "face",
+        "crop": [200, 80, 192],
+        "text": "Her face is warm and kind: a gentle closed-mouth smile with the corners of the mouth lifted, cheeks raised, softened eyes with smile creases at the corners, brows relaxed; keep every wrinkle line style the same"
+      }
+    }
+  },
+  "thug": {
+    "file": "enemy.thug.png",
+    "who": "a rough bandit man with a red head scarf",
+    "moods": {}
+  }
+}

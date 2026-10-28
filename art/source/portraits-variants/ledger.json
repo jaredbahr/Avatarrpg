@@ -1,0 +1,164 @@
+{
+  "task": "portraits-variants: expression, pose and pixel-bust sample (ADR 0092)",
+  "jobs": [
+    {
+      "name": "a-kaya-angry-s9201",
+      "endpoint": "/inpaint-v3",
+      "job": "76da2972-c752-43d7-bf4f-4891c96fc11b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Her face is angry and determined: brows drawn hard down and together, eyes narrowed, mouth a tight frown with clenched jaw. Same person, a young fire-nation woman with tan skin, amber eyes and dark brown hair. Flat cel-shaded 2D anime illustration with clean dark brown ink lines, one soft shadow tone per material, warm light from the upper left, matching the surrounding painting exactly. Not pixel art.",
+        "inpainting_image": {
+          "image": "<png>",
+          "size": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "mask_image": {
+          "image": "<png>",
+          "size": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "seed": 9201,
+        "no_background": false,
+        "crop_to_mask": true
+      },
+      "inputs": {
+        "image": "kaya.png",
+        "mask": "masks/kaya-face.png"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 25.0,
+      "balance_before": 1859.3999999999796,
+      "balance_after": 1454.3999999999796,
+      "secs": 492,
+      "notes": "",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "a-kaya-angry-c192-s9201",
+      "endpoint": "/inpaint-v3",
+      "job": "6533fdb8-e82c-42c6-8898-5dd86f33fd11",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Her face is angry and determined: brows drawn hard down and together, eyes narrowed, mouth a tight frown with clenched jaw. Same person, a young fire-nation woman with tan skin, amber eyes and dark brown hair. Flat cel-shaded 2D anime illustration with clean dark brown ink lines, one soft shadow tone per material, warm light from the upper left, matching the surrounding painting exactly. Not pixel art.",
+        "inpainting_image": {
+          "image": "<png>",
+          "size": {
+            "width": 192,
+            "height": 192
+          }
+        },
+        "mask_image": {
+          "image": "<png>",
+          "size": {
+            "width": 192,
+            "height": 192
+          }
+        },
+        "seed": 9201,
+        "no_background": false,
+        "crop_to_mask": true
+      },
+      "inputs": {
+        "image": "kaya.png",
+        "crop": [200, 150, 192],
+        "mask": "masks/kaya-face.png"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 10.0,
+      "balance_before": 1454.3999999999796,
+      "balance_after": 1414.7999999999392,
+      "secs": 475,
+      "notes": "",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "a-kaya-worried-c128-s9201",
+      "endpoint": "/inpaint-v3",
+      "job": "55df223b-e7bf-405e-98d7-ccc79fc23055",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Her face is worried and sad: inner ends of the brows raised and pinched upward, eyes wide and glistening looking slightly down, mouth small, closed and turned down. Same person, a young fire-nation woman with tan skin, amber eyes and dark brown hair. Flat cel-shaded 2D anime illustration with clean dark brown ink lines, one soft shadow tone per material, warm light from the upper left, matching the surrounding painting exactly. Not pixel art.",
+        "inpainting_image": {
+          "image": "<png>",
+          "size": {
+            "width": 128,
+            "height": 128
+          }
+        },
+        "mask_image": {
+          "image": "<png>",
+          "size": {
+            "width": 128,
+            "height": 128
+          }
+        },
+        "seed": 9201,
+        "no_background": false,
+        "crop_to_mask": true
+      },
+      "inputs": {
+        "image": "kaya.png",
+        "crop": [240, 178, 128],
+        "mask": "masks/kaya-eyesmouth.png"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 10.0,
+      "balance_before": 1414.7999999999392,
+      "balance_after": 1233.7999999999392,
+      "secs": 480,
+      "notes": "",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "a-mira-warm-c192-s9201",
+      "endpoint": "/inpaint-v3",
+      "job": "e30bf6e7-f996-4cee-bac7-947b35c330a5",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "Her face is warm and kind: a gentle closed-mouth smile with the corners of the mouth lifted, cheeks raised, softened eyes with smile creases at the corners, brows relaxed; keep every wrinkle line style the same. Same person, an elderly earth-kingdom woman with deep brown wrinkled skin, dark brown eyes and white hair in a bun. Flat cel-shaded 2D anime illustration with clean dark brown ink lines, one soft shadow tone per material, warm light from the upper left, matching the surrounding painting exactly. Not pixel art.",
+        "inpainting_image": {
+          "image": "<png>",
+          "size": {
+            "width": 192,
+            "height": 192
+          }
+        },
+        "mask_image": {
+          "image": "<png>",
+          "size": {
+            "width": 192,
+            "height": 192
+          }
+        },
+        "seed": 9201,
+        "no_background": false,
+        "crop_to_mask": true
+      },
+      "inputs": {
+        "image": "mira.png",
+        "crop": [200, 80, 192],
+        "mask": "masks/mira-face.png"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 10.0,
+      "balance_before": 1218.7999999999392,
+      "balance_after": 1123.7999999999392,
+      "secs": 257,
+      "notes": "",
+      "verdict": null,
+      "error": null
+    }
+  ]
+}
