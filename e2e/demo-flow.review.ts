@@ -22,7 +22,7 @@
  * FNT_FLOW_LABEL=before npx playwright test -c playwright.demo-flow.config.ts --project desktop-canvas
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { RngCursor } from '../src/core/rng';
@@ -55,6 +55,7 @@ test('the demo, played through', async ({ page }, info) => {
   const renderer = String(info.project.metadata.renderer ?? 'canvas');
   const label = process.env.FNT_FLOW_LABEL ?? 'current';
   const folder = `${process.env.FNT_FLOW_DIR ?? '.shots/demo-flow'}/${label}/${info.project.name}`;
+  rmSync(folder, { recursive: true, force: true });
   mkdirSync(folder, { recursive: true });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -330,12 +331,41 @@ test('the demo, played through', async ({ page }, info) => {
     const cells = [...reachable(draft.moveContext(self), self.pos, self.move).values()].filter(
       (c) => !b.units.some((u) => u.hp > 0 && u.pos.x === c.pos.x && u.pos.y === c.pos.y),
     );
-    const best = cells.sort((p, q) => dist(p.pos, goal) - dist(q.pos, goal))[0];
-    if (!best || dist(best.pos, goal) >= dist(self.pos, goal)) return false;
     const move = page.getByRole('button', { name: /^Move/ });
     if (!(await move.isEnabled({ timeout: 2_000 }))) return false;
     await move.click();
-    await tapTile(best.pos);
+    await settleLayout(page, slow ? 120_000 : 30_000);
+    // The nearest tile to the goal that is on screen: a tap can only land there.
+    const box = await page.locator('.map-canvas').boundingBox();
+    let best: Vec2 | null = null;
+    for (const cell of cells.sort((p, q) => dist(p.pos, goal) - dist(q.pos, goal))) {
+      if (dist(cell.pos, goal) >= dist(self.pos, goal)) break;
+      const pt = await paintedTileCentre(page, cell.pos);
+      if (
+        pt &&
+        box &&
+        pt.x > box.x + 30 &&
+        pt.x < box.x + box.width - 30 &&
+        pt.y > box.y + 30 &&
+        pt.y < box.y + box.height - 30
+      ) {
+        best = cell.pos;
+        break;
+      }
+    }
+    const confirmButton = page.locator('.confirm-bar').getByRole('button', { name: /^Confirm$/ });
+    if (best) await tapTile(best);
+    if (
+      !best ||
+      !(await confirmButton
+        .waitFor({ state: 'visible', timeout: 3_000 })
+        .then(() => true)
+        .catch(() => false))
+    ) {
+      const cancel = page.getByRole('button', { name: /Cancel$/ }).first();
+      if (await cancel.isVisible().catch(() => false)) await cancel.click();
+      return false;
+    }
     await confirm();
     return true;
   };
