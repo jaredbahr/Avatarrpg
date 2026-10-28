@@ -39,6 +39,13 @@ OUT = 'art/source/ba-dan-route-a/world/world-g1-grounded.png'
 KEY = (O.SHADOW_KX, O.SHADOW_KY)
 # Redone by their own polish steps (`garden.py` repainted the plot): their pixels carry no `objects.py` shadow to lift.
 SKIP = {'garden-kit'}
+# Painted pieces no round set in. One painted inside a house sprite has no silhouette of its own, so one whose outline is
+# plain is authored here, in world px of the master: Gao's door barrel is a 17 x 36 px upright drum on the plinth, its
+# bottom ink row at y = 523. It darkens no pixel that is already ink dark, so nothing the painting shaded is shaded twice.
+# Not here: the court trees. Their frozen silhouettes run on below the painted roots over a strip of grass and path, so
+# neither the silhouette's bottom nor the bark's colour says where a tree meets the ground (ADR 0093, known faults).
+EXTRA_RECTS = {'gao-door-barrel': (1596, 488, 1612, 523)}
+INK_DARK = 62
 SCENE = json.load(open(f'{O.GEO}/scene.json'))['pieces']
 
 
@@ -288,13 +295,21 @@ def main():
         _, c, t = grounded(al, o['xy'], shape, o['piece'])
         cast |= c
         contact |= t
+    # The authored pieces inside the house sprites.
+    lum = a.mean(axis=2)
+    for name, (x0, y0, x1, y1) in EXTRA_RECTS.items():
+        al = np.ones((y1 - y0 + 1, x1 - x0 + 1), bool)
+        obj, c, t = grounded(al, (x0, y0), shape)
+        objs |= obj
+        cast |= c & (lum >= INK_DARK)
+        contact |= t & (lum >= INK_DARK)
     contact &= ~objs
     cast &= ~objs & ~contact
     a[cast] *= O.SHADOW * O.COOL
     a[contact] *= O.CONTACT * O.COOL
     Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)).save(OUT, optimize=True)
     print(f'{OUT}: {len(standing)} objects re-shaded ({len(kept)} set by objects.py, {len(bench_fence)} reshaded, '
-          f'{len(redrawn)} redrawn)')
+          f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS)} painted piece grounded')
 
 
 if __name__ == '__main__':
