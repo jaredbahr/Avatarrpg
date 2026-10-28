@@ -30,12 +30,20 @@ import {
   UniformGroup,
 } from 'pixi.js';
 
-import type { MapScene, SceneFlock, SceneImage, TerrainId, Tile, Vec2 } from '../../core/types';
+import type {
+  MapScene,
+  SceneFlock,
+  SceneImage,
+  SceneScenery,
+  TerrainId,
+  Tile,
+  Vec2,
+} from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
-import { sceneForGrid, sceneImage, sceneryOpacities } from '../scene';
+import { drawSceneImage, sceneForGrid, sceneImage, sceneryOpacities } from '../scene';
 import {
   firstGustCrest,
   flockAt,
@@ -128,7 +136,7 @@ import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } fro
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
-import { groundedCastArt } from '../groundedCastArt';
+import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -1329,11 +1337,15 @@ export class PixiBackend implements RenderBackend {
    * the cache's size and offset bookkeeping drew the wrong region once the
    * scene finished loading.
    */
-  private syncSceneryShadows(view: MapView): void {
+  private syncSceneryShadows(view: MapView, camera: Camera): void {
     for (const item of view.scene?.scenery ?? []) {
       if (item.castShadow === false) continue;
       const source = this.scenerySprites.get(item.id);
       if (!source?.visible) continue;
+      if (item.castFrom === 'base') {
+        this.groundSceneryPiece(item, camera);
+        continue;
+      }
       this.projectDynamicShadow(
         `scene:${item.id}`,
         source,
@@ -1343,6 +1355,46 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
+  /**
+   * A solid scenery piece (`castFrom: 'base'`) stands on its whole base as a prop does: its cast from the lower hull
+   * of its own bottom edge along the shared key, and its contact line `CONTACT_LINE` world pixels under it. Both are
+   * cut from the piece as drawn (`pieceArt`) and placed on its world box.
+   */
+  private groundSceneryPiece(item: SceneScenery, camera: Camera): void {
+    const image = sceneImage(item);
+    if (!image) return;
+    const art = pieceArt(image, item, (context, width, height) =>
+      drawSceneImage(context, image, item, 0, 0, width, height),
+    );
+    if (!art) return;
+    const k = item.width / art.width;
+    const place = (key: string, canvas: HTMLCanvasElement, dy: number, alpha: number) => {
+      this.castLive.add(key);
+      let sprite = this.castSprites.get(key);
+      if (!sprite) {
+        sprite = new Sprite();
+        this.castSprites.set(key, sprite);
+        this.shadowMaskSources.addChild(sprite);
+      }
+      const texture = this.texture(canvas);
+      if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+      sprite.texture = texture;
+      sprite.anchor.set(0, 0);
+      sprite.rotation = 0;
+      sprite.position.set(item.x, item.y + dy);
+      sprite.width = canvas.width * k;
+      sprite.height = canvas.height * k;
+      sprite.alpha = Math.max(0, Math.min(1, alpha / shadowCeiling(this.grounding)));
+      sprite.blendMode = 'max';
+      sprite.visible = sprite.alpha > 0;
+    };
+    const strength = castShadowStrength(item.castShadow);
+    const cast = groundedCastArt(art, CAST_PER_PIXEL, pieceFeet(item, camera));
+    if (cast && strength > 0) place(`scene:${item.id}`, cast, 0, strength * CAST_SHADOW_ALPHA);
+    if (item.contactShadow !== false)
+      place(`scenefoot:${item.id}`, art, CONTACT_LINE, this.grounding.contact);
+  }
+
   /** Unions cached static and current-frame silhouettes, then exposes one tinted layer. */
   private syncCastShadows(view: MapView, camera: Camera): void {
     const app = this.app;
@@ -1350,7 +1402,7 @@ export class PixiBackend implements RenderBackend {
     this.grounding = actorGrounding(view.scene);
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
-    if (camera.projection === 'oblique') this.syncSceneryShadows(view);
+    if (camera.projection === 'oblique') this.syncSceneryShadows(view, camera);
     for (const [key, sprite] of this.castSprites)
       if (!this.castLive.has(key)) sprite.visible = false;
     const visible = [...this.castSprites.values()].filter((sprite) => sprite.visible);

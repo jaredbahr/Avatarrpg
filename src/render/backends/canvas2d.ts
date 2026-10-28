@@ -10,7 +10,7 @@
  * context, they never own one.
  */
 
-import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
+import type { Grid, SceneFlock, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
@@ -86,7 +86,7 @@ import {
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
-import { groundedCastArt } from '../groundedCastArt';
+import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -1799,6 +1799,10 @@ export class Canvas2DBackend implements RenderBackend {
       const y = piece.y * camera.scale - camera.offsetY;
       const w = piece.width * camera.scale;
       const h = piece.height * camera.scale;
+      if (piece.castFrom === 'base') {
+        this.groundSceneryPiece(target, piece, image, { x, y, w, h }, camera);
+        continue;
+      }
       const foot = { x: x + w / 2, y: y + h };
       const m = silhouetteProjection(foot.x, foot.y);
       this.castInto(
@@ -1824,6 +1828,43 @@ export class Canvas2DBackend implements RenderBackend {
         },
       );
     }
+  }
+
+  /**
+   * A solid scenery piece (`castFrom: 'base'`) stands on its whole base as a prop does: its cast from the lower hull
+   * of its own bottom edge along the shared key, and its contact line `CONTACT_LINE` world pixels under its silhouette.
+   */
+  private groundSceneryPiece(
+    target: CanvasRenderingContext2D,
+    piece: SceneScenery,
+    image: HTMLImageElement,
+    placed: { x: number; y: number; w: number; h: number },
+    camera: Camera,
+  ): void {
+    const art = pieceArt(image, piece, (context, width, height) =>
+      drawSceneImage(context, image, piece, 0, 0, width, height),
+    );
+    if (!art) return;
+    const strength = castShadowStrength(piece.castShadow);
+    const cast = groundedCastArt(art, CAST_PER_PIXEL, pieceFeet(piece, camera));
+    if (cast && strength > 0) {
+      const k = placed.w / art.width;
+      const w = cast.width * k;
+      const h = cast.height * k;
+      this.castInto(
+        target,
+        CAST_SHADOW_ALPHA,
+        { x0: placed.x, y0: placed.y, x1: placed.x + w, y1: placed.y + h },
+        (t) => {
+          t.save();
+          t.globalAlpha = strength;
+          t.drawImage(cast, placed.x, placed.y, w, h);
+          t.restore();
+        },
+      );
+    }
+    if (piece.contactShadow !== false)
+      this.projectContactLine(target, art, placed, 1, camera.scale);
   }
 
   private drawLiveShadowMask(

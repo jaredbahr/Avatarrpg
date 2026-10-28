@@ -134,6 +134,10 @@ describe('both backends draw the same grounding', () => {
       expect(source).toContain('CONTACT_LINE');
       expect(source).toContain('groundedCastArt(');
     });
+    it(`${file} grounds solid scenery on its own base, its feet inside its footprint`, () => {
+      expect(source).toContain('groundSceneryPiece(');
+      expect(source).toContain('pieceFeet(');
+    });
   }
 
   it('lays the contact line deep enough that a whole world pixel shows under the outline', () => {

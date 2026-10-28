@@ -254,6 +254,8 @@ export const FOREST_LODGE: SceneScenery = (() => {
     footprint: FOREST_LODGE_CELLS,
     depth: { x: front.x - 0.5, y: front.y - 0.5 },
     fadeWhenOccluding: true,
+    // A building stands on its whole base: its side walls rise from corners higher than the front one (ADR 0093).
+    castFrom: 'base',
   };
 })();
 
@@ -366,6 +368,8 @@ function roadsideProp(prop: RoadsideProp, bankKeys: ReadonlySet<string>): SceneS
     ...(prop.flip ? { flip: true } : {}),
     ...(prop.castShadow ? { castShadow: prop.castShadow } : {}),
     ...(prop.fadeWhenOccluding ? { fadeWhenOccluding: true } : {}),
+    // Every roadside prop stands on its whole base but the lantern, whose lamp hangs from an arm (ADR 0093).
+    ...(prop.art === 'lantern-post' ? {} : { castFrom: 'base' as const }),
   };
 }
 /** Raised-bank cells that carry a prop, so the piece stands on the lifted top. */

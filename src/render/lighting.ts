@@ -444,12 +444,17 @@ export function groundProfile(
   width: number,
   height: number,
   threshold = 128,
+  feet?: GroundSpan,
 ): Int32Array {
   const bottom: { x: number; y: number }[] = [];
+  const lowest = new Int32Array(width).fill(-1);
   for (let x = 0; x < width; x += 1)
     for (let y = height - 1; y >= 0; y -= 1)
       if (alpha(x, y) >= threshold) {
-        bottom.push({ x, y });
+        lowest[x] = y;
+        const span = feet?.(x);
+        // With a footprint, only a column whose bottom reaches its ground is a foot.
+        if (!feet || (span && y >= span.top - FOOT_TOLERANCE)) bottom.push({ x, y });
         break;
       }
   const base = new Int32Array(width).fill(-1);
@@ -467,18 +472,65 @@ export function groundProfile(
     }
     hull.push(p);
   }
-  const first = bottom[0]?.x ?? 0;
-  const last = bottom[bottom.length - 1]?.x ?? 0;
-  for (let i = 0; i < hull.length - 1; i += 1) {
-    const a = hull[i];
-    const b = hull[i + 1];
-    if (!a || !b) continue;
-    for (let x = a.x; x <= b.x; x += 1)
-      base[x] = Math.round(a.y + ((b.y - a.y) * (x - a.x)) / Math.max(1, b.x - a.x));
+  const first = hull[0];
+  const last = hull[hull.length - 1];
+  if (!first || !last) return base;
+  for (let x = 0; x < width; x += 1) {
+    const own = lowest[x] ?? -1;
+    if (own < 0) continue;
+    // Between the feet, the hull; past either end, level with the end foot, so what overhangs is cast from the
+    // ground under it rather than standing on its own bottom.
+    let ground = x < first.x ? first.y : last.y;
+    for (let i = 0; i < hull.length - 1; i += 1) {
+      const a = hull[i];
+      const b = hull[i + 1];
+      if (a && b && a.x <= x && x <= b.x) {
+        ground = Math.round(a.y + ((b.y - a.y) * (x - a.x)) / Math.max(1, b.x - a.x));
+        break;
+      }
+    }
+    base[x] = Math.max(ground, own);
   }
-  if (hull.length === 1) base[first] = hull[0]?.y ?? 0;
-  for (let x = 0; x < width; x += 1) if (x < first || x > last) base[x] = -1;
   return base;
+}
+
+/** How far above its footprint's ground a column's bottom may sit and still count as a foot, in art pixels. */
+const FOOT_TOLERANCE = 3;
+
+/**
+ * Per column of a piece's art, the rows its footprint's ground spans (`top` the farthest edge, `bottom` the nearest),
+ * or `null` where the footprint does not reach: what `groundProfile` takes as feet.
+ */
+export type GroundSpan = (x: number) => { readonly top: number; readonly bottom: number } | null;
+
+/**
+ * The `GroundSpan` of a footprint in a piece's art: each cell's ground diamond, from its four corners in the art's
+ * pixels (`corner` maps a logical ground point there).
+ */
+export function footprintSpan(
+  cells: readonly { readonly x: number; readonly y: number }[],
+  corner: (point: { readonly x: number; readonly y: number }) => { x: number; y: number },
+): GroundSpan {
+  const diamonds = cells.map((c) => [
+    corner({ x: c.x, y: c.y }),
+    corner({ x: c.x + 1, y: c.y }),
+    corner({ x: c.x + 1, y: c.y + 1 }),
+    corner({ x: c.x, y: c.y + 1 }),
+  ]);
+  return (x) => {
+    const X = x + 0.5;
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const d of diamonds)
+      d.forEach((a, i) => {
+        const b = d[(i + 1) % d.length];
+        if (!b || a.x === b.x || X < Math.min(a.x, b.x) || X > Math.max(a.x, b.x)) return;
+        const y = a.y + ((b.y - a.y) * (X - a.x)) / (b.x - a.x);
+        top = Math.min(top, y);
+        bottom = Math.max(bottom, y);
+      });
+    return top <= bottom ? { top, bottom } : null;
+  };
 }
 
 /** A prop's cast as a mask in its art's pixels, from its own ground (`groundProfile`). */
@@ -502,8 +554,9 @@ export function groundedCast(
   height: number,
   key: CastKey,
   threshold = 128,
+  feet?: GroundSpan,
 ): GroundedCast {
-  const base = groundProfile(alpha, width, height, threshold);
+  const base = groundProfile(alpha, width, height, threshold, feet);
   const outW = width + Math.ceil(key.x * height) + 1;
   const outH = height + Math.ceil(key.y * height) + 1;
   const mask = new Uint8Array(outW * outH);
