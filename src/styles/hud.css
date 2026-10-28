@@ -1862,6 +1862,15 @@ html[data-contrast='high'] .hud-panel::after {
   overflow-y: auto;
 }
 
+/* A consequence is a sentence ("The flask shatters and oil spreads across the
+   ground — after…"): it wraps inside the dock instead of running off its edge. */
+.preview-chips .chip {
+  max-width: 100%;
+  white-space: normal;
+  text-align: start;
+  border-radius: var(--radius-lg);
+}
+
 .preview-target-chip {
   min-height: var(--tap);
   width: auto;
