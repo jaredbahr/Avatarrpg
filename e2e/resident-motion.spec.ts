@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
+import {
+  residentCompletionPlan,
+  residentPhaseChangeSettled,
+  waitWithinResidentBudget,
+} from './resident-completion';
+import type { ResidentPlanSnapshot, PlannedResidentTrack } from './resident-completion';
 import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
 import type { GameState } from '../src/core/types';
 import type { NpcMarker } from '../src/render/view';
@@ -15,6 +21,33 @@ import type { NpcMarker } from '../src/render/view';
 const FAKE_CLOCK_WALK_BUDGET_MS = 180_000;
 
 const CLOCK_STEP_MS = 60;
+
+/** Read the active planned paths, not the runtime's computed end timestamps. */
+const residentPlan = (page: Page) =>
+  page.evaluate(() => {
+    const residents = window.fnt!.app.residents as unknown as {
+      clock: number;
+      tracks: Map<string, PlannedResidentTrack>;
+    };
+    return {
+      clock: residents.clock,
+      tracks: [...residents.tracks.values()].map(({ start, motion }) =>
+        motion.kind === 'walk'
+          ? {
+              start,
+              motion: {
+                kind: 'walk' as const,
+                who: { id: motion.who.id, sprite: motion.who.sprite },
+                from: motion.from,
+                path: motion.path,
+                enter: motion.enter,
+                leave: motion.leave,
+              },
+            }
+          : { start, motion: { kind: 'fade' as const, from: motion.from, to: motion.to } },
+      ),
+    } satisfies ResidentPlanSnapshot;
+  });
 
 /**
  * Advance the residents' clamped presentation clock without rendering every
@@ -157,13 +190,27 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     // Canvas covers the per-frame trail. Software WebGL instead renders short
     // start/mid/end windows around clock-only advances: its regression is
     // sprite identity, and rendering the full trail can take minutes on CI.
-    const sample = async () => {
-      await page.clock.runFor(CLOCK_STEP_MS);
+    const sample = async (stepMs = CLOCK_STEP_MS) => {
+      await page.clock.runFor(stepMs);
       const frame = await residentFrame(page);
       end = frame.markers;
       residentsMoving = frame.moving;
       dorinSprites.push(frame.dorinSprites);
       coordinateSprites = Math.max(coordinateSprites, frame.coordinateSprites);
+    };
+    const finishPhaseChange = async () => {
+      const completion = residentCompletionPlan(await residentPlan(page));
+      // Spend only the planned route's interior on clamped ticks. Begin the
+      // rendered window before its authored end, then keep the finite slack.
+      if (completion.interiorMs > 0)
+        await advanceResidentsWithoutFrames(page, completion.interiorMs);
+      const completed = await waitWithinResidentBudget(completion.renderedMs, sample, async () =>
+        residentPhaseChangeSettled({ moving: residentsMoving, markers: end }),
+      );
+      expect(
+        completed,
+        `resident phase change should settle within ${completion.totalBudgetMs} virtual ms`,
+      ).toBe(true);
     };
     if (renderer === 'webgl') {
       await sample();
@@ -179,20 +226,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         midDorin && (!Number.isInteger(midDorin.at.x) || !Number.isInteger(midDorin.at.y)),
       ).toBe(true);
       expect(dorinSprites.at(-1)).toBe(1);
-      await advanceResidentsWithoutFrames(page, 5_000);
-      for (let step = 0; step < 20; step++) {
-        await sample();
-        const mira = end.find((m) => m.id === 'lw.npc.mira');
-        const dorin = end.find((m) => m.id === 'lw.npc.dorin');
-        if (
-          !residentsMoving &&
-          !mira &&
-          dorin?.at.x === 17 &&
-          dorin.at.y === 6 &&
-          dorin.alpha === 1
-        )
-          break;
-      }
+      await finishPhaseChange();
     } else {
       // First observe Mira between tiles. That proves a rendered frame planned
       // the phase-change walk before either sampling or skipping it. Continue
@@ -208,22 +242,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         if (underway && new Set(trail.map((p) => `${p.x},${p.y}`)).size > 6) break;
       }
       expect(new Set(trail.map((p) => `${p.x},${p.y}`)).size).toBeGreaterThan(6);
-      await advanceResidentsWithoutFrames(page, 10_000);
-      // Render until the observed settled frame after the skip rather than
-      // assuming a particular number of rAF callbacks will be delivered.
-      for (let step = 0; step < 100; step++) {
-        await sample();
-        const mira = end.find((m) => m.id === 'lw.npc.mira');
-        const dorin = end.find((m) => m.id === 'lw.npc.dorin');
-        if (
-          !residentsMoving &&
-          !mira &&
-          dorin?.at.x === 17 &&
-          dorin.at.y === 6 &&
-          dorin.alpha === 1
-        )
-          break;
-      }
+      await finishPhaseChange();
     }
     await page.clock.resume();
     if (renderer === 'canvas') {
