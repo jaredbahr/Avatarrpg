@@ -46,3 +46,20 @@ and distinguish these scoped checks from full gameplay/gallery acceptance.
 Keep the PR draft for Claude and owner review. No merge, deployment, PixelLab
 generation, API-key fallback or paid service is authorized by this checkpoint.
 Admit heavy validation only when the higher-priority game workloads are clear.
+
+## Scoped native evidence at e10ea354
+
+The dedicated single-worker browser review passed 8/8 in 11.3 seconds on
+2026-10-28: angry, worried, warm and aborted-request neutral fallback on desktop
+Chromium (1368x912) and emulated iPad portrait WebKit (834x1194 CSS, DPR2).
+Each case compares actual portrait backing-store RGBA pixels to its selected
+PNG and verifies expression requests occur only after selection. Screenshots
+are in `art/source/portraits-variants/review/in-game/`.
+
+All eight screenshots were inspected. The portrait, speaker label, dialogue
+and Next control remain visible without clipping. Expression detail is subtler
+at the smaller iPad portrait size; this is not a physical-device check or
+Jared's aesthetic acceptance. The neutral failed-load portrait is visible.
+The production build passed and check-delivery.mjs confirmed the actual built
+service worker includes neutral Kaya and excludes the expression folder.
+Full ci:local remains the publication gate; see the PR for its exact-head result.
