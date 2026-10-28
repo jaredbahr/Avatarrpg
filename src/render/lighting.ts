@@ -141,18 +141,15 @@ export function spriteBandArt<S extends { readonly width: number; readonly heigh
 }
 
 /**
- * What a figure's feet get under it. A scene with a contact layer draws the
- * sole band for any figure that casts (frame or sprite, they all have art to
- * cut it from) and drops the radial pool for it; a figure that casts nothing
- * keeps its pool where the default scene had one. A default scene is untouched:
- * `pool` is whatever the figure drew before (`defaultPool`), never a band.
+ * Whether a figure or prop gets a contact under it: any that casts, in a scene
+ * with a contact layer, which every oblique board has (ADR 0093). Nothing else
+ * grounds a figure; one that casts nothing draws no shadow at all.
  */
-export function groundTreatment(
+export function contactBand(
   grounding: Pick<ActorGrounding, 'contact'>,
-  figure: { readonly castStrength: number; readonly defaultPool: boolean },
-): { readonly band: boolean; readonly pool: boolean } {
-  const band = grounding.contact > 0 && figure.castStrength > 0;
-  return { band, pool: figure.defaultPool && !band };
+  castStrength: number,
+): boolean {
+  return grounding.contact > 0 && castStrength > 0;
 }
 
 export interface ShadowProjection {

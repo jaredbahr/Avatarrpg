@@ -148,7 +148,7 @@ import {
   actorGrounding,
   castShadowStrength,
   contactBandRows,
-  groundTreatment,
+  contactBand,
   shadowCeiling,
   spriteBandArt,
   type BandArt,
@@ -2775,11 +2775,7 @@ export class PixiBackend implements RenderBackend {
         this.grounding.cast,
         this.grounding.castKey,
       );
-      const treatment = groundTreatment(this.grounding, {
-        castStrength: 1,
-        defaultPool: entry.kind !== 'painter',
-      });
-      if (treatment.band && bandArt)
+      if (contactBand(this.grounding, 1) && bandArt)
         this.projectContact(
           `npcfoot:${npc.id}`,
           sprite,
@@ -2820,7 +2816,7 @@ export class PixiBackend implements RenderBackend {
       const propStrength = castShadowStrength(prop.castShadow);
       // A prop casts from its own ground and meets it on its contact line (ADR 0093).
       if (propStrength > 0) this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
-      if (groundTreatment(this.grounding, { castStrength: propStrength, defaultPool: false }).band)
+      if (contactBand(this.grounding, propStrength))
         this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
 
       /*
@@ -2865,10 +2861,7 @@ export class PixiBackend implements RenderBackend {
       const sprite = this.unitSprite(unit.id);
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const treatment = groundTreatment(this.grounding, {
-        castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: false,
-      });
+      const band = contactBand(this.grounding, castShadowStrength(unit.castShadow));
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
@@ -2937,7 +2930,7 @@ export class PixiBackend implements RenderBackend {
           this.grounding.cast,
           this.grounding.castKey,
         );
-        if (treatment.band && bandArt)
+        if (band && bandArt)
           this.projectContact(
             `foot:${unit.id}`,
             sprite,

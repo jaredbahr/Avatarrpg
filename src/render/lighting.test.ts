@@ -19,7 +19,7 @@ import {
   actorGrounding,
   castShadowStrength,
   contactBandRows,
-  groundTreatment,
+  contactBand,
   shadowCeiling,
   spriteBandArt,
   unionShadowCoverage,
@@ -229,29 +229,11 @@ describe('scene actor grounding', () => {
     expect(spriteBandArt({ width: 128, height: 256 }, 2).pixelsPerTile).toBe(128);
   });
 
-  it('gives a figure that casts a band and no pool, and keeps the pool of one that does not', () => {
-    const contact = { contact: 0.8 };
-    // Every figure that casts has art to cut a band from, so it loses its pool...
-    expect(groundTreatment(contact, { castStrength: 1, defaultPool: true })).toEqual({
-      band: true,
-      pool: false,
-    });
-    // ...a resident that never had a pool just gains the band...
-    expect(groundTreatment(contact, { castStrength: 1, defaultPool: false })).toEqual({
-      band: true,
-      pool: false,
-    });
-    // ...and one that casts nothing keeps what it had.
-    expect(groundTreatment(contact, { castStrength: 0, defaultPool: true })).toEqual({
-      band: false,
-      pool: true,
-    });
+  it('gives every figure that casts a band, and one that casts nothing no shadow', () => {
+    expect(contactBand({ contact: 0.8 }, 1)).toBe(true);
+    expect(contactBand({ contact: 0.8 }, 0)).toBe(false);
     // A scene that sets nothing grounds its figures the same way (ADR 0093).
-    for (const defaultPool of [true, false])
-      expect(groundTreatment(DEFAULT_ACTOR_GROUNDING, { castStrength: 1, defaultPool })).toEqual({
-        band: true,
-        pool: false,
-      });
+    expect(contactBand(DEFAULT_ACTOR_GROUNDING, 1)).toBe(true);
   });
 
   it('is read the same way by both backends', () => {

@@ -126,4 +126,4 @@ and things." Painted Ba Dan pieces came into scope. The numbered list, with a be
 4. **The radial pool is gone.** No figure on an oblique board reached it once every scene had a contact layer; only a
    figure with `castShadow: false` still did, and that now means no shadow at all. Both backends drop the pool and
    Canvas drops the non-exact union path, which no scene took. The bundle needed the room: the forest's scenery
-   grounding put it over its 360 KB budget.
+   grounding put it over its 360 KB budget. ADR 0077's `groundTreatment` is now `contactBand`, the one question left.

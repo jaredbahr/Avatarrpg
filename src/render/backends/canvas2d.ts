@@ -97,7 +97,7 @@ import {
   actorGrounding,
   castShadowStrength,
   contactBandRows,
-  groundTreatment,
+  contactBand,
   spriteBandArt,
   type BandArt,
   type CastKey,
@@ -1854,10 +1854,7 @@ export class Canvas2DBackend implements RenderBackend {
         width,
       );
       const entry = resolveAsset(npc.sprite);
-      const { band } = groundTreatment(this.grounding, {
-        castStrength: 1,
-        defaultPool: entry.kind !== 'painter',
-      });
+      const band = contactBand(this.grounding, 1);
       if (frame) {
         const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
         this.projectMask(
@@ -1939,10 +1936,7 @@ export class Canvas2DBackend implements RenderBackend {
       // With a contact layer the foot is the tile's ground, so the walk bob lifts
       // the figure off both shadows instead of dragging the cast along with it.
       const grounded = this.grounding.contact > 0;
-      const { band } = groundTreatment(this.grounding, {
-        castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: true,
-      });
+      const band = contactBand(this.grounding, castShadowStrength(unit.castShadow));
       const foot = {
         x: box.x + width / 2,
         y: box.y - (grounded ? (unit.offset?.y ?? 0) * box.size : 0) + FOOT_LINE * box.size,
@@ -2063,7 +2057,7 @@ export class Canvas2DBackend implements RenderBackend {
           },
         );
       }
-      if (groundTreatment(this.grounding, { castStrength: strength, defaultPool: false }).band)
+      if (contactBand(this.grounding, strength))
         this.projectContactLine(target, sprite, placed, strength, camera.scale);
     }
   }
