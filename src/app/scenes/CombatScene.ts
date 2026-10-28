@@ -1339,7 +1339,8 @@ export class CombatScene implements Scene {
     clear(strip);
 
     for (const unit of upcomingOrder(battle, battle.units.length).filter(isAlive)) {
-      const isActive = unit.id === this.active()?.id;
+      // Once the fight is over nobody is acting, so no chip is plated.
+      const isActive = battle.phase === 'active' && unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
       const definition = unit.enemyId
         ? this.app.content.enemies.get(unit.enemyId)
