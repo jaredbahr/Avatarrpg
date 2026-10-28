@@ -1,6 +1,8 @@
 /** Rebuild the face-only expression proof from its preserved OpenAI edits. */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import process from 'node:process';
+import { Buffer } from 'node:buffer';
 import { PNG } from 'pngjs';
 
 const neutral = PNG.sync.read(readFileSync('public/art/portraits/kaya.png'));
