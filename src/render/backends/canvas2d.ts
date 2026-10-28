@@ -163,6 +163,12 @@ export class Canvas2DBackend implements RenderBackend {
   private grounding = DEFAULT_ACTOR_GROUNDING;
   /** One caster at a time, in the exact-max path (see `castInto`). */
   private castScratch: HTMLCanvasElement | null = null;
+  /** One viewport's static scenery union; live actors and props never enter it. */
+  private sceneryShadow: {
+    key: string;
+    images: (HTMLImageElement | null)[];
+    canvas: HTMLCanvasElement;
+  } | null = null;
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
@@ -197,6 +203,7 @@ export class Canvas2DBackend implements RenderBackend {
     sprites.clear();
     sheets.clear();
     this.dropLiftLayer();
+    this.sceneryShadow = null;
   }
 
   draw(view: MapView, camera: Camera): void {
@@ -1444,11 +1451,10 @@ export class Canvas2DBackend implements RenderBackend {
     this.toShadowTexels(layer, grid);
     this.drawStructureShadowMask(layer, view, camera);
 
-    // Scenery and still props are drawn straight into the union each frame:
-    // a cached mask only covered the viewport it was built for (so a pan lost
-    // pieces) and was frozen before streamed scene art had arrived.
+    // Only scenery is cached, with the viewport and actual loaded art in its
+    // key. Props and actors still rebuild into this frame's exact-max union.
     if (view.scene && camera.projection === 'oblique') {
-      this.drawSceneryShadowMask(layer, view, camera);
+      this.drawCachedSceneryShadowMask(layer, view, camera, grid);
       this.drawPropShadowMask(
         layer,
         view.props.filter((prop) => !prop.burning),
@@ -1459,6 +1465,73 @@ export class Canvas2DBackend implements RenderBackend {
     this.drawLiveShadowMask(layer, view, camera);
     layer.setTransform(1, 0, 0, 1, 0, 0);
     this.compositeExactShadow(layer, view, camera, width, height);
+  }
+
+  private drawCachedSceneryShadowMask(
+    target: CanvasRenderingContext2D,
+    view: MapView,
+    camera: Camera,
+    grid: ShadowGrid,
+  ): void {
+    // The uncached fallback can draw coloured casters when scratch allocation
+    // fails. That is not an opaque grey mask we may retain after recovery.
+    if (!this.castScratch?.getContext('2d')) {
+      this.sceneryShadow = null;
+      this.drawSceneryShadowMask(target, view, camera);
+      return;
+    }
+    const images = (view.scene?.scenery ?? []).map((piece) => sceneImage(piece));
+    // Content can be filtered by the current grid or changed in place by a
+    // fixture. Do not rely on scene identity, and do not reuse a viewport crop
+    // after a pan, zoom, resize or newly streamed/replaced image.
+    const key = JSON.stringify([
+      view.scene,
+      camera.projection,
+      camera.grid,
+      camera.viewport,
+      camera.scale,
+      camera.offsetX,
+      camera.offsetY,
+      grid,
+      images.map((image) =>
+        image ? [image.src, image.currentSrc, image.naturalWidth, image.naturalHeight] : null,
+      ),
+    ]);
+    let cache = this.sceneryShadow;
+    const cachedImages = cache?.images;
+    if (
+      !cache ||
+      cache.key !== key ||
+      images.some((image, index) => image !== cachedImages?.[index])
+    ) {
+      cache ??= { key: '', images: [], canvas: document.createElement('canvas') };
+      cache.key = '';
+      if (cache.canvas.width !== grid.width) cache.canvas.width = grid.width;
+      if (cache.canvas.height !== grid.height) cache.canvas.height = grid.height;
+      const layer = cache.canvas.getContext('2d');
+      if (!layer) {
+        this.sceneryShadow = null;
+        this.drawSceneryShadowMask(target, view, camera);
+        return;
+      }
+      layer.setTransform(1, 0, 0, 1, 0, 0);
+      layer.globalAlpha = 1;
+      layer.globalCompositeOperation = 'source-over';
+      layer.fillStyle = '#000000';
+      layer.fillRect(0, 0, grid.width, grid.height);
+      this.toShadowTexels(layer, grid);
+      this.drawSceneryShadowMask(layer, view, camera);
+      cache.key = key;
+      cache.images = images;
+      this.sceneryShadow = cache;
+    }
+    // Opaque grey masks combine by maximum, just like individual casters.
+    // Copy at identity in mask texels, not through the camera transform.
+    target.save();
+    target.setTransform(1, 0, 0, 1, 0, 0);
+    target.globalCompositeOperation = 'lighten';
+    target.drawImage(cache.canvas, 0, 0);
+    target.restore();
   }
 
   /** A mask context draws in screen CSS px onto world-pixel texels, sampling its casters nearest. */
