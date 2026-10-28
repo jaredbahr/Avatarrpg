@@ -52,9 +52,9 @@ and 3, 4x nearest crops) found:
    figure's height; the mask's texel edges land on world-pixel edges at several zooms and offsets; both backends draw
    the grid, the scene key and the prop contact line.
 
-Painted Ba Dan uprights get nothing new: no piece visibly floats in the captures, and the frozen painting is not
-painted over. Ba Dan's market-table cast reads as a band a few pixels below the legs at N = 2; it is the painting's,
-and it is flagged for the 1 px re-cut (`claude/one-px-art`) rather than touched here.
+This ADR covers what the runtime draws. The painted Ba Dan pieces are a follow-up (the coordinator's sequencing, after
+ADR 0090's 1 px re-cut): their shadows are baked into the 1 px master and are fixed there and regenerated, never in the
+shipped files.
 
 ## Not changed, and why (known faults)
 
@@ -71,6 +71,12 @@ and it is flagged for the 1 px re-cut (`claude/one-px-art`) rather than touched 
 - **Figures are drawn at 1.25 on oblique boards** (`partyScale`), so one art pixel is 2.5 or 3.75 device pixels at
   N = 2 or 3 and every figure resamples soft, whatever its shadow does. This is ADR 0089's art scale and is out of
   this pass's scope; the shadows are on the world grid regardless.
+- **Painted Ba Dan objects float** (follow-up PR). Gao's table, the south and north displays, the bench and the basket
+  groups carry casts that sit below or beside their legs instead of at them, and little or no contact. Cause:
+  `objects.py` `set_in` measures every pixel's height from the object's single lowest row, so on an oblique piece the
+  top and the back legs are cast as if they stood on the front legs' row, and the shadow lands as a flat band under
+  the front feet; `polish.py` then shortened the bench's and fence's casts. The fix is a cast from each piece's own
+  footprint and height, set into the master and regenerated.
 - **The riverside** draws through the living layer (`VillageLife`) with its own shadows and is not covered here.
 - **Combat ambience and orthographic boards.** No board ships orthographic today; one that did would get the same
   grid at its camera scale.
