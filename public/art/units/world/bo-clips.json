@@ -1,0 +1,186 @@
+{
+  "hitEast": {
+    "frames": [
+      "unit.earth.bo/hitEast/0",
+      "unit.earth.bo/hitEast/1",
+      "unit.earth.bo/hitEast/2",
+      "unit.earth.bo/hitEast/3",
+      "unit.earth.bo/hitEast/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "hitSouthEast": {
+    "frames": [
+      "unit.earth.bo/hitSouthEast/0",
+      "unit.earth.bo/hitSouthEast/1",
+      "unit.earth.bo/hitSouthEast/2",
+      "unit.earth.bo/hitSouthEast/3",
+      "unit.earth.bo/hitSouthEast/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "hitSouth": {
+    "frames": [
+      "unit.earth.bo/hitSouth/0",
+      "unit.earth.bo/hitSouth/1",
+      "unit.earth.bo/hitSouth/2",
+      "unit.earth.bo/hitSouth/3",
+      "unit.earth.bo/hitSouth/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "hitSouthWest": {
+    "frames": [
+      "unit.earth.bo/hitSouthWest/0",
+      "unit.earth.bo/hitSouthWest/1",
+      "unit.earth.bo/hitSouthWest/2",
+      "unit.earth.bo/hitSouthWest/3",
+      "unit.earth.bo/hitSouthWest/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "hitWest": {
+    "frames": [
+      "unit.earth.bo/hitWest/0",
+      "unit.earth.bo/hitWest/1",
+      "unit.earth.bo/hitWest/2",
+      "unit.earth.bo/hitWest/3",
+      "unit.earth.bo/hitWest/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "hitNorthWest": {
+    "frames": [
+      "unit.earth.bo/hitNorthWest/0",
+      "unit.earth.bo/hitNorthWest/1",
+      "unit.earth.bo/hitNorthWest/2",
+      "unit.earth.bo/hitNorthWest/3",
+      "unit.earth.bo/hitNorthWest/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "hitNorth": {
+    "frames": [
+      "unit.earth.bo/hitNorth/0",
+      "unit.earth.bo/hitNorth/1",
+      "unit.earth.bo/hitNorth/2",
+      "unit.earth.bo/hitNorth/3",
+      "unit.earth.bo/hitNorth/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "hitNorthEast": {
+    "frames": [
+      "unit.earth.bo/hitNorthEast/0",
+      "unit.earth.bo/hitNorthEast/1",
+      "unit.earth.bo/hitNorthEast/2",
+      "unit.earth.bo/hitNorthEast/3",
+      "unit.earth.bo/hitNorthEast/0"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 210, 160, 130, 110]
+  },
+  "koSouthEast": {
+    "frames": [
+      "unit.earth.bo/koSouthEast/0",
+      "unit.earth.bo/koSouthEast/1",
+      "unit.earth.bo/koSouthEast/2",
+      "unit.earth.bo/koSouthEast/3",
+      "unit.earth.bo/koSouthEast/4",
+      "unit.earth.bo/koSouthEast/5",
+      "unit.earth.bo/koSouthEast/6"
+    ],
+    "fps": 6.363636,
+    "loop": false,
+    "frameMs": [40, 220, 100, 90, 140, 110, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koSouthWest": {
+    "frames": [
+      "unit.earth.bo/koSouthWest/0",
+      "unit.earth.bo/koSouthWest/1",
+      "unit.earth.bo/koSouthWest/2",
+      "unit.earth.bo/koSouthWest/3",
+      "unit.earth.bo/koSouthWest/4",
+      "unit.earth.bo/koSouthWest/5",
+      "unit.earth.bo/koSouthWest/6"
+    ],
+    "fps": 6.363636,
+    "loop": false,
+    "frameMs": [40, 220, 100, 90, 140, 110, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koNorthEast": {
+    "frames": [
+      "unit.earth.bo/koNorthEast/0",
+      "unit.earth.bo/koNorthEast/1",
+      "unit.earth.bo/koNorthEast/2",
+      "unit.earth.bo/koNorthEast/3",
+      "unit.earth.bo/koNorthEast/4",
+      "unit.earth.bo/koNorthEast/5",
+      "unit.earth.bo/koNorthEast/6"
+    ],
+    "fps": 6.363636,
+    "loop": false,
+    "frameMs": [40, 220, 100, 90, 140, 110, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koNorthWest": {
+    "frames": [
+      "unit.earth.bo/koNorthWest/0",
+      "unit.earth.bo/koNorthWest/1",
+      "unit.earth.bo/koNorthWest/2",
+      "unit.earth.bo/koNorthWest/3",
+      "unit.earth.bo/koNorthWest/4",
+      "unit.earth.bo/koNorthWest/5",
+      "unit.earth.bo/koNorthWest/6"
+    ],
+    "fps": 6.363636,
+    "loop": false,
+    "frameMs": [40, 220, 100, 90, 140, 110, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  }
+}

@@ -14,6 +14,10 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${port}`,
     viewport: { width: 1368, height: 912 },
     serviceWorkers: 'block',
+    // FNT_FOREST_G1_VIDEO=1 records the fight in real time (cut the load with ffmpeg; not committed).
+    video: process.env.FNT_FOREST_G1_VIDEO
+      ? { mode: 'on', size: { width: 1368, height: 912 } }
+      : 'off',
     launchOptions: process.env.FNT_REVIEW_BROWSER_CHANNEL
       ? { channel: process.env.FNT_REVIEW_BROWSER_CHANNEL }
       : {},

@@ -1,0 +1,628 @@
+{
+  "frames": {
+    "unit.earth.bo/bendEast/0": {
+      "frame": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/1": {
+      "frame": { "x": 192, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/2": {
+      "frame": { "x": 384, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/3": {
+      "frame": { "x": 576, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/4": {
+      "frame": { "x": 768, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/5": {
+      "frame": { "x": 960, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/6": {
+      "frame": { "x": 1152, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/7": {
+      "frame": { "x": 1344, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/8": {
+      "frame": { "x": 1536, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/9": {
+      "frame": { "x": 1728, "y": 0, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendEast/10": {
+      "frame": { "x": 0, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/0": {
+      "frame": { "x": 192, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/1": {
+      "frame": { "x": 384, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/2": {
+      "frame": { "x": 576, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/3": {
+      "frame": { "x": 768, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/4": {
+      "frame": { "x": 960, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/5": {
+      "frame": { "x": 1152, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/6": {
+      "frame": { "x": 1344, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/7": {
+      "frame": { "x": 1536, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/8": {
+      "frame": { "x": 1728, "y": 192, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/9": {
+      "frame": { "x": 0, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthEast/10": {
+      "frame": { "x": 192, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/0": {
+      "frame": { "x": 384, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/1": {
+      "frame": { "x": 576, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/2": {
+      "frame": { "x": 768, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/3": {
+      "frame": { "x": 960, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/4": {
+      "frame": { "x": 1152, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/5": {
+      "frame": { "x": 1344, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/6": {
+      "frame": { "x": 1536, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/7": {
+      "frame": { "x": 1728, "y": 384, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/8": {
+      "frame": { "x": 0, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/9": {
+      "frame": { "x": 192, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouth/10": {
+      "frame": { "x": 384, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/0": {
+      "frame": { "x": 576, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/1": {
+      "frame": { "x": 768, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/2": {
+      "frame": { "x": 960, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/3": {
+      "frame": { "x": 1152, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/4": {
+      "frame": { "x": 1344, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/5": {
+      "frame": { "x": 1536, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/6": {
+      "frame": { "x": 1728, "y": 576, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/7": {
+      "frame": { "x": 0, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/8": {
+      "frame": { "x": 192, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/9": {
+      "frame": { "x": 384, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendSouthWest/10": {
+      "frame": { "x": 576, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/0": {
+      "frame": { "x": 768, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/1": {
+      "frame": { "x": 960, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/2": {
+      "frame": { "x": 1152, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/3": {
+      "frame": { "x": 1344, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/4": {
+      "frame": { "x": 1536, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/5": {
+      "frame": { "x": 1728, "y": 768, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/6": {
+      "frame": { "x": 0, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/7": {
+      "frame": { "x": 192, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/8": {
+      "frame": { "x": 384, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/9": {
+      "frame": { "x": 576, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendWest/10": {
+      "frame": { "x": 768, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/0": {
+      "frame": { "x": 960, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/1": {
+      "frame": { "x": 1152, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/2": {
+      "frame": { "x": 1344, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/3": {
+      "frame": { "x": 1536, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/4": {
+      "frame": { "x": 1728, "y": 960, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/5": {
+      "frame": { "x": 0, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/6": {
+      "frame": { "x": 192, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/7": {
+      "frame": { "x": 384, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/8": {
+      "frame": { "x": 576, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/9": {
+      "frame": { "x": 768, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthWest/10": {
+      "frame": { "x": 960, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/0": {
+      "frame": { "x": 1152, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/1": {
+      "frame": { "x": 1344, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/2": {
+      "frame": { "x": 1536, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/3": {
+      "frame": { "x": 1728, "y": 1152, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/4": {
+      "frame": { "x": 0, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/5": {
+      "frame": { "x": 192, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/6": {
+      "frame": { "x": 384, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/7": {
+      "frame": { "x": 576, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/8": {
+      "frame": { "x": 768, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/9": {
+      "frame": { "x": 960, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorth/10": {
+      "frame": { "x": 1152, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/0": {
+      "frame": { "x": 1344, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/1": {
+      "frame": { "x": 1536, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/2": {
+      "frame": { "x": 1728, "y": 1344, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/3": {
+      "frame": { "x": 0, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/4": {
+      "frame": { "x": 192, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/5": {
+      "frame": { "x": 384, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/6": {
+      "frame": { "x": 576, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/7": {
+      "frame": { "x": 768, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/8": {
+      "frame": { "x": 960, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/9": {
+      "frame": { "x": 1152, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    },
+    "unit.earth.bo/bendNorthEast/10": {
+      "frame": { "x": 1344, "y": 1536, "w": 192, "h": 192 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 192, "h": 192 },
+      "sourceSize": { "w": 192, "h": 192 }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "bo-bend-page.webp",
+    "format": "RGBA8888",
+    "size": { "w": 1920, "h": 1728 },
+    "scale": "1"
+  }
+}
