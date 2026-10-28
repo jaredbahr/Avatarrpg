@@ -83,7 +83,8 @@ shipped files.
   shadow as it would; flagged with the stride above, since both are the walk art.
 - **Figures are drawn at 1.25 on oblique boards** (`partyScale`), so one art pixel is 2.5 or 3.75 device pixels at
   N = 2 or 3 and every figure resamples soft, whatever its shadow does. This is ADR 0089's art scale and is out of
-  this pass's scope; the shadows are on the world grid regardless.
+  this pass's scope; the shadows are on the world grid regardless. Resolved by ADR 0094: figures are drawn at 1.0 (owner,
+  2026-10-28).
 - **Painted Ba Dan objects float** (follow-up PR). Gao's table, the south and north displays, the bench and the basket
   groups carry casts that sit below or beside their legs instead of at them, and little or no contact. Cause:
   `objects.py` `set_in` measures every pixel's height from the object's single lowest row, so on an oblique piece the
