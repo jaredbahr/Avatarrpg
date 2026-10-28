@@ -138,7 +138,7 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya flinches to CMU 79_73 (scared), frames 48 to 72; Sura to CMU 76_03 (avoid attacker), frames 256 to 288; Bo to CMU 77_09 (duck to avoid flying object), frames 212 to 234; the thug, the slinger and the bruiser flinch to 79_73 as Kaya does, frames 48 to 72; every take is retargeted onto the character’s own stance in each of eight headings; the cels are drawn for this project with PixelLab, and their clips ride in the same clip data as the knockouts. See docs/adr/0063-g-hit-reactions.md.',
   },
   {
-    what: 'The motion of the party’s walks, breathing, fighting stance and bends',
+    what: 'The motion of the party’s, residents’ and bandits’ walks and breathing, and the party’s stance and bends',
     work: 'CMU Graphics Lab Motion Capture Database, subject 8 trial 1, subject 77 trials 2 and 3, subject 143 trial 23, subject 135 trial 4 and subject 12 trial 4',
     authors: 'Carnegie Mellon University Graphics Lab',
     licence: 'CMU Motion Capture Database terms',
@@ -165,16 +165,6 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
       'art/units/kaya-bend.json',
       'art/units/sura-bend.json',
       'art/units/bo-bend.json',
-    ],
-    note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. The party walks to CMU 08_01 (walk), one gait cycle in eight headings, root-locked; its idle and its fighting stance breathe to one breath cycle of 77_02 (standing) and 77_03 (ready stance) on one drawn cel each; Kaya’s bend is 143_23 (punching), a left jab and a right cross; Sura’s is 12_04 (tai chi), a circling left palm push; Bo’s is 135_04 (front kick), the knee lift and stamp, then 143_23’s jab as his drive; every take is retargeted onto the character’s own drawing in each heading; the cels are drawn for this project with PixelLab. See docs/adr/0089-party-at-native-g1.md.',
-  },
-  {
-    what: 'The motion of the Ba Dan residents’ and the forest bandits’ walks and breathing',
-    work: 'CMU Graphics Lab Motion Capture Database, subject 8 trial 1 and subject 77 trial 2',
-    authors: 'Carnegie Mellon University Graphics Lab',
-    licence: 'CMU Motion Capture Database terms',
-    source: 'https://mocap.cs.cmu.edu',
-    covers: [
       'art/units/household-g.webp',
       'art/units/household-g.json',
       'art/units/watch-g.webp',
@@ -194,7 +184,7 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
       'art/units/bruiser-g.webp',
       'art/units/bruiser-g.json',
     ],
-    note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. The six Ba Dan residents and the thug, the slinger and the bruiser walk to CMU 08_01 (walk), one gait cycle in eight cels and eight headings, root-locked, as the party does; their idles breathe to one breath cycle of 77_02 (standing) on one drawn cel each; every take is retargeted onto the character’s own drawing in each heading; the cels are drawn for this project with PixelLab. See docs/adr/0091-residents-and-bandits-at-native-g1.md.',
+    note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. The party walks to CMU 08_01 (walk), one gait cycle in eight headings, root-locked; its idle and its fighting stance breathe to one breath cycle of 77_02 (standing) and 77_03 (ready stance) on one drawn cel each; Kaya’s bend is 143_23 (punching), a left jab and a right cross; Sura’s is 12_04 (tai chi), a circling left palm push; Bo’s is 135_04 (front kick), the knee lift and stamp, then 143_23’s jab as his drive; every take is retargeted onto the character’s own drawing in each heading; the cels are drawn for this project with PixelLab. See docs/adr/0089-party-at-native-g1.md. The six Ba Dan residents and the thug, the slinger and the bruiser walk to the same 08_01 cycle in eight cels and eight headings and breathe to the same 77_02 cycle, each retargeted onto its own drawing; see docs/adr/0091-residents-and-bandits-at-native-g1.md.',
   },
   {
     what: 'The motion of the quarry bender’s walk',
