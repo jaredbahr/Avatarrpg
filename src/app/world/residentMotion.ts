@@ -35,6 +35,7 @@ import type { MoveContext } from '../../core/rules/grid';
 import { resolveResidents } from '../../core/story/residents';
 import { backgroundFigures, visibleNpcs } from '../../core/story/world';
 import { Animator } from '../animator';
+import { TIMING } from '../anim/choreography';
 import { motionReduced } from '../ui/dom';
 import type { ClipName } from '../../content/assets/clips';
 import { sheetLocomotion } from '../../content/assets/manifest';
@@ -214,7 +215,7 @@ interface Track {
   readonly walkEnd: number;
   readonly end: number;
   readonly fade: number;
-  /** A routine errand's leg: it ambles, so it draws the walk, not the jog. */
+  /** A routine errand's leg, or any move of Mira's: it ambles on a slowed clock. */
   readonly amble?: boolean;
 }
 
@@ -273,13 +274,11 @@ const WORK_LEAN_RAD = 0.03;
 export const RESIDENT_STRIDE_MS = 500;
 /**
  * How much slower a routine errand goes than the brisk stroll (ADR 0095): 2 s a
- * tile, where the walk, whose feet cover about half a tile a loop, plays at its
- * authored rate with its planted foot on the ground. Every other move (a
- * placement, a call home) keeps the brisk pace and jogs, except for a figure
- * whose sheet has no jog (Mira), who ambles everywhere. The ambling animator is
- * read on a clock slowed this much.
+ * tile. Every other move (a placement, a call home) keeps the brisk pace,
+ * except Mira's, who ambles everywhere. The ambling animator is read on a clock
+ * slowed this much.
  */
-export const RESIDENT_AMBLE = 4;
+export const RESIDENT_AMBLE = 2000 / TIMING.strollStep;
 export const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
 export const RESIDENT_CONTACT_MS = 60;
 export const RESIDENT_BOB_PX = 2;
@@ -643,8 +642,8 @@ export class ResidentWalks {
     const id = motion.who.id;
     const fade = FADE_MS * (this.reduced() ? 0.02 : 1);
     const at = this.clock;
-    // A G sheet without a jog walks everywhere at the amble (Mira, ADR 0095).
-    const amble = errand || sheetLocomotion(motion.who.sprite)?.jog === false;
+    // Mira walks everywhere at the amble (ADR 0095).
+    const amble = errand || sheetLocomotion(motion.who.sprite)?.amble === true;
     const slow = amble ? RESIDENT_AMBLE : 1;
     const animator = new Animator(this.content, { motionReduced: this.reduced });
     animator.setProjection(map.projection ?? 'orthographic');

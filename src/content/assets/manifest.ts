@@ -171,86 +171,68 @@ function rikoSheet(): SheetEntry {
 /** One complete authored G walk loop covers this many logical ground tiles. */
 export const G_STRIDE_TILES = 1.825;
 
-/** The jog (ADR 0095): one loop of ten cels at 60 ms a cel. */
+/** The jog (ADR 0095): one loop of ten cels at 60 ms a cel. Its cels ship; no move plays them for now. */
 const JOG_CELS = 10;
 const JOG_CEL_MS = 60;
-/** It starts on cel 1, the first planted cel after a contact, and settles on a half-loop from there. */
-const JOG_START_CEL = 1;
 
 /**
- * Tiles one jog loop covers east on the drawn cels, by name: the scalar of
- * `walk_stride.py`'s fits over the eight headings against `G1_HEADING`, the
- * shape every name shares (the median, east 1). Back views cover more ground
- * a loop than front views, as drawn (ADR 0095). The jog's clip time a tile
- * follows, so its planted foot holds the ground at any pace.
+ * Tiles one walk loop covers as drawn, by name and heading (`HEADINGS` order),
+ * at one art px a world px: `walk_stride.py`'s fit, so the walk's clip time a
+ * tile holds its planted foot (the animator stretches it by the figure scale).
+ * Every native-G1 figure walks (ADR 0095's amendment, owner, 2026-10-28:
+ * "Walk, a bit slower") until the ~74 px redraw draws a natural-stride jog.
  */
-export const G1_JOG: Readonly<Record<string, number>> = {
-  kaya: 1,
-  sura: 1.02,
-  bo: 1.03,
-  thug: 1.13,
-  slinger: 1.08,
-  bruiser: 1.23,
-  household: 1.06,
-  watch: 1.07,
-  mira: 1.21,
-  gao: 1.15,
-  pella: 0.84,
-  dorin: 1.15,
+export const G1_WALK: Readonly<Record<string, readonly number[]>> = {
+  kaya: [0.45, 0.51, 0.46, 0.47, 0.43, 0.48, 0.33, 0.46],
+  sura: [0.46, 0.51, 0.41, 0.48, 0.43, 0.44, 0.34, 0.43],
+  bo: [0.46, 0.55, 0.46, 0.51, 0.43, 0.47, 0.37, 0.48],
+  thug: [0.48, 0.58, 0.51, 0.56, 0.47, 0.53, 0.37, 0.49],
+  slinger: [0.49, 0.57, 0.46, 0.58, 0.48, 0.5, 0.41, 0.51],
+  bruiser: [0.52, 0.66, 0.55, 0.55, 0.5, 0.56, 0.49, 0.57],
+  household: [0.44, 0.52, 0.46, 0.54, 0.43, 0.46, 0.38, 0.46],
+  watch: [0.55, 0.51, 0.46, 0.59, 0.46, 0.51, 0.38, 0.47],
+  mira: [0.53, 0.65, 0.53, 0.62, 0.53, 0.56, 0.44, 0.56],
+  gao: [0.49, 0.58, 0.46, 0.57, 0.5, 0.51, 0.43, 0.54],
+  pella: [0.37, 0.46, 0.41, 0.44, 0.37, 0.41, 0.28, 0.4],
+  dorin: [0.52, 0.62, 0.56, 0.6, 0.49, 0.52, 0.43, 0.55],
 };
-/** A jog loop's length on each heading against east's, in `HEADINGS` order. */
-export const G1_HEADING = [1, 0.99, 0.88, 1.1, 1.05, 1.24, 1.17, 1.15];
 /**
- * A resident's walk covers this share of its jog's loop (the six residents'
- * median), which sets the walk's rate when an errand ambles on the jog's clock.
+ * Names that walk everywhere at the amble (the owner, 2026-10-28: "Mira always
+ * walks"): `residentMotion.ts` slows every move they make, not only errands.
  */
-export const G1_AMBLE = 0.43;
-/**
- * Names that never jog (the owner, 2026-10-28: "Mira always walks"). Their
- * sheets keep the jog cels, but the locomotion leaves `jog` off, so the
- * animator draws the walk and `residentMotion.ts` ambles every move they make.
- */
-const G1_WALKS_ONLY = new Set(['mira']);
+const G1_AMBLES = new Set(['mira']);
 
 /**
- * A G1 sheet's eight-way idle, rest, walk and jog (ADR 0095), and the
- * locomotion that plays the jog for every brisk move. The walk keeps its
- * authored 114 ms a cel; a resident's (`amble`) plays on the jog's distance
- * clock at the rate that makes one walk loop cover its own ground, which is
- * how an errand ambles without sliding.
+ * A G1 sheet's eight-way idle, rest, walk and (unplayed) jog, and the
+ * locomotion that walks every move at its authored 114 ms a cel, timed to the
+ * ground its drawn feet cover (`G1_WALK`), from the quarter-cycle passing pose.
  */
 function g1Locomotion(
   clips: Partial<Record<ClipName, ClipDef>>,
   frames: (clip: ClipName, count: number) => string[],
   name: string,
   walkCels: number,
-  amble?: boolean,
 ): LocomotionDef {
-  const jog = G1_JOG[name];
-  // Without a jog (the quarry bender's 128 px G sheet) the walk keeps ADR
-  // 0067's shared stride, from cel 2, the quarter-cycle passing pose.
-  const [cels, celMs, start] = jog ? [JOG_CELS, JOG_CEL_MS, JOG_START_CEL] : [walkCels, 114, 2];
+  const fit = G1_WALK[name];
   const msPerTile = {} as Record<Heading, number>;
   HEADINGS.forEach((heading, i) => {
-    const g = jog ? (G1_HEADING[i] ?? 1) * jog : G_STRIDE_TILES;
     const add = (base: HeadingClipBase, count: number, fps: number) => {
       const clip = headingClip(base, heading);
       clips[clip] = { frames: frames(clip, count), fps, loop: true };
     };
-    msPerTile[heading] = (cels * celMs) / g;
+    // Without a fit (the quarry bender's 128 px G sheet) the walk keeps ADR 0067's shared stride.
+    msPerTile[heading] = (walkCels * 114) / (fit?.[i] ?? G_STRIDE_TILES);
     add('idle', 4, 4);
     add('rest', 1, 1);
-    if (jog) add('jog', cels, 1000 / celMs);
-    // A resident's walk plays on the jog's clock when its errand ambles, at
-    // the rate that makes one walk loop cover the walk's own ground.
-    add('walk', walkCels, amble ? (walkCels * 1000) / (G1_AMBLE * cels * celMs) : 1000 / 114);
+    if (fit) add('jog', JOG_CELS, 1000 / JOG_CEL_MS);
+    add('walk', walkCels, 1000 / 114);
   });
   return {
     headings: 8,
-    jog: !!jog && !G1_WALKS_ONLY.has(name),
+    ...(G1_AMBLES.has(name) && { amble: true as const }),
     walkMsPerTile: msPerTile,
-    walkStartMs: start * celMs,
-    walkCycleMs: cels * celMs,
+    walkStartMs: (walkCels / 4) * 114,
+    walkCycleMs: walkCels * 114,
     authoredBob: true,
   };
 }
@@ -371,7 +353,7 @@ function residentGSheet(name: ResidentGName, key: string, palette: string): Shee
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
   const clips: Partial<Record<ClipName, ClipDef>> = {};
-  const locomotion = g1Locomotion(clips, frames, name, 8, true);
+  const locomotion = g1Locomotion(clips, frames, name, 8);
   // The grid the packer used (`residentGrid.ts`): 64 px a tile, a 64x96 cel,
   // which is the default cel for that grid, so no frame size is declared.
   const grid = residentGrid();

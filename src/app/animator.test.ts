@@ -97,14 +97,14 @@ describe('Animator', () => {
     const diagonal = animator();
     diagonal.push(0, [moved('p0', [2, 1], [3, 0], [4, -1])], [unit('p0', 1, 1)]);
     for (let at = 1; at < diagonal.finishesAt; at++)
-      expect(diagonal.locomotion(at, 'p0', 'idle', 'unit.fire.kaya').clip).toMatch(/^jog/);
+      expect(diagonal.locomotion(at, 'p0', 'idle', 'unit.fire.kaya').clip).toMatch(/^walk/);
   });
 
   it('adds no turn plant under reduced motion', () => {
     const a = animator(true);
     a.push(0, [moved('p0', [2, 1], [2, 0])], [unit('p0', 1, 1)]);
     for (let at = 0; at < a.finishesAt; at += 0.1)
-      expect(a.locomotion(at, 'p0', 'idle', 'unit.fire.kaya').clip).toMatch(/^jog/);
+      expect(a.locomotion(at, 'p0', 'idle', 'unit.fire.kaya').clip).toMatch(/^walk/);
   });
 
   it('starts authored walks planted, staggers followers, and keeps the shadow ground anchor level', () => {
@@ -120,14 +120,14 @@ describe('Animator', () => {
       a.push(0, [move(id)], [], { alongside: index > 0, walkPhase: partyWalkPhase(index) });
     });
     const start = a.unitPose(0.01, 'leader', 'unit.fire.kaya');
-    // The jog starts on its first planted cel, 1 of 10 at 60 ms (ADR 0095).
-    expect(Math.floor((start?.clipTime ?? -1) / 60) % 10).toBe(1);
+    // The walk starts on its quarter-cycle passing cel, 3 of 12 at 114 ms.
+    expect(Math.floor((start?.clipTime ?? -1) / 114) % 12).toBe(3);
     const phases = ids.map((id) => a.unitPose(400, id, 'unit.fire.kaya')?.clipTime ?? -1);
-    // No two members within two cels of each other on the 10-cel loop.
+    // No two members within two cels of each other on the 12-cel loop.
     for (let i = 0; i < phases.length; i++)
       for (let j = i + 1; j < phases.length; j++) {
-        const gap = Math.abs((phases[i] ?? 0) - (phases[j] ?? 0)) % (10 * 60);
-        expect(Math.min(gap, 10 * 60 - gap), `${i}/${j}`).toBeGreaterThan(2 * 60);
+        const gap = Math.abs((phases[i] ?? 0) - (phases[j] ?? 0)) % (12 * 114);
+        expect(Math.min(gap, 12 * 114 - gap), `${i}/${j}`).toBeGreaterThan(2 * 114);
       }
     for (const at of [1, 200, 400, 600]) {
       expect(a.offset(at, 'leader', 'unit.fire.kaya')).toBeUndefined();
@@ -151,8 +151,8 @@ describe('Animator', () => {
       expect(pose?.clipTime ?? -1).toBeGreaterThanOrEqual(last);
       last = pose?.clipTime ?? -1;
     }
-    // The window closes on a planted cel of the jog (1 or 6 of 10, ADR 0095).
-    expect([1, 6]).toContain(Math.round(last / 60) % 10);
+    // The window closes on a planted passing cel (3 or 9 of 12).
+    expect([3, 9]).toContain(Math.round(last / 114) % 12);
     expect(at(end + STOP_SETTLE_MS)).toBeUndefined();
   });
   it.each([false, true])('holds damage feedback until Air Blast impact, reduced=%s', (reduced) => {
@@ -295,7 +295,7 @@ describe('Animator', () => {
     });
     a.push(0, [moved('e0', [4, 5])], [unit('e0', 4, 4)]);
     a.prune(10);
-    expect(a.locomotion(10, 'e0', 'idle', thug, -1).clip).toBe('jogSouth');
+    expect(a.locomotion(10, 'e0', 'idle', thug, -1).clip).toBe('walkSouth');
     a.prune(5000);
     expect(a.locomotion(5000, 'e0', 'idle', thug, -1).clip).toBe('idleSouth');
   });

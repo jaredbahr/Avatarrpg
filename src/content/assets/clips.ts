@@ -64,11 +64,13 @@ export type Heading = (typeof HEADINGS)[number];
 export interface LocomotionDef {
   readonly headings: 8;
   /**
-   * The sheet also carries a jog in every heading, and every move at the brisk
-   * pace plays it instead of the walk (ADR 0095); the timing below is then the
-   * jog's. The walk stays for the slow routine errands (`residentMotion.ts`).
+   * Every move at the brisk pace plays the sheet's jog instead of the walk
+   * (ADR 0095); the timing below is then the jog's. No sheet sets it until the
+   * ~74 px redraw draws a natural-stride jog (ADR 0095's amendment).
    */
   readonly jog?: boolean;
+  /** Every move this figure makes ambles, as a routine errand does (Mira, ADR 0095). */
+  readonly amble?: true;
   readonly walkMsPerTile: Readonly<Record<Heading, number>>;
   /** Start on a planted passing pose instead of the loop's widest stride. */
   readonly walkStartMs: number;

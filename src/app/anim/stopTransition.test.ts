@@ -141,12 +141,12 @@ describe('combat move gait', () => {
     const at = (ms: number) => drawn(a, ms, 'p0', rest);
 
     // Still walking on the last frame of the route...
-    expect(at(end - 1).clip).toBe('jog');
-    // ...and holding the snapped planted jog cel on the next one, not the guard.
-    expect(at(end + 1).clip).toBe('jog');
+    expect(at(end - 1).clip).toBe('walk');
+    // ...and holding the snapped planted walk cel on the next one, not the guard.
+    expect(at(end + 1).clip).toBe('walk');
     expect(at(end + 1).pos).toEqual(rest);
     // A real dwell, not a single frame: it is still settled 100 ms later.
-    expect(at(end + 100).clip).toBe('jog');
+    expect(at(end + 100).clip).toBe('walk');
     expect(at(end + 100).pos).toEqual(rest);
 
     const ready = readyStanceAt(a, end, rest) - end;
@@ -169,16 +169,16 @@ describe('combat move gait', () => {
     const end = a.finishesAt;
     const clips = new Set<string>();
     for (let now = START; now <= end; now += 16) clips.add(drawn(a, now, 'p0', rest).clip);
-    // North for the first leg, then the side-on jog after the corner (ADR 0095).
-    expect(clips.has('jogNorth')).toBe(true);
-    expect(clips.has('jog')).toBe(true);
+    // North for the first leg, then the side-on walk after the corner.
+    expect(clips.has('walkNorth')).toBe(true);
+    expect(clips.has('walk')).toBe(true);
 
     const { max } = maxStep(a, end, rest);
     expect(max).toBeLessThanOrEqual(16 / TIMING.combatWalkStep + 1e-9);
     expect(max).toBeCloseTo(16 / TIMING.combatWalkStep, 9);
-    expect(drawn(a, end - 1, 'p0', rest)).toMatchObject({ clip: 'jog', facing: 1 });
-    // The stop holds the planted east-facing jog cel, then the ready stance.
-    expect(drawn(a, end + 1, 'p0', rest)).toMatchObject({ clip: 'jog', facing: 1 });
+    expect(drawn(a, end - 1, 'p0', rest)).toMatchObject({ clip: 'walk', facing: 1 });
+    // The stop holds the planted east-facing walk cel, then the ready stance.
+    expect(drawn(a, end + 1, 'p0', rest)).toMatchObject({ clip: 'walk', facing: 1 });
     expect(drawn(a, end + 300, 'p0', rest)).toMatchObject({ clip: 'idle', facing: 1 });
     expect(drawn(a, end + 300, 'p0', rest).pos).toEqual(rest);
   });

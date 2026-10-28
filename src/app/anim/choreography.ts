@@ -37,8 +37,8 @@ import { planBendCast } from './bendHandoff';
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
   step: 110,
-  combatWalkStep: 480,
-  strollStep: 500,
+  combatWalkStep: 720,
+  strollStep: 750,
   windUp: 260,
   release: 120,
   recover: 280,

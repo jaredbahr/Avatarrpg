@@ -323,7 +323,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
         [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
         [],
       );
-      expect(g.locomotion(200, 'u', 'idle', sprite)).toEqual({ clip: 'jogNorthEast', facing: 1 });
+      expect(g.locomotion(200, 'u', 'idle', sprite)).toEqual({ clip: 'walkNorthEast', facing: 1 });
       g.clear();
       // A cleared animator forgets the eight-way heading with everything else.
       expect(g.locomotion(9999, 'u', 'idle', sprite)).toEqual({ clip: 'idle', facing: 1 });
@@ -389,7 +389,7 @@ describe('Mira never jogs (ADR 0095)', () => {
       expect([...clips].filter((clip) => clip.startsWith('jog'))).toEqual([]);
     }
     const mira = ASSETS['npc.elder'];
-    expect(mira?.kind === 'sheet' && mira.locomotion?.jog).toBe(false);
+    expect(mira?.kind === 'sheet' && mira.locomotion?.amble).toBe(true);
   });
 });
 
@@ -426,13 +426,13 @@ describe('the fighting stance (ADR 0052)', () => {
           ],
           [],
         );
-        // The brisk stroll jogs (ADR 0095).
-        expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`jog${heading}`);
+        // The brisk stroll walks (ADR 0095's amendment).
+        expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
         const done = a.finishesAt + 1;
         a.prune(done);
-        // The stop holds a planted jog cel for the settle window (not a stride
+        // The stop holds a planted walk cel for the settle window (not a stride
         // frame, not the guard); the guard follows once it ends.
-        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`jog${heading}`);
+        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
         const guard = a.locomotion(done + 300, 'p', 'stance', sprite);
         // Authored for each side, so drawn unflipped whichever way she faces.
         expect(guard.clip).toBe(`stance${heading}`);
@@ -482,11 +482,11 @@ describe('eight-way oblique headings for a declaring sheet', () => {
         [],
       );
       const kaya = 'unit.fire.kaya';
-      expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', kaya).clip).toBe(`jog${clip}`);
+      expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', kaya).clip).toBe(`walk${clip}`);
       const done = a.finishesAt + 1;
       a.prune(done);
-      // The stop holds a planted jog cel for its settle window, then idles.
-      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`jog${clip}`);
+      // The stop holds a planted walk cel for its settle window, then idles.
+      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`walk${clip}`);
       expect(a.locomotion(done + 300, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
       // Explore requests the legacy rest family; a G sheet substitutes its
       // planted directional idle instead of holding the mid-stride rest cel.
