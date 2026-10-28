@@ -90,6 +90,7 @@ import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
+  CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
   SHADOW_COLOR,
@@ -1756,6 +1757,34 @@ export class Canvas2DBackend implements RenderBackend {
     );
   }
 
+  /**
+   * A prop's contact line: its own silhouette one world pixel lower, at the
+   * contact level, so a line one world pixel deep shows under every edge it
+   * stands on, whatever shape its base is (ADR 0093). It is how the painting's
+   * G1 objects meet the ground (`objects.py`); a figure's band is cut from its
+   * soles instead, because a figure stands on two small feet.
+   */
+  private projectContactLine(
+    target: CanvasRenderingContext2D,
+    source: CanvasImageSource,
+    placed: { x: number; y: number; w: number; h: number },
+    alpha: number,
+    worldPixel: number,
+  ): void {
+    const y = placed.y + CONTACT_LINE * worldPixel;
+    this.castInto(
+      target,
+      this.grounding.contact,
+      { x0: placed.x, y0: y, x1: placed.x + placed.w, y1: y + placed.h },
+      (t) => {
+        t.save();
+        t.globalAlpha = alpha;
+        t.drawImage(source, placed.x, y, placed.w, placed.h);
+        t.restore();
+      },
+    );
+  }
+
   private drawSceneryShadowMask(
     target: CanvasRenderingContext2D,
     view: MapView,
@@ -2007,18 +2036,23 @@ export class Canvas2DBackend implements RenderBackend {
       const box = camera.spriteBox(prop.pos);
       box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
-      // A prop stands as a figure does: its cast falls down the scene's key.
+      const placed = { x: box.x, y: box.y, w: box.size, h: box.size };
+      const foot = { x: box.x + box.size / 2, y: box.y + FOOT_LINE * box.size };
+      const strength = castShadowStrength(prop.castShadow);
+      // A prop stands as a figure does: a cast down the scene's key and its base laid flat under it.
       this.projectMask(
         target,
         sprite,
         null,
-        { x: box.x, y: box.y, w: box.size, h: box.size },
-        { x: box.x + box.size / 2, y: box.y + FOOT_LINE * box.size },
-        castShadowStrength(prop.castShadow),
+        placed,
+        foot,
+        strength,
         false,
         this.grounding.cast,
         this.grounding.castKey,
       );
+      if (groundTreatment(this.grounding, { castStrength: strength, defaultPool: false }).band)
+        this.projectContactLine(target, sprite, placed, strength, camera.scale);
     }
   }
 

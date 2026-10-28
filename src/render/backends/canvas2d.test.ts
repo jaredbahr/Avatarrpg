@@ -6,6 +6,7 @@ import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   DEFAULT_ACTOR_GROUNDING,
+  DEFAULT_CONTACT_ALPHA,
   FALLEN_SHADOW_ALPHA,
   type ActorGrounding,
 } from '../lighting';
@@ -84,15 +85,16 @@ describe('Canvas unit cast shadow', () => {
     return { alphas, levels };
   };
 
-  it('scales the shadow by the unit alpha during a fade, as the Pixi backend does', () => {
-    expect(drawnAlphas({})).toEqual([1]);
-    expect(drawnAlphas({ alpha: 0.5 })[0]).toBeCloseTo(0.5);
-    expect(drawnAlphas({ alpha: 0.5, fallen: true })[0]).toBeCloseTo(0.5 * FALLEN_SHADOW_ALPHA);
+  it('scales the cast and the band by the unit alpha during a fade, as the Pixi backend does', () => {
+    expect(drawnAlphas({})).toEqual([1, 1]);
+    for (const alpha of drawnAlphas({ alpha: 0.5 })) expect(alpha).toBeCloseTo(0.5);
+    for (const alpha of drawnAlphas({ alpha: 0.5, fallen: true }))
+      expect(alpha).toBeCloseTo(0.5 * FALLEN_SHADOW_ALPHA);
   });
 
   it('applies the same fade when the unit has no sheet frame and falls back to the sprite', () => {
-    expect(drawnAlphas({}, false)).toEqual([1]);
-    expect(drawnAlphas({ alpha: 0.5 }, false)[0]).toBeCloseTo(0.5);
+    expect(drawnAlphas({}, false)).toEqual([1, 1]);
+    for (const alpha of drawnAlphas({ alpha: 0.5 }, false)) expect(alpha).toBeCloseTo(0.5);
   });
 
   it('writes the cast and the contact band at their own strengths', () => {
@@ -101,13 +103,13 @@ describe('Canvas unit cast shadow', () => {
     expect(out.alphas).toEqual([1, 1]);
   });
 
-  it('draws no contact band, and the default level, for a scene that sets nothing', () => {
+  it('grounds a figure with a cast and a contact band in a scene that sets nothing (ADR 0093)', () => {
     const out = drawn({}, true, DEFAULT_ACTOR_GROUNDING);
-    expect(out.alphas).toEqual([1]);
-    expect(out.levels).toEqual([CAST_SHADOW_ALPHA]);
+    expect(out.alphas).toEqual([1, 1]);
+    expect(out.levels).toEqual([CAST_SHADOW_ALPHA, DEFAULT_CONTACT_ALPHA]);
   });
 
-  it('still gives a painter-fallback unit its band in a contact scene', () => {
+  it('still gives a painter-fallback unit its band', () => {
     const out = drawn({}, false, BA);
     expect(out.levels).toEqual([0.5, 0.8]);
   });

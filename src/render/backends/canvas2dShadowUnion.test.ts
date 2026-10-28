@@ -336,13 +336,13 @@ describe("what a figure's feet get", () => {
       expect(pool).toBe(false);
     });
 
-    it(`leaves a ${kind} with its old treatment in a default scene`, () => {
-      expect(bandsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(0);
+    it(`gives a ${kind} its band and no pool in a scene that sets nothing (ADR 0093)`, () => {
+      expect(bandsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(1);
       const { pool } = groundTreatment(DEFAULT_ACTOR_GROUNDING, {
         castStrength: 1,
         defaultPool: kinds[kind].pool,
       });
-      expect(pool).toBe(kinds[kind].pool);
+      expect(pool).toBe(false);
     });
   }
 

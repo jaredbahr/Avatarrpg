@@ -132,6 +132,7 @@ import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
+  CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
   SHADOW_LEVEL_SLOTS,
@@ -1254,6 +1255,32 @@ export class PixiBackend implements RenderBackend {
     );
     shadow.blendMode = 'max';
     shadow.visible = source.visible && shadow.alpha > 0;
+  }
+
+  /**
+   * A prop's contact line: its silhouette one world pixel lower at the contact
+   * level, so a line that deep shows under every edge it stands on (ADR 0093),
+   * as the painting's G1 objects meet the ground.
+   */
+  private projectContactLine(key: string, source: Sprite, strength: number): void {
+    this.castLive.add(key);
+    let line = this.castSprites.get(key);
+    if (!line) {
+      line = new Sprite();
+      this.castSprites.set(key, line);
+      this.shadowMaskSources.addChild(line);
+    }
+    line.texture = source.texture;
+    line.anchor.copyFrom(source.anchor);
+    line.setFromMatrix(source.localTransform);
+    // The mask sources draw in world pixels.
+    line.y += CONTACT_LINE;
+    line.alpha = Math.max(
+      0,
+      Math.min(1, (strength * this.grounding.contact) / shadowCeiling(this.grounding)),
+    );
+    line.blendMode = 'max';
+    line.visible = source.visible && line.alpha > 0;
   }
 
   /**
@@ -2725,15 +2752,20 @@ export class PixiBackend implements RenderBackend {
       sprite.height = TILE;
       sprite.alpha = 1;
       sprite.visible = true;
-      if (prop.burning && castShadowStrength(prop.castShadow) > 0)
+      const propFoot = { x: anchor.x + TILE / 2, y: sprite.y + FOOT_LINE * TILE };
+      const propStrength = castShadowStrength(prop.castShadow);
+      if (prop.burning && propStrength > 0)
         this.projectDynamicShadow(
           `prop:${prop.id}`,
           sprite,
-          { x: anchor.x + TILE / 2, y: sprite.y + FOOT_LINE * TILE },
-          castShadowStrength(prop.castShadow),
+          propFoot,
+          propStrength,
           this.grounding.cast,
           this.grounding.castKey,
         );
+      // A prop meets the ground on its own contact line (ADR 0093).
+      if (groundTreatment(this.grounding, { castStrength: propStrength, defaultPool: false }).band)
+        this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
 
       /*
        * A damage bar only once it has been hit. A full bar on every barrel

@@ -45,10 +45,9 @@ export interface CastKey {
  * How a scene grounds the figures and props standing in it (ADR 0077, ADR 0093).
  * `cast` is the projected silhouette's alpha and `castKey` the direction and
  * length it falls along, which a painted scene sets to its painting's own;
- * `contact` is a second, tighter layer drawn from the soles of the frame itself
- * (both feet, whatever the pose) and `0` leaves the radial contact pool in
- * charge. A painted village whose own shadows run at ~0.4 darkening needs both
- * turned up or its figures read as floating.
+ * `contact` is the tighter layer cut from the soles of the frame itself (both
+ * feet, whatever the pose) or from a prop's base. Every scene has a contact
+ * layer: `0` would leave a figure on a soft radial pool and a prop on nothing.
  */
 export interface ActorGrounding {
   readonly cast: number;
@@ -56,9 +55,17 @@ export interface ActorGrounding {
   readonly castKey: CastKey;
 }
 
+/**
+ * The contact a scene that sets nothing gets. The forest road and the quarry
+ * paint no shadows of their own, so the runtime is their only grounding: this
+ * keeps the sole band clearly darker than the 0.4 cast it sits in, as Ba Dan's
+ * 0.8 is to its 0.5, without the black rim a full-strength band read as.
+ */
+export const DEFAULT_CONTACT_ALPHA = 0.6;
+
 export const DEFAULT_ACTOR_GROUNDING: ActorGrounding = {
   cast: CAST_SHADOW_ALPHA,
-  contact: 0,
+  contact: DEFAULT_CONTACT_ALPHA,
   castKey: CAST_PER_PIXEL,
 };
 
@@ -77,6 +84,12 @@ export function actorGrounding(
 export function shadowCeiling(grounding: Pick<ActorGrounding, 'cast' | 'contact'>): number {
   return Math.max(CAST_SHADOW_ALPHA, grounding.cast, grounding.contact);
 }
+
+/**
+ * How far a prop's contact line sits below its silhouette, in world pixels: the
+ * painting's G1 objects meet the ground on a line this deep (`objects.py`).
+ */
+export const CONTACT_LINE = 1;
 
 /** The sole band of a frame laid flat for contact: height in tiles, spread about the foot, drop in tiles. */
 export const CONTACT_BAND = { height: 0.14, spreadX: 1.4, spreadY: 1, drop: 0.03 } as const;
