@@ -1,6 +1,6 @@
 # ADR 0095: A jog for every native-G1 figure at the brisk pace
 
-**Status:** proposed, 2026-10-28 (draft PR for the coordinator's review)
+**Status:** accepted, 2026-10-28 (#306; the owner's three decisions below, the same day)
 
 Amends ADR 0067 (the brisk stride cadence: its pace stays, its 1.825-tile G walk loop no longer times the native-G1
 figures), ADR 0089 and ADR 0091 (each sheet gains a jog clip in eight headings) and ADR 0093 (its "walk foot slide"
@@ -108,9 +108,22 @@ No ceiling is raised. Generations: 297 of the ~350 budgeted (balance 740.8 to 44
 6 billed for jobs in flight when the container restarted, which returned nothing. Every ledgered job is in the two
 `ledger.json` files.
 
+## The owner's decisions (Jared, 2026-10-28)
+
+1. **Cadence: "Accept for now".** The quick jog ships as it is; no retake. It is to be revisited after the PixelLab plan
+   upgrade, if it bothers him.
+2. **Mira: "Mira always walks".** She never jogs: every move she makes, a placement walk, a call home or an errand,
+   draws her walk at the amble. Her sheet keeps its jog cels and the jog's clock (her walk's rate is set against it),
+   but its locomotion leaves `jog` off (`G1_WALKS_ONLY` in the manifest), and `residentMotion.ts` ambles every walk of
+   a G sheet without a jog. Read on the slowed clock, an entering walk's fade-in delay is divided by the same factor so
+   it still lasts `FADE_MS`. The animator and resident-motion tests hold that her sheet never resolves to `jog*`.
+3. **Errands: "Keep the slow amble".** Routine errand legs stay at `RESIDENT_AMBLE` (2 s a tile).
+
+The rule above therefore has one named exception: a figure whose sheet has no jog walks at the amble whatever the move.
+
 ## Consequences and known faults
 
-- **The cadence is quick.** PixelLab drew the strides about 15% shorter than the skeletons asked (Kaya's east: 1.18
+- **The cadence is quick** (accepted for now, decision 1). PixelLab drew the strides about 15% shorter than the skeletons asked (Kaya's east: 1.18
   tiles a loop asked, 1.0 drawn), so the loop that holds the foot plays at 195 to 240 steps a minute east (Pella, the
   child, 286), slower to the north. A retake at stride 1.9 would bring it near 200 for the party but costs about 290
   generations, outside this budget.
@@ -122,9 +135,9 @@ No ceiling is raised. Generations: 297 of the ~350 budgeted (balance 740.8 to 44
   than the ground, a 1.6 to 2.4 px backward slide; a future change of draw scale must refit `G1_JOG` by that ratio.
 - **Clamped margins.** The watch's south jog loses its spear tip (72 px over seven cels, the take raised it past the cel
   top) and seven headings lose 2 to 24 toe pixels at the cel's side.
-- **Who jogs.** Mira, the elder, jogs on her placement walks and when called home, her stick coming and going between
-  cels; whether an elder should jog at all is the owner's call. Her ambling routine walks.
-- **Errands take longer.** A routine leg now takes four times as long, so the routines cycle more slowly through a phase;
+- **Mira always walks** (decision 2), so a call home or a placement walk of hers takes four times as long as anyone
+  else's: a talk opened by tapping her while she is away waits for her amble home. Her jog cels ship unused.
+- **Errands take longer** (kept, decision 3). A routine leg now takes four times as long, so the routines cycle more slowly through a phase;
   their holds are unchanged.
 - **The walk stays on every sheet** (party and bandits included) for a future slow move, at no new byte cost.
 - **The quarry bender** is still the 128 px G sheet with ADR 0067's walk; not native G1, so out of scope.
