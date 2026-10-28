@@ -22,7 +22,8 @@
  * Local review fixture only: not a playthrough, not a CI check.
  *
  * FNT_FOREST_G1_LABEL=before npx playwright test -c playwright.forest-g1.config.ts
- * (FNT_FOREST_G1_ZOOM=128 takes the zoomed frames at N = 2 on a 1 dpr screen, ADR 0088.)
+ * (FNT_FOREST_G1_ZOOM=128 takes the zoomed frames at N = 2 on a 1 dpr screen, ADR 0088. FNT_FOREST_G1_QUERY appends
+ * to the page query: `&style=world` shows the world-style figures. FNT_FOREST_G1_VIDEO=1 records the run.)
  */
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -129,7 +130,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     mkdirSync(folder, { recursive: true });
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    await resetStorage(page, `?renderer=${renderer}`);
+    await resetStorage(page, `?renderer=${renderer}${process.env.FNT_FOREST_G1_QUERY ?? ''}`);
     await startGame(
       page,
       ['Sura', 'Riko', 'Kaya', 'Bo', 'Nima', 'Wen'],
