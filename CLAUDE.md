@@ -240,9 +240,10 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   geometry (`art/source/ba-dan-regions/geometry/`), not by `baDan.ts`: moving a piece is a repaint of its region, and a
   piece's footprint, depth key and flags in `baDan.ts` must still equal the frozen ones (`baDan.test.ts`). Rejected by the owner: the
   piece-on-lawn village (houses, trees and dressing laid on baked ground plates: cut, stacked, floating).
-- **Ba Dan's resolution is 1 painting px per world px for ground and uprights** (ADR 0088; `regions.py` `SCALE`). Integer zoom
-  samples 1 px art nearest at every N; the old 1.5 px was smoothed at N = 2 and crisp only at N = 3, so do not scale the
-  painting back up for the old camera. The frozen geometry stays in world px. The maps art family is 6 MiB (ADR 0076).
+- **Ba Dan's resolution is 1 painting px per world px for ground and uprights** (`regions.py` `SCALE`). The owner approved
+  1 px on 2026-10-28 because the party now ships at 1 px (ADR 0090, replacing the old 1.5 px "do not downscale" rule): integer
+  zoom samples 1 px art nearest at every N, where 1.5 px was smoothed at N = 2. Do not scale the painting back up. The frozen
+  geometry stays in world px. The maps art family is 6 MiB (ADR 0076).
 - **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
   lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
   lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
@@ -261,7 +262,8 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   its pixels covers a whole number of device pixels (`src/render/pixelSampling.ts`, both backends). Never write
   `camera.scale` from a scene to a computed value; go through `fit`, `fitExplore`, `zoomAt`, `raiseToFit` or
   `snapScale` (the battle opening's ease is the one deliberate exception), or the board resamples. Map art ships
-  at 1 art px per world px (Ba Dan and the forest included): a density that does not divide every N is smoothed.
+  at 1 art px per world px, Ba Dan and the forest included (owner-approved 2026-10-28, because the party now ships at 1 px;
+  ADR 0090): a density that does not divide every N, as the old 1.5 px did, is smoothed.
 - **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
   the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
   tappable tile and pans instead; that is the one exception to "combat never
