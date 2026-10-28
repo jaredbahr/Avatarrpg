@@ -117,11 +117,17 @@ element ramps and sampled nearest (ADR 0086).
 Dialogue portraits, and the older illustrated action, tea and wave frames that
 still sit in some unit sheets, were briefed as flat cel base plus one shadow
 tone. As shipped they show smoother hand-drawn shading with softer variation
-than that brief; the delivery notes record this as a first art pass
-([dialogue portraits](art/dialogue-portraits.md),
-[hero art delivery](art/hero-art-delivery.md)), accepted as shipped rather than
-approved as a standard (see the open questions). The prompt packs' style block
-remains the generation brief and is stricter than this shipped tolerance.
+than that brief ([dialogue portraits](art/dialogue-portraits.md),
+[hero art delivery](art/hero-art-delivery.md)). **The owner approved that
+softness as the portrait standard on 28 October 2026** (the owner finds the existing
+portraits sharp and enjoys them), and stopped a proposed
+rebuild of the portraits as pixel busts: portraits stay painted, at their own
+grain, and are exempt from the world's G1 "one grain" rule above. A new
+portrait or a variant of one matches the shipped portraits (line weight,
+palette, cel families, parchment field, 512 frame), not the stricter two-tone
+brief in the prompt packs. Variants are edited from the shipped portrait, never
+generated fresh, so the face stays the same person
+(`art/source/portraits-variants/README.md`).
 Portraits are 512×512 busts on a plain
 warm parchment field and retain clear room for the circular crop. These are
 larger illustrations, not enlarged in-play sprites; identity, costume,
@@ -311,8 +317,10 @@ Every asset passes the shared list plus its class list before it is committed.
 - [ ] Hands pass the same anatomy and grip checks as character sprites
 - [ ] Portrait is a centred three-quarter bust with crop room and a flat
       `#f4e9d8` field: no scenery, border, vignette or background texture
-- [ ] Shading stays clean cel families, no softer than the shipped portraits;
-      no black outline
+- [ ] Shading matches the shipped portraits (the approved standard): clean cel
+      families, no softer and no harder; no black outline
+- [ ] A variant (expression or pose) is edited from the shipped portrait and
+      keeps the same face, frame and parchment field
 - [ ] Portrait still reads at the turn-strip size
 
 ## Fonts
@@ -338,8 +346,9 @@ Cormorant reads European and Cinzel Roman, so neither fits the world.
 - The old rule asked for one thin pale rim light on every character. The
   shipped sprites do not carry it consistently. Keep it as a requirement for
   new sprites, or drop it?
-- Portraits and the older illustrated action frames shipped softer than their
-  two-tone brief and are recorded as a first pass. Is that softness the
-  approved portrait standard, or should later portraits return to the brief?
+- ~~Portraits shipped softer than their two-tone brief. Is that softness the
+  approved standard?~~ **Answered 28 October 2026: yes, for portraits** (see
+  _Illustrated cast art and portraits_). The older illustrated action frames
+  are not covered by that answer.
 - Which of the older illustrated frames, beyond the shipping dialogue
   portraits, are owner-approved identity references for future sprite work?
