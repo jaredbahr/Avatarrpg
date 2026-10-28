@@ -1,1 +1,655 @@
-{"frames":{"unit.fire.kaya/hitEast/0":{"frame":{"x":0,"y":0,"w":80,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":80,"h":134},"sourceSize":{"w":80,"h":134}},"unit.fire.kaya/hitEast/1":{"frame":{"x":80,"y":0,"w":80,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":80,"h":134},"sourceSize":{"w":80,"h":134}},"unit.fire.kaya/hitEast/2":{"frame":{"x":160,"y":0,"w":80,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":80,"h":134},"sourceSize":{"w":80,"h":134}},"unit.fire.kaya/hitEast/3":{"frame":{"x":240,"y":0,"w":80,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":80,"h":134},"sourceSize":{"w":80,"h":134}},"unit.fire.kaya/hitSouthEast/0":{"frame":{"x":320,"y":0,"w":93,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":136},"sourceSize":{"w":93,"h":136}},"unit.fire.kaya/hitSouthEast/1":{"frame":{"x":413,"y":0,"w":93,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":136},"sourceSize":{"w":93,"h":136}},"unit.fire.kaya/hitSouthEast/2":{"frame":{"x":506,"y":0,"w":93,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":136},"sourceSize":{"w":93,"h":136}},"unit.fire.kaya/hitSouthEast/3":{"frame":{"x":599,"y":0,"w":93,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":136},"sourceSize":{"w":93,"h":136}},"unit.fire.kaya/hitSouth/0":{"frame":{"x":692,"y":0,"w":77,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":77,"h":135},"sourceSize":{"w":77,"h":135}},"unit.fire.kaya/hitSouth/1":{"frame":{"x":769,"y":0,"w":77,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":77,"h":135},"sourceSize":{"w":77,"h":135}},"unit.fire.kaya/hitSouth/2":{"frame":{"x":846,"y":0,"w":77,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":77,"h":135},"sourceSize":{"w":77,"h":135}},"unit.fire.kaya/hitSouth/3":{"frame":{"x":923,"y":0,"w":77,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":77,"h":135},"sourceSize":{"w":77,"h":135}},"unit.fire.kaya/hitSouthWest/0":{"frame":{"x":1000,"y":0,"w":84,"h":138},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":138},"sourceSize":{"w":84,"h":138}},"unit.fire.kaya/hitSouthWest/1":{"frame":{"x":1084,"y":0,"w":84,"h":138},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":138},"sourceSize":{"w":84,"h":138}},"unit.fire.kaya/hitSouthWest/2":{"frame":{"x":1168,"y":0,"w":84,"h":138},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":138},"sourceSize":{"w":84,"h":138}},"unit.fire.kaya/hitSouthWest/3":{"frame":{"x":1252,"y":0,"w":84,"h":138},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":138},"sourceSize":{"w":84,"h":138}},"unit.fire.kaya/hitWest/0":{"frame":{"x":1336,"y":0,"w":73,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":73,"h":131},"sourceSize":{"w":73,"h":131}},"unit.fire.kaya/hitWest/1":{"frame":{"x":1409,"y":0,"w":73,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":73,"h":131},"sourceSize":{"w":73,"h":131}},"unit.fire.kaya/hitWest/2":{"frame":{"x":1482,"y":0,"w":73,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":73,"h":131},"sourceSize":{"w":73,"h":131}},"unit.fire.kaya/hitWest/3":{"frame":{"x":1555,"y":0,"w":73,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":73,"h":131},"sourceSize":{"w":73,"h":131}},"unit.fire.kaya/hitNorthWest/0":{"frame":{"x":1628,"y":0,"w":84,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":125},"sourceSize":{"w":84,"h":125}},"unit.fire.kaya/hitNorthWest/1":{"frame":{"x":1712,"y":0,"w":84,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":125},"sourceSize":{"w":84,"h":125}},"unit.fire.kaya/hitNorthWest/2":{"frame":{"x":1796,"y":0,"w":84,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":125},"sourceSize":{"w":84,"h":125}},"unit.fire.kaya/hitNorthWest/3":{"frame":{"x":1880,"y":0,"w":84,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":84,"h":125},"sourceSize":{"w":84,"h":125}},"unit.fire.kaya/hitNorth/0":{"frame":{"x":1964,"y":0,"w":78,"h":127},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":78,"h":127},"sourceSize":{"w":78,"h":127}},"unit.fire.kaya/hitNorth/1":{"frame":{"x":0,"y":138,"w":78,"h":127},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":78,"h":127},"sourceSize":{"w":78,"h":127}},"unit.fire.kaya/hitNorth/2":{"frame":{"x":78,"y":138,"w":78,"h":127},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":78,"h":127},"sourceSize":{"w":78,"h":127}},"unit.fire.kaya/hitNorth/3":{"frame":{"x":156,"y":138,"w":78,"h":127},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":78,"h":127},"sourceSize":{"w":78,"h":127}},"unit.fire.kaya/hitNorthEast/0":{"frame":{"x":234,"y":138,"w":82,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":82,"h":131},"sourceSize":{"w":82,"h":131}},"unit.fire.kaya/hitNorthEast/1":{"frame":{"x":316,"y":138,"w":82,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":82,"h":131},"sourceSize":{"w":82,"h":131}},"unit.fire.kaya/hitNorthEast/2":{"frame":{"x":398,"y":138,"w":82,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":82,"h":131},"sourceSize":{"w":82,"h":131}},"unit.fire.kaya/hitNorthEast/3":{"frame":{"x":480,"y":138,"w":82,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":82,"h":131},"sourceSize":{"w":82,"h":131}}},"meta":{"app":"four-nations-tactics","version":"1","image":"kaya-g-4.webp","format":"RGBA8888","size":{"w":2042,"h":269},"scale":"1"}}
+{
+  "frames": {
+    "unit.fire.kaya/hitSouth/0": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 36,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 36,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 36,
+        "h": 68
+      }
+    },
+    "unit.fire.kaya/hitSouth/1": {
+      "frame": {
+        "x": 40,
+        "y": 2,
+        "w": 36,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 36,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 36,
+        "h": 68
+      }
+    },
+    "unit.fire.kaya/hitSouth/2": {
+      "frame": {
+        "x": 78,
+        "y": 2,
+        "w": 36,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 36,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 36,
+        "h": 68
+      }
+    },
+    "unit.fire.kaya/hitSouth/3": {
+      "frame": {
+        "x": 116,
+        "y": 2,
+        "w": 36,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 36,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 36,
+        "h": 68
+      }
+    },
+    "unit.fire.kaya/hitSouthEast/0": {
+      "frame": {
+        "x": 154,
+        "y": 2,
+        "w": 47,
+        "h": 71
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 47,
+        "h": 71
+      },
+      "sourceSize": {
+        "w": 47,
+        "h": 71
+      }
+    },
+    "unit.fire.kaya/hitSouthEast/1": {
+      "frame": {
+        "x": 203,
+        "y": 2,
+        "w": 47,
+        "h": 71
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 47,
+        "h": 71
+      },
+      "sourceSize": {
+        "w": 47,
+        "h": 71
+      }
+    },
+    "unit.fire.kaya/hitSouthEast/2": {
+      "frame": {
+        "x": 252,
+        "y": 2,
+        "w": 47,
+        "h": 71
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 47,
+        "h": 71
+      },
+      "sourceSize": {
+        "w": 47,
+        "h": 71
+      }
+    },
+    "unit.fire.kaya/hitSouthEast/3": {
+      "frame": {
+        "x": 301,
+        "y": 2,
+        "w": 47,
+        "h": 71
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 47,
+        "h": 71
+      },
+      "sourceSize": {
+        "w": 47,
+        "h": 71
+      }
+    },
+    "unit.fire.kaya/hitEast/0": {
+      "frame": {
+        "x": 350,
+        "y": 2,
+        "w": 44,
+        "h": 70
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 70
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 70
+      }
+    },
+    "unit.fire.kaya/hitEast/1": {
+      "frame": {
+        "x": 396,
+        "y": 2,
+        "w": 44,
+        "h": 70
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 70
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 70
+      }
+    },
+    "unit.fire.kaya/hitEast/2": {
+      "frame": {
+        "x": 442,
+        "y": 2,
+        "w": 44,
+        "h": 70
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 70
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 70
+      }
+    },
+    "unit.fire.kaya/hitEast/3": {
+      "frame": {
+        "x": 488,
+        "y": 2,
+        "w": 44,
+        "h": 70
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 70
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 70
+      }
+    },
+    "unit.fire.kaya/hitNorthEast/0": {
+      "frame": {
+        "x": 534,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitNorthEast/1": {
+      "frame": {
+        "x": 575,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitNorthEast/2": {
+      "frame": {
+        "x": 616,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitNorthEast/3": {
+      "frame": {
+        "x": 657,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitNorth/0": {
+      "frame": {
+        "x": 698,
+        "y": 2,
+        "w": 37,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 64
+      }
+    },
+    "unit.fire.kaya/hitNorth/1": {
+      "frame": {
+        "x": 737,
+        "y": 2,
+        "w": 37,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 64
+      }
+    },
+    "unit.fire.kaya/hitNorth/2": {
+      "frame": {
+        "x": 776,
+        "y": 2,
+        "w": 37,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 64
+      }
+    },
+    "unit.fire.kaya/hitNorth/3": {
+      "frame": {
+        "x": 815,
+        "y": 2,
+        "w": 37,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 64
+      }
+    },
+    "unit.fire.kaya/hitNorthWest/0": {
+      "frame": {
+        "x": 854,
+        "y": 2,
+        "w": 43,
+        "h": 61
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 43,
+        "h": 61
+      },
+      "sourceSize": {
+        "w": 43,
+        "h": 61
+      }
+    },
+    "unit.fire.kaya/hitNorthWest/1": {
+      "frame": {
+        "x": 899,
+        "y": 2,
+        "w": 43,
+        "h": 61
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 43,
+        "h": 61
+      },
+      "sourceSize": {
+        "w": 43,
+        "h": 61
+      }
+    },
+    "unit.fire.kaya/hitNorthWest/2": {
+      "frame": {
+        "x": 944,
+        "y": 2,
+        "w": 43,
+        "h": 61
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 43,
+        "h": 61
+      },
+      "sourceSize": {
+        "w": 43,
+        "h": 61
+      }
+    },
+    "unit.fire.kaya/hitNorthWest/3": {
+      "frame": {
+        "x": 989,
+        "y": 2,
+        "w": 43,
+        "h": 61
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 43,
+        "h": 61
+      },
+      "sourceSize": {
+        "w": 43,
+        "h": 61
+      }
+    },
+    "unit.fire.kaya/hitWest/0": {
+      "frame": {
+        "x": 1034,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitWest/1": {
+      "frame": {
+        "x": 1075,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitWest/2": {
+      "frame": {
+        "x": 1116,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitWest/3": {
+      "frame": {
+        "x": 1157,
+        "y": 2,
+        "w": 39,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 66
+      }
+    },
+    "unit.fire.kaya/hitSouthWest/0": {
+      "frame": {
+        "x": 1198,
+        "y": 2,
+        "w": 37,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 69
+      }
+    },
+    "unit.fire.kaya/hitSouthWest/1": {
+      "frame": {
+        "x": 1237,
+        "y": 2,
+        "w": 37,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 69
+      }
+    },
+    "unit.fire.kaya/hitSouthWest/2": {
+      "frame": {
+        "x": 1276,
+        "y": 2,
+        "w": 37,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 69
+      }
+    },
+    "unit.fire.kaya/hitSouthWest/3": {
+      "frame": {
+        "x": 1315,
+        "y": 2,
+        "w": 37,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 37,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 37,
+        "h": 69
+      }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "kaya-g-4.webp",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1354,
+      "h": 75
+    },
+    "scale": "1"
+  }
+}

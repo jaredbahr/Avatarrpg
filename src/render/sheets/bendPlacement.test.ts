@@ -14,6 +14,7 @@ import { Rectangle, Sprite, Texture, TextureSource } from 'pixi.js';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
 import { BEND_SOCKETS } from '../../content/bends';
+import type { BendSetDef } from '../../content/bends';
 import type { Image } from '../../../scripts/art/lib/image';
 import { decodeWebp } from '../../../scripts/art/lib/webp';
 import { celOffset, placeFrame } from './placement';
@@ -173,9 +174,13 @@ describe('bend sockets (ADR 0055, sub-pixel sockets)', () => {
     if (!bend) throw new Error('No Kaya south-east cel 2');
     const lw = bend.sockets.LW;
     if (!lw) throw new Error('Kaya south-east cel 2 has no LW');
-    // The jab's left wrist, as the packer wrote it: packed-cel pixels from
-    // the cel's top-left corner, not from a pixel centre.
-    expect(lw).toEqual({ x: 99.125, y: 61.175 });
+    // The jab's left wrist, exactly as the packer wrote it (no half pixel
+    // added on the way): packed-cel pixels from the cel's top-left corner.
+    const written = (
+      JSON.parse(readFileSync('public/art/units/kaya-bend.json', 'utf8')) as BendSetDef
+    ).facings.southEast.socketsPerFrame[2]?.sockets.LW;
+    expect(written).toBeDefined();
+    expect(lw).toEqual(written);
     // The anchor itself, as a socket, is the foot: offset zero.
     const foot = { x: bend.anchor.x * bend.frame.w, y: bend.anchor.y * bend.frame.h };
     expect(celOffset(bend, foot)).toEqual({ x: 0, y: 0 });

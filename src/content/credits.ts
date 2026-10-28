@@ -40,13 +40,19 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
   },
   {
     what: 'The motion of the party’s, the thug’s, the slinger’s and the bruiser’s knockouts',
-    work: 'CMU Graphics Lab Motion Capture Database, subject 90 trial 18 and subject 77 trials 16 and 18',
+    work: 'CMU Graphics Lab Motion Capture Database, subject 90 trial 18 and subject 77 trial 16',
     authors: 'Carnegie Mellon University Graphics Lab',
     licence: 'CMU Motion Capture Database terms',
   },
   {
     what: 'The motion of the party’s, the thug’s, the slinger’s and the bruiser’s hit reactions',
     work: 'CMU Graphics Lab Motion Capture Database, subject 79 trial 73, subject 76 trial 03 and subject 77 trial 09',
+    authors: 'Carnegie Mellon University Graphics Lab',
+    licence: 'CMU Motion Capture Database terms',
+  },
+  {
+    what: 'The motion of the party’s walks, breathing, fighting stance and bends',
+    work: 'CMU Graphics Lab Motion Capture Database, subject 8 trial 1, subject 77 trials 2 and 3, subject 143 trial 23, subject 135 trial 4 and subject 12 trial 4',
     authors: 'Carnegie Mellon University Graphics Lab',
     licence: 'CMU Motion Capture Database terms',
   },
