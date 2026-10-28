@@ -92,7 +92,32 @@ with the old 1.25 beside them.
 | slinger   |                                +7.7..+15.2, 11.5 |  10.4 |                       −0.8..+1.5, 0.50, 9.3 |  1.93 |                         – |
 | bruiser   |                                +7.2..+15.0, 11.1 |   9.9 |                       −1.0..+0.9, 0.51, 6.4 |  2.38 |                         – |
 
-The rows behind the table are `art/source/jog-g1/review/stride-before.json` and `stride-after.json`.
+### At figure scale 1.25 (ADR 0094's amendment, 2026-10-28)
+
+The owner put the figures back at 1.25. The animator now divides the jog's clip time a tile by the figure scale
+(`Animator.walkClipTime`), so a loop covers 1.25 times the ground and the planted foot stays planted; `walk_stride.py
+--manifest --scale 1.25` applies the same division. Slides are larger in world px only because everything is drawn
+1.25 times larger (they are the 1.0 figures times 1.25, a fifth of a world px more at most); the cadence falls by 1.25.
+
+| family    | jog (range, mean of abs, worst pair) | loop E (tiles) | steps/min E | errand walk (mean of abs) |
+| --------- | -----------------------------------: | -------------: | ----------: | ------------------------: |
+| Kaya      |                -1.3..+0.9, 0.64, 6.2 |           1.25 |         192 |                         – |
+| Sura      |                -0.7..+0.4, 0.38, 6.1 |           1.27 |         188 |                         – |
+| Bo        |                -1.1..+1.6, 0.54, 7.5 |           1.29 |         186 |                         – |
+| household |                -2.2..+1.1, 0.59, 8.3 |           1.32 |         181 |                      0.70 |
+| watch     |                -0.7..+2.5, 0.66, 8.2 |           1.34 |         180 |                      0.74 |
+| Mira (\*) |                -2.7..+1.1, 0.96, 6.4 |           1.51 |         159 |                      0.69 |
+| Gao       |                -1.0..+0.5, 0.32, 6.6 |           1.44 |         167 |                      0.55 |
+| Pella     |                -1.5..+1.3, 0.60, 3.1 |           1.05 |         229 |                      0.51 |
+| Dorin     |                -1.4..+0.6, 0.53, 8.0 |           1.44 |         167 |                      0.73 |
+| thug      |                -0.2..+1.1, 0.42, 5.6 |           1.41 |         170 |                         – |
+| slinger   |               -1.0..+1.9, 0.63, 11.6 |           1.35 |         178 |                         – |
+| bruiser   |                -1.2..+1.1, 0.63, 7.9 |           1.54 |         156 |                         – |
+
+(\*) Mira's jog no longer plays (decision 2 below); her row is the cels' fit, and her errand walk is what she draws.
+
+The rows behind the tables are `art/source/jog-g1/review/stride-before.json`, `stride-after.json` and (at 1.25 with
+the animator's stretch) `stride-after-125.json`.
 
 ## Budget
 

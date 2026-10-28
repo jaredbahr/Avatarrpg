@@ -2,19 +2,19 @@ import type { Projection } from '../../render/projection';
 import { sheetLocomotion } from '../../content/assets/manifest';
 
 /**
- * World px per art px for a figure on an oblique board (ADR 0094; owner, 28
- * October 2026: "1.0x, matching the world"). The G1 figures (the party, the Ba
- * Dan residents, the forest bandits) are drawn one art px to one world px, the
- * painting's grain, so at every integer zoom N an art pixel is exactly N x N
- * device pixels and samples nearest (ADR 0088). It was 1.25, which put 2.5 or
- * 3.75 device pixels on an art pixel and resampled every figure soft.
+ * World px per art px for a figure on an oblique board (ADR 0094 and its
+ * amendment; owner, 28 October 2026: "1.25× now, redraw later"). The Ba Dan
+ * painting and the forest were built round adults about 74 world px tall, so
+ * the G1 figures (59 art px) are drawn at 1.25 and resample soft, by the
+ * owner's choice, until a native redraw at that height. At 1 they were crisp
+ * but stood small beside the doors and tables.
  */
-export const OBLIQUE_FIGURE_SCALE = 1;
+export const OBLIQUE_FIGURE_SCALE = 1.25;
 
 /**
  * Adult art not drawn on the G1 grid (the older enemy and placeholder sheets)
- * was sized to stand as tall as a G figure at the old 1.25; this keeps it
- * level with the G1 adults at the new scale.
+ * was sized to stand as tall as a G figure at 1.25; this keeps it level with
+ * the G1 adults at whatever scale they draw (1 at 1.25).
  */
 export const OBLIQUE_LEGACY_ADULT = OBLIQUE_FIGURE_SCALE / 1.25;
 

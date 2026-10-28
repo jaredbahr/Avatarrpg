@@ -11,6 +11,7 @@ import type { ContentIndex, Vec2 } from '../../core/types';
 import { smoothPath } from '../../render/geometry/curve';
 import type { Projection } from '../../render/projection';
 import { Animator, WALK_MS_PER_TILE } from '../animator';
+import { partyScale } from './actorScale';
 import { screenDirection, walkHeading } from './direction';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
@@ -30,7 +31,8 @@ function gait() {
 
 /** Kaya's clip ms per logical tile along `tangent`, as the sheet declares it. */
 function kayaRate(tangent: Vec2, projection: Projection): number {
-  return gait()[walkHeading(screenDirection(tangent, projection))];
+  // The animator stretches the sheet's clip by the figure's scale (ADR 0095).
+  return gait()[walkHeading(screenDirection(tangent, projection))] / partyScale(projection);
 }
 
 function walker(projection: Projection, from: Vec2, path: readonly Vec2[]): Animator {

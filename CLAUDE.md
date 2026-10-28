@@ -248,7 +248,9 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
   lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
 - **A native-G1 figure jogs at the brisk pace and walks only when slow** (ADR 0095). Its sheet's `locomotion.jog`
-  makes the animator draw `jog*`, and `walkMsPerTile` is the jog's, fitted to the drawn feet (`G1_JOG`, `G1_HEADING`).
+  makes the animator draw `jog*`, and `walkMsPerTile` is the jog's, fitted to the drawn feet at one art px a world px
+  (`G1_JOG`, `G1_HEADING`); `Animator.walkClipTime` divides it by the figure scale (1.25 on oblique boards, ADR 0094's
+  amendment), so it stays planted at any scale.
   The `walk*` clips stay for slow moves: a resident's routine errand ambles at `RESIDENT_AMBLE` times the stroll and
   draws the walk at the rate `G1_AMBLE` sets. Mira never jogs (owner, 2026-10-28): her sheet leaves `jog` off
   (`G1_WALKS_ONLY`), so every move of hers ambles; do not give her the jog back. A new slow or scripted move must

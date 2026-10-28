@@ -5,6 +5,7 @@ import type { WalkDirection } from './direction';
 import { ASSETS } from '../../content/assets/manifest';
 import type { ClipName } from '../../content/assets/clips';
 import type { Vec2 } from '../../core/types';
+import { partyScale } from './actorScale';
 import { Animator } from '../animator';
 import type { ContentIndex } from '../../core/types';
 
@@ -350,8 +351,9 @@ describe('heading vocabulary is a declared sheet capability', () => {
       const sheet = ASSETS[sprite];
       if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
       const { walkMsPerTile } = sheet.locomotion;
-      // Projection chooses the heading, but does not multiply the cadence.
-      for (const [to, expected] of [
+      // Projection chooses the heading; the oblique board's figure scale stretches
+      // the clip over the ground the larger feet cover (ADR 0095).
+      for (const [to, rate] of [
         [{ x: 8, y: 4 }, walkMsPerTile.southEast],
         [{ x: 8, y: 8 }, walkMsPerTile.south],
         [{ x: 8, y: 0 }, walkMsPerTile.east],
@@ -361,6 +363,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
         a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
         const pose = a.unitPose(300, 'u', sprite);
         const legacy = a.unitPose(300, 'u', FOUR_WAY);
+        const expected = rate / partyScale('oblique');
         expect((pose?.clipTime ?? 0) - sheet.locomotion.walkStartMs).toBeCloseTo(
           ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected,
         );

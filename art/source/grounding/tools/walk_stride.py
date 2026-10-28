@@ -22,7 +22,8 @@ loop travel) is kept as `ratio` for comparison with the earlier tables.
 python3 -I art/source/grounding/tools/walk_stride.py party-g1 kaya walk --cel-ms 114 --tiles 1.825   # ADR 0067's timing
 python3 -I art/source/grounding/tools/walk_stride.py residents-g1 thug jog --manifest                  # as it ships
 (--tiles: one number, or east, diagonal, north/south loop lengths in tiles; --manifest reads the clip's fps and the sheet's
-clip time a tile from src/content/assets/manifest.ts instead, so a resident's walk is measured as its errand ambles;
+clip time a tile from src/content/assets/manifest.ts instead, so a resident's walk is measured as its errand ambles,
+and divides that clip time by --scale as the animator does on an oblique board (pass the board's figure scale, 1.25);
 --json prints the rows as JSON)
 """
 import subprocess
@@ -140,6 +141,7 @@ def measure(family, name, kind, cel_ms, tiles, scale, timing=None):
         ppt = px_per_tile(d)
         if timing:
             cel_ms, ms_tile = timing[d]
+            ms_tile /= scale  # the animator stretches the clip by the figure scale (Animator.walkClipTime, ADR 0095)
             t = n * cel_ms / ms_tile
         else:
             t = tiles[GROUP[d]]
