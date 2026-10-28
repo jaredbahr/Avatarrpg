@@ -128,11 +128,15 @@ import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } fro
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
+import { groundedCastArt } from '../groundedCastArt';
 import {
+  CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
+  CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
+  SHADOW_LEVEL_SLOTS,
   SHADOW_RGB,
   actorGrounding,
   castShadowStrength,
@@ -141,6 +145,9 @@ import {
   shadowCeiling,
   spriteBandArt,
   type BandArt,
+  type CastKey,
+  shadowGrid,
+  shadowLevels,
   structureShadowPolygons,
   tileShadowCell,
   silhouetteProjection,
@@ -162,22 +169,41 @@ const TERRAIN_INDEX: Record<TerrainId, number> = {
 /** The ground pass renders at this fraction of device resolution. */
 const GROUND_RESOLUTION = 0.5;
 
-/** Cast silhouettes need edges, not full sprite colour; half device resolution is sufficient. */
-const SHADOW_RESOLUTION = 0.5;
-
 const SHADOW_RGB_GLSL = SHADOW_RGB.map((channel) => (channel / 255).toFixed(5)).join(', ');
 
-/** The mask's max-unioned coverage is tinted once, so overlaps cannot darken twice. */
+/**
+ * The mask's max-unioned coverage is tinted once, so overlaps cannot darken
+ * twice. A caster's edge texel can hold a fraction of its level where it was
+ * sampled between two of its art's pixels; each texel snaps to the nearest of
+ * the levels the frame's casters wrote (`shadowLevels`, 0 among them), so a
+ * shadow is hard-edged at every caster's own strength (ADR 0093).
+ */
 const CAST_SHADOW_FRAGMENT = `#version 300 es
 precision highp float;
 
 in vec2 vTextureCoord;
 uniform sampler2D uTexture;
 uniform float uCastAlpha;
+uniform vec4 uLevelsA;
+uniform vec4 uLevelsB;
 out vec4 fragColor;
 
+float snapLevel(float a, float level, float best) {
+  return abs(a - level) < abs(a - best) ? level : best;
+}
+
 void main(void) {
-  float alpha = texture(uTexture, vTextureCoord).a * uCastAlpha;
+  float a = texture(uTexture, vTextureCoord).a;
+  float level = 0.0;
+  level = snapLevel(a, uLevelsA.x, level);
+  level = snapLevel(a, uLevelsA.y, level);
+  level = snapLevel(a, uLevelsA.z, level);
+  level = snapLevel(a, uLevelsA.w, level);
+  level = snapLevel(a, uLevelsB.x, level);
+  level = snapLevel(a, uLevelsB.y, level);
+  level = snapLevel(a, uLevelsB.z, level);
+  level = snapLevel(a, uLevelsB.w, level);
+  float alpha = level * uCastAlpha;
   fragColor = vec4(vec3(${SHADOW_RGB_GLSL}) * alpha, alpha);
 }`;
 
@@ -433,6 +459,8 @@ export class PixiBackend implements RenderBackend {
   /** The union's tint alpha: the scene's strongest shadow (`shadowCeiling`). */
   private castUniforms = new UniformGroup({
     uCastAlpha: { value: CAST_SHADOW_ALPHA, type: 'f32' },
+    uLevelsA: { value: new Float32Array(4), type: 'vec4<f32>' },
+    uLevelsB: { value: new Float32Array(4), type: 'vec4<f32>' },
   });
   private groundFilter: Filter | null = null;
   private groundOverlayFilter: Filter | null = null;
@@ -1151,11 +1179,12 @@ export class PixiBackend implements RenderBackend {
     foot: { x: number; y: number },
     strength: number,
     alpha: number,
+    key: CastKey = CAST_PER_PIXEL,
   ): void {
     target.texture = source.texture;
     target.anchor.copyFrom(source.anchor);
     const s = source.localTransform;
-    const p = silhouetteProjection(foot.x, foot.y);
+    const p = silhouetteProjection(foot.x, foot.y, key);
     target.setFromMatrix(
       new Matrix(
         p.a * s.a + p.c * s.b,
@@ -1178,6 +1207,7 @@ export class PixiBackend implements RenderBackend {
     foot: { x: number; y: number },
     strength: number,
     alpha = CAST_SHADOW_ALPHA,
+    castKey: CastKey = CAST_PER_PIXEL,
   ): void {
     this.castLive.add(key);
     let shadow = this.castSprites.get(key);
@@ -1186,7 +1216,7 @@ export class PixiBackend implements RenderBackend {
       this.castSprites.set(key, shadow);
       this.shadowMaskSources.addChild(shadow);
     }
-    this.projectSilhouette(shadow, source, foot, strength, alpha);
+    this.projectSilhouette(shadow, source, foot, strength, alpha, castKey);
   }
 
   /**
@@ -1229,7 +1259,71 @@ export class PixiBackend implements RenderBackend {
   }
 
   /**
-   * Adds scenery and still-prop silhouettes to the frame's union. They are
+   * A prop's cast from its own ground (`groundedCastArt`): placed exactly as the
+   * prop is, so its base row is its own shadow and no ground shows between them.
+   */
+  private projectGroundedCast(
+    key: string,
+    source: Sprite,
+    art: HTMLCanvasElement,
+    strength: number,
+  ): void {
+    const cast = groundedCastArt(art, this.grounding.castKey);
+    if (!cast) return;
+    this.castLive.add(key);
+    let shadow = this.castSprites.get(key);
+    if (!shadow) {
+      shadow = new Sprite();
+      this.castSprites.set(key, shadow);
+      this.shadowMaskSources.addChild(shadow);
+    }
+    const texture = this.texture(cast);
+    if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+    shadow.texture = texture;
+    shadow.anchor.set(0, 0);
+    shadow.rotation = 0;
+    shadow.position.copyFrom(source.position);
+    // The cast shares the art's pixel size and origin.
+    const k = source.width / Math.max(1, art.width);
+    shadow.width = cast.width * k;
+    shadow.height = cast.height * k;
+    shadow.alpha = Math.max(
+      0,
+      Math.min(1, (strength * this.grounding.cast) / shadowCeiling(this.grounding)),
+    );
+    shadow.blendMode = 'max';
+    shadow.visible = source.visible && shadow.alpha > 0;
+  }
+
+  /**
+   * A prop's contact line: its silhouette `CONTACT_LINE` world pixels lower at the contact
+   * level, so a line that deep shows under every edge it stands on (ADR 0093),
+   * as the painting's G1 objects meet the ground.
+   */
+  private projectContactLine(key: string, source: Sprite, strength: number): void {
+    this.castLive.add(key);
+    let line = this.castSprites.get(key);
+    if (!line) {
+      line = new Sprite();
+      this.castSprites.set(key, line);
+      this.shadowMaskSources.addChild(line);
+    }
+    line.texture = source.texture;
+    line.anchor.copyFrom(source.anchor);
+    line.setFromMatrix(source.localTransform);
+    // The mask sources draw in world pixels.
+    line.y += CONTACT_LINE;
+    line.alpha = Math.max(
+      0,
+      Math.min(1, (strength * this.grounding.contact) / shadowCeiling(this.grounding)),
+    );
+    line.blendMode = 'max';
+    line.visible = source.visible && line.alpha > 0;
+  }
+
+  /**
+   * Adds scenery silhouettes to the frame's union (props cast from `drawUnits`,
+   * where their art is, along their own ground: `projectGroundedCast`). They are
    * drawn straight into the viewport mask each frame: a few dozen sprites into
    * a half-resolution target costs less than a cached world-space texture, and
    * the cache's size and offset bookkeeping drew the wrong region once the
@@ -1247,17 +1341,6 @@ export class PixiBackend implements RenderBackend {
         castShadowStrength(item.castShadow),
       );
     }
-    for (const prop of view.props) {
-      if (prop.burning || prop.castShadow === false) continue;
-      const source = this.unitSprites.get(`prop:${prop.id}`);
-      if (!source?.visible) continue;
-      this.projectDynamicShadow(
-        `prop:${prop.id}`,
-        source,
-        { x: source.x + TILE / 2, y: source.y + FOOT_LINE * TILE },
-        castShadowStrength(prop.castShadow),
-      );
-    }
   }
 
   /** Unions cached static and current-frame silhouettes, then exposes one tinted layer. */
@@ -1266,35 +1349,47 @@ export class PixiBackend implements RenderBackend {
     if (!app) return;
     this.grounding = actorGrounding(view.scene);
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
-    // UniformGroup.uniforms is a plain object: the new ceiling is only uploaded by update().
-    (this.castUniforms.uniforms as { uCastAlpha: number }).uCastAlpha = shadowCeiling(
-      this.grounding,
-    );
-    this.castUniforms.update();
     const hasStructure = this.syncStructureShadows(view, camera);
     if (camera.projection === 'oblique') this.syncSceneryShadows(view);
     for (const [key, sprite] of this.castSprites)
       if (!this.castLive.has(key)) sprite.visible = false;
-    const hasDynamic = [...this.castSprites.values()].some((sprite) => sprite.visible);
+    const visible = [...this.castSprites.values()].filter((sprite) => sprite.visible);
     this.castLive.clear();
-    if (!hasDynamic && !hasStructure) {
+    if (visible.length === 0 && !hasStructure) {
       this.shadowComposite.visible = false;
       return;
     }
+    const levels = shadowLevels([
+      ...visible.map((sprite) => sprite.alpha),
+      ...(hasStructure ? [this.structureShadowGfx.alpha] : []),
+    ]);
+    // UniformGroup.uniforms is a plain object: the new values are only uploaded by update().
+    const uniforms = this.castUniforms.uniforms as {
+      uCastAlpha: number;
+      uLevelsA: Float32Array;
+      uLevelsB: Float32Array;
+    };
+    uniforms.uCastAlpha = shadowCeiling(this.grounding);
+    uniforms.uLevelsA.set(levels.slice(0, 4));
+    uniforms.uLevelsB.set(levels.slice(4, SHADOW_LEVEL_SLOTS));
+    this.castUniforms.update();
 
-    // A figure's legs are a few pixels wide: half resolution blurs a contact layer away.
-    const resolution = Math.max(
-      0.5,
-      this.viewport.dpr * (this.grounding.contact > 0 ? 1 : SHADOW_RESOLUTION),
-    );
-    this.shadowMask = (this.shadowMask ?? RenderTexture.create({ dynamic: true })).resize(
-      this.viewport.width,
-      this.viewport.height,
-      resolution,
-    ) as RenderTexture;
-    const ring = camera.clampRingTiles;
+    // One texel per world pixel, its edges on the world-pixel grid (ADR 0093).
     const nx = view.cameraNudge.x * TILE * camera.scale;
     const ny = view.cameraNudge.y * TILE * camera.scale;
+    const grid = shadowGrid(this.viewport, camera.scale, camera.offsetX - nx, camera.offsetY - ny);
+    this.shadowMask = (this.shadowMask ?? RenderTexture.create({ dynamic: true })).resize(
+      grid.width * grid.texel,
+      grid.height * grid.texel,
+      1 / grid.texel,
+    ) as RenderTexture;
+    if (this.shadowMask.source.scaleMode !== 'nearest')
+      this.shadowMask.source.scaleMode = 'nearest';
+    // The mask's texel (0, 0) is the screen's (originX, originY): draw into it shifted by as much.
+    this.shadowMaskSources.position.x -= grid.originX;
+    this.shadowMaskSources.position.y -= grid.originY;
+    this.shadowOutsideRoot.position.set(-grid.originX, -grid.originY);
+    const ring = camera.clampRingTiles;
     const corners = [
       { x: -ring.left, y: -ring.top },
       { x: view.grid.width + ring.right, y: -ring.top },
@@ -1345,11 +1440,13 @@ export class PixiBackend implements RenderBackend {
       target: this.shadowMask,
       clear: false,
     });
+    this.shadowMaskSources.position.x += grid.originX;
+    this.shadowMaskSources.position.y += grid.originY;
     this.shadowComposite.texture = this.shadowMask;
     this.shadowComposite.anchor.set(0, 0);
-    this.shadowComposite.position.set(0, 0);
-    this.shadowComposite.width = this.viewport.width;
-    this.shadowComposite.height = this.viewport.height;
+    this.shadowComposite.position.set(grid.originX, grid.originY);
+    this.shadowComposite.width = grid.width * grid.texel;
+    this.shadowComposite.height = grid.height * grid.texel;
     this.shadowComposite.visible = true;
   }
 
@@ -2625,6 +2722,7 @@ export class PixiBackend implements RenderBackend {
         { x: footX, y: (this.grounding.contact > 0 ? ground : y) + FOOT_LINE * TILE },
         alpha,
         this.grounding.cast,
+        this.grounding.castKey,
       );
       const treatment = groundTreatment(this.grounding, {
         castStrength: 1,
@@ -2668,7 +2766,8 @@ export class PixiBackend implements RenderBackend {
       const key = `prop:${prop.id}`;
       live.add(key);
       const sprite = this.unitSprite(key);
-      sprite.texture = this.texture(sprites.get(prop.sprite, px, { facing: 1 }));
+      const art = sprites.get(prop.sprite, px, { facing: 1 });
+      sprite.texture = this.texture(art);
       const anchor = box(prop.pos);
       sprite.anchor.set(0, 0);
       sprite.position.set(
@@ -2680,13 +2779,11 @@ export class PixiBackend implements RenderBackend {
       sprite.height = TILE;
       sprite.alpha = 1;
       sprite.visible = true;
-      if (prop.burning && castShadowStrength(prop.castShadow) > 0)
-        this.projectDynamicShadow(
-          `prop:${prop.id}`,
-          sprite,
-          { x: anchor.x + TILE / 2, y: sprite.y + FOOT_LINE * TILE },
-          castShadowStrength(prop.castShadow),
-        );
+      const propStrength = castShadowStrength(prop.castShadow);
+      // A prop casts from its own ground and meets it on its contact line (ADR 0093).
+      if (propStrength > 0) this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
+      if (groundTreatment(this.grounding, { castStrength: propStrength, defaultPool: false }).band)
+        this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
 
       /*
        * A damage bar only once it has been hit. A full bar on every barrel
@@ -2827,6 +2924,7 @@ export class PixiBackend implements RenderBackend {
           castFoot,
           castStrength * bodyShade,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         if (treatment.band && bandArt)
           this.projectContact(

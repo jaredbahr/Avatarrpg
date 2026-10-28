@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Canvas2DBackend } from './canvas2d';
 import { sheets } from '../sheets/store';
 import { sprites } from '../spriteCache';
-import { DEFAULT_ACTOR_GROUNDING, SHADOW_COLOR, groundTreatment } from '../lighting';
+import { DEFAULT_ACTOR_GROUNDING, SHADOW_COLOR, groundTreatment, shadowGrid } from '../lighting';
 import type { ActorGrounding } from '../lighting';
 
 /*
@@ -52,6 +52,7 @@ function parseColour(style: string): [number, number, number] {
 
 class FakeContext {
   globalAlpha = 1;
+  imageSmoothingEnabled = true;
   globalCompositeOperation: Op = 'source-over';
   fillStyle = '#000000';
   private clipRect: [number, number, number, number] | null = null;
@@ -69,6 +70,11 @@ class FakeContext {
   restore(): void {
     const s = this.stack.pop();
     if (s) [this.globalAlpha, this.globalCompositeOperation, this.fillStyle, this.clipRect] = s;
+  }
+  /** The union is run at one texel per screen pixel here, so its transforms are all the identity. */
+  setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void {
+    if (a !== 1 || b !== 0 || c !== 0 || d !== 1 || e !== 0 || f !== 0)
+      throw new Error('this model draws at identity only');
   }
   beginPath(): void {
     this.path = null;
@@ -185,8 +191,12 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
       shadowLayer: layerCanvas,
       castScratch: new FakeCanvas(W, H),
       ctx: mainCtx,
+      // One texel per pixel: the union's arithmetic is what is under test, not the grid.
+      shadowGridNow: shadowGrid({ width: W, height: H }, 1, 0, 0),
       exactMax: proto.exactMax,
       castInto: proto.castInto,
+      toShadowTexels: proto.toShadowTexels,
+      drawShadowTexels: proto.drawShadowTexels,
       compositeExactShadow: proto.compositeExactShadow,
       clipShadowGround: () => undefined,
     };
@@ -217,7 +227,7 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
   const near = (got: number[], want: number[]): void =>
     want.forEach((v, k) => expect(Math.abs((got[k] ?? 0) - v)).toBeLessThanOrEqual(1));
 
-  const ba: ActorGrounding = { cast: 0.5, contact: 0.8 };
+  const ba: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
 
   it('leaves an overlap of two equal casters at their strength, not darker', () => {
     const at = run(ba, [
@@ -261,7 +271,7 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
 });
 
 describe("what a figure's feet get", () => {
-  const contact: ActorGrounding = { cast: 0.5, contact: 0.8 };
+  const contact: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
   const frame = {
     source: {},
     frame: { x: 0, y: 0, w: 64, h: 96 },
@@ -326,13 +336,13 @@ describe("what a figure's feet get", () => {
       expect(pool).toBe(false);
     });
 
-    it(`leaves a ${kind} with its old treatment in a default scene`, () => {
-      expect(bandsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(0);
+    it(`gives a ${kind} its band and no pool in a scene that sets nothing (ADR 0093)`, () => {
+      expect(bandsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(1);
       const { pool } = groundTreatment(DEFAULT_ACTOR_GROUNDING, {
         castStrength: 1,
         defaultPool: kinds[kind].pool,
       });
-      expect(pool).toBe(kinds[kind].pool);
+      expect(pool).toBe(false);
     });
   }
 

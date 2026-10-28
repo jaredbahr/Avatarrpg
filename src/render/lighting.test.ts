@@ -8,6 +8,7 @@ import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
+  DEFAULT_CONTACT_ALPHA,
   DEFAULT_ACTOR_GROUNDING,
   FACE_SHADE,
   PAINTED_FACE_SHADE,
@@ -176,12 +177,17 @@ describe('form shading against the reference', () => {
 });
 
 describe('scene actor grounding', () => {
-  it("leaves a scene that sets nothing at today's single cast alpha and no contact layer", () => {
-    expect(actorGrounding(undefined)).toEqual({ cast: CAST_SHADOW_ALPHA, contact: 0 });
+  it('gives a scene that sets nothing the shared cast, key and a contact layer (ADR 0093)', () => {
+    expect(actorGrounding(undefined)).toEqual({
+      cast: CAST_SHADOW_ALPHA,
+      contact: DEFAULT_CONTACT_ALPHA,
+      castKey: CAST_PER_PIXEL,
+    });
     expect(actorGrounding({})).toBe(DEFAULT_ACTOR_GROUNDING);
     expect(actorGrounding(FOREST_ROAD_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
     expect(actorGrounding(QUARRY_GATE_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
-    expect(shadowCeiling(DEFAULT_ACTOR_GROUNDING)).toBe(CAST_SHADOW_ALPHA);
+    expect(DEFAULT_CONTACT_ALPHA).toBeGreaterThan(CAST_SHADOW_ALPHA);
+    expect(shadowCeiling(DEFAULT_ACTOR_GROUNDING)).toBe(DEFAULT_CONTACT_ALPHA);
   });
 
   it('gives Ba Dan a stronger cast and a contact layer, tinted at the strongest of them', () => {
@@ -196,9 +202,10 @@ describe('scene actor grounding', () => {
   });
 
   it('fills only the keys a scene sets', () => {
-    expect(actorGrounding({ actorGrounding: { contact: 0.6 } })).toEqual({
+    expect(actorGrounding({ actorGrounding: { contact: 0.7 } })).toEqual({
       cast: CAST_SHADOW_ALPHA,
-      contact: 0.6,
+      contact: 0.7,
+      castKey: CAST_PER_PIXEL,
     });
   });
 
@@ -222,8 +229,8 @@ describe('scene actor grounding', () => {
     expect(spriteBandArt({ width: 128, height: 256 }, 2).pixelsPerTile).toBe(128);
   });
 
-  it('gives a figure a band or a pool in a contact scene, and the old pool in a default one', () => {
-    const contact = { cast: 0.5, contact: 0.8 };
+  it('gives a figure that casts a band and no pool, and keeps the pool of one that does not', () => {
+    const contact = { contact: 0.8 };
     // Every figure that casts has art to cut a band from, so it loses its pool...
     expect(groundTreatment(contact, { castStrength: 1, defaultPool: true })).toEqual({
       band: true,
@@ -239,10 +246,11 @@ describe('scene actor grounding', () => {
       band: false,
       pool: true,
     });
+    // A scene that sets nothing grounds its figures the same way (ADR 0093).
     for (const defaultPool of [true, false])
       expect(groundTreatment(DEFAULT_ACTOR_GROUNDING, { castStrength: 1, defaultPool })).toEqual({
-        band: false,
-        pool: defaultPool,
+        band: true,
+        pool: false,
       });
   });
 

@@ -26,18 +26,48 @@ export const CONTACT_SHADOW_ALPHA = 0.3;
 export const FALLEN_SHADOW_ALPHA = 0.52;
 
 /**
- * How a scene grounds the figures standing in it. `cast` is the projected
- * silhouette's alpha; `contact` is a second, tighter layer drawn from the
- * soles of the frame itself (both feet, whatever the pose) and `0` leaves the
- * radial contact pool in charge. A painted village whose own shadows run at
- * ~0.4 darkening needs both turned up or its figures read as floating.
+ * Screen-space projection of an upright silhouette onto the ground. Both the
+ * orthographic and oblique cameras keep vertical objects upright on screen,
+ * so the same foot-anchored projection applies: every pixel above the foot
+ * travels down-right, opposite the upper-left key. This is the key the runtime
+ * scenery, the procedural structure and the figures of a scene that names no
+ * key of its own all share.
+ */
+export const CAST_PER_PIXEL = { x: 0.42, y: 0.27 } as const;
+
+/** A cast key: how far a pixel `h` above the foot lands, `x * h` right and `y * h` down. */
+export interface CastKey {
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * How a scene grounds the figures and props standing in it (ADR 0077, ADR 0093).
+ * `cast` is the projected silhouette's alpha and `castKey` the direction and
+ * length it falls along, which a painted scene sets to its painting's own;
+ * `contact` is the tighter layer cut from the soles of the frame itself (both
+ * feet, whatever the pose) or from a prop's base. Every scene has a contact
+ * layer: `0` would leave a figure on a soft radial pool and a prop on nothing.
  */
 export interface ActorGrounding {
   readonly cast: number;
   readonly contact: number;
+  readonly castKey: CastKey;
 }
 
-export const DEFAULT_ACTOR_GROUNDING: ActorGrounding = { cast: CAST_SHADOW_ALPHA, contact: 0 };
+/**
+ * The contact a scene that sets nothing gets. The forest road and the quarry
+ * paint no shadows of their own, so the runtime is their only grounding: this
+ * keeps the sole band clearly darker than the 0.4 cast it sits in, as Ba Dan's
+ * 0.8 is to its 0.5, without the black rim a full-strength band read as.
+ */
+export const DEFAULT_CONTACT_ALPHA = 0.6;
+
+export const DEFAULT_ACTOR_GROUNDING: ActorGrounding = {
+  cast: CAST_SHADOW_ALPHA,
+  contact: DEFAULT_CONTACT_ALPHA,
+  castKey: CAST_PER_PIXEL,
+};
 
 export function actorGrounding(
   scene?: { readonly actorGrounding?: Partial<ActorGrounding> } | null,
@@ -51,9 +81,17 @@ export function actorGrounding(
  * its own alpha as a fraction of that, so a scene that sets nothing keeps the
  * single `CAST_SHADOW_ALPHA` and coverage 1.
  */
-export function shadowCeiling(grounding: ActorGrounding): number {
+export function shadowCeiling(grounding: Pick<ActorGrounding, 'cast' | 'contact'>): number {
   return Math.max(CAST_SHADOW_ALPHA, grounding.cast, grounding.contact);
 }
+
+/**
+ * How far a prop's contact line sits below its silhouette, in world pixels. The
+ * painting's G1 objects meet the ground on a 1 px line (`objects.py`), but a
+ * prop's art is four pixels to a world pixel and its outline lands mid-texel,
+ * covering half of a 1 px line; at 2 a whole world pixel shows under every edge.
+ */
+export const CONTACT_LINE = 2;
 
 /** The sole band of a frame laid flat for contact: height in tiles, spread about the foot, drop in tiles. */
 export const CONTACT_BAND = { height: 0.14, spreadX: 1.4, spreadY: 1, drop: 0.03 } as const;
@@ -110,20 +148,12 @@ export function spriteBandArt<S extends { readonly width: number; readonly heigh
  * `pool` is whatever the figure drew before (`defaultPool`), never a band.
  */
 export function groundTreatment(
-  grounding: ActorGrounding,
+  grounding: Pick<ActorGrounding, 'contact'>,
   figure: { readonly castStrength: number; readonly defaultPool: boolean },
 ): { readonly band: boolean; readonly pool: boolean } {
   const band = grounding.contact > 0 && figure.castStrength > 0;
   return { band, pool: figure.defaultPool && !band };
 }
-
-/**
- * Screen-space projection of an upright silhouette onto the ground. Both the
- * orthographic and oblique cameras keep vertical objects upright on screen,
- * so the same foot-anchored projection applies: every pixel above the foot
- * travels down-right, opposite the upper-left key.
- */
-export const CAST_PER_PIXEL = { x: 0.42, y: 0.27 } as const;
 
 export interface ShadowProjection {
   readonly a: number;
@@ -158,26 +188,76 @@ export interface StructureShadowPolygon {
 }
 
 /** Canvas/Pixi affine coefficients; `(footX, footY)` remains fixed. */
-export function silhouetteProjection(footX: number, footY: number): ShadowProjection {
+export function silhouetteProjection(
+  footX: number,
+  footY: number,
+  key: CastKey = CAST_PER_PIXEL,
+): ShadowProjection {
   // Horizontal coordinates already remain anchored under this shear; retaining
   // footX in the API makes the two-dimensional anchor contract explicit.
   void footX;
   return {
     a: 1,
     b: 0,
-    c: -CAST_PER_PIXEL.x,
-    d: -CAST_PER_PIXEL.y,
-    e: CAST_PER_PIXEL.x * footY,
-    f: footY * (1 + CAST_PER_PIXEL.y),
+    c: -key.x,
+    d: -key.y,
+    e: key.x * footY,
+    f: footY * (1 + key.y),
   };
 }
 
 export function projectShadowPoint(
   point: { readonly x: number; readonly y: number },
   foot: { readonly x: number; readonly y: number },
+  key: CastKey = CAST_PER_PIXEL,
 ): { x: number; y: number } {
   const rise = foot.y - point.y;
-  return { x: point.x + rise * CAST_PER_PIXEL.x, y: foot.y + rise * CAST_PER_PIXEL.y };
+  return { x: point.x + rise * key.x, y: foot.y + rise * key.y };
+}
+
+/**
+ * Where the shared shadow mask's texels lie (ADR 0093). The world is pixel art
+ * on a world-pixel grid, so a shadow is too: one mask texel per world pixel,
+ * its edges on the same grid as the art beside it, sampled nearest both ways,
+ * so a cast or a contact band is hard-edged and stepped, never a blur.
+ *
+ * `scale` is CSS px per world px and `offset` the screen offset of world (0, 0)
+ * negated, as the camera keeps them; the origin is the screen point of the first
+ * texel corner at or left of / above the viewport's. The mask is one texel wider
+ * and taller than the viewport so the shifted grid still covers it.
+ */
+export interface ShadowGrid {
+  /** CSS px per texel (the camera scale: one world pixel). */
+  readonly texel: number;
+  /** Screen position of texel (0, 0)'s top-left corner, CSS px, at or before 0. */
+  readonly originX: number;
+  readonly originY: number;
+  /** Texels across and down. */
+  readonly width: number;
+  readonly height: number;
+}
+
+export function shadowGrid(
+  viewport: { readonly width: number; readonly height: number },
+  scale: number,
+  offsetX: number,
+  offsetY: number,
+): ShadowGrid {
+  const texel = scale > 0 && Number.isFinite(scale) ? scale : 1;
+  // World pixel k's left edge is on screen at k * texel - offsetX.
+  const phase = (offset: number) => {
+    const r = -offset % texel;
+    return r > 0 ? r - texel : r;
+  };
+  const originX = phase(offsetX);
+  const originY = phase(offsetY);
+  return {
+    texel,
+    originX,
+    originY,
+    width: Math.ceil((viewport.width - originX) / texel),
+    height: Math.ceil((viewport.height - originY) / texel),
+  };
 }
 
 /**
@@ -325,4 +405,156 @@ export function unionShadowCoverage(a: number, b: number): number {
 
 export function castShadowStrength(policy?: false | 'reduced'): number {
   return policy === false ? 0 : policy === 'reduced' ? REDUCED_CAST_ALPHA : 1;
+}
+
+/** How many levels the WebGL shadow composite can snap a texel to (two vec4 uniforms). */
+export const SHADOW_LEVEL_SLOTS = 8;
+
+/**
+ * The levels a frame's casters wrote into the union, for the composite to snap
+ * each texel to (ADR 0093): the distinct alphas, strongest first, padded with
+ * 0 (which is always a candidate). More distinct levels than slots — several
+ * figures fading at once — fall onto eighths, so the set always fits.
+ */
+export function shadowLevels(alphas: readonly number[]): readonly number[] {
+  const clean = alphas.filter((a) => Number.isFinite(a) && a > 0).map((a) => Math.min(1, a));
+  // Two alphas one 8-bit step apart are one level: the mask stores 8 bits.
+  const distinct = (values: readonly number[]) =>
+    [...new Map(values.map((a) => [Math.round(a * 255), a] as const)).values()].sort(
+      (a, b) => b - a,
+    );
+  let levels = distinct(clean);
+  if (levels.length > SHADOW_LEVEL_SLOTS)
+    levels = distinct(
+      clean.map((a) => Math.max(1, Math.round(a * SHADOW_LEVEL_SLOTS)) / SHADOW_LEVEL_SLOTS),
+    );
+  return [...levels, ...Array<number>(SHADOW_LEVEL_SLOTS - levels.length).fill(0)];
+}
+
+/**
+ * The ground under each column of a prop's art (ADR 0093): the lower convex hull
+ * of its silhouette's bottom edge, in art pixels, `-1` where the art has no
+ * pixels at all. A box's base edges are their own hull, so they are on the
+ * ground; a tripod's or a cart's hull is the line between its feet or wheels,
+ * so the bowl or the bed between them stands above it. A figure keeps the foot
+ * projection instead: its hands are not on the ground.
+ */
+export function groundProfile(
+  alpha: (x: number, y: number) => number,
+  width: number,
+  height: number,
+  threshold = 128,
+): Int32Array {
+  const bottom: { x: number; y: number }[] = [];
+  for (let x = 0; x < width; x += 1)
+    for (let y = height - 1; y >= 0; y -= 1)
+      if (alpha(x, y) >= threshold) {
+        bottom.push({ x, y });
+        break;
+      }
+  const base = new Int32Array(width).fill(-1);
+  if (bottom.length === 0) return base;
+  // Monotone chain over the bottom points, keeping the chain that bounds them from below (largest y).
+  const hull: { x: number; y: number }[] = [];
+  for (const p of bottom) {
+    for (;;) {
+      const a = hull[hull.length - 2];
+      const b = hull[hull.length - 1];
+      if (!a || !b) break;
+      // Drop b unless it lies below (larger y than) the segment a -> p.
+      if ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) < 0) break;
+      hull.pop();
+    }
+    hull.push(p);
+  }
+  const first = bottom[0]?.x ?? 0;
+  const last = bottom[bottom.length - 1]?.x ?? 0;
+  for (let i = 0; i < hull.length - 1; i += 1) {
+    const a = hull[i];
+    const b = hull[i + 1];
+    if (!a || !b) continue;
+    for (let x = a.x; x <= b.x; x += 1)
+      base[x] = Math.round(a.y + ((b.y - a.y) * (x - a.x)) / Math.max(1, b.x - a.x));
+  }
+  if (hull.length === 1) base[first] = hull[0]?.y ?? 0;
+  for (let x = 0; x < width; x += 1) if (x < first || x > last) base[x] = -1;
+  return base;
+}
+
+/** A prop's cast as a mask in its art's pixels, from its own ground (`groundProfile`). */
+export interface GroundedCast {
+  readonly width: number;
+  readonly height: number;
+  /** 1 where the cast falls, 0 elsewhere; row-major, `width * height`. */
+  readonly mask: Uint8Array;
+}
+
+/**
+ * Casts a prop's silhouette along `key`, each pixel from the ground under its
+ * own column: a pixel `h` above it lands `key.x * h` right and `key.y * h`
+ * down of that ground point. The base row is its own cast, so the shadow starts
+ * at the base with no gap, wherever the base is on screen. The mask shares the
+ * art's origin and runs past its right and bottom edges as far as the cast does.
+ */
+export function groundedCast(
+  alpha: (x: number, y: number) => number,
+  width: number,
+  height: number,
+  key: CastKey,
+  threshold = 128,
+): GroundedCast {
+  const base = groundProfile(alpha, width, height, threshold);
+  const outW = width + Math.ceil(key.x * height) + 1;
+  const outH = height + Math.ceil(key.y * height) + 1;
+  const mask = new Uint8Array(outW * outH);
+  // Half columns and half steps, the ground eased between neighbouring columns: a base edge
+  // that climbs across the art would otherwise leave hairline holes between columns' casts.
+  for (let x = 0; x < width; x += 1) {
+    const ground = base[x] ?? -1;
+    if (ground < 0) continue;
+    const next = base[x + 1] ?? -1;
+    for (let y = 0; y <= ground; y += 1) {
+      if (alpha(x, y) < threshold) continue;
+      for (const sub of [0, 0.5]) {
+        const g = next >= 0 ? ground + (next - ground) * sub : ground;
+        for (const step of [0, 0.5]) {
+          const rise = Math.max(0, g - y + step);
+          const cx = Math.round(x + sub + key.x * rise);
+          const cy = Math.round(g + key.y * rise);
+          if (cx >= 0 && cy >= 0 && cx < outW && cy < outH) mask[cy * outW + cx] = 1;
+        }
+      }
+    }
+  }
+  return { width: outW, height: outH, mask: closeMask(mask, outW, outH) };
+}
+
+/**
+ * A 3 x 3 closing (dilate, then erode): fills the hairline holes the forward
+ * map leaves where a rounded base climbs steeply between columns, and keeps
+ * every pixel that was set, so a cast that touched its base still does.
+ */
+function closeMask(mask: Uint8Array, width: number, height: number): Uint8Array {
+  const pass = (src: Uint8Array, outside: number, keep: (count: number) => boolean) => {
+    const out = new Uint8Array(src.length);
+    for (let y = 0; y < height; y += 1)
+      for (let x = 0; x < width; x += 1) {
+        let count = 0;
+        for (let dy = -1; dy <= 1; dy += 1)
+          for (let dx = -1; dx <= 1; dx += 1) {
+            const nx = x + dx;
+            const ny = y + dy;
+            const inside = nx >= 0 && ny >= 0 && nx < width && ny < height;
+            count += inside ? (src[ny * width + nx] ?? 0) : outside;
+          }
+        out[y * width + x] = keep(count) ? 1 : 0;
+      }
+    return out;
+  };
+  // Outside the mask is empty both ways: the edge is never grown, and what the erosion eats there
+  // was set to begin with, so it is put back below.
+  const dilated = pass(mask, 0, (count) => count > 0);
+  const closed = pass(dilated, 0, (count) => count === 9);
+  for (let i = 0; i < mask.length; i += 1) if (mask[i]) closed[i] = 1;
+  return closed;
 }
