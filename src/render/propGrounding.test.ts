@@ -94,6 +94,25 @@ describe('every shipped prop meets the ground with no gap', () => {
         }
         expect(columns).toBeGreaterThan(0);
       });
+
+    // At the sizes the sprite cache draws a prop (N = 1 to 3 at 1 and 2 dpr), the cast is solid.
+    for (const size of [64, 128, 192, 256])
+      it(`${sprite} casts a solid shadow at ${size} px`, () => {
+        const png = PNG.sync.read(
+          readFileSync(new URL(`../../public/art/props/${file}`, import.meta.url)),
+        );
+        const s = png.width / size;
+        const alpha = (x: number, y: number) =>
+          png.data[(Math.floor(y * s) * png.width + Math.floor(x * s)) * 4 + 3] ?? 0;
+        const cast = groundedCast(alpha, size, size, CAST_PER_PIXEL);
+        const on = (x: number, y: number) => cast.mask[y * cast.width + x] === 1;
+        let holes = 0;
+        for (let y = 1; y < cast.height - 1; y += 1)
+          for (let x = 1; x < cast.width - 1; x += 1)
+            if (!on(x, y) && on(x - 1, y) && on(x + 1, y) && on(x, y - 1) && on(x, y + 1))
+              holes += 1;
+        expect(holes).toBe(0);
+      });
   }
 });
 

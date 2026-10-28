@@ -507,18 +507,54 @@ export function groundedCast(
   const outW = width + Math.ceil(key.x * height) + 1;
   const outH = height + Math.ceil(key.y * height) + 1;
   const mask = new Uint8Array(outW * outH);
+  // Half columns and half steps, the ground eased between neighbouring columns: a base edge
+  // that climbs across the art would otherwise leave hairline holes between columns' casts.
   for (let x = 0; x < width; x += 1) {
     const ground = base[x] ?? -1;
     if (ground < 0) continue;
+    const next = base[x + 1] ?? -1;
     for (let y = 0; y <= ground; y += 1) {
       if (alpha(x, y) < threshold) continue;
-      // Half steps, so a steep column leaves no holes in its cast.
-      for (const rise of [ground - y, ground - y + 0.5]) {
-        const cx = Math.round(x + key.x * rise);
-        const cy = Math.round(ground + key.y * rise);
-        if (cx >= 0 && cy >= 0 && cx < outW && cy < outH) mask[cy * outW + cx] = 1;
+      for (const sub of [0, 0.5]) {
+        const g = next >= 0 ? ground + (next - ground) * sub : ground;
+        for (const step of [0, 0.5]) {
+          const rise = Math.max(0, g - y + step);
+          const cx = Math.round(x + sub + key.x * rise);
+          const cy = Math.round(g + key.y * rise);
+          if (cx >= 0 && cy >= 0 && cx < outW && cy < outH) mask[cy * outW + cx] = 1;
+        }
       }
     }
   }
-  return { width: outW, height: outH, mask };
+  return { width: outW, height: outH, mask: closeMask(mask, outW, outH) };
+}
+
+/**
+ * A 3 x 3 closing (dilate, then erode): fills the hairline holes the forward
+ * map leaves where a rounded base climbs steeply between columns, and keeps
+ * every pixel that was set, so a cast that touched its base still does.
+ */
+function closeMask(mask: Uint8Array, width: number, height: number): Uint8Array {
+  const pass = (src: Uint8Array, outside: number, keep: (count: number) => boolean) => {
+    const out = new Uint8Array(src.length);
+    for (let y = 0; y < height; y += 1)
+      for (let x = 0; x < width; x += 1) {
+        let count = 0;
+        for (let dy = -1; dy <= 1; dy += 1)
+          for (let dx = -1; dx <= 1; dx += 1) {
+            const nx = x + dx;
+            const ny = y + dy;
+            const inside = nx >= 0 && ny >= 0 && nx < width && ny < height;
+            count += inside ? (src[ny * width + nx] ?? 0) : outside;
+          }
+        out[y * width + x] = keep(count) ? 1 : 0;
+      }
+    return out;
+  };
+  // Outside the mask is empty both ways: the edge is never grown, and what the erosion eats there
+  // was set to begin with, so it is put back below.
+  const dilated = pass(mask, 0, (count) => count > 0);
+  const closed = pass(dilated, 0, (count) => count === 9);
+  for (let i = 0; i < mask.length; i += 1) if (mask[i]) closed[i] = 1;
+  return closed;
 }
