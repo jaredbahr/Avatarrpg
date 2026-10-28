@@ -230,6 +230,7 @@ function g1Locomotion(
   return {
     headings: 8,
     ...(G1_AMBLES.has(name) && { amble: true as const }),
+    ...(fit && { walkCelMs: 114 }),
     walkMsPerTile: msPerTile,
     walkStartMs: (walkCels / 4) * 114,
     walkCycleMs: walkCels * 114,

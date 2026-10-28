@@ -4,7 +4,8 @@ import { HEADINGS, headingClip } from '../../content/assets/clips';
 import type { ContentIndex, Vec2 } from '../../core/types';
 import { smoothPath } from '../../render/geometry/curve';
 import type { Projection } from '../../render/projection';
-import { Animator, WALK_MS_PER_TILE } from '../animator';
+import { Animator, BRISK_WALK_CEL_MS, WALK_MS_PER_TILE } from '../animator';
+import { TIMING } from './choreography';
 import { partyScale } from './actorScale';
 import { screenDirection, walkHeading } from './direction';
 
@@ -29,8 +30,9 @@ function kayaRate(tangent: Vec2, projection: Projection): number {
   return gait()[walkHeading(screenDirection(tangent, projection))] / partyScale(projection);
 }
 
+/** An ambling walker: it plays each heading's fitted rate, which a brisk move only caps. */
 function walker(projection: Projection, from: Vec2, path: readonly Vec2[]): Animator {
-  const a = new Animator(content, { motionReduced: () => false });
+  const a = new Animator(content, { motionReduced: () => false, amble: true });
   a.setProjection(projection);
   a.push(0, [{ type: 'partyWalked', unitId: 'p', from, path }], []);
   return a;
@@ -85,6 +87,30 @@ describe('eight-way walk phase across a turn', () => {
         // The quarry bender's 128 px sheet keeps ADR 0067's shared stride.
         expect(loop, `${key} ${heading}`).toBeCloseTo(fit?.[i] ?? G_STRIDE_TILES, 8);
       });
+    }
+  });
+
+  it('walks every native-G1 figure at the brisk cadence, never slower than its fit, and ambles on the fit', () => {
+    for (const [key, entry] of Object.entries(ASSETS)) {
+      if (entry?.kind !== 'sheet' || !entry.locomotion?.walkCelMs) continue;
+      const { walkCelMs, walkMsPerTile, walkStartMs } = entry.locomotion;
+      for (const projection of ['orthographic', 'oblique'] as const) {
+        for (const amble of [false, true]) {
+          const a = new Animator(content, { motionReduced: () => false, amble });
+          a.setProjection(projection);
+          a.push(0, [{ type: 'partyWalked', unitId: 'p', from: FROM, path: [{ x: 8, y: 4 }] }], []);
+          const pose = a.unitPose(300, 'p', key);
+          const legacy = a.unitPose(300, 'p', FOUR_WAY)?.clipTime ?? 0;
+          const heading = walkHeading(screenDirection({ x: 1, y: 0 }, projection));
+          const fitted = walkMsPerTile[heading] / partyScale(projection);
+          const brisk = (walkCelMs * TIMING.strollStep) / BRISK_WALK_CEL_MS;
+          // A brisk move holds each cel BRISK_WALK_CEL_MS at the stroll, unless its fit is slower still.
+          expect((pose?.clipTime ?? 0) - walkStartMs, `${key} ${projection} ${amble}`).toBeCloseTo(
+            (legacy / WALK_MS_PER_TILE) * (amble ? fitted : Math.min(fitted, brisk)),
+            6,
+          );
+        }
+      }
     }
   });
 
