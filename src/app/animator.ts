@@ -462,7 +462,9 @@ export class Animator {
     const base = plant
       ? 'idle'
       : travel || planted
-        ? 'walk'
+        ? gait?.jog
+          ? 'jog'
+          : 'walk'
         : stop
           ? gait
             ? 'idle'

@@ -10,6 +10,22 @@
       "root": "idle",
       "action": "walk",
       "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+    },
+    "jog": {
+      "kind": "walk",
+      "clip": "09_01",
+      "cycle": [40, 89],
+      "scale_clip": "09_01",
+      "scale_frame": 40,
+      "frames": 10,
+      "track": 0.35,
+      "bob": 1.5,
+      "stride": 1.6,
+      "arms": 1.2,
+      "canvas": 96,
+      "root": "idle",
+      "action": "running, a light jog",
+      "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 9 trial 1 (run), one stride cycle (frames 40-129) in 10 cels, root-locked; track 0.35, pelvis bob x1.5, fore-aft leg swing x1.6, arm swing x1.2"
     }
   },
   "bandit": {
@@ -21,7 +37,14 @@
       "canvas": 96,
       "root": "idle",
       "cels": [1, 2, 3],
-      "frames": [60, 72, { "f": 72, "amp": 0.4 }],
+      "frames": [
+        60,
+        72,
+        {
+          "f": 72,
+          "amp": 0.4
+        }
+      ],
       "action": "hit reaction, flinching back",
       "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
     },

@@ -37,7 +37,7 @@ import numpy as np
 from PIL import Image
 sys.path.insert(0, str(Path(__file__).parent))
 from palette_lock import lock
-from motion import DIRS, origin
+from motion import DIRS, origin, spec_for
 HERE = Path(__file__).resolve().parent.parent
 C = json.load(open(HERE / 'tools/chars.json'))
 SHIPPED = HERE / 'shipped'
@@ -149,6 +149,13 @@ def trim(name, frames, W, foot, dy=0):
     return [f.crop(box) for f in frames], box, anchor
 
 
+def clamp_margin(im, m=MARGIN):
+    """Clear the ink inside the clear margin; returns the cel and how many pixels went (a toe or a spear tip, ADR 0095)."""
+    a = np.asarray(im).copy(); keep = np.zeros(a.shape[:2], bool); keep[m:-m, m:-m] = True
+    lost = int(((a[..., 3] > 0) & ~keep).sum()); a[~keep] = 0
+    return Image.fromarray(a), lost
+
+
 def build(name):
     A = json.load(open(HERE / 'assembly.json'))[name]; spec = C[name]
     fw = spec['frame_w']; foot = (fw / 2, 0.85 * FRAME_H); line = int(round(foot[1]))
@@ -200,6 +207,23 @@ def build(name):
         rest_dy = lowest(idle[0]) - lowest(walk[rest])
         put(heading_clip('walk', d), walk); put(heading_clip('rest', d), [shift(walk[rest], 0, rest_dy)])
         placement[d] = dict(walk_job=job, idleDy=idle_dy[d], walkDx=dx, walkDy=dy, restCel=rest, restDy=rest_dy, contact_rows=cr)
+        if 'jog' in A:
+            # The jog (ADR 0095): cropped and centred as the walk is; its two contact cels' soles on idle's sole in every
+            # heading (the walk's north rule sank a run's back-view feet), the upper body centred, then cleared of the
+            # margin. No mean-row bound: a run's flight cels leave the ground.
+            job = A['jog'][d]; design = json.load(open(HERE / f'design/{name}/jog-{d}.json'))
+            gen = load_gen(job, spec_for(name, 'jog')['frames'], name)
+            lost = sum(int(alpha(c)[:, :ox - pad].sum() + alpha(c)[:, ox + fw + pad:].sum()) for c in gen)
+            jog = [shift(c.crop((ox - pad, 0, ox + fw + pad, 96)), 0, idle_dy[d]) for c in gen]
+            jcr = design['info']['contact_rows']
+            jdy = -int(round((lowest(jog[jcr['LA']['cel']]) + lowest(jog[jcr['RA']['cel']])) / 2 - base))
+            off = np.mean([upper_offset(shift(c, 0, jdy), idle[0]) for c in jog]); jdx = int(round(off)) if abs(off) > 1 else 0
+            jdx += int(clearance([shift(c, jdx, jdy) for c in jog]))
+            placed = [clamp_margin(shift(c, jdx, jdy)) for c in jog]
+            put(heading_clip('jog', d), [c for c, _ in placed])
+            clamped = sum(n for _, n in placed)
+            if lost or clamped: print(f'  {name} jog {d}: {lost} px of ink outside the {pw} px cel, {clamped} px inside its margin cleared')
+            placement[d].update(jog_job=job, jogDx=jdx, jogDy=jdy, jog_contact_rows=jcr, jogLostPx=lost, jogClampedPx=clamped)
     if spec['kind'] == 'bandit':
         shipped = json.load(open(SHIPPED / f'{name}-g-clips.json'))
         for d in DIRS:

@@ -260,9 +260,209 @@
         "h": 96
       }
     },
-    "npc.guard/idleSouthEast/0": {
+    "npc.guard/jogSouth/0": {
       "frame": {
         "x": 860,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/1": {
+      "frame": {
+        "x": 926,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/2": {
+      "frame": {
+        "x": 992,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/3": {
+      "frame": {
+        "x": 1058,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/4": {
+      "frame": {
+        "x": 1124,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/5": {
+      "frame": {
+        "x": 1190,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/6": {
+      "frame": {
+        "x": 1256,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/7": {
+      "frame": {
+        "x": 1322,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/8": {
+      "frame": {
+        "x": 1388,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouth/9": {
+      "frame": {
+        "x": 1454,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleSouthEast/0": {
+      "frame": {
+        "x": 1520,
         "y": 2,
         "w": 64,
         "h": 96
@@ -282,7 +482,7 @@
     },
     "npc.guard/idleSouthEast/1": {
       "frame": {
-        "x": 926,
+        "x": 1586,
         "y": 2,
         "w": 64,
         "h": 96
@@ -302,7 +502,7 @@
     },
     "npc.guard/idleSouthEast/2": {
       "frame": {
-        "x": 992,
+        "x": 1652,
         "y": 2,
         "w": 64,
         "h": 96
@@ -322,7 +522,7 @@
     },
     "npc.guard/idleSouthEast/3": {
       "frame": {
-        "x": 1058,
+        "x": 1718,
         "y": 2,
         "w": 64,
         "h": 96
@@ -342,7 +542,7 @@
     },
     "npc.guard/walkSouthEast/0": {
       "frame": {
-        "x": 1124,
+        "x": 1784,
         "y": 2,
         "w": 64,
         "h": 96
@@ -362,7 +562,7 @@
     },
     "npc.guard/walkSouthEast/1": {
       "frame": {
-        "x": 1190,
+        "x": 1850,
         "y": 2,
         "w": 64,
         "h": 96
@@ -382,7 +582,7 @@
     },
     "npc.guard/walkSouthEast/2": {
       "frame": {
-        "x": 1256,
+        "x": 1916,
         "y": 2,
         "w": 64,
         "h": 96
@@ -402,7 +602,7 @@
     },
     "npc.guard/walkSouthEast/3": {
       "frame": {
-        "x": 1322,
+        "x": 1982,
         "y": 2,
         "w": 64,
         "h": 96
@@ -422,8 +622,8 @@
     },
     "npc.guard/walkSouthEast/4": {
       "frame": {
-        "x": 1388,
-        "y": 2,
+        "x": 2,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -442,8 +642,8 @@
     },
     "npc.guard/walkSouthEast/5": {
       "frame": {
-        "x": 1454,
-        "y": 2,
+        "x": 68,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -462,8 +662,8 @@
     },
     "npc.guard/walkSouthEast/6": {
       "frame": {
-        "x": 1520,
-        "y": 2,
+        "x": 134,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -482,8 +682,8 @@
     },
     "npc.guard/walkSouthEast/7": {
       "frame": {
-        "x": 1586,
-        "y": 2,
+        "x": 200,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -502,8 +702,208 @@
     },
     "npc.guard/restSouthEast/0": {
       "frame": {
-        "x": 1652,
-        "y": 2,
+        "x": 266,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/0": {
+      "frame": {
+        "x": 332,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/1": {
+      "frame": {
+        "x": 398,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/2": {
+      "frame": {
+        "x": 464,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/3": {
+      "frame": {
+        "x": 530,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/4": {
+      "frame": {
+        "x": 596,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/5": {
+      "frame": {
+        "x": 662,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/6": {
+      "frame": {
+        "x": 728,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/7": {
+      "frame": {
+        "x": 794,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/8": {
+      "frame": {
+        "x": 860,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthEast/9": {
+      "frame": {
+        "x": 926,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -522,8 +922,8 @@
     },
     "npc.guard/idle/0": {
       "frame": {
-        "x": 1718,
-        "y": 2,
+        "x": 992,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -542,8 +942,8 @@
     },
     "npc.guard/idle/1": {
       "frame": {
-        "x": 1784,
-        "y": 2,
+        "x": 1058,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -562,8 +962,8 @@
     },
     "npc.guard/idle/2": {
       "frame": {
-        "x": 1850,
-        "y": 2,
+        "x": 1124,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -582,8 +982,8 @@
     },
     "npc.guard/idle/3": {
       "frame": {
-        "x": 1916,
-        "y": 2,
+        "x": 1190,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -602,8 +1002,8 @@
     },
     "npc.guard/walk/0": {
       "frame": {
-        "x": 1982,
-        "y": 2,
+        "x": 1256,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -622,7 +1022,7 @@
     },
     "npc.guard/walk/1": {
       "frame": {
-        "x": 2,
+        "x": 1322,
         "y": 100,
         "w": 64,
         "h": 96
@@ -642,7 +1042,7 @@
     },
     "npc.guard/walk/2": {
       "frame": {
-        "x": 68,
+        "x": 1388,
         "y": 100,
         "w": 64,
         "h": 96
@@ -662,7 +1062,7 @@
     },
     "npc.guard/walk/3": {
       "frame": {
-        "x": 134,
+        "x": 1454,
         "y": 100,
         "w": 64,
         "h": 96
@@ -682,7 +1082,7 @@
     },
     "npc.guard/walk/4": {
       "frame": {
-        "x": 200,
+        "x": 1520,
         "y": 100,
         "w": 64,
         "h": 96
@@ -702,7 +1102,7 @@
     },
     "npc.guard/walk/5": {
       "frame": {
-        "x": 266,
+        "x": 1586,
         "y": 100,
         "w": 64,
         "h": 96
@@ -722,7 +1122,7 @@
     },
     "npc.guard/walk/6": {
       "frame": {
-        "x": 332,
+        "x": 1652,
         "y": 100,
         "w": 64,
         "h": 96
@@ -742,7 +1142,7 @@
     },
     "npc.guard/walk/7": {
       "frame": {
-        "x": 398,
+        "x": 1718,
         "y": 100,
         "w": 64,
         "h": 96
@@ -762,8 +1162,208 @@
     },
     "npc.guard/rest/0": {
       "frame": {
-        "x": 464,
+        "x": 1784,
         "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/0": {
+      "frame": {
+        "x": 1850,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/1": {
+      "frame": {
+        "x": 1916,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/2": {
+      "frame": {
+        "x": 1982,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/3": {
+      "frame": {
+        "x": 2,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/4": {
+      "frame": {
+        "x": 68,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/5": {
+      "frame": {
+        "x": 134,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/6": {
+      "frame": {
+        "x": 200,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/7": {
+      "frame": {
+        "x": 266,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/8": {
+      "frame": {
+        "x": 332,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jog/9": {
+      "frame": {
+        "x": 398,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -782,8 +1382,8 @@
     },
     "npc.guard/idleNorthEast/0": {
       "frame": {
-        "x": 530,
-        "y": 100,
+        "x": 464,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -802,8 +1402,8 @@
     },
     "npc.guard/idleNorthEast/1": {
       "frame": {
-        "x": 596,
-        "y": 100,
+        "x": 530,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -822,8 +1422,8 @@
     },
     "npc.guard/idleNorthEast/2": {
       "frame": {
-        "x": 662,
-        "y": 100,
+        "x": 596,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -842,8 +1442,8 @@
     },
     "npc.guard/idleNorthEast/3": {
       "frame": {
-        "x": 728,
-        "y": 100,
+        "x": 662,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -862,606 +1462,6 @@
     },
     "npc.guard/walkNorthEast/0": {
       "frame": {
-        "x": 794,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthEast/1": {
-      "frame": {
-        "x": 860,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthEast/2": {
-      "frame": {
-        "x": 926,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthEast/3": {
-      "frame": {
-        "x": 992,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthEast/4": {
-      "frame": {
-        "x": 1058,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthEast/5": {
-      "frame": {
-        "x": 1124,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthEast/6": {
-      "frame": {
-        "x": 1190,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthEast/7": {
-      "frame": {
-        "x": 1256,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/restNorthEast/0": {
-      "frame": {
-        "x": 1322,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorth/0": {
-      "frame": {
-        "x": 1388,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorth/1": {
-      "frame": {
-        "x": 1454,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorth/2": {
-      "frame": {
-        "x": 1520,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorth/3": {
-      "frame": {
-        "x": 1586,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/0": {
-      "frame": {
-        "x": 1652,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/1": {
-      "frame": {
-        "x": 1718,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/2": {
-      "frame": {
-        "x": 1784,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/3": {
-      "frame": {
-        "x": 1850,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/4": {
-      "frame": {
-        "x": 1916,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/5": {
-      "frame": {
-        "x": 1982,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/6": {
-      "frame": {
-        "x": 2,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorth/7": {
-      "frame": {
-        "x": 68,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/restNorth/0": {
-      "frame": {
-        "x": 134,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorthWest/0": {
-      "frame": {
-        "x": 200,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorthWest/1": {
-      "frame": {
-        "x": 266,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorthWest/2": {
-      "frame": {
-        "x": 332,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/idleNorthWest/3": {
-      "frame": {
-        "x": 398,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthWest/0": {
-      "frame": {
-        "x": 464,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthWest/1": {
-      "frame": {
-        "x": 530,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthWest/2": {
-      "frame": {
-        "x": 596,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthWest/3": {
-      "frame": {
-        "x": 662,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.guard/walkNorthWest/4": {
-      "frame": {
         "x": 728,
         "y": 198,
         "w": 64,
@@ -1480,7 +1480,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkNorthWest/5": {
+    "npc.guard/walkNorthEast/1": {
       "frame": {
         "x": 794,
         "y": 198,
@@ -1500,7 +1500,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkNorthWest/6": {
+    "npc.guard/walkNorthEast/2": {
       "frame": {
         "x": 860,
         "y": 198,
@@ -1520,7 +1520,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkNorthWest/7": {
+    "npc.guard/walkNorthEast/3": {
       "frame": {
         "x": 926,
         "y": 198,
@@ -1540,7 +1540,7 @@
         "h": 96
       }
     },
-    "npc.guard/restNorthWest/0": {
+    "npc.guard/walkNorthEast/4": {
       "frame": {
         "x": 992,
         "y": 198,
@@ -1560,7 +1560,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleWest/0": {
+    "npc.guard/walkNorthEast/5": {
       "frame": {
         "x": 1058,
         "y": 198,
@@ -1580,7 +1580,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleWest/1": {
+    "npc.guard/walkNorthEast/6": {
       "frame": {
         "x": 1124,
         "y": 198,
@@ -1600,7 +1600,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleWest/2": {
+    "npc.guard/walkNorthEast/7": {
       "frame": {
         "x": 1190,
         "y": 198,
@@ -1620,7 +1620,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleWest/3": {
+    "npc.guard/restNorthEast/0": {
       "frame": {
         "x": 1256,
         "y": 198,
@@ -1640,7 +1640,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/0": {
+    "npc.guard/jogNorthEast/0": {
       "frame": {
         "x": 1322,
         "y": 198,
@@ -1660,7 +1660,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/1": {
+    "npc.guard/jogNorthEast/1": {
       "frame": {
         "x": 1388,
         "y": 198,
@@ -1680,7 +1680,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/2": {
+    "npc.guard/jogNorthEast/2": {
       "frame": {
         "x": 1454,
         "y": 198,
@@ -1700,7 +1700,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/3": {
+    "npc.guard/jogNorthEast/3": {
       "frame": {
         "x": 1520,
         "y": 198,
@@ -1720,7 +1720,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/4": {
+    "npc.guard/jogNorthEast/4": {
       "frame": {
         "x": 1586,
         "y": 198,
@@ -1740,7 +1740,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/5": {
+    "npc.guard/jogNorthEast/5": {
       "frame": {
         "x": 1652,
         "y": 198,
@@ -1760,7 +1760,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/6": {
+    "npc.guard/jogNorthEast/6": {
       "frame": {
         "x": 1718,
         "y": 198,
@@ -1780,7 +1780,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkWest/7": {
+    "npc.guard/jogNorthEast/7": {
       "frame": {
         "x": 1784,
         "y": 198,
@@ -1800,7 +1800,7 @@
         "h": 96
       }
     },
-    "npc.guard/restWest/0": {
+    "npc.guard/jogNorthEast/8": {
       "frame": {
         "x": 1850,
         "y": 198,
@@ -1820,7 +1820,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleSouthWest/0": {
+    "npc.guard/jogNorthEast/9": {
       "frame": {
         "x": 1916,
         "y": 198,
@@ -1840,7 +1840,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleSouthWest/1": {
+    "npc.guard/idleNorth/0": {
       "frame": {
         "x": 1982,
         "y": 198,
@@ -1860,7 +1860,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleSouthWest/2": {
+    "npc.guard/idleNorth/1": {
       "frame": {
         "x": 2,
         "y": 296,
@@ -1880,7 +1880,7 @@
         "h": 96
       }
     },
-    "npc.guard/idleSouthWest/3": {
+    "npc.guard/idleNorth/2": {
       "frame": {
         "x": 68,
         "y": 296,
@@ -1900,7 +1900,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/0": {
+    "npc.guard/idleNorth/3": {
       "frame": {
         "x": 134,
         "y": 296,
@@ -1920,7 +1920,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/1": {
+    "npc.guard/walkNorth/0": {
       "frame": {
         "x": 200,
         "y": 296,
@@ -1940,7 +1940,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/2": {
+    "npc.guard/walkNorth/1": {
       "frame": {
         "x": 266,
         "y": 296,
@@ -1960,7 +1960,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/3": {
+    "npc.guard/walkNorth/2": {
       "frame": {
         "x": 332,
         "y": 296,
@@ -1980,7 +1980,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/4": {
+    "npc.guard/walkNorth/3": {
       "frame": {
         "x": 398,
         "y": 296,
@@ -2000,7 +2000,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/5": {
+    "npc.guard/walkNorth/4": {
       "frame": {
         "x": 464,
         "y": 296,
@@ -2020,7 +2020,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/6": {
+    "npc.guard/walkNorth/5": {
       "frame": {
         "x": 530,
         "y": 296,
@@ -2040,7 +2040,7 @@
         "h": 96
       }
     },
-    "npc.guard/walkSouthWest/7": {
+    "npc.guard/walkNorth/6": {
       "frame": {
         "x": 596,
         "y": 296,
@@ -2060,10 +2060,1610 @@
         "h": 96
       }
     },
-    "npc.guard/restSouthWest/0": {
+    "npc.guard/walkNorth/7": {
       "frame": {
         "x": 662,
         "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/restNorth/0": {
+      "frame": {
+        "x": 728,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/0": {
+      "frame": {
+        "x": 794,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/1": {
+      "frame": {
+        "x": 860,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/2": {
+      "frame": {
+        "x": 926,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/3": {
+      "frame": {
+        "x": 992,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/4": {
+      "frame": {
+        "x": 1058,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/5": {
+      "frame": {
+        "x": 1124,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/6": {
+      "frame": {
+        "x": 1190,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/7": {
+      "frame": {
+        "x": 1256,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/8": {
+      "frame": {
+        "x": 1322,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorth/9": {
+      "frame": {
+        "x": 1388,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleNorthWest/0": {
+      "frame": {
+        "x": 1454,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleNorthWest/1": {
+      "frame": {
+        "x": 1520,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleNorthWest/2": {
+      "frame": {
+        "x": 1586,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleNorthWest/3": {
+      "frame": {
+        "x": 1652,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/0": {
+      "frame": {
+        "x": 1718,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/1": {
+      "frame": {
+        "x": 1784,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/2": {
+      "frame": {
+        "x": 1850,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/3": {
+      "frame": {
+        "x": 1916,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/4": {
+      "frame": {
+        "x": 1982,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/5": {
+      "frame": {
+        "x": 2,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/6": {
+      "frame": {
+        "x": 68,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkNorthWest/7": {
+      "frame": {
+        "x": 134,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/restNorthWest/0": {
+      "frame": {
+        "x": 200,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/0": {
+      "frame": {
+        "x": 266,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/1": {
+      "frame": {
+        "x": 332,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/2": {
+      "frame": {
+        "x": 398,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/3": {
+      "frame": {
+        "x": 464,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/4": {
+      "frame": {
+        "x": 530,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/5": {
+      "frame": {
+        "x": 596,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/6": {
+      "frame": {
+        "x": 662,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/7": {
+      "frame": {
+        "x": 728,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/8": {
+      "frame": {
+        "x": 794,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogNorthWest/9": {
+      "frame": {
+        "x": 860,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleWest/0": {
+      "frame": {
+        "x": 926,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleWest/1": {
+      "frame": {
+        "x": 992,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleWest/2": {
+      "frame": {
+        "x": 1058,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleWest/3": {
+      "frame": {
+        "x": 1124,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/0": {
+      "frame": {
+        "x": 1190,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/1": {
+      "frame": {
+        "x": 1256,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/2": {
+      "frame": {
+        "x": 1322,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/3": {
+      "frame": {
+        "x": 1388,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/4": {
+      "frame": {
+        "x": 1454,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/5": {
+      "frame": {
+        "x": 1520,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/6": {
+      "frame": {
+        "x": 1586,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkWest/7": {
+      "frame": {
+        "x": 1652,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/restWest/0": {
+      "frame": {
+        "x": 1718,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/0": {
+      "frame": {
+        "x": 1784,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/1": {
+      "frame": {
+        "x": 1850,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/2": {
+      "frame": {
+        "x": 1916,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/3": {
+      "frame": {
+        "x": 1982,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/4": {
+      "frame": {
+        "x": 2,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/5": {
+      "frame": {
+        "x": 68,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/6": {
+      "frame": {
+        "x": 134,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/7": {
+      "frame": {
+        "x": 200,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/8": {
+      "frame": {
+        "x": 266,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogWest/9": {
+      "frame": {
+        "x": 332,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleSouthWest/0": {
+      "frame": {
+        "x": 398,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleSouthWest/1": {
+      "frame": {
+        "x": 464,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleSouthWest/2": {
+      "frame": {
+        "x": 530,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/idleSouthWest/3": {
+      "frame": {
+        "x": 596,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/0": {
+      "frame": {
+        "x": 662,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/1": {
+      "frame": {
+        "x": 728,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/2": {
+      "frame": {
+        "x": 794,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/3": {
+      "frame": {
+        "x": 860,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/4": {
+      "frame": {
+        "x": 926,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/5": {
+      "frame": {
+        "x": 992,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/6": {
+      "frame": {
+        "x": 1058,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/walkSouthWest/7": {
+      "frame": {
+        "x": 1124,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/restSouthWest/0": {
+      "frame": {
+        "x": 1190,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/0": {
+      "frame": {
+        "x": 1256,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/1": {
+      "frame": {
+        "x": 1322,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/2": {
+      "frame": {
+        "x": 1388,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/3": {
+      "frame": {
+        "x": 1454,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/4": {
+      "frame": {
+        "x": 1520,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/5": {
+      "frame": {
+        "x": 1586,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/6": {
+      "frame": {
+        "x": 1652,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/7": {
+      "frame": {
+        "x": 1718,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/8": {
+      "frame": {
+        "x": 1784,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.guard/jogSouthWest/9": {
+      "frame": {
+        "x": 1850,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2088,7 +3688,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 2048,
-      "h": 394
+      "h": 590
     },
     "scale": "1"
   }

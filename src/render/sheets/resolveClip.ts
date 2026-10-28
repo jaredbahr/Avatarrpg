@@ -10,62 +10,33 @@
 
 import type { ClipDef, ClipName } from '../../content/assets/clips';
 
-const FALLBACK: Readonly<Record<ClipName, readonly ClipName[]>> = {
-  idle: [],
-  tea: ['idle'],
-  wave: ['idle'],
-  walk: ['idle'],
-  cast: ['idle'],
-  melee: ['cast', 'idle'],
-  hit: ['idle'],
-  ko: ['hit', 'idle'],
-  idleNorth: ['idle'],
-  idleNorthEast: ['idleNorth', 'idle'],
-  idleSouthEast: ['idleSouth', 'idle'],
-  idleSouth: ['idle'],
-  idleSouthWest: ['idleSouth', 'idle'],
-  idleWest: ['idle'],
-  idleNorthWest: ['idleNorth', 'idle'],
-  walkNorth: ['walk', 'idle'],
-  walkNorthEast: ['walkNorth', 'walk', 'idle'],
-  walkSouthEast: ['walkSouth', 'walk', 'idle'],
-  walkSouth: ['walk', 'idle'],
-  walkSouthWest: ['walkSouth', 'walk', 'idle'],
-  walkWest: ['walk', 'idle'],
-  walkNorthWest: ['walkNorth', 'walk', 'idle'],
-  rest: ['idle'],
-  restNorth: ['idleNorth', 'rest', 'idle'],
-  restNorthEast: ['idleNorthEast', 'idleNorth', 'rest', 'idle'],
-  restSouthEast: ['idleSouthEast', 'idleSouth', 'rest', 'idle'],
-  restSouth: ['idleSouth', 'rest', 'idle'],
-  restSouthWest: ['idleSouthWest', 'idleSouth', 'rest', 'idle'],
-  restWest: ['idleWest', 'rest', 'idle'],
-  restNorthWest: ['idleNorthWest', 'idleNorth', 'rest', 'idle'],
-  // A fighting stance is the idle of a sheet that authors none (ADR 0052).
-  stance: ['idle'],
-  stanceNorth: ['idleNorth', 'idle'],
-  stanceNorthEast: ['idleNorthEast', 'idleNorth', 'idle'],
-  stanceSouthEast: ['idleSouthEast', 'idleSouth', 'idle'],
-  stanceSouth: ['idleSouth', 'idle'],
-  stanceSouthWest: ['idleSouthWest', 'idleSouth', 'idle'],
-  stanceWest: ['idleWest', 'idle'],
-  stanceNorthWest: ['idleNorthWest', 'idleNorth', 'idle'],
-  // A G knockout (ADR 0059) falls back to the legacy pose on a sheet without
-  // one, or before its clip data has loaded.
-  koNorthEast: ['ko', 'hit', 'idle'],
-  koSouthEast: ['ko', 'hit', 'idle'],
-  koSouthWest: ['ko', 'hit', 'idle'],
-  koNorthWest: ['ko', 'hit', 'idle'],
-  // So does a G hit (ADR 0063), to the legacy mirrored cel.
-  hitEast: ['hit', 'idle'],
-  hitSouthEast: ['hit', 'idle'],
-  hitSouth: ['hit', 'idle'],
-  hitSouthWest: ['hit', 'idle'],
-  hitWest: ['hit', 'idle'],
-  hitNorthWest: ['hit', 'idle'],
-  hitNorth: ['hit', 'idle'],
-  hitNorthEast: ['hit', 'idle'],
-};
+/**
+ * ADR 0003's table, by rule. Everything unsuffixed is the idle but the idle
+ * itself, the melee (the cast) and the KO (the hit). A heading's G knockout
+ * falls back to the legacy pose and its G hit to the legacy cel (ADR 0059,
+ * ADR 0063), either one before its clip data has loaded. A heading's idle or
+ * walk falls back through its front or back pose to the side clip; a
+ * heading's rest is that heading's idle, then the same; and a fighting stance
+ * is the idle of a sheet that authors none (ADR 0052). A jog is asked only of
+ * a sheet that has one (ADR 0095).
+ */
+function fallbacks(clip: ClipName): readonly ClipName[] {
+  const [, base = '', ns = '', ew = ''] = /^([a-z]+)(North|South)?(East|West)?$/.exec(clip) ?? [];
+  if (!ns && !ew)
+    return clip === 'idle'
+      ? []
+      : clip === 'melee'
+        ? ['cast', 'idle']
+        : clip === 'ko'
+          ? ['hit', 'idle']
+          : ['idle'];
+  if (base === 'ko') return ['ko', 'hit', 'idle'];
+  if (base === 'hit') return ['hit', 'idle'];
+  const own = base === 'rest' || base === 'stance' ? [`idle${ns}${ew}`] : [];
+  const side = ns && ew ? [`${base === 'walk' ? 'walk' : 'idle'}${ns}`] : [];
+  const tail = base === 'walk' || base === 'rest' ? [base, 'idle'] : ['idle'];
+  return [...own, ...side, ...tail] as ClipName[];
+}
 
 export interface ResolvedClip {
   /** The clip actually found, which may not be the one asked for. */
@@ -81,7 +52,7 @@ export function resolveClip(
 ): ResolvedClip | null {
   const own = clips[wanted];
   if (own && own.frames.length > 0) return { clip: wanted, def: own, exact: true };
-  for (const other of FALLBACK[wanted]) {
+  for (const other of fallbacks(wanted)) {
     const def = clips[other];
     if (def && def.frames.length > 0) return { clip: other, def, exact: false };
   }
