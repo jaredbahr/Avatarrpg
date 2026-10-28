@@ -268,3 +268,26 @@ Known faults after the pass:
 - Where a tree's frozen silhouette traced a long root, the tree's upright now carries the grass there (as it carried the root).
 - Rim trees whose feet stand behind other canopies were not redrawn (`tree-18-0`, `tree-23-3`, the clumps behind the east and south rims).
 - The paving's flag lines are the restyle's own: some flags are irregular, and the calm does not straighten them.
+
+## Grounding pass (2026-10-28, fourth round)
+
+ADR 0093. Owner, relayed: "a lot of items still appear to be floating. Shadows are wrong or non-existent." The objects
+`objects.py` and `props_set.py` set in were cast by measuring every pixel's height from the object's lowest row, so an
+oblique piece's shadow landed as a flat band below its front feet (Gao's table, the displays, the planters), and
+`reshade` had cut the bench's and fence's casts to stubs.
+
+```sh
+python art/source/ba-dan-route-a/tools/shadows.py      # world/world-g1-polish.png -> world/world-g1-grounded.png
+WORLD_G1=art/source/ba-dan-route-a/world/world-g1-grounded.png python art/source/ba-dan-route-a/tools/regions_back.py
+sh scripts/art/ba-dan-regions/regen.sh
+```
+
+`shadows.py` lifts those shadows exactly (the masks are deterministic, as `props_set.lift` already used) and casts each
+of the 22 objects from its own ground: every column from the lower convex hull of the silhouette's bottom edge, taking
+as feet only the columns that reach the piece's footprint (a hanging lantern or a roof's eave is not a foot), along the
+same key and tone; then a 1 px contact line under every edge that stands on that ground. A pixel a later polish step had
+repainted is capped at the unshaded ground around it, so the lift leaves no pale ghost. The garden plot (repainted by
+`garden.py`) is not re-shaded. All six regions passed the gate without `--force`. Before and after of each object:
+`art/source/grounding/painted/` (ADR 0093's fault list). A second look grounds Gao's yard posts and cart wheel from outlines traced at
+6x (`EXTRA_SHAPES`), keeping their cast off the porch post (`NOT_GROUND`); the court trees and the garden plot are kept
+(fault list 29 to 31).

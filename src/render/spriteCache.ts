@@ -19,7 +19,6 @@
 
 import { resolveAsset } from '../content/assets/manifest';
 import { resolvePainter } from './painters/registry';
-import { groundShadow } from './painters/shapes';
 import type { PainterOptions } from './painters/units';
 
 interface CacheEntry {
@@ -118,25 +117,6 @@ export class SpriteCache {
       if (oldest === undefined) break;
       this.entries.delete(oldest);
     }
-    return canvas;
-  }
-
-  /**
-   * A contact shadow on its own, in a tile-sized box with the painters' foot
-   * line, for figure art that carries none: a resident's portrait-style PNG,
-   * or any figure standing on grass (`actorShadowDensity`). Drawn on the ground
-   * under the walk bob, so it stays put as the figure lifts (ADR 0047 §7, W8).
-   */
-  shadow(size: number, density = 1): HTMLCanvasElement {
-    const bucketed = this.bucket(size);
-    const cacheKey = `shadow|${bucketed}|${density}`;
-    const existing = this.entries.get(cacheKey);
-    if (existing) return existing.canvas;
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = bucketed;
-    const ctx = canvas.getContext('2d');
-    if (ctx) groundShadow(ctx, { x: 0, y: 0, size: bucketed }, 0.36, density);
-    this.entries.set(cacheKey, { canvas });
     return canvas;
   }
 

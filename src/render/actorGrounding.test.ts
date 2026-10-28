@@ -13,7 +13,7 @@ import {
   KEY_LIGHT_SCREEN,
   SHADOW_LEVEL_SLOTS,
   actorGrounding,
-  groundTreatment,
+  contactBand,
   shadowGrid,
   shadowLevels,
 } from './lighting';
@@ -37,12 +37,8 @@ describe('every standing thing on an oblique board is grounded', () => {
       expect(grounding.contact).toBeGreaterThan(grounding.cast);
     });
 
-    it(`gives every caster on ${map.id} a contact and no soft pool`, () => {
-      for (const defaultPool of [true, false])
-        expect(groundTreatment(grounding, { castStrength: 1, defaultPool })).toEqual({
-          band: true,
-          pool: false,
-        });
+    it(`gives every caster on ${map.id} a contact`, () => {
+      expect(contactBand(grounding, 1)).toBe(true);
     });
 
     it(`casts down-right on ${map.id}, away from the one upper-left key light`, () => {
@@ -133,6 +129,10 @@ describe('both backends draw the same grounding', () => {
       expect(source).toContain('projectContactLine(');
       expect(source).toContain('CONTACT_LINE');
       expect(source).toContain('groundedCastArt(');
+    });
+    it(`${file} grounds solid scenery on its own base, its feet inside its footprint`, () => {
+      expect(source).toContain('groundSceneryPiece(');
+      expect(source).toContain('pieceFeet(');
     });
   }
 

@@ -226,7 +226,11 @@ function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number
   return (mask[Math.floor(y * MASK_SIZE) * MASK_SIZE + Math.floor(x * MASK_SIZE)] ?? 0) > 64;
 }
 
-/** Heights (world px) above the foot at which a figure is tested against a piece's silhouette. */
+/**
+ * Heights above the foot at which a figure is tested against a piece's silhouette, in a figure's art px:
+ * `sceneryOpacity` multiplies each by the figure's scale, so at the 1.25 of ADR 0089 and at the 1 of
+ * ADR 0094 alike the head probe sits at about 95% of a G1 adult (55-61 art px tall).
+ */
 const BODY_PROBES = [8, 32, 56] as const;
 const HEAD_PROBE = [56] as const;
 

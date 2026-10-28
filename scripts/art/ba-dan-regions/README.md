@@ -21,7 +21,7 @@ sh scripts/art/ba-dan-regions/regen.sh --check    # the same, then compare every
 Painting pixels are world pixels times `SCALE`, measured from the pan box corner. `SCALE` is **1** since ADR 0088: the camera
 draws at a whole number N of device px per world px, and art is only crisp (sampled nearest) where one of its px covers a
 whole number of device px, so 1 px per world px is crisp at every N. (It was 1.5, the old camera's zoom, crisp only at N = 3;
-the G1 master, `art/source/ba-dan-route-a/world/world-g1-polish.png`, is drawn at world px, so the regions are now plain
+the G1 master, `art/source/ba-dan-route-a/world/world-g1-grounded.png` since ADR 0093, is drawn at world px, so the regions are now plain
 crops of it.) A region is exactly 1536 x 1024 painting px, the size the image tool edits without reframing: at 1 px that is a
 3 x 2 grid. Region origins and plate cuts are multiples of `GRID` (2 x `SCALE`) painting px, so they sit on whole, even world px.
 Lengths meant in world px (the fade, its noise) go through `px()`.

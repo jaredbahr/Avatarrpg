@@ -12,8 +12,8 @@ pipeline and `docs/art/ba-dan-scene.md` the design.
 
 **At 1 px per world px (ADR 0088, 27 October 2026).** The grid is `regions.py plan`'s: 3 columns by 2 rows over the pan box
 (3000 x 1600 world px from (-200, -100)), 804 and 448 px of overlap (at least 192 world px on every shared side), origins on
-whole, even world px. The six regions are crops of the polished G1 master (`art/source/ba-dan-route-a/world/world-g1-polish.png`,
-1 px per world px) by `art/source/ba-dan-route-a/tools/regions_back.py`, each gated against a guide of that master with the
+whole, even world px. The six regions are crops of the G1 master (`art/source/ba-dan-route-a/world/world-g1-grounded.png`, the polished
+master re-shaded by ADR 0093's `shadows.py`, 1 px per world px) by `art/source/ba-dan-route-a/tools/regions_back.py`, each gated against a guide of that master with the
 frozen uprights over it; all six passed without `--force`. Everything below, up to "Rebuilding", is the history of the twelve
 regions at 1.5 px per world px that the G1 restyle was made from (in git before this re-cut).
 
