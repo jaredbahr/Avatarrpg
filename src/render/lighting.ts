@@ -1,6 +1,3 @@
-import type { ClipName } from '../content/assets/clips';
-import { FOOT_LINE } from './sheets/bake';
-
 /** One scene light shared by painted geometry and both runtime backends. */
 export const KEY_LIGHT_SCREEN = { x: -0.72, y: -0.69 } as const;
 /** Bible ink; shadows are tinted once after all silhouettes have been unioned. */
@@ -44,23 +41,46 @@ export interface CastKey {
 
 /**
  * How a scene grounds the figures and props standing in it (ADR 0077, ADR 0093).
- * `cast` is the projected silhouette's alpha and `castKey` the direction and
- * length it falls along, which a painted scene sets to its painting's own;
- * `contact` is the tighter layer cut from the soles of the frame itself (both
- * feet, whatever the pose) or from a prop's base. Every scene has a contact
- * layer: `0` would leave a figure on a soft radial pool and a prop on nothing.
+ * `cast` is the alpha of a figure's ground pool and short cast and of a prop's
+ * cast, and `castKey` the direction and length they fall along, which a painted
+ * scene sets to its painting's own; `contact` is the tighter, darker layer: the
+ * core under a figure's soles and the line under a prop's base. Every scene has
+ * a contact layer: `0` would leave a figure and a prop on nothing.
  */
 export interface ActorGrounding {
   readonly cast: number;
   readonly contact: number;
   readonly castKey: CastKey;
+  /**
+   * The colour the shadow union is tinted with, 0-255 a channel. A painted scene sets the ink that,
+   * at its `cast` and `contact` levels, lands on its painting's own shadow tone (ADR 0093's figure
+   * amendment); one that sets none keeps the bible ink `SHADOW_RGB`.
+   */
+  readonly ink: ShadowInk;
+}
+
+export interface ShadowInk {
+  readonly r: number;
+  readonly g: number;
+  readonly b: number;
+}
+
+export const DEFAULT_SHADOW_INK: ShadowInk = {
+  r: SHADOW_RGB[0],
+  g: SHADOW_RGB[1],
+  b: SHADOW_RGB[2],
+};
+
+/** The ink as a CSS colour, for Canvas. */
+export function inkColor(ink: ShadowInk): string {
+  return `rgb(${ink.r}, ${ink.g}, ${ink.b})`;
 }
 
 /**
  * The contact a scene that sets nothing gets. The forest road and the quarry
  * paint no shadows of their own, so the runtime is their only grounding: this
- * keeps the sole band clearly darker than the 0.4 cast it sits in, as Ba Dan's
- * 0.8 is to its 0.5, without the black rim a full-strength band read as.
+ * keeps the contact clearly darker than the 0.4 cast it sits in, without the
+ * black rim a full-strength contact read as.
  */
 export const DEFAULT_CONTACT_ALPHA = 0.6;
 
@@ -68,6 +88,7 @@ export const DEFAULT_ACTOR_GROUNDING: ActorGrounding = {
   cast: CAST_SHADOW_ALPHA,
   contact: DEFAULT_CONTACT_ALPHA,
   castKey: CAST_PER_PIXEL,
+  ink: DEFAULT_SHADOW_INK,
 };
 
 export function actorGrounding(
@@ -94,51 +115,93 @@ export function shadowCeiling(grounding: Pick<ActorGrounding, 'cast' | 'contact'
  */
 export const CONTACT_LINE = 2;
 
-/** The sole band of a frame laid flat for contact: height in tiles, spread about the foot, drop in tiles. */
-export const CONTACT_BAND = { height: 0.14, spreadX: 1.4, spreadY: 1, drop: 0.03 } as const;
-
 /**
- * The rows of a frame that make its contact band: the `CONTACT_BAND.height`
- * tiles ending on the foot line (`anchorY` of the frame), in frame pixels.
+ * A figure's ground shadow (ADR 0093's figure amendment; owner, 2026-10-28: "the shadows make them look
+ * off"). Not its silhouette: a calm pool under the feet, the shape the painting gives its own objects,
+ * and a short cast along the scene's key. Sizes are in tiles of the figure's own scale, so a figure
+ * drawn larger casts a larger pool.
+ *
+ * - `pool`: the ellipse at the feet, half-width and half-height (2:1, as the ground is).
+ * - `core`: the tighter ellipse under the soles at the contact level, as the painting's contact line.
+ * - `reach`: how far the pool is swept along the key, as the height (tiles) a pixel is cast from, so
+ *   the key's own slope and length set the direction; never more than `maxReach` of `height`, the
+ *   figure's height, which keeps the cast to about a quarter of it.
+ * - `taper`: the swept ellipse's size at the cast's far end, as a fraction of the pool's.
  */
-export function contactBandRows(
-  frameHeight: number,
-  anchorY: number,
-  pixelsPerTile: number,
-): { readonly top: number; readonly height: number } {
-  const bottom = Math.max(0, Math.min(frameHeight, anchorY * frameHeight));
-  const height = Math.max(1, Math.min(bottom, Math.round(CONTACT_BAND.height * pixelsPerTile)));
-  return { top: bottom - height, height };
+export const FIGURE_SHADOW = {
+  pool: { rx: 0.18, ry: 0.08 },
+  core: { rx: 0.11, ry: 0.03 },
+  reach: 0.6,
+  height: 1.15,
+  maxReach: 0.25,
+  taper: 0.7,
+} as const;
+
+/** Levels in a `figureShadow` mask. */
+export const FIGURE_CAST = 1;
+export const FIGURE_CONTACT = 2;
+
+/** A figure's ground shadow on the world-pixel grid: one byte a world pixel, 0, `FIGURE_CAST` or `FIGURE_CONTACT`. */
+export interface FigureShadow {
+  readonly width: number;
+  readonly height: number;
+  /** The foot's position in the mask, in world pixels from its top-left corner. */
+  readonly footX: number;
+  readonly footY: number;
+  readonly mask: Uint8Array;
 }
 
-/** The art a contact band is cut from: a sheet frame, or a drawn sprite stood on the foot line. */
-export interface BandArt<S = HTMLCanvasElement | HTMLImageElement> {
-  readonly source: S;
-  readonly frame: {
-    readonly x: number;
-    readonly y: number;
-    readonly w: number;
-    readonly h: number;
-  };
-  readonly anchor: { readonly x: number; readonly y: number };
-  readonly pixelsPerTile: number;
+/** The sweep along the key the cast runs to, in world pixels from the foot. */
+export function figureCastReach(tilePx: number, key: CastKey): { x: number; y: number } {
+  const full = { x: key.x * FIGURE_SHADOW.reach * tilePx, y: key.y * FIGURE_SHADOW.reach * tilePx };
+  const cap = FIGURE_SHADOW.maxReach * FIGURE_SHADOW.height * tilePx;
+  const length = Math.hypot(full.x, full.y);
+  const k = length > cap ? cap / length : 1;
+  return { x: full.x * k, y: full.y * k };
 }
 
 /**
- * Band art for a figure with no sheet frame (a painter or single-image
- * resident, a painter-fallback unit): its drawn sprite, `heightTiles` tall,
- * standing on `FOOT_LINE` exactly as the backends place it.
+ * Rasterises a figure's ground shadow at `tilePx` world pixels a tile, `widthTiles` wide (a two-tile
+ * figure's pool is twice as wide): the pool swept along `key` and tapering, with the core under the
+ * feet. Every pixel is in or out by its centre, so the edge steps a whole world pixel, as the
+ * painting's do. It depends on nothing a figure's legs do, so it is steady across every cel.
  */
-export function spriteBandArt<S extends { readonly width: number; readonly height: number }>(
-  sprite: S,
-  heightTiles = 1,
-): BandArt<S> {
-  return {
-    source: sprite,
-    frame: { x: 0, y: 0, w: sprite.width, h: sprite.height },
-    anchor: { x: 0.5, y: FOOT_LINE },
-    pixelsPerTile: sprite.height / heightTiles,
+export function figureShadow(tilePx: number, key: CastKey, widthTiles = 1): FigureShadow {
+  const pool = {
+    rx: FIGURE_SHADOW.pool.rx * widthTiles * tilePx,
+    ry: FIGURE_SHADOW.pool.ry * widthTiles * tilePx,
   };
+  const core = {
+    rx: FIGURE_SHADOW.core.rx * widthTiles * tilePx,
+    ry: FIGURE_SHADOW.core.ry * widthTiles * tilePx,
+  };
+  const reach = figureCastReach(tilePx, key);
+  const left = Math.floor(-pool.rx) - 1;
+  const top = Math.floor(-pool.ry) - 1;
+  const width = Math.ceil(pool.rx + reach.x) + 2 - left;
+  const height = Math.ceil(pool.ry + reach.y) + 2 - top;
+  const mask = new Uint8Array(width * height);
+  const steps = Math.max(8, Math.ceil(Math.hypot(reach.x, reach.y) * 2));
+  const inside = (x: number, y: number, cx: number, cy: number, rx: number, ry: number) =>
+    rx > 0 && ry > 0 && ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+  for (let j = 0; j < height; j += 1)
+    for (let i = 0; i < width; i += 1) {
+      const x = left + i + 0.5;
+      const y = top + j + 0.5;
+      let level = 0;
+      if (inside(x, y, 0, 0, Math.max(1, core.rx), Math.max(1, core.ry))) level = FIGURE_CONTACT;
+      else
+        for (let t = 0; t <= steps; t += 1) {
+          const f = t / steps;
+          const s = 1 - (1 - FIGURE_SHADOW.taper) * f;
+          if (inside(x, y, reach.x * f, reach.y * f, pool.rx * s, pool.ry * s)) {
+            level = FIGURE_CAST;
+            break;
+          }
+        }
+      mask[j * width + i] = level;
+    }
+  return { width, height, footX: -left, footY: -top, mask };
 }
 
 /**
@@ -399,21 +462,6 @@ export function structureShadowPolygons(
 /** Opaque masks use max coverage; fixed alpha is applied only when composited. */
 export function unionShadowCoverage(a: number, b: number): number {
   return Math.max(a, b);
-}
-
-/**
- * The cel a figure casts its shadow from (ADR 0093's amendment, owner,
- * 2026-10-28: "Shadows are off and it makes it look like their legs are
- * growing"). While it stands, walks, jogs or settles, a figure casts its
- * heading's idle, first cel: one steady shape at its feet, not the swing of its
- * legs sheared across the ground and jumping from cel to cel. Its contact band
- * still follows the drawn feet. An action (a bend, a hit, a knockout) casts its
- * own frame, so a body that falls lies on its shadow: null, cast the frame.
- */
-export function castFrame(clip: ClipName): { clip: ClipName; clipTime: 0 } | null {
-  return /^(walk|jog|rest|idle|stance)/.test(clip)
-    ? { clip: clip.replace(/^(walk|jog|rest|stance)/, 'idle') as ClipName, clipTime: 0 }
-    : null;
 }
 
 export function castShadowStrength(policy?: false | 'reduced'): number {
