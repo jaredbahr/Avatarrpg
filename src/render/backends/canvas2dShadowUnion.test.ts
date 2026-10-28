@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import * as sceneArt from '../scene';
 import { Canvas2DBackend } from './canvas2d';
 import { sheets } from '../sheets/store';
 import { sprites } from '../spriteCache';
@@ -343,5 +344,283 @@ describe("what a figure's feet get", () => {
 
   it('gives a figure that casts nothing no band', () => {
     expect(contactBand(contact, 0)).toBe(false);
+  });
+});
+
+describe('cached static scenery shadow union', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  const W = 40;
+  const H = 12;
+  const proto = Canvas2DBackend.prototype as unknown as {
+    drawCachedSceneryShadowMask(this: unknown, ...args: unknown[]): void;
+  };
+
+  function fixture() {
+    const image = {
+      src: 'tree.webp',
+      currentSrc: 'tree.webp',
+      naturalWidth: 16,
+      naturalHeight: 16,
+    };
+    const images = vi.spyOn(sceneArt, 'sceneImage').mockReturnValue(image as never);
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas(W, H) });
+    const camera = {
+      projection: 'oblique',
+      grid: { width: 4, height: 3 },
+      viewport: { width: W, height: H, dpr: 1 },
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+    };
+    const grid = { width: W, height: H, texel: 1, originX: 0, originY: 0 };
+    const view = {
+      scene: {
+        scenery: [
+          {
+            url: 'tree.webp',
+            x: 8,
+            y: 2,
+            width: 8,
+            height: 6,
+            castShadow: 0.5,
+            flip: false,
+            footprint: [{ x: 1, y: 1 }],
+          },
+        ],
+        actorGrounding: { contact: 0.8 },
+      },
+    };
+    const paint = vi.fn((context: FakeContext) => {
+      for (const piece of view.scene.scenery) {
+        if (!sceneArt.sceneImage(piece as never)) continue;
+        const grey = Math.round(piece.castShadow * 255);
+        context.fillStyle = 'rgb(' + grey + ', ' + grey + ', ' + grey + ')';
+        context.fillRect(
+          piece.x * camera.scale - camera.offsetX,
+          piece.y * camera.scale - camera.offsetY,
+          piece.width * camera.scale,
+          piece.height * camera.scale,
+        );
+      }
+    });
+    const self = {
+      sceneryShadow: null,
+      castScratch: new FakeCanvas(W, H),
+      // This pixel model covers mask storage/composition at identity. Real
+      // transformed pixels are also compared in the browser before publication.
+      toShadowTexels: () => undefined,
+      drawSceneryShadowMask: paint,
+    };
+    function frame(cached: boolean, actorX?: number) {
+      const canvas = new FakeCanvas(W, H);
+      const context = canvas.getContext();
+      context.fillStyle = '#000000';
+      context.fillRect(0, 0, W, H);
+      context.fillStyle = 'rgb(64, 64, 64)';
+      context.fillRect(0, 0, 10, H);
+      context.globalCompositeOperation = 'lighten';
+      if (cached) proto.drawCachedSceneryShadowMask.call(self, context, view, camera, grid);
+      else paint(context);
+      if (actorX !== undefined) {
+        context.fillStyle = 'rgb(200, 200, 200)';
+        context.fillRect(actorX, 3, 6, 4);
+      }
+      return canvas.px;
+    }
+    return { camera, grid, view, image, images, paint, self, frame };
+  }
+
+  it('reuses the static mask with byte-identical maximum overlap and moving live shadows', () => {
+    const f = fixture();
+    const first = f.frame(true, 12);
+    expect(f.paint).toHaveBeenCalledTimes(1);
+    expect(f.frame(true, 12)).toEqual(first);
+    expect(f.paint).toHaveBeenCalledTimes(1);
+    expect(first).toEqual(f.frame(false, 12));
+    f.paint.mockClear();
+    const moved = f.frame(true, 24);
+    expect(f.paint).not.toHaveBeenCalled();
+    expect(moved).not.toEqual(first);
+    expect(moved).toEqual(f.frame(false, 24));
+  });
+
+  const changes: [string, (f: ReturnType<typeof fixture>) => void][] = [
+    [
+      'mask width',
+      (f) => {
+        f.grid.width -= 1;
+      },
+    ],
+    [
+      'mask height',
+      (f) => {
+        f.grid.height -= 1;
+      },
+    ],
+    [
+      'pan x',
+      (f) => {
+        f.camera.offsetX = 3;
+      },
+    ],
+    [
+      'pan y',
+      (f) => {
+        f.camera.offsetY = 1;
+      },
+    ],
+    [
+      'zoom',
+      (f) => {
+        f.camera.scale = 2;
+      },
+    ],
+    [
+      'viewport width',
+      (f) => {
+        f.camera.viewport.width -= 1;
+      },
+    ],
+    [
+      'viewport height',
+      (f) => {
+        f.camera.viewport.height -= 1;
+      },
+    ],
+    [
+      'DPR',
+      (f) => {
+        f.camera.viewport.dpr = 2;
+      },
+    ],
+    [
+      'grid dimensions',
+      (f) => {
+        f.camera.grid.width += 1;
+      },
+    ],
+    [
+      'mask origin',
+      (f) => {
+        f.grid.originX = -0.5;
+      },
+    ],
+    [
+      'mask texel scale',
+      (f) => {
+        f.grid.texel = 0.5;
+      },
+    ],
+    [
+      'source URL',
+      (f) => {
+        f.view.scene.scenery[0]!.url = 'other.webp';
+      },
+    ],
+    [
+      'in-place geometry',
+      (f) => {
+        f.view.scene.scenery[0]!.x += 2;
+      },
+    ],
+    [
+      'cast strength',
+      (f) => {
+        f.view.scene.scenery[0]!.castShadow = 0.25;
+      },
+    ],
+    [
+      'flip',
+      (f) => {
+        f.view.scene.scenery[0]!.flip = true;
+      },
+    ],
+    [
+      'footprint',
+      (f) => {
+        f.view.scene.scenery[0]!.footprint[0]!.x += 1;
+      },
+    ],
+    [
+      'contact grounding',
+      (f) => {
+        f.view.scene.actorGrounding.contact = 0.4;
+      },
+    ],
+    [
+      'source dimensions',
+      (f) => {
+        f.image.naturalWidth += 1;
+      },
+    ],
+    [
+      'source current URL',
+      (f) => {
+        f.image.currentSrc = 'reloaded.webp';
+      },
+    ],
+    [
+      'source identity',
+      (f) => {
+        f.images.mockReturnValue({ ...f.image } as never);
+      },
+    ],
+  ];
+
+  for (const [name, change] of changes) {
+    it('invalidates on ' + name + ' and agrees with the fresh mask', () => {
+      const f = fixture();
+      f.frame(true);
+      change(f);
+      const cached = f.frame(true);
+      expect(f.paint).toHaveBeenCalledTimes(2);
+      expect(cached).toEqual(f.frame(false));
+    });
+  }
+
+  it('does not retain an incomplete mask after late art arrives, or old art after eviction', () => {
+    const f = fixture();
+    f.images.mockReturnValue(null);
+    const missing = f.frame(true);
+    f.images.mockReturnValue(f.image as never);
+    const arrived = f.frame(true);
+    expect(arrived).not.toEqual(missing);
+    expect(f.paint).toHaveBeenCalledTimes(2);
+    expect(arrived).toEqual(f.frame(false));
+    f.images.mockReturnValue(null);
+    expect(f.frame(true)).toEqual(missing);
+  });
+
+  it('invalidates when the grid-filtered scene loses a caster', () => {
+    const f = fixture();
+    const before = f.frame(true);
+    f.view.scene.scenery = [];
+    const after = f.frame(true);
+    expect(after).not.toEqual(before);
+    expect(after).toEqual(f.frame(false));
+  });
+
+  it('falls back to the uncached painter if the cache canvas has no 2D context', () => {
+    const f = fixture();
+    vi.stubGlobal('document', { createElement: () => ({ getContext: () => null }) });
+    expect(f.frame(true)).toEqual(f.frame(false));
+    expect(f.self.sceneryShadow).toBeNull();
+  });
+
+  it('drops the cached mask while the exact-max scratch context is unavailable and rebuilds on recovery', () => {
+    const f = fixture();
+    const first = f.frame(true);
+    const scratch = vi.spyOn(f.self.castScratch, 'getContext').mockReturnValue(null as never);
+    f.frame(true);
+    expect(f.self.sceneryShadow).toBeNull();
+    expect(f.paint).toHaveBeenCalledTimes(2);
+    scratch.mockRestore();
+    expect(f.frame(true)).toEqual(first);
+    expect(f.paint).toHaveBeenCalledTimes(3);
+    expect(f.frame(true)).toEqual(f.frame(false));
   });
 });

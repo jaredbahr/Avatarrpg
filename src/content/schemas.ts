@@ -157,12 +157,25 @@ const flagValue = z.union([z.boolean(), z.number(), z.string()]);
  */
 export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
   z.union([
-    z.object({
-      kind: z.literal('flag'),
-      key: z.string().min(1),
-      op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
-      value: flagValue.optional(),
-    }),
+    z
+      .object({
+        kind: z.literal('flag'),
+        key: z.string().min(1),
+        op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
+        value: flagValue.optional(),
+      })
+      .superRefine((condition, context) => {
+        if (
+          (condition.op === 'gte' || condition.op === 'lte') &&
+          typeof condition.value !== 'number'
+        ) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['value'],
+            message: `${condition.op} requires a numeric value`,
+          });
+        }
+      }),
     z.object({
       kind: z.literal('partyHas'),
       element: elementId.optional(),
@@ -1787,6 +1800,7 @@ export function validateContent(
   const mapIds = new Set(bundle.maps.map((m) => m.id));
   const encounterIds = new Set(bundle.encounters.map((e) => e.id));
   const storyIds = new Set(bundle.story.map((n) => n.id));
+  const characterIds = new Set(bundle.characters.map((c) => c.id));
   const statusIds = new Set(bundle.statuses.map((s) => s.id));
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
   const propIds = new Set(bundle.props.map((p) => p.id));
@@ -2342,13 +2356,23 @@ export function validateContent(
       );
     }
   }
-  // Every flag condition in content, wherever it sits, that compares scene
-  // memory with a value it can never hold.
+  // Cross-reference condition IDs and reject scene-memory comparisons with
+  // values scene memory can never hold, wherever those conditions are nested.
   const seen = new WeakSet<object>();
   const scanConditions = (value: unknown, where: string): void => {
     if (typeof value !== 'object' || value === null || seen.has(value)) return;
     seen.add(value);
     const record = value as Record<string, unknown>;
+    if (record.kind === 'partyHas' && typeof record.characterId === 'string') {
+      if (!characterIds.has(record.characterId)) {
+        problems.push(`${where} checks for unknown character "${record.characterId}"`);
+      }
+    }
+    if (record.kind === 'visited' && typeof record.nodeId === 'string') {
+      if (!storyIds.has(record.nodeId)) {
+        problems.push(`${where} visits unknown story node "${record.nodeId}"`);
+      }
+    }
     if (
       record.kind === 'flag' &&
       typeof record.key === 'string' &&
