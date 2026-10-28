@@ -26,18 +26,41 @@ export const CONTACT_SHADOW_ALPHA = 0.3;
 export const FALLEN_SHADOW_ALPHA = 0.52;
 
 /**
- * How a scene grounds the figures standing in it. `cast` is the projected
- * silhouette's alpha; `contact` is a second, tighter layer drawn from the
- * soles of the frame itself (both feet, whatever the pose) and `0` leaves the
- * radial contact pool in charge. A painted village whose own shadows run at
- * ~0.4 darkening needs both turned up or its figures read as floating.
+ * Screen-space projection of an upright silhouette onto the ground. Both the
+ * orthographic and oblique cameras keep vertical objects upright on screen,
+ * so the same foot-anchored projection applies: every pixel above the foot
+ * travels down-right, opposite the upper-left key. This is the key the runtime
+ * scenery, the procedural structure and the figures of a scene that names no
+ * key of its own all share.
+ */
+export const CAST_PER_PIXEL = { x: 0.42, y: 0.27 } as const;
+
+/** A cast key: how far a pixel `h` above the foot lands, `x * h` right and `y * h` down. */
+export interface CastKey {
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * How a scene grounds the figures and props standing in it (ADR 0077, ADR 0093).
+ * `cast` is the projected silhouette's alpha and `castKey` the direction and
+ * length it falls along, which a painted scene sets to its painting's own;
+ * `contact` is a second, tighter layer drawn from the soles of the frame itself
+ * (both feet, whatever the pose) and `0` leaves the radial contact pool in
+ * charge. A painted village whose own shadows run at ~0.4 darkening needs both
+ * turned up or its figures read as floating.
  */
 export interface ActorGrounding {
   readonly cast: number;
   readonly contact: number;
+  readonly castKey: CastKey;
 }
 
-export const DEFAULT_ACTOR_GROUNDING: ActorGrounding = { cast: CAST_SHADOW_ALPHA, contact: 0 };
+export const DEFAULT_ACTOR_GROUNDING: ActorGrounding = {
+  cast: CAST_SHADOW_ALPHA,
+  contact: 0,
+  castKey: CAST_PER_PIXEL,
+};
 
 export function actorGrounding(
   scene?: { readonly actorGrounding?: Partial<ActorGrounding> } | null,
@@ -51,7 +74,7 @@ export function actorGrounding(
  * its own alpha as a fraction of that, so a scene that sets nothing keeps the
  * single `CAST_SHADOW_ALPHA` and coverage 1.
  */
-export function shadowCeiling(grounding: ActorGrounding): number {
+export function shadowCeiling(grounding: Pick<ActorGrounding, 'cast' | 'contact'>): number {
   return Math.max(CAST_SHADOW_ALPHA, grounding.cast, grounding.contact);
 }
 
@@ -110,20 +133,12 @@ export function spriteBandArt<S extends { readonly width: number; readonly heigh
  * `pool` is whatever the figure drew before (`defaultPool`), never a band.
  */
 export function groundTreatment(
-  grounding: ActorGrounding,
+  grounding: Pick<ActorGrounding, 'contact'>,
   figure: { readonly castStrength: number; readonly defaultPool: boolean },
 ): { readonly band: boolean; readonly pool: boolean } {
   const band = grounding.contact > 0 && figure.castStrength > 0;
   return { band, pool: figure.defaultPool && !band };
 }
-
-/**
- * Screen-space projection of an upright silhouette onto the ground. Both the
- * orthographic and oblique cameras keep vertical objects upright on screen,
- * so the same foot-anchored projection applies: every pixel above the foot
- * travels down-right, opposite the upper-left key.
- */
-export const CAST_PER_PIXEL = { x: 0.42, y: 0.27 } as const;
 
 export interface ShadowProjection {
   readonly a: number;
@@ -158,26 +173,31 @@ export interface StructureShadowPolygon {
 }
 
 /** Canvas/Pixi affine coefficients; `(footX, footY)` remains fixed. */
-export function silhouetteProjection(footX: number, footY: number): ShadowProjection {
+export function silhouetteProjection(
+  footX: number,
+  footY: number,
+  key: CastKey = CAST_PER_PIXEL,
+): ShadowProjection {
   // Horizontal coordinates already remain anchored under this shear; retaining
   // footX in the API makes the two-dimensional anchor contract explicit.
   void footX;
   return {
     a: 1,
     b: 0,
-    c: -CAST_PER_PIXEL.x,
-    d: -CAST_PER_PIXEL.y,
-    e: CAST_PER_PIXEL.x * footY,
-    f: footY * (1 + CAST_PER_PIXEL.y),
+    c: -key.x,
+    d: -key.y,
+    e: key.x * footY,
+    f: footY * (1 + key.y),
   };
 }
 
 export function projectShadowPoint(
   point: { readonly x: number; readonly y: number },
   foot: { readonly x: number; readonly y: number },
+  key: CastKey = CAST_PER_PIXEL,
 ): { x: number; y: number } {
   const rise = foot.y - point.y;
-  return { x: point.x + rise * CAST_PER_PIXEL.x, y: foot.y + rise * CAST_PER_PIXEL.y };
+  return { x: point.x + rise * key.x, y: foot.y + rise * key.y };
 }
 
 /**

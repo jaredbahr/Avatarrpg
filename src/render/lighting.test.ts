@@ -177,7 +177,11 @@ describe('form shading against the reference', () => {
 
 describe('scene actor grounding', () => {
   it("leaves a scene that sets nothing at today's single cast alpha and no contact layer", () => {
-    expect(actorGrounding(undefined)).toEqual({ cast: CAST_SHADOW_ALPHA, contact: 0 });
+    expect(actorGrounding(undefined)).toEqual({
+      cast: CAST_SHADOW_ALPHA,
+      contact: 0,
+      castKey: CAST_PER_PIXEL,
+    });
     expect(actorGrounding({})).toBe(DEFAULT_ACTOR_GROUNDING);
     expect(actorGrounding(FOREST_ROAD_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
     expect(actorGrounding(QUARRY_GATE_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
@@ -199,6 +203,7 @@ describe('scene actor grounding', () => {
     expect(actorGrounding({ actorGrounding: { contact: 0.6 } })).toEqual({
       cast: CAST_SHADOW_ALPHA,
       contact: 0.6,
+      castKey: CAST_PER_PIXEL,
     });
   });
 
@@ -223,7 +228,7 @@ describe('scene actor grounding', () => {
   });
 
   it('gives a figure a band or a pool in a contact scene, and the old pool in a default one', () => {
-    const contact = { cast: 0.5, contact: 0.8 };
+    const contact = { contact: 0.8 };
     // Every figure that casts has art to cut a band from, so it loses its pool...
     expect(groundTreatment(contact, { castStrength: 1, defaultPool: true })).toEqual({
       band: true,

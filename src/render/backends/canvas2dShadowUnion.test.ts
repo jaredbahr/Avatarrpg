@@ -217,7 +217,7 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
   const near = (got: number[], want: number[]): void =>
     want.forEach((v, k) => expect(Math.abs((got[k] ?? 0) - v)).toBeLessThanOrEqual(1));
 
-  const ba: ActorGrounding = { cast: 0.5, contact: 0.8 };
+  const ba: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
 
   it('leaves an overlap of two equal casters at their strength, not darker', () => {
     const at = run(ba, [
@@ -261,7 +261,7 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
 });
 
 describe("what a figure's feet get", () => {
-  const contact: ActorGrounding = { cast: 0.5, contact: 0.8 };
+  const contact: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
   const frame = {
     source: {},
     frame: { x: 0, y: 0, w: 64, h: 96 },

@@ -375,8 +375,17 @@ const plate = ([
 /** The image files the scene draws: the ground plates and the upright pages. */
 export const BA_DAN_IMAGE_COUNT = BA_DAN_GROUND_PLATES.length + BA_DAN_UPRIGHT_PAGES;
 
-/** Ink alpha of a figure's projected cast and of the sole-band contact under both feet. */
-export const BA_DAN_ACTOR_GROUNDING = { cast: 0.5, contact: 0.8 } as const;
+/**
+ * Ink alpha of a figure's projected cast and of the sole-band contact under both feet, and the key the
+ * cast falls along: the one the G1 pass set the painting's figure-scale objects in with (`SHADOW_KX`,
+ * `SHADOW_KY` in `art/source/ba-dan-route-a/tools/objects.py`), so a figure's shadow lies the way the
+ * table's, the baskets' and the bench's beside it do (ADR 0093).
+ */
+export const BA_DAN_ACTOR_GROUNDING = {
+  cast: 0.5,
+  contact: 0.8,
+  castKey: { x: 0.35, y: 0.16 },
+} as const;
 
 /**
  * A complete scene: the plates cover the whole pan box, so the grid's procedural terrain is not drawn under

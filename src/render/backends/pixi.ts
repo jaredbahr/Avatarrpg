@@ -129,6 +129,7 @@ import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
 import {
+  CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
   DEFAULT_ACTOR_GROUNDING,
@@ -141,6 +142,7 @@ import {
   shadowCeiling,
   spriteBandArt,
   type BandArt,
+  type CastKey,
   structureShadowPolygons,
   tileShadowCell,
   silhouetteProjection,
@@ -1151,11 +1153,12 @@ export class PixiBackend implements RenderBackend {
     foot: { x: number; y: number },
     strength: number,
     alpha: number,
+    key: CastKey = CAST_PER_PIXEL,
   ): void {
     target.texture = source.texture;
     target.anchor.copyFrom(source.anchor);
     const s = source.localTransform;
-    const p = silhouetteProjection(foot.x, foot.y);
+    const p = silhouetteProjection(foot.x, foot.y, key);
     target.setFromMatrix(
       new Matrix(
         p.a * s.a + p.c * s.b,
@@ -1178,6 +1181,7 @@ export class PixiBackend implements RenderBackend {
     foot: { x: number; y: number },
     strength: number,
     alpha = CAST_SHADOW_ALPHA,
+    castKey: CastKey = CAST_PER_PIXEL,
   ): void {
     this.castLive.add(key);
     let shadow = this.castSprites.get(key);
@@ -1186,7 +1190,7 @@ export class PixiBackend implements RenderBackend {
       this.castSprites.set(key, shadow);
       this.shadowMaskSources.addChild(shadow);
     }
-    this.projectSilhouette(shadow, source, foot, strength, alpha);
+    this.projectSilhouette(shadow, source, foot, strength, alpha, castKey);
   }
 
   /**
@@ -1256,6 +1260,8 @@ export class PixiBackend implements RenderBackend {
         source,
         { x: source.x + TILE / 2, y: source.y + FOOT_LINE * TILE },
         castShadowStrength(prop.castShadow),
+        this.grounding.cast,
+        this.grounding.castKey,
       );
     }
   }
@@ -2625,6 +2631,7 @@ export class PixiBackend implements RenderBackend {
         { x: footX, y: (this.grounding.contact > 0 ? ground : y) + FOOT_LINE * TILE },
         alpha,
         this.grounding.cast,
+        this.grounding.castKey,
       );
       const treatment = groundTreatment(this.grounding, {
         castStrength: 1,
@@ -2686,6 +2693,8 @@ export class PixiBackend implements RenderBackend {
           sprite,
           { x: anchor.x + TILE / 2, y: sprite.y + FOOT_LINE * TILE },
           castShadowStrength(prop.castShadow),
+          this.grounding.cast,
+          this.grounding.castKey,
         );
 
       /*
@@ -2827,6 +2836,7 @@ export class PixiBackend implements RenderBackend {
           castFoot,
           castStrength * bodyShade,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         if (treatment.band && bandArt)
           this.projectContact(

@@ -87,6 +87,7 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import {
+  CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
   DEFAULT_ACTOR_GROUNDING,
@@ -99,6 +100,7 @@ import {
   shadowCeiling,
   spriteBandArt,
   type BandArt,
+  type CastKey,
   structureShadowPolygons,
   tileShadowCell,
   silhouetteProjection,
@@ -1619,8 +1621,9 @@ export class Canvas2DBackend implements RenderBackend {
     alpha = 1,
     flip = false,
     level = CAST_SHADOW_ALPHA,
+    key: CastKey = CAST_PER_PIXEL,
   ): void {
-    const m = silhouetteProjection(foot.x, foot.y);
+    const m = silhouetteProjection(foot.x, foot.y, key);
     const x0 = flip ? 2 * foot.x - dest.x - dest.w : dest.x;
     this.castInto(
       target,
@@ -1771,6 +1774,7 @@ export class Canvas2DBackend implements RenderBackend {
           npc.alpha ?? 1,
           false,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         // A painter resident's baked frame is only the cast's stand-in: its band is cut from what is drawn.
         if (band && entry.kind === 'sheet')
@@ -1796,6 +1800,7 @@ export class Canvas2DBackend implements RenderBackend {
             npc.alpha ?? 1,
             false,
             this.grounding.cast,
+            this.grounding.castKey,
           );
         if (band) {
           const k = scale * (npc.poseScale ?? 1);
@@ -1874,6 +1879,7 @@ export class Canvas2DBackend implements RenderBackend {
             castShadowStrength(unit.castShadow),
           !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         if (band)
           this.projectContactMask(
@@ -1912,6 +1918,7 @@ export class Canvas2DBackend implements RenderBackend {
             castShadowStrength(unit.castShadow),
           false,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         if (band)
           this.projectContactMask(
@@ -1941,6 +1948,7 @@ export class Canvas2DBackend implements RenderBackend {
       const box = camera.spriteBox(prop.pos);
       box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
+      // A prop stands as a figure does: its cast falls down the scene's key.
       this.projectMask(
         target,
         sprite,
@@ -1948,6 +1956,9 @@ export class Canvas2DBackend implements RenderBackend {
         { x: box.x, y: box.y, w: box.size, h: box.size },
         { x: box.x + box.size / 2, y: box.y + FOOT_LINE * box.size },
         castShadowStrength(prop.castShadow),
+        false,
+        this.grounding.cast,
+        this.grounding.castKey,
       );
     }
   }

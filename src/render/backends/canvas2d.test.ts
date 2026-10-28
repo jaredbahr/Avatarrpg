@@ -3,11 +3,14 @@ import { Canvas2DBackend, uprightSpriteVisible } from './canvas2d';
 import { sheets } from '../sheets/store';
 import { sprites } from '../spriteCache';
 import {
+  CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
   type ActorGrounding,
 } from '../lighting';
+
+const BA: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
 
 describe('Canvas unit cast shadow', () => {
   // Drives the private mask pass on a stub context: only globalAlpha at each draw matters.
@@ -93,7 +96,7 @@ describe('Canvas unit cast shadow', () => {
   });
 
   it('writes the cast and the contact band at their own strengths', () => {
-    const out = drawn({}, true, { cast: 0.5, contact: 0.8 });
+    const out = drawn({}, true, BA);
     expect(out.levels).toEqual([0.5, 0.8]);
     expect(out.alphas).toEqual([1, 1]);
   });
@@ -105,8 +108,50 @@ describe('Canvas unit cast shadow', () => {
   });
 
   it('still gives a painter-fallback unit its band in a contact scene', () => {
-    const out = drawn({}, false, { cast: 0.5, contact: 0.8 });
+    const out = drawn({}, false, BA);
     expect(out.levels).toEqual([0.5, 0.8]);
+  });
+
+  it("casts along the scene's own key", () => {
+    const shear = (grounding: ActorGrounding) => {
+      const transforms: number[][] = [];
+      const ctx = {
+        globalAlpha: 1,
+        save: vi.fn(),
+        restore: vi.fn(),
+        transform: vi.fn((...m: number[]) => transforms.push(m)),
+        translate: vi.fn(),
+        scale: vi.fn(),
+        drawImage: vi.fn(),
+      };
+      const self = {
+        grounding,
+        castInto: (_l: unknown, _level: number, _b: unknown, draw: (t: unknown) => void) =>
+          draw(ctx),
+      };
+      (
+        Canvas2DBackend.prototype as unknown as {
+          projectMask(this: unknown, ...a: unknown[]): void;
+        }
+      ).projectMask.call(
+        self,
+        ctx,
+        {},
+        null,
+        { x: 0, y: 0, w: 64, h: 64 },
+        { x: 32, y: 54 },
+        1,
+        false,
+        grounding.cast,
+        grounding.castKey,
+      );
+      return transforms[0];
+    };
+    expect(shear(DEFAULT_ACTOR_GROUNDING)?.slice(2, 4)).toEqual([
+      -CAST_PER_PIXEL.x,
+      -CAST_PER_PIXEL.y,
+    ]);
+    expect(shear(BA)?.slice(2, 4)).toEqual([-0.35, -0.16]);
   });
 });
 
