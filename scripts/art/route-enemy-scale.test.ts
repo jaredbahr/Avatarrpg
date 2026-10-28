@@ -67,7 +67,7 @@ it('keeps the legacy route crossbow near party height without changing its pixel
       crop(pixels, { x: standing.x, y: standing.y, width: standing.w, height: standing.h }),
     );
     if (!body) throw new Error('Empty standing frame');
-    const height = (body.height / entry.pixelsPerTile) * enemyScale(key);
+    const height = (body.height / entry.pixelsPerTile) * enemyScale(key, 1, 'oblique');
     const adult = (121 / 128) * partyScale('oblique');
     expect(height / adult).toBeGreaterThan(0.95);
     expect(height / adult).toBeLessThan(1.04);
