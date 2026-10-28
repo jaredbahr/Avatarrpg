@@ -1,146 +1,106 @@
 {
- "region": "r0c0",
- "source": {
-  "path": ".review/route-a/candidates/r0c0.png",
-  "sha256": "9d95f18fcee0f89bab466eed8e8d212320d9a6bd90448681bbd216157fd626fa"
- },
- "stored": {
-  "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c0.png",
-  "sha256": "9d95f18fcee0f89bab466eed8e8d212320d9a6bd90448681bbd216157fd626fa"
- },
- "gate": {
-  "pass": true,
-  "frame": {
-   "dx": 0,
-   "dy": 0,
-   "corr": 0.8173
+  "region": "r0c0",
+  "source": {
+    "path": ".review/route-a/candidates/r0c0.png",
+    "sha256": "9d95f18fcee0f89bab466eed8e8d212320d9a6bd90448681bbd216157fd626fa"
   },
-  "blobs": [
-   {
-    "n": 1,
-    "box": [
-     0,
-     0,
-     1536,
-     930
-    ],
-    "area": 681361,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.8119,
-    "status": "ok"
-   },
-   {
-    "n": 2,
-    "box": [
-     1328,
-     251,
-     1536,
-     536
-    ],
-    "area": 23934,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.8607,
-    "status": "ok"
-   },
-   {
-    "n": 3,
-    "box": [
-     797,
-     439,
-     949,
-     583
-    ],
-    "area": 4129,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.9308,
-    "status": "ok"
-   },
-   {
-    "n": 4,
-    "box": [
-     1302,
-     514,
-     1530,
-     681
-    ],
-    "area": 10022,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.9119,
-    "status": "ok"
-   },
-   {
-    "n": 5,
-    "box": [
-     1108,
-     715,
-     1536,
-     1024
-    ],
-    "area": 75670,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.8275,
-    "status": "ok"
-   },
-   {
-    "n": 6,
-    "box": [
-     299,
-     765,
-     546,
-     1024
-    ],
-    "area": 18963,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.8913,
-    "status": "ok"
-   },
-   {
-    "n": 7,
-    "box": [
-     494,
-     810,
-     741,
-     1024
-    ],
-    "area": 16245,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.8884,
-    "status": "ok"
-   },
-   {
-    "n": 8,
-    "box": [
-     641,
-     929,
-     936,
-     1024
-    ],
-    "area": 8500,
-    "dx": 0,
-    "dy": 0,
-    "corr": 0.8803,
-    "status": "ok"
-   }
-  ],
-  "carry": {
-   "pixels": 823296,
-   "meanAbsDiff": 0.0,
-   "p95": 0.0,
-   "fractionOver16": 0.0
+  "stored": {
+    "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c0.png",
+    "sha256": "9d95f18fcee0f89bab466eed8e8d212320d9a6bd90448681bbd216157fd626fa"
   },
-  "warn": [],
-  "fail": []
- },
- "prompt": {
-  "path": "art/source/ba-dan-route-a/world/prompt.txt",
-  "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
- },
- "forced": false
+  "gate": {
+    "pass": true,
+    "frame": {
+      "dx": 0,
+      "dy": 0,
+      "corr": 0.8173
+    },
+    "blobs": [
+      {
+        "n": 1,
+        "box": [0, 0, 1536, 930],
+        "area": 681361,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8119,
+        "status": "ok"
+      },
+      {
+        "n": 2,
+        "box": [1328, 251, 1536, 536],
+        "area": 23934,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8607,
+        "status": "ok"
+      },
+      {
+        "n": 3,
+        "box": [797, 439, 949, 583],
+        "area": 4129,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.9308,
+        "status": "ok"
+      },
+      {
+        "n": 4,
+        "box": [1302, 514, 1530, 681],
+        "area": 10022,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.9119,
+        "status": "ok"
+      },
+      {
+        "n": 5,
+        "box": [1108, 715, 1536, 1024],
+        "area": 75670,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8275,
+        "status": "ok"
+      },
+      {
+        "n": 6,
+        "box": [299, 765, 546, 1024],
+        "area": 18963,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8913,
+        "status": "ok"
+      },
+      {
+        "n": 7,
+        "box": [494, 810, 741, 1024],
+        "area": 16245,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8884,
+        "status": "ok"
+      },
+      {
+        "n": 8,
+        "box": [641, 929, 936, 1024],
+        "area": 8500,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8803,
+        "status": "ok"
+      }
+    ],
+    "carry": {
+      "pixels": 823296,
+      "meanAbsDiff": 0.0,
+      "p95": 0.0,
+      "fractionOver16": 0.0
+    },
+    "warn": [],
+    "fail": []
+  },
+  "prompt": {
+    "path": "art/source/ba-dan-route-a/world/prompt.txt",
+    "sha256": "d73fab16197d3b06cb6f16a3f044203649e09f3d9db9f4a935acab31717bc86a"
+  },
+  "forced": false
 }
