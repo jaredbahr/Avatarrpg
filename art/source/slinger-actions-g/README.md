@@ -1,5 +1,8 @@
 # Slinger hits and knockouts (art source)
 
+> **History (ADR 0091).** This set no longer ships: the sheet is redrawn on the world's native G1 grid from
+> `art/source/residents-g1/` and packed by `scripts/art/residents-g1.ts`. Its packer was retired; the files stay as the record.
+
 What `scripts/art/slinger-clips.ts` packs, and where each piece comes from. ADR 0079; the same layout and recipe as
 `../thug-actions-g/` (ADR 0078), with the slinger's own stance skeleton, approved rotations, idle cels and skin mask.
 
