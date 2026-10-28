@@ -30,12 +30,20 @@ import {
   UniformGroup,
 } from 'pixi.js';
 
-import type { MapScene, SceneFlock, SceneImage, TerrainId, Tile, Vec2 } from '../../core/types';
+import type {
+  MapScene,
+  SceneFlock,
+  SceneImage,
+  SceneScenery,
+  TerrainId,
+  Tile,
+  Vec2,
+} from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
-import { sceneForGrid, sceneImage, sceneryOpacities } from '../scene';
+import { drawSceneImage, sceneForGrid, sceneImage, sceneryOpacities } from '../scene';
 import {
   firstGustCrest,
   flockAt,
@@ -45,7 +53,7 @@ import {
   sway,
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
-import { sceneryZ, shadowZ } from './depthOrder';
+import { sceneryZ } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
@@ -68,7 +76,6 @@ import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
   actorReticleX,
   actorSilhouetteGeometry,
-  actorShadowDensity,
   fallbackBarTop,
   floaterFontPx,
   floaterOwner,
@@ -128,7 +135,7 @@ import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } fro
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
-import { groundedCastArt } from '../groundedCastArt';
+import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -141,7 +148,7 @@ import {
   actorGrounding,
   castShadowStrength,
   contactBandRows,
-  groundTreatment,
+  contactBand,
   shadowCeiling,
   spriteBandArt,
   type BandArt,
@@ -1329,11 +1336,15 @@ export class PixiBackend implements RenderBackend {
    * the cache's size and offset bookkeeping drew the wrong region once the
    * scene finished loading.
    */
-  private syncSceneryShadows(view: MapView): void {
+  private syncSceneryShadows(view: MapView, camera: Camera): void {
     for (const item of view.scene?.scenery ?? []) {
       if (item.castShadow === false) continue;
       const source = this.scenerySprites.get(item.id);
       if (!source?.visible) continue;
+      if (item.castFrom === 'base') {
+        this.groundSceneryPiece(item, camera);
+        continue;
+      }
       this.projectDynamicShadow(
         `scene:${item.id}`,
         source,
@@ -1343,6 +1354,46 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
+  /**
+   * A solid scenery piece (`castFrom: 'base'`) stands on its whole base as a prop does: its cast from the lower hull
+   * of its own bottom edge along the shared key, and its contact line `CONTACT_LINE` world pixels under it. Both are
+   * cut from the piece as drawn (`pieceArt`) and placed on its world box.
+   */
+  private groundSceneryPiece(item: SceneScenery, camera: Camera): void {
+    const image = sceneImage(item);
+    if (!image) return;
+    const art = pieceArt(image, item, (context, width, height) =>
+      drawSceneImage(context, image, item, 0, 0, width, height),
+    );
+    if (!art) return;
+    const k = item.width / art.width;
+    const place = (key: string, canvas: HTMLCanvasElement, dy: number, alpha: number) => {
+      this.castLive.add(key);
+      let sprite = this.castSprites.get(key);
+      if (!sprite) {
+        sprite = new Sprite();
+        this.castSprites.set(key, sprite);
+        this.shadowMaskSources.addChild(sprite);
+      }
+      const texture = this.texture(canvas);
+      if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+      sprite.texture = texture;
+      sprite.anchor.set(0, 0);
+      sprite.rotation = 0;
+      sprite.position.set(item.x, item.y + dy);
+      sprite.width = canvas.width * k;
+      sprite.height = canvas.height * k;
+      sprite.alpha = Math.max(0, Math.min(1, alpha / shadowCeiling(this.grounding)));
+      sprite.blendMode = 'max';
+      sprite.visible = sprite.alpha > 0;
+    };
+    const strength = castShadowStrength(item.castShadow);
+    const cast = groundedCastArt(art, CAST_PER_PIXEL, pieceFeet(item, camera));
+    if (cast && strength > 0) place(`scene:${item.id}`, cast, 0, strength * CAST_SHADOW_ALPHA);
+    if (item.contactShadow !== false)
+      place(`scenefoot:${item.id}`, art, CONTACT_LINE, this.grounding.contact);
+  }
+
   /** Unions cached static and current-frame silhouettes, then exposes one tinted layer. */
   private syncCastShadows(view: MapView, camera: Camera): void {
     const app = this.app;
@@ -1350,7 +1401,7 @@ export class PixiBackend implements RenderBackend {
     this.grounding = actorGrounding(view.scene);
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
-    if (camera.projection === 'oblique') this.syncSceneryShadows(view);
+    if (camera.projection === 'oblique') this.syncSceneryShadows(view, camera);
     for (const [key, sprite] of this.castSprites)
       if (!this.castLive.has(key)) sprite.visible = false;
     const visible = [...this.castSprites.values()].filter((sprite) => sprite.visible);
@@ -2724,11 +2775,7 @@ export class PixiBackend implements RenderBackend {
         this.grounding.cast,
         this.grounding.castKey,
       );
-      const treatment = groundTreatment(this.grounding, {
-        castStrength: 1,
-        defaultPool: entry.kind !== 'painter',
-      });
-      if (treatment.band && bandArt)
+      if (contactBand(this.grounding, 1) && bandArt)
         this.projectContact(
           `npcfoot:${npc.id}`,
           sprite,
@@ -2736,19 +2783,6 @@ export class PixiBackend implements RenderBackend {
           { x: footX, y: ground + FOOT_LINE * TILE },
           alpha,
         );
-      if (treatment.pool) {
-        const shadowKey = `shadow:${npc.id}`;
-        live.add(shadowKey);
-        const shadow = this.unitSprite(shadowKey);
-        const density = actorShadowDensity(view.grid, at, true, width, false);
-        shadow.texture = this.texture(sprites.shadow(px * scale, density));
-        shadow.anchor.set(0.5, 0.86);
-        shadow.position.set(footX, ground + FOOT_LINE * TILE);
-        shadow.width = shadow.height = TILE * scale;
-        shadow.alpha = alpha;
-        shadow.zIndex = shadowZ(sprite.zIndex);
-        shadow.visible = true;
-      }
 
       // A small "talk" pip so a child can tell an NPC from scenery.
       if (!npc.quiet)
@@ -2782,7 +2816,7 @@ export class PixiBackend implements RenderBackend {
       const propStrength = castShadowStrength(prop.castShadow);
       // A prop casts from its own ground and meets it on its contact line (ADR 0093).
       if (propStrength > 0) this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
-      if (groundTreatment(this.grounding, { castStrength: propStrength, defaultPool: false }).band)
+      if (contactBand(this.grounding, propStrength))
         this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
 
       /*
@@ -2827,37 +2861,7 @@ export class PixiBackend implements RenderBackend {
       const sprite = this.unitSprite(unit.id);
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const shadowDensity = actorShadowDensity(
-        view.grid,
-        pos,
-        unit.shadow === true,
-        unit.size,
-        this.squareFootprints,
-      );
-      const treatment = groundTreatment(this.grounding, {
-        castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: shadowDensity > 0,
-      });
-      if (treatment.pool) {
-        // On the ground, not on the bob (explore maps, ADR 0015; grass, canvas2d.ts).
-        const key = `shadow:${unit.id}`;
-        live.add(key);
-        const shadow = this.unitSprite(key);
-        shadow.texture = this.texture(sprites.shadow(px * (unit.scale ?? 1), shadowDensity));
-        shadow.anchor.set(0.5, 0.86);
-        const footprint = this.squareFootprints ? unit.size : 1;
-        shadow.position.set(
-          anchor.x + width / 2,
-          anchor.y + (0.86 - lift - (footprint - 1) * 0.5) * TILE,
-        );
-        // Keep a square unit's contact shadow on its rules footprint even when
-        // its upright cel has projection-specific presentation compensation.
-        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : (unit.scale ?? 1);
-        shadow.width = shadow.height = TILE * shadowScale * footprint;
-        shadow.alpha = alpha;
-        shadow.zIndex = shadowZ(depth(pos, unit.size));
-        shadow.visible = true;
-      }
+      const band = contactBand(this.grounding, castShadowStrength(unit.castShadow));
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
@@ -2926,7 +2930,7 @@ export class PixiBackend implements RenderBackend {
           this.grounding.cast,
           this.grounding.castKey,
         );
-        if (treatment.band && bandArt)
+        if (band && bandArt)
           this.projectContact(
             `foot:${unit.id}`,
             sprite,
