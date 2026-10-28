@@ -66,7 +66,7 @@ quarry bender's 128 px sheet keeps ADR 0067's walk through the same helper). To 
 `resolveClip.ts` is derived by rule (identical to the table for all fifty existing clips, checked name by name), the
 shipped clip-name list is generated and leaves out the jog names (`BAKED_CLIP_NAMES` for painter bakes; the full
 `CLIP_NAMES` is CI-only), and the three CMU credit entries are folded into one, as #301 folded the walks. The bundle
-ends 23 bytes under its 360 KB gzip budget (main: 12).
+ended 23 bytes under the 360 KB gzip budget of the time (main: 12); ADR 0094's PR has since raised it to 380 KB.
 
 ## Measurements (`art/source/grounding/tools/walk_stride.py`, world px a stance cel)
 
@@ -74,8 +74,8 @@ The tool was rewritten for this: per heading it finds the planted foot in each s
 contacts, the sole nearest that foot's requested ankle in the placed cel) and compares its travel with the game's over
 the same cel, along the clip's real screen heading (diagonals at a slope of one half, 71.6 px a tile; ADR 0093's first
 measure used 45 degrees). `--manifest` reads the timing from the shipped manifest. Slide is signed: + the foot lags
-the ground, − it outruns it. The tables at figure scale 1.0 (draft `claude/figure-scale-1x`; at 1.0 one art px is one
-world px), with today's 1.25 beside them.
+the ground, − it outruns it. The tables at figure scale 1.0, which ships with ADR 0094 (at 1.0 one art px is one world px),
+with the old 1.25 beside them.
 
 | family    | before: walk at 500 ms (mean range, mean of abs) | @1.25 | after: jog (range, mean of abs, worst pair) | @1.25 | errand walk at 2 s a tile |
 | --------- | -----------------------------------------------: | ----: | ------------------------------------------: | ----: | ------------------------: |
@@ -118,8 +118,8 @@ No ceiling is raised. Generations: 297 of the ~350 budgeted (balance 740.8 to 44
   the worst single stance pair is 2.5 to 9.3 px (the slinger's), and a few headings' means reach ±2 px where the
   shared heading shape fits worst (Mira's south-east and north-west, the watch's north-east, the household's south).
   Per-family per-heading timing would remove the mean error and cost about 250 bundle bytes.
-- **Until the figure scale is 1.0** (the parallel `claude/figure-scale-1x`), figures draw at 1.25 and their feet travel
-  25% further than the ground: a 1.6 to 2.4 px backward slide, still a fifth of the walk's.
+- **The timing assumes figure scale 1.0** (ADR 0094, now on main). At the old 1.25 the feet travelled 25% further
+  than the ground, a 1.6 to 2.4 px backward slide; a future change of draw scale must refit `G1_JOG` by that ratio.
 - **Clamped margins.** The watch's south jog loses its spear tip (72 px over seven cels, the take raised it past the cel
   top) and seven headings lose 2 to 24 toe pixels at the cel's side.
 - **Who jogs.** Mira, the elder, jogs on her placement walks and when called home, her stick coming and going between
