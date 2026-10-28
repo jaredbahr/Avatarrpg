@@ -107,6 +107,8 @@ import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
 import { placeFrame } from '../sheets/placement';
+import { RevealLayer, revealBox, revealsUnit } from '../reveal';
+import type { RevealFigure } from '../reveal';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import { npcPipLift } from '../npcPip';
@@ -361,6 +363,8 @@ export class PixiBackend implements RenderBackend {
   private groundingSprite: Sprite | null = null;
   private groundingCanvas: HTMLCanvasElement | null = null;
   private groundingTexture: Texture | null = null;
+  /** The silhouettes of hidden party members over the pieces that keep their paint (ADR 0096). */
+  private reveal: { layer: RevealLayer; sprite: Sprite; texture: Texture | null } | null = null;
   /** A gust's light on the grass: slices of the wind ground added back onto it. */
   private breeze = new Container();
   /** Each wind plate's breeze stripes, kept from frame to frame. */
@@ -726,6 +730,8 @@ export class PixiBackend implements RenderBackend {
     this.groundingTexture?.destroy(true);
     this.groundingTexture = null;
     this.groundingCanvas = null;
+    this.reveal?.texture?.destroy(true);
+    this.reveal = null;
     this.mapTexture.destroy(true);
   }
 
@@ -2799,6 +2805,7 @@ export class PixiBackend implements RenderBackend {
       g.rect(x, y, (w * prop.hp) / prop.maxHp, h).fill({ color: '#d9a441' });
     }
 
+    const revealFigures: RevealFigure[] = [];
     for (const unit of ordered) {
       const pos = unit.renderPos ?? unit.pos;
       // The bob lifts the drawing, never the sort: zIndex stays on the tile.
@@ -2893,6 +2900,18 @@ export class PixiBackend implements RenderBackend {
         sprite.height = placed.h;
         sprite.scale.x = Math.abs(sprite.scale.x) * (bend ? 1 : drawFacing);
         this.sampleArt(sprite, camera.scale);
+        if (revealsUnit(unit) && camera.projection === 'oblique') {
+          const footX = x + width / 2;
+          const flip = !bend && drawFacing === -1;
+          revealFigures.push({
+            source: frame.source,
+            rect: frame.frame,
+            ...revealBox(placeFrame(frame, footX, y + FOOT_LINE * TILE, TILE * scale), footX, flip),
+            flip,
+            foot: camera.groundPoint(renderFoot(pos, unit.size, this.squareFootprints, 'oblique'))
+              .y,
+          });
+        }
       } else {
         const art = sprites.get(unit.sprite, px * scale, { facing }, unit.size, heightTiles);
         bandArt = spriteBandArt(art, heightTiles);
@@ -2998,6 +3017,7 @@ export class PixiBackend implements RenderBackend {
     for (const [key, sprite] of this.unitSprites) {
       if (!live.has(key)) sprite.visible = false;
     }
+    this.syncReveal(view, camera, revealFigures);
     for (let i = badgeIndex; i < this.badgeText.length; i++) {
       const text = this.badgeText[i];
       if (text) text.visible = false;
@@ -3009,6 +3029,34 @@ export class PixiBackend implements RenderBackend {
       this.barTops.set(candidate.id, bar.y);
       this.drawHealthBar(g, candidate.unit, bar, candidate.actorX, view.hatch, camera.scale);
     }
+  }
+
+  /** The covered part of each hidden party member, over every piece, as on Canvas 2D. */
+  private syncReveal(view: MapView, camera: Camera, figures: readonly RevealFigure[]): void {
+    const scenery = camera.projection === 'oblique' ? (view.scene?.scenery ?? []) : [];
+    if (!this.reveal && !scenery.some((piece) => piece.revealOccluded)) return;
+    if (!this.reveal) {
+      const sprite = new Sprite();
+      sprite.zIndex = Number.MAX_SAFE_INTEGER;
+      this.unitLayer.addChild(sprite);
+      this.reveal = { layer: new RevealLayer(), sprite, texture: null };
+    }
+    const reveal = this.reveal;
+    const drawn = reveal.layer.draw(figures, scenery, camera);
+    reveal.sprite.visible = Boolean(drawn);
+    if (!drawn) return;
+    const { canvas } = drawn;
+    let texture = reveal.texture;
+    if (!texture || texture.width !== canvas.width || texture.height !== canvas.height) {
+      // Owned here, never Pixi's cache: the canvas is redrawn every frame.
+      texture?.destroy(true);
+      texture = reveal.texture = Texture.from(canvas, true);
+    } else texture.source.update();
+    reveal.sprite.texture = texture;
+    reveal.sprite.position.set(drawn.x, drawn.y);
+    reveal.sprite.width = drawn.width;
+    reveal.sprite.height = drawn.height;
+    this.sampleArt(reveal.sprite, camera.scale);
   }
 
   private unitSprite(key: string): Sprite {
