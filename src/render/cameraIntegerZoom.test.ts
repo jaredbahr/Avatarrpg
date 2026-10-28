@@ -118,6 +118,28 @@ describe('integer zoom: the settled views', () => {
     });
   }
 
+  it.each([
+    { dpr: 1, preferred: 40, expected: 64 },
+    { dpr: 1, preferred: 64, expected: 64 },
+    { dpr: 1.5, preferred: 40, expected: 64 / 1.5 },
+    { dpr: 1.5, preferred: 64, expected: 64 / 1.5 },
+    { dpr: 2, preferred: 40, expected: 64 },
+    { dpr: 2, preferred: 64, expected: 64 },
+    { dpr: 3, preferred: 40, expected: 128 / 3 },
+    { dpr: 3, preferred: 64, expected: 64 },
+  ])(
+    'snaps a compact $preferred px combat preference at DPR $dpr to $expected px',
+    ({ dpr, preferred, expected }) => {
+      // A short canvas keeps the board fit below the preferred scale. ADR 0088
+      // floors the preference, then enforces the smallest whole, tappable stop.
+      const camera = integerCamera({ width: 1280, height: 200, dpr }, FOREST_ROAD);
+      camera.fitExplore(preferred, 12, 'floor');
+      expect(TILE * camera.scale).toBeCloseTo(expected, 9);
+      expect(TILE * camera.scale).toBeGreaterThanOrEqual(MIN_TILE_PX);
+      expectSettled(camera);
+    },
+  );
+
   it('leaves the continuous camera alone when integer zoom is off', () => {
     const camera = new Camera({ width: 1368, height: 912, dpr: 1.5 }, FOREST_ROAD, 'oblique');
     camera.fitExplore(96);

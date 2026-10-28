@@ -212,7 +212,13 @@ for (const largeText of ['normal', 'huge'] as const) {
     const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
     const box = await page.locator('.map-canvas').boundingBox();
     if (!box) throw new Error('Missing battlefield geometry');
-    expect(before.tilePx).toBeCloseTo(largeText === 'huge' ? 40 : 64, 5);
+    // ADR 0088: 40 is a preferred CSS tile, not an integer-zoom stop. Both
+    // configured DPRs (desktop 1 and iPad 2) need a 64px tile to stay on whole
+    // device pixels without going below the 40px touch minimum.
+    expect(before.tilePx).toBeCloseTo(64, 5);
+    const dpr = await page.evaluate(() => window.devicePixelRatio);
+    const deviceScale = (before.tilePx / 64) * dpr;
+    expect(deviceScale).toBeCloseTo(Math.round(deviceScale), 5);
     expect(box.height).toBeGreaterThan(160);
     expect(await page.getByRole('button', { name: /^Focus / }).count()).toBeGreaterThan(0);
 
