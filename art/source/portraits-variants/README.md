@@ -80,6 +80,25 @@ hand cleaning, but it changes the art standard the owner just approved.
 - Precache: each 100 KB variant adds 100 KB to the 25 MB precache too, unless variants are left out of the precache and
   fetched on first use, with the neutral portrait as the fallback while they load.
 
+## Sizing the first route A rollout (owner's plan: 7 characters x 4 moods)
+
+If route A is picked, the first wave is the party and the Ba Dan speakers: Kaya, Sura, Bo, Mira, Gao, Pella and Dorin, 4
+moods each beside the shipped neutral, so **28 variants**.
+
+| item                           | estimate                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| generations                    | 28 x 10 = 280 with no rerolls; **about 365** at one reroll in three (13 a mood)                               |
+| bytes                          | 28 x 87–108 KB = 2.4–3.0 MB, **about 2.7 MiB**                                                                |
+| portraits family               | 3.98 + 2.7 = 6.7 MiB: **raise to 7 MiB** (ADR 0092)                                                           |
+| with Kaya, Sura, Bo re-encoded | those three are the only full-colour files among the seven; 256 colours frees 0.38 MiB: 6.3, raise to 6.5 MiB |
+| with all 12 re-encoded         | frees 1.31 MiB: 5.4, raise to 5.5 MiB                                                                         |
+| precache (25 MB)               | 22.23 + about 2.8 = **about 25.0: at the limit**                                                              |
+
+The precache is the binding number, not the family budget. Either re-encode the full-colour portraits first (which
+brings the precache back to about 23.7), or leave variants out of the precache and load them on first use, with the
+neutral portrait shown until they land. I recommend both: the re-encode is a one-off with a banding check, and lazy
+variants keep the next waves (bandits, the rest of the cast) off the install size.
+
 ## Design note: choosing a variant in game (proposal, not built)
 
 - **Where the field goes.** A dialogue node has one speaker and one portrait, and its `lines` are plain strings, so a
