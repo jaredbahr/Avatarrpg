@@ -2,6 +2,9 @@
 
 **Status:** proposed, 2026-10-27 (draft PR for the owner's review, issue #284)
 
+**Amended by ADR 0094 (2026-10-28):** the figures are drawn at 1.0 on oblique boards, not 1.25, so they sample
+nearest at every integer zoom.
+
 Follows ADR 0085 (Route A: one art pixel a world pixel), ADR 0086 (the effects at G1) and ADR 0087 (the forest road at
 G1). Changes the party's sheets, their grid, their asset format and the units budget's measured use, so it is recorded
 here. ADR 0088 is reserved for the camera.

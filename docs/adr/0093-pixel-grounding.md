@@ -83,7 +83,8 @@ shipped files.
   shadow as it would; flagged with the stride above, since both are the walk art.
 - **Figures are drawn at 1.25 on oblique boards** (`partyScale`), so one art pixel is 2.5 or 3.75 device pixels at
   N = 2 or 3 and every figure resamples soft, whatever its shadow does. This is ADR 0089's art scale and is out of
-  this pass's scope; the shadows are on the world grid regardless.
+  this pass's scope; the shadows are on the world grid regardless. Resolved by ADR 0094: figures are drawn at 1.0 (owner,
+  2026-10-28).
 - **The riverside** draws through the living layer (`VillageLife`) with its own shadows and is not covered here.
 - **Combat ambience and orthographic boards.** No board ships orthographic today; one that did would get the same
   grid at its camera scale.
