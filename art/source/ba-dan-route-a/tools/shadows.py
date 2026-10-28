@@ -46,6 +46,9 @@ SKIP = {'garden-kit'}
 # neither the silhouette's bottom nor the bark's colour says where a tree meets the ground (ADR 0093, known faults).
 EXTRA_RECTS = {'gao-door-barrel': (1596, 488, 1612, 523)}
 INK_DARK = 62
+# Uncertain items (ADR 0093's list): a single flat beige tile on the south-west house's roof, one colour, reads as a
+# hole or a stray stone at play zoom. Its pixels take the roof's own tile colour around it.
+ROOF_TILE = {'box': (990, 648, 1020, 670), 'rgb': (173, 147, 115)}
 SCENE = json.load(open(f'{O.GEO}/scene.json'))['pieces']
 
 
@@ -248,6 +251,20 @@ def clamp_to_ground(a, before, lifted, r=6, gain=1.06):
     return out
 
 
+def retile(a):
+    """Gives the stray beige roof tile the median colour of the lit roof tiles in a 6 px ring round it."""
+    x0, y0, x1, y1 = ROOF_TILE['box']
+    box = a[y0:y1, x0:x1]
+    tile = (np.abs(box - np.array(ROOF_TILE['rgb'])).max(axis=2) < 3)
+    if not tile.any():
+        return
+    near = P.dilate(np.pad(tile, 6), 6)[6:-6, 6:-6] & ~tile
+    ring = box[near]
+    lit = ring[(ring.mean(axis=1) > 90) & (ring[:, 0] - ring[:, 2] > 60)]
+    if len(lit):
+        box[tile] = np.median(lit, axis=0)
+
+
 def main():
     world = Image.open(SRC).convert('RGB')
     shape = (world.height, world.width)
@@ -307,6 +324,7 @@ def main():
     cast &= ~objs & ~contact
     a[cast] *= O.SHADOW * O.COOL
     a[contact] *= O.CONTACT * O.COOL
+    retile(a)
     Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)).save(OUT, optimize=True)
     print(f'{OUT}: {len(standing)} objects re-shaded ({len(kept)} set by objects.py, {len(bench_fence)} reshaded, '
           f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS)} painted piece grounded')

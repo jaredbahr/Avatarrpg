@@ -2,11 +2,11 @@
  "region": "r0c0",
  "source": {
   "path": ".review/route-a/candidates/r0c0.png",
-  "sha256": "062cc0bcdfffcdd7c0db24102ddd7b39a7d96857a7797f9547e753abe054b32d"
+  "sha256": "9d95f18fcee0f89bab466eed8e8d212320d9a6bd90448681bbd216157fd626fa"
  },
  "stored": {
   "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c0.png",
-  "sha256": "062cc0bcdfffcdd7c0db24102ddd7b39a7d96857a7797f9547e753abe054b32d"
+  "sha256": "9d95f18fcee0f89bab466eed8e8d212320d9a6bd90448681bbd216157fd626fa"
  },
  "gate": {
   "pass": true,
