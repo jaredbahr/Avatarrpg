@@ -1,6 +1,7 @@
 # ADR 0095: A jog for every native-G1 figure at the brisk pace
 
-**Status:** accepted, 2026-10-28 (#306; the owner's three decisions below, the same day)
+**Status:** accepted, 2026-10-28 (#306; the owner's three decisions below, the same day). **Suspended** the same day:
+no move plays the jog until the ~74 px redraw (the amendment at the end).
 
 Amends ADR 0067 (the brisk stride cadence: its pace stays, its 1.825-tile G walk loop no longer times the native-G1
 figures), ADR 0089 and ADR 0091 (each sheet gains a jog clip in eight headings) and ADR 0093 (its "walk foot slide"
@@ -168,3 +169,66 @@ The rule above therefore has one named exception: a figure whose sheet has no jo
 - **The quarry bender** is still the 128 px G sheet with ADR 0067's walk; not native G1, so out of scope.
 - **Captures** are canvas only (the WebGL path times out on this container's software rasteriser, as ADR 0091's did).
 - Credits: CMU subject 9 trial 1 joins the folded CMU entry.
+
+## Amendment, 2026-10-28: walk, a bit slower, until the redraw
+
+Jared, 2026-10-28, on the jog at 1.25: **"Jog is still visually wrong. Shadows are off and it makes it look like their
+legs are growing."** His two decisions:
+
+1. **Steady shadows.** Each figure casts one steady shape a heading at its feet; the contact band stays. Recorded as
+   ADR 0093's amendment of the same day.
+2. **"Walk, a bit slower."** Until the native ~74 px redraw after the PixelLab plan upgrade, every native-G1 figure
+   goes back to the walk clip, with its normal leg proportions, and the brisk pace slows.
+
+**The interim plan, as shipped.**
+
+- **The pace** is 750 ms a tile in exploration (`TIMING.strollStep`, was 500) and 720 in combat (`combatWalkStep`, was
+  480). Errands keep their amble at 2 s a tile (`RESIDENT_AMBLE` is now `2000 / strollStep`), and so does every move of
+  Mira's, through an explicit `locomotion.amble` (her sheet no longer needs a missing jog to say so). The legacy
+  four-way walk's clip time a tile (`WALK_MS_PER_TILE`) is pinned at its old 475, so those sheets keep their fit. Every
+  other consumer reads `TIMING` (the trail reservations, the combat and explore choreography, the tests), and the AI's
+  turns wait on the animator, so nothing else assumed 500.
+- **The jog is off** through locomotion: no sheet sets `jog`, so the animator draws `walk*` for every move. The jog cels
+  and clips stay in the sheets, unplayed.
+- **The walk is timed to its drawn feet** at the figure scale: `G1_WALK` holds `walk_stride.py`'s fit (tiles a loop at
+  one art px a world px) for each family and heading, `walkMsPerTile = cels * 114 / fit`, and the animator's division
+  by 1.25 stretches it over the larger feet. The walk starts on its quarter-cycle passing cel (3 of 12, 2 of 8). The
+  quarry bender keeps ADR 0067's 1.825-tile stride.
+
+Measured as shipped (`walk_stride.py <family> <name> walk --manifest --scale 1.25`, rows in
+`art/source/jog-g1/review/stride-walk-750.json`; slides in world px a stance cel, steps a minute and ms a cel east at
+750 ms a tile):
+
+| family    | slide range (mean abs) | worst pair | loop E (tiles) | steps/min E |  ms a cel E |
+| --------- | ---------------------: | ---------: | -------------: | ----------: | ----------: |
+| Kaya      |    -0.04..+0.03 (0.01) |        5.6 |          0.562 |         285 |          35 |
+| Sura      |    -0.04..+0.04 (0.02) |        3.8 |          0.575 |         278 |          36 |
+| Bo        |    -0.02..+0.04 (0.01) |        7.3 |          0.575 |         278 |          36 |
+| household |    +0.01..+0.06 (0.03) |        4.5 |          0.550 |         291 |          52 |
+| watch     |    -0.05..+0.04 (0.04) |        9.7 |          0.687 |         233 |          64 |
+| Mira      |    -0.03..+0.06 (0.03) |        7.5 |          0.663 |  (amble) 91 | (amble) 166 |
+| Gao       |    -0.07..+0.06 (0.03) |        5.9 |          0.612 |         261 |          57 |
+| Pella     |    -0.03..+0.05 (0.02) |        5.7 |          0.462 |         346 |          43 |
+| Dorin     |    -0.04..+0.05 (0.03) |        5.0 |          0.650 |         246 |          61 |
+| thug      |    -0.05..+0.03 (0.03) |        3.9 |          0.600 |         267 |          56 |
+| slinger   |    -0.04..+0.06 (0.03) |        7.7 |          0.612 |         261 |          57 |
+| bruiser   |    -0.01..+0.06 (0.03) |        9.6 |          0.650 |         246 |          61 |
+
+(An errand at 2 s a tile plays a resident's walk at 2.67 times these ms a cel: 115 for Pella to 171 for the watch,
+near the authored 114.)
+
+**Known faults of the interim.**
+
+- **The legs are quick.** The walk's drawn feet cover about 0.46 tiles a loop at one art px (a quarter of what the
+  game's brisk pace needs), so holding the planted foot at 750 ms a tile plays the walk at 233 to 291 steps a minute
+  (Pella 346), the party's 12-cel walk at about 35 ms a cel against its authored 114. This is what "the slide as small
+  as it can be" costs. It is a single dial: a cel time of k times the fitted one slides the planted foot about (k − 1)
+  times its own back-travel, about 4 world px a stance cel east at 1.25, so the authored 114 ms (k ≈ 3.2) would slide
+  about 9 px a cel, and 70 ms (k = 2) about 4. Some slide is accepted; the owner chooses on the recording.
+- **Single pairs jitter** 3.8 to 9.7 px (the watch's and the bruiser's worst), as the walk always did: the mean is fit,
+  the drawn foot does not move evenly.
+- **Every trip takes 1.5 times as long**: a talk, a fight's move, the party's crossing of Ba Dan.
+
+**The follow-up.** A natural-stride jog drawn natively in the ~74 px redraw, its stride long enough that its planted
+foot covers the brisk pace at a believable cadence without lengthening the swing in the retarget, so the legs keep
+their proportions. Until then the jog cels ship unused.

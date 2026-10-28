@@ -247,22 +247,25 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
   lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
   lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
-- **A native-G1 figure jogs at the brisk pace and walks only when slow** (ADR 0095). Its sheet's `locomotion.jog`
-  makes the animator draw `jog*`, and `walkMsPerTile` is the jog's, fitted to the drawn feet at one art px a world px
-  (`G1_JOG`, `G1_HEADING`); `Animator.walkClipTime` divides it by the figure scale (1.25 on oblique boards, ADR 0094's
-  amendment), so it stays planted at any scale.
-  The `walk*` clips stay for slow moves: a resident's routine errand ambles at `RESIDENT_AMBLE` times the stroll and
-  draws the walk at the rate `G1_AMBLE` sets. Mira never jogs (owner, 2026-10-28): her sheet leaves `jog` off
-  (`G1_WALKS_ONLY`), so every move of hers ambles; do not give her the jog back. A new slow or scripted move must
-  draw the walk on a clock whose ms a tile is the walk's own; the walk at the brisk pace slides 5-16 px a stance cel.
-  Measure with `walk_stride.py --manifest`.
+- **Every native-G1 figure walks, at 750 ms a tile, until the ~74 px redraw** (ADR 0095's amendment; owner,
+  2026-10-28: "Walk, a bit slower"). The jog read as legs growing, so no sheet's locomotion sets `jog`; its cels stay
+  in the sheets, unplayed, for a natural-stride jog drawn in the redraw. Do not turn the jog back on. The walk's
+  `walkMsPerTile` is fitted per family and heading to its drawn feet (`G1_WALK`, from `walk_stride.py`), and
+  `Animator.walkClipTime` divides it by the figure scale (1.25 on oblique boards), so the planted foot holds at any
+  pace; the price is a quick cadence (about 35 ms a cel for the party), accepted until the redraw. Errands amble at
+  2 s a tile (`RESIDENT_AMBLE = 2000 / strollStep`), and so does every move of Mira's (`locomotion.amble`). The
+  legacy four-way walk keeps its pinned `WALK_MS_PER_TILE` (475). Refit `G1_WALK` with
+  `walk_stride.py <family> <name> walk --manifest --scale 1.25` whenever a walk is redrawn.
 - **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
   on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
   smooths, or a mask at screen resolution, brings back the soft edge the pass removed. Every figure and prop on an
   oblique board gets a contact (a figure's sole band, a prop's 2 world px contact line) and a cast along its scene's
   `castKey`: a figure's from its foot row, a prop's from its own base (`groundedCast`), so no ground shows between
   a box's side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is
-  grounded the same way, its feet only inside its footprint; a tree or a hanging lamp does not. Ba Dan's painted
+  grounded the same way, its feet only inside its footprint; a tree or a hanging lamp does not.
+  A figure's **cast is steady** (ADR 0093's amendment): while it stands, walks or settles it casts its heading's
+  idle cel (`castFrame`), never the frame it draws, so the shadow does not sweep with its legs; its contact band
+  still follows the drawn soles, and an action casts its own frame. Ba Dan's painted
   objects are shaded in the master by `ba-dan-route-a/tools/shadows.py`, never in the shipped files.
   `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
