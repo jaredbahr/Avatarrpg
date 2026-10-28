@@ -39,10 +39,23 @@ and 3, 4x nearest crops) found:
    oblique board. Ba Dan keeps `{ cast: 0.5, contact: 0.8 }`. The forest and the quarry paint no shadows of their own,
    so 0.6 keeps the band clearly darker than the cast it sits in, in the ratio Ba Dan's has. A figure with
    `castShadow: false` keeps its pool, as before.
-3. **A prop meets the ground on a contact line.** Its own silhouette one world pixel lower (`CONTACT_LINE`), at the
-   contact level, into the same union: a line one world pixel deep under every edge it stands on, whatever its base's
-   shape. It is how `objects.py` set the painting's G1 objects in. The figures' flattened sole band was tried first;
-   on a wide prop it poked out past the base's side corners at the front corner's height.
+3. **A prop stands on its own base.** Two parts, both in the union:
+   - **Its cast starts at its base** (`groundedCast`, `groundProfile`). A prop's art is a solid object whose base is a
+     shape on screen, not a point: a box's base is a V (front corner low, side corners higher), a tripod's or a cart's
+     is the line between its feet or wheels. Each column of the art is cast from the lower convex hull of the
+     silhouette's bottom edge under it, so the base row is its own shadow. The figures' foot projection, which
+     shears everything from one foot row, lands a box's raised side edges' shadow several world pixels below them
+     (the coordinator's review of the hay bale: a band of grass between the bale and its cast).
+     `propGrounding.test.ts` holds every shipped prop to "the pixel under every column's lowest opaque pixel is
+     shadow" on both keys, and shows the foot projection failing that on the hay bale. Figures keep the foot
+     projection: their hands are not on the ground.
+   - **Its contact line.** Its own silhouette `CONTACT_LINE` = 2 world pixels lower, at the contact level: a line
+     under every edge it stands on, whatever its base's shape. It is how `objects.py` set the painting's G1 objects in
+     (1 px there); a prop's art is four pixels to a world pixel and its outline lands mid-texel, covering half of a 1 px
+     line, so 2 shows a whole world pixel. The figures' flattened sole band was tried first; on a wide prop it poked
+     out past the base's side corners at the front corner's height.
+   - The soft radial pool the sprite cache baked into every prop image (`groundShadow`, measured by
+     `propFootprint.ts`) is gone with its measurement: it was the one blurred shadow left on the board.
 4. **A scene can name its key.** `actorGrounding.castKey` (validated down-right only) is the direction and length
    figures' and props' casts fall along. Ba Dan names objects.py's `SHADOW_KX, SHADOW_KY` = (0.35, 0.16), and
    `actorGrounding.test.ts` reads it back from that file so the two cannot drift. A scene that names none keeps
