@@ -252,10 +252,13 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   in the sheets, unplayed, for a natural-stride jog drawn in the redraw. Do not turn the jog back on. The walk's
   `walkMsPerTile` is fitted per family and heading to its drawn feet (`G1_WALK`, from `walk_stride.py`), and
   `Animator.walkClipTime` divides it by the figure scale (1.25 on oblique boards), so the planted foot holds at any
-  pace; the price is a quick cadence (about 35 ms a cel for the party), accepted until the redraw. Errands amble at
-  2 s a tile (`RESIDENT_AMBLE = 2000 / strollStep`), and so does every move of Mira's (`locomotion.amble`). The
+  pace. A brisk move then caps it at `BRISK_WALK_CEL_MS` (70, `animator.ts`: the owner's choice, about 3 px of slide
+  a stance cel for the party): one constant for every family and heading, so tune it there, never in `G1_WALK`.
+  Errands amble at 2 s a tile on the fit (`RESIDENT_AMBLE = 2000 / strollStep`, `AnimatorOptions.amble`), and so does
+  every move of Mira's (`locomotion.amble`). The
   legacy four-way walk keeps its pinned `WALK_MS_PER_TILE` (475). Refit `G1_WALK` with
-  `walk_stride.py <family> <name> walk --manifest --scale 1.25` whenever a walk is redrawn.
+  `walk_stride.py <family> <name> walk --manifest --scale 1.25` whenever a walk is redrawn (add
+  `--cadence 70` to measure the brisk walk).
 - **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
   on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
   smooths, or a mask at screen resolution, brings back the soft edge the pass removed. Every figure and prop on an

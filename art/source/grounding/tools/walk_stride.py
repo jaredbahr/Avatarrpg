@@ -24,6 +24,8 @@ python3 -I art/source/grounding/tools/walk_stride.py residents-g1 thug jog --man
 (--tiles: one number, or east, diagonal, north/south loop lengths in tiles; --manifest reads the clip's fps and the sheet's
 clip time a tile from src/content/assets/manifest.ts instead, so a resident's walk is measured as its errand ambles,
 and divides that clip time by --scale as the animator does on an oblique board (pass the board's figure scale, 1.25);
+--cadence MS caps it at the brisk cadence, cel ms * --pace (default 750) / MS clip ms a tile, as the animator plays a
+brisk move (BRISK_WALK_CEL_MS, ADR 0095's amendment), so pass 70 to measure a brisk walk and leave it off for an errand;
 --json prints the rows as JSON)
 """
 import subprocess
@@ -114,7 +116,7 @@ def manifest_timing(key, kind):
     return {camel[h]: v for h, v in json.loads(r.stdout.strip().splitlines()[-1]).items()}
 
 
-def measure(family, name, kind, cel_ms, tiles, scale, timing=None):
+def measure(family, name, kind, cel_ms, tiles, scale, timing=None, cadence=None, pace=750):
     M = motion_module(family)
     chars = json.loads((REPO / f'art/source/{family}/tools/chars.json').read_text())
     spec = M.spec_for(name, kind) if hasattr(M, 'spec_for') else (
@@ -142,6 +144,8 @@ def measure(family, name, kind, cel_ms, tiles, scale, timing=None):
         if timing:
             cel_ms, ms_tile = timing[d]
             ms_tile /= scale  # the animator stretches the clip by the figure scale (Animator.walkClipTime, ADR 0095)
+            if cadence:
+                ms_tile = min(ms_tile, cel_ms * pace / cadence)  # a brisk move's cap (BRISK_WALK_CEL_MS)
             t = n * cel_ms / ms_tile
         else:
             t = tiles[GROUP[d]]
@@ -170,6 +174,7 @@ def measure(family, name, kind, cel_ms, tiles, scale, timing=None):
         ratio = (path / 2) / (ppt * t)
         back = float(np.mean(backs)) if backs else float('nan')
         rows.append(dict(heading=d, pairs=len(slides), game=round(game, 2), back=round(back, 2), loop=round(t, 3),
+                         wall_cel_ms=round(cel_ms * pace / ms_tile, 1) if timing else None,
                          slide=round(float(np.mean(slides)), 2) if slides else None,
                          worst=round(float(max(slides, key=abs)), 2) if slides else None,
                          fit=round(back * n / ppt, 3) if backs else None, ratio=round(ratio, 2)))
@@ -185,6 +190,8 @@ def main():
     ap.add_argument('--tiles', default='1.825')
     ap.add_argument('--scale', type=float, default=1.0)
     ap.add_argument('--manifest', action='store_true')
+    ap.add_argument('--cadence', type=float)
+    ap.add_argument('--pace', type=float, default=750)
     ap.add_argument('--json', action='store_true')
     a = ap.parse_args()
     t = [float(x) for x in a.tiles.split(',')]
@@ -193,7 +200,7 @@ def main():
     if a.manifest:
         key = json.loads((REPO / f'art/source/{a.family}/cels/{a.name}/pack.json').read_text())['key']
         timing = manifest_timing(key, a.kind)
-    rows = measure(a.family, a.name, a.kind, a.cel_ms, tiles, a.scale, timing)
+    rows = measure(a.family, a.name, a.kind, a.cel_ms, tiles, a.scale, timing, a.cadence, a.pace)
     if a.json:
         print(json.dumps(rows))
         return

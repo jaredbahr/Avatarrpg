@@ -232,3 +232,37 @@ near the authored 114.)
 **The follow-up.** A natural-stride jog drawn natively in the ~74 px redraw, its stride long enough that its planted
 foot covers the brisk pace at a believable cadence without lengthening the swing in the retarget, so the legs keep
 their proportions. Until then the jog cels ship unused.
+
+### The cadence, chosen (Jared, 2026-10-28)
+
+Jared watched #313's recording and chose the dial's middle setting: **calmer steps, about 4 px of slide a stance cel,
+around 70 ms a cel.** One named constant sets it, `BRISK_WALK_CEL_MS` = 70 in `src/app/animator.ts`: at the brisk stroll
+a native-G1 sheet (its locomotion declares `walkCelMs`, the walk's authored 114) plays its walk at
+`walkCelMs * strollStep / BRISK_WALK_CEL_MS` clip ms a tile, for every family and heading, never slower than its fitted
+`walkMsPerTile`, so no planted foot slides forwards (the bruiser's south-east, Mira's and Dorin's slowest headings keep
+their fit, 73 to 77 ms a cel). An ambling animator (`AnimatorOptions.amble`: errands, and every move of Mira's) keeps
+the fit, so the errand and Mira rows above are unchanged. Combat's 720 ms a tile plays the same clip rate, 67 ms a cel.
+The fitted table (`G1_WALK`) is unchanged; to retune, change the one constant.
+
+Measured as shipped (`walk_stride.py <family> <name> walk --manifest --scale 1.25 --cadence 70`, rows in
+`art/source/jog-g1/review/stride-walk-750-70ms.json`; world px a stance cel, east at 750 ms a tile):
+
+| family    | slide range (mean abs) | worst pair | loop E (tiles) | steps/min E | ms a cel (all headings) |
+| --------- | ---------------------: | ---------: | -------------: | ----------: | ----------------------: |
+| Kaya      |       +2.0..+4.3 (3.2) |        9.7 |          1.120 |         143 |                      70 |
+| Sura      |       +2.3..+4.4 (3.3) |        7.1 |          1.120 |         143 |                      70 |
+| Bo        |       +2.1..+4.4 (3.1) |       10.4 |          1.120 |         143 |                      70 |
+| household |       +0.7..+2.4 (1.5) |        5.5 |          0.747 |         214 |                      70 |
+| watch     |       +0.0..+1.9 (1.1) |       11.2 |          0.747 |         214 |                      70 |
+| Mira (\*) |       -0.0..+1.1 (0.6) |        7.0 |          0.747 |         214 |                  70..76 |
+| Gao       |       +0.2..+1.4 (0.9) |        6.6 |          0.747 |         214 |                      70 |
+| Pella     |       +1.3..+3.3 (2.2) |        5.0 |          0.747 |         214 |                      70 |
+| Dorin     |       -0.0..+1.5 (0.7) |        4.7 |          0.747 |         214 |                  70..73 |
+| thug      |       +0.2..+1.8 (1.0) |        4.5 |          0.747 |         214 |                      70 |
+| slinger   |       +0.2..+1.6 (1.0) |        7.4 |          0.747 |         214 |                      70 |
+| bruiser   |       +0.1..+1.4 (0.6) |        9.5 |          0.747 |         214 |                  70..77 |
+
+(\*) Mira never walks briskly; her row is what the cap would give. Slide is now one-signed (+, the foot lags the
+ground): the party's 12-cel walk slides about 3 px a stance cel, the eight-cel residents' and bandits' 1 to 2. Their
+loops differ (1.12 and 0.75 tiles east) because every figure now holds the same cel time, and the party's loop has 12
+cels to the others' 8. The known fault "the legs are quick" above is superseded by this choice.

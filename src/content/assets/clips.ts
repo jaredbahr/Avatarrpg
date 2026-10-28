@@ -71,7 +71,17 @@ export interface LocomotionDef {
   readonly jog?: boolean;
   /** Every move this figure makes ambles, as a routine errand does (Mira, ADR 0095). */
   readonly amble?: true;
+  /**
+   * Clip ms a tile that holds the walk's planted foot, by heading, at one art px
+   * a world px. A routine errand plays it; with `walkCelMs` a brisk move plays
+   * the walk faster than that only up to the animator's brisk cadence.
+   */
   readonly walkMsPerTile: Readonly<Record<Heading, number>>;
+  /**
+   * The walk's authored clip ms a cel, on a native-G1 sheet: at the brisk stroll
+   * the animator plays it at `BRISK_WALK_CEL_MS` a cel (ADR 0095's amendment).
+   */
+  readonly walkCelMs?: number;
   /** Start on a planted passing pose instead of the loop's widest stride. */
   readonly walkStartMs: number;
   /** Full authored loop, used only to stagger companions without changing pace. */

@@ -645,7 +645,7 @@ export class ResidentWalks {
     // Mira walks everywhere at the amble (ADR 0095).
     const amble = errand || sheetLocomotion(motion.who.sprite)?.amble === true;
     const slow = amble ? RESIDENT_AMBLE : 1;
-    const animator = new Animator(this.content, { motionReduced: this.reduced });
+    const animator = new Animator(this.content, { motionReduced: this.reduced, amble });
     animator.setProjection(map.projection ?? 'orthographic');
     animator.push(
       at,

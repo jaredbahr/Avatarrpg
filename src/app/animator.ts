@@ -19,7 +19,7 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
-import { choreograph } from './anim/choreography';
+import { choreograph, TIMING } from './anim/choreography';
 import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
@@ -56,6 +56,15 @@ const BOB = 0.05;
  * their declared stride.
  */
 export const WALK_MS_PER_TILE = 475;
+
+/**
+ * Wall ms each walk cel holds at the brisk stroll on a native-G1 sheet (ADR
+ * 0095's amendment; owner, 2026-10-28: the middle of the cadence dial). Its
+ * feet hold the ground only at about 35 ms a cel, which read as racing legs;
+ * at 70 the steps are calmer and the planted foot slides about 4 world px a
+ * stance cel. One number for every family and heading: tune it here.
+ */
+export const BRISK_WALK_CEL_MS = 70;
 
 /**
  * How long a finished walk holds its settled pose before the ready stance is
@@ -98,6 +107,12 @@ export interface UnitHealthPresentation {
 export interface AnimatorOptions {
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
+  /**
+   * Every walk this animator plays ambles (a routine errand, Mira: ADR 0095),
+   * so a G sheet keeps the clip time a tile fitted to its drawn feet rather
+   * than the brisk cadence.
+   */
+  readonly amble?: boolean;
   /**
    * Where a push's sound cues go. Presentation only and entirely optional: the
    * animator never reads them back, nothing about `busy()` or `finishesAt`
@@ -586,11 +601,19 @@ export class Animator {
     // (ADR 0095). Drawn larger, its feet cover more ground a loop, so the loop
     // plays over more of it and the planted foot stays planted at any figure scale.
     const scale = partyScale(this.projection);
+    // At the brisk stroll a native-G1 walk plays at BRISK_WALK_CEL_MS a cel,
+    // never slower than its fitted rate; an amble keeps the fit (ADR 0095).
+    const brisk =
+      gait.walkCelMs && !this.options.amble
+        ? (gait.walkCelMs * TIMING.strollStep) / BRISK_WALK_CEL_MS
+        : Infinity;
     return (
       gait.walkStartMs +
       (this.walkPhaseFractions.get(travel.track.unitId) ?? 0) * gait.walkCycleMs +
       integrateAlong(travel.track.curve, travel.distance, (tangent) => {
-        return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] / scale;
+        const fitted =
+          gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] / scale;
+        return Math.min(fitted, brisk);
       })
     );
   }

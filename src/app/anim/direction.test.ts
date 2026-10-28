@@ -334,7 +334,8 @@ describe('heading vocabulary is a declared sheet capability', () => {
     it(`plays ${sprite}'s eight-way walk at its sheet-declared gait per heading`, () => {
       const sheet = ASSETS[sprite];
       if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
-      const a = new Animator(content, { motionReduced: () => false });
+      // An amble plays the fitted rate a heading; a brisk move caps it (walkPhase.test).
+      const a = new Animator(content, { motionReduced: () => false, amble: true });
       a.push(
         0,
         [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 4, y: 8 }] }],
@@ -358,7 +359,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
         [{ x: 8, y: 8 }, walkMsPerTile.south],
         [{ x: 8, y: 0 }, walkMsPerTile.east],
       ] as const) {
-        const a = new Animator(content, { motionReduced: () => false });
+        const a = new Animator(content, { motionReduced: () => false, amble: true });
         a.setProjection('oblique');
         a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
         const pose = a.unitPose(300, 'u', sprite);
