@@ -1,5 +1,8 @@
 # Ba Dan residents, G locomotion (art source, shared tools)
 
+> **History (ADR 0091).** This set no longer ships: the sheet is redrawn on the world's native G1 grid from
+> `art/source/residents-g1/` and packed by `scripts/art/residents-g1.ts`. Its packer was retired; the files stay as the record.
+
 The design and review tools for the six Ba Dan resident G sets of `docs/art/character-lane-plan.md` ("Ordered generation
 plan", jobs 1-6; issue #284): `household-g`, `watch-g`, `mira-g`, `gao-g`, `pella-g`, `dorin-g`. Generated, not shipped:
 nothing here is in the manifest (ADR 0082 leaves room for two or three sheets; that choice is the owner's).

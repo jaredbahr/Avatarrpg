@@ -31,6 +31,7 @@
 
 import type { ClipDef, ClipName, Heading, LocomotionDef, MeleeDirection } from './clips';
 import { HEADINGS, headingClip } from './clips';
+import { BANDITS_G1_TRIMS } from './banditsG1';
 import { PARTY_G1_TRIMS } from './partyG1';
 import { residentGrid } from './residentGrid';
 
@@ -251,21 +252,27 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
 type EnemyGName = 'thug' | 'slinger' | 'bruiser' | 'quarrybender';
 
 /**
- * A toned PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle,
- * walk and rest at the party's scale and walk rate, and the old sheet's
- * cast, hit and KO cels, mirrored as the party's legacy actions are. The
- * bruiser's club needs a 160 px cel. The thug, the slinger and the bruiser also draw their own G
- * hits (eight headings) and knockouts (the four diagonals) from two further
- * pages and a clip file (ADR 0059, ADR 0063), as the party does.
+ * A PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle, walk
+ * and rest at the party's scale and walk rate, and the mirrored legacy cast,
+ * hit and KO, as the party's legacy actions are. The thug, the slinger and the
+ * bruiser also draw their own G hits (eight headings) and knockouts (the four
+ * diagonals) from two further pages and a clip file (ADR 0059, ADR 0063), as
+ * the party does.
+ *
+ * The forest bandits (thug, slinger, bruiser) are on the world's native G1
+ * grid (ADR 0091): 64 px a tile, a 64x96 cel, the thug's 80 and the
+ * bruiser's 96 px wide for the club's swing; their one-cel hit and KO are trimmed cels (`banditsG1.ts`). The
+ * quarry bender is still the 128 px G sheet.
  */
 function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
   const key = `unit.enemy.${name}`;
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const g1 = name === 'quarrybender' ? undefined : BANDITS_G1_TRIMS[name];
   const clips: Partial<Record<ClipName, ClipDef>> = {
     cast: { frames: frames('cast', 3), fps: 8, loop: false },
-    hit: { frames: frames('hit', 1), fps: 1, loop: false },
-    ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    hit: { frames: frames('hit', 1), fps: 1, loop: false, ...g1?.hit },
+    ko: { frames: frames('ko', 1), fps: 1, loop: false, ...g1?.ko },
   };
   for (const heading of HEADINGS) {
     clips[headingClip('idle', heading)] = {
@@ -294,8 +301,10 @@ function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
           clipData: `art/units/${name}-g-clips.json`,
         }
       : {}),
-    pixelsPerTile: 128,
-    ...(name === 'bruiser' ? { frameSize: { w: 160, h: 192 } } : {}),
+    pixelsPerTile: g1 ? 64 : 128,
+    // The club's swing needs a wider cel than a tile (ADR 0032): 80 px for the thug, 96 for the bruiser.
+    ...(name === 'thug' ? { frameSize: { w: 80, h: 96 } } : {}),
+    ...(name === 'bruiser' ? { frameSize: { w: 96, h: 96 } } : {}),
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
@@ -315,8 +324,9 @@ function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
 type ResidentGName = 'household' | 'watch' | 'mira' | 'gao' | 'pella' | 'dorin';
 
 /**
- * A Ba Dan resident on a G sheet (issue #284, `scripts/art/resident-g.ts`):
- * PixelLab art edited from Kaya's G south, eight-way idle, walk and rest at
+ * A Ba Dan resident on a G sheet (issue #284, ADR 0091,
+ * `scripts/art/residents-g1.ts`): PixelLab art redrawn on the world's native
+ * G1 grid by the party's recipe (ADR 0089), eight-way idle, walk and rest at
  * the party's scale and walk rate, with no combat clips. The walk is eight
  * cels like the enemies', so it shares their stride timing.
  */
@@ -341,13 +351,13 @@ function residentGSheet(name: ResidentGName, key: string, palette: string): Shee
       loop: true,
     };
   }
-  // The grid the packer used (`residentGrid.ts`): 128 px a tile today.
+  // The grid the packer used (`residentGrid.ts`): 64 px a tile, a 64x96 cel,
+  // which is the default cel for that grid, so no frame size is declared.
   const grid = residentGrid();
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
     pixelsPerTile: grid.pixelsPerTile,
-    ...(grid.frameW === 128 ? {} : { frameSize: { w: grid.frameW, h: grid.frameH } }),
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',

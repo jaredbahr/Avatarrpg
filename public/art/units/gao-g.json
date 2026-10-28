@@ -1,1 +1,2095 @@
-{"frames":{"npc.shopkeeper/idle/0":{"frame":{"x":0,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idle/1":{"frame":{"x":128,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idle/2":{"frame":{"x":256,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idle/3":{"frame":{"x":384,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/0":{"frame":{"x":512,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/1":{"frame":{"x":640,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/2":{"frame":{"x":768,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/3":{"frame":{"x":896,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/4":{"frame":{"x":1024,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/5":{"frame":{"x":1152,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/6":{"frame":{"x":1280,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walk/7":{"frame":{"x":1408,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorth/0":{"frame":{"x":1536,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorth/1":{"frame":{"x":1664,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorth/2":{"frame":{"x":1792,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorth/3":{"frame":{"x":1920,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthEast/0":{"frame":{"x":0,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthEast/1":{"frame":{"x":128,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthEast/2":{"frame":{"x":256,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthEast/3":{"frame":{"x":384,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthEast/0":{"frame":{"x":512,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthEast/1":{"frame":{"x":640,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthEast/2":{"frame":{"x":768,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthEast/3":{"frame":{"x":896,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouth/0":{"frame":{"x":1024,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouth/1":{"frame":{"x":1152,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouth/2":{"frame":{"x":1280,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouth/3":{"frame":{"x":1408,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthWest/0":{"frame":{"x":1536,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthWest/1":{"frame":{"x":1664,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthWest/2":{"frame":{"x":1792,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleSouthWest/3":{"frame":{"x":1920,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleWest/0":{"frame":{"x":0,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleWest/1":{"frame":{"x":128,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleWest/2":{"frame":{"x":256,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleWest/3":{"frame":{"x":384,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthWest/0":{"frame":{"x":512,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthWest/1":{"frame":{"x":640,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthWest/2":{"frame":{"x":768,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/idleNorthWest/3":{"frame":{"x":896,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/0":{"frame":{"x":1024,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/1":{"frame":{"x":1152,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/2":{"frame":{"x":1280,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/3":{"frame":{"x":1408,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/4":{"frame":{"x":1536,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/5":{"frame":{"x":1664,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/6":{"frame":{"x":1792,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorth/7":{"frame":{"x":1920,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/0":{"frame":{"x":0,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/1":{"frame":{"x":128,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/2":{"frame":{"x":256,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/3":{"frame":{"x":384,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/4":{"frame":{"x":512,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/5":{"frame":{"x":640,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/6":{"frame":{"x":768,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthEast/7":{"frame":{"x":896,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/0":{"frame":{"x":1024,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/1":{"frame":{"x":1152,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/2":{"frame":{"x":1280,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/3":{"frame":{"x":1408,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/4":{"frame":{"x":1536,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/5":{"frame":{"x":1664,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/6":{"frame":{"x":1792,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthEast/7":{"frame":{"x":1920,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/0":{"frame":{"x":0,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/1":{"frame":{"x":128,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/2":{"frame":{"x":256,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/3":{"frame":{"x":384,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/4":{"frame":{"x":512,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/5":{"frame":{"x":640,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/6":{"frame":{"x":768,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouth/7":{"frame":{"x":896,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/0":{"frame":{"x":1024,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/1":{"frame":{"x":1152,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/2":{"frame":{"x":1280,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/3":{"frame":{"x":1408,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/4":{"frame":{"x":1536,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/5":{"frame":{"x":1664,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/6":{"frame":{"x":1792,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkSouthWest/7":{"frame":{"x":1920,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/0":{"frame":{"x":0,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/1":{"frame":{"x":128,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/2":{"frame":{"x":256,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/3":{"frame":{"x":384,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/4":{"frame":{"x":512,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/5":{"frame":{"x":640,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/6":{"frame":{"x":768,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkWest/7":{"frame":{"x":896,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/0":{"frame":{"x":1024,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/1":{"frame":{"x":1152,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/2":{"frame":{"x":1280,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/3":{"frame":{"x":1408,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/4":{"frame":{"x":1536,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/5":{"frame":{"x":1664,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/6":{"frame":{"x":1792,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/walkNorthWest/7":{"frame":{"x":1920,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/rest/0":{"frame":{"x":0,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/restNorth/0":{"frame":{"x":128,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/restNorthEast/0":{"frame":{"x":256,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/restSouthEast/0":{"frame":{"x":384,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/restSouth/0":{"frame":{"x":512,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/restSouthWest/0":{"frame":{"x":640,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/restWest/0":{"frame":{"x":768,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.shopkeeper/restNorthWest/0":{"frame":{"x":896,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}}},"meta":{"app":"four-nations-tactics","version":"1","image":"gao-g.webp","format":"RGBA8888","size":{"w":2048,"h":1344},"scale":"1"}}
+{
+  "frames": {
+    "npc.shopkeeper/idleSouth/0": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouth/1": {
+      "frame": {
+        "x": 68,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouth/2": {
+      "frame": {
+        "x": 134,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouth/3": {
+      "frame": {
+        "x": 200,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/0": {
+      "frame": {
+        "x": 266,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/1": {
+      "frame": {
+        "x": 332,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/2": {
+      "frame": {
+        "x": 398,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/3": {
+      "frame": {
+        "x": 464,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/4": {
+      "frame": {
+        "x": 530,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/5": {
+      "frame": {
+        "x": 596,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/6": {
+      "frame": {
+        "x": 662,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouth/7": {
+      "frame": {
+        "x": 728,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/restSouth/0": {
+      "frame": {
+        "x": 794,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthEast/0": {
+      "frame": {
+        "x": 860,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthEast/1": {
+      "frame": {
+        "x": 926,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthEast/2": {
+      "frame": {
+        "x": 992,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthEast/3": {
+      "frame": {
+        "x": 1058,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/0": {
+      "frame": {
+        "x": 1124,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/1": {
+      "frame": {
+        "x": 1190,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/2": {
+      "frame": {
+        "x": 1256,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/3": {
+      "frame": {
+        "x": 1322,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/4": {
+      "frame": {
+        "x": 1388,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/5": {
+      "frame": {
+        "x": 1454,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/6": {
+      "frame": {
+        "x": 1520,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthEast/7": {
+      "frame": {
+        "x": 1586,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/restSouthEast/0": {
+      "frame": {
+        "x": 1652,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idle/0": {
+      "frame": {
+        "x": 1718,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idle/1": {
+      "frame": {
+        "x": 1784,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idle/2": {
+      "frame": {
+        "x": 1850,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idle/3": {
+      "frame": {
+        "x": 1916,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/0": {
+      "frame": {
+        "x": 1982,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/1": {
+      "frame": {
+        "x": 2,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/2": {
+      "frame": {
+        "x": 68,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/3": {
+      "frame": {
+        "x": 134,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/4": {
+      "frame": {
+        "x": 200,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/5": {
+      "frame": {
+        "x": 266,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/6": {
+      "frame": {
+        "x": 332,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walk/7": {
+      "frame": {
+        "x": 398,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/rest/0": {
+      "frame": {
+        "x": 464,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthEast/0": {
+      "frame": {
+        "x": 530,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthEast/1": {
+      "frame": {
+        "x": 596,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthEast/2": {
+      "frame": {
+        "x": 662,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthEast/3": {
+      "frame": {
+        "x": 728,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/0": {
+      "frame": {
+        "x": 794,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/1": {
+      "frame": {
+        "x": 860,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/2": {
+      "frame": {
+        "x": 926,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/3": {
+      "frame": {
+        "x": 992,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/4": {
+      "frame": {
+        "x": 1058,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/5": {
+      "frame": {
+        "x": 1124,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/6": {
+      "frame": {
+        "x": 1190,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthEast/7": {
+      "frame": {
+        "x": 1256,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/restNorthEast/0": {
+      "frame": {
+        "x": 1322,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorth/0": {
+      "frame": {
+        "x": 1388,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorth/1": {
+      "frame": {
+        "x": 1454,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorth/2": {
+      "frame": {
+        "x": 1520,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorth/3": {
+      "frame": {
+        "x": 1586,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/0": {
+      "frame": {
+        "x": 1652,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/1": {
+      "frame": {
+        "x": 1718,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/2": {
+      "frame": {
+        "x": 1784,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/3": {
+      "frame": {
+        "x": 1850,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/4": {
+      "frame": {
+        "x": 1916,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/5": {
+      "frame": {
+        "x": 1982,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/6": {
+      "frame": {
+        "x": 2,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorth/7": {
+      "frame": {
+        "x": 68,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/restNorth/0": {
+      "frame": {
+        "x": 134,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthWest/0": {
+      "frame": {
+        "x": 200,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthWest/1": {
+      "frame": {
+        "x": 266,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthWest/2": {
+      "frame": {
+        "x": 332,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleNorthWest/3": {
+      "frame": {
+        "x": 398,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/0": {
+      "frame": {
+        "x": 464,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/1": {
+      "frame": {
+        "x": 530,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/2": {
+      "frame": {
+        "x": 596,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/3": {
+      "frame": {
+        "x": 662,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/4": {
+      "frame": {
+        "x": 728,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/5": {
+      "frame": {
+        "x": 794,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/6": {
+      "frame": {
+        "x": 860,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkNorthWest/7": {
+      "frame": {
+        "x": 926,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/restNorthWest/0": {
+      "frame": {
+        "x": 992,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleWest/0": {
+      "frame": {
+        "x": 1058,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleWest/1": {
+      "frame": {
+        "x": 1124,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleWest/2": {
+      "frame": {
+        "x": 1190,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleWest/3": {
+      "frame": {
+        "x": 1256,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/0": {
+      "frame": {
+        "x": 1322,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/1": {
+      "frame": {
+        "x": 1388,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/2": {
+      "frame": {
+        "x": 1454,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/3": {
+      "frame": {
+        "x": 1520,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/4": {
+      "frame": {
+        "x": 1586,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/5": {
+      "frame": {
+        "x": 1652,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/6": {
+      "frame": {
+        "x": 1718,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkWest/7": {
+      "frame": {
+        "x": 1784,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/restWest/0": {
+      "frame": {
+        "x": 1850,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthWest/0": {
+      "frame": {
+        "x": 1916,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthWest/1": {
+      "frame": {
+        "x": 1982,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthWest/2": {
+      "frame": {
+        "x": 2,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/idleSouthWest/3": {
+      "frame": {
+        "x": 68,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/0": {
+      "frame": {
+        "x": 134,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/1": {
+      "frame": {
+        "x": 200,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/2": {
+      "frame": {
+        "x": 266,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/3": {
+      "frame": {
+        "x": 332,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/4": {
+      "frame": {
+        "x": 398,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/5": {
+      "frame": {
+        "x": 464,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/6": {
+      "frame": {
+        "x": 530,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/walkSouthWest/7": {
+      "frame": {
+        "x": 596,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.shopkeeper/restSouthWest/0": {
+      "frame": {
+        "x": 662,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "gao-g.webp",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 394
+    },
+    "scale": "1"
+  }
+}

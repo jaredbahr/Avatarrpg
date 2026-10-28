@@ -1,1 +1,2095 @@
-{"frames":{"npc.dorin/idle/0":{"frame":{"x":0,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idle/1":{"frame":{"x":128,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idle/2":{"frame":{"x":256,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idle/3":{"frame":{"x":384,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/0":{"frame":{"x":512,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/1":{"frame":{"x":640,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/2":{"frame":{"x":768,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/3":{"frame":{"x":896,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/4":{"frame":{"x":1024,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/5":{"frame":{"x":1152,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/6":{"frame":{"x":1280,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walk/7":{"frame":{"x":1408,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorth/0":{"frame":{"x":1536,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorth/1":{"frame":{"x":1664,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorth/2":{"frame":{"x":1792,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorth/3":{"frame":{"x":1920,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthEast/0":{"frame":{"x":0,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthEast/1":{"frame":{"x":128,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthEast/2":{"frame":{"x":256,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthEast/3":{"frame":{"x":384,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthEast/0":{"frame":{"x":512,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthEast/1":{"frame":{"x":640,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthEast/2":{"frame":{"x":768,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthEast/3":{"frame":{"x":896,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouth/0":{"frame":{"x":1024,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouth/1":{"frame":{"x":1152,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouth/2":{"frame":{"x":1280,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouth/3":{"frame":{"x":1408,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthWest/0":{"frame":{"x":1536,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthWest/1":{"frame":{"x":1664,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthWest/2":{"frame":{"x":1792,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleSouthWest/3":{"frame":{"x":1920,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleWest/0":{"frame":{"x":0,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleWest/1":{"frame":{"x":128,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleWest/2":{"frame":{"x":256,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleWest/3":{"frame":{"x":384,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthWest/0":{"frame":{"x":512,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthWest/1":{"frame":{"x":640,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthWest/2":{"frame":{"x":768,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/idleNorthWest/3":{"frame":{"x":896,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/0":{"frame":{"x":1024,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/1":{"frame":{"x":1152,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/2":{"frame":{"x":1280,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/3":{"frame":{"x":1408,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/4":{"frame":{"x":1536,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/5":{"frame":{"x":1664,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/6":{"frame":{"x":1792,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorth/7":{"frame":{"x":1920,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/0":{"frame":{"x":0,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/1":{"frame":{"x":128,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/2":{"frame":{"x":256,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/3":{"frame":{"x":384,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/4":{"frame":{"x":512,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/5":{"frame":{"x":640,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/6":{"frame":{"x":768,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthEast/7":{"frame":{"x":896,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/0":{"frame":{"x":1024,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/1":{"frame":{"x":1152,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/2":{"frame":{"x":1280,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/3":{"frame":{"x":1408,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/4":{"frame":{"x":1536,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/5":{"frame":{"x":1664,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/6":{"frame":{"x":1792,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthEast/7":{"frame":{"x":1920,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/0":{"frame":{"x":0,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/1":{"frame":{"x":128,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/2":{"frame":{"x":256,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/3":{"frame":{"x":384,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/4":{"frame":{"x":512,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/5":{"frame":{"x":640,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/6":{"frame":{"x":768,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouth/7":{"frame":{"x":896,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/0":{"frame":{"x":1024,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/1":{"frame":{"x":1152,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/2":{"frame":{"x":1280,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/3":{"frame":{"x":1408,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/4":{"frame":{"x":1536,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/5":{"frame":{"x":1664,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/6":{"frame":{"x":1792,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkSouthWest/7":{"frame":{"x":1920,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/0":{"frame":{"x":0,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/1":{"frame":{"x":128,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/2":{"frame":{"x":256,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/3":{"frame":{"x":384,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/4":{"frame":{"x":512,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/5":{"frame":{"x":640,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/6":{"frame":{"x":768,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkWest/7":{"frame":{"x":896,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/0":{"frame":{"x":1024,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/1":{"frame":{"x":1152,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/2":{"frame":{"x":1280,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/3":{"frame":{"x":1408,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/4":{"frame":{"x":1536,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/5":{"frame":{"x":1664,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/6":{"frame":{"x":1792,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/walkNorthWest/7":{"frame":{"x":1920,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/rest/0":{"frame":{"x":0,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/restNorth/0":{"frame":{"x":128,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/restNorthEast/0":{"frame":{"x":256,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/restSouthEast/0":{"frame":{"x":384,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/restSouth/0":{"frame":{"x":512,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/restSouthWest/0":{"frame":{"x":640,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/restWest/0":{"frame":{"x":768,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.dorin/restNorthWest/0":{"frame":{"x":896,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}}},"meta":{"app":"four-nations-tactics","version":"1","image":"dorin-g.webp","format":"RGBA8888","size":{"w":2048,"h":1344},"scale":"1"}}
+{
+  "frames": {
+    "npc.dorin/idleSouth/0": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouth/1": {
+      "frame": {
+        "x": 68,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouth/2": {
+      "frame": {
+        "x": 134,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouth/3": {
+      "frame": {
+        "x": 200,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/0": {
+      "frame": {
+        "x": 266,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/1": {
+      "frame": {
+        "x": 332,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/2": {
+      "frame": {
+        "x": 398,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/3": {
+      "frame": {
+        "x": 464,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/4": {
+      "frame": {
+        "x": 530,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/5": {
+      "frame": {
+        "x": 596,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/6": {
+      "frame": {
+        "x": 662,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouth/7": {
+      "frame": {
+        "x": 728,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restSouth/0": {
+      "frame": {
+        "x": 794,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthEast/0": {
+      "frame": {
+        "x": 860,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthEast/1": {
+      "frame": {
+        "x": 926,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthEast/2": {
+      "frame": {
+        "x": 992,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthEast/3": {
+      "frame": {
+        "x": 1058,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/0": {
+      "frame": {
+        "x": 1124,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/1": {
+      "frame": {
+        "x": 1190,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/2": {
+      "frame": {
+        "x": 1256,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/3": {
+      "frame": {
+        "x": 1322,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/4": {
+      "frame": {
+        "x": 1388,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/5": {
+      "frame": {
+        "x": 1454,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/6": {
+      "frame": {
+        "x": 1520,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthEast/7": {
+      "frame": {
+        "x": 1586,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restSouthEast/0": {
+      "frame": {
+        "x": 1652,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idle/0": {
+      "frame": {
+        "x": 1718,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idle/1": {
+      "frame": {
+        "x": 1784,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idle/2": {
+      "frame": {
+        "x": 1850,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idle/3": {
+      "frame": {
+        "x": 1916,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/0": {
+      "frame": {
+        "x": 1982,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/1": {
+      "frame": {
+        "x": 2,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/2": {
+      "frame": {
+        "x": 68,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/3": {
+      "frame": {
+        "x": 134,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/4": {
+      "frame": {
+        "x": 200,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/5": {
+      "frame": {
+        "x": 266,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/6": {
+      "frame": {
+        "x": 332,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walk/7": {
+      "frame": {
+        "x": 398,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/rest/0": {
+      "frame": {
+        "x": 464,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthEast/0": {
+      "frame": {
+        "x": 530,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthEast/1": {
+      "frame": {
+        "x": 596,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthEast/2": {
+      "frame": {
+        "x": 662,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthEast/3": {
+      "frame": {
+        "x": 728,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/0": {
+      "frame": {
+        "x": 794,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/1": {
+      "frame": {
+        "x": 860,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/2": {
+      "frame": {
+        "x": 926,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/3": {
+      "frame": {
+        "x": 992,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/4": {
+      "frame": {
+        "x": 1058,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/5": {
+      "frame": {
+        "x": 1124,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/6": {
+      "frame": {
+        "x": 1190,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthEast/7": {
+      "frame": {
+        "x": 1256,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restNorthEast/0": {
+      "frame": {
+        "x": 1322,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorth/0": {
+      "frame": {
+        "x": 1388,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorth/1": {
+      "frame": {
+        "x": 1454,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorth/2": {
+      "frame": {
+        "x": 1520,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorth/3": {
+      "frame": {
+        "x": 1586,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/0": {
+      "frame": {
+        "x": 1652,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/1": {
+      "frame": {
+        "x": 1718,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/2": {
+      "frame": {
+        "x": 1784,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/3": {
+      "frame": {
+        "x": 1850,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/4": {
+      "frame": {
+        "x": 1916,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/5": {
+      "frame": {
+        "x": 1982,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/6": {
+      "frame": {
+        "x": 2,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorth/7": {
+      "frame": {
+        "x": 68,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restNorth/0": {
+      "frame": {
+        "x": 134,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/0": {
+      "frame": {
+        "x": 200,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/1": {
+      "frame": {
+        "x": 266,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/2": {
+      "frame": {
+        "x": 332,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/3": {
+      "frame": {
+        "x": 398,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/0": {
+      "frame": {
+        "x": 464,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/1": {
+      "frame": {
+        "x": 530,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/2": {
+      "frame": {
+        "x": 596,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/3": {
+      "frame": {
+        "x": 662,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/4": {
+      "frame": {
+        "x": 728,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/5": {
+      "frame": {
+        "x": 794,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/6": {
+      "frame": {
+        "x": 860,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/7": {
+      "frame": {
+        "x": 926,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restNorthWest/0": {
+      "frame": {
+        "x": 992,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/0": {
+      "frame": {
+        "x": 1058,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/1": {
+      "frame": {
+        "x": 1124,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/2": {
+      "frame": {
+        "x": 1190,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/3": {
+      "frame": {
+        "x": 1256,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/0": {
+      "frame": {
+        "x": 1322,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/1": {
+      "frame": {
+        "x": 1388,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/2": {
+      "frame": {
+        "x": 1454,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/3": {
+      "frame": {
+        "x": 1520,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/4": {
+      "frame": {
+        "x": 1586,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/5": {
+      "frame": {
+        "x": 1652,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/6": {
+      "frame": {
+        "x": 1718,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/7": {
+      "frame": {
+        "x": 1784,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restWest/0": {
+      "frame": {
+        "x": 1850,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/0": {
+      "frame": {
+        "x": 1916,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/1": {
+      "frame": {
+        "x": 1982,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/2": {
+      "frame": {
+        "x": 2,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/3": {
+      "frame": {
+        "x": 68,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/0": {
+      "frame": {
+        "x": 134,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/1": {
+      "frame": {
+        "x": 200,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/2": {
+      "frame": {
+        "x": 266,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/3": {
+      "frame": {
+        "x": 332,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/4": {
+      "frame": {
+        "x": 398,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/5": {
+      "frame": {
+        "x": 464,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/6": {
+      "frame": {
+        "x": 530,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/7": {
+      "frame": {
+        "x": 596,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restSouthWest/0": {
+      "frame": {
+        "x": 662,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "dorin-g.webp",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 394
+    },
+    "scale": "1"
+  }
+}

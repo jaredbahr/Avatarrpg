@@ -1,0 +1,67 @@
+{
+  "household": {
+    "kind": "resident",
+    "key": "npc.household",
+    "frame_w": 64,
+    "root_description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "root_back": "From behind the apron shows only as its tie at the waist; the back of the tunic is plain moss green. "
+  },
+  "watch": {
+    "kind": "resident",
+    "key": "npc.guard",
+    "frame_w": 64,
+    "root_description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "root_back": "From behind the coat back is plain olive green; the spear stays upright at his right side. "
+  },
+  "mira": {
+    "kind": "resident",
+    "key": "npc.elder",
+    "frame_w": 64,
+    "root_description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "root_back": "From behind the striped green shawl covers her back and the white bun shows at the top. "
+  },
+  "gao": {
+    "kind": "resident",
+    "key": "npc.shopkeeper",
+    "frame_w": 64,
+    "root_description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "root_back": "From behind the back of the green tunic is plain green with only a thin dark brown apron tie at the waist; no white straps, no cross, no lettering on the back. "
+  },
+  "pella": {
+    "kind": "resident",
+    "key": "npc.kid",
+    "frame_w": 64,
+    "root_description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "root_back": "From behind both pigtails show and the cabbage is mostly hidden in front of her. "
+  },
+  "dorin": {
+    "kind": "resident",
+    "key": "npc.dorin",
+    "frame_w": 64,
+    "root_description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "root_back": "From behind the long green coat back is plain; the spear stays upright at his right side. "
+  },
+  "thug": {
+    "kind": "bandit",
+    "key": "unit.enemy.thug",
+    "frame_w": 64,
+    "root_description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "root_back": "From behind the bandana knot and its ties show at the back of the head; the vest back is plain dark brown. ",
+    "pack_w": 80
+  },
+  "slinger": {
+    "kind": "bandit",
+    "key": "unit.enemy.slinger",
+    "frame_w": 64,
+    "root_description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "root_back": "From behind the hood covers the back of the head; the tunic back is plain grey-brown. "
+  },
+  "bruiser": {
+    "kind": "bandit",
+    "key": "unit.enemy.bruiser",
+    "frame_w": 80,
+    "root_description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "root_back": "From behind the vest back is plain dark brown and the headband knot shows at the back of the head; he holds only one club, in his right hand; seen from behind and to the left the club is hidden in front of his body and his left hand is empty. ",
+    "pack_w": 96
+  }
+}

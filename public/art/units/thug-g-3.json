@@ -1,1 +1,655 @@
-{"frames":{"unit.enemy.thug/hitEast/0":{"frame":{"x":0,"y":0,"w":83,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":136},"sourceSize":{"w":83,"h":136}},"unit.enemy.thug/hitEast/1":{"frame":{"x":83,"y":0,"w":83,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":136},"sourceSize":{"w":83,"h":136}},"unit.enemy.thug/hitEast/2":{"frame":{"x":166,"y":0,"w":83,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":136},"sourceSize":{"w":83,"h":136}},"unit.enemy.thug/hitEast/3":{"frame":{"x":249,"y":0,"w":83,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":136},"sourceSize":{"w":83,"h":136}},"unit.enemy.thug/hitSouthEast/0":{"frame":{"x":332,"y":0,"w":69,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":69,"h":134},"sourceSize":{"w":69,"h":134}},"unit.enemy.thug/hitSouthEast/1":{"frame":{"x":401,"y":0,"w":69,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":69,"h":134},"sourceSize":{"w":69,"h":134}},"unit.enemy.thug/hitSouthEast/2":{"frame":{"x":470,"y":0,"w":69,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":69,"h":134},"sourceSize":{"w":69,"h":134}},"unit.enemy.thug/hitSouthEast/3":{"frame":{"x":539,"y":0,"w":69,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":69,"h":134},"sourceSize":{"w":69,"h":134}},"unit.enemy.thug/hitSouth/0":{"frame":{"x":608,"y":0,"w":83,"h":133},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":133},"sourceSize":{"w":83,"h":133}},"unit.enemy.thug/hitSouth/1":{"frame":{"x":691,"y":0,"w":83,"h":133},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":133},"sourceSize":{"w":83,"h":133}},"unit.enemy.thug/hitSouth/2":{"frame":{"x":774,"y":0,"w":83,"h":133},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":133},"sourceSize":{"w":83,"h":133}},"unit.enemy.thug/hitSouth/3":{"frame":{"x":857,"y":0,"w":83,"h":133},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":83,"h":133},"sourceSize":{"w":83,"h":133}},"unit.enemy.thug/hitSouthWest/0":{"frame":{"x":940,"y":0,"w":97,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":97,"h":134},"sourceSize":{"w":97,"h":134}},"unit.enemy.thug/hitSouthWest/1":{"frame":{"x":1037,"y":0,"w":97,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":97,"h":134},"sourceSize":{"w":97,"h":134}},"unit.enemy.thug/hitSouthWest/2":{"frame":{"x":1134,"y":0,"w":97,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":97,"h":134},"sourceSize":{"w":97,"h":134}},"unit.enemy.thug/hitSouthWest/3":{"frame":{"x":1231,"y":0,"w":97,"h":134},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":97,"h":134},"sourceSize":{"w":97,"h":134}},"unit.enemy.thug/hitWest/0":{"frame":{"x":1328,"y":0,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}},"unit.enemy.thug/hitWest/1":{"frame":{"x":1415,"y":0,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}},"unit.enemy.thug/hitWest/2":{"frame":{"x":1502,"y":0,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}},"unit.enemy.thug/hitWest/3":{"frame":{"x":1589,"y":0,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}},"unit.enemy.thug/hitNorthWest/0":{"frame":{"x":1676,"y":0,"w":70,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":70,"h":136},"sourceSize":{"w":70,"h":136}},"unit.enemy.thug/hitNorthWest/1":{"frame":{"x":1746,"y":0,"w":70,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":70,"h":136},"sourceSize":{"w":70,"h":136}},"unit.enemy.thug/hitNorthWest/2":{"frame":{"x":1816,"y":0,"w":70,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":70,"h":136},"sourceSize":{"w":70,"h":136}},"unit.enemy.thug/hitNorthWest/3":{"frame":{"x":1886,"y":0,"w":70,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":70,"h":136},"sourceSize":{"w":70,"h":136}},"unit.enemy.thug/hitNorth/0":{"frame":{"x":0,"y":136,"w":93,"h":132},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":132},"sourceSize":{"w":93,"h":132}},"unit.enemy.thug/hitNorth/1":{"frame":{"x":93,"y":136,"w":93,"h":132},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":132},"sourceSize":{"w":93,"h":132}},"unit.enemy.thug/hitNorth/2":{"frame":{"x":186,"y":136,"w":93,"h":132},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":132},"sourceSize":{"w":93,"h":132}},"unit.enemy.thug/hitNorth/3":{"frame":{"x":279,"y":136,"w":93,"h":132},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":132},"sourceSize":{"w":93,"h":132}},"unit.enemy.thug/hitNorthEast/0":{"frame":{"x":372,"y":136,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}},"unit.enemy.thug/hitNorthEast/1":{"frame":{"x":459,"y":136,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}},"unit.enemy.thug/hitNorthEast/2":{"frame":{"x":546,"y":136,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}},"unit.enemy.thug/hitNorthEast/3":{"frame":{"x":633,"y":136,"w":87,"h":136},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":87,"h":136},"sourceSize":{"w":87,"h":136}}},"meta":{"app":"four-nations-tactics","version":"1","image":"thug-g-3.webp","format":"RGBA8888","size":{"w":1956,"h":272},"scale":"1"}}
+{
+  "frames": {
+    "unit.enemy.thug/hitSouth/0": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 40,
+        "h": 67
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 67
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 67
+      }
+    },
+    "unit.enemy.thug/hitSouth/1": {
+      "frame": {
+        "x": 44,
+        "y": 2,
+        "w": 40,
+        "h": 67
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 67
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 67
+      }
+    },
+    "unit.enemy.thug/hitSouth/2": {
+      "frame": {
+        "x": 86,
+        "y": 2,
+        "w": 40,
+        "h": 67
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 67
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 67
+      }
+    },
+    "unit.enemy.thug/hitSouth/3": {
+      "frame": {
+        "x": 128,
+        "y": 2,
+        "w": 40,
+        "h": 67
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 67
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 67
+      }
+    },
+    "unit.enemy.thug/hitSouthEast/0": {
+      "frame": {
+        "x": 170,
+        "y": 2,
+        "w": 34,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 34,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 34,
+        "h": 68
+      }
+    },
+    "unit.enemy.thug/hitSouthEast/1": {
+      "frame": {
+        "x": 206,
+        "y": 2,
+        "w": 34,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 34,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 34,
+        "h": 68
+      }
+    },
+    "unit.enemy.thug/hitSouthEast/2": {
+      "frame": {
+        "x": 242,
+        "y": 2,
+        "w": 34,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 34,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 34,
+        "h": 68
+      }
+    },
+    "unit.enemy.thug/hitSouthEast/3": {
+      "frame": {
+        "x": 278,
+        "y": 2,
+        "w": 34,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 34,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 34,
+        "h": 68
+      }
+    },
+    "unit.enemy.thug/hitEast/0": {
+      "frame": {
+        "x": 314,
+        "y": 2,
+        "w": 42,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 42,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 42,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitEast/1": {
+      "frame": {
+        "x": 358,
+        "y": 2,
+        "w": 42,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 42,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 42,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitEast/2": {
+      "frame": {
+        "x": 402,
+        "y": 2,
+        "w": 42,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 42,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 42,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitEast/3": {
+      "frame": {
+        "x": 446,
+        "y": 2,
+        "w": 42,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 42,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 42,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorthEast/0": {
+      "frame": {
+        "x": 490,
+        "y": 2,
+        "w": 45,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorthEast/1": {
+      "frame": {
+        "x": 537,
+        "y": 2,
+        "w": 45,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorthEast/2": {
+      "frame": {
+        "x": 584,
+        "y": 2,
+        "w": 45,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorthEast/3": {
+      "frame": {
+        "x": 631,
+        "y": 2,
+        "w": 45,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorth/0": {
+      "frame": {
+        "x": 678,
+        "y": 2,
+        "w": 45,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 66
+      }
+    },
+    "unit.enemy.thug/hitNorth/1": {
+      "frame": {
+        "x": 725,
+        "y": 2,
+        "w": 45,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 66
+      }
+    },
+    "unit.enemy.thug/hitNorth/2": {
+      "frame": {
+        "x": 772,
+        "y": 2,
+        "w": 45,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 66
+      }
+    },
+    "unit.enemy.thug/hitNorth/3": {
+      "frame": {
+        "x": 819,
+        "y": 2,
+        "w": 45,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 45,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 45,
+        "h": 66
+      }
+    },
+    "unit.enemy.thug/hitNorthWest/0": {
+      "frame": {
+        "x": 866,
+        "y": 2,
+        "w": 39,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorthWest/1": {
+      "frame": {
+        "x": 907,
+        "y": 2,
+        "w": 39,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorthWest/2": {
+      "frame": {
+        "x": 948,
+        "y": 2,
+        "w": 39,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitNorthWest/3": {
+      "frame": {
+        "x": 989,
+        "y": 2,
+        "w": 39,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitWest/0": {
+      "frame": {
+        "x": 1030,
+        "y": 2,
+        "w": 44,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitWest/1": {
+      "frame": {
+        "x": 1076,
+        "y": 2,
+        "w": 44,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitWest/2": {
+      "frame": {
+        "x": 1122,
+        "y": 2,
+        "w": 44,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitWest/3": {
+      "frame": {
+        "x": 1168,
+        "y": 2,
+        "w": 44,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 69
+      }
+    },
+    "unit.enemy.thug/hitSouthWest/0": {
+      "frame": {
+        "x": 1214,
+        "y": 2,
+        "w": 46,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 46,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 46,
+        "h": 68
+      }
+    },
+    "unit.enemy.thug/hitSouthWest/1": {
+      "frame": {
+        "x": 1262,
+        "y": 2,
+        "w": 46,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 46,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 46,
+        "h": 68
+      }
+    },
+    "unit.enemy.thug/hitSouthWest/2": {
+      "frame": {
+        "x": 1310,
+        "y": 2,
+        "w": 46,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 46,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 46,
+        "h": 68
+      }
+    },
+    "unit.enemy.thug/hitSouthWest/3": {
+      "frame": {
+        "x": 1358,
+        "y": 2,
+        "w": 46,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 46,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 46,
+        "h": 68
+      }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "thug-g-3.webp",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1406,
+      "h": 73
+    },
+    "scale": "1"
+  }
+}

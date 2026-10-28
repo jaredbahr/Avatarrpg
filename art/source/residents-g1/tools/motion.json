@@ -1,0 +1,49 @@
+{
+  "_shared": {
+    "walk": {
+      "kind": "walk",
+      "clip": "08_01",
+      "frames": 8,
+      "track": 0.35,
+      "bob": 2.0,
+      "canvas": 96,
+      "root": "idle",
+      "action": "walk",
+      "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+    }
+  },
+  "bandit": {
+    "hit": {
+      "kind": "pose",
+      "clip": "79_73",
+      "ref": 48,
+      "amp": 1.35,
+      "canvas": 96,
+      "root": "idle",
+      "cels": [1, 2, 3],
+      "frames": [60, 72, { "f": 72, "amp": 0.4 }],
+      "action": "hit reaction, flinching back",
+      "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+    },
+    "ko": {
+      "kind": "ko",
+      "clip": "90_18",
+      "ref": 64,
+      "amp": 1.0,
+      "root_travel": 0.7,
+      "canvas": 128,
+      "root": "idle",
+      "cels": [1, 2, 3, 4, 5, 6],
+      "frames": [86, 100, 112, 128, 142, 170],
+      "absw": [0, 0.25, 0.5, 0.8, 1, 1],
+      "turn": {
+        "south-east": [0, 12, 30, 48, 60, 60],
+        "south-west": [0, -9, -22.5, -36, -45, -45],
+        "north-east": [0, -3, -7.5, -12, -15, -15],
+        "north-west": [0, 3, 7.5, 12, 15, 15]
+      },
+      "action": "knocked down, falling backwards",
+      "attribution": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+    }
+  }
+}

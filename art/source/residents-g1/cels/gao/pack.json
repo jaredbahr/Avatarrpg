@@ -1,0 +1,322 @@
+{
+  "key": "npc.shopkeeper",
+  "kind": "resident",
+  "grid": {
+    "pixelsPerTile": 64,
+    "frame": [64, 96],
+    "foot": [32.0, 81.6],
+    "margin": 4
+  },
+  "clips": {
+    "idleSouth": {
+      "cels": ["idleSouth/00.png", "idleSouth/01.png", "idleSouth/02.png", "idleSouth/03.png"]
+    },
+    "walkSouth": {
+      "cels": [
+        "walkSouth/00.png",
+        "walkSouth/01.png",
+        "walkSouth/02.png",
+        "walkSouth/03.png",
+        "walkSouth/04.png",
+        "walkSouth/05.png",
+        "walkSouth/06.png",
+        "walkSouth/07.png"
+      ]
+    },
+    "restSouth": {
+      "cels": ["restSouth/00.png"]
+    },
+    "idleSouthEast": {
+      "cels": [
+        "idleSouthEast/00.png",
+        "idleSouthEast/01.png",
+        "idleSouthEast/02.png",
+        "idleSouthEast/03.png"
+      ]
+    },
+    "walkSouthEast": {
+      "cels": [
+        "walkSouthEast/00.png",
+        "walkSouthEast/01.png",
+        "walkSouthEast/02.png",
+        "walkSouthEast/03.png",
+        "walkSouthEast/04.png",
+        "walkSouthEast/05.png",
+        "walkSouthEast/06.png",
+        "walkSouthEast/07.png"
+      ]
+    },
+    "restSouthEast": {
+      "cels": ["restSouthEast/00.png"]
+    },
+    "idle": {
+      "cels": ["idle/00.png", "idle/01.png", "idle/02.png", "idle/03.png"]
+    },
+    "walk": {
+      "cels": [
+        "walk/00.png",
+        "walk/01.png",
+        "walk/02.png",
+        "walk/03.png",
+        "walk/04.png",
+        "walk/05.png",
+        "walk/06.png",
+        "walk/07.png"
+      ]
+    },
+    "rest": {
+      "cels": ["rest/00.png"]
+    },
+    "idleNorthEast": {
+      "cels": [
+        "idleNorthEast/00.png",
+        "idleNorthEast/01.png",
+        "idleNorthEast/02.png",
+        "idleNorthEast/03.png"
+      ]
+    },
+    "walkNorthEast": {
+      "cels": [
+        "walkNorthEast/00.png",
+        "walkNorthEast/01.png",
+        "walkNorthEast/02.png",
+        "walkNorthEast/03.png",
+        "walkNorthEast/04.png",
+        "walkNorthEast/05.png",
+        "walkNorthEast/06.png",
+        "walkNorthEast/07.png"
+      ]
+    },
+    "restNorthEast": {
+      "cels": ["restNorthEast/00.png"]
+    },
+    "idleNorth": {
+      "cels": ["idleNorth/00.png", "idleNorth/01.png", "idleNorth/02.png", "idleNorth/03.png"]
+    },
+    "walkNorth": {
+      "cels": [
+        "walkNorth/00.png",
+        "walkNorth/01.png",
+        "walkNorth/02.png",
+        "walkNorth/03.png",
+        "walkNorth/04.png",
+        "walkNorth/05.png",
+        "walkNorth/06.png",
+        "walkNorth/07.png"
+      ]
+    },
+    "restNorth": {
+      "cels": ["restNorth/00.png"]
+    },
+    "idleNorthWest": {
+      "cels": [
+        "idleNorthWest/00.png",
+        "idleNorthWest/01.png",
+        "idleNorthWest/02.png",
+        "idleNorthWest/03.png"
+      ]
+    },
+    "walkNorthWest": {
+      "cels": [
+        "walkNorthWest/00.png",
+        "walkNorthWest/01.png",
+        "walkNorthWest/02.png",
+        "walkNorthWest/03.png",
+        "walkNorthWest/04.png",
+        "walkNorthWest/05.png",
+        "walkNorthWest/06.png",
+        "walkNorthWest/07.png"
+      ]
+    },
+    "restNorthWest": {
+      "cels": ["restNorthWest/00.png"]
+    },
+    "idleWest": {
+      "cels": ["idleWest/00.png", "idleWest/01.png", "idleWest/02.png", "idleWest/03.png"]
+    },
+    "walkWest": {
+      "cels": [
+        "walkWest/00.png",
+        "walkWest/01.png",
+        "walkWest/02.png",
+        "walkWest/03.png",
+        "walkWest/04.png",
+        "walkWest/05.png",
+        "walkWest/06.png",
+        "walkWest/07.png"
+      ]
+    },
+    "restWest": {
+      "cels": ["restWest/00.png"]
+    },
+    "idleSouthWest": {
+      "cels": [
+        "idleSouthWest/00.png",
+        "idleSouthWest/01.png",
+        "idleSouthWest/02.png",
+        "idleSouthWest/03.png"
+      ]
+    },
+    "walkSouthWest": {
+      "cels": [
+        "walkSouthWest/00.png",
+        "walkSouthWest/01.png",
+        "walkSouthWest/02.png",
+        "walkSouthWest/03.png",
+        "walkSouthWest/04.png",
+        "walkSouthWest/05.png",
+        "walkSouthWest/06.png",
+        "walkSouthWest/07.png"
+      ]
+    },
+    "restSouthWest": {
+      "cels": ["restSouthWest/00.png"]
+    }
+  },
+  "placement": {
+    "south": {
+      "walk_job": "gao-walk-south-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -7,
+      "restCel": 2,
+      "restDy": 2,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 84.84
+        },
+        "RA": {
+          "cel": 4,
+          "row": 84.41
+        }
+      }
+    },
+    "south-east": {
+      "walk_job": "gao-walk-south-east-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -3,
+      "restCel": 2,
+      "restDy": 4,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 81.02
+        },
+        "RA": {
+          "cel": 4,
+          "row": 81.17
+        }
+      }
+    },
+    "east": {
+      "walk_job": "gao-walk-east-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": 1,
+      "restCel": 6,
+      "restDy": 1,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 76.15
+        },
+        "RA": {
+          "cel": 4,
+          "row": 76.48
+        }
+      }
+    },
+    "north-east": {
+      "walk_job": "gao-walk-north-east-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -3,
+      "restCel": 2,
+      "restDy": 1,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 72.17
+        },
+        "RA": {
+          "cel": 4,
+          "row": 72.29
+        }
+      }
+    },
+    "north": {
+      "walk_job": "gao-walk-north-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -2,
+      "restCel": 2,
+      "restDy": 2,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 70.25
+        },
+        "RA": {
+          "cel": 4,
+          "row": 69.77
+        }
+      }
+    },
+    "north-west": {
+      "walk_job": "gao-walk-north-west-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -3,
+      "restCel": 2,
+      "restDy": 3,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 72.71
+        },
+        "RA": {
+          "cel": 4,
+          "row": 71.65
+        }
+      }
+    },
+    "west": {
+      "walk_job": "gao-walk-west-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": 0,
+      "restCel": 2,
+      "restDy": 0,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 77.62
+        },
+        "RA": {
+          "cel": 4,
+          "row": 76.38
+        }
+      }
+    },
+    "south-west": {
+      "walk_job": "gao-walk-south-west-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -2,
+      "restCel": 2,
+      "restDy": 3,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 82.3
+        },
+        "RA": {
+          "cel": 4,
+          "row": 81.28
+        }
+      }
+    }
+  }
+}
