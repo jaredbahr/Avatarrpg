@@ -50,6 +50,8 @@ import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { drawArt } from '../pixelSampling';
+import { RevealLayer, revealBox, revealsUnit } from '../reveal';
+import type { RevealFigure } from '../reveal';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
@@ -133,6 +135,9 @@ export class Canvas2DBackend implements RenderBackend {
   private healthBarStagger = new HealthBarStagger();
   /** Top edge of each unit's bar this frame (as drawn, staggered): floating numbers start above it. */
   private barTops = new Map<string, number>();
+  /** Party frames drawn this pass, for the silhouettes over the pieces that hide them (ADR 0096). */
+  private revealFigures: RevealFigure[] = [];
+  private reveal: RevealLayer | null = null;
   private pendingHealthBars: (HealthBarPlacement & {
     readonly unit: RenderUnit;
     readonly actorX: number;
@@ -437,7 +442,9 @@ export class Canvas2DBackend implements RenderBackend {
       ].sort((a, b) =>
         compareRenderedDepth(camera.groundPoint(a.pos).y, camera.groundPoint(b.pos).y),
       );
+      this.revealFigures = [];
       for (const occupant of occupants) occupant.draw();
+      this.drawReveal(view, camera);
       this.flushHealthBars();
       this.drawTargetReticle(view, camera);
       this.drawFlock(view, camera);
@@ -2141,6 +2148,26 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
+  /** The covered part of each hidden party member, over the pieces that keep their paint. */
+  private drawReveal(view: MapView, camera: Camera): void {
+    const scenery = view.scene?.scenery ?? [];
+    if (!scenery.some((piece) => piece.revealOccluded)) return;
+    this.reveal ??= new RevealLayer();
+    const drawn = this.reveal.draw(this.revealFigures, scenery, camera);
+    if (!drawn) return;
+    const { ctx } = this;
+    const width = drawn.width * camera.scale;
+    drawArt(ctx, drawn.width, width, () =>
+      ctx.drawImage(
+        drawn.canvas,
+        drawn.x * camera.scale - camera.offsetX,
+        drawn.y * camera.scale - camera.offsetY,
+        width,
+        drawn.height * camera.scale,
+      ),
+    );
+  }
+
   private drawUnits(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const { dpr } = camera.viewport;
@@ -2213,6 +2240,26 @@ export class Canvas2DBackend implements RenderBackend {
           ctx.translate(-ax, 0);
         }
         const f = frame.frame;
+        if (revealsUnit(unit) && camera.projection === 'oblique') {
+          const world = (v: number, offset: number) => (v + offset) / camera.scale;
+          this.revealFigures.push({
+            source: frame.source,
+            rect: f,
+            ...revealBox(
+              {
+                x: world(drawX, camera.offsetX),
+                y: world(drawY, camera.offsetY),
+                w: fw / camera.scale,
+                h: fh / camera.scale,
+              },
+              world(ax, camera.offsetX),
+              drawFacing === -1 && !bend,
+            ),
+            flip: drawFacing === -1 && !bend,
+            foot: camera.groundPoint(renderFoot(pos, unit.size, this.squareFootprints, 'oblique'))
+              .y,
+          });
+        }
         // A sheet pixel on a whole block of device pixels draws nearest (ADR 0088).
         drawArt(ctx, f.w, fw, () => {
           ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);

@@ -916,10 +916,11 @@ export interface SceneScenery extends SceneImage {
   readonly wall?: boolean;
   readonly fadeWhenOccluding?: boolean;
   /**
-   * Fade only once the figure's upper body is behind the piece. Where the ground art holds the same
-   * building, a veil over a figure whose head clears the silhouette just draws it standing on the roof.
+   * Never fade: a party member behind the piece is drawn over it as a silhouette instead
+   * (`render/reveal.ts`, ADR 0096). For art whose ground holds the same building, where a faded
+   * piece reads as the figure standing on its roof.
    */
-  readonly fadeWhenHeadHidden?: boolean;
+  readonly revealOccluded?: boolean;
   /** Connected depth slices share the lowest cutaway opacity within this scene. */
   readonly fadeGroup?: string;
   /**

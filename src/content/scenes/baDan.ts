@@ -348,9 +348,9 @@ function upright(piece: Standing): SceneScenery | null {
     height: height / PIXELS_PER_WORLD,
     footprint: piece.footprint,
     depth: BA_DAN_DEPTH_OVERRIDES[piece.id] ?? piece.depth,
-    // The plates hold every building and tree this fades over, so the veil only shows a figure through
-    // its own roof: it is for a figure that is hidden, not for one whose legs the roof corner covers.
-    ...(piece.fadeWhenOccluding ? { fadeWhenOccluding: true, fadeWhenHeadHidden: true } : {}),
+    // The plates hold every building and tree in front of a figure, so a faded piece reads as the figure
+    // standing on its roof: the piece keeps its paint and a hidden party member shows as a silhouette.
+    ...(piece.fadeWhenOccluding ? { fadeWhenOccluding: true, revealOccluded: true } : {}),
     ...(piece.exterior ? { exterior: true } : {}),
     // The painting has the contact and the cast shade; the runtime would draw them a second time.
     contactShadow: false,

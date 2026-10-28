@@ -232,11 +232,13 @@ function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number
  * ADR 0094 alike the head probe sits at about 95% of a G1 adult (55-61 art px tall).
  */
 const BODY_PROBES = [8, 32, 56] as const;
-const HEAD_PROBE = [56] as const;
 
-/** The unscaled lifts `sceneryOpacity` tests for a piece; it multiplies each by the figure's scale. */
-export const probeLifts = (scenery: Pick<SceneScenery, 'fadeWhenHeadHidden'>): readonly number[] =>
-  scenery.fadeWhenHeadHidden ? HEAD_PROBE : BODY_PROBES;
+/**
+ * The unscaled lifts `sceneryOpacity` tests for a piece; it multiplies each by the figure's scale.
+ * None for a piece that reveals instead of fading (`reveal.ts`).
+ */
+export const probeLifts = (scenery: Pick<SceneScenery, 'revealOccluded'>): readonly number[] =>
+  scenery.revealOccluded ? [] : BODY_PROBES;
 
 /** Roof cutaway follows actual on-screen overlap and ground depth, on either backend. */
 export function sceneryOpacity(
@@ -245,7 +247,7 @@ export function sceneryOpacity(
   camera: Camera,
   squareFootprints = SQUARE_FOOTPRINTS,
 ): number {
-  if (!scenery.fadeWhenOccluding) return 1;
+  if (!scenery.fadeWhenOccluding || scenery.revealOccluded) return 1;
   const image = sceneImage(scenery);
   if (!image) return 1;
   const depth = camera.groundPoint(scenery.depth).y;

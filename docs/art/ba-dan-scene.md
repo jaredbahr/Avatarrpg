@@ -134,9 +134,9 @@ depth sorting, the house fade (`fadeWhenOccluding` on the houses and trees), the
 shadows (ADR 0071) and the live surfaces (ice, fire, steam) over the painted canal. `src/render` is unchanged.
 
 Because the plates hold every house and tree, a faded upright shows the same roof beneath it, and a figure seen through
-the veil looks as if it stands on the roof. So Ba Dan's fading pieces also set `fadeWhenHeadHidden`: they fade only when the
-figure's head is behind the piece, and a roof corner over the legs simply covers them (`sceneryOpacity` in `src/render/scene.ts`;
-`src/content/scenes/baDanDepth.test.ts` sweeps every walkable tile). Six rim pieces use runtime-only depth overrides in
+the veil looks as if it stands on the roof. So Ba Dan's pieces set `revealOccluded` and never fade: a party member hidden
+behind one is drawn over it as a flat silhouette of its covered part, on the world-pixel grid, once a quarter of the
+figure is covered; a resident is simply hidden (`src/render/reveal.ts`, ADR 0096). Six rim pieces use runtime-only depth overrides in
 `baDan.ts`; their frozen geometry still controls the art split, and an opaque-overlap test preserves its scenery order. Six
 figure ties remain where correcting one piece would reorder overlapping painted trees; they require splitting/regenerating art.
 
