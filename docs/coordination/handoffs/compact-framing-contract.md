@@ -25,8 +25,8 @@ The current player-view target still requires readable touch controls and stable
 - TypeScript noEmit passed.
 - Independent read-only source review approved the two-file patch with no findings, checked DPR table and retained assertions. Review did not launch tests or browsers.
 - First unit invocation executed no tests because a maximum-only worker flag conflicted with Vitest's default minimum; the unchanged tests passed after both were explicitly set to one.
-- No browser suite, build or full ci:local ran in this source-only assignment. No browser-pass or merge-ready claim; unchanged e2e deadlines and all behavioral assertions remain in place.
-- Before publication, the integration owner still needs full required validation and an admitted focused browser check at the current combined head. No publication, merge or deployment is authorized by this handoff.
+- At the source-only checkpoint, no browser suite, build or full ci:local had run. Unchanged e2e deadlines and all behavioral assertions remain in place.
+- Continuation authorizes standard local validation and a focused browser check before normal draft publication. Final exact-head outcomes belong in the PR validation record and local receipt; this handoff preserves the earlier source-only results. No merge or deployment is authorized. Keep unrelated WebKit timing failures and portrait #310 acceptance separate.
 
 Preserved run evidence and readable comparison:
 `C:/Users/Jared/Documents/Codex/2026-10-27/task-6/avatar-evidence-40661689631/REPORT.md`.
