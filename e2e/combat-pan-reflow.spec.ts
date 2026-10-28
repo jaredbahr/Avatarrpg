@@ -260,21 +260,27 @@ test('iPad landscape normal text keeps the lower target inside the map', async (
   ).toBe(true);
 });
 
-test('real viewport resize recomputes compact oblique framing', async ({ page }) => {
-  await page.setViewportSize({ width: 1600, height: 900 });
-  await resetStorage(page, '?renderer=canvas');
-  await startGame(page, ['Kaya'], ['kaya'], 'compact-frame-resize');
-  await enterNode(page, 'battle_forest_road');
-  await takeTurn(page);
-  await waitForIdle(page);
-  await settleLayout(page);
-  const tall = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-  expect(tall.tilePx).toBeGreaterThanOrEqual(96);
+test.describe('resize across integer zoom stops at DPR 2', () => {
+  // A 96px preference floors to 64px at DPR 1 (ADR 0088), so these two
+  // viewports only exercise a scale-changing refit at DPR 2.
+  test.use({ deviceScaleFactor: 2 });
 
-  await page.setViewportSize({ width: 1280, height: 720 });
-  await settleLayout(page);
-  const short = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-  expect(short.tilePx).toBeCloseTo(64, 5);
+  test('real viewport resize recomputes compact oblique framing', async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Kaya'], ['kaya'], 'compact-frame-resize');
+    await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await settleLayout(page);
+    const tall = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    expect(tall.tilePx).toBeGreaterThanOrEqual(96);
+
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await settleLayout(page);
+    const short = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    expect(short.tilePx).toBeCloseTo(64, 5);
+  });
 });
 
 test('Huge text on a tall viewport reserves the expanded decision panel', async ({ page }) => {
@@ -287,7 +293,8 @@ test('Huge text on a tall viewport reserves the expanded decision panel', async 
   await waitForIdle(page);
   await settleLayout(page);
   const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-  expect(before.tilePx).toBeLessThanOrEqual(40.01);
+  // The 40px preference must use the 64px tappable integer stop at DPR 1/2.
+  expect(before.tilePx).toBeCloseTo(64, 5);
   await page.getByRole('button', { name: /^Fire Jab/ }).click();
   await settleLayout(page);
   const aiming = await page.evaluate(() => window.fnt!.app.rendererCamera()!);

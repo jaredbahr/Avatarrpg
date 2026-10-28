@@ -121,14 +121,16 @@ describe('integer zoom: the settled views', () => {
   it.each([
     { dpr: 1, preferred: 40, expected: 64 },
     { dpr: 1, preferred: 64, expected: 64 },
+    { dpr: 1, preferred: 96, expected: 64 },
     { dpr: 1.5, preferred: 40, expected: 64 / 1.5 },
     { dpr: 1.5, preferred: 64, expected: 64 / 1.5 },
     { dpr: 2, preferred: 40, expected: 64 },
     { dpr: 2, preferred: 64, expected: 64 },
+    { dpr: 2, preferred: 96, expected: 96 },
     { dpr: 3, preferred: 40, expected: 128 / 3 },
     { dpr: 3, preferred: 64, expected: 64 },
   ])(
-    'snaps a compact $preferred px combat preference at DPR $dpr to $expected px',
+    'snaps a $preferred px combat preference at DPR $dpr to $expected px',
     ({ dpr, preferred, expected }) => {
       // A short canvas keeps the board fit below the preferred scale. ADR 0088
       // floors the preference, then enforces the smallest whole, tappable stop.
