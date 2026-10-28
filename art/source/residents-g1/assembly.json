@@ -1,0 +1,164 @@
+{
+ "household": {
+  "walk": {
+   "south": "household-walk-south-s9701",
+   "south-east": "household-walk-south-east-s9701",
+   "east": "household-walk-east-s9701",
+   "north-east": "household-walk-north-east-s9701",
+   "north": "household-walk-north-s9701",
+   "north-west": "household-walk-north-west-s9701",
+   "west": "household-walk-west-s9701",
+   "south-west": "household-walk-south-west-s9701"
+  }
+ },
+ "watch": {
+  "walk": {
+   "south": "watch-walk-south-s9701",
+   "south-east": "watch-walk-south-east-s9702",
+   "east": "watch-walk-east-s9701",
+   "north-east": "watch-walk-north-east-s9701",
+   "north": "watch-walk-north-s9701",
+   "north-west": "watch-walk-north-west-s9701",
+   "west": "watch-walk-west-s9701",
+   "south-west": "watch-walk-south-west-s9701"
+  }
+ },
+ "mira": {
+  "walk": {
+   "south": "mira-walk-south-s9701",
+   "south-east": "mira-walk-south-east-s9701",
+   "east": "mira-walk-east-s9701",
+   "north-east": "mira-walk-north-east-s9701",
+   "north": "mira-walk-north-s9701",
+   "north-west": "mira-walk-north-west-s9701",
+   "west": "mira-walk-west-s9701",
+   "south-west": "mira-walk-south-west-s9701"
+  }
+ },
+ "gao": {
+  "walk": {
+   "south": "gao-walk-south-s9701",
+   "south-east": "gao-walk-south-east-s9701",
+   "east": "gao-walk-east-s9701",
+   "north-east": "gao-walk-north-east-s9701",
+   "north": "gao-walk-north-s9701",
+   "north-west": "gao-walk-north-west-s9701",
+   "west": "gao-walk-west-s9701",
+   "south-west": "gao-walk-south-west-s9701"
+  }
+ },
+ "pella": {
+  "walk": {
+   "south": "pella-walk-south-s9701",
+   "south-east": "pella-walk-south-east-s9701",
+   "east": "pella-walk-east-s9701",
+   "north-east": "pella-walk-north-east-s9701",
+   "north": "pella-walk-north-s9701",
+   "north-west": "pella-walk-north-west-s9701",
+   "west": "pella-walk-west-s9701",
+   "south-west": "pella-walk-south-west-s9701"
+  }
+ },
+ "dorin": {
+  "walk": {
+   "south": "dorin-walk-south-s9702",
+   "south-east": "dorin-walk-south-east-s9701",
+   "east": "dorin-walk-east-s9701",
+   "north-east": "dorin-walk-north-east-s9701",
+   "north": "dorin-walk-north-s9701",
+   "north-west": "dorin-walk-north-west-s9701",
+   "west": "dorin-walk-west-s9701",
+   "south-west": "dorin-walk-south-west-s9701"
+  }
+ },
+ "thug": {
+  "walk": {
+   "south": "thug-walk-south-s9701",
+   "south-east": "thug-walk-south-east-s9701",
+   "east": "thug-walk-east-s9701",
+   "north-east": "thug-walk-north-east-s9701",
+   "north": "thug-walk-north-s9701",
+   "north-west": "thug-walk-north-west-s9701",
+   "west": "thug-walk-west-s9701",
+   "south-west": "thug-walk-south-west-s9701"
+  },
+  "hit": {
+   "south": "thug-hit-south-s9701",
+   "south-east": "thug-hit-south-east-s9701",
+   "east": "thug-hit-east-s9701",
+   "north-east": "thug-hit-north-east-s9701",
+   "north": "thug-hit-north-s9701",
+   "north-west": "thug-hit-north-west-s9701",
+   "west": "thug-hit-west-s9701",
+   "south-west": "thug-hit-south-west-s9701"
+  },
+  "ko": {
+   "south-east": "thug-ko-south-east-s9701",
+   "south-west": "thug-ko-south-west-s9701",
+   "north-east": "thug-ko-north-east-s9701",
+   "north-west": "thug-ko-north-west-s9701"
+  }
+ },
+ "slinger": {
+  "walk": {
+   "south": "slinger-walk-south-s9701",
+   "south-east": "slinger-walk-south-east-s9701",
+   "east": "slinger-walk-east-s9701",
+   "north-east": "slinger-walk-north-east-s9701",
+   "north": "slinger-walk-north-s9701",
+   "north-west": "slinger-walk-north-west-s9701",
+   "west": "slinger-walk-west-s9701",
+   "south-west": "slinger-walk-south-west-s9701"
+  },
+  "hit": {
+   "south": "slinger-hit-south-s9701",
+   "south-east": "slinger-hit-south-east-s9701",
+   "east": "slinger-hit-east-s9701",
+   "north-east": "slinger-hit-north-east-s9701",
+   "north": "slinger-hit-north-s9701",
+   "north-west": "slinger-hit-north-west-s9701",
+   "west": "slinger-hit-west-s9701",
+   "south-west": "slinger-hit-south-west-s9701"
+  },
+  "ko": {
+   "south-east": "slinger-ko-south-east-s9701",
+   "south-west": "slinger-ko-south-west-s9701",
+   "north-east": "slinger-ko-north-east-s9701",
+   "north-west": "slinger-ko-north-west-s9701"
+  }
+ },
+ "bruiser": {
+  "walk": {
+   "south": "bruiser-walk-south-s9701",
+   "south-east": "bruiser-walk-south-east-s9701",
+   "east": "bruiser-walk-east-s9701",
+   "north-east": "bruiser-walk-north-east-s9701",
+   "north": "bruiser-walk-north-s9701",
+   "north-west": "bruiser-walk-north-west-s9702",
+   "west": "bruiser-walk-west-s9701",
+   "south-west": "bruiser-walk-south-west-s9701"
+  },
+  "hit": {
+   "south": "bruiser-hit-south-s9701",
+   "south-east": "bruiser-hit-south-east-s9701",
+   "east": "bruiser-hit-east-s9701",
+   "north-east": "bruiser-hit-north-east-s9701",
+   "north": "bruiser-hit-north-s9701",
+   "north-west": "bruiser-hit-north-west-s9701",
+   "west": "bruiser-hit-west-s9701",
+   "south-west": "bruiser-hit-south-west-s9701"
+  },
+  "ko": {
+   "south-east": "bruiser-ko-south-east-s9701",
+   "south-west": "bruiser-ko-south-west-s9701",
+   "north-east": "bruiser-ko-north-east-s9701",
+   "north-west": "bruiser-ko-north-west-s9701"
+  }
+ },
+ "_why": {
+  "watch/walk/south-east": "s9701 lost the spear for three cels; s9702 holds it in most cels",
+  "bruiser/walk/north-west": "s9701 moved the club between hands; s9702 keeps it in his right hand from cel 2 (cel 0-1 still show it behind the left side)",
+  "dorin/walk/south": "s9701 shortened the spear mid-cycle; s9702 keeps its length",
+  "ko (all)": "the take's last cel (CMU frame 170) smeared or ghosted in about half the diagonals (the bruiser's south-west stood back up); frames 142 and 170 are both the body lying flat, so cel 6 holds cel 5 on every diagonal"
+ }
+}
