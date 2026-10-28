@@ -1367,11 +1367,13 @@ html[data-contrast='high'] .map-wrap {
   text-align: center;
 }
 
+/* Under the portrait the column is narrow: the name wraps rather than
+   ellipsing "Elder Mira" to "Elder M…" on an iPad in portrait. */
 .conversation-compact-speaker strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
+  text-wrap: balance;
   font-size: var(--fs-lg);
+  line-height: 1.15;
 }
 
 .explore-conversation .conversation-panel .dialogue-line {
@@ -1429,6 +1431,12 @@ html[data-contrast='high'] .map-wrap {
     flex: 1 1 auto;
     width: auto;
     text-align: left;
+  }
+
+  .conversation-compact-speaker strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .explore-conversation .conversation-panel .dialogue-line,
