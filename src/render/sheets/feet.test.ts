@@ -140,7 +140,7 @@ describe('every figure stands on its own soles', () => {
 
   describe('the ?style=world test sheets', () => {
     beforeAll(() => useWorldStyleTest());
-    holdsEveryCelOnItsSoles('?style=world', () => WORLD_STYLE, /style-test/);
+    holdsEveryCelOnItsSoles('?style=world', () => WORLD_STYLE, /style-test|units\/world\//);
   });
 });
 

@@ -39,8 +39,9 @@ import type {
 } from './clips';
 import { HEADINGS, headingClip } from './clips';
 import { BANDITS_G1_TRIMS } from './banditsG1';
-import { PARTY_G1_TRIMS } from './partyG1';
 import { residentGrid } from './residentGrid';
+import { PARTY_G1_TRIMS } from './partyG1';
+import { WORLD_PARTY, type WorldPartyName } from './worldParty';
 import { WORLD_STYLE_TEST, type WorldStyleName } from './worldStyleTest';
 
 export type AssetEntry =
@@ -482,22 +483,99 @@ function worldStyleSheet(name: WorldStyleName, key: string, palette: string): Sh
   };
 }
 
-const WORLD_STYLE_KEYS: Readonly<Record<string, readonly [WorldStyleName, string]>> = {
+/**
+ * Kaya, Sura and Bo in the world's rendering, phase 2a (art/source/party-world): the curated party-g1 roots restyled
+ * as #317 restyled them, every heading drawn (Bo's three west-facing ones mirror his east-facing ones), and every clip
+ * the party plays: idle and rest, the designed six-cel walk, the fighting stance, the hits and knockouts (from the clip
+ * file, at the shipped sheets' own timing), and the bends (party-g1's shipped bend sets on these cels). 80 px a tile, so
+ * the oblique figure scale puts one art px on one world px. Every clip the party plays is drawn, but
+ * they draw only under `?style=world` until the owner has seen them (ADR 0097): switching the default retires the G1
+ * sheets that the art tests pin, which is its own change.
+ */
+/** The 192 px cels' size and foot point: the knockouts', the legacy KO's and the cast's. */
+const WIDE = { frameSize: { w: 192, h: 192 }, anchor: { x: 0.5, y: 151 / 192 } } as const;
+
+function worldPartySheet(name: WorldPartyName, key: string, palette: string): SheetEntry {
+  const t = WORLD_PARTY[name];
+  const frames = (clip: string, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const clips: Partial<Record<ClipName, ClipDef>> = {
+    // The legacy clips, on the 192 px page as party-g1 packs them: the one-cel KO a non-diagonal fall asks for (the
+    // south-east knockout's last cel) and the mirrored cast non-bend abilities play (the east bend's stance, wind-up
+    // and strike).
+    ko: { frames: frames('ko', 1), fps: 1, loop: false, ...WIDE },
+    cast: { frames: frames('cast', 3), fps: 8, loop: false, ...WIDE },
+  };
+  const msPerTile = {} as Record<Heading, number>;
+  HEADINGS.forEach((heading, i) => {
+    const add = (base: HeadingClipBase, count: number, def: Omit<ClipDef, 'frames'>) => {
+      const clip = headingClip(base, heading);
+      clips[clip] = { frames: frames(clip, count), ...def };
+    };
+    add('idle', 2, { fps: 1, loop: true, frameMs: t.idleMs });
+    add('rest', 1, { fps: 1, loop: true });
+    add('walk', t.walkCels, { fps: 1000 / t.walkCelMs, loop: true });
+    add('stance', 2, { fps: 1, loop: true, frameMs: t.idleMs });
+    msPerTile[heading] = t.walkMsPerTile[i] ?? t.walkCels * t.walkCelMs;
+  });
+  // The riverside draws Kaya and Sura from this sheet too (ADR 0054): their wave and seated tea, the G1 cels carried
+  // onto this grid (not redrawn).
+  if (name === 'kaya' || name === 'sura') {
+    clips.wave = { frames: frames('wave', 2), fps: 4, loop: true };
+    clips.tea = { frames: frames('tea', 2), fps: 0.25, loop: true };
+  }
+  return {
+    kind: 'sheet',
+    atlas: `art/units/world/${name}.json`,
+    // Page 2: the knockouts, 192 px cels; their clips and the hits' arrive with the clip file.
+    atlasPages: [`art/units/world/${name}-2.json`],
+    clipData: `art/units/world/${name}-clips.json`,
+    ...(t.bend && {
+      bend: `art/units/world/${name}-bend.json`,
+      bendPages: [`art/units/world/${name}-bend-page.json`],
+    }),
+    pixelsPerTile: 80,
+    frameSize: { w: 128, h: 128 },
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: t.anchorY },
+    facing: 'both',
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: msPerTile,
+      walkStartMs: t.walkStartCel * t.walkCelMs,
+      walkCycleMs: t.walkCels * t.walkCelMs,
+      authoredBob: true,
+    },
+    palette,
+    clips,
+  };
+}
+
+const WORLD_PARTY_KEYS: Readonly<Record<string, readonly [WorldPartyName, string]>> = {
   'unit.fire.kaya': ['kaya', 'fire'],
   'unit.water.sura': ['sura', 'water'],
   'unit.earth.bo': ['bo', 'earth'],
+};
+const WORLD_STYLE_KEYS: Readonly<Record<string, readonly [WorldStyleName, string]>> = {
   'npc.shopkeeper': ['gao', 'earth'],
 };
 let worldStyle: Readonly<Record<string, AssetEntry>> | undefined;
 
-/** `?style=world`: draw the four test figures instead of the shipped sheets (a dev comparison, never the default). */
+/**
+ * `?style=world`: draw the world-style figures instead of the shipped sheets (a comparison, not yet the default): the
+ * party's phase 2a sheets (ADR 0097) and #317's Gao.
+ */
 export function useWorldStyleTest(): void {
-  worldStyle = Object.fromEntries(
-    Object.entries(WORLD_STYLE_KEYS).map(([key, [name, palette]]) => [
+  worldStyle = Object.fromEntries([
+    ...Object.entries(WORLD_PARTY_KEYS).map(([key, [name, palette]]) => [
+      key,
+      worldPartySheet(name, key, palette),
+    ]),
+    ...Object.entries(WORLD_STYLE_KEYS).map(([key, [name, palette]]) => [
       key,
       worldStyleSheet(name, key, palette),
     ]),
-  );
+  ]);
 }
 
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {

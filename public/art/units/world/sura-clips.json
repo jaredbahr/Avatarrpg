@@ -1,0 +1,186 @@
+{
+  "hitEast": {
+    "frames": [
+      "unit.water.sura/hitEast/0",
+      "unit.water.sura/hitEast/1",
+      "unit.water.sura/hitEast/2",
+      "unit.water.sura/hitEast/3",
+      "unit.water.sura/hitEast/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "hitSouthEast": {
+    "frames": [
+      "unit.water.sura/hitSouthEast/0",
+      "unit.water.sura/hitSouthEast/1",
+      "unit.water.sura/hitSouthEast/2",
+      "unit.water.sura/hitSouthEast/3",
+      "unit.water.sura/hitSouthEast/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "hitSouth": {
+    "frames": [
+      "unit.water.sura/hitSouth/0",
+      "unit.water.sura/hitSouth/1",
+      "unit.water.sura/hitSouth/2",
+      "unit.water.sura/hitSouth/3",
+      "unit.water.sura/hitSouth/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "hitSouthWest": {
+    "frames": [
+      "unit.water.sura/hitSouthWest/0",
+      "unit.water.sura/hitSouthWest/1",
+      "unit.water.sura/hitSouthWest/2",
+      "unit.water.sura/hitSouthWest/3",
+      "unit.water.sura/hitSouthWest/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "hitWest": {
+    "frames": [
+      "unit.water.sura/hitWest/0",
+      "unit.water.sura/hitWest/1",
+      "unit.water.sura/hitWest/2",
+      "unit.water.sura/hitWest/3",
+      "unit.water.sura/hitWest/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "hitNorthWest": {
+    "frames": [
+      "unit.water.sura/hitNorthWest/0",
+      "unit.water.sura/hitNorthWest/1",
+      "unit.water.sura/hitNorthWest/2",
+      "unit.water.sura/hitNorthWest/3",
+      "unit.water.sura/hitNorthWest/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "hitNorth": {
+    "frames": [
+      "unit.water.sura/hitNorth/0",
+      "unit.water.sura/hitNorth/1",
+      "unit.water.sura/hitNorth/2",
+      "unit.water.sura/hitNorth/3",
+      "unit.water.sura/hitNorth/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "hitNorthEast": {
+    "frames": [
+      "unit.water.sura/hitNorthEast/0",
+      "unit.water.sura/hitNorthEast/1",
+      "unit.water.sura/hitNorthEast/2",
+      "unit.water.sura/hitNorthEast/3",
+      "unit.water.sura/hitNorthEast/0"
+    ],
+    "fps": 9.259259,
+    "loop": false,
+    "frameMs": [40, 150, 140, 110, 100]
+  },
+  "koSouthEast": {
+    "frames": [
+      "unit.water.sura/koSouthEast/0",
+      "unit.water.sura/koSouthEast/1",
+      "unit.water.sura/koSouthEast/2",
+      "unit.water.sura/koSouthEast/3",
+      "unit.water.sura/koSouthEast/4",
+      "unit.water.sura/koSouthEast/5",
+      "unit.water.sura/koSouthEast/6"
+    ],
+    "fps": 7,
+    "loop": false,
+    "frameMs": [40, 160, 80, 130, 100, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koSouthWest": {
+    "frames": [
+      "unit.water.sura/koSouthWest/0",
+      "unit.water.sura/koSouthWest/1",
+      "unit.water.sura/koSouthWest/2",
+      "unit.water.sura/koSouthWest/3",
+      "unit.water.sura/koSouthWest/4",
+      "unit.water.sura/koSouthWest/4",
+      "unit.water.sura/koSouthWest/6"
+    ],
+    "fps": 7,
+    "loop": false,
+    "frameMs": [40, 160, 80, 130, 100, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koNorthEast": {
+    "frames": [
+      "unit.water.sura/koNorthEast/0",
+      "unit.water.sura/koNorthEast/1",
+      "unit.water.sura/koNorthEast/2",
+      "unit.water.sura/koNorthEast/3",
+      "unit.water.sura/koNorthEast/4",
+      "unit.water.sura/koNorthEast/5",
+      "unit.water.sura/koNorthEast/6"
+    ],
+    "fps": 7,
+    "loop": false,
+    "frameMs": [40, 160, 80, 130, 100, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koNorthWest": {
+    "frames": [
+      "unit.water.sura/koNorthWest/0",
+      "unit.water.sura/koNorthWest/1",
+      "unit.water.sura/koNorthWest/2",
+      "unit.water.sura/koNorthWest/3",
+      "unit.water.sura/koNorthWest/4",
+      "unit.water.sura/koNorthWest/5",
+      "unit.water.sura/koNorthWest/6"
+    ],
+    "fps": 7,
+    "loop": false,
+    "frameMs": [40, 160, 80, 130, 100, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  }
+}
