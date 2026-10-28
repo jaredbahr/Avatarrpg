@@ -1,884 +1,452 @@
 {
- "household": {
-  "south": {
-   "colours": [
-    20,
-    22
-   ],
-   "idle_boil": 0.036,
-   "contact_rows": [
-    80,
-    80
-   ],
-   "walk_mean_minus_idle": -1.75
+  "household": {
+    "south": {
+      "colours": [20, 22],
+      "idle_boil": 0.036,
+      "contact_rows": [80, 80],
+      "walk_mean_minus_idle": -1.75
+    },
+    "south-east": {
+      "colours": [24, 29],
+      "idle_boil": 0.04,
+      "contact_rows": [79, 81],
+      "walk_mean_minus_idle": -1.5
+    },
+    "east": {
+      "colours": [25, 30],
+      "idle_boil": 0.06,
+      "contact_rows": [81, 80],
+      "walk_mean_minus_idle": 0.0
+    },
+    "north-east": {
+      "colours": [24, 28],
+      "idle_boil": 0.038,
+      "contact_rows": [80, 78],
+      "walk_mean_minus_idle": -1.5
+    },
+    "north": {
+      "colours": [12, 13],
+      "idle_boil": 0.039,
+      "contact_rows": [84, 84],
+      "walk_mean_minus_idle": 1.75
+    },
+    "north-west": {
+      "colours": [16, 18],
+      "idle_boil": 0.037,
+      "contact_rows": [79, 79],
+      "walk_mean_minus_idle": -1.62
+    },
+    "west": {
+      "colours": [24, 27],
+      "idle_boil": 0.053,
+      "contact_rows": [79, 79],
+      "walk_mean_minus_idle": -0.38
+    },
+    "south-west": {
+      "colours": [26, 30],
+      "idle_boil": 0.035,
+      "contact_rows": [82, 81],
+      "walk_mean_minus_idle": -1.12
+    }
   },
-  "south-east": {
-   "colours": [
-    24,
-    29
-   ],
-   "idle_boil": 0.04,
-   "contact_rows": [
-    79,
-    81
-   ],
-   "walk_mean_minus_idle": -1.5
+  "watch": {
+    "south": {
+      "colours": [21, 24],
+      "idle_boil": 0.032,
+      "contact_rows": [81, 81],
+      "walk_mean_minus_idle": -1.5
+    },
+    "south-east": {
+      "colours": [22, 32],
+      "idle_boil": 0.029,
+      "contact_rows": [84, 82],
+      "walk_mean_minus_idle": -1.0
+    },
+    "east": {
+      "colours": [20, 25],
+      "idle_boil": 0.026,
+      "contact_rows": [84, 84],
+      "walk_mean_minus_idle": 0.62
+    },
+    "north-east": {
+      "colours": [19, 19],
+      "idle_boil": 0.037,
+      "contact_rows": [82, 81],
+      "walk_mean_minus_idle": -1.75
+    },
+    "north": {
+      "colours": [21, 27],
+      "idle_boil": 0.036,
+      "contact_rows": [85, 84],
+      "walk_mean_minus_idle": 1.38
+    },
+    "north-west": {
+      "colours": [22, 32],
+      "idle_boil": 0.032,
+      "contact_rows": [80, 80],
+      "walk_mean_minus_idle": -1.62
+    },
+    "west": {
+      "colours": [21, 27],
+      "idle_boil": 0.036,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -0.5
+    },
+    "south-west": {
+      "colours": [23, 26],
+      "idle_boil": 0.037,
+      "contact_rows": [83, 82],
+      "walk_mean_minus_idle": -1.12
+    }
   },
-  "east": {
-   "colours": [
-    25,
-    30
-   ],
-   "idle_boil": 0.06,
-   "contact_rows": [
-    81,
-    80
-   ],
-   "walk_mean_minus_idle": 0.0
+  "mira": {
+    "south": {
+      "colours": [18, 22],
+      "idle_boil": 0.029,
+      "contact_rows": [80, 80],
+      "walk_mean_minus_idle": -1.75
+    },
+    "south-east": {
+      "colours": [20, 23],
+      "idle_boil": 0.033,
+      "contact_rows": [81, 81],
+      "walk_mean_minus_idle": -1.12
+    },
+    "east": {
+      "colours": [22, 26],
+      "idle_boil": 0.032,
+      "contact_rows": [80, 79],
+      "walk_mean_minus_idle": 0.0
+    },
+    "north-east": {
+      "colours": [21, 25],
+      "idle_boil": 0.035,
+      "contact_rows": [82, 80],
+      "walk_mean_minus_idle": -1.0
+    },
+    "north": {
+      "colours": [13, 13],
+      "idle_boil": 0.036,
+      "contact_rows": [85, 84],
+      "walk_mean_minus_idle": 1.75
+    },
+    "north-west": {
+      "colours": [22, 25],
+      "idle_boil": 0.041,
+      "contact_rows": [81, 80],
+      "walk_mean_minus_idle": -1.12
+    },
+    "west": {
+      "colours": [19, 24],
+      "idle_boil": 0.031,
+      "contact_rows": [79, 79],
+      "walk_mean_minus_idle": -0.75
+    },
+    "south-west": {
+      "colours": [19, 20],
+      "idle_boil": 0.031,
+      "contact_rows": [81, 80],
+      "walk_mean_minus_idle": -1.0
+    }
   },
-  "north-east": {
-   "colours": [
-    24,
-    28
-   ],
-   "idle_boil": 0.038,
-   "contact_rows": [
-    80,
-    78
-   ],
-   "walk_mean_minus_idle": -1.5
+  "gao": {
+    "south": {
+      "colours": [18, 19],
+      "idle_boil": 0.029,
+      "contact_rows": [80, 80],
+      "walk_mean_minus_idle": -1.62
+    },
+    "south-east": {
+      "colours": [20, 20],
+      "idle_boil": 0.031,
+      "contact_rows": [80, 81],
+      "walk_mean_minus_idle": -1.12
+    },
+    "east": {
+      "colours": [26, 29],
+      "idle_boil": 0.033,
+      "contact_rows": [82, 80],
+      "walk_mean_minus_idle": -0.62
+    },
+    "north-east": {
+      "colours": [19, 20],
+      "idle_boil": 0.035,
+      "contact_rows": [82, 80],
+      "walk_mean_minus_idle": -1.12
+    },
+    "north": {
+      "colours": [21, 24],
+      "idle_boil": 0.03,
+      "contact_rows": [84, 84],
+      "walk_mean_minus_idle": 1.5
+    },
+    "north-west": {
+      "colours": [20, 22],
+      "idle_boil": 0.031,
+      "contact_rows": [81, 80],
+      "walk_mean_minus_idle": -1.5
+    },
+    "west": {
+      "colours": [20, 22],
+      "idle_boil": 0.036,
+      "contact_rows": [81, 79],
+      "walk_mean_minus_idle": -0.38
+    },
+    "south-west": {
+      "colours": [22, 24],
+      "idle_boil": 0.031,
+      "contact_rows": [83, 82],
+      "walk_mean_minus_idle": -1.0
+    }
   },
-  "north": {
-   "colours": [
-    12,
-    13
-   ],
-   "idle_boil": 0.039,
-   "contact_rows": [
-    84,
-    84
-   ],
-   "walk_mean_minus_idle": 1.75
+  "pella": {
+    "south": {
+      "colours": [20, 23],
+      "idle_boil": 0.066,
+      "contact_rows": [80, 80],
+      "walk_mean_minus_idle": -1.38
+    },
+    "south-east": {
+      "colours": [21, 24],
+      "idle_boil": 0.083,
+      "contact_rows": [80, 80],
+      "walk_mean_minus_idle": -1.38
+    },
+    "east": {
+      "colours": [23, 26],
+      "idle_boil": 0.086,
+      "contact_rows": [81, 80],
+      "walk_mean_minus_idle": 0.0
+    },
+    "north-east": {
+      "colours": [22, 29],
+      "idle_boil": 0.066,
+      "contact_rows": [80, 79],
+      "walk_mean_minus_idle": -1.25
+    },
+    "north": {
+      "colours": [21, 23],
+      "idle_boil": 0.079,
+      "contact_rows": [83, 82],
+      "walk_mean_minus_idle": 1.12
+    },
+    "north-west": {
+      "colours": [22, 26],
+      "idle_boil": 0.078,
+      "contact_rows": [79, 79],
+      "walk_mean_minus_idle": -1.62
+    },
+    "west": {
+      "colours": [20, 25],
+      "idle_boil": 0.084,
+      "contact_rows": [80, 80],
+      "walk_mean_minus_idle": -0.38
+    },
+    "south-west": {
+      "colours": [21, 25],
+      "idle_boil": 0.069,
+      "contact_rows": [80, 79],
+      "walk_mean_minus_idle": -1.12
+    }
   },
-  "north-west": {
-   "colours": [
-    16,
-    18
-   ],
-   "idle_boil": 0.037,
-   "contact_rows": [
-    79,
-    79
-   ],
-   "walk_mean_minus_idle": -1.62
+  "dorin": {
+    "south": {
+      "colours": [20, 23],
+      "idle_boil": 0.038,
+      "contact_rows": [83, 82],
+      "walk_mean_minus_idle": -0.88
+    },
+    "south-east": {
+      "colours": [20, 24],
+      "idle_boil": 0.031,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -1.5
+    },
+    "east": {
+      "colours": [20, 25],
+      "idle_boil": 0.033,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -0.38
+    },
+    "north-east": {
+      "colours": [14, 15],
+      "idle_boil": 0.041,
+      "contact_rows": [83, 81],
+      "walk_mean_minus_idle": -1.25
+    },
+    "north": {
+      "colours": [18, 20],
+      "idle_boil": 0.036,
+      "contact_rows": [85, 84],
+      "walk_mean_minus_idle": 1.25
+    },
+    "north-west": {
+      "colours": [22, 25],
+      "idle_boil": 0.032,
+      "contact_rows": [82, 81],
+      "walk_mean_minus_idle": -1.5
+    },
+    "west": {
+      "colours": [19, 22],
+      "idle_boil": 0.046,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -0.38
+    },
+    "south-west": {
+      "colours": [19, 23],
+      "idle_boil": 0.03,
+      "contact_rows": [83, 82],
+      "walk_mean_minus_idle": -1.0
+    }
   },
-  "west": {
-   "colours": [
-    24,
-    27
-   ],
-   "idle_boil": 0.053,
-   "contact_rows": [
-    79,
-    79
-   ],
-   "walk_mean_minus_idle": -0.38
+  "thug": {
+    "south": {
+      "colours": [20, 23],
+      "idle_boil": 0.031,
+      "contact_rows": [83, 83],
+      "walk_mean_minus_idle": -0.88
+    },
+    "south-east": {
+      "colours": [20, 25],
+      "idle_boil": 0.038,
+      "contact_rows": [81, 83],
+      "walk_mean_minus_idle": -1.12
+    },
+    "east": {
+      "colours": [22, 26],
+      "idle_boil": 0.066,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -0.38
+    },
+    "north-east": {
+      "colours": [20, 24],
+      "idle_boil": 0.035,
+      "contact_rows": [83, 81],
+      "walk_mean_minus_idle": -0.88
+    },
+    "north": {
+      "colours": [21, 24],
+      "idle_boil": 0.035,
+      "contact_rows": [85, 85],
+      "walk_mean_minus_idle": 1.12
+    },
+    "north-west": {
+      "colours": [17, 19],
+      "idle_boil": 0.05,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -1.12
+    },
+    "west": {
+      "colours": [28, 31],
+      "idle_boil": 0.067,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -0.75
+    },
+    "south-west": {
+      "colours": [21, 21],
+      "idle_boil": 0.039,
+      "contact_rows": [83, 81],
+      "walk_mean_minus_idle": -1.62
+    }
   },
-  "south-west": {
-   "colours": [
-    26,
-    30
-   ],
-   "idle_boil": 0.035,
-   "contact_rows": [
-    82,
-    81
-   ],
-   "walk_mean_minus_idle": -1.12
+  "slinger": {
+    "south": {
+      "colours": [24, 27],
+      "idle_boil": 0.021,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -1.12
+    },
+    "south-east": {
+      "colours": [16, 18],
+      "idle_boil": 0.027,
+      "contact_rows": [83, 83],
+      "walk_mean_minus_idle": -0.88
+    },
+    "east": {
+      "colours": [22, 26],
+      "idle_boil": 0.032,
+      "contact_rows": [81, 81],
+      "walk_mean_minus_idle": -0.38
+    },
+    "north-east": {
+      "colours": [19, 22],
+      "idle_boil": 0.025,
+      "contact_rows": [82, 80],
+      "walk_mean_minus_idle": -0.88
+    },
+    "north": {
+      "colours": [22, 29],
+      "idle_boil": 0.024,
+      "contact_rows": [85, 85],
+      "walk_mean_minus_idle": 0.88
+    },
+    "north-west": {
+      "colours": [21, 28],
+      "idle_boil": 0.024,
+      "contact_rows": [81, 80],
+      "walk_mean_minus_idle": -1.25
+    },
+    "west": {
+      "colours": [24, 28],
+      "idle_boil": 0.036,
+      "contact_rows": [81, 81],
+      "walk_mean_minus_idle": -0.62
+    },
+    "south-west": {
+      "colours": [19, 23],
+      "idle_boil": 0.022,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -1.62
+    }
+  },
+  "bruiser": {
+    "south": {
+      "colours": [29, 30],
+      "idle_boil": 0.025,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -1.75
+    },
+    "south-east": {
+      "colours": [27, 30],
+      "idle_boil": 0.027,
+      "contact_rows": [83, 83],
+      "walk_mean_minus_idle": -1.5
+    },
+    "east": {
+      "colours": [23, 28],
+      "idle_boil": 0.027,
+      "contact_rows": [82, 81],
+      "walk_mean_minus_idle": -0.25
+    },
+    "north-east": {
+      "colours": [16, 18],
+      "idle_boil": 0.021,
+      "contact_rows": [83, 81],
+      "walk_mean_minus_idle": -1.5
+    },
+    "north": {
+      "colours": [25, 31],
+      "idle_boil": 0.025,
+      "contact_rows": [87, 86],
+      "walk_mean_minus_idle": 1.75
+    },
+    "north-west": {
+      "colours": [27, 33],
+      "idle_boil": 0.026,
+      "contact_rows": [82, 82],
+      "walk_mean_minus_idle": -1.25
+    },
+    "west": {
+      "colours": [22, 27],
+      "idle_boil": 0.029,
+      "contact_rows": [81, 81],
+      "walk_mean_minus_idle": -0.62
+    },
+    "south-west": {
+      "colours": [16, 19],
+      "idle_boil": 0.026,
+      "contact_rows": [83, 83],
+      "walk_mean_minus_idle": -1.38
+    }
   }
- },
- "watch": {
-  "south": {
-   "colours": [
-    21,
-    24
-   ],
-   "idle_boil": 0.032,
-   "contact_rows": [
-    81,
-    81
-   ],
-   "walk_mean_minus_idle": -1.5
-  },
-  "south-east": {
-   "colours": [
-    22,
-    32
-   ],
-   "idle_boil": 0.029,
-   "contact_rows": [
-    84,
-    82
-   ],
-   "walk_mean_minus_idle": -1.0
-  },
-  "east": {
-   "colours": [
-    20,
-    25
-   ],
-   "idle_boil": 0.026,
-   "contact_rows": [
-    84,
-    84
-   ],
-   "walk_mean_minus_idle": 0.62
-  },
-  "north-east": {
-   "colours": [
-    19,
-    19
-   ],
-   "idle_boil": 0.037,
-   "contact_rows": [
-    82,
-    81
-   ],
-   "walk_mean_minus_idle": -1.75
-  },
-  "north": {
-   "colours": [
-    21,
-    27
-   ],
-   "idle_boil": 0.036,
-   "contact_rows": [
-    85,
-    84
-   ],
-   "walk_mean_minus_idle": 1.38
-  },
-  "north-west": {
-   "colours": [
-    22,
-    32
-   ],
-   "idle_boil": 0.032,
-   "contact_rows": [
-    80,
-    80
-   ],
-   "walk_mean_minus_idle": -1.62
-  },
-  "west": {
-   "colours": [
-    21,
-    27
-   ],
-   "idle_boil": 0.036,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -0.5
-  },
-  "south-west": {
-   "colours": [
-    23,
-    26
-   ],
-   "idle_boil": 0.037,
-   "contact_rows": [
-    83,
-    82
-   ],
-   "walk_mean_minus_idle": -1.12
-  }
- },
- "mira": {
-  "south": {
-   "colours": [
-    18,
-    22
-   ],
-   "idle_boil": 0.029,
-   "contact_rows": [
-    80,
-    80
-   ],
-   "walk_mean_minus_idle": -1.75
-  },
-  "south-east": {
-   "colours": [
-    20,
-    23
-   ],
-   "idle_boil": 0.033,
-   "contact_rows": [
-    81,
-    81
-   ],
-   "walk_mean_minus_idle": -1.12
-  },
-  "east": {
-   "colours": [
-    22,
-    26
-   ],
-   "idle_boil": 0.032,
-   "contact_rows": [
-    80,
-    79
-   ],
-   "walk_mean_minus_idle": 0.0
-  },
-  "north-east": {
-   "colours": [
-    21,
-    25
-   ],
-   "idle_boil": 0.035,
-   "contact_rows": [
-    82,
-    80
-   ],
-   "walk_mean_minus_idle": -1.0
-  },
-  "north": {
-   "colours": [
-    13,
-    13
-   ],
-   "idle_boil": 0.036,
-   "contact_rows": [
-    85,
-    84
-   ],
-   "walk_mean_minus_idle": 1.75
-  },
-  "north-west": {
-   "colours": [
-    22,
-    25
-   ],
-   "idle_boil": 0.041,
-   "contact_rows": [
-    81,
-    80
-   ],
-   "walk_mean_minus_idle": -1.12
-  },
-  "west": {
-   "colours": [
-    19,
-    24
-   ],
-   "idle_boil": 0.031,
-   "contact_rows": [
-    79,
-    79
-   ],
-   "walk_mean_minus_idle": -0.75
-  },
-  "south-west": {
-   "colours": [
-    19,
-    20
-   ],
-   "idle_boil": 0.031,
-   "contact_rows": [
-    81,
-    80
-   ],
-   "walk_mean_minus_idle": -1.0
-  }
- },
- "gao": {
-  "south": {
-   "colours": [
-    18,
-    19
-   ],
-   "idle_boil": 0.029,
-   "contact_rows": [
-    80,
-    80
-   ],
-   "walk_mean_minus_idle": -1.62
-  },
-  "south-east": {
-   "colours": [
-    20,
-    20
-   ],
-   "idle_boil": 0.031,
-   "contact_rows": [
-    80,
-    81
-   ],
-   "walk_mean_minus_idle": -1.12
-  },
-  "east": {
-   "colours": [
-    26,
-    29
-   ],
-   "idle_boil": 0.033,
-   "contact_rows": [
-    82,
-    80
-   ],
-   "walk_mean_minus_idle": -0.62
-  },
-  "north-east": {
-   "colours": [
-    19,
-    20
-   ],
-   "idle_boil": 0.035,
-   "contact_rows": [
-    82,
-    80
-   ],
-   "walk_mean_minus_idle": -1.12
-  },
-  "north": {
-   "colours": [
-    21,
-    24
-   ],
-   "idle_boil": 0.03,
-   "contact_rows": [
-    84,
-    84
-   ],
-   "walk_mean_minus_idle": 1.5
-  },
-  "north-west": {
-   "colours": [
-    20,
-    22
-   ],
-   "idle_boil": 0.031,
-   "contact_rows": [
-    81,
-    80
-   ],
-   "walk_mean_minus_idle": -1.5
-  },
-  "west": {
-   "colours": [
-    20,
-    22
-   ],
-   "idle_boil": 0.036,
-   "contact_rows": [
-    81,
-    79
-   ],
-   "walk_mean_minus_idle": -0.38
-  },
-  "south-west": {
-   "colours": [
-    22,
-    24
-   ],
-   "idle_boil": 0.031,
-   "contact_rows": [
-    83,
-    82
-   ],
-   "walk_mean_minus_idle": -1.0
-  }
- },
- "pella": {
-  "south": {
-   "colours": [
-    20,
-    23
-   ],
-   "idle_boil": 0.066,
-   "contact_rows": [
-    80,
-    80
-   ],
-   "walk_mean_minus_idle": -1.38
-  },
-  "south-east": {
-   "colours": [
-    21,
-    24
-   ],
-   "idle_boil": 0.083,
-   "contact_rows": [
-    80,
-    80
-   ],
-   "walk_mean_minus_idle": -1.38
-  },
-  "east": {
-   "colours": [
-    23,
-    26
-   ],
-   "idle_boil": 0.086,
-   "contact_rows": [
-    81,
-    80
-   ],
-   "walk_mean_minus_idle": 0.0
-  },
-  "north-east": {
-   "colours": [
-    22,
-    29
-   ],
-   "idle_boil": 0.066,
-   "contact_rows": [
-    80,
-    79
-   ],
-   "walk_mean_minus_idle": -1.25
-  },
-  "north": {
-   "colours": [
-    21,
-    23
-   ],
-   "idle_boil": 0.079,
-   "contact_rows": [
-    83,
-    82
-   ],
-   "walk_mean_minus_idle": 1.12
-  },
-  "north-west": {
-   "colours": [
-    22,
-    26
-   ],
-   "idle_boil": 0.078,
-   "contact_rows": [
-    79,
-    79
-   ],
-   "walk_mean_minus_idle": -1.62
-  },
-  "west": {
-   "colours": [
-    20,
-    25
-   ],
-   "idle_boil": 0.084,
-   "contact_rows": [
-    80,
-    80
-   ],
-   "walk_mean_minus_idle": -0.38
-  },
-  "south-west": {
-   "colours": [
-    21,
-    25
-   ],
-   "idle_boil": 0.069,
-   "contact_rows": [
-    80,
-    79
-   ],
-   "walk_mean_minus_idle": -1.12
-  }
- },
- "dorin": {
-  "south": {
-   "colours": [
-    20,
-    23
-   ],
-   "idle_boil": 0.038,
-   "contact_rows": [
-    83,
-    82
-   ],
-   "walk_mean_minus_idle": -0.88
-  },
-  "south-east": {
-   "colours": [
-    20,
-    24
-   ],
-   "idle_boil": 0.031,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -1.5
-  },
-  "east": {
-   "colours": [
-    20,
-    25
-   ],
-   "idle_boil": 0.033,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -0.38
-  },
-  "north-east": {
-   "colours": [
-    14,
-    15
-   ],
-   "idle_boil": 0.041,
-   "contact_rows": [
-    83,
-    81
-   ],
-   "walk_mean_minus_idle": -1.25
-  },
-  "north": {
-   "colours": [
-    18,
-    20
-   ],
-   "idle_boil": 0.036,
-   "contact_rows": [
-    85,
-    84
-   ],
-   "walk_mean_minus_idle": 1.25
-  },
-  "north-west": {
-   "colours": [
-    22,
-    25
-   ],
-   "idle_boil": 0.032,
-   "contact_rows": [
-    82,
-    81
-   ],
-   "walk_mean_minus_idle": -1.5
-  },
-  "west": {
-   "colours": [
-    19,
-    22
-   ],
-   "idle_boil": 0.046,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -0.38
-  },
-  "south-west": {
-   "colours": [
-    19,
-    23
-   ],
-   "idle_boil": 0.03,
-   "contact_rows": [
-    83,
-    82
-   ],
-   "walk_mean_minus_idle": -1.0
-  }
- },
- "thug": {
-  "south": {
-   "colours": [
-    20,
-    23
-   ],
-   "idle_boil": 0.031,
-   "contact_rows": [
-    83,
-    83
-   ],
-   "walk_mean_minus_idle": -0.88
-  },
-  "south-east": {
-   "colours": [
-    20,
-    25
-   ],
-   "idle_boil": 0.038,
-   "contact_rows": [
-    81,
-    83
-   ],
-   "walk_mean_minus_idle": -1.12
-  },
-  "east": {
-   "colours": [
-    22,
-    26
-   ],
-   "idle_boil": 0.066,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -0.38
-  },
-  "north-east": {
-   "colours": [
-    20,
-    24
-   ],
-   "idle_boil": 0.035,
-   "contact_rows": [
-    83,
-    81
-   ],
-   "walk_mean_minus_idle": -0.88
-  },
-  "north": {
-   "colours": [
-    21,
-    24
-   ],
-   "idle_boil": 0.035,
-   "contact_rows": [
-    85,
-    85
-   ],
-   "walk_mean_minus_idle": 1.12
-  },
-  "north-west": {
-   "colours": [
-    17,
-    19
-   ],
-   "idle_boil": 0.05,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -1.12
-  },
-  "west": {
-   "colours": [
-    28,
-    31
-   ],
-   "idle_boil": 0.067,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -0.75
-  },
-  "south-west": {
-   "colours": [
-    21,
-    21
-   ],
-   "idle_boil": 0.039,
-   "contact_rows": [
-    83,
-    81
-   ],
-   "walk_mean_minus_idle": -1.62
-  }
- },
- "slinger": {
-  "south": {
-   "colours": [
-    24,
-    27
-   ],
-   "idle_boil": 0.021,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -1.12
-  },
-  "south-east": {
-   "colours": [
-    16,
-    18
-   ],
-   "idle_boil": 0.027,
-   "contact_rows": [
-    83,
-    83
-   ],
-   "walk_mean_minus_idle": -0.88
-  },
-  "east": {
-   "colours": [
-    22,
-    26
-   ],
-   "idle_boil": 0.032,
-   "contact_rows": [
-    81,
-    81
-   ],
-   "walk_mean_minus_idle": -0.38
-  },
-  "north-east": {
-   "colours": [
-    19,
-    22
-   ],
-   "idle_boil": 0.025,
-   "contact_rows": [
-    82,
-    80
-   ],
-   "walk_mean_minus_idle": -0.88
-  },
-  "north": {
-   "colours": [
-    22,
-    29
-   ],
-   "idle_boil": 0.024,
-   "contact_rows": [
-    85,
-    85
-   ],
-   "walk_mean_minus_idle": 0.88
-  },
-  "north-west": {
-   "colours": [
-    21,
-    28
-   ],
-   "idle_boil": 0.024,
-   "contact_rows": [
-    81,
-    80
-   ],
-   "walk_mean_minus_idle": -1.25
-  },
-  "west": {
-   "colours": [
-    24,
-    28
-   ],
-   "idle_boil": 0.036,
-   "contact_rows": [
-    81,
-    81
-   ],
-   "walk_mean_minus_idle": -0.62
-  },
-  "south-west": {
-   "colours": [
-    19,
-    23
-   ],
-   "idle_boil": 0.022,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -1.62
-  }
- },
- "bruiser": {
-  "south": {
-   "colours": [
-    29,
-    30
-   ],
-   "idle_boil": 0.025,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -1.75
-  },
-  "south-east": {
-   "colours": [
-    27,
-    30
-   ],
-   "idle_boil": 0.027,
-   "contact_rows": [
-    83,
-    83
-   ],
-   "walk_mean_minus_idle": -1.5
-  },
-  "east": {
-   "colours": [
-    23,
-    28
-   ],
-   "idle_boil": 0.027,
-   "contact_rows": [
-    82,
-    81
-   ],
-   "walk_mean_minus_idle": -0.25
-  },
-  "north-east": {
-   "colours": [
-    16,
-    18
-   ],
-   "idle_boil": 0.021,
-   "contact_rows": [
-    83,
-    81
-   ],
-   "walk_mean_minus_idle": -1.5
-  },
-  "north": {
-   "colours": [
-    25,
-    31
-   ],
-   "idle_boil": 0.025,
-   "contact_rows": [
-    87,
-    86
-   ],
-   "walk_mean_minus_idle": 1.75
-  },
-  "north-west": {
-   "colours": [
-    27,
-    33
-   ],
-   "idle_boil": 0.026,
-   "contact_rows": [
-    82,
-    82
-   ],
-   "walk_mean_minus_idle": -1.25
-  },
-  "west": {
-   "colours": [
-    22,
-    27
-   ],
-   "idle_boil": 0.029,
-   "contact_rows": [
-    81,
-    81
-   ],
-   "walk_mean_minus_idle": -0.62
-  },
-  "south-west": {
-   "colours": [
-    16,
-    19
-   ],
-   "idle_boil": 0.026,
-   "contact_rows": [
-    83,
-    83
-   ],
-   "walk_mean_minus_idle": -1.38
-  }
- }
 }

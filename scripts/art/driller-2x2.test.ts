@@ -41,7 +41,9 @@ it('ships the deterministic lossless 32-frame atlas with the shadowed stills rem
   const packed = packDriller();
   const encoded = await encodeWebpLossless(packed.image);
   expect(isLosslessWebp(encoded)).toBe(true);
-  expect(isLosslessWebp(new Uint8Array(readFileSync('public/art/units/quarrybender-g.webp')))).toBe(false);
+  expect(isLosslessWebp(new Uint8Array(readFileSync('public/art/units/quarrybender-g.webp')))).toBe(
+    false,
+  );
   expect(encoded).toEqual(new Uint8Array(readFileSync(DRILLER_WEBP)));
   expect(await decodeWebp(encoded)).toEqual(packed.image);
   expect(packed.json).toBe(readFileSync(DRILLER_JSON, 'utf8'));
