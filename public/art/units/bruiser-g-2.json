@@ -4,7 +4,7 @@
       "frame": {
         "x": 2,
         "y": 2,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "rotated": false,
@@ -12,19 +12,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "sourceSize": {
-        "w": 83,
+        "w": 86,
         "h": 75
       }
     },
     "unit.enemy.bruiser/koSouthEast/1": {
       "frame": {
-        "x": 87,
+        "x": 90,
         "y": 2,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "rotated": false,
@@ -32,19 +32,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "sourceSize": {
-        "w": 83,
+        "w": 86,
         "h": 75
       }
     },
     "unit.enemy.bruiser/koSouthEast/2": {
       "frame": {
-        "x": 172,
+        "x": 178,
         "y": 2,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "rotated": false,
@@ -52,19 +52,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "sourceSize": {
-        "w": 83,
+        "w": 86,
         "h": 75
       }
     },
     "unit.enemy.bruiser/koSouthEast/3": {
       "frame": {
-        "x": 257,
+        "x": 266,
         "y": 2,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "rotated": false,
@@ -72,19 +72,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "sourceSize": {
-        "w": 83,
+        "w": 86,
         "h": 75
       }
     },
     "unit.enemy.bruiser/koSouthEast/4": {
       "frame": {
-        "x": 342,
+        "x": 354,
         "y": 2,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "rotated": false,
@@ -92,19 +92,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "sourceSize": {
-        "w": 83,
+        "w": 86,
         "h": 75
       }
     },
     "unit.enemy.bruiser/koSouthEast/5": {
       "frame": {
-        "x": 427,
+        "x": 442,
         "y": 2,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "rotated": false,
@@ -112,19 +112,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "sourceSize": {
-        "w": 83,
+        "w": 86,
         "h": 75
       }
     },
     "unit.enemy.bruiser/koSouthEast/6": {
       "frame": {
-        "x": 512,
+        "x": 530,
         "y": 2,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "rotated": false,
@@ -132,19 +132,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 83,
+        "w": 86,
         "h": 75
       },
       "sourceSize": {
-        "w": 83,
+        "w": 86,
         "h": 75
       }
     },
     "unit.enemy.bruiser/koSouthWest/0": {
       "frame": {
-        "x": 597,
+        "x": 618,
         "y": 2,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "rotated": false,
@@ -152,19 +152,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "sourceSize": {
-        "w": 79,
+        "w": 80,
         "h": 72
       }
     },
     "unit.enemy.bruiser/koSouthWest/1": {
       "frame": {
-        "x": 678,
+        "x": 700,
         "y": 2,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "rotated": false,
@@ -172,19 +172,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "sourceSize": {
-        "w": 79,
+        "w": 80,
         "h": 72
       }
     },
     "unit.enemy.bruiser/koSouthWest/2": {
       "frame": {
-        "x": 759,
+        "x": 782,
         "y": 2,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "rotated": false,
@@ -192,19 +192,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "sourceSize": {
-        "w": 79,
+        "w": 80,
         "h": 72
       }
     },
     "unit.enemy.bruiser/koSouthWest/3": {
       "frame": {
-        "x": 840,
+        "x": 864,
         "y": 2,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "rotated": false,
@@ -212,19 +212,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "sourceSize": {
-        "w": 79,
+        "w": 80,
         "h": 72
       }
     },
     "unit.enemy.bruiser/koSouthWest/4": {
       "frame": {
-        "x": 921,
+        "x": 946,
         "y": 2,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "rotated": false,
@@ -232,19 +232,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "sourceSize": {
-        "w": 79,
+        "w": 80,
         "h": 72
       }
     },
     "unit.enemy.bruiser/koSouthWest/5": {
       "frame": {
-        "x": 1002,
+        "x": 1028,
         "y": 2,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "rotated": false,
@@ -252,19 +252,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "sourceSize": {
-        "w": 79,
+        "w": 80,
         "h": 72
       }
     },
     "unit.enemy.bruiser/koSouthWest/6": {
       "frame": {
-        "x": 1083,
+        "x": 1110,
         "y": 2,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "rotated": false,
@@ -272,17 +272,17 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 79,
+        "w": 80,
         "h": 72
       },
       "sourceSize": {
-        "w": 79,
+        "w": 80,
         "h": 72
       }
     },
     "unit.enemy.bruiser/koNorthEast/0": {
       "frame": {
-        "x": 1164,
+        "x": 1192,
         "y": 2,
         "w": 80,
         "h": 71
@@ -302,7 +302,7 @@
     },
     "unit.enemy.bruiser/koNorthEast/1": {
       "frame": {
-        "x": 1246,
+        "x": 1274,
         "y": 2,
         "w": 80,
         "h": 71
@@ -322,7 +322,7 @@
     },
     "unit.enemy.bruiser/koNorthEast/2": {
       "frame": {
-        "x": 1328,
+        "x": 1356,
         "y": 2,
         "w": 80,
         "h": 71
@@ -342,7 +342,7 @@
     },
     "unit.enemy.bruiser/koNorthEast/3": {
       "frame": {
-        "x": 1410,
+        "x": 1438,
         "y": 2,
         "w": 80,
         "h": 71
@@ -362,7 +362,7 @@
     },
     "unit.enemy.bruiser/koNorthEast/4": {
       "frame": {
-        "x": 1492,
+        "x": 1520,
         "y": 2,
         "w": 80,
         "h": 71
@@ -382,7 +382,7 @@
     },
     "unit.enemy.bruiser/koNorthEast/5": {
       "frame": {
-        "x": 1574,
+        "x": 1602,
         "y": 2,
         "w": 80,
         "h": 71
@@ -402,7 +402,7 @@
     },
     "unit.enemy.bruiser/koNorthEast/6": {
       "frame": {
-        "x": 1656,
+        "x": 1684,
         "y": 2,
         "w": 80,
         "h": 71
@@ -422,7 +422,7 @@
     },
     "unit.enemy.bruiser/koNorthWest/0": {
       "frame": {
-        "x": 1738,
+        "x": 1766,
         "y": 2,
         "w": 76,
         "h": 71
@@ -442,7 +442,7 @@
     },
     "unit.enemy.bruiser/koNorthWest/1": {
       "frame": {
-        "x": 1816,
+        "x": 1844,
         "y": 2,
         "w": 76,
         "h": 71
@@ -462,7 +462,7 @@
     },
     "unit.enemy.bruiser/koNorthWest/2": {
       "frame": {
-        "x": 1894,
+        "x": 1922,
         "y": 2,
         "w": 76,
         "h": 71
@@ -567,7 +567,7 @@
     "image": "bruiser-g-2.webp",
     "format": "RGBA8888",
     "size": {
-      "w": 1972,
+      "w": 2000,
       "h": 152
     },
     "scale": "1"

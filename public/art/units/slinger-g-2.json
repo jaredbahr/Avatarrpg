@@ -4,148 +4,148 @@
       "frame": {
         "x": 2,
         "y": 2,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     },
     "unit.enemy.slinger/koSouthEast/1": {
       "frame": {
-        "x": 77,
+        "x": 79,
         "y": 2,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     },
     "unit.enemy.slinger/koSouthEast/2": {
       "frame": {
-        "x": 152,
+        "x": 156,
         "y": 2,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     },
     "unit.enemy.slinger/koSouthEast/3": {
       "frame": {
-        "x": 227,
+        "x": 233,
         "y": 2,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     },
     "unit.enemy.slinger/koSouthEast/4": {
       "frame": {
-        "x": 302,
+        "x": 310,
         "y": 2,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     },
     "unit.enemy.slinger/koSouthEast/5": {
       "frame": {
-        "x": 377,
+        "x": 387,
         "y": 2,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     },
     "unit.enemy.slinger/koSouthEast/6": {
       "frame": {
-        "x": 452,
+        "x": 464,
         "y": 2,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     },
     "unit.enemy.slinger/koSouthWest/0": {
       "frame": {
-        "x": 527,
+        "x": 541,
         "y": 2,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
@@ -153,19 +153,19 @@
         "x": 0,
         "y": 0,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "sourceSize": {
         "w": 76,
-        "h": 71
+        "h": 72
       }
     },
     "unit.enemy.slinger/koSouthWest/1": {
       "frame": {
-        "x": 605,
+        "x": 619,
         "y": 2,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
@@ -173,19 +173,19 @@
         "x": 0,
         "y": 0,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "sourceSize": {
         "w": 76,
-        "h": 71
+        "h": 72
       }
     },
     "unit.enemy.slinger/koSouthWest/2": {
       "frame": {
-        "x": 683,
+        "x": 697,
         "y": 2,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
@@ -193,19 +193,19 @@
         "x": 0,
         "y": 0,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "sourceSize": {
         "w": 76,
-        "h": 71
+        "h": 72
       }
     },
     "unit.enemy.slinger/koSouthWest/3": {
       "frame": {
-        "x": 761,
+        "x": 775,
         "y": 2,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
@@ -213,19 +213,19 @@
         "x": 0,
         "y": 0,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "sourceSize": {
         "w": 76,
-        "h": 71
+        "h": 72
       }
     },
     "unit.enemy.slinger/koSouthWest/4": {
       "frame": {
-        "x": 839,
+        "x": 853,
         "y": 2,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
@@ -233,19 +233,19 @@
         "x": 0,
         "y": 0,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "sourceSize": {
         "w": 76,
-        "h": 71
+        "h": 72
       }
     },
     "unit.enemy.slinger/koSouthWest/5": {
       "frame": {
-        "x": 917,
+        "x": 931,
         "y": 2,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
@@ -253,19 +253,19 @@
         "x": 0,
         "y": 0,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "sourceSize": {
         "w": 76,
-        "h": 71
+        "h": 72
       }
     },
     "unit.enemy.slinger/koSouthWest/6": {
       "frame": {
-        "x": 995,
+        "x": 1009,
         "y": 2,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
@@ -273,291 +273,291 @@
         "x": 0,
         "y": 0,
         "w": 76,
-        "h": 71
+        "h": 72
       },
       "sourceSize": {
         "w": 76,
-        "h": 71
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthEast/0": {
       "frame": {
-        "x": 1073,
+        "x": 1087,
         "y": 2,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthEast/1": {
       "frame": {
-        "x": 1152,
+        "x": 1165,
         "y": 2,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthEast/2": {
       "frame": {
-        "x": 1231,
+        "x": 1243,
         "y": 2,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthEast/3": {
       "frame": {
-        "x": 1310,
+        "x": 1321,
         "y": 2,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthEast/4": {
       "frame": {
-        "x": 1389,
+        "x": 1399,
         "y": 2,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthEast/5": {
       "frame": {
-        "x": 1468,
+        "x": 1477,
         "y": 2,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthEast/6": {
       "frame": {
-        "x": 1547,
+        "x": 1555,
         "y": 2,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 73
+        "w": 76,
+        "h": 72
       }
     },
     "unit.enemy.slinger/koNorthWest/0": {
       "frame": {
-        "x": 1626,
+        "x": 1633,
         "y": 2,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "sourceSize": {
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       }
     },
     "unit.enemy.slinger/koNorthWest/1": {
       "frame": {
-        "x": 1700,
+        "x": 1706,
         "y": 2,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "sourceSize": {
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       }
     },
     "unit.enemy.slinger/koNorthWest/2": {
       "frame": {
-        "x": 1774,
+        "x": 1779,
         "y": 2,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "sourceSize": {
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       }
     },
     "unit.enemy.slinger/koNorthWest/3": {
       "frame": {
-        "x": 1848,
+        "x": 1852,
         "y": 2,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "sourceSize": {
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       }
     },
     "unit.enemy.slinger/koNorthWest/4": {
       "frame": {
-        "x": 1922,
+        "x": 1925,
         "y": 2,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "sourceSize": {
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       }
     },
     "unit.enemy.slinger/koNorthWest/5": {
       "frame": {
         "x": 2,
-        "y": 77,
-        "w": 72,
-        "h": 70
+        "y": 78,
+        "w": 71,
+        "h": 69
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "sourceSize": {
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       }
     },
     "unit.enemy.slinger/koNorthWest/6": {
       "frame": {
-        "x": 76,
-        "y": 77,
-        "w": 72,
-        "h": 70
+        "x": 75,
+        "y": 78,
+        "w": 71,
+        "h": 69
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       },
       "sourceSize": {
-        "w": 72,
-        "h": 70
+        "w": 71,
+        "h": 69
       }
     }
   },
@@ -567,7 +567,7 @@
     "image": "slinger-g-2.webp",
     "format": "RGBA8888",
     "size": {
-      "w": 1996,
+      "w": 1998,
       "h": 149
     },
     "scale": "1"

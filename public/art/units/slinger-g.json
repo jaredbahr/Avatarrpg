@@ -2144,7 +2144,7 @@
       "frame": {
         "x": 926,
         "y": 296,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "rotated": false,
@@ -2152,32 +2152,32 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "sourceSize": {
-        "w": 27,
+        "w": 28,
         "h": 67
       }
     },
     "unit.enemy.slinger/ko/0": {
       "frame": {
-        "x": 955,
+        "x": 956,
         "y": 296,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       },
       "sourceSize": {
-        "w": 73,
-        "h": 73
+        "w": 75,
+        "h": 74
       }
     }
   },

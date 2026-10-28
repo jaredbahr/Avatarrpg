@@ -4,7 +4,7 @@
       "frame": {
         "x": 2,
         "y": 2,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -12,19 +12,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 46,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.thug/hitSouth/1": {
       "frame": {
-        "x": 50,
+        "x": 44,
         "y": 2,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -32,19 +32,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 46,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.thug/hitSouth/2": {
       "frame": {
-        "x": 98,
+        "x": 86,
         "y": 2,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -52,19 +52,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 46,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.thug/hitSouth/3": {
       "frame": {
-        "x": 146,
+        "x": 128,
         "y": 2,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -72,19 +72,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 46,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 46,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.thug/hitSouthEast/0": {
       "frame": {
-        "x": 194,
+        "x": 170,
         "y": 2,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "rotated": false,
@@ -92,19 +92,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "sourceSize": {
-        "w": 31,
+        "w": 34,
         "h": 68
       }
     },
     "unit.enemy.thug/hitSouthEast/1": {
       "frame": {
-        "x": 227,
+        "x": 206,
         "y": 2,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "rotated": false,
@@ -112,19 +112,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "sourceSize": {
-        "w": 31,
+        "w": 34,
         "h": 68
       }
     },
     "unit.enemy.thug/hitSouthEast/2": {
       "frame": {
-        "x": 260,
+        "x": 242,
         "y": 2,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "rotated": false,
@@ -132,19 +132,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "sourceSize": {
-        "w": 31,
+        "w": 34,
         "h": 68
       }
     },
     "unit.enemy.thug/hitSouthEast/3": {
       "frame": {
-        "x": 293,
+        "x": 278,
         "y": 2,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "rotated": false,
@@ -152,19 +152,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 31,
+        "w": 34,
         "h": 68
       },
       "sourceSize": {
-        "w": 31,
+        "w": 34,
         "h": 68
       }
     },
     "unit.enemy.thug/hitEast/0": {
       "frame": {
-        "x": 326,
+        "x": 314,
         "y": 2,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "rotated": false,
@@ -172,19 +172,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "sourceSize": {
-        "w": 43,
+        "w": 42,
         "h": 69
       }
     },
     "unit.enemy.thug/hitEast/1": {
       "frame": {
-        "x": 371,
+        "x": 358,
         "y": 2,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "rotated": false,
@@ -192,19 +192,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "sourceSize": {
-        "w": 43,
+        "w": 42,
         "h": 69
       }
     },
     "unit.enemy.thug/hitEast/2": {
       "frame": {
-        "x": 416,
+        "x": 402,
         "y": 2,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "rotated": false,
@@ -212,19 +212,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "sourceSize": {
-        "w": 43,
+        "w": 42,
         "h": 69
       }
     },
     "unit.enemy.thug/hitEast/3": {
       "frame": {
-        "x": 461,
+        "x": 446,
         "y": 2,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "rotated": false,
@@ -232,17 +232,17 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 43,
+        "w": 42,
         "h": 69
       },
       "sourceSize": {
-        "w": 43,
+        "w": 42,
         "h": 69
       }
     },
     "unit.enemy.thug/hitNorthEast/0": {
       "frame": {
-        "x": 506,
+        "x": 490,
         "y": 2,
         "w": 45,
         "h": 69
@@ -262,7 +262,7 @@
     },
     "unit.enemy.thug/hitNorthEast/1": {
       "frame": {
-        "x": 553,
+        "x": 537,
         "y": 2,
         "w": 45,
         "h": 69
@@ -282,7 +282,7 @@
     },
     "unit.enemy.thug/hitNorthEast/2": {
       "frame": {
-        "x": 600,
+        "x": 584,
         "y": 2,
         "w": 45,
         "h": 69
@@ -302,7 +302,7 @@
     },
     "unit.enemy.thug/hitNorthEast/3": {
       "frame": {
-        "x": 647,
+        "x": 631,
         "y": 2,
         "w": 45,
         "h": 69
@@ -322,7 +322,7 @@
     },
     "unit.enemy.thug/hitNorth/0": {
       "frame": {
-        "x": 694,
+        "x": 678,
         "y": 2,
         "w": 45,
         "h": 66
@@ -342,7 +342,7 @@
     },
     "unit.enemy.thug/hitNorth/1": {
       "frame": {
-        "x": 741,
+        "x": 725,
         "y": 2,
         "w": 45,
         "h": 66
@@ -362,7 +362,7 @@
     },
     "unit.enemy.thug/hitNorth/2": {
       "frame": {
-        "x": 788,
+        "x": 772,
         "y": 2,
         "w": 45,
         "h": 66
@@ -382,7 +382,7 @@
     },
     "unit.enemy.thug/hitNorth/3": {
       "frame": {
-        "x": 835,
+        "x": 819,
         "y": 2,
         "w": 45,
         "h": 66
@@ -402,9 +402,9 @@
     },
     "unit.enemy.thug/hitNorthWest/0": {
       "frame": {
-        "x": 882,
+        "x": 866,
         "y": 2,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "rotated": false,
@@ -412,19 +412,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "sourceSize": {
-        "w": 38,
+        "w": 39,
         "h": 69
       }
     },
     "unit.enemy.thug/hitNorthWest/1": {
       "frame": {
-        "x": 922,
+        "x": 907,
         "y": 2,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "rotated": false,
@@ -432,19 +432,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "sourceSize": {
-        "w": 38,
+        "w": 39,
         "h": 69
       }
     },
     "unit.enemy.thug/hitNorthWest/2": {
       "frame": {
-        "x": 962,
+        "x": 948,
         "y": 2,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "rotated": false,
@@ -452,19 +452,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "sourceSize": {
-        "w": 38,
+        "w": 39,
         "h": 69
       }
     },
     "unit.enemy.thug/hitNorthWest/3": {
       "frame": {
-        "x": 1002,
+        "x": 989,
         "y": 2,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "rotated": false,
@@ -472,19 +472,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 39,
         "h": 69
       },
       "sourceSize": {
-        "w": 38,
+        "w": 39,
         "h": 69
       }
     },
     "unit.enemy.thug/hitWest/0": {
       "frame": {
-        "x": 1042,
+        "x": 1030,
         "y": 2,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "rotated": false,
@@ -492,19 +492,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "sourceSize": {
-        "w": 42,
+        "w": 44,
         "h": 69
       }
     },
     "unit.enemy.thug/hitWest/1": {
       "frame": {
-        "x": 1086,
+        "x": 1076,
         "y": 2,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "rotated": false,
@@ -512,19 +512,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "sourceSize": {
-        "w": 42,
+        "w": 44,
         "h": 69
       }
     },
     "unit.enemy.thug/hitWest/2": {
       "frame": {
-        "x": 1130,
+        "x": 1122,
         "y": 2,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "rotated": false,
@@ -532,19 +532,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "sourceSize": {
-        "w": 42,
+        "w": 44,
         "h": 69
       }
     },
     "unit.enemy.thug/hitWest/3": {
       "frame": {
-        "x": 1174,
+        "x": 1168,
         "y": 2,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "rotated": false,
@@ -552,19 +552,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 42,
+        "w": 44,
         "h": 69
       },
       "sourceSize": {
-        "w": 42,
+        "w": 44,
         "h": 69
       }
     },
     "unit.enemy.thug/hitSouthWest/0": {
       "frame": {
-        "x": 1218,
+        "x": 1214,
         "y": 2,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "rotated": false,
@@ -572,19 +572,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "sourceSize": {
-        "w": 48,
+        "w": 46,
         "h": 68
       }
     },
     "unit.enemy.thug/hitSouthWest/1": {
       "frame": {
-        "x": 1268,
+        "x": 1262,
         "y": 2,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "rotated": false,
@@ -592,19 +592,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "sourceSize": {
-        "w": 48,
+        "w": 46,
         "h": 68
       }
     },
     "unit.enemy.thug/hitSouthWest/2": {
       "frame": {
-        "x": 1318,
+        "x": 1310,
         "y": 2,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "rotated": false,
@@ -612,19 +612,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "sourceSize": {
-        "w": 48,
+        "w": 46,
         "h": 68
       }
     },
     "unit.enemy.thug/hitSouthWest/3": {
       "frame": {
-        "x": 1368,
+        "x": 1358,
         "y": 2,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "rotated": false,
@@ -632,11 +632,11 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 48,
+        "w": 46,
         "h": 68
       },
       "sourceSize": {
-        "w": 48,
+        "w": 46,
         "h": 68
       }
     }
@@ -647,7 +647,7 @@
     "image": "thug-g-3.webp",
     "format": "RGBA8888",
     "size": {
-      "w": 1418,
+      "w": 1406,
       "h": 73
     },
     "scale": "1"

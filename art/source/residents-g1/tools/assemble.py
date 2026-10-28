@@ -11,7 +11,7 @@ numbers it chose are in pack.json `placement`:
 - Grid: 64 px a tile, a 64x96 cel, the foot point at (W/2, 81.6) (anchor 0.5, 0.85). The bruiser's root is 80 px wide
   (the shipped cel was 160 at 2x); the thug's and the bruiser's packed cels are 80 and 96 px (`pack_w`) for the club's
   swing, every cel centred on them. A root is already placed there: it is a redraw of the shipped cel reduced 2x, which carried the shipped placement.
-- Every generated cel goes through the palette lock and binary alpha, and loses any island under 60 px that does not touch
+- Every generated cel goes through the palette lock (the name's roots palette) and binary alpha, and loses any island under 60 px that does not touch
   the body.
 - Idle: `idleDy` the fewest pixels that stand idle cel 0 within 3 px of the foot line (art:validate's 6 at 128 px a tile).
 - Walk (8 cels): cropped from its 96 canvas. `walkDy` puts the mean of the two contact cels' soles on idle cel 0's sole;

@@ -217,12 +217,12 @@
  },
  "placement": {
   "south": {
-   "walk_job": "pella-walk-south-s9701",
+   "walk_job": "pella-walk-south-s9711",
    "idleDy": 0,
    "walkDx": 0,
-   "walkDy": -5,
+   "walkDy": -6,
    "restCel": 2,
-   "restDy": 3,
+   "restDy": 1,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -235,7 +235,7 @@
    }
   },
   "south-east": {
-   "walk_job": "pella-walk-south-east-s9701",
+   "walk_job": "pella-walk-south-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -3,
@@ -253,7 +253,7 @@
    }
   },
   "east": {
-   "walk_job": "pella-walk-east-s9701",
+   "walk_job": "pella-walk-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": 0,
@@ -271,12 +271,12 @@
    }
   },
   "north-east": {
-   "walk_job": "pella-walk-north-east-s9701",
+   "walk_job": "pella-walk-north-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -3,
    "restCel": 2,
-   "restDy": 3,
+   "restDy": 2,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -289,12 +289,12 @@
    }
   },
   "north": {
-   "walk_job": "pella-walk-north-s9701",
+   "walk_job": "pella-walk-north-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -1,
    "restCel": 2,
-   "restDy": 0,
+   "restDy": 1,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -307,11 +307,11 @@
    }
   },
   "north-west": {
-   "walk_job": "pella-walk-north-west-s9701",
+   "walk_job": "pella-walk-north-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -3,
-   "restCel": 2,
+   "restCel": 6,
    "restDy": 3,
    "contact_rows": {
     "LA": {
@@ -325,7 +325,7 @@
    }
   },
   "west": {
-   "walk_job": "pella-walk-west-s9701",
+   "walk_job": "pella-walk-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": 0,
@@ -343,12 +343,12 @@
    }
   },
   "south-west": {
-   "walk_job": "pella-walk-south-west-s9701",
+   "walk_job": "pella-walk-south-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
-   "walkDy": -3,
+   "walkDy": -2,
    "restCel": 2,
-   "restDy": 3,
+   "restDy": 2,
    "contact_rows": {
     "LA": {
      "cel": 0,

@@ -4,7 +4,7 @@
       "frame": {
         "x": 2,
         "y": 2,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -12,19 +12,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 39,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouth/1": {
       "frame": {
-        "x": 43,
+        "x": 44,
         "y": 2,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -32,19 +32,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 39,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouth/2": {
       "frame": {
-        "x": 84,
+        "x": 86,
         "y": 2,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -52,19 +52,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 39,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouth/3": {
       "frame": {
-        "x": 125,
+        "x": 128,
         "y": 2,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "rotated": false,
@@ -72,19 +72,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 39,
+        "w": 40,
         "h": 67
       },
       "sourceSize": {
-        "w": 39,
+        "w": 40,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouthEast/0": {
       "frame": {
-        "x": 166,
+        "x": 170,
         "y": 2,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "rotated": false,
@@ -92,19 +92,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "sourceSize": {
-        "w": 36,
+        "w": 43,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouthEast/1": {
       "frame": {
-        "x": 204,
+        "x": 215,
         "y": 2,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "rotated": false,
@@ -112,19 +112,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "sourceSize": {
-        "w": 36,
+        "w": 43,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouthEast/2": {
       "frame": {
-        "x": 242,
+        "x": 260,
         "y": 2,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "rotated": false,
@@ -132,19 +132,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "sourceSize": {
-        "w": 36,
+        "w": 43,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouthEast/3": {
       "frame": {
-        "x": 280,
+        "x": 305,
         "y": 2,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "rotated": false,
@@ -152,19 +152,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 36,
+        "w": 43,
         "h": 67
       },
       "sourceSize": {
-        "w": 36,
+        "w": 43,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitEast/0": {
       "frame": {
-        "x": 318,
+        "x": 350,
         "y": 2,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "rotated": false,
@@ -172,19 +172,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "sourceSize": {
-        "w": 27,
+        "w": 28,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitEast/1": {
       "frame": {
-        "x": 347,
+        "x": 380,
         "y": 2,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "rotated": false,
@@ -192,19 +192,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "sourceSize": {
-        "w": 27,
+        "w": 28,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitEast/2": {
       "frame": {
-        "x": 376,
+        "x": 410,
         "y": 2,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "rotated": false,
@@ -212,19 +212,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "sourceSize": {
-        "w": 27,
+        "w": 28,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitEast/3": {
       "frame": {
-        "x": 405,
+        "x": 440,
         "y": 2,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "rotated": false,
@@ -232,19 +232,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 27,
+        "w": 28,
         "h": 67
       },
       "sourceSize": {
-        "w": 27,
+        "w": 28,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitNorthEast/0": {
       "frame": {
-        "x": 434,
+        "x": 470,
         "y": 2,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "rotated": false,
@@ -252,19 +252,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "sourceSize": {
-        "w": 34,
+        "w": 33,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitNorthEast/1": {
       "frame": {
-        "x": 470,
+        "x": 505,
         "y": 2,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "rotated": false,
@@ -272,19 +272,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "sourceSize": {
-        "w": 34,
+        "w": 33,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitNorthEast/2": {
       "frame": {
-        "x": 506,
+        "x": 540,
         "y": 2,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "rotated": false,
@@ -292,19 +292,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "sourceSize": {
-        "w": 34,
+        "w": 33,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitNorthEast/3": {
       "frame": {
-        "x": 542,
+        "x": 575,
         "y": 2,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "rotated": false,
@@ -312,17 +312,17 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 34,
+        "w": 33,
         "h": 68
       },
       "sourceSize": {
-        "w": 34,
+        "w": 33,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitNorth/0": {
       "frame": {
-        "x": 578,
+        "x": 610,
         "y": 2,
         "w": 39,
         "h": 67
@@ -342,7 +342,7 @@
     },
     "unit.enemy.slinger/hitNorth/1": {
       "frame": {
-        "x": 619,
+        "x": 651,
         "y": 2,
         "w": 39,
         "h": 67
@@ -362,7 +362,7 @@
     },
     "unit.enemy.slinger/hitNorth/2": {
       "frame": {
-        "x": 660,
+        "x": 692,
         "y": 2,
         "w": 39,
         "h": 67
@@ -382,7 +382,7 @@
     },
     "unit.enemy.slinger/hitNorth/3": {
       "frame": {
-        "x": 701,
+        "x": 733,
         "y": 2,
         "w": 39,
         "h": 67
@@ -402,9 +402,9 @@
     },
     "unit.enemy.slinger/hitNorthWest/0": {
       "frame": {
-        "x": 742,
+        "x": 774,
         "y": 2,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "rotated": false,
@@ -412,19 +412,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "sourceSize": {
-        "w": 35,
+        "w": 41,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitNorthWest/1": {
       "frame": {
-        "x": 779,
+        "x": 817,
         "y": 2,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "rotated": false,
@@ -432,19 +432,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "sourceSize": {
-        "w": 35,
+        "w": 41,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitNorthWest/2": {
       "frame": {
-        "x": 816,
+        "x": 860,
         "y": 2,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "rotated": false,
@@ -452,19 +452,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "sourceSize": {
-        "w": 35,
+        "w": 41,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitNorthWest/3": {
       "frame": {
-        "x": 853,
+        "x": 903,
         "y": 2,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "rotated": false,
@@ -472,19 +472,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 35,
+        "w": 41,
         "h": 68
       },
       "sourceSize": {
-        "w": 35,
+        "w": 41,
         "h": 68
       }
     },
     "unit.enemy.slinger/hitWest/0": {
       "frame": {
-        "x": 890,
+        "x": 946,
         "y": 2,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "rotated": false,
@@ -492,19 +492,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "sourceSize": {
-        "w": 37,
+        "w": 32,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitWest/1": {
       "frame": {
-        "x": 929,
+        "x": 980,
         "y": 2,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "rotated": false,
@@ -512,19 +512,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "sourceSize": {
-        "w": 37,
+        "w": 32,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitWest/2": {
       "frame": {
-        "x": 968,
+        "x": 1014,
         "y": 2,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "rotated": false,
@@ -532,19 +532,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "sourceSize": {
-        "w": 37,
+        "w": 32,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitWest/3": {
       "frame": {
-        "x": 1007,
+        "x": 1048,
         "y": 2,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "rotated": false,
@@ -552,19 +552,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 37,
+        "w": 32,
         "h": 67
       },
       "sourceSize": {
-        "w": 37,
+        "w": 32,
         "h": 67
       }
     },
     "unit.enemy.slinger/hitSouthWest/0": {
       "frame": {
-        "x": 1046,
+        "x": 1082,
         "y": 2,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "rotated": false,
@@ -572,19 +572,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "sourceSize": {
-        "w": 38,
+        "w": 35,
         "h": 66
       }
     },
     "unit.enemy.slinger/hitSouthWest/1": {
       "frame": {
-        "x": 1086,
+        "x": 1119,
         "y": 2,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "rotated": false,
@@ -592,19 +592,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "sourceSize": {
-        "w": 38,
+        "w": 35,
         "h": 66
       }
     },
     "unit.enemy.slinger/hitSouthWest/2": {
       "frame": {
-        "x": 1126,
+        "x": 1156,
         "y": 2,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "rotated": false,
@@ -612,19 +612,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "sourceSize": {
-        "w": 38,
+        "w": 35,
         "h": 66
       }
     },
     "unit.enemy.slinger/hitSouthWest/3": {
       "frame": {
-        "x": 1166,
+        "x": 1193,
         "y": 2,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "rotated": false,
@@ -632,11 +632,11 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 38,
+        "w": 35,
         "h": 66
       },
       "sourceSize": {
-        "w": 38,
+        "w": 35,
         "h": 66
       }
     }
@@ -647,7 +647,7 @@
     "image": "slinger-g-3.webp",
     "format": "RGBA8888",
     "size": {
-      "w": 1206,
+      "w": 1230,
       "h": 72
     },
     "scale": "1"

@@ -7220,6 +7220,4290 @@
    "notes": "walk north-west",
    "verdict": null,
    "error": null
+  },
+  {
+   "name": "watch-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5c1c3508-b507-4a80-bd6b-0291f957c65f",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/south.png on a 96 canvas",
+    "keypoints": "design/watch/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1040.7999999999392,
+   "secs": 94,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "41078571-83ef-4689-9e15-d691a979a20e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/south.png on a 96 canvas",
+    "keypoints": "design/household/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1034.7999999999392,
+   "secs": 101,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "2e516eb1-0897-44ea-bb86-b0b1958ec6da",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/household/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1028.7999999999392,
+   "secs": 106,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "77597be9-eac8-4b5a-9813-74019747ca3b",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/household/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1028.7999999999392,
+   "secs": 107,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "watch-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "9294a9be-bf09-4b18-9e3c-6e69e6c863e0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/watch/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1025.7999999999392,
+   "secs": 113,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "83ab3922-a9ff-41e7-9ff5-a114325113c5",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/north.png on a 96 canvas",
+    "keypoints": "design/household/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1019.7999999999392,
+   "secs": 124,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "e6ce732a-41e0-419b-9376-311273eec1e7",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/household/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1016.7999999999392,
+   "secs": 126,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5250ffab-3894-4617-9873-4b976e4227c2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/household/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1016.7999999999392,
+   "secs": 126,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "edfe2b1f-4fa6-4b4d-8e29-50e34f052c42",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/east.png on a 96 canvas",
+    "keypoints": "design/household/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1016.7999999999392,
+   "secs": 127,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "watch-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "fe8585ba-9726-4df5-bb73-01eca107a84c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/watch/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1010.7999999999392,
+   "secs": 133,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "household-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "14606bcb-af77-4837-810c-3a7a8e46e8ea",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a practical rural village adult woman in her thirties, weathered friendly face, dark brown hair tied back in a low knot, muted moss-green work tunic with rolled sleeves, ochre linen apron tied over it at the front, plain earth-brown trousers, simple worn brown shoes, a small woven basket held at her left hip, right hand relaxed at her side, no weapon, no emblem, no headwear, realistic adult proportions",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/household/idle/west.png on a 96 canvas",
+    "keypoints": "design/household/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1004.7999999999392,
+   "secs": 138,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "watch-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "b68f270a-f873-4962-a020-1dcaca895313",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/east.png on a 96 canvas",
+    "keypoints": "design/watch/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1040.7999999999392,
+   "balance_after": 1004.7999999999392,
+   "secs": 138,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "watch-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "84fb3c5b-7586-4ee2-9b12-6c04009a498e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/watch/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1028.7999999999392,
+   "balance_after": 1001.7999999999392,
+   "secs": 93,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "watch-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "866d18a5-d8a8-484b-95c2-46f5ab13fce2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/north.png on a 96 canvas",
+    "keypoints": "design/watch/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1037.7999999999392,
+   "balance_after": 998.7999999999392,
+   "secs": 112,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5021a7ac-fdd7-46b4-8c5c-4e3f8e6eeab9",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/mira/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1016.7999999999392,
+   "balance_after": 992.7999999999392,
+   "secs": 92,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "8249fbdd-4721-4488-baff-8d1db2b69eb5",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/south.png on a 96 canvas",
+    "keypoints": "design/mira/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1025.7999999999392,
+   "balance_after": 992.7999999999392,
+   "secs": 106,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "watch-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "b47e120a-4b7f-4709-b044-0f111e99d4a0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/watch/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1034.7999999999392,
+   "balance_after": 989.7999999999392,
+   "secs": 125,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "bcde3c89-071a-40a7-983e-d299f877b5d5",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/west.png on a 96 canvas",
+    "keypoints": "design/mira/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1004.7999999999392,
+   "balance_after": 986.7999999999392,
+   "secs": 99,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "watch-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "e367a139-b5ce-4726-b320-00ad2f915120",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/watch/idle/west.png on a 96 canvas",
+    "keypoints": "design/watch/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1028.7999999999392,
+   "balance_after": 983.7999999999392,
+   "secs": 132,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "3fc525a4-6fb7-46b7-a161-7c9e3503098c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/north.png on a 96 canvas",
+    "keypoints": "design/mira/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1013.7999999999392,
+   "balance_after": 983.7999999999392,
+   "secs": 112,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "67a3f706-4fe1-4303-bdda-78216b9532f8",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/east.png on a 96 canvas",
+    "keypoints": "design/mira/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1016.7999999999392,
+   "balance_after": 980.7999999999392,
+   "secs": 118,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "1bf03390-a9ad-46ff-83c4-3ec15e1c5d62",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/mira/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1010.7999999999392,
+   "balance_after": 974.7999999999392,
+   "secs": 125,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "8fdff035-406f-497c-9bc3-76af07cec6d8",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/mira/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1004.7999999999392,
+   "balance_after": 971.7999999999392,
+   "secs": 132,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "a6f34146-216d-4872-a7dc-d8570c5ade39",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/south.png on a 96 canvas",
+    "keypoints": "design/gao/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1001.7999999999392,
+   "balance_after": 968.7999999999392,
+   "secs": 118,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "e858bde4-390c-4f16-8804-82d976717fea",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/east.png on a 96 canvas",
+    "keypoints": "design/gao/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 992.7999999999392,
+   "balance_after": 965.7999999999392,
+   "secs": 105,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "aa0e3644-d0cd-410e-bd72-eb8a1eb16498",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/north.png on a 96 canvas",
+    "keypoints": "design/gao/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 989.7999999999392,
+   "balance_after": 962.7999999999392,
+   "secs": 99,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5faac454-ade3-42ce-85cb-5a2825d99086",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/gao/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 998.7999999999392,
+   "balance_after": 959.7999999999392,
+   "secs": 125,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "c8f0db74-f0b6-4feb-94c8-29dc690c208e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/gao/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 992.7999999999392,
+   "balance_after": 956.7999999999392,
+   "secs": 125,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "6f41175d-60b4-49d2-a2b5-813f416cad21",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/south.png on a 96 canvas",
+    "keypoints": "design/pella/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 977.7999999999392,
+   "balance_after": 953.7999999999392,
+   "secs": 105,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "d5f44cb8-48f1-429a-83b6-3de6f508693f",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/west.png on a 96 canvas",
+    "keypoints": "design/gao/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 983.7999999999392,
+   "balance_after": 950.7999999999392,
+   "secs": 112,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "mira-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5cd6397b-aee9-4305-93f6-f07e5c04a9bd",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Elder Mira, an elderly woman in her seventies, weathered brown skin and a lined stern face, white hair in a tight bun, a large green shawl with ochre-yellow stripes wrapped over her shoulders, long dark brown tunic, simple dark trousers and flat brown shoes, a gentle stoop, her right hand resting on top of a plain wooden walking stick planted beside her right foot, left hand inside the shawl, realistic elderly proportions",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/mira/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/mira/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 1019.7999999999392,
+   "balance_after": 947.7999999999392,
+   "secs": 229,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "3e70f36c-1a8c-4255-9f28-a82d28f9a6a2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/gao/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 983.7999999999392,
+   "balance_after": 941.7999999999392,
+   "secs": 119,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "2acbce23-a832-4f87-906c-79e05931a3eb",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/pella/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 974.7999999999392,
+   "balance_after": 938.7999999999392,
+   "secs": 99,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "gao-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "143f2f3a-a86d-4e16-a579-28a3100a12d2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Gao, a round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic with rolled sleeves under a long cream apron, a string of dried red peppers hanging at his right shoulder and two brown leather waterskins at his left hip, holding a small wooden abacus against his chest with his left arm, charcoal trousers, brown cloth shoes, friendly watchful expression",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/gao/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 983.7999999999392,
+   "balance_after": 938.7999999999392,
+   "secs": 119,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5ba03cc7-0bb4-4a7b-9248-f78841c90aaa",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/east.png on a 96 canvas",
+    "keypoints": "design/pella/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 971.7999999999392,
+   "balance_after": 938.7999999999392,
+   "secs": 118,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "11d1cad8-0582-4bd0-93e9-ac5784f77467",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/pella/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 968.7999999999392,
+   "balance_after": 935.7999999999392,
+   "secs": 100,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5373dfc3-972d-4357-a95b-36dc90b0a300",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/north.png on a 96 canvas",
+    "keypoints": "design/pella/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 965.7999999999392,
+   "balance_after": 929.7999999999392,
+   "secs": 99,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "6d576ecf-1e4e-4e3a-b6a1-445384c3523e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/west.png on a 96 canvas",
+    "keypoints": "design/pella/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 959.7999999999392,
+   "balance_after": 926.7999999999392,
+   "secs": 99,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "99bcea53-d6fa-4a9b-a1ea-e15637d1f83f",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 938.7999999999392,
+   "balance_after": 923.7999999999392,
+   "secs": 86,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "98c7b08d-944c-4318-bf90-dd19fe7e6c0d",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/south.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 950.7999999999392,
+   "balance_after": 920.7999999999392,
+   "secs": 99,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "844ad9bf-2d0d-4992-a469-c719c2664e27",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/pella/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 956.7999999999392,
+   "balance_after": 920.7999999999392,
+   "secs": 112,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "pella-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "0539fcc5-f2bd-490e-8bfa-4dce451aca82",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Pella, a small nine-year-old girl with natural child proportions, about five heads tall and much shorter than an adult, messy dark brown pigtails, light-brown skin, cream loose tunic with a patched green sash, calf-length brown trousers, simple flat shoes, hugging a large green cabbage against her chest with both arms; plain still figure, no effects",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/pella/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/pella/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 962.7999999999392,
+   "balance_after": 917.7999999999392,
+   "secs": 132,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "e54aeda2-732f-45d4-bba6-5cb6443b8bc0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/north.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 938.7999999999392,
+   "balance_after": 911.7999999999392,
+   "secs": 105,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "306d269d-237d-4b6a-b370-7499e67cf31e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 950.7999999999392,
+   "balance_after": 911.7999999999392,
+   "secs": 113,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "fdaba265-6ecc-494b-a232-9948329b1a2c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/east.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 944.7999999999392,
+   "balance_after": 905.7999999999392,
+   "secs": 125,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "58528266-611a-4aa2-9a4b-f96e0fa8cf7c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 938.7999999999392,
+   "balance_after": 902.7999999999392,
+   "secs": 158,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "54ef7fca-39f1-4991-a0c4-199b927be6b6",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/west.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 938.7999999999392,
+   "balance_after": 899.7999999999392,
+   "secs": 140,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "c865edeb-5afa-4f9a-87fd-93982b97dd95",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/thug/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 920.7999999999392,
+   "balance_after": 899.7999999999392,
+   "secs": 93,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "732ae095-1d6e-42c0-afd8-42294bb14306",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south.png on a 96 canvas",
+    "keypoints": "design/thug/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 929.7999999999392,
+   "balance_after": 899.7999999999392,
+   "secs": 119,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "e4c39f65-6384-4b20-8fa5-f4123022b88a",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/thug/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 908.7999999999392,
+   "balance_after": 890.7999999999392,
+   "secs": 86,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "dorin-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "814c7245-8cea-4147-8e8d-c05249eadaa6",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "Dorin, a lanky tall thin young man in his late twenties, long face, large ears, short tousled brown hair, wispy moustache, oversized long green provincial guard coat with a brass clasp, dark trousers, brown boots, no helmet, holding a plain straight wooden spear vertically at his right side, spear tip above his head; the spear is one straight shaft with a single small plain leaf-shaped iron point, no fork, no prongs, no hooks",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/dorin/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/dorin/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 932.7999999999392,
+   "balance_after": 887.7999999999392,
+   "secs": 138,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "a1ba5423-15b0-49c9-ba6c-8872c6b9015c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/east.png on a 96 canvas",
+    "keypoints": "design/thug/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 920.7999999999392,
+   "balance_after": 884.7999999999392,
+   "secs": 115,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "1cfcee08-70e4-4c68-ab52-29384998e619",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north.png on a 96 canvas",
+    "keypoints": "design/thug/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 920.7999999999392,
+   "balance_after": 881.7999999999392,
+   "secs": 112,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "7d5ac616-0d71-46f3-9af2-4646a125cb36",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/thug/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 914.7999999999392,
+   "balance_after": 878.7999999999392,
+   "secs": 118,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "71bb76c6-db92-4c00-924d-62060187945c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 905.7999999999392,
+   "balance_after": 875.7999999999392,
+   "secs": 125,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "15fd3825-635a-44fd-a5fb-539d7530d113",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/west.png on a 96 canvas",
+    "keypoints": "design/thug/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 911.7999999999392,
+   "balance_after": 872.7999999999392,
+   "secs": 145,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "22252917-0367-455f-926b-b51ef5c2130a",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/east.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 899.7999999999392,
+   "balance_after": 869.7999999999392,
+   "secs": 94,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "c24e6bb9-efb9-452b-9b96-6733b914c92d",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 902.7999999999392,
+   "balance_after": 869.7999999999392,
+   "secs": 112,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "100271d7-c00c-4177-bb2e-b0b91bd595db",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 899.7999999999392,
+   "balance_after": 863.7999999999392,
+   "secs": 99,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "50cb7d6a-e804-49fc-812c-7be69b49de93",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/thug/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 926.7999999999392,
+   "balance_after": 863.7999999999392,
+   "secs": 216,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "b23a55f2-3ccf-4f52-b672-feca687e19a0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/west.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 887.7999999999392,
+   "balance_after": 860.7999999999392,
+   "secs": 92,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "30ee78d3-8eac-4061-b333-e826b05e9517",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 890.7999999999392,
+   "balance_after": 851.7999999999392,
+   "secs": 119,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "f24070fe-694e-49ab-8324-404777818c8a",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 884.7999999999392,
+   "balance_after": 848.7999999999392,
+   "secs": 112,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "24c5519b-36e1-42c4-912b-152b57459327",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 881.7999999999392,
+   "balance_after": 848.7999999999392,
+   "secs": 105,
+   "notes": "walk south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "61d03f10-70d7-4ce2-9cb6-ce0e196a23f3",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 878.7999999999392,
+   "balance_after": 845.7999999999392,
+   "secs": 105,
+   "notes": "walk south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "7c464ff7-b0a4-4d5a-bd87-a10c87910f95",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 872.7999999999392,
+   "balance_after": 842.7999999999392,
+   "secs": 112,
+   "notes": "walk north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "e9cde107-0132-4850-ac40-f44ac3e2203c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/east.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 875.7999999999392,
+   "balance_after": 839.7999999999392,
+   "secs": 125,
+   "notes": "walk east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "38b88552-c839-44f1-a9f8-f628dc2adfdf",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/thug/hit-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 848.7999999999392,
+   "balance_after": 837.7999999999392,
+   "secs": 60,
+   "notes": "hit north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "b9300ebb-de67-4236-9450-3c07eebfed65",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south.png on a 96 canvas",
+    "keypoints": "design/thug/hit-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 857.7999999999392,
+   "balance_after": 837.7999999999392,
+   "secs": 86,
+   "notes": "hit south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "42b83b79-b7ac-4c8c-a1a8-af4421ed6ef8",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 869.7999999999392,
+   "balance_after": 829.7999999999392,
+   "secs": 112,
+   "notes": "walk north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "0ef1551c-dd61-4830-84e0-1cee6475bd1c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 869.7999999999392,
+   "balance_after": 829.7999999999392,
+   "secs": 119,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "77de0d66-7f31-44b4-800f-977721b9a877",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/west.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 863.7999999999392,
+   "balance_after": 823.7999999999392,
+   "secs": 105,
+   "notes": "walk west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-walk-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "39d5453b-e740-4c29-aa5f-c30cfc3faa5e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "walk",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north.png on a 96 canvas",
+    "keypoints": "design/slinger/walk-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 899.7999999999392,
+   "balance_after": 821.7999999999392,
+   "secs": 206,
+   "notes": "walk north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "8d3093a5-6db7-42e9-a9c3-f7915c375fc2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/thug/hit-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 851.7999999999392,
+   "balance_after": 821.7999999999392,
+   "secs": 80,
+   "notes": "hit south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-walk-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "2a3872fc-8c0d-4df7-a801-4fccb5284ba4",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<8 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/bruiser/walk-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 8 trial 1 (walk), one gait cycle in 8 cels, root-locked; track 0.35, pelvis bob x2"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 863.7999999999392,
+   "balance_after": 818.7999999999392,
+   "secs": 105,
+   "notes": "walk south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "ca172a0e-b86a-4cfa-8e47-1b759b0882fb",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/east.png on a 96 canvas",
+    "keypoints": "design/thug/hit-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 848.7999999999392,
+   "balance_after": 816.7999999999392,
+   "secs": 85,
+   "notes": "hit east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "5448ad6b-a92f-45a1-8984-babe03649df8",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north.png on a 96 canvas",
+    "keypoints": "design/thug/hit-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 845.7999999999392,
+   "balance_after": 814.7999999999392,
+   "secs": 79,
+   "notes": "hit north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "9bf4d623-37e9-49f1-a82c-bce74355d9a0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/thug/hit-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 837.7999999999392,
+   "balance_after": 812.7999999999392,
+   "secs": 60,
+   "notes": "hit south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "4803a842-d4f3-462f-b648-474f298d2c88",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/thug/hit-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 842.7999999999392,
+   "balance_after": 810.7999999999392,
+   "secs": 80,
+   "notes": "hit north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "bcca3e11-d262-4290-b257-b224e6a9e1c2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/east.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 818.7999999999392,
+   "balance_after": 810.7999999999392,
+   "secs": 59,
+   "notes": "hit east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-hit-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "51e0ba25-fd2a-43be-97a7-416efe2b9591",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/west.png on a 96 canvas",
+    "keypoints": "design/thug/hit-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 839.7999999999392,
+   "balance_after": 804.7999999999392,
+   "secs": 85,
+   "notes": "hit west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "fbfb472a-c65f-49fd-ba32-d44b00a6b3d3",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 821.7999999999392,
+   "balance_after": 804.7999999999392,
+   "secs": 67,
+   "notes": "hit south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "de5f0bb6-9f2d-48e6-8810-01131f77a160",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 814.7999999999392,
+   "balance_after": 802.7999999999392,
+   "secs": 59,
+   "notes": "hit north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "8de976c0-48d4-42ee-8dff-f25859352407",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 821.7999999999392,
+   "balance_after": 800.7999999999392,
+   "secs": 79,
+   "notes": "hit south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "8d80ece5-a556-45a9-8d9f-9f125c9e1dcb",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 816.7999999999392,
+   "balance_after": 798.7999999999392,
+   "secs": 73,
+   "notes": "hit north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-ko-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "19120ff2-f99f-424a-8190-d9ebd87ddc59",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south-west.png on a 128 canvas",
+    "keypoints": "design/thug/ko-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 829.7999999999392,
+   "balance_after": 792.7999999999392,
+   "secs": 118,
+   "notes": "ko south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-ko-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "513880e1-9010-4819-89de-a3dce1e5ac84",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/south-east.png on a 128 canvas",
+    "keypoints": "design/thug/ko-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 835.7999999999392,
+   "balance_after": 792.7999999999392,
+   "secs": 126,
+   "notes": "ko south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "913a026a-2a99-4fb2-8c60-58b08f867291",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 808.7999999999392,
+   "balance_after": 788.7999999999392,
+   "secs": 66,
+   "notes": "hit south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "d55789a3-e48f-47c9-92a3-818d60e95291",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/west.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 810.7999999999392,
+   "balance_after": 788.7999999999392,
+   "secs": 79,
+   "notes": "hit west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-ko-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "ea677d7b-1f8b-43e6-8f36-5d3d3759feb8",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north-east.png on a 128 canvas",
+    "keypoints": "design/thug/ko-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 829.7999999999392,
+   "balance_after": 788.7999999999392,
+   "secs": 152,
+   "notes": "ko north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-south-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "c764fc86-ac27-44cf-8113-4b9c44d08bab",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-south.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 798.7999999999392,
+   "balance_after": 783.7999999999392,
+   "secs": 79,
+   "notes": "hit south",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "ba11a120-a7f9-40b8-a960-0d9c969db8f6",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/east.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 792.7999999999392,
+   "balance_after": 781.7999999999392,
+   "secs": 79,
+   "notes": "hit east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "thug-ko-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "42d8f95f-da6b-4942-b838-40ea8e0c25a0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit man, tan skin, shaggy dark brown hair under a rust-red bandana with short trailing ties, sleeveless worn dark brown vest open at the chest, a rope belt, ragged grey-brown knee-length trousers with torn hems, cloth-wrapped shins and forearms, simple sandals, a short knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/thug/idle/north-west.png on a 128 canvas",
+    "keypoints": "design/thug/ko-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 821.7999999999392,
+   "balance_after": 778.7999999999392,
+   "secs": 196,
+   "notes": "ko north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "06b549f2-866b-4a0b-9e84-a0f10ee438ca",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south-east.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 792.7999999999392,
+   "balance_after": 772.7999999999392,
+   "secs": 92,
+   "notes": "hit south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-hit-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "8465d839-3bdc-472f-bf6b-ba3f36ebd2d3",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/slinger/hit-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 812.7999999999392,
+   "balance_after": 772.7999999999392,
+   "secs": 157,
+   "notes": "hit north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "616a3381-3155-4f2e-a0a8-01b954c5d8c6",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north-east.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 788.7999999999392,
+   "balance_after": 772.7999999999392,
+   "secs": 73,
+   "notes": "hit north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-north-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "87fc3770-0044-4baa-9d48-54effd40240c",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-north.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 788.7999999999392,
+   "balance_after": 770.7999999999392,
+   "secs": 86,
+   "notes": "hit north",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "bcfb2cfc-8c1a-4274-b5ba-d3755a6b6e9f",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north-west.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 788.7999999999392,
+   "balance_after": 770.7999999999392,
+   "secs": 72,
+   "notes": "hit north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-ko-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "d97bbe59-160a-4d7e-8248-177d82a4d9e9",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south-east.png on a 128 canvas",
+    "keypoints": "design/slinger/ko-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 804.7999999999392,
+   "balance_after": 768.7999999999392,
+   "secs": 157,
+   "notes": "ko south-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-ko-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "43835379-395c-4e51-827a-0390f3eef0a7",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north-east.png on a 128 canvas",
+    "keypoints": "design/slinger/ko-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 802.7999999999392,
+   "balance_after": 765.7999999999392,
+   "secs": 158,
+   "notes": "ko north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "64472f24-bc68-4c09-a5e2-202433bce0ee",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/west.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 783.7999999999392,
+   "balance_after": 762.7999999999392,
+   "secs": 73,
+   "notes": "hit west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-ko-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "122f8da8-e9de-4fc5-bdad-a967d5dae9e2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/north-west.png on a 128 canvas",
+    "keypoints": "design/slinger/ko-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 800.7999999999392,
+   "balance_after": 757.7999999999392,
+   "secs": 158,
+   "notes": "ko north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "slinger-ko-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "b29e9de7-4e85-48a2-9476-dc4eb4f65cd9",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a lean young bandit, tan skin, a dark grey-brown cloth hood worn up, sleeveless dark grey-brown wrap tunic to mid-thigh with a rust-red cloth belt, ragged grey-brown trousers, cloth-wrapped shins and forearms, simple sandals, a leather sling dangling from his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/slinger/idle/south-west.png on a 128 canvas",
+    "keypoints": "design/slinger/ko-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 804.7999999999392,
+   "balance_after": 754.7999999999392,
+   "secs": 184,
+   "notes": "ko south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-hit-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "2e4ff55c-4ec0-45a4-b1f1-341b80f8937b",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "hit reaction, flinching back",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<3 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south-west.png on a 96 canvas",
+    "keypoints": "design/bruiser/hit-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 (scared), frames 48-72"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png"
+   ],
+   "gens": 2.0,
+   "balance_before": 781.7999999999392,
+   "balance_after": 752.7999999999392,
+   "secs": 66,
+   "notes": "hit south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-ko-south-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "9495e414-680d-4145-b0c6-89514e66e5d7",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south-west.png on a 128 canvas",
+    "keypoints": "design/bruiser/ko-south-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 772.7999999999392,
+   "balance_after": 749.7999999999392,
+   "secs": 126,
+   "notes": "ko south-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-ko-north-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "7c138e37-cc2a-48f2-8825-965339c1c8e0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north-east.png on a 128 canvas",
+    "keypoints": "design/bruiser/ko-north-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 772.7999999999392,
+   "balance_after": 749.7999999999392,
+   "secs": 145,
+   "notes": "ko north-east",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-ko-north-west-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "663e40bc-22a2-46a2-bda4-6f19e75a8f88",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/north-west.png on a 128 canvas",
+    "keypoints": "design/bruiser/ko-north-west.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 772.7999999999392,
+   "balance_after": 743.7999999999392,
+   "secs": 151,
+   "notes": "ko north-west",
+   "verdict": null,
+   "error": null
+  },
+  {
+   "name": "bruiser-ko-south-east-s9711",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "1c652d4c-4340-4396-ba50-e85da039c397",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "a big heavyset bandit man, very broad shoulders and thick arms, tan skin, shaved head with a rust-red headband, short dark beard, open sleeveless dark brown leather vest over a bare chest, cloth-wrapped forearms, baggy dark grey-brown trousers, heavy brown boots, a heavy knobbed wooden club held low in his right hand",
+    "action": "knocked down, falling backwards",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 9711,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bruiser/idle/south-east.png on a 128 canvas",
+    "keypoints": "design/bruiser/ko-south-east.json",
+    "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 778.7999999999392,
+   "balance_after": 743.7999999999392,
+   "secs": 164,
+   "notes": "ko south-east",
+   "verdict": null,
+   "error": null
   }
  ]
 }

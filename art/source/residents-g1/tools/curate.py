@@ -1,7 +1,7 @@
 """Step 2: copy each curated root (curate.json) to roots/<char>/<kind>/<dir>.png through the palette lock.
 
 usage (repo root): python3 -I art/source/residents-g1/tools/curate.py
-Deterministic: the same raw files give the same roots. palette_lock.py snaps every pixel to the character's shipped palette."""
+Deterministic: the same raw files give the same roots. palette_lock.py snaps every pixel to the name's own palette (roots_palette.py, run first)."""
 import json, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))

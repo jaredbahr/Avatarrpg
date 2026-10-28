@@ -144,7 +144,7 @@
       "frame": {
         "x": 576,
         "y": 2,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "rotated": false,
@@ -152,19 +152,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "sourceSize": {
-        "w": 77,
+        "w": 78,
         "h": 71
       }
     },
     "unit.enemy.thug/koSouthWest/1": {
       "frame": {
-        "x": 655,
+        "x": 656,
         "y": 2,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "rotated": false,
@@ -172,19 +172,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "sourceSize": {
-        "w": 77,
+        "w": 78,
         "h": 71
       }
     },
     "unit.enemy.thug/koSouthWest/2": {
       "frame": {
-        "x": 734,
+        "x": 736,
         "y": 2,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "rotated": false,
@@ -192,19 +192,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "sourceSize": {
-        "w": 77,
+        "w": 78,
         "h": 71
       }
     },
     "unit.enemy.thug/koSouthWest/3": {
       "frame": {
-        "x": 813,
+        "x": 816,
         "y": 2,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "rotated": false,
@@ -212,19 +212,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "sourceSize": {
-        "w": 77,
+        "w": 78,
         "h": 71
       }
     },
     "unit.enemy.thug/koSouthWest/4": {
       "frame": {
-        "x": 892,
+        "x": 896,
         "y": 2,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "rotated": false,
@@ -232,19 +232,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "sourceSize": {
-        "w": 77,
+        "w": 78,
         "h": 71
       }
     },
     "unit.enemy.thug/koSouthWest/5": {
       "frame": {
-        "x": 971,
+        "x": 976,
         "y": 2,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "rotated": false,
@@ -252,19 +252,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "sourceSize": {
-        "w": 77,
+        "w": 78,
         "h": 71
       }
     },
     "unit.enemy.thug/koSouthWest/6": {
       "frame": {
-        "x": 1050,
+        "x": 1056,
         "y": 2,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "rotated": false,
@@ -272,292 +272,292 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
+        "w": 78,
         "h": 71
       },
       "sourceSize": {
-        "w": 77,
+        "w": 78,
         "h": 71
       }
     },
     "unit.enemy.thug/koNorthEast/0": {
       "frame": {
-        "x": 1129,
+        "x": 1136,
         "y": 2,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthEast/1": {
       "frame": {
-        "x": 1208,
+        "x": 1216,
         "y": 2,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthEast/2": {
       "frame": {
-        "x": 1287,
+        "x": 1296,
         "y": 2,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthEast/3": {
       "frame": {
-        "x": 1366,
+        "x": 1376,
         "y": 2,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthEast/4": {
       "frame": {
-        "x": 1445,
+        "x": 1456,
         "y": 2,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthEast/5": {
       "frame": {
-        "x": 1524,
+        "x": 1536,
         "y": 2,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthEast/6": {
       "frame": {
-        "x": 1603,
+        "x": 1616,
         "y": 2,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       },
       "sourceSize": {
-        "w": 77,
-        "h": 71
+        "w": 78,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthWest/0": {
       "frame": {
-        "x": 1682,
+        "x": 1696,
         "y": 2,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "sourceSize": {
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthWest/1": {
       "frame": {
-        "x": 1756,
+        "x": 1771,
         "y": 2,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "sourceSize": {
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthWest/2": {
       "frame": {
-        "x": 1830,
+        "x": 1846,
         "y": 2,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "sourceSize": {
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthWest/3": {
       "frame": {
-        "x": 1904,
+        "x": 1921,
         "y": 2,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "sourceSize": {
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthWest/4": {
       "frame": {
         "x": 2,
-        "y": 75,
-        "w": 72,
-        "h": 71
+        "y": 76,
+        "w": 73,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "sourceSize": {
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthWest/5": {
       "frame": {
-        "x": 76,
-        "y": 75,
-        "w": 72,
-        "h": 71
+        "x": 77,
+        "y": 76,
+        "w": 73,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "sourceSize": {
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       }
     },
     "unit.enemy.thug/koNorthWest/6": {
       "frame": {
-        "x": 150,
-        "y": 75,
-        "w": 72,
-        "h": 71
+        "x": 152,
+        "y": 76,
+        "w": 73,
+        "h": 72
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       },
       "sourceSize": {
-        "w": 72,
-        "h": 71
+        "w": 73,
+        "h": 72
       }
     }
   },
@@ -567,8 +567,8 @@
     "image": "thug-g-2.webp",
     "format": "RGBA8888",
     "size": {
-      "w": 1978,
-      "h": 148
+      "w": 1996,
+      "h": 150
     },
     "scale": "1"
   }

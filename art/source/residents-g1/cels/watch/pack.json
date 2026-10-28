@@ -217,12 +217,12 @@
  },
  "placement": {
   "south": {
-   "walk_job": "watch-walk-south-s9701",
+   "walk_job": "watch-walk-south-s9711",
    "idleDy": 0,
-   "walkDx": 0,
+   "walkDx": -1,
    "walkDy": -6,
-   "restCel": 2,
-   "restDy": 6,
+   "restCel": 0,
+   "restDy": -1,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -235,12 +235,12 @@
    }
   },
   "south-east": {
-   "walk_job": "watch-walk-south-east-s9702",
+   "walk_job": "watch-walk-south-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
-   "walkDy": 0,
+   "walkDy": -1,
    "restCel": 2,
-   "restDy": 0,
+   "restDy": 1,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -253,7 +253,7 @@
    }
   },
   "east": {
-   "walk_job": "watch-walk-east-s9701",
+   "walk_job": "watch-walk-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": 2,
@@ -271,11 +271,11 @@
    }
   },
   "north-east": {
-   "walk_job": "watch-walk-north-east-s9701",
+   "walk_job": "watch-walk-north-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -3,
-   "restCel": 2,
+   "restCel": 6,
    "restDy": 3,
    "contact_rows": {
     "LA": {
@@ -289,12 +289,12 @@
    }
   },
   "north": {
-   "walk_job": "watch-walk-north-s9701",
+   "walk_job": "watch-walk-north-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -2,
    "restCel": 2,
-   "restDy": 1,
+   "restDy": 2,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -307,12 +307,12 @@
    }
   },
   "north-west": {
-   "walk_job": "watch-walk-north-west-s9701",
+   "walk_job": "watch-walk-north-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
-   "walkDy": -2,
+   "walkDy": -3,
    "restCel": 2,
-   "restDy": 2,
+   "restDy": 3,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -325,12 +325,12 @@
    }
   },
   "west": {
-   "walk_job": "watch-walk-west-s9701",
+   "walk_job": "watch-walk-west-s9711",
    "idleDy": 0,
-   "walkDx": -1,
+   "walkDx": 0,
    "walkDy": 1,
-   "restCel": 6,
-   "restDy": 2,
+   "restCel": 2,
+   "restDy": -1,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -343,7 +343,7 @@
    }
   },
   "south-west": {
-   "walk_job": "watch-walk-south-west-s9701",
+   "walk_job": "watch-walk-south-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -2,

@@ -8,15 +8,15 @@
  */
 export const BANDITS_G1_TRIMS = {
   thug: {
-    hit: { frameSize: { w: 43, h: 69 }, anchor: { x: 0.372093, y: 0.921739 } },
+    hit: { frameSize: { w: 42, h: 69 }, anchor: { x: 0.380952, y: 0.921739 } },
     ko: { frameSize: { w: 80, h: 71 }, anchor: { x: 0.45, y: 0.895775 } },
   },
   slinger: {
-    hit: { frameSize: { w: 27, h: 67 }, anchor: { x: 0.518519, y: 0.934328 } },
-    ko: { frameSize: { w: 73, h: 73 }, anchor: { x: 0.479452, y: 0.843836 } },
+    hit: { frameSize: { w: 28, h: 67 }, anchor: { x: 0.535714, y: 0.934328 } },
+    ko: { frameSize: { w: 75, h: 74 }, anchor: { x: 0.466667, y: 0.832432 } },
   },
   bruiser: {
-    hit: { frameSize: { w: 44, h: 69 }, anchor: { x: 0.363636, y: 0.936232 } },
-    ko: { frameSize: { w: 83, h: 75 }, anchor: { x: 0.457831, y: 0.848 } },
+    hit: { frameSize: { w: 44, h: 69 }, anchor: { x: 0.409091, y: 0.936232 } },
+    ko: { frameSize: { w: 86, h: 75 }, anchor: { x: 0.453488, y: 0.848 } },
   },
 } as const;

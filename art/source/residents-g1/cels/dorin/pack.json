@@ -217,12 +217,12 @@
  },
  "placement": {
   "south": {
-   "walk_job": "dorin-walk-south-s9702",
+   "walk_job": "dorin-walk-south-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -6,
    "restCel": 2,
-   "restDy": 4,
+   "restDy": 5,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -235,12 +235,12 @@
    }
   },
   "south-east": {
-   "walk_job": "dorin-walk-south-east-s9701",
+   "walk_job": "dorin-walk-south-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -3,
    "restCel": 2,
-   "restDy": 3,
+   "restDy": 4,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -253,7 +253,7 @@
    }
   },
   "east": {
-   "walk_job": "dorin-walk-east-s9701",
+   "walk_job": "dorin-walk-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": 1,
@@ -271,11 +271,11 @@
    }
   },
   "north-east": {
-   "walk_job": "dorin-walk-north-east-s9701",
+   "walk_job": "dorin-walk-north-east-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -2,
-   "restCel": 2,
+   "restCel": 6,
    "restDy": 3,
    "contact_rows": {
     "LA": {
@@ -289,7 +289,7 @@
    }
   },
   "north": {
-   "walk_job": "dorin-walk-north-s9701",
+   "walk_job": "dorin-walk-north-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -2,
@@ -307,7 +307,7 @@
    }
   },
   "north-west": {
-   "walk_job": "dorin-walk-north-west-s9701",
+   "walk_job": "dorin-walk-north-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -2,
@@ -325,12 +325,12 @@
    }
   },
   "west": {
-   "walk_job": "dorin-walk-west-s9701",
+   "walk_job": "dorin-walk-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": 2,
-   "restCel": 6,
-   "restDy": 2,
+   "restCel": 2,
+   "restDy": 0,
    "contact_rows": {
     "LA": {
      "cel": 0,
@@ -343,12 +343,12 @@
    }
   },
   "south-west": {
-   "walk_job": "dorin-walk-south-west-s9701",
+   "walk_job": "dorin-walk-south-west-s9711",
    "idleDy": 0,
    "walkDx": 0,
    "walkDy": -2,
    "restCel": 2,
-   "restDy": 2,
+   "restDy": 3,
    "contact_rows": {
     "LA": {
      "cel": 0,

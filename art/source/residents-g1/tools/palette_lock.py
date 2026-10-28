@@ -1,6 +1,7 @@
-"""Palette lock: snap every opaque pixel of a native cel to the nearest colour of the character's shipped palette
-(b/<char>/palette.png, reduce.py's median cut of every shipped cel), in a perceptual (OKLab) distance; alpha binarised at
-128. Deterministic. Removes the redraw's hue drift (Kaya's warmer boots) and keeps every heading and cel on one palette.
+"""Palette lock: snap every opaque pixel of a native cel to the nearest colour of the name's palette (palettes/<name>.png,
+roots_palette.py's cut of its own curated roots), in a perceptual (OKLab) distance; alpha binarised at 128. Deterministic.
+Copied from the party's (art/source/party-g1/tools/palette_lock.py), which locks to the shipped palette instead; see
+roots_palette.py for why. Keeps every heading and cel on one palette, so colour cannot flicker between cels.
 
 usage: palette_lock.py CHAR IN.png OUT.png   or import lock(img, char)"""
 import sys
@@ -24,7 +25,7 @@ _pal = {}
 
 def palette(char):
     if char not in _pal:
-        p = np.asarray(Image.open(HERE / f'b/{char}/palette.png').convert('RGBA')).reshape(-1, 4)
+        p = np.asarray(Image.open(HERE / f'palettes/{char}.png').convert('RGBA')).reshape(-1, 4)
         p = np.unique(p[p[:, 3] > 0][:, :3], axis=0).astype(float)
         _pal[char] = (p, _oklab(p))
     return _pal[char]
