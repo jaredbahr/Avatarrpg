@@ -1,15 +1,19 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { BA_DAN_ACTOR_GROUNDING, BA_DAN_SCENE } from '../content/scenes/baDan';
-import { FOOT_LINE } from './sheets/bake';
 import { FOREST_ROAD_SCENE } from '../content/scenes/forestRoad';
 import { QUARRY_GATE_SCENE } from '../content/scenes/quarryGate';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
-  CONTACT_BAND,
   DEFAULT_CONTACT_ALPHA,
   DEFAULT_ACTOR_GROUNDING,
+  DEFAULT_SHADOW_INK,
+  FIGURE_CAST,
+  FIGURE_CONTACT,
+  FIGURE_SHADOW,
+  figureCastReach,
+  figureShadow,
   FACE_SHADE,
   PAINTED_FACE_SHADE,
   projectShadowPoint,
@@ -18,10 +22,8 @@ import {
   silhouetteProjection,
   actorGrounding,
   castShadowStrength,
-  contactBandRows,
   contactBand,
   shadowCeiling,
-  spriteBandArt,
   unionShadowCoverage,
 } from './lighting';
 
@@ -182,6 +184,7 @@ describe('scene actor grounding', () => {
       cast: CAST_SHADOW_ALPHA,
       contact: DEFAULT_CONTACT_ALPHA,
       castKey: CAST_PER_PIXEL,
+      ink: DEFAULT_SHADOW_INK,
     });
     expect(actorGrounding({})).toBe(DEFAULT_ACTOR_GROUNDING);
     expect(actorGrounding(FOREST_ROAD_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
@@ -190,10 +193,10 @@ describe('scene actor grounding', () => {
     expect(shadowCeiling(DEFAULT_ACTOR_GROUNDING)).toBe(DEFAULT_CONTACT_ALPHA);
   });
 
-  it('gives Ba Dan a stronger cast and a contact layer, tinted at the strongest of them', () => {
+  it("gives Ba Dan its painting's shadow ink and a contact layer, tinted at the strongest of them", () => {
     const grounding = actorGrounding(BA_DAN_SCENE);
     expect(grounding).toEqual(BA_DAN_ACTOR_GROUNDING);
-    expect(grounding.cast).toBeGreaterThan(CAST_SHADOW_ALPHA);
+    expect(grounding.ink).not.toEqual(DEFAULT_SHADOW_INK);
     expect(grounding.contact).toBeGreaterThan(grounding.cast);
     expect(shadowCeiling(grounding)).toBe(grounding.contact);
     // Every caster writes its alpha as a fraction of the ceiling, never above it.
@@ -206,27 +209,8 @@ describe('scene actor grounding', () => {
       cast: CAST_SHADOW_ALPHA,
       contact: 0.7,
       castKey: CAST_PER_PIXEL,
+      ink: DEFAULT_SHADOW_INK,
     });
-  });
-
-  it('takes the sole band from the rows ending on the foot line', () => {
-    // A 192 px cel at 128 px a tile with the foot line at 0.85 of its height.
-    const band = contactBandRows(192, 0.85, 128);
-    expect(band.height).toBe(Math.round(CONTACT_BAND.height * 128));
-    expect(band.top + band.height).toBeCloseTo(0.85 * 192, 0);
-    // Never past the cel, and never empty.
-    expect(contactBandRows(10, 1, 128)).toEqual({ top: 0, height: 10 });
-    expect(contactBandRows(192, 0, 128).height).toBe(1);
-  });
-
-  it('cuts a sprite band from the rows ending on the foot line', () => {
-    const art = spriteBandArt({ width: 128, height: 128 });
-    expect(art.anchor.y).toBe(FOOT_LINE);
-    const band = contactBandRows(art.frame.h, art.anchor.y, art.pixelsPerTile);
-    expect(band.height).toBe(Math.round(CONTACT_BAND.height * 128));
-    expect(band.top + band.height).toBeCloseTo(FOOT_LINE * 128, 0);
-    // A 2-tile-tall sprite measures its tile by half its height.
-    expect(spriteBandArt({ width: 128, height: 256 }, 2).pixelsPerTile).toBe(128);
   });
 
   it('gives every figure that casts a band, and one that casts nothing no shadow', () => {
@@ -240,12 +224,84 @@ describe('scene actor grounding', () => {
     const read = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8');
     for (const source of [read('./backends/pixi.ts'), read('./backends/canvas2d.ts')]) {
       expect(source).toContain('actorGrounding(view.scene)');
-      expect(source).toContain('contactBandRows(');
-      expect(source).toContain('CONTACT_BAND.drop');
-      expect(source).toContain('CONTACT_BAND.spreadX');
-      expect(source).toContain('CONTACT_BAND.spreadY');
+      expect(source).toContain('figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles)');
+      expect(source).toContain('this.grounding.ink');
     }
     // WebGL writes each caster as a fraction of the tint's ceiling; Canvas writes absolute levels (`castInto`).
     expect(read('./backends/pixi.ts')).toContain('shadowCeiling(this.grounding)');
+  });
+});
+
+describe("a figure's ground shadow (ADR 0093, figure amendment)", () => {
+  const key = BA_DAN_ACTOR_GROUNDING.castKey;
+  const at = (shadow: ReturnType<typeof figureShadow>, x: number, y: number) =>
+    shadow.mask[(shadow.footY + y) * shadow.width + shadow.footX + x] ?? 0;
+  const cells = (shadow: ReturnType<typeof figureShadow>) =>
+    [...shadow.mask].flatMap((level, i) =>
+      level
+        ? [
+            {
+              x: (i % shadow.width) - shadow.footX,
+              y: Math.floor(i / shadow.width) - shadow.footY,
+              level,
+            },
+          ]
+        : [],
+    );
+
+  it('is whole world pixels at three levels: none, the cast and the contact', () => {
+    const shadow = figureShadow(64, key);
+    expect(new Set(shadow.mask)).toEqual(new Set([0, FIGURE_CAST, FIGURE_CONTACT]));
+  });
+
+  it('sits the contact core under the feet, inside the pool', () => {
+    const shadow = figureShadow(64, key);
+    expect(at(shadow, 0, 0)).toBe(FIGURE_CONTACT);
+    for (const c of cells(shadow).filter((c) => c.level === FIGURE_CONTACT)) {
+      expect(Math.abs(c.x + 0.5)).toBeLessThanOrEqual(FIGURE_SHADOW.core.rx * 64 + 1);
+      expect(Math.abs(c.y + 0.5)).toBeLessThanOrEqual(FIGURE_SHADOW.core.ry * 64 + 1);
+    }
+  });
+
+  for (const [name, castKey] of [
+    ['Ba Dan', key],
+    ['the shared key', CAST_PER_PIXEL],
+  ] as const)
+    it(`keeps the cast short and down-right along ${name}`, () => {
+      const shadow = figureShadow(64, castKey);
+      const pool = { rx: FIGURE_SHADOW.pool.rx * 64, ry: FIGURE_SHADOW.pool.ry * 64 };
+      const reach = figureCastReach(64, castKey);
+      // About a quarter of the figure's height, or less.
+      expect(Math.hypot(reach.x, reach.y)).toBeLessThanOrEqual(
+        FIGURE_SHADOW.maxReach * FIGURE_SHADOW.height * 64 + 1e-9,
+      );
+      expect(reach.x / reach.y).toBeCloseTo(castKey.x / castKey.y, 6);
+      for (const c of cells(shadow)) {
+        // Nothing up or left of the pool: the light is upper-left.
+        expect(c.x + 0.5).toBeGreaterThanOrEqual(-pool.rx - 1e-9);
+        expect(c.y + 0.5).toBeGreaterThanOrEqual(-pool.ry - 1e-9);
+        expect(c.x + 0.5).toBeLessThanOrEqual(reach.x + pool.rx + 1e-9);
+        expect(c.y + 0.5).toBeLessThanOrEqual(reach.y + pool.ry + 1e-9);
+      }
+      // The far end of the cast is shadow.
+      expect(at(shadow, Math.floor(reach.x), Math.floor(reach.y))).toBe(FIGURE_CAST);
+    });
+
+  it('is one connected pool with no holes: a calm shape, not a silhouette', () => {
+    const shadow = figureShadow(64, key);
+    // Each row is one run, so the edge steps a pixel at a time and no gap shows between legs.
+    for (let y = 0; y < shadow.height; y += 1) {
+      const row = [...shadow.mask.slice(y * shadow.width, (y + 1) * shadow.width)].map(
+        (v) => v > 0,
+      );
+      const starts = row.filter((on, x) => on && !row[x - 1]).length;
+      expect(starts).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('grows with the figure and with a two-tile body', () => {
+    const one = cells(figureShadow(64, key)).length;
+    expect(cells(figureShadow(80, key)).length).toBeGreaterThan(one);
+    expect(cells(figureShadow(64, key, 2)).length).toBeGreaterThan(one * 1.5);
   });
 });

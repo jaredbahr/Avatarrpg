@@ -261,14 +261,16 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `--cadence 70` to measure the brisk walk).
 - **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
   on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
-  smooths, or a mask at screen resolution, brings back the soft edge the pass removed. Every figure and prop on an
-  oblique board gets a contact (a figure's sole band, a prop's 2 world px contact line) and a cast along its scene's
-  `castKey`: a figure's from its foot row, a prop's from its own base (`groundedCast`), so no ground shows between
-  a box's side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is
-  grounded the same way, its feet only inside its footprint; a tree or a hanging lamp does not.
-  A figure's **cast is steady** (ADR 0093's amendment): while it stands, walks or settles it casts its heading's
-  idle cel (`castFrame`), never the frame it draws, so the shadow does not sweep with its legs; its contact band
-  still follows the drawn soles, and an action casts its own frame. Ba Dan's painted
+  smooths, or a mask at screen resolution, brings back the soft edge the pass removed. A **figure's shadow is a calm
+  pool, never its silhouette** (ADR 0093's figure amendment; owner, 2026-10-28: "the shadows make them look off"):
+  `figureShadow` rasterises an ellipse under the feet swept a short way along the scene's `castKey` (a quarter of
+  the figure's height at most) at the cast level, with a smaller core under the soles at the contact level. It reads
+  nothing of the figure's art, so it is the same shape on every cel, clip and bend; do not bring back a sole band
+  or a sheared silhouette for figures. A painted scene sets its shadow `ink` and levels so the pool lands on the
+  painting's own tone (Ba Dan's are fitted by `art/source/grounding/tools/figure_shadow_tone.py`). Every prop
+  gets a 2 world px contact line and a cast from its own base (`groundedCast`), so no ground shows between a box's
+  side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is grounded
+  the same way, its feet only inside its footprint; a tree or a hanging lamp does not. Ba Dan's painted
   objects are shaded in the master by `ba-dan-route-a/tools/shadows.py`, never in the shipped files.
   `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the

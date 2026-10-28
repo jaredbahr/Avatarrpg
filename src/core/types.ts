@@ -996,6 +996,8 @@ export interface MapScene {
     readonly cast?: number;
     readonly contact?: number;
     readonly castKey?: { readonly x: number; readonly y: number };
+    /** The shadow's tint, 0-255 a channel: the ink that lands on the painting's own shadow tone. */
+    readonly ink?: { readonly r: number; readonly g: number; readonly b: number };
   };
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];

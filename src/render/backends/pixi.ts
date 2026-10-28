@@ -138,10 +138,10 @@ import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
+import { figureShadowArt } from '../figureShadowArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
-  CONTACT_BAND,
   CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
@@ -149,12 +149,8 @@ import {
   SHADOW_RGB,
   actorGrounding,
   castShadowStrength,
-  contactBandRows,
   contactBand,
-  castFrame,
   shadowCeiling,
-  spriteBandArt,
-  type BandArt,
   type CastKey,
   shadowGrid,
   shadowLevels,
@@ -179,14 +175,13 @@ const TERRAIN_INDEX: Record<TerrainId, number> = {
 /** The ground pass renders at this fraction of device resolution. */
 const GROUND_RESOLUTION = 0.5;
 
-const SHADOW_RGB_GLSL = SHADOW_RGB.map((channel) => (channel / 255).toFixed(5)).join(', ');
-
 /**
  * The mask's max-unioned coverage is tinted once, so overlaps cannot darken
  * twice. A caster's edge texel can hold a fraction of its level where it was
  * sampled between two of its art's pixels; each texel snaps to the nearest of
  * the levels the frame's casters wrote (`shadowLevels`, 0 among them), so a
- * shadow is hard-edged at every caster's own strength (ADR 0093).
+ * shadow is hard-edged at every caster's own strength (ADR 0093). `uInk` is the
+ * scene's shadow ink (`ActorGrounding.ink`).
  */
 const CAST_SHADOW_FRAGMENT = `#version 300 es
 precision highp float;
@@ -194,6 +189,7 @@ precision highp float;
 in vec2 vTextureCoord;
 uniform sampler2D uTexture;
 uniform float uCastAlpha;
+uniform vec3 uInk;
 uniform vec4 uLevelsA;
 uniform vec4 uLevelsB;
 out vec4 fragColor;
@@ -214,7 +210,7 @@ void main(void) {
   level = snapLevel(a, uLevelsB.z, level);
   level = snapLevel(a, uLevelsB.w, level);
   float alpha = level * uCastAlpha;
-  fragColor = vec4(vec3(${SHADOW_RGB_GLSL}) * alpha, alpha);
+  fragColor = vec4(uInk * alpha, alpha);
 }`;
 
 /**
@@ -471,6 +467,10 @@ export class PixiBackend implements RenderBackend {
   /** The union's tint alpha: the scene's strongest shadow (`shadowCeiling`). */
   private castUniforms = new UniformGroup({
     uCastAlpha: { value: CAST_SHADOW_ALPHA, type: 'f32' },
+    uInk: {
+      value: new Float32Array(SHADOW_RGB.map((channel) => channel / 255)),
+      type: 'vec3<f32>',
+    },
     uLevelsA: { value: new Float32Array(4), type: 'vec4<f32>' },
     uLevelsB: { value: new Float32Array(4), type: 'vec4<f32>' },
   });
@@ -494,8 +494,6 @@ export class PixiBackend implements RenderBackend {
   /** Top edge of each unit's bar this frame (as drawn, staggered): floating numbers start above it. */
   private barTops = new Map<string, number>();
   private unitSprites = new Map<string, Sprite>();
-  /** Off-stage casters: a figure's heading idle cel, posed as its body, for its steady shadow (ADR 0093). */
-  private castSources = new Map<string, Sprite>();
   private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
   private frameTextures = new Map<string, Texture>();
   private climbLabels: Text[] = [];
@@ -732,7 +730,6 @@ export class PixiBackend implements RenderBackend {
     this.shadowFilter = null;
     this.dropTextures();
     this.unitSprites.clear();
-    this.castSources.clear();
     this.breezePools.clear();
     this.sceneTextures.clear();
     this.groundChunks.clear();
@@ -1217,27 +1214,6 @@ export class PixiBackend implements RenderBackend {
     target.visible = source.visible && target.alpha > 0;
   }
 
-  /**
-   * What a figure casts (ADR 0093): `cast`, its heading's idle cel, posed exactly as its `body` is (the
-   * same sheet's cels share a grain, so the body's scale, facing and lean carry over), or the body itself.
-   */
-  private steadyCaster(key: string, body: Sprite, cast: ResolvedFrame | null | false): Sprite {
-    if (!cast) return body;
-    let source = this.castSources.get(key);
-    if (!source) {
-      source = new Sprite();
-      this.castSources.set(key, source);
-    }
-    source.texture = this.frameTexture(cast);
-    source.anchor.set(cast.anchor.x, cast.anchor.y);
-    source.position.copyFrom(body.position);
-    source.scale.copyFrom(body.scale);
-    source.rotation = body.rotation;
-    source.visible = body.visible;
-    source.updateLocalTransform();
-    return source;
-  }
-
   /** Adds this frame's actor or moving-prop silhouette to the dynamic union. */
   private projectDynamicShadow(
     key: string,
@@ -1258,42 +1234,44 @@ export class PixiBackend implements RenderBackend {
   }
 
   /**
-   * Lays the sole band of a figure's current frame flat on the ground, a little
-   * wider and lower than the boots, into the same union: a tight contact under
-   * both feet that follows the pose, drawn from the art and not from a disc.
+   * A figure's ground shadow (ADR 0093's figure amendment): its pool and short cast at the scene's cast
+   * level and the core under its soles at the contact level, into the same union, one texture pixel a
+   * world pixel. `foot` is the ground point under the figure, in world pixels: the walk bob lifts the
+   * figure off it, never the shadow.
    */
-  private projectContact(
+  private projectFigureShadow(
     key: string,
-    source: Sprite,
-    frame: Pick<BandArt, 'source' | 'frame' | 'anchor' | 'pixelsPerTile'>,
     foot: { x: number; y: number },
+    scale: number,
+    widthTiles: number,
     strength: number,
   ): void {
-    this.castLive.add(key);
-    let shadow = this.castSprites.get(key);
-    if (!shadow) {
-      shadow = new Sprite();
-      this.castSprites.set(key, shadow);
-      this.shadowMaskSources.addChild(shadow);
+    if (strength <= 0 || !contactBand(this.grounding, 1)) return;
+    const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
+    if (!art) return;
+    for (const [id, canvas, level] of [
+      [key, art.cast, this.grounding.cast],
+      [`${key}:foot`, art.contact, this.grounding.contact],
+    ] as const) {
+      this.castLive.add(id);
+      let sprite = this.castSprites.get(id);
+      if (!sprite) {
+        sprite = new Sprite();
+        this.castSprites.set(id, sprite);
+        this.shadowMaskSources.addChild(sprite);
+      }
+      const texture = this.texture(canvas);
+      if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+      sprite.texture = texture;
+      sprite.anchor.set(0, 0);
+      sprite.rotation = 0;
+      sprite.position.set(foot.x - art.footX, foot.y - art.footY);
+      sprite.width = canvas.width;
+      sprite.height = canvas.height;
+      sprite.alpha = Math.max(0, Math.min(1, (strength * level) / shadowCeiling(this.grounding)));
+      sprite.blendMode = 'max';
+      sprite.visible = sprite.alpha > 0;
     }
-    const band = contactBandRows(frame.frame.h, frame.anchor.y, frame.pixelsPerTile);
-    shadow.texture = this.frameTexture({
-      source: frame.source,
-      frame: { ...frame.frame, y: frame.frame.y + band.top, h: band.height },
-    });
-    shadow.anchor.set(frame.anchor.x, 1);
-    shadow.position.set(foot.x, foot.y + CONTACT_BAND.drop * TILE);
-    shadow.scale.set(
-      source.scale.x * CONTACT_BAND.spreadX,
-      Math.abs(source.scale.y) * CONTACT_BAND.spreadY,
-    );
-    shadow.rotation = 0;
-    shadow.alpha = Math.max(
-      0,
-      Math.min(1, (strength * this.grounding.contact) / shadowCeiling(this.grounding)),
-    );
-    shadow.blendMode = 'max';
-    shadow.visible = source.visible && shadow.alpha > 0;
   }
 
   /**
@@ -1448,10 +1426,13 @@ export class PixiBackend implements RenderBackend {
     // UniformGroup.uniforms is a plain object: the new values are only uploaded by update().
     const uniforms = this.castUniforms.uniforms as {
       uCastAlpha: number;
+      uInk: Float32Array;
       uLevelsA: Float32Array;
       uLevelsB: Float32Array;
     };
     uniforms.uCastAlpha = shadowCeiling(this.grounding);
+    const ink = this.grounding.ink;
+    uniforms.uInk.set([ink.r / 255, ink.g / 255, ink.b / 255]);
     uniforms.uLevelsA.set(levels.slice(0, 4));
     uniforms.uLevelsB.set(levels.slice(4, SHADOW_LEVEL_SLOTS));
     this.castUniforms.update();
@@ -2776,7 +2757,6 @@ export class PixiBackend implements RenderBackend {
       const y = ground + Math.round(rawLift * liftScale) / liftScale;
       const footX = x + (width * TILE) / 2;
       sprite.zIndex = depth(at, width, false);
-      let bandArt: BandArt | null = frame;
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
@@ -2786,8 +2766,6 @@ export class PixiBackend implements RenderBackend {
         this.sampleArt(sprite, camera.scale);
       } else {
         const art = sprites.get(npc.sprite, px * scale, npcPose(npc), width);
-        // A painter or single-image resident has no frame; its band is the drawn sprite's soles.
-        bandArt = spriteBandArt(art);
         sprite.texture = this.texture(art);
         sprite.anchor.set(0.5, FOOT_LINE);
         sprite.position.set(footX, y + FOOT_LINE * TILE);
@@ -2798,36 +2776,14 @@ export class PixiBackend implements RenderBackend {
       sprite.rotation = npc.lean ?? 0;
       sprite.alpha = alpha;
       sprite.visible = true;
-      const npcSteady = castFrame(clip);
-      this.projectDynamicShadow(
+      // A resident's shadow is its pool, whatever it is doing: one steady shape at its feet (ADR 0093).
+      this.projectFigureShadow(
         `npc:${npc.id}`,
-        this.steadyCaster(
-          key,
-          sprite,
-          !!frame &&
-            npcSteady &&
-            sheets.frame(
-              npc.sprite,
-              npcSteady.clip,
-              npcSteady.clipTime,
-              undefined,
-              px * scale,
-              width,
-            ),
-        ),
-        { x: footX, y: (this.grounding.contact > 0 ? ground : y) + FOOT_LINE * TILE },
+        { x: footX, y: ground + FOOT_LINE * TILE },
+        scale,
+        1,
         alpha,
-        this.grounding.cast,
-        this.grounding.castKey,
       );
-      if (contactBand(this.grounding, 1) && bandArt)
-        this.projectContact(
-          `npcfoot:${npc.id}`,
-          sprite,
-          bandArt,
-          { x: footX, y: ground + FOOT_LINE * TILE },
-          alpha,
-        );
 
       // A small "talk" pip so a child can tell an NPC from scenery.
       if (!npc.quiet)
@@ -2907,7 +2863,6 @@ export class PixiBackend implements RenderBackend {
       const sprite = this.unitSprite(unit.id);
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const band = contactBand(this.grounding, castShadowStrength(unit.castShadow));
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
@@ -2933,7 +2888,6 @@ export class PixiBackend implements RenderBackend {
         26 / camera.scale,
       );
       this.barTops.set(unit.id, silhouette.bar.y);
-      let bandArt: BandArt | null = frame;
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
@@ -2957,7 +2911,6 @@ export class PixiBackend implements RenderBackend {
         }
       } else {
         const art = sprites.get(unit.sprite, px * scale, { facing }, unit.size, heightTiles);
-        bandArt = spriteBandArt(art, heightTiles);
         sprite.texture = this.texture(art);
         sprite.anchor.set(0, 0);
         const drawWidth = width * scale;
@@ -2970,50 +2923,17 @@ export class PixiBackend implements RenderBackend {
       sprite.alpha = alpha;
       sprite.visible = true;
       sprite.zIndex = depth(pos, unit.size);
-      const unitSteady = castFrame(locomotion);
-      const castStrength = castShadowStrength(unit.castShadow);
-      const grounded = this.grounding.contact > 0;
-      // With a contact layer the foot is the tile's ground, so the walk bob lifts
-      // the figure off both shadows instead of dragging the cast along with it.
-      const castFoot = {
-        x: x + width / 2,
-        y: (grounded ? anchor.y - lift * TILE : y) + FOOT_LINE * TILE,
-      };
-      const bodyShade = (unit.alpha ?? 1) * (unit.fallen ? FALLEN_SHADOW_ALPHA : 1);
-      if (castStrength > 0) {
-        this.projectDynamicShadow(
-          `unit:${unit.id}`,
-          this.steadyCaster(
-            unit.id,
-            sprite,
-            !!frame &&
-              !bend &&
-              unitSteady &&
-              sheets.frame(
-                unit.sprite,
-                unitSteady.clip,
-                unitSteady.clipTime,
-                undefined,
-                px * scale,
-                unit.size,
-                undefined,
-                heightTiles,
-              ),
-          ),
-          castFoot,
-          castStrength * bodyShade,
-          this.grounding.cast,
-          this.grounding.castKey,
-        );
-        if (band && bandArt)
-          this.projectContact(
-            `foot:${unit.id}`,
-            sprite,
-            bandArt,
-            castFoot,
-            castStrength * bodyShade,
-          );
-      }
+      // Its pool, whatever its clip or bend: a calm ground shadow, steady across every cel (ADR 0093).
+      // The foot is the tile's ground, so the walk bob lifts the figure off its shadow.
+      this.projectFigureShadow(
+        `unit:${unit.id}`,
+        { x: x + width / 2, y: anchor.y - lift * TILE + FOOT_LINE * TILE },
+        scale,
+        unit.size === 2 ? 2 : 1,
+        castShadowStrength(unit.castShadow) *
+          (unit.alpha ?? 1) *
+          (unit.fallen ? FALLEN_SHADOW_ALPHA : 1),
+      );
 
       // The hit flash: the same sprite again, white and additive, over the top.
       const flash = unit.flash ?? 0;

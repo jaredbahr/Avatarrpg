@@ -1,9 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Canvas2DBackend, uprightSpriteVisible } from './canvas2d';
 import { sheets } from '../sheets/store';
-import { sprites } from '../spriteCache';
+import { TILE } from '../camera';
+import { figureShadowArt } from '../figureShadowArt';
+import { FOOT_LINE } from '../sheets/bake';
 import {
-  CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   DEFAULT_ACTOR_GROUNDING,
   DEFAULT_CONTACT_ALPHA,
@@ -11,36 +12,52 @@ import {
   type ActorGrounding,
 } from '../lighting';
 
-const BA: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
+const BA: ActorGrounding = {
+  cast: 0.335,
+  contact: 0.535,
+  castKey: { x: 0.35, y: 0.16 },
+  ink: { r: 0, g: 3, b: 11 },
+};
 
-describe('Canvas unit cast shadow', () => {
-  // Drives the private mask pass on a stub context: only globalAlpha at each draw matters.
-  const drawnAlphas = (
-    unit: Record<string, unknown>,
-    sheeted = true,
-    grounding: ActorGrounding = DEFAULT_ACTOR_GROUNDING,
-  ): number[] => drawn(unit, sheeted, grounding).alphas;
+/** A canvas the figure shadow art can be painted into: the unit environment has none. */
+const fakeCanvas = () => ({
+  width: 0,
+  height: 0,
+  getContext: () => ({
+    createImageData: (w: number, h: number) => ({ data: new Uint8ClampedArray(w * h * 4) }),
+    putImageData: () => undefined,
+  }),
+});
 
+describe('Canvas figure ground shadow (ADR 0093, figure amendment)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  // Drives the private mask pass on a stub context: what is drawn, at which level and alpha.
   const drawn = (
     unit: Record<string, unknown>,
-    sheeted = true,
     grounding: ActorGrounding = DEFAULT_ACTOR_GROUNDING,
-  ): { alphas: number[]; levels: number[] } => {
+  ): { alphas: number[]; levels: number[]; rects: number[][]; frames: number } => {
+    vi.stubGlobal('document', { createElement: fakeCanvas });
     const alphas: number[] = [];
     const levels: number[] = [];
+    const rects: number[][] = [];
     const ctx = {
       globalAlpha: 1,
       save: vi.fn(),
       restore: vi.fn(),
-      transform: vi.fn(),
-      translate: vi.fn(),
-      scale: vi.fn(),
-      drawImage: vi.fn(() => alphas.push(ctx.globalAlpha)),
+      drawImage: vi.fn((_s: unknown, ...r: number[]) => {
+        alphas.push(ctx.globalAlpha);
+        rects.push(r);
+      }),
     };
     const camera = {
-      projection: 'flat',
+      projection: 'oblique',
+      scale: 2,
       viewport: { dpr: 1 },
-      spriteBox: () => ({ x: 0, y: 0, size: 64 }),
+      spriteBox: () => ({ x: 0, y: 0, size: 128 }),
     };
     const view = {
       grid: { width: 1, height: 1, tiles: [] },
@@ -50,110 +67,67 @@ describe('Canvas unit cast shadow', () => {
       time: 0,
       units: [{ id: 'u', pos: { x: 0, y: 0 }, size: 1, sprite: 'x', ...unit }],
     };
-    const frame = {
-      source: {},
-      frame: { x: 0, y: 0, w: 8, h: 8 },
-      anchor: { x: 0.5, y: 1 },
-      pixelsPerTile: 8,
+    const frame = vi.spyOn(sheets, 'frame');
+    const self = {
+      squareFootprints: false,
+      grounding,
+      drawPropShadowMask: () => undefined,
+      projectFigureShadow: (Canvas2DBackend.prototype as unknown as Record<string, unknown>)
+        .projectFigureShadow,
+      // No scratch: the caster draws straight through, and the level it asked for is recorded.
+      castInto: (_layer: unknown, level: number, _b: unknown, draw: (t: unknown) => void) => {
+        levels.push(level);
+        draw(ctx);
+      },
     };
-    const spy = vi.spyOn(sheets, 'frame').mockReturnValue(sheeted ? (frame as never) : null);
-    const spriteSpy = vi.spyOn(sprites, 'get').mockReturnValue({} as never);
-    try {
-      const self = {
-        squareFootprints: false,
-        grounding,
-        drawPropShadowMask: () => undefined,
-        projectMask: (Canvas2DBackend.prototype as unknown as Record<string, unknown>).projectMask,
-        projectContactMask: (Canvas2DBackend.prototype as unknown as Record<string, unknown>)
-          .projectContactMask,
-        // No scratch: the caster draws straight through, and the level it asked for is recorded.
-        castInto: (_layer: unknown, level: number, _b: unknown, draw: (t: unknown) => void) => {
-          levels.push(level);
-          draw(ctx);
-        },
-      };
-      const draw = (
-        Canvas2DBackend.prototype as unknown as {
-          drawLiveShadowMask(this: unknown, ...args: unknown[]): void;
-        }
-      ).drawLiveShadowMask;
-      draw.call(self, ctx, view, camera);
-    } finally {
-      spy.mockRestore();
-      spriteSpy.mockRestore();
-    }
-    return { alphas, levels };
+    (
+      Canvas2DBackend.prototype as unknown as {
+        drawLiveShadowMask(this: unknown, ...args: unknown[]): void;
+      }
+    ).drawLiveShadowMask.call(self, ctx, view, camera);
+    return { alphas, levels, rects, frames: frame.mock.calls.length };
   };
 
-  it('scales the cast and the band by the unit alpha during a fade, as the Pixi backend does', () => {
-    expect(drawnAlphas({})).toEqual([1, 1]);
-    for (const alpha of drawnAlphas({ alpha: 0.5 })) expect(alpha).toBeCloseTo(0.5);
-    for (const alpha of drawnAlphas({ alpha: 0.5, fallen: true }))
+  it('writes the pool at the cast level and the core at the contact level', () => {
+    expect(drawn({}, BA).levels).toEqual([BA.cast, BA.contact]);
+    expect(drawn({}).levels).toEqual([CAST_SHADOW_ALPHA, DEFAULT_CONTACT_ALPHA]);
+  });
+
+  it('scales both by the unit alpha during a fade, as the Pixi backend does', () => {
+    expect(drawn({}).alphas).toEqual([1, 1]);
+    for (const alpha of drawn({ alpha: 0.5 }).alphas) expect(alpha).toBeCloseTo(0.5);
+    for (const alpha of drawn({ alpha: 0.5, fallen: true }).alphas)
       expect(alpha).toBeCloseTo(0.5 * FALLEN_SHADOW_ALPHA);
   });
 
-  it('applies the same fade when the unit has no sheet frame and falls back to the sprite', () => {
-    expect(drawnAlphas({}, false)).toEqual([1, 1]);
-    for (const alpha of drawnAlphas({ alpha: 0.5 }, false)) expect(alpha).toBeCloseTo(0.5);
+  it('reads no frame: the shadow is the same whatever the clip, cel or bend', () => {
+    const still = drawn({ clip: 'idle' }, BA);
+    for (const unit of [
+      { clip: 'walkSouthEast', clipTime: 333 },
+      { clip: 'hit', clipTime: 120 },
+      { bend: { heading: 'south', index: 2 } },
+    ]) {
+      const moving = drawn(unit, BA);
+      expect(moving.frames).toBe(0);
+      expect(moving.rects).toEqual(still.rects);
+    }
   });
 
-  it('writes the cast and the contact band at their own strengths', () => {
-    const out = drawn({}, true, BA);
-    expect(out.levels).toEqual([0.5, 0.8]);
-    expect(out.alphas).toEqual([1, 1]);
-  });
-
-  it('grounds a figure with a cast and a contact band in a scene that sets nothing (ADR 0093)', () => {
-    const out = drawn({}, true, DEFAULT_ACTOR_GROUNDING);
-    expect(out.alphas).toEqual([1, 1]);
-    expect(out.levels).toEqual([CAST_SHADOW_ALPHA, DEFAULT_CONTACT_ALPHA]);
-  });
-
-  it('still gives a painter-fallback unit its band', () => {
-    const out = drawn({}, false, BA);
-    expect(out.levels).toEqual([0.5, 0.8]);
-  });
-
-  it("casts along the scene's own key", () => {
-    const shear = (grounding: ActorGrounding) => {
-      const transforms: number[][] = [];
-      const ctx = {
-        globalAlpha: 1,
-        save: vi.fn(),
-        restore: vi.fn(),
-        transform: vi.fn((...m: number[]) => transforms.push(m)),
-        translate: vi.fn(),
-        scale: vi.fn(),
-        drawImage: vi.fn(),
-      };
-      const self = {
-        grounding,
-        castInto: (_l: unknown, _level: number, _b: unknown, draw: (t: unknown) => void) =>
-          draw(ctx),
-      };
-      (
-        Canvas2DBackend.prototype as unknown as {
-          projectMask(this: unknown, ...a: unknown[]): void;
-        }
-      ).projectMask.call(
-        self,
-        ctx,
-        {},
-        null,
-        { x: 0, y: 0, w: 64, h: 64 },
-        { x: 32, y: 54 },
-        1,
-        false,
-        grounding.cast,
-        grounding.castKey,
-      );
-      return transforms[0];
-    };
-    expect(shear(DEFAULT_ACTOR_GROUNDING)?.slice(2, 4)).toEqual([
-      -CAST_PER_PIXEL.x,
-      -CAST_PER_PIXEL.y,
+  it('lays one canvas pixel on one world pixel, the foot on the ground point', () => {
+    const { rects } = drawn({}, BA);
+    const art = figureShadowArt(TILE, BA.castKey);
+    expect(art).not.toBeNull();
+    // spriteBox puts the tile at 0,0 with 128 CSS px a tile (scale 2): the foot is at (64, FOOT_LINE * 128).
+    expect(rects[0]).toEqual([
+      64 - (art?.footX ?? 0) * 2,
+      FOOT_LINE * 128 - (art?.footY ?? 0) * 2,
+      (art?.cast.width ?? 0) * 2,
+      (art?.cast.height ?? 0) * 2,
     ]);
-    expect(shear(BA)?.slice(2, 4)).toEqual([-0.35, -0.16]);
+  });
+
+  it('draws nothing for a figure that casts nothing', () => {
+    expect(drawn({ castShadow: false }).levels).toEqual([]);
   });
 });
 

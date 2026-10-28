@@ -376,15 +376,19 @@ const plate = ([
 export const BA_DAN_IMAGE_COUNT = BA_DAN_GROUND_PLATES.length + BA_DAN_UPRIGHT_PAGES;
 
 /**
- * Ink alpha of a figure's projected cast and of the sole-band contact under both feet, and the key the
- * cast falls along: the one the G1 pass set the painting's figure-scale objects in with (`SHADOW_KX`,
- * `SHADOW_KY` in `art/source/ba-dan-route-a/tools/objects.py`), so a figure's shadow lies the way the
- * table's, the baskets' and the bench's beside it do (ADR 0093).
+ * How a figure's shadow is laid in the painting (ADR 0093 and its figure amendment). The key is the one
+ * the G1 pass set the painting's objects in with (`SHADOW_KX`, `SHADOW_KY` in
+ * `art/source/ba-dan-route-a/tools/objects.py`), so a figure's shadow lies the way the table's, the
+ * baskets' and the barrel's beside it do. The tone is theirs too: the painting multiplies the ground by
+ * `SHADOW` and `CONTACT` (0.70 and 0.50) cooled by `COOL`, and this ink at these two levels lands on
+ * those over the ground its shadows fall on, within 1.6 levels RMS
+ * (`art/source/grounding/tools/figure_shadow_tone.py` fits and prints them).
  */
 export const BA_DAN_ACTOR_GROUNDING = {
-  cast: 0.5,
-  contact: 0.8,
+  cast: 0.335,
+  contact: 0.535,
   castKey: { x: 0.35, y: 0.16 },
+  ink: { r: 0, g: 3, b: 11 },
 } as const;
 
 /**

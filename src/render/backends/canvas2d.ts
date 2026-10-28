@@ -88,22 +88,17 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
+import { figureShadowArt } from '../figureShadowArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
-  CONTACT_BAND,
   CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
-  SHADOW_COLOR,
   actorGrounding,
   castShadowStrength,
-  contactBandRows,
   contactBand,
-  castFrame,
-  spriteBandArt,
-  type BandArt,
-  type CastKey,
+  inkColor,
   type ShadowGrid,
   structureShadowPolygons,
   tileShadowCell,
@@ -1648,7 +1643,7 @@ export class Canvas2DBackend implements RenderBackend {
     this.ctx.globalCompositeOperation = 'multiply';
     this.drawShadowTexels(this.castScratch, grid);
     scratch.globalCompositeOperation = 'source-over';
-    scratch.fillStyle = SHADOW_COLOR;
+    scratch.fillStyle = inkColor(this.grounding.ink);
     scratch.fillRect(0, 0, width, height);
     scratch.globalCompositeOperation = 'multiply';
     scratch.drawImage(this.shadowLayer, 0, 0);
@@ -1719,89 +1714,36 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.clip();
   }
 
-  private projectMask(
-    target: CanvasRenderingContext2D,
-    source: CanvasImageSource,
-    src: { x: number; y: number; w: number; h: number } | null,
-    dest: { x: number; y: number; w: number; h: number },
-    foot: { x: number; y: number },
-    alpha = 1,
-    flip = false,
-    level = CAST_SHADOW_ALPHA,
-    key: CastKey = CAST_PER_PIXEL,
-  ): void {
-    const m = silhouetteProjection(foot.x, foot.y, key);
-    const x0 = flip ? 2 * foot.x - dest.x - dest.w : dest.x;
-    this.castInto(
-      target,
-      level,
-      pointBounds(
-        rectCorners(x0, dest.y, dest.w, dest.h).map((p) => ({
-          x: m.a * p.x + m.c * p.y + m.e,
-          y: m.b * p.x + m.d * p.y + m.f,
-        })),
-      ),
-      (t) => {
-        t.save();
-        t.globalAlpha = alpha;
-        t.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-        if (flip) {
-          t.translate(foot.x * 2, 0);
-          t.scale(-1, 1);
-        }
-        if (src) t.drawImage(source, src.x, src.y, src.w, src.h, dest.x, dest.y, dest.w, dest.h);
-        else t.drawImage(source, dest.x, dest.y, dest.w, dest.h);
-        t.restore();
-      },
-    );
-  }
-
   /**
-   * The sole band of a frame laid flat about its foot, a little wider and lower
-   * than the boots: the contact under both feet, from the pose's own art.
+   * A figure's ground shadow (ADR 0093's figure amendment): its pool and short cast at the scene's cast
+   * level, and the core under its soles at the contact level, one canvas pixel a world pixel, so each
+   * lands on one texel of the mask. `foot` is in screen CSS px, `worldPixel` CSS px a world pixel.
    */
-  private projectContactMask(
+  private projectFigureShadow(
     target: CanvasRenderingContext2D,
-    frame: Pick<BandArt, 'source' | 'frame' | 'anchor' | 'pixelsPerTile'>,
-    placed: { x: number; y: number; w: number; h: number },
     foot: { x: number; y: number },
+    scale: number,
+    widthTiles: number,
     alpha: number,
-    flip: boolean,
-    tilePx: number,
+    worldPixel: number,
   ): void {
-    const band = contactBandRows(frame.frame.h, frame.anchor.y, frame.pixelsPerTile);
-    const f = frame.frame;
-    const destH = (band.height / frame.frame.h) * placed.h;
-    const sx = CONTACT_BAND.spreadX * (flip ? -1 : 1);
-    const dy = foot.y + CONTACT_BAND.drop * tilePx;
-    this.castInto(
-      target,
-      this.grounding.contact,
-      pointBounds(
-        [placed.x - foot.x, placed.x - foot.x + placed.w].flatMap((px) => [
-          { x: foot.x + px * sx, y: dy },
-          { x: foot.x + px * sx, y: dy - destH * CONTACT_BAND.spreadY },
-        ]),
-      ),
-      (t) => {
+    if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
+    const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
+    if (!art) return;
+    const x = foot.x - art.footX * worldPixel;
+    const y = foot.y - art.footY * worldPixel;
+    const w = art.cast.width * worldPixel;
+    const h = art.cast.height * worldPixel;
+    for (const [canvas, level] of [
+      [art.cast, this.grounding.cast],
+      [art.contact, this.grounding.contact],
+    ] as const)
+      this.castInto(target, level, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
         t.save();
         t.globalAlpha = alpha;
-        t.translate(foot.x, dy);
-        t.scale(sx, CONTACT_BAND.spreadY);
-        t.drawImage(
-          frame.source,
-          f.x,
-          f.y + band.top,
-          f.w,
-          band.height,
-          placed.x - foot.x,
-          -destH,
-          placed.w,
-          destH,
-        );
+        t.drawImage(canvas, x, y, w, h);
         t.restore();
-      },
-    );
+      });
   }
 
   /**
@@ -1918,95 +1860,21 @@ export class Canvas2DBackend implements RenderBackend {
     view: MapView,
     camera: Camera,
   ): void {
-    const dpr = camera.viewport.dpr;
+    const worldPixel = camera.scale;
     for (const npc of view.npcs) {
       const at = npc.renderPos ?? npc.pos;
       const width = this.npcWidth(npc.sprite);
       const box = camera.spriteBox(at, width, false);
       box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
-      const scale = npc.scale ?? 1;
-      const foot = { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size };
-      const clip = npcClip(npc);
-      const frame = sheets.frame(
-        npc.sprite,
-        clip,
-        npc.clipTime ?? 0,
-        undefined,
-        box.size * dpr * scale,
-        width,
+      // A resident's shadow is its pool, whatever it is doing: one steady shape at its feet (ADR 0093).
+      this.projectFigureShadow(
+        target,
+        { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size },
+        npc.scale ?? 1,
+        1,
+        npc.alpha ?? 1,
+        worldPixel,
       );
-      const entry = resolveAsset(npc.sprite);
-      const band = contactBand(this.grounding, 1);
-      if (frame) {
-        const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
-        // A standing or walking resident casts its heading's idle cel: one steady shadow (ADR 0093).
-        const steady = castFrame(clip);
-        const cast =
-          (steady &&
-            sheets.frame(
-              npc.sprite,
-              steady.clip,
-              steady.clipTime,
-              undefined,
-              box.size * dpr * scale,
-              width,
-            )) ||
-          frame;
-        this.projectMask(
-          target,
-          cast.source,
-          cast.frame,
-          cast === frame ? placed : placeFrame(cast, foot.x, foot.y, box.size * scale),
-          foot,
-          npc.alpha ?? 1,
-          false,
-          this.grounding.cast,
-          this.grounding.castKey,
-        );
-        // A painter resident's baked frame is only the cast's stand-in: its band is cut from what is drawn.
-        if (band && entry.kind === 'sheet')
-          this.projectContactMask(
-            target,
-            frame,
-            placed,
-            foot,
-            npc.alpha ?? 1,
-            false,
-            box.size * scale,
-          );
-      }
-      if (!frame || (band && entry.kind !== 'sheet')) {
-        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
-        if (!frame)
-          this.projectMask(
-            target,
-            sprite,
-            null,
-            { x: box.x, y: box.y, w: box.size * width, h: box.size },
-            foot,
-            npc.alpha ?? 1,
-            false,
-            this.grounding.cast,
-            this.grounding.castKey,
-          );
-        if (band) {
-          const k = scale * (npc.poseScale ?? 1);
-          this.projectContactMask(
-            target,
-            spriteBandArt(sprite),
-            {
-              x: foot.x - (foot.x - box.x) * k,
-              y: foot.y - (foot.y - box.y) * k,
-              w: box.size * width * k,
-              h: box.size * k,
-            },
-            foot,
-            npc.alpha ?? 1,
-            false,
-            box.size * k,
-          );
-        }
-      }
     }
     this.drawPropShadowMask(
       target,
@@ -2025,113 +1893,24 @@ export class Canvas2DBackend implements RenderBackend {
         box.y += unit.offset.y * box.size;
       }
       box.y -= liftAlong(view.grid, pos, camera.projection) * box.size;
-      const scale = unit.scale ?? 1;
-      const heightTiles = this.squareFootprints ? unit.size : 1;
       const width = unit.size === 2 ? box.size * 2 : box.size;
-      // With a contact layer the foot is the tile's ground, so the walk bob lifts
-      // the figure off both shadows instead of dragging the cast along with it.
-      const grounded = this.grounding.contact > 0;
-      const band = contactBand(this.grounding, castShadowStrength(unit.castShadow));
+      // The foot is the tile's ground, so the walk bob lifts the figure off its shadow
+      // instead of dragging the shadow along with it.
       const foot = {
         x: box.x + width / 2,
-        y: box.y - (grounded ? (unit.offset?.y ?? 0) * box.size : 0) + FOOT_LINE * box.size,
+        y: box.y - (unit.offset?.y ?? 0) * box.size + FOOT_LINE * box.size,
       };
-      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
-      const frame =
-        bend ||
-        sheets.frame(
-          unit.sprite,
-          unit.clip ?? 'idle',
-          unit.clipTime ?? view.time + idlePhase(unit.id),
-          unit.clipFrame,
-          box.size * dpr * scale,
-          unit.size,
-          unit.meleeDirection,
-          heightTiles,
-        );
-      if (frame) {
-        const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
-        // A standing or moving figure casts its heading's idle cel: one steady shadow (ADR 0093).
-        const steady = castFrame(unit.clip ?? 'idle');
-        const cast =
-          (!bend &&
-            steady &&
-            sheets.frame(
-              unit.sprite,
-              steady.clip,
-              steady.clipTime,
-              undefined,
-              box.size * dpr * scale,
-              unit.size,
-              undefined,
-              heightTiles,
-            )) ||
-          frame;
-        this.projectMask(
-          target,
-          cast.source,
-          cast.frame,
-          cast === frame ? placed : placeFrame(cast, foot.x, foot.y, box.size * scale),
-          foot,
-          (unit.alpha ?? 1) *
-            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-            castShadowStrength(unit.castShadow),
-          !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
-          this.grounding.cast,
-          this.grounding.castKey,
-        );
-        if (band)
-          this.projectContactMask(
-            target,
-            frame,
-            placed,
-            foot,
-            (unit.alpha ?? 1) *
-              (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-              castShadowStrength(unit.castShadow),
-            !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
-            box.size * scale,
-          );
-      } else {
-        const sprite = sprites.get(
-          unit.sprite,
-          box.size * dpr * scale,
-          { facing: unit.facing ?? (unit.faction === 'enemy' ? -1 : 1) },
-          unit.size,
-          heightTiles,
-        );
-        const dest = {
-          x: box.x + (width - width * scale) / 2,
-          y: box.y + FOOT_LINE * (box.size - box.size * heightTiles * scale),
-          w: width * scale,
-          h: box.size * heightTiles * scale,
-        };
-        this.projectMask(
-          target,
-          sprite,
-          null,
-          dest,
-          foot,
-          (unit.alpha ?? 1) *
-            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-            castShadowStrength(unit.castShadow),
-          false,
-          this.grounding.cast,
-          this.grounding.castKey,
-        );
-        if (band)
-          this.projectContactMask(
-            target,
-            spriteBandArt(sprite, heightTiles),
-            dest,
-            foot,
-            (unit.alpha ?? 1) *
-              (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-              castShadowStrength(unit.castShadow),
-            false,
-            box.size * scale,
-          );
-      }
+      // Its pool, whatever its clip or bend: a calm ground shadow, steady across every cel (ADR 0093).
+      this.projectFigureShadow(
+        target,
+        foot,
+        unit.scale ?? 1,
+        unit.size === 2 ? 2 : 1,
+        (unit.alpha ?? 1) *
+          (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+          castShadowStrength(unit.castShadow),
+        worldPixel,
+      );
     }
   }
 

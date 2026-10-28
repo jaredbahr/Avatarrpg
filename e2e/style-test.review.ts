@@ -11,6 +11,9 @@
  *
  * Local review fixture only: not a CI check.
  *
+ * FNT_STYLE_RENDERER=webgl captures the WebGL backend instead of Canvas, and FNT_STYLE_LABEL names the output
+ * folder (default the style), so a before and an after can sit side by side.
+ *
  * FNT_STYLE=world FNT_STYLE_VIDEO=1 npx playwright test -c playwright.style-test.config.ts
  */
 import { execFileSync } from 'node:child_process';
@@ -61,11 +64,15 @@ test('world-style figure captures', async ({ page }) => {
   test.setTimeout(300_000);
   const videoStart = Date.now();
   const style = process.env.FNT_STYLE ?? 'current';
-  const folder = `.shots/style-test/${style}`;
+  const renderer = process.env.FNT_STYLE_RENDERER ?? 'canvas';
+  const folder = `.shots/style-test/${process.env.FNT_STYLE_LABEL ?? style}`;
   mkdirSync(folder, { recursive: true });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await resetStorage(page, style === 'world' ? '?renderer=canvas&style=world' : '?renderer=canvas');
+  await resetStorage(
+    page,
+    style === 'world' ? `?renderer=${renderer}&style=world` : `?renderer=${renderer}`,
+  );
   await startGame(page, ['Kaya', 'Sura', 'Bo'], ['kaya', 'sura', 'bo'], 'ba-dan-demo', {
     reduceMotion: false,
   });
@@ -74,6 +81,7 @@ test('world-style figure captures', async ({ page }) => {
   await settleLayout(page);
   const provenance: Record<string, unknown> = {
     style,
+    renderer,
     revision: execFileSync('git', ['rev-parse', '--short', 'HEAD']).toString().trim(),
     tilePx: await page.evaluate(() => window.fnt!.app.rendererCamera()!.tilePx),
     dpr: await page.evaluate(() => window.devicePixelRatio),

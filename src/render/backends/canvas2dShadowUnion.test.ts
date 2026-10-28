@@ -1,9 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as sceneArt from '../scene';
 import { Canvas2DBackend } from './canvas2d';
-import { sheets } from '../sheets/store';
-import { sprites } from '../spriteCache';
-import { DEFAULT_ACTOR_GROUNDING, SHADOW_COLOR, contactBand, shadowGrid } from '../lighting';
+import { BA_DAN_ACTOR_GROUNDING } from '../../content/scenes/baDan';
+import {
+  DEFAULT_ACTOR_GROUNDING,
+  DEFAULT_SHADOW_INK,
+  SHADOW_COLOR,
+  contactBand,
+  shadowGrid,
+} from '../lighting';
 import type { ActorGrounding } from '../lighting';
 
 /*
@@ -181,12 +186,14 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
   const run = (
     grounding: ActorGrounding,
     casters: { level: number; x: number; w: number; alpha?: number }[],
+    background?: (canvas: FakeCanvas) => void,
   ): ((x: number) => number[]) => {
     const layerCanvas = new FakeCanvas(W, H);
     const main = new FakeCanvas(W, H);
     const mainCtx = main.getContext();
     mainCtx.fillStyle = `rgb(${LIT.join(', ')})`;
     mainCtx.fillRect(0, 0, W, H);
+    background?.(main);
     const self = {
       grounding,
       shadowLayer: layerCanvas,
@@ -227,7 +234,12 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
   const near = (got: number[], want: number[]): void =>
     want.forEach((v, k) => expect(Math.abs((got[k] ?? 0) - v)).toBeLessThanOrEqual(1));
 
-  const ba: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
+  const ba: ActorGrounding = {
+    cast: 0.5,
+    contact: 0.8,
+    castKey: { x: 0.35, y: 0.16 },
+    ink: DEFAULT_SHADOW_INK,
+  };
 
   it('leaves an overlap of two equal casters at their strength, not darker', () => {
     const at = run(ba, [
@@ -268,81 +280,95 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
     ]);
     near(at(20), shaded(0.5));
   });
+
+  it("lands Ba Dan's figure shadows on the painting's own shadow tone", () => {
+    // objects.py multiplies the ground by SHADOW (0.70) under a cast and CONTACT (0.50) under the
+    // contact line, cooled by COOL; on the mean ground its shadows fall on, the runtime ink must agree.
+    const ground = [118, 110, 73];
+    const cool = [0.93, 0.96, 1.06];
+    const grounding = { ...DEFAULT_ACTOR_GROUNDING, ...BA_DAN_ACTOR_GROUNDING };
+    const bg = (canvas: FakeCanvas) => {
+      const c = canvas.getContext();
+      c.fillStyle = `rgb(${ground.join(', ')})`;
+      c.fillRect(0, 0, W, H);
+    };
+    const at = run(
+      grounding,
+      [
+        { level: grounding.cast, x: 4, w: 10 },
+        { level: grounding.contact, x: 20, w: 10 },
+      ],
+      bg,
+    );
+    const painted = (m: number) => ground.map((v, k) => Math.round(v * m * (cool[k] ?? 1)));
+    for (const [x, m] of [
+      [8, 0.7],
+      [24, 0.5],
+    ] as const)
+      painted(m).forEach((v, k) => expect(Math.abs((at(x)[k] ?? 0) - v)).toBeLessThanOrEqual(3));
+  });
 });
 
 describe("what a figure's feet get", () => {
-  const contact: ActorGrounding = { cast: 0.5, contact: 0.8, castKey: { x: 0.35, y: 0.16 } };
-  const frame = {
-    source: {},
-    frame: { x: 0, y: 0, w: 64, h: 96 },
-    anchor: { x: 0.5, y: 0.85 },
-    pixelsPerTile: 64,
+  const contact: ActorGrounding = {
+    cast: 0.5,
+    contact: 0.8,
+    castKey: { x: 0.35, y: 0.16 },
+    ink: DEFAULT_SHADOW_INK,
   };
-  // The kinds of figure the backends tell apart; each gets the same band.
+  // The kinds of figure the backends tell apart; each gets the same ground shadow.
   const kinds = {
-    'sheet frame': { sprite: 'unit.fire.tenzo', frame: true, unit: false },
-    'painter resident': { sprite: 'npc.hanru', frame: true, unit: false },
-    'single-image resident': { sprite: 'world.tea_station', frame: false, unit: false },
-    'G-sheet resident': { sprite: 'npc.shopkeeper', frame: true, unit: false },
-    'painter-fallback unit': { sprite: 'unit.fire.tenzo', frame: false, unit: true },
+    'sheet frame': { sprite: 'unit.fire.tenzo', unit: false },
+    'painter resident': { sprite: 'npc.hanru', unit: false },
+    'single-image resident': { sprite: 'world.tea_station', unit: false },
+    'G-sheet resident': { sprite: 'npc.shopkeeper', unit: false },
+    'painter-fallback unit': { sprite: 'unit.fire.tenzo', unit: true },
   } as const;
 
-  /** Drives the Canvas live mask for one figure and returns the band art it asked for. */
-  const bandsFor = (grounding: ActorGrounding, kind: keyof typeof kinds): unknown[][] => {
+  /** Drives the Canvas live mask for one figure and returns the ground shadows it asked for. */
+  const shadowsFor = (grounding: ActorGrounding, kind: keyof typeof kinds): unknown[][] => {
     const k = kinds[kind];
-    const bands: unknown[][] = [];
-    const sheetsSpy = vi.spyOn(sheets, 'frame').mockReturnValue(k.frame ? (frame as never) : null);
-    const spriteSpy = vi.spyOn(sprites, 'get').mockReturnValue({ width: 64, height: 64 } as never);
-    try {
-      const self = {
-        squareFootprints: false,
-        grounding,
-        npcWidth: () => 1,
-        drawPropShadowMask: () => undefined,
-        projectMask: () => undefined,
-        projectContactMask: (...a: unknown[]) => bands.push(a),
-      };
-      const camera = {
-        projection: 'flat',
-        viewport: { dpr: 1 },
-        spriteBox: () => ({ x: 0, y: 0, size: 64 }),
-      };
-      const view = {
-        grid: { width: 1, height: 1, tiles: [] },
-        props: [],
-        scene: null,
-        time: 0,
-        npcs: k.unit ? [] : [{ id: 'n', pos: { x: 0, y: 0 }, sprite: k.sprite }],
-        units: k.unit ? [{ id: 'u', pos: { x: 0, y: 0 }, size: 1, sprite: k.sprite }] : [],
-      };
-      (
-        Canvas2DBackend.prototype as unknown as {
-          drawLiveShadowMask(this: unknown, ...a: unknown[]): void;
-        }
-      ).drawLiveShadowMask.call(self, {}, view, camera);
-    } finally {
-      sheetsSpy.mockRestore();
-      spriteSpy.mockRestore();
-    }
-    return bands;
+    const shadows: unknown[][] = [];
+    const self = {
+      squareFootprints: false,
+      grounding,
+      npcWidth: () => 1,
+      drawPropShadowMask: () => undefined,
+      projectFigureShadow: (...a: unknown[]) => shadows.push(a),
+    };
+    const camera = {
+      projection: 'flat',
+      scale: 1,
+      viewport: { dpr: 1 },
+      spriteBox: () => ({ x: 0, y: 0, size: 64 }),
+    };
+    const view = {
+      grid: { width: 1, height: 1, tiles: [] },
+      props: [],
+      scene: null,
+      time: 0,
+      npcs: k.unit ? [] : [{ id: 'n', pos: { x: 0, y: 0 }, sprite: k.sprite }],
+      units: k.unit ? [{ id: 'u', pos: { x: 0, y: 0 }, size: 1, sprite: k.sprite }] : [],
+    };
+    (
+      Canvas2DBackend.prototype as unknown as {
+        drawLiveShadowMask(this: unknown, ...a: unknown[]): void;
+      }
+    ).drawLiveShadowMask.call(self, {}, view, camera);
+    return shadows;
   };
 
   for (const kind of Object.keys(kinds) as (keyof typeof kinds)[]) {
-    it(`gives a ${kind} exactly one band in a contact scene`, () => {
-      expect(bandsFor(contact, kind)).toHaveLength(1);
+    it(`gives a ${kind} exactly one ground shadow in a contact scene`, () => {
+      expect(shadowsFor(contact, kind)).toHaveLength(1);
     });
 
-    it(`gives a ${kind} its band in a scene that sets nothing (ADR 0093)`, () => {
-      expect(bandsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(1);
+    it(`gives a ${kind} its ground shadow in a scene that sets nothing (ADR 0093)`, () => {
+      expect(shadowsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(1);
     });
   }
 
-  it("cuts a frameless figure's band from the sprite that is drawn, not from a baked stand-in", () => {
-    const [args] = bandsFor(contact, 'painter resident');
-    expect((args?.[1] as { source: unknown }).source).toEqual({ width: 64, height: 64 });
-  });
-
-  it('gives a figure that casts nothing no band', () => {
+  it('gives a figure that casts nothing no contact', () => {
     expect(contactBand(contact, 0)).toBe(false);
   });
 });

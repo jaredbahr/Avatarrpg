@@ -618,6 +618,14 @@ export const mapSchema = z
               .object({ x: z.number().positive().max(1), y: z.number().positive().max(1) })
               .strict()
               .optional(),
+            ink: z
+              .object({
+                r: z.number().int().min(0).max(255),
+                g: z.number().int().min(0).max(255),
+                b: z.number().int().min(0).max(255),
+              })
+              .strict()
+              .optional(),
           })
           .strict()
           .optional(),
