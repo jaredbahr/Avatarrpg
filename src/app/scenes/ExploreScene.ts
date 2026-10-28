@@ -57,6 +57,8 @@ import { partyScale } from '../anim/actorScale';
 import { worldConversationFor } from '../../content/story/presentations';
 import { conversationPanel } from '../ui/ConversationPanel';
 import { sheets } from '../../render/sheets/store';
+import { backdrops } from '../../render/backdrops';
+import { sceneImages } from '../../render/scene';
 import {
   hasPractice,
   practiceAt,
@@ -132,6 +134,22 @@ export class ExploreScene implements Scene {
   private practiceShown: boolean | null = null;
 
   constructor(private app: App) {}
+
+  drawnMapId(): string | null {
+    return this.map?.id ?? null;
+  }
+
+  /** The map's painting and every piece of its scene, loaded or failed. */
+  firstFrameReady(): Promise<unknown> {
+    const map = this.map;
+    if (!map) return Promise.resolve();
+    const backdrop = this.app.backdropFor(map.id);
+    const pieces = map.scene ? [...map.scene.ground, ...map.scene.scenery] : [];
+    return Promise.all([
+      backdrop ? backdrops.whenLoaded(backdrop.url) : Promise.resolve(true),
+      ...[...new Set(pieces.map((piece) => piece.url))].map((url) => sceneImages.whenLoaded(url)),
+    ]);
+  }
 
   firstFrameSheetKeys(): readonly string[] {
     return [

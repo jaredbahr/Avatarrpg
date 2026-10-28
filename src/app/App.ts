@@ -103,6 +103,10 @@ export interface Scene {
   sync(): void;
   /** Sprite sheets needed by actors already present in the first map frame. */
   firstFrameSheetKeys?(): readonly string[];
+  /** Settles once the map art the first frame draws has loaded or failed. */
+  firstFrameReady?(): Promise<unknown>;
+  /** The map this scene draws now, so a change of map can be curtained. */
+  drawnMapId?(): string | null;
   resize?(): void;
   /** Stop background work while retaining the scene's last painted frame. */
   suspend?(): void;
@@ -516,7 +520,7 @@ export class App {
     scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
     // After the swap, never instead of it: see Curtain.
-    if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
+    if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? [], scene.firstFrameReady?.());
   }
 
   /** Tints the backdrop. Scenes call it when they know better than the map does. */
@@ -567,7 +571,20 @@ export class App {
       if (wanted === 'dialogue') this.showScene(this.scene);
       else {
         this.setMood(this.defaultMood());
+        // A walk off one map onto the next keeps the explore scene, which swaps
+        // its board in place: cover that swap as a scene change is covered, and
+        // lift once the new map's painting is in, so the procedural fallback
+        // never shows between the two.
+        const before = this.scene.drawnMapId?.() ?? null;
         this.scene.sync();
+        const after = this.scene.drawnMapId?.() ?? null;
+        if (before !== null && after !== null && after !== before) {
+          this.curtain.coverCurrent();
+          this.curtain.reveal(
+            this.scene.firstFrameSheetKeys?.() ?? [],
+            this.scene.firstFrameReady?.(),
+          );
+        }
       }
       return;
     }
