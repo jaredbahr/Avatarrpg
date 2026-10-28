@@ -205,6 +205,12 @@ export const G1_HEADING = [1, 0.99, 0.88, 1.1, 1.05, 1.24, 1.17, 1.15];
  * median), which sets the walk's rate when an errand ambles on the jog's clock.
  */
 export const G1_AMBLE = 0.43;
+/**
+ * Names that never jog (the owner, 2026-10-28: "Mira always walks"). Their
+ * sheets keep the jog cels, but the locomotion leaves `jog` off, so the
+ * animator draws the walk and `residentMotion.ts` ambles every move they make.
+ */
+const G1_WALKS_ONLY = new Set(['mira']);
 
 /**
  * A G1 sheet's eight-way idle, rest, walk and jog (ADR 0095), and the
@@ -241,7 +247,7 @@ function g1Locomotion(
   });
   return {
     headings: 8,
-    jog: !!jog,
+    jog: !!jog && !G1_WALKS_ONLY.has(name),
     walkMsPerTile: msPerTile,
     walkStartMs: start * celMs,
     walkCycleMs: cels * celMs,

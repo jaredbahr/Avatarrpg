@@ -369,6 +369,27 @@ describe('heading vocabulary is a declared sheet capability', () => {
   }
 });
 
+describe('Mira never jogs (ADR 0095)', () => {
+  it('draws her sheet’s walk at any pace, and never resolves to a jog', () => {
+    for (const projection of ['orthographic', 'oblique'] as const) {
+      const a = new Animator(content, { motionReduced: () => false });
+      a.setProjection(projection);
+      a.push(
+        0,
+        [{ type: 'partyWalked', unitId: 'm', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
+        [],
+      );
+      const clips = new Set<string>();
+      for (let t = 0; t <= a.finishesAt + 400; t += 10)
+        clips.add(a.locomotion(t, 'm', 'rest', 'npc.elder').clip);
+      expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
+      expect([...clips].filter((clip) => clip.startsWith('jog'))).toEqual([]);
+    }
+    const mira = ASSETS['npc.elder'];
+    expect(mira?.kind === 'sheet' && mira.locomotion?.jog).toBe(false);
+  });
+});
+
 describe('the fighting stance (ADR 0052)', () => {
   it('turns the stance like idle for four-way art, which falls back to its idle', () => {
     expect(directionalClip('stance', 'north')).toBe('stanceNorth');
