@@ -245,6 +245,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
   lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
   lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
+- **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
+  on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
+  smooths, or a mask at screen resolution, brings back the soft edge the pass removed. Every figure and prop on an
+  oblique board gets a contact (a figure's sole band, a prop's one-world-pixel contact line) and a cast along its
+  scene's `castKey`; `actorGrounding.test.ts` holds it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
   Pixi texture map are bounded LRUs because iOS caps canvas memory; do not
