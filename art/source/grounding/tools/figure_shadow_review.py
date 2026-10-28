@@ -6,11 +6,13 @@ Reads the review captures:
 - .shots/grounding/<before|after>/canvas/ (e2e/grounding.review.ts with FNT_GROUNDING_LABEL).
 `BEFORE_ROOT` is the before checkout's root (default: this repository).
 
-Writes art/source/grounding/review/figure-shadows/:
+Writes art/source/grounding/review/<REVIEW_NAME>/ (default figure-shadows):
 - crop-4x-<gao-door|market-table>-<renderer>.png: rows the shipped figures and ?style=world, columns before and
   after, 4 screen px a world px (the N = 2 capture doubled, nearest);
 - slice-canvas.png: the whole Ba Dan slice, before above after, for the shipped figures and ?style=world;
-- forest-bank.png: the first fight on the bank at N = 2 (Canvas), before above after.
+- forest-bank.png: the first fight on the bank at N = 2 (Canvas), before above after;
+- walk-strip.png: the leader's feet every half cel of one walk (Canvas), before above after;
+- feet-<who>.png: the grounding review's 4x crop under each Ba Dan figure's feet at N = 2, before beside after.
 
 usage (repo root): BEFORE_ROOT=<main checkout> python3 -I art/source/grounding/tools/figure_shadow_review.py
 """
@@ -22,7 +24,7 @@ from PIL import Image
 
 REPO = Path(__file__).resolve().parents[4]
 BEFORE = Path(os.environ.get('BEFORE_ROOT', REPO))
-OUT = REPO / 'art/source/grounding/review/figure-shadows'
+OUT = REPO / 'art/source/grounding/review' / os.environ.get('REVIEW_NAME', 'figure-shadows')
 GAP = 8
 BG = (20, 20, 20)
 
@@ -66,10 +68,22 @@ def crops(renderer):
             OUT / f'slice-{renderer}.png', optimize=True)
 
 
+def grounding(name):
+    return [Image.open((BEFORE if w == 'before' else REPO) / f'.shots/grounding/{w}/canvas/{name}').convert('RGB')
+            for w in ('before', 'after')]
+
+
 def forest():
-    ims = [Image.open((BEFORE if w == 'before' else REPO) / f'.shots/grounding/{w}/canvas/forest-wide-bank-N2.png')
-           .convert('RGB') for w in ('before', 'after')]
+    ims = grounding('forest-wide-bank-N2.png')
     grid([[ims[0]], [ims[1]]]).save(OUT / 'forest-bank.png', optimize=True)
+
+
+def walk_and_feet():
+    ims = grounding('badan-walk-strip.png')
+    grid([[ims[0]], [ims[1]]]).save(OUT / 'walk-strip.png', optimize=True)
+    for path in sorted((REPO / '.shots/grounding/after/canvas').glob('badan-feet-*-N2-4x.png')):
+        who = path.name[len('badan-feet-'):-len('-N2-4x.png')]
+        grid([grounding(path.name)]).save(OUT / f'feet-{who}.png', optimize=True)
 
 
 if __name__ == '__main__':
@@ -77,5 +91,7 @@ if __name__ == '__main__':
     for renderer in ('canvas', 'webgl'):
         crops(renderer)
     forest()
+    if os.environ.get('REVIEW_NAME'):
+        walk_and_feet()
     for p in sorted(OUT.iterdir()):
         print(p.name, Image.open(p).size, p.stat().st_size // 1024, 'KB')
