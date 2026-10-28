@@ -88,7 +88,9 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
-import { figureShadowArt } from '../figureShadowArt';
+import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import { restingClip } from '../sheets/feet';
+import type { ResolvedFrame } from '../sheets/store';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -123,6 +125,16 @@ export function canvasActorDepth(
 export const EDGE_SHADE_TILES = 1.4;
 export const EDGE_SHADE_ALPHA = 0.42;
 export const VIGNETTE_ALPHA = 0.3;
+
+/** The cels a figure's ground shadow reads: the one drawn (its soles' contact) and its heading's resting idle (its pool). */
+interface FigureCels {
+  readonly drawn: Pick<ResolvedFrame, 'frame' | 'anchor' | 'pixelsPerTile' | 'feet'> | null;
+  readonly resting: ResolvedFrame | null;
+  /** Whether the body is mirrored about its foot. */
+  readonly flip: boolean;
+  /** The figure's drawn scale (with any pose scale). */
+  readonly scale: number;
+}
 
 export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
@@ -1726,24 +1738,50 @@ export class Canvas2DBackend implements RenderBackend {
     widthTiles: number,
     alpha: number,
     worldPixel: number,
+    cels?: FigureCels,
   ): void {
     if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
     const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
     if (!art) return;
-    const x = foot.x - art.footX * worldPixel;
-    const y = foot.y - art.footY * worldPixel;
+    // The pool centres on the resting soles; one figure tile is `tile` CSS px.
+    const tile = TILE * worldPixel * (cels?.scale ?? scale);
+    const offset = poolOffset(cels?.resting, cels?.flip ?? false);
+    const x = foot.x + offset.x * tile - art.footX * worldPixel;
+    const y = foot.y + offset.y * tile - art.footY * worldPixel;
     const w = art.cast.width * worldPixel;
     const h = art.cast.height * worldPixel;
-    for (const [canvas, level] of [
-      [art.cast, this.grounding.cast],
-      [art.contact, this.grounding.contact],
-    ] as const)
+    const pool = (canvas: HTMLCanvasElement, level: number) =>
       this.castInto(target, level, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
         t.save();
         t.globalAlpha = alpha;
         t.drawImage(canvas, x, y, w, h);
         t.restore();
       });
+    pool(art.cast, this.grounding.cast);
+    const drawn = cels?.drawn;
+    const soles = drawn?.feet && soleContactArt(drawn.feet, drawn.frame.w);
+    if (!drawn || !soles) {
+      // No measured soles (a painter figure, a bend): the pool's own core is its contact.
+      pool(art.contact, this.grounding.contact);
+      return;
+    }
+    // The contact under each sole, placed exactly as the cel is drawn on the ground point.
+    const fw = (drawn.frame.w / drawn.pixelsPerTile) * tile;
+    const fh = (drawn.frame.h / drawn.pixelsPerTile) * tile;
+    const cx = foot.x - drawn.anchor.x * fw;
+    const cy = foot.y - drawn.anchor.y * fh;
+    const ch = (soles.height / drawn.frame.h) * fh;
+    const x0 = cels.flip ? 2 * foot.x - cx - fw : cx;
+    this.castInto(target, this.grounding.contact, { x0, y0: cy, x1: x0 + fw, y1: cy + ch }, (t) => {
+      t.save();
+      t.globalAlpha = alpha;
+      if (cels.flip) {
+        t.translate(foot.x * 2, 0);
+        t.scale(-1, 1);
+      }
+      t.drawImage(soles, cx, cy, fw, ch);
+      t.restore();
+    });
   }
 
   /**
@@ -1866,14 +1904,29 @@ export class Canvas2DBackend implements RenderBackend {
       const width = this.npcWidth(npc.sprite);
       const box = camera.spriteBox(at, width, false);
       box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
-      // A resident's shadow is its pool, whatever it is doing: one steady shape at its feet (ADR 0093).
+      const entry = resolveAsset(npc.sprite);
+      const clip = npcClip(npc);
+      const scale = npc.scale ?? 1;
+      const px = box.size * camera.viewport.dpr * scale;
+      const sheet = entry.kind === 'sheet';
+      // A resident's pool is steady at its feet; its contact follows the soles it draws (ADR 0093).
       this.projectFigureShadow(
         target,
         { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size },
-        npc.scale ?? 1,
+        scale,
         1,
         npc.alpha ?? 1,
         worldPixel,
+        sheet
+          ? {
+              drawn: sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px, width),
+              resting: sheets.frame(npc.sprite, restingClip(clip), 0, undefined, px, width),
+              flip:
+                !(entry.facing === 'both' && authoredForBothSides(clip)) &&
+                (npc.facing ?? 1) === -1,
+              scale: scale * (npc.poseScale ?? 1),
+            }
+          : undefined,
       );
     }
     this.drawPropShadowMask(
@@ -1900,16 +1953,52 @@ export class Canvas2DBackend implements RenderBackend {
         x: box.x + width / 2,
         y: box.y - (unit.offset?.y ?? 0) * box.size + FOOT_LINE * box.size,
       };
-      // Its pool, whatever its clip or bend: a calm ground shadow, steady across every cel (ADR 0093).
+      const scale = unit.scale ?? 1;
+      const heightTiles = this.squareFootprints ? unit.size : 1;
+      const clip = unit.clip ?? 'idle';
+      const asset = resolveAsset(unit.sprite);
+      const px = box.size * camera.viewport.dpr * scale;
+      // A bend cel has no measured feet: the pool alone, with its core.
+      const cels =
+        asset.kind === 'sheet' && !unit.bend
+          ? {
+              drawn: sheets.frame(
+                unit.sprite,
+                clip,
+                unit.clipTime ?? view.time + idlePhase(unit.id),
+                unit.clipFrame,
+                px,
+                unit.size,
+                unit.meleeDirection,
+                heightTiles,
+              ),
+              resting: sheets.frame(
+                unit.sprite,
+                restingClip(clip),
+                0,
+                undefined,
+                px,
+                unit.size,
+                undefined,
+                heightTiles,
+              ),
+              flip:
+                !(asset.facing === 'both' && authoredForBothSides(clip)) &&
+                (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
+              scale,
+            }
+          : undefined;
+      // Its pool is steady at its feet, its contact under the soles it draws (ADR 0093).
       this.projectFigureShadow(
         target,
         foot,
-        unit.scale ?? 1,
+        scale,
         unit.size === 2 ? 2 : 1,
         (unit.alpha ?? 1) *
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
           castShadowStrength(unit.castShadow),
         worldPixel,
+        cels,
       );
     }
   }

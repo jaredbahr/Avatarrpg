@@ -26,6 +26,7 @@ import { parseAtlasJson } from './atlasJson';
 import type { BakedSheet } from './bake';
 import { bakeSheet, frameHeadroom, headroomFromPixels } from './bake';
 import { frameIndex, resolveClip } from './resolveClip';
+import { feetFromPixels, plantAnchor, standsOnSoles, type FrameFeet } from './feet';
 
 export interface ResolvedFrame {
   readonly source: HTMLCanvasElement | HTMLImageElement;
@@ -42,6 +43,11 @@ export interface ResolvedFrame {
   readonly index: number;
   /** True when this came from the painter rather than an atlas. */
   readonly placeholder: boolean;
+  /**
+   * Where its drawn soles meet the ground, in frame px, for a standing or walking cel of an atlas whose pixels could
+   * be read (ADR 0093's planting amendment); its `anchor` already stands on them.
+   */
+  readonly feet?: FrameFeet;
 }
 
 /**
@@ -80,6 +86,8 @@ interface LoadedAtlas {
   readonly clips: SheetClips;
   /** Stable silhouette envelope measured once across the asset's authored clips. */
   readonly headroom: number;
+  /** Each standing or walking cel's feet, by frame name, measured once when the atlas loads. */
+  readonly feet: ReadonlyMap<string, FrameFeet>;
 }
 
 /** A sheet's bend (ADR 0055): its own pages and its data, loaded apart from the sheet. */
@@ -144,6 +152,40 @@ export function atlasHeadroom(
     envelope = Math.max(envelope, height);
   }
   return envelope;
+}
+
+/**
+ * The feet of every standing or walking cel an atlas page holds (`feetFromPixels`), read once when it loads. Empty
+ * where pixels cannot be read (no DOM, a tainted image): those cels keep their authored anchor.
+ */
+export function atlasFeet(
+  entry: SheetEntry,
+  atlas: AtlasJson,
+  image: CanvasImageSource,
+  clips: SheetClips = entry.clips,
+): Map<string, FrameFeet> {
+  const feet = new Map<string, FrameFeet>();
+  const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
+  const ctx = scratch?.getContext('2d', { willReadFrequently: true });
+  if (!scratch || !ctx) return feet;
+  for (const [clip, def] of Object.entries(clips))
+    if (def && standsOnSoles(clip))
+      for (const name of def.frames) {
+        const frame = atlas.frames.get(name);
+        if (feet.has(name) || !frame || frame.w === 0 || frame.h === 0) continue;
+        scratch.width = frame.w;
+        scratch.height = frame.h;
+        ctx.clearRect(0, 0, frame.w, frame.h);
+        try {
+          ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
+          const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
+          const found = feetFromPixels(data, frame.w, frame.h, entry.pixelsPerTile);
+          if (found) feet.set(name, found);
+        } catch {
+          return feet;
+        }
+      }
+  return feet;
 }
 
 /** Baked pixels kept, across every sheet: 48 MB is well under the iOS cap with sprites beside it. */
@@ -278,19 +320,29 @@ export class SheetStore {
     const resolved = resolveClip(loaded.clips, clip);
     if (!resolved) return null;
     const index = frameIndex(resolved, clipTime, clipFrame);
-    const found = findFrame(loaded, resolved.def.frames[index]);
+    const name = resolved.def.frames[index];
+    const found = findFrame(loaded, name);
     if (!found) return null;
+    const feet = name === undefined ? undefined : loaded.feet.get(name);
     return {
       source: found.image,
       frame: found.frame,
       pixelsPerTile: entry.pixelsPerTile,
       footprint: entry.footprint,
-      // A trimmed clip (a G knockout, ADR 0059) stands by its own anchor.
-      anchor: resolved.def.anchor ?? entry.anchor,
+      // A trimmed clip (a G knockout, ADR 0059) stands by its own anchor; a standing or
+      // walking cel stands on its own soles (ADR 0093's planting amendment).
+      anchor: plantAnchor(
+        resolved.clip,
+        resolved.def.anchor ?? entry.anchor,
+        found.frame,
+        feet,
+        entry.pixelsPerTile,
+      ),
       headroom: loaded.headroom,
       clip: resolved.clip,
       index,
       placeholder: false,
+      ...(feet ? { feet } : {}),
     };
   }
 
@@ -453,6 +505,9 @@ export class SheetStore {
           headroom: Math.min(
             entry.uiHeadroomCap ?? Number.POSITIVE_INFINITY,
             Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips))),
+          ),
+          feet: new Map(
+            pages.flatMap((page) => [...atlasFeet(entry, page.atlas, page.image, clips)]),
           ),
         });
         if (this.bendsWanted.has(key)) this.bend(key, entry);

@@ -138,7 +138,8 @@ import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
-import { figureShadowArt } from '../figureShadowArt';
+import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import { restingClip } from '../sheets/feet';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -320,6 +321,16 @@ function insideLoop(point: Vec2, loop: readonly Vec2[]): boolean {
     if (crosses && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
   }
   return inside;
+}
+
+/** The cels a figure's ground shadow reads: the one drawn (its soles' contact) and its heading's resting idle (its pool). */
+interface FigureCels {
+  readonly drawn: Pick<ResolvedFrame, 'frame' | 'anchor' | 'pixelsPerTile' | 'feet'> | null;
+  readonly resting: ResolvedFrame | null;
+  /** Whether the body is mirrored about its foot. */
+  readonly flip: boolean;
+  /** The figure's drawn scale (with any pose scale). */
+  readonly scale: number;
 }
 
 export class PixiBackend implements RenderBackend {
@@ -1245,14 +1256,17 @@ export class PixiBackend implements RenderBackend {
     scale: number,
     widthTiles: number,
     strength: number,
+    cels?: FigureCels,
   ): void {
     if (strength <= 0 || !contactBand(this.grounding, 1)) return;
     const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
     if (!art) return;
-    for (const [id, canvas, level] of [
-      [key, art.cast, this.grounding.cast],
-      [`${key}:foot`, art.contact, this.grounding.contact],
-    ] as const) {
+    // The pool centres on the resting soles, in world px; one figure tile is `tile`.
+    const tile = TILE * (cels?.scale ?? scale);
+    const offset = poolOffset(cels?.resting, cels?.flip ?? false);
+    const drawn = cels?.drawn;
+    const soles = drawn?.feet && soleContactArt(drawn.feet, drawn.frame.w);
+    const place = (id: string, canvas: HTMLCanvasElement, level: number) => {
       this.castLive.add(id);
       let sprite = this.castSprites.get(id);
       if (!sprite) {
@@ -1265,13 +1279,34 @@ export class PixiBackend implements RenderBackend {
       sprite.texture = texture;
       sprite.anchor.set(0, 0);
       sprite.rotation = 0;
-      sprite.position.set(foot.x - art.footX, foot.y - art.footY);
-      sprite.width = canvas.width;
-      sprite.height = canvas.height;
+      // A width set keeps the sign of the scale: a sprite mirrored last frame would stay mirrored.
+      sprite.scale.set(1, 1);
       sprite.alpha = Math.max(0, Math.min(1, (strength * level) / shadowCeiling(this.grounding)));
       sprite.blendMode = 'max';
       sprite.visible = sprite.alpha > 0;
+      return sprite;
+    };
+    const pool = place(key, art.cast, this.grounding.cast);
+    pool.position.set(foot.x + offset.x * tile - art.footX, foot.y + offset.y * tile - art.footY);
+    pool.width = art.cast.width;
+    pool.height = art.cast.height;
+    if (!drawn || !soles) {
+      // No measured soles (a painter figure, a bend): the pool's own core is its contact.
+      const core = place(`${key}:foot`, art.contact, this.grounding.contact);
+      core.position.copyFrom(pool.position);
+      core.width = art.contact.width;
+      core.height = art.contact.height;
+      return;
     }
+    // The contact under each sole, placed exactly as the cel is drawn on the ground point.
+    const fw = (drawn.frame.w / drawn.pixelsPerTile) * tile;
+    const fh = (drawn.frame.h / drawn.pixelsPerTile) * tile;
+    const contact = place(`${key}:foot`, soles, this.grounding.contact);
+    contact.anchor.set(drawn.anchor.x, (drawn.anchor.y * drawn.frame.h) / soles.height);
+    contact.position.set(foot.x, foot.y);
+    contact.width = fw;
+    contact.height = (soles.height / drawn.frame.h) * fh;
+    contact.scale.x = Math.abs(contact.scale.x) * (cels.flip ? -1 : 1);
   }
 
   /**
@@ -2776,13 +2811,21 @@ export class PixiBackend implements RenderBackend {
       sprite.rotation = npc.lean ?? 0;
       sprite.alpha = alpha;
       sprite.visible = true;
-      // A resident's shadow is its pool, whatever it is doing: one steady shape at its feet (ADR 0093).
+      // A resident's pool is steady at its feet; its contact follows the soles it draws (ADR 0093).
       this.projectFigureShadow(
         `npc:${npc.id}`,
         { x: footX, y: ground + FOOT_LINE * TILE },
         scale,
         1,
         alpha,
+        frame
+          ? {
+              drawn: frame,
+              resting: sheets.frame(npc.sprite, restingClip(clip), 0, undefined, px * scale, width),
+              flip: facing === -1,
+              scale: scale * poseScale,
+            }
+          : undefined,
       );
 
       // A small "talk" pip so a child can tell an NPC from scenery.
@@ -2923,8 +2966,8 @@ export class PixiBackend implements RenderBackend {
       sprite.alpha = alpha;
       sprite.visible = true;
       sprite.zIndex = depth(pos, unit.size);
-      // Its pool, whatever its clip or bend: a calm ground shadow, steady across every cel (ADR 0093).
-      // The foot is the tile's ground, so the walk bob lifts the figure off its shadow.
+      // Its pool is steady at its feet, its contact under the soles it draws (ADR 0093). The
+      // foot is the tile's ground, so the walk bob lifts the figure off its shadow.
       this.projectFigureShadow(
         `unit:${unit.id}`,
         { x: x + width / 2, y: anchor.y - lift * TILE + FOOT_LINE * TILE },
@@ -2933,6 +2976,23 @@ export class PixiBackend implements RenderBackend {
         castShadowStrength(unit.castShadow) *
           (unit.alpha ?? 1) *
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1),
+        frame && !bend && asset.kind === 'sheet'
+          ? {
+              drawn: frame,
+              resting: sheets.frame(
+                unit.sprite,
+                restingClip(locomotion),
+                0,
+                undefined,
+                px * scale,
+                unit.size,
+                undefined,
+                heightTiles,
+              ),
+              flip: drawFacing === -1,
+              scale,
+            }
+          : undefined,
       );
 
       // The hit flash: the same sprite again, white and additive, over the top.

@@ -129,6 +129,84 @@ describe('Canvas figure ground shadow (ADR 0093, figure amendment)', () => {
   it('draws nothing for a figure that casts nothing', () => {
     expect(drawn({ castShadow: false }).levels).toEqual([]);
   });
+
+  it("lays a sheet figure's contact under its drawn soles, and centres its pool on its resting feet", () => {
+    vi.stubGlobal('document', { createElement: fakeCanvas });
+    // A 20 x 40 cel at 80 px a tile, its one sole at columns 12-15 standing on row 31.
+    const soles = new Int16Array(20).fill(-1);
+    for (let x = 12; x <= 15; x++) soles[x] = 31;
+    const cel = {
+      source: {},
+      frame: { x: 0, y: 0, w: 20, h: 40 },
+      anchor: { x: 0.5, y: 31 / 40 },
+      pixelsPerTile: 80,
+      feet: { ground: 31, soles, centre: { x: 14, y: 31 } },
+    };
+    vi.spyOn(sheets, 'frame').mockReturnValue(cel as never);
+    const draws: { image: { width: number; height: number }; rect: number[] }[] = [];
+    const ctx = {
+      globalAlpha: 1,
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      scale: vi.fn(),
+      drawImage: vi.fn((image: { width: number; height: number }, ...rect: number[]) =>
+        draws.push({ image, rect }),
+      ),
+    };
+    const levels: number[] = [];
+    const self = {
+      squareFootprints: false,
+      grounding: BA,
+      drawPropShadowMask: () => undefined,
+      projectFigureShadow: (Canvas2DBackend.prototype as unknown as Record<string, unknown>)
+        .projectFigureShadow,
+      castInto: (_l: unknown, level: number, _b: unknown, draw: (t: unknown) => void) => {
+        levels.push(level);
+        draw(ctx);
+      },
+    };
+    (
+      Canvas2DBackend.prototype as unknown as {
+        drawLiveShadowMask(this: unknown, ...args: unknown[]): void;
+      }
+    ).drawLiveShadowMask.call(
+      self,
+      ctx,
+      {
+        grid: { width: 1, height: 1, tiles: [] },
+        npcs: [],
+        props: [],
+        scene: null,
+        time: 0,
+        units: [
+          { id: 'u', pos: { x: 0, y: 0 }, size: 1, sprite: 'unit.fire.kaya', faction: 'party' },
+        ],
+      },
+      {
+        projection: 'oblique',
+        scale: 1,
+        viewport: { dpr: 1 },
+        spriteBox: () => ({ x: 0, y: 0, size: 64 }),
+      },
+    );
+    // The pool at the cast level, then the soles at the contact level: no elliptical core.
+    expect(levels).toEqual([BA.cast, BA.contact]);
+    const art = figureShadowArt(TILE, BA.castKey);
+    const foot = { x: 32, y: FOOT_LINE * 64 };
+    // One figure tile is 64 CSS px: the soles' middle (14) is 4 art px right of the anchor (10), at 80 a tile.
+    expect(draws[0]?.rect[0]).toBeCloseTo(foot.x + (4 / 80) * 64 - (art?.footX ?? 0), 6);
+    // The contact is the cel's own size plus two rows, placed as the cel is.
+    expect(draws[1]?.image.height).toBe(33);
+    const fw = (20 / 80) * 64;
+    const fh = (40 / 80) * 64;
+    expect(draws[1]?.rect).toEqual([
+      foot.x - 0.5 * fw,
+      foot.y - (31 / 40) * fh,
+      fw,
+      (33 / 40) * fh,
+    ]);
+  });
 });
 
 describe('upright Canvas culling', () => {

@@ -266,7 +266,10 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `figureShadow` rasterises an ellipse under the feet swept a short way along the scene's `castKey` (a quarter of
   the figure's height at most) at the cast level, with a smaller core under the soles at the contact level. It reads
   nothing of the figure's art, so it is the same shape on every cel, clip and bend; do not bring back a sole band
-  or a sheared silhouette for figures. A painted scene sets its shadow `ink` and levels so the pool lands on the
+  or a sheared silhouette for figures. Every idle, walk, jog, rest and stance cel **stands on its own lowest sole**:
+  the store measures each cel when its atlas loads (`sheets/feet.ts`) and moves its anchor's foot line there, the
+  pool centres on the heading's resting feet, and a 1–2 px contact line in the contact tone sits under each planted
+  sole; `feet.test.ts` holds every shipped and `?style=world` cel to ±1 world px. A painted scene sets its shadow `ink` and levels so the pool lands on the
   painting's own tone (Ba Dan's are fitted by `art/source/grounding/tools/figure_shadow_tone.py`). Every prop
   gets a 2 world px contact line and a cast from its own base (`groundedCast`), so no ground shows between a box's
   side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is grounded
