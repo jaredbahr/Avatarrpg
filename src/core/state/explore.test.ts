@@ -125,6 +125,25 @@ describe('walking the village', () => {
     );
   });
 
+  it('stops beside an NPC on dry ground rather than in the canal', () => {
+    const village = CONTENT.maps.get('ba_dan_village');
+    if (!village) throw new Error('Missing village');
+    const grid = buildGrid(village);
+    const base = inVillage();
+    const elder = visibleNpcs(CONTENT, village, base).find((n) => n.id === 'elder_mira');
+    if (!elder) throw new Error('Missing Mira');
+    // From the road south of the canal, the nearest neighbour of hers is canal water.
+    const from = { x: elder.pos.x, y: elder.pos.y + 2 };
+    const state = { ...base, location: { ...base.location, pos: from } };
+    const wetNeighbour = [-1, 0, 1].some(
+      (dx) => tileAt(grid, { x: elder.pos.x + dx, y: elder.pos.y + 1 })?.surface,
+    );
+    expect(wetNeighbour).toBe(true);
+    const { state: after } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos });
+    expect(after.screen).toBe('dialogue');
+    expect(tileAt(grid, after.location.pos)?.surface ?? null).toBeNull();
+  });
+
   it('walks onto the gate and then leaves', () => {
     const state = inVillage();
     const exit = CONTENT.maps.get('ba_dan_village')?.exit;

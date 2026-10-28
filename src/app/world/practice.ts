@@ -158,3 +158,34 @@ export function practiceSources(casts: readonly PracticeCast[]): Record<string, 
   for (const cast of casts) if (cast.source) sources[cast.unitId] = cast.source;
   return sources;
 }
+
+/**
+ * Where the camera looks during a practice: halfway between the middle of the
+ * box holding every bender and the mark they throw at, so the party and its
+ * bends are on screen together rather than the leader alone at the explore
+ * zoom. The lean toward the mark keeps the impacts clear of the objective card
+ * in the board's top-left corner.
+ */
+export function practiceFrame(benders: readonly Vec2[], mark: Vec2): Vec2 {
+  const all = [...benders, mark];
+  const xs = all.map((p) => p.x);
+  const ys = all.map((p) => p.y);
+  const middle = {
+    x: (Math.min(...xs) + Math.max(...xs)) / 2,
+    y: (Math.min(...ys) + Math.max(...ys)) / 2,
+  };
+  return { x: (middle.x + mark.x) / 2, y: (middle.y + mark.y) / 2 };
+}
+
+/** How long the camera takes to glide onto a practice and back, in ms. */
+export const PRACTICE_GLIDE_MS = 450;
+
+/**
+ * The point a glide from `from` to `to` has reached `elapsed` ms in: an
+ * ease-in-out over `ms`, arriving exactly at `to` (and at once when `ms` is 0).
+ */
+export function glidePoint(from: Vec2, to: Vec2, elapsed: number, ms: number): Vec2 {
+  const t = ms <= 0 ? 1 : Math.min(1, Math.max(0, elapsed / ms));
+  const k = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+  return { x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k };
+}

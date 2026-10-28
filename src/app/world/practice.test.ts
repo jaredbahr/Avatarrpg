@@ -23,7 +23,9 @@ import {
   practiceAbility,
   practiceAt,
   practiceCasts,
+  glidePoint,
   practiceEvents,
+  practiceFrame,
   practiceSources,
   practiceUnits,
 } from './practice';
@@ -244,5 +246,27 @@ describe('practice playback', () => {
     }
     const end = Math.max(...bends.map((b) => b.start + b.duration));
     expect(animator.busy(end + 1000)).toBe(false);
+  });
+});
+
+describe('the practice camera', () => {
+  it('frames the benders and leans toward the mark', () => {
+    const benders = [
+      { x: 10, y: 8 },
+      { x: 9, y: 8 },
+      { x: 8, y: 7 },
+    ];
+    expect(practiceFrame(benders, BA_DAN_PRACTICE.mark)).toEqual({ x: 7, y: 7.25 });
+  });
+
+  it('glides with an ease and lands exactly on its target', () => {
+    const from = { x: 0, y: 0 };
+    const to = { x: 4, y: 2 };
+    expect(glidePoint(from, to, 0, 400)).toEqual(from);
+    expect(glidePoint(from, to, 200, 400)).toEqual({ x: 2, y: 1 });
+    expect(glidePoint(from, to, 100, 400).x).toBeLessThan(1);
+    expect(glidePoint(from, to, 900, 400)).toEqual(to);
+    // Reduce motion: no glide at all.
+    expect(glidePoint(from, to, 0, 0)).toEqual(to);
   });
 });

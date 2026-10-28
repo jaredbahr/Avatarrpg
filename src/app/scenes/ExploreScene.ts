@@ -57,11 +57,16 @@ import { partyScale } from '../anim/actorScale';
 import { worldConversationFor } from '../../content/story/presentations';
 import { conversationPanel } from '../ui/ConversationPanel';
 import { sheets } from '../../render/sheets/store';
+import { backdrops } from '../../render/backdrops';
+import { sceneImages } from '../../render/scene';
 import {
   hasPractice,
   practiceAt,
+  PRACTICE_GLIDE_MS,
+  glidePoint,
   practiceCasts,
   practiceEvents,
+  practiceFrame,
   practiceSources,
   practiceUnits,
 } from '../world/practice';
@@ -119,10 +124,32 @@ export class ExploreScene implements Scene {
   private warmedBends = false;
   /** A bending practice is playing (issue #284); presentation only. */
   private practising = false;
+  /**
+   * The camera's glide onto a practice and back: at the explore zoom the
+   * leader alone fills the view, so the camera frames the benders and their
+   * mark while they bend, then returns to the leader.
+   */
+  private practiceCamera: { from: Vec2; to: Vec2; start: number; back: boolean } | null = null;
   /** Whether the HUD last drew the practice action ready, so it redraws once the bends are in. */
   private practiceShown: boolean | null = null;
 
   constructor(private app: App) {}
+
+  drawnMapId(): string | null {
+    return this.map?.id ?? null;
+  }
+
+  /** The map's painting and every piece of its scene, loaded or failed. */
+  firstFrameReady(): Promise<unknown> {
+    const map = this.map;
+    if (!map) return Promise.resolve();
+    const backdrop = this.app.backdropFor(map.id);
+    const pieces = map.scene ? [...map.scene.ground, ...map.scene.scenery] : [];
+    return Promise.all([
+      backdrop ? backdrops.whenLoaded(backdrop.url) : Promise.resolve(true),
+      ...[...new Set(pieces.map((piece) => piece.url))].map((url) => sceneImages.whenLoaded(url)),
+    ]);
+  }
 
   firstFrameSheetKeys(): readonly string[] {
     return [
@@ -194,6 +221,7 @@ export class ExploreScene implements Scene {
     this.life = null;
     this.lastLife = null;
     this.practising = false;
+    this.practiceCamera = null;
     this.practiceShown = null;
     // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
     if (this.warmedBends) sheets.releaseBends();
@@ -244,6 +272,7 @@ export class ExploreScene implements Scene {
       this.map = map;
       this.app.animator.setProjection(map.projection ?? 'orthographic');
       this.practising = false;
+      this.practiceCamera = null;
       this.warmPractice();
       this.setupLife();
       this.grid = buildGrid(map);
@@ -959,6 +988,12 @@ export class ExploreScene implements Scene {
       waterSources: practiceSources(casts),
     });
     this.practising = true;
+    this.practiceCamera = {
+      from: state.location.pos,
+      to: practiceFrame(positions, ground.mark),
+      start: now,
+      back: false,
+    };
     this.renderHud();
   }
 
@@ -1136,7 +1171,16 @@ export class ExploreScene implements Scene {
       }
     }
     if (!this.conversationMode && this.life?.update(now, renderer.camera)) return;
-    if (this.practising && !this.app.animator.busy(now)) this.practising = false;
+    if (this.practising && !this.app.animator.busy(now)) {
+      this.practising = false;
+      if (this.practiceCamera)
+        this.practiceCamera = {
+          from: this.practiceCamera.to,
+          to: state.location.pos,
+          start: now,
+          back: true,
+        };
+    }
     if (
       this.hudMoving !== this.app.animator.busy(now) ||
       (this.practiceShown !== null && this.practiceShown !== this.practiceReady(state))
@@ -1154,7 +1198,14 @@ export class ExploreScene implements Scene {
         courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
       );
     // The camera follows the walk and rests where it ends; a drag afterwards stays.
-    if (walking) renderer.camera.centreOn(walking);
+    // A practice holds it on the benders and glides back to the leader after.
+    const glide = this.practiceCamera;
+    if (glide) {
+      const ms = motionReduced() ? 0 : PRACTICE_GLIDE_MS;
+      const to = glide.back ? (walking ?? state.location.pos) : glide.to;
+      renderer.camera.centreOn(glidePoint(glide.from, to, now - glide.start, ms));
+      if (glide.back && now - glide.start >= ms) this.practiceCamera = null;
+    } else if (walking) renderer.camera.centreOn(walking);
     const seats = this.ensureTrail(state, grid).positions(state.party.length);
     this.localMap?.update(
       seats.map(

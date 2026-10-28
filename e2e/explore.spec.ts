@@ -95,7 +95,7 @@ test.describe('the village', () => {
 
     // On the road two tiles below the elder, and further from everyone else,
     // Talk lights up with her name; tapping it walks the party to her side
-    // and starts her node.
+    // (on dry ground: the canal lies between) and starts her node.
     await standAt(page, { x: 11, y: 7 });
     await expect(talk).toBeEnabled();
     await expect(talk).toContainText('Elder Mira');
@@ -103,9 +103,10 @@ test.describe('the village', () => {
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
       .toBe('mira_intro');
+    // Beside her on the paving by her table, not in the canal below her.
     await expect
-      .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.pos.y))
-      .toBe(6);
+      .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.pos))
+      .toEqual({ x: 10, y: 5 });
   });
 
   test('the gate names the road and leads to it', async ({ page }) => {
