@@ -2,62 +2,86 @@
   "region": "r0c1",
   "source": {
     "path": ".review/route-a/candidates/r0c1.png",
-    "sha256": "22dbafd3a9ae5b1e01b7704e6a512462ef638792e8b563cbc21c7f5d20bbacd5"
+    "sha256": "1b481fce6a06025914ffd61207d4cefd7fb0cbe2cd590851dba8f3396ab972ac"
   },
   "stored": {
     "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c1.png",
-    "sha256": "22dbafd3a9ae5b1e01b7704e6a512462ef638792e8b563cbc21c7f5d20bbacd5"
+    "sha256": "1b481fce6a06025914ffd61207d4cefd7fb0cbe2cd590851dba8f3396ab972ac"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7297
+      "corr": 0.8196
     },
     "blobs": [
       {
         "n": 1,
-        "box": [0, 0, 1536, 847],
-        "area": 775702,
+        "box": [0, 0, 1536, 764],
+        "area": 554302,
         "dx": 0,
         "dy": 0,
-        "corr": 0.728,
+        "corr": 0.8033,
         "status": "ok"
       },
       {
         "n": 2,
-        "box": [220, 671, 424, 863],
-        "area": 9534,
+        "box": [65, 439, 217, 583],
+        "area": 4129,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7478,
+        "corr": 0.9369,
         "status": "ok"
       },
       {
         "n": 3,
-        "box": [0, 697, 840, 1024],
-        "area": 141430,
+        "box": [0, 467, 517, 892],
+        "area": 113677,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7092,
+        "corr": 0.8417,
         "status": "ok"
       },
       {
         "n": 4,
-        "box": [978, 784, 1296, 1010],
-        "area": 22567,
+        "box": [570, 514, 798, 681],
+        "area": 10022,
         "dx": 0,
         "dy": 0,
-        "corr": 0.8226,
+        "corr": 0.9124,
+        "status": "ok"
+      },
+      {
+        "n": 5,
+        "box": [1025, 673, 1177, 807],
+        "area": 4087,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.9446,
+        "status": "ok"
+      },
+      {
+        "n": 6,
+        "box": [376, 715, 987, 1024],
+        "area": 106204,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8399,
+        "status": "ok"
+      },
+      {
+        "n": 7,
+        "box": [0, 929, 204, 1024],
+        "area": 7549,
+        "dx": 0,
+        "dy": 0,
+        "corr": 0.8769,
         "status": "ok"
       }
     ],
     "carry": {
-      "pixels": 1268574,
-      "meanAbsDiff": 1.078,
-      "p95": 3.667,
-      "fractionOver16": 0.0202
+      "pixels": 0
     },
     "warn": [],
     "fail": []

@@ -8,10 +8,11 @@
 
 - `pine-b` came out teal beside the warm `pine` and read as another species in the wall, so its chroma is moved
   PINE_B_TOWARD of the way to `pine`'s mean chroma (YCbCr, opaque pixels; luma untouched).
-- Delivery scale: each upright also at 1.5 px per world px (pieces/uprights-1.5x), by Ba Dan's EPX x2 then a 0.75
-  Lanczos (ba-dan-route-a/tools/compose.py `up15`, ADR 0085), so at the 1.5 camera an art px is a screen px.
+- Delivery scale: the uprights ship as they are, 1 px per world px (ADR 0088: crisp at every integer zoom). Until
+  then each was also scaled to 1.5 px per world px (pieces/uprights-1.5x, EPX x2 then a 0.75 Lanczos), which the
+  integer-zoom camera smoothed at N = 2; that folder is gone.
 
-Writes art/source/forest-road-g1/pieces/{ground,uprights,uprights-1.5x,props}/<name>.png, the inputs of
+Writes art/source/forest-road-g1/pieces/{ground,uprights,props}/<name>.png, the inputs of
 scripts/art/forest-g1-pack.ts.
 """
 import json, os, sys
@@ -52,25 +53,6 @@ def ground():
             im = im.resize(old.size, Image.NEAREST)
             im.putalpha(old.getchannel('A'))
         im.save(f'{OUT}/ground/{name}.png')
-
-
-def epx(im):
-    """Scale2x (EPX), copied unchanged from ba-dan-route-a/tools/compose.py."""
-    a = np.asarray(im.convert('RGBA')).astype(np.int32)
-    p = np.pad(a, ((1, 1), (1, 1), (0, 0)), mode='edge')
-    C = p[1:-1, 1:-1]; A = p[:-2, 1:-1]; B = p[1:-1, 2:]; D = p[2:, 1:-1]; Cl = p[1:-1, :-2]
-    eq = lambda x, y: (np.abs(x - y).sum(-1) < 24)
-    o = np.zeros((a.shape[0] * 2, a.shape[1] * 2, 4), np.int32)
-    o[0::2, 0::2] = np.where((eq(Cl, A) & ~eq(A, B) & ~eq(Cl, D))[..., None], A, C)
-    o[0::2, 1::2] = np.where((eq(A, B) & ~eq(A, Cl) & ~eq(B, D))[..., None], B, C)
-    o[1::2, 0::2] = np.where((eq(D, Cl) & ~eq(D, B) & ~eq(Cl, A))[..., None], Cl, C)
-    o[1::2, 1::2] = np.where((eq(B, D) & ~eq(B, A) & ~eq(D, Cl))[..., None], D, C)
-    return Image.fromarray(o.astype(np.uint8), 'RGBA')
-
-
-def up15(im, size):
-    """World px -> 1.5 px per world px: EPX x2 then a 0.75 Lanczos (ADR 0085's delivery scale)."""
-    return epx(im).resize(size, Image.LANCZOS)
 
 
 def contour(im):
@@ -115,9 +97,6 @@ def upright(pid, tag):
     if pid == 'pine-b':
         img = toward_pine(img)
     img.save(f'{OUT}/{kind}/{pid}.png')
-    if kind == 'uprights':
-        os.makedirs(f'{OUT}/uprights-1.5x', exist_ok=True)
-        up15(img, (img.width * 3 // 2, img.height * 3 // 2)).save(f'{OUT}/uprights-1.5x/{pid}.png')
 
 
 if __name__ == '__main__':

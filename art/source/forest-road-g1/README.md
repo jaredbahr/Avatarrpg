@@ -26,7 +26,7 @@ python3 art/source/forest-road-g1/tools/world.py     # one restyle pass at world
 python3 art/source/forest-road-g1/tools/tone.py      # broad colour back to the painting's, one palette
 python3 art/source/forest-road-g1/tools/uprights.py  # every upright and prop at world px     (PixelLab, cached)
 python3 art/source/forest-road-g1/tools/cut.py       # clear the heaps and glyphs, cut back into the pieces
-python3 art/source/forest-road-g1/tools/select.py    # -> pieces/ (the selection, contour, 1.5x delivery)
+python3 art/source/forest-road-g1/tools/select.py    # -> pieces/ (the selection, contour; world px)
 node --import tsx scripts/art/forest-g1-pack.ts      # -> public/art/maps/forest-g1/, public/art/props/ (--check)
 ```
 
@@ -52,8 +52,9 @@ files to `pieces/` byte for byte.
 
 ## Faults (judged at the fit and at the 1.5 camera, Canvas)
 
-- The ground ships at 1 file px per world px (budget), so at the 1.5 camera it is softer than the 1.5x uprights and
-  the figures; the lossy codec softens moss and kerb colour edges a little more. See ADR 0087.
+- (Fixed by ADR 0088.) The ground shipped at 1 file px per world px and the uprights at 1.5, so at the old 1.5 camera
+  the ground was softer than the uprights. Under integer zoom everything ships at 1 px per world px and is sampled
+  nearest at every N; the lossy codec still softens moss and kerb colour edges a little. See ADR 0087's amendment.
 - The figures are still finer-grained than the world (ADR 0085's open camera question).
 - The restyle invented a few things in the apron's fade: bushes past the west corner and the east shelf, and a striped
   sliver at the bottom corner (a streak was there before too). They sit in faded, out-of-play ground.

@@ -1,6 +1,6 @@
 # Ba Dan painting pipeline
 
-The village is one continuous painting: twelve accepted region paintings, stitched, then split by the
+The village is one continuous painting: six accepted region paintings, stitched, then split by the
 upright geometry into ground plates and uprights. This is how Ba Dan's shipped art is made. Sources are
 tracked (`art/source/ba-dan-regions/`, its README), the chain to the shipped files is deterministic, and
 `--check` proves it. Design and numbers: `docs/art/ba-dan-scene.md`.
@@ -18,9 +18,13 @@ sh scripts/art/ba-dan-regions/regen.sh --check    # the same, then compare every
 
 ## Units
 
-Painting pixels are world pixels times 1.5 (the scale the village is authored at, and the game's zoom: a painting pixel is a
-screen pixel), measured from the pan box corner. A region is exactly 1536 x 1024 painting px, the size the image tool edits without
-reframing. Region origins are multiples of 3 painting px so they sit on whole, even world px.
+Painting pixels are world pixels times `SCALE`, measured from the pan box corner. `SCALE` is **1** since ADR 0088: the camera
+draws at a whole number N of device px per world px, and art is only crisp (sampled nearest) where one of its px covers a
+whole number of device px, so 1 px per world px is crisp at every N. (It was 1.5, the old camera's zoom, crisp only at N = 3;
+the G1 master, `art/source/ba-dan-route-a/world/world-g1-polish.png`, is drawn at world px, so the regions are now plain
+crops of it.) A region is exactly 1536 x 1024 painting px, the size the image tool edits without reframing: at 1 px that is a
+3 x 2 grid. Region origins and plate cuts are multiples of `GRID` (2 x `SCALE`) painting px, so they sit on whole, even world px.
+Lengths meant in world px (the fade, its noise) go through `px()`.
 
 ## Commands
 
@@ -37,12 +41,14 @@ node --import tsx scripts/art/ba-dan-regions/pack.ts [DIR] [--check]
 
 - **plan** lays the grid over the pan box (default 3000 x 1600 world px from (-200, -100)) with at least 192 world px of overlap on
   every shared side. It is plain geometry; the other commands make it at the default if there is none.
-- **render** (`render-village.ts`) lays the **frozen geometry** (`art/source/ba-dan-regions/geometry/`) on the grid, bilinear from the
-  frozen sprites exactly as the game's art was sampled: `uprights.png`, `ids.png` (the front-most piece owning each pixel),
+- **render** (`render-village.ts`) lays the **frozen geometry** (`art/source/ba-dan-regions/geometry/`) on the grid at `SCALE`. The
+  frozen sprites are 1.5 px or more per world px, denser than the grid, so each grid pixel is the area mean of the sprite it covers
+  (a silhouette keeps its coverage and its thin parts); a sprite no denser than the grid is sampled bilinear, as before: `uprights.png`, `ids.png` (the front-most piece owning each pixel),
   `front.png`, `pieces/NNN.png` (each piece's own silhouette), `pieces.json` (rectangles, depth keys, footprints, fade flags, the
   map's walkable cells). The game's scene data is not read.
 - **guide** writes `DIR/guides/<id>/`: `guide.png` (the painting the accepted regions make, `DIR/stitched.png`, rebuilt when a
-  region is newer, with the frozen geometry's uprights over it), `ground.png` (that painting's pixels), `uprights.png` (RGBA),
+  region is newer, or the whole-village picture `--ground PATH`, which a re-cut at a new scale starts from), with the frozen
+  geometry's uprights over it), `ground.png` (that painting's pixels), `uprights.png` (RGBA),
   `mask.png` (the uprights' alpha), `carry.png` + `carry-mask.png` (accepted neighbours' pixels pasted into the guide),
   `ids.png` / `ids.json` (each owner's index, depth key, pixel count, box, sprite). Paint over `guide.png`, return exactly 1536 x 1024.
 - **gate** refuses anything not 1536 x 1024 (exit 2). Otherwise: the edge-map shift of the whole frame (pass within 1 px) and of every
@@ -58,8 +64,8 @@ node --import tsx scripts/art/ba-dan-regions/pack.ts [DIR] [--check]
   from one region's own territory to the other's (`needsRepaint`: repaint those; none today), and, as before, every
   16 px cell of an overlap where the two paintings differ by more than `--threshold` (`disagreements`). Fewer than a full
   grid (a trial, a test) is cross-faded with a smoothstep feather; whatever is uncovered is the margin colour and is counted.
-- **split** first fades the painting's outer edge into the margin colour (`edge_fade`: exactly the margin on the outer 12 painting px,
-  then a ragged ramp reaching 72 to 144 painting px = 48 to 96 world px in, longest where the painting is already dark canopy or
+- **split** first fades the painting's outer edge into the margin colour (`edge_fade`: exactly the margin on the outer 8 world px,
+  then a ragged ramp reaching 48 to 96 world px in, longest where the painting is already dark canopy or
   undergrowth; fixed seed, no scipy; saved as `DIR/faded.png`). Before that fade, `quiet_plates` calms the ground (ADR 0083:
   `QUIET_MEDIAN` 3, `QUIET_SATURATION` 0.85, `QUIET_CONTRAST` 0.88) only where no geometry piece owns the pixel (`village/ids.png`),
   feathered over 2 px on the ground side (`QUIET_FEATHER`); the plates are cut from that calmed painting and the uprights from
@@ -68,8 +74,8 @@ node --import tsx scripts/art/ba-dan-regions/pack.ts [DIR] [--check]
   others (29) are the ground only. Per sprite the alpha is the geometry's, unchanged; every pixel under it that the piece owns
   takes the painting's colour (rim included); a pixel under a piece that is ground takes the painting's; a pixel hidden by a front upright or
   beyond the painting comes from the old sprite, moved by the repaint's colour change measured on the sprite's own painted pixels
-  (`hiddenFilledFromSprite`, `hiddenBehindFading`). The report also lists painting that straddles a silhouette edge (`straddles`) and the
-  plates: `PLATE_GRID` 4 x 3, cuts on multiples of 3 painting px, each plate running `PLATE_OVERLAP` = 2 px into the next.
+  (`hiddenFilledFromSprite`, `hiddenBehindFading`); that change is sampled only where the piece itself owns the painting. The report also lists painting that straddles a silhouette edge (`straddles`) and the
+  plates: `PLATE_GRID` 4 x 3, cuts on multiples of `GRID` painting px, each plate running `PLATE_OVERLAP` = 2 px into the next.
 - **pack.ts** encodes the plates (opaque lossy WebP, `GROUND_QUALITY` 85) and the uprights (q90 with sharp YUV and an exact alpha
   plane, stepping up only to hold the fine-grain contract), packs the uprights into 2048-pixel pages, writes
   `public/art/maps/ba-dan-scene/ground-NN.webp`, `uprights-N.webp` and `src/content/scenes/baDan.art.ts` (prettier-formatted).

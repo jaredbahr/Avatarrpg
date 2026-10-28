@@ -5,6 +5,7 @@ import { BA_DAN_PAINTING, BA_DAN_UPRIGHTS } from '../../src/content/scenes/baDan
 import { DRESSING_PINS, TRUE_PINS, measurePiece, readProjectionPins } from './ba-dan-projection';
 import { OUTPUT_DIR, SOURCE_DIR } from './ba-dan-restyle';
 import { offTile } from './lib/ba-dan-projection';
+import type { GroundSpec } from './lib/ba-dan-projection';
 import { newImage, readImage } from './lib/image';
 import type { Image } from './lib/image';
 import { decodeWebp } from './lib/webp';
@@ -124,7 +125,28 @@ async function page(index: number): Promise<Image> {
   return image;
 }
 
-/** The upright on the canvas its piece was painted on: the frozen rectangle, in painting pixels, at 1.5 to the world pixel. */
+/**
+ * The pins were read on each piece's canvas at 1.5 painting px per world px, the scale the village was painted at
+ * until ADR 0088. The painting is cut at `BA_DAN_PAINTING.scale` (1) now, so the windows are scaled to it, each
+ * rounded inward so it never takes in a column the pinned window did not (a widened window caught the next leg), and
+ * the span a pair of feet fixes a slope over shrinks with them.
+ */
+const PIN_SCALE = 1.5;
+type Pins = typeof truePins;
+function atPaintingScale(pins: Pins, name: string): Pins {
+  const pin = pins[name]!;
+  const k = BA_DAN_PAINTING.scale / PIN_SCALE;
+  const win = ([lo, hi]: readonly number[]): [number, number] => [
+    Math.ceil((lo ?? 0) * k),
+    Math.floor((hi ?? 0) * k),
+  ];
+  const dir = (d: GroundSpec['left']): GroundSpec['left'] =>
+    'feet' in d ? { feet: [win(d.feet[0]), win(d.feet[1])] } : { fit: d.fit.map(win) };
+  const spec = pin.measure!;
+  return { [name]: { ...pin, measure: { left: dir(spec.left), right: dir(spec.right) } } };
+}
+
+/** The upright on the canvas its piece was painted on: the frozen rectangle, in painting pixels, at the painting's scale. */
 async function onCanvas(id: string): Promise<Image> {
   const piece = frozen.get(id)!;
   const [index, sx, sy, vx, vy, width, height] = BA_DAN_UPRIGHTS[id]!;
@@ -149,14 +171,15 @@ async function onCanvas(id: string): Promise<Image> {
 
 describe.each(Object.keys(PIN_OF))('upright %s', (id) => {
   it('is on the tile lines as shipped', async () => {
-    const [pins, name] = PIN_OF[id]!;
+    const [frozenPins, name] = PIN_OF[id]!;
+    const pins = atPaintingScale(frozenPins, name);
     const m = measurePiece(pins, name, await onCanvas(id), false);
     const spec = pins[name]!.measure!;
     expect(Math.abs(offTile(m.left)), `left ${m.left.degrees}`).toBeLessThanOrEqual(
-      tolerance(spec.left, pins === g1Pins),
+      tolerance(spec.left, frozenPins === g1Pins),
     );
     expect(Math.abs(offTile(m.right)), `right ${m.right.degrees}`).toBeLessThanOrEqual(
-      tolerance(spec.right, pins === g1Pins),
+      tolerance(spec.right, frozenPins === g1Pins),
     );
   });
 });

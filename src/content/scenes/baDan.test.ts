@@ -89,12 +89,12 @@ it('holds the scenery to the schema limit, the ground to its piece limit and the
 });
 
 it('lays the ground plates over the whole pan box with no gap and a 2 px overlap at every join', () => {
-  // The pan box is 3000 x 1600 world px from (-200, -100); the painting is 1.5 px to the world pixel.
+  // The pan box is 3000 x 1600 world px from (-200, -100); the painting is 1 px to the world pixel (ADR 0088).
   const { scale, origin, size } = BA_DAN_PAINTING;
+  expect(scale).toBe(1);
   expect(size.width).toBe(3000 * scale);
-  // The last of twelve 1024-row regions ends at row 2401: 1600.67 world px, over the 1600 of the pan box.
-  expect(size.height).toBe(2401);
-  expect(size.height).toBeGreaterThanOrEqual(1600 * scale);
+  // The second row of 1024-row regions ends at row 1600, the pan box's last.
+  expect(size.height).toBe(1600 * scale);
   const covered = new Uint8Array(size.width * size.height);
   for (const [index, x, y, width, height] of BA_DAN_GROUND_PLATES) {
     const plate = BA_DAN_SCENE.ground[index];

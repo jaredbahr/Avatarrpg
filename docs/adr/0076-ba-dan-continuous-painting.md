@@ -59,3 +59,23 @@ crops show no loss against the lossless painting (80 softens wood grain and ston
   the camera shows world x -378 .. 2938 and y -199 .. 1479 (more when zoomed out), where the old art reached x -384 .. 3136. The ring is
   flat margin colour there and the painting's edge cuts painted foliage. It needs outer regions painted or the camera held in
   (`docs/art/ba-dan-scene.md`, "Pan reach"); this ADR does not decide which.
+
+## Amendment, 2026-10-27: 1 painting px per world px (ADR 0088)
+
+Under the integer-zoom camera (ADR 0088) the 1.5 painting px per world px chosen here is crisp only at N = 3 and smoothed at
+N = 2 (desktop and Surface), so the painting is cut at **1 px per world px** from the G1 master, which is drawn at that
+resolution (`regions.py` `SCALE = 1`; six 1536 x 1024 regions in a 3 x 2 grid; ADR 0085's amendment of the same date has
+the pipeline). Still one continuous painting, the same 12 plates and the same 46 uprights, with every footprint, depth key and
+flag unchanged.
+
+| measure                                     | at 1.5 px per world px             | at 1 px per world px               |
+| ------------------------------------------- | ---------------------------------- | ---------------------------------- |
+| painting                                    | 4500 x 2401                        | 3000 x 1600                        |
+| `public/art/maps/ba-dan-scene`              | 3,605,650 B                        | 2,174,672 B                        |
+| maps family (`public/art/maps`)             | 6.98 MiB                           | 5.48 MiB                           |
+| decoded, the village                        | 67.2 MiB (ground 41.3, pages 25.9) | 29.7 MiB (ground 18.3, pages 11.4) |
+| region sources (`art/source/.../accepted/`) | 21 MB, 12 regions                  | 8.3 MB, 6 regions                  |
+
+The maps family budget comes down from 7.5 MiB to **6 MiB** (the next half MiB over what ships), so the space this frees goes
+to the precache total, which had about 1.5 MB left, rather than to the maps family by default. Raising it again is a reviewed
+line and an ADR, as before.

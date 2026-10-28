@@ -1,0 +1,16 @@
+{
+  "uniform2x2": {
+    "lodge-roof": {
+      "before": 0.0573,
+      "after": 1.0
+    },
+    "pine-boughs": {
+      "before": 0.0795,
+      "after": 0.0293
+    },
+    "signpost": {
+      "before": 0.6078,
+      "after": 0.6365
+    }
+  }
+}
