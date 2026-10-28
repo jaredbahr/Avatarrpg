@@ -22,9 +22,7 @@ export interface ResidentGrid {
 
 export function residentGrid(pxPerWorldPx = RESIDENT_SHEET_PX_PER_WORLD_PX): ResidentGrid {
   if (!Number.isInteger(pxPerWorldPx) || pxPerWorldPx < 1)
-    throw new Error(
-      `A resident grid is a whole number of sheet px per world px, not ${pxPerWorldPx}.`,
-    );
+    throw new Error(`Resident grid: ${pxPerWorldPx} px per world px`);
   const pixelsPerTile = WORLD_TILE_PX * pxPerWorldPx;
   return { pxPerWorldPx, pixelsPerTile, frameW: pixelsPerTile, frameH: pixelsPerTile * 1.5 };
 }
