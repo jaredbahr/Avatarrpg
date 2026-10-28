@@ -1,7 +1,7 @@
 # Grounding pass review (ADR 0093)
 
 Before (left) and after (right), from two runs of `e2e/grounding.review.ts` at the same seed and framing: before on
-`d815440` (main), after on `claude/grounding-pass`. 1368x912 viewport, dpr 1. `review/canvas/` and `review/webgl/` are
+`de7d933` (main, with ADR 0090's 1 px art), after on `claude/grounding-pass` merged with it. 1368x912 viewport, dpr 1. `review/canvas/` and `review/webgl/` are
 the two backends (WebGL on the container's software rasteriser, forced with `?renderer=webgl`).
 
 | Sheet              | What it shows                                                                                                                                                                                                        |
@@ -15,6 +15,6 @@ the two backends (WebGL on the container's software rasteriser, forced with `?re
 
 Re-capture: `FNT_GROUNDING_LABEL=after FNT_GROUNDING_DIR=<dir> npx playwright test -c playwright.grounding.config.ts`,
 the same with `before` on the base commit (a separate worktree: the dev server serves live source), then
-`python3 -I art/source/grounding/tools/sheets.py <dir> art/source/grounding/review`.
+`python3 -I art/source/grounding/tools/sheets.py <dir> before after art/source/grounding/review`.
 
 `tools/walk_stride.py` measures the walk's planted-foot travel against the game's (ADR 0093, known faults).

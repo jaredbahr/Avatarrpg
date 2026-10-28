@@ -1,6 +1,6 @@
 """Before/after sheets for ADR 0093 from two runs of e2e/grounding.review.ts.
 
-python3 -I art/source/grounding/tools/sheets.py <shots dir with before/ and after/> art/source/grounding/review
+python3 -I art/source/grounding/tools/sheets.py <shots dir> <before label> <after label> art/source/grounding/review
 Each sheet is before on the left, after on the right, one row per capture; wide frames at half size, 4x crops as
 captured, the walk strip before above after.
 """
@@ -39,9 +39,9 @@ def stack(rows, gap=8):
     return out
 
 
-def main(shots, dest):
+def main(shots, before_label, after_label, dest):
     for backend in ('canvas', 'webgl'):
-        before, after = Path(shots, 'before', backend), Path(shots, 'after', backend)
+        before, after = Path(shots, before_label, backend), Path(shots, after_label, backend)
         out = Path(dest, backend)
         out.mkdir(parents=True, exist_ok=True)
         for name, files in SHEETS.items():
@@ -56,4 +56,4 @@ def main(shots, dest):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(*sys.argv[1:5])
