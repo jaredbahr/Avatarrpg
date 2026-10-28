@@ -41,6 +41,7 @@ import { HEADINGS, headingClip } from './clips';
 import { BANDITS_G1_TRIMS } from './banditsG1';
 import { PARTY_G1_TRIMS } from './partyG1';
 import { residentGrid } from './residentGrid';
+import { WORLD_STYLE_TEST, type WorldStyleName } from './worldStyleTest';
 
 export type AssetEntry =
   | {
@@ -419,6 +420,86 @@ function cuttingSheet(name: string, palette: string): SheetEntry {
   };
 }
 
+/**
+ * The world-style figure test (art/source/style-test-world-chars, not shipped by
+ * default): Kaya, Sura, Bo and Gao redrawn in the Ba Dan painting's own
+ * rendering, about 74 art px tall, with a designed six-cel walk in the four
+ * diagonals (the cardinals borrow the nearest one). Shown only with
+ * `?style=world` (`useWorldStyleTest`). The atlas says 80 px a tile so that the
+ * oblique figure scale (1.25) lands one art px on exactly one world px: crisp
+ * at every integer zoom, with no resample. Locomotion only; anything else asks
+ * the idle (ADR 0003's fallback).
+ */
+function worldStyleSheet(name: WorldStyleName, key: string, palette: string): SheetEntry {
+  const t = WORLD_STYLE_TEST[name];
+  const frames = (clip: string, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const drawn: Readonly<Record<Heading, string>> = {
+    east: 'walkSouthEast',
+    southEast: 'walkSouthEast',
+    south: 'walkSouthWest',
+    southWest: 'walkSouthWest',
+    west: 'walkSouthWest',
+    northWest: 'walkNorthWest',
+    north: 'walkNorthWest',
+    northEast: 'walkNorthEast',
+  };
+  const clips: Partial<Record<ClipName, ClipDef>> = {};
+  const msPerTile = {} as Record<Heading, number>;
+  HEADINGS.forEach((heading, i) => {
+    const own = drawn[heading].slice('walk'.length);
+    clips[headingClip('idle', heading)] = {
+      frames: frames(`idle${own}`, 2),
+      fps: 1,
+      loop: true,
+      frameMs: t.idleMs,
+    };
+    clips[headingClip('rest', heading)] = { frames: frames(`idle${own}`, 1), fps: 1, loop: true };
+    clips[headingClip('walk', heading)] = {
+      frames: frames(`walk${own}`, t.walkCels),
+      fps: 1000 / t.walkCelMs,
+      loop: true,
+    };
+    msPerTile[heading] = t.walkMsPerTile[i] ?? t.walkCels * t.walkCelMs;
+  });
+  return {
+    kind: 'sheet',
+    atlas: `art/units/style-test/${name}.json`,
+    pixelsPerTile: 80,
+    frameSize: { w: 128, h: 128 },
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: t.anchorY },
+    facing: 'both',
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: msPerTile,
+      walkStartMs: t.walkStartCel * t.walkCelMs,
+      walkCycleMs: t.walkCels * t.walkCelMs,
+      authoredBob: true,
+    },
+    palette,
+    clips,
+  };
+}
+
+const WORLD_STYLE_KEYS: Readonly<Record<string, readonly [WorldStyleName, string]>> = {
+  'unit.fire.kaya': ['kaya', 'fire'],
+  'unit.water.sura': ['sura', 'water'],
+  'unit.earth.bo': ['bo', 'earth'],
+  'npc.shopkeeper': ['gao', 'earth'],
+};
+let worldStyle: Readonly<Record<string, AssetEntry>> | undefined;
+
+/** `?style=world`: draw the four test figures instead of the shipped sheets (a dev comparison, never the default). */
+export function useWorldStyleTest(): void {
+  worldStyle = Object.fromEntries(
+    Object.entries(WORLD_STYLE_KEYS).map(([key, [name, palette]]) => [
+      key,
+      worldStyleSheet(name, key, palette),
+    ]),
+  );
+}
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* ------------------------------------------------------ Party sprites */
   'unit.fire.kaya': gSheet('unit.fire.kaya', 'kaya', 'fire'),
@@ -580,7 +661,7 @@ export function sheetLocomotion(key: string | undefined): LocomotionDef | undefi
  * manifest edit, while overriding one still can.
  */
 export function resolveAsset(key: string): AssetEntry {
-  const explicit = ASSETS[key];
+  const explicit = worldStyle?.[key] ?? ASSETS[key];
   if (explicit) return explicit;
 
   if (key.startsWith('fx.')) {
