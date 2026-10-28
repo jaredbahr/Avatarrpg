@@ -128,3 +128,22 @@ and things." Painted Ba Dan pieces came into scope. The numbered list, with a be
    figure with `castShadow: false` still did, and that now means no shadow at all. Both backends drop the pool and
    Canvas drops the non-exact union path, which no scene took. The bundle needed the room: the forest's scenery
    grounding put it over its 360 KB budget. ADR 0077's `groundTreatment` is now `contactBand`, the one question left.
+
+## Amendment, 2026-10-28: a figure's cast is steady
+
+The owner, relayed, on the jog: **"Jog is still visually wrong. Shadows are off and it makes it look like their legs
+are growing."** A figure cast the frame it was drawing, sheared along the key, so every stride swept a long leg-shaped
+shadow across the ground and the shape jumped from cel to cel; at the jog's reach it read as the legs themselves
+stretching.
+
+- **One steady shape a heading.** While it stands, walks, jogs, rests or settles, a figure casts its heading's idle,
+  first cel (`castFrame` in `lighting.ts`), posed exactly as its body is: the same foot anchor (`liftAlong` and all),
+  scale, facing and lean. Its cast therefore never changes with its legs, only with its heading and position. An
+  action (a bend, a hit, a knockout, a cast) still casts its own frame, so a body that falls lies on its shadow.
+- **The contact band is unchanged.** It is still cut from the drawn frame's soles (`contactBandRows`), so the dark
+  2 px under the feet follows the planted foot.
+- **Everything else stands.** The world-pixel grid, nearest sampling, the scene's `castKey`, the level snap and both
+  backends: Canvas resolves the idle cel through the sprite cache and projects it as before; WebGL poses an off-stage
+  caster sprite (`steadyCaster`) on the idle cel's texture with the body's transform. Props and scenery are unchanged.
+- `actorGrounding.test.ts` holds it: for every eight-way sheet in the manifest, every cel of every walk and jog clip
+  resolves to the one idle cel of its heading, and both backends route figures and residents through `castFrame`.

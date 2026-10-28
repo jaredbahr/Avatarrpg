@@ -257,8 +257,8 @@ describe('ResidentWalks', () => {
       const b = trace[i] as Vec2;
       expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.2);
     }
-    // Mira walks off down the river path, at her amble (she never jogs, ADR
-    // 0095), and is gone once she has faded there.
+    // Mira walks off down the river path, at her amble (ADR 0095), and is gone
+    // once she has faded there.
     for (let t = 4050; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
@@ -270,7 +270,7 @@ describe('ResidentWalks', () => {
     expect(w.walkingTo({ x: 17, y: 6 })).toBe(false);
   });
 
-  it('walks Mira everywhere at her amble, never on the jog (ADR 0095)', () => {
+  it('walks Mira everywhere at her amble (ADR 0095)', () => {
     const w = walks();
     const before = at('midday');
     w.tick(0, false);
@@ -287,7 +287,7 @@ describe('ResidentWalks', () => {
       if (t === 1050) at1s = mira.drawPos;
       if (mira.walking) clips.add(mira.clip ?? '');
     }
-    // A placement walk, which every other resident jogs, draws her walk...
+    // A placement walk, which every other resident makes at the brisk pace, draws her walk...
     expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
     expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(false);
     // ...at the amble: after a second she has covered under a tile.
@@ -591,7 +591,7 @@ describe('routines (Working Ba Dan)', () => {
     const walk = gao.slice(first, after);
     expect(walk.length).toBeGreaterThan(4);
     // The sheet authors the stride and its bob (issue #284): eight-way clips, nothing added.
-    // An errand leg ambles, so it draws the walk, never the jog (ADR 0095).
+    // An errand leg ambles on the walk (ADR 0095).
     expect(walk.every((figure) => /^(walk|idle)/.test(figure.clip ?? ''))).toBe(true);
     expect(walk.some((figure) => (figure.clip ?? '').startsWith('walk'))).toBe(true);
     expect(walk.every((figure) => figure.offset === undefined && figure.lean === 0)).toBe(true);
@@ -701,9 +701,9 @@ describe('routines (Working Ba Dan)', () => {
       v.update(VILLAGE, walking, [beside], true);
       clips.add(gao(v)?.clip ?? '');
     }
-    // Called home, he jogs at the brisk pace; his errand legs amble on the walk (ADR 0095).
-    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(true);
-    expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(false);
+    // Called home, he walks at the brisk pace, never the jog (ADR 0095's amendment).
+    expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
+    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(false);
     // Home on the next leg, not after the four-second hold at the crates.
     expect(t - reached.t).toBeLessThan(2_500);
     expect(gao(v)).toMatchObject({ drawPos: SHOP, walking: false });

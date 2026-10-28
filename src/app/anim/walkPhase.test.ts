@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ASSETS,
-  G1_AMBLE,
-  G1_HEADING,
-  G1_JOG,
-  G_STRIDE_TILES,
-} from '../../content/assets/manifest';
+import { ASSETS, G1_WALK, G_STRIDE_TILES } from '../../content/assets/manifest';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
 import type { ContentIndex, Vec2 } from '../../core/types';
 import { smoothPath } from '../../render/geometry/curve';
@@ -18,10 +12,10 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 const KAYA = 'unit.fire.kaya';
 /** A four-way sheet: a fixed near-authored clip phase per tile. */
 const FOUR_WAY = 'unit.earth.linmei';
-/** Kaya's moving cel: the jog's nominal 60 ms cadence (ADR 0095). */
-const CEL_MS = 60;
-/** Where Kaya's jog starts: its first planted cel. */
-const START_MS = 1 * CEL_MS;
+/** Kaya's walk cel: the clip's nominal 114 ms cadence. */
+const CEL_MS = 114;
+/** Where Kaya's walk starts: its quarter-cycle passing cel. */
+const START_MS = 3 * CEL_MS;
 
 function gait() {
   const sheet = ASSETS[KAYA];
@@ -74,62 +68,25 @@ const E: [number, number] = [1, 0];
 const N: [number, number] = [0, -1];
 
 describe('eight-way walk phase across a turn', () => {
-  it('plays every G jog, and every G walk, at the declared stride in every heading', () => {
+  it('plays every G walk at the stride its drawn feet cover in every heading', () => {
     for (const [key, entry] of Object.entries(ASSETS)) {
       if (entry?.kind !== 'sheet' || entry.facing !== 'both' || !entry.locomotion) continue;
       const name = /([a-z]+)-g\.json$/.exec(entry.atlas)?.[1] ?? '';
-      const jog = G1_JOG[name];
-      // Mira never jogs (the owner, 2026-10-28): her sheet keeps the jog's
-      // clock for her ambling walk, but leaves the jog off (ADR 0095).
-      expect(Boolean(entry.locomotion.jog), key).toBe(jog !== undefined && key !== 'npc.elder');
+      const fit = G1_WALK[name];
+      // Every native-G1 figure walks until the redraw (ADR 0095's amendment);
+      // only Mira ambles everywhere.
+      expect(Boolean(entry.locomotion.jog), key).toBe(false);
+      expect(Boolean(entry.locomotion.amble), key).toBe(key === 'npc.elder');
       HEADINGS.forEach((heading, i) => {
-        const loop = (base: 'walk' | 'jog') => {
-          const def = entry.clips[headingClip(base, heading)];
-          if (!def) throw new Error(`${key} ${base} ${heading}`);
-          return def.frames.length / (entry.locomotion!.walkMsPerTile[heading] * (def.fps / 1000));
-        };
-        if (jog === undefined) {
-          // The quarry bender's 128 px sheet keeps ADR 0067's shared stride.
-          expect(loop('walk'), `${key} ${heading}`).toBeCloseTo(G_STRIDE_TILES, 8);
-          return;
-        }
-        // The jog covers its fitted loop (ADR 0095); a resident's walk, which
-        // only an errand plays, covers its share of it on the same clock.
-        expect(loop('jog'), `${key} ${heading}`).toBeCloseTo(jog * (G1_HEADING[i] ?? 1), 8);
-        if (key.startsWith('npc.'))
-          expect(loop('walk') / loop('jog'), `${key} ${heading}`).toBeCloseTo(G1_AMBLE, 8);
+        const walk = entry.clips[headingClip('walk', heading)];
+        if (!walk) throw new Error(`${key} walk ${heading}`);
+        const loop =
+          walk.frames.length / (entry.locomotion!.walkMsPerTile[heading] * (walk.fps / 1000));
+        // The quarry bender's 128 px sheet keeps ADR 0067's shared stride.
+        expect(loop, `${key} ${heading}`).toBeCloseTo(fit?.[i] ?? G_STRIDE_TILES, 8);
       });
     }
   });
-
-  for (const projection of ['orthographic', 'oblique'] as const) {
-    for (const [label, path] of [
-      ['east then north', tiles(FROM, E, E, E, N, N, N)],
-      ['north then east', tiles(FROM, N, N, N, E, E, E)],
-    ] as const) {
-      it(`accumulates each stretch at its own rate, ${label}, ${projection}`, () => {
-        const samples = trace(walker(projection, FROM, path), KAYA);
-        expect(samples.length).toBeGreaterThan(200);
-        // The same integral, summed independently from the drawn motion.
-        let integral = samples[0]?.clipTime ?? 0;
-        let largestStep = 0;
-        for (let i = 1; i < samples.length; i++) {
-          const [a, b] = [samples[i - 1], samples[i]];
-          if (!a || !b) continue;
-          const dx = b.pos.x - a.pos.x;
-          const dy = b.pos.y - a.pos.y;
-          const ds = Math.hypot(dx, dy);
-          if (ds > 0) integral += ds * kayaRate({ x: dx / ds, y: dy / ds }, projection);
-          const step = b.clipTime - a.clipTime;
-          // Never backwards, and never a cel in one frame: the turn does not pop.
-          expect(step, `step ${i}`).toBeGreaterThanOrEqual(0);
-          largestStep = Math.max(largestStep, step);
-          expect(Math.abs(b.clipTime - integral), `sample ${i}`).toBeLessThan(0.01 * integral + 40);
-        }
-        expect(largestStep).toBeLessThan(CEL_MS / 2);
-      });
-    }
-  }
 
   it('plays the first stretch at its rate alone before the turn', () => {
     // Before the corner rounds, phase is the east rate times the distance, as

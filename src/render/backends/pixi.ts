@@ -151,6 +151,7 @@ import {
   castShadowStrength,
   contactBandRows,
   contactBand,
+  castFrame,
   shadowCeiling,
   spriteBandArt,
   type BandArt,
@@ -493,6 +494,8 @@ export class PixiBackend implements RenderBackend {
   /** Top edge of each unit's bar this frame (as drawn, staggered): floating numbers start above it. */
   private barTops = new Map<string, number>();
   private unitSprites = new Map<string, Sprite>();
+  /** Off-stage casters: a figure's heading idle cel, posed as its body, for its steady shadow (ADR 0093). */
+  private castSources = new Map<string, Sprite>();
   private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
   private frameTextures = new Map<string, Texture>();
   private climbLabels: Text[] = [];
@@ -729,6 +732,7 @@ export class PixiBackend implements RenderBackend {
     this.shadowFilter = null;
     this.dropTextures();
     this.unitSprites.clear();
+    this.castSources.clear();
     this.breezePools.clear();
     this.sceneTextures.clear();
     this.groundChunks.clear();
@@ -1211,6 +1215,27 @@ export class PixiBackend implements RenderBackend {
     target.alpha = Math.max(0, Math.min(1, (strength * alpha) / shadowCeiling(this.grounding)));
     target.blendMode = 'max';
     target.visible = source.visible && target.alpha > 0;
+  }
+
+  /**
+   * What a figure casts (ADR 0093): `cast`, its heading's idle cel, posed exactly as its `body` is (the
+   * same sheet's cels share a grain, so the body's scale, facing and lean carry over), or the body itself.
+   */
+  private steadyCaster(key: string, body: Sprite, cast: ResolvedFrame | null | false): Sprite {
+    if (!cast) return body;
+    let source = this.castSources.get(key);
+    if (!source) {
+      source = new Sprite();
+      this.castSources.set(key, source);
+    }
+    source.texture = this.frameTexture(cast);
+    source.anchor.set(cast.anchor.x, cast.anchor.y);
+    source.position.copyFrom(body.position);
+    source.scale.copyFrom(body.scale);
+    source.rotation = body.rotation;
+    source.visible = body.visible;
+    source.updateLocalTransform();
+    return source;
   }
 
   /** Adds this frame's actor or moving-prop silhouette to the dynamic union. */
@@ -2773,9 +2798,23 @@ export class PixiBackend implements RenderBackend {
       sprite.rotation = npc.lean ?? 0;
       sprite.alpha = alpha;
       sprite.visible = true;
+      const npcSteady = castFrame(clip);
       this.projectDynamicShadow(
         `npc:${npc.id}`,
-        sprite,
+        this.steadyCaster(
+          key,
+          sprite,
+          !!frame &&
+            npcSteady &&
+            sheets.frame(
+              npc.sprite,
+              npcSteady.clip,
+              npcSteady.clipTime,
+              undefined,
+              px * scale,
+              width,
+            ),
+        ),
         { x: footX, y: (this.grounding.contact > 0 ? ground : y) + FOOT_LINE * TILE },
         alpha,
         this.grounding.cast,
@@ -2931,6 +2970,7 @@ export class PixiBackend implements RenderBackend {
       sprite.alpha = alpha;
       sprite.visible = true;
       sprite.zIndex = depth(pos, unit.size);
+      const unitSteady = castFrame(locomotion);
       const castStrength = castShadowStrength(unit.castShadow);
       const grounded = this.grounding.contact > 0;
       // With a contact layer the foot is the tile's ground, so the walk bob lifts
@@ -2943,7 +2983,23 @@ export class PixiBackend implements RenderBackend {
       if (castStrength > 0) {
         this.projectDynamicShadow(
           `unit:${unit.id}`,
-          sprite,
+          this.steadyCaster(
+            unit.id,
+            sprite,
+            !!frame &&
+              !bend &&
+              unitSteady &&
+              sheets.frame(
+                unit.sprite,
+                unitSteady.clip,
+                unitSteady.clipTime,
+                undefined,
+                px * scale,
+                unit.size,
+                undefined,
+                heightTiles,
+              ),
+          ),
           castFoot,
           castStrength * bodyShade,
           this.grounding.cast,

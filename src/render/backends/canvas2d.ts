@@ -100,6 +100,7 @@ import {
   castShadowStrength,
   contactBandRows,
   contactBand,
+  castFrame,
   spriteBandArt,
   type BandArt,
   type CastKey,
@@ -1925,9 +1926,10 @@ export class Canvas2DBackend implements RenderBackend {
       box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
       const scale = npc.scale ?? 1;
       const foot = { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size };
+      const clip = npcClip(npc);
       const frame = sheets.frame(
         npc.sprite,
-        npcClip(npc),
+        clip,
         npc.clipTime ?? 0,
         undefined,
         box.size * dpr * scale,
@@ -1937,11 +1939,24 @@ export class Canvas2DBackend implements RenderBackend {
       const band = contactBand(this.grounding, 1);
       if (frame) {
         const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
+        // A standing or walking resident casts its heading's idle cel: one steady shadow (ADR 0093).
+        const steady = castFrame(clip);
+        const cast =
+          (steady &&
+            sheets.frame(
+              npc.sprite,
+              steady.clip,
+              steady.clipTime,
+              undefined,
+              box.size * dpr * scale,
+              width,
+            )) ||
+          frame;
         this.projectMask(
           target,
-          frame.source,
-          frame.frame,
-          placed,
+          cast.source,
+          cast.frame,
+          cast === frame ? placed : placeFrame(cast, foot.x, foot.y, box.size * scale),
           foot,
           npc.alpha ?? 1,
           false,
@@ -2036,12 +2051,27 @@ export class Canvas2DBackend implements RenderBackend {
         );
       if (frame) {
         const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
-        const f = frame.frame;
+        // A standing or moving figure casts its heading's idle cel: one steady shadow (ADR 0093).
+        const steady = castFrame(unit.clip ?? 'idle');
+        const cast =
+          (!bend &&
+            steady &&
+            sheets.frame(
+              unit.sprite,
+              steady.clip,
+              steady.clipTime,
+              undefined,
+              box.size * dpr * scale,
+              unit.size,
+              undefined,
+              heightTiles,
+            )) ||
+          frame;
         this.projectMask(
           target,
-          frame.source,
-          f,
-          placed,
+          cast.source,
+          cast.frame,
+          cast === frame ? placed : placeFrame(cast, foot.x, foot.y, box.size * scale),
           foot,
           (unit.alpha ?? 1) *
             (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *

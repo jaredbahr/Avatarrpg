@@ -2,17 +2,22 @@
  * The grounding rule of ADR 0093: everything a backend draws standing on an
  * oblique board — every figure and every prop — gets a contact shadow under its
  * feet or base and a cast down-right along its scene's key, hard-edged on the
- * world-pixel grid, on both backends.
+ * world-pixel grid, on both backends. A figure's cast is one steady shape a
+ * heading, its idle's first cel, whatever its legs are doing (owner, 2026-10-28);
+ * its contact band still follows the drawn feet.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ALL_MAPS } from '../content/index';
+import { ASSETS } from '../content/assets/manifest';
+import type { ClipName } from '../content/assets/clips';
 import {
   CAST_PER_PIXEL,
   CONTACT_LINE,
   KEY_LIGHT_SCREEN,
   SHADOW_LEVEL_SLOTS,
   actorGrounding,
+  castFrame,
   contactBand,
   shadowGrid,
   shadowLevels,
@@ -73,6 +78,51 @@ describe('every standing thing on an oblique board is grounded', () => {
   });
 });
 
+describe("a figure's cast is steady (ADR 0093's amendment)", () => {
+  type Clips = Partial<Record<string, { frames: readonly string[]; fps: number }>>;
+  const eightWay = Object.entries(ASSETS).flatMap(([key, asset]) =>
+    'locomotion' in asset && asset.locomotion ? [{ key, clips: asset.clips as Clips }] : [],
+  );
+  // The atlas frame a clip shows at a clip time, as the sheet resolves a looped clip.
+  const at = (clips: Clips, name: string, time: number) => {
+    const def = clips[name];
+    return def?.frames[Math.floor((time * def.fps) / 1000) % def.frames.length];
+  };
+
+  it('covers every eight-way figure the game ships', () => {
+    expect(eightWay.length).toBeGreaterThan(0);
+  });
+
+  for (const { key, clips } of eightWay) {
+    const moving = Object.keys(clips).filter((clip) => /^(walk|jog)/.test(clip));
+
+    it(`casts ${key} from one cel across every cel of each walk and jog clip`, () => {
+      expect(moving.length).toBeGreaterThan(0);
+      for (const name of moving) {
+        const clip = clips[name];
+        if (!clip) continue;
+        // What each drawn cel casts, as the backends choose it: the steady cel, or (null) the cel drawn.
+        const cast = new Set(
+          clip.frames.map((_, cel) => {
+            const steady = castFrame(name as ClipName);
+            return steady
+              ? at(clips, steady.clip, steady.clipTime)
+              : at(clips, name, (cel * 1000) / clip.fps);
+          }),
+        );
+        const idle = clips[name.replace(/^(walk|jog)/, 'idle')]?.frames[0];
+        expect(idle, `${key} ${name} has an idle to cast`).toBeDefined();
+        expect([...cast], `${key} ${name}`).toEqual([idle]);
+      }
+    });
+  }
+
+  it('casts an action from its own frame, so a body that falls lies on its shadow', () => {
+    for (const clip of ['hit', 'ko', 'cast', 'melee', 'koSouthEast'] as const)
+      expect(castFrame(clip)).toBeNull();
+  });
+});
+
 describe('the shadow mask is on the world-pixel grid', () => {
   for (const [scale, offsetX, offsetY] of [
     [2, 852, 347],
@@ -124,6 +174,9 @@ describe('both backends draw the same grounding', () => {
     });
     it(`${file} casts figures and props along the scene key`, () => {
       expect(source.match(/this\.grounding\.castKey/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    });
+    it(`${file} casts every figure and resident from its steady cel`, () => {
+      expect(source.match(/castFrame\(/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
     });
     it(`${file} seats every prop on its contact line and casts it from its own ground`, () => {
       expect(source).toContain('projectContactLine(');
