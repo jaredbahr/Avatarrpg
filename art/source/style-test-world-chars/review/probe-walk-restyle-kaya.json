@@ -1,0 +1,90 @@
+{
+ "south-east/locked": {
+  "boil": [
+   0.223,
+   0.269,
+   0.243
+  ],
+  "colours": [
+   22,
+   25
+  ]
+ },
+ "south-east/restyled": {
+  "boil": [
+   0.341,
+   0.762,
+   0.474
+  ],
+  "colours": [
+   85,
+   112
+  ]
+ },
+ "south-west/locked": {
+  "boil": [
+   0.168,
+   0.273,
+   0.227
+  ],
+  "colours": [
+   23,
+   26
+  ]
+ },
+ "south-west/restyled": {
+  "boil": [
+   0.339,
+   0.732,
+   0.456
+  ],
+  "colours": [
+   91,
+   112
+  ]
+ },
+ "north-east/locked": {
+  "boil": [
+   0.155,
+   0.437,
+   0.279
+  ],
+  "colours": [
+   19,
+   20
+  ]
+ },
+ "north-east/restyled": {
+  "boil": [
+   0.246,
+   0.54,
+   0.375
+  ],
+  "colours": [
+   67,
+   95
+  ]
+ },
+ "north-west/locked": {
+  "boil": [
+   0.246,
+   0.329,
+   0.304
+  ],
+  "colours": [
+   18,
+   20
+  ]
+ },
+ "north-west/restyled": {
+  "boil": [
+   0.32,
+   0.391,
+   0.364
+  ],
+  "colours": [
+   57,
+   81
+  ]
+ }
+}

@@ -1,0 +1,156 @@
+{
+ "crop": [
+  1040,
+  980,
+  1552,
+  1492
+ ],
+ "scale": 1.25,
+ "cell": 128,
+ "figures": [
+  {
+   "char": "kaya",
+   "dir": "south-east",
+   "x": 49,
+   "y": 34,
+   "w": 31,
+   "h": 81,
+   "height": 76
+  },
+  {
+   "char": "kaya",
+   "dir": "south-west",
+   "x": 176,
+   "y": 34,
+   "w": 32,
+   "h": 82,
+   "height": 76
+  },
+  {
+   "char": "kaya",
+   "dir": "north-east",
+   "x": 303,
+   "y": 38,
+   "w": 35,
+   "h": 78,
+   "height": 73
+  },
+  {
+   "char": "kaya",
+   "dir": "north-west",
+   "x": 430,
+   "y": 39,
+   "w": 35,
+   "h": 76,
+   "height": 72
+  },
+  {
+   "char": "sura",
+   "dir": "south-east",
+   "x": 50,
+   "y": 164,
+   "w": 30,
+   "h": 79,
+   "height": 75
+  },
+  {
+   "char": "sura",
+   "dir": "south-west",
+   "x": 177,
+   "y": 163,
+   "w": 31,
+   "h": 80,
+   "height": 76
+  },
+  {
+   "char": "sura",
+   "dir": "north-east",
+   "x": 306,
+   "y": 165,
+   "w": 30,
+   "h": 78,
+   "height": 74
+  },
+  {
+   "char": "sura",
+   "dir": "north-west",
+   "x": 434,
+   "y": 167,
+   "w": 30,
+   "h": 76,
+   "height": 72
+  },
+  {
+   "char": "bo",
+   "dir": "south-east",
+   "x": 49,
+   "y": 291,
+   "w": 31,
+   "h": 80,
+   "height": 76
+  },
+  {
+   "char": "bo",
+   "dir": "south-west",
+   "x": 175,
+   "y": 292,
+   "w": 34,
+   "h": 79,
+   "height": 75
+  },
+  {
+   "char": "bo",
+   "dir": "north-east",
+   "x": 304,
+   "y": 291,
+   "w": 32,
+   "h": 80,
+   "height": 76
+  },
+  {
+   "char": "bo",
+   "dir": "north-west",
+   "x": 433,
+   "y": 295,
+   "w": 31,
+   "h": 76,
+   "height": 72
+  },
+  {
+   "char": "gao",
+   "dir": "south-east",
+   "x": 44,
+   "y": 423,
+   "w": 41,
+   "h": 76,
+   "height": 72
+  },
+  {
+   "char": "gao",
+   "dir": "south-west",
+   "x": 176,
+   "y": 421,
+   "w": 34,
+   "h": 78,
+   "height": 74
+  },
+  {
+   "char": "gao",
+   "dir": "north-east",
+   "x": 305,
+   "y": 423,
+   "w": 31,
+   "h": 76,
+   "height": 72
+  },
+  {
+   "char": "gao",
+   "dir": "north-west",
+   "x": 428,
+   "y": 423,
+   "w": 40,
+   "h": 76,
+   "height": 72
+  }
+ ]
+}
