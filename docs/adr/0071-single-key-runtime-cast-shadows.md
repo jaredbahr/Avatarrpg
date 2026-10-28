@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted.
+Accepted. Amended by ADR 0093: the union is drawn at one texel per world pixel on the world-pixel grid and
+sampled nearest on both backends, and a scene may name its own cast key.
 
 ## Context
 

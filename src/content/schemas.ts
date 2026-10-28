@@ -600,6 +600,11 @@ export const mapSchema = z
           .object({
             cast: z.number().min(0).max(1).optional(),
             contact: z.number().min(0).max(1).optional(),
+            // Down-right only: the one key light is upper-left (ADR 0093).
+            castKey: z
+              .object({ x: z.number().positive().max(1), y: z.number().positive().max(1) })
+              .strict()
+              .optional(),
           })
           .strict()
           .optional(),

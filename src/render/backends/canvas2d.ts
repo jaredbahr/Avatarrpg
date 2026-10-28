@@ -86,9 +86,12 @@ import {
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
+import { groundedCastArt } from '../groundedCastArt';
 import {
+  CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
   CONTACT_BAND,
+  CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
   SHADOW_COLOR,
@@ -99,8 +102,11 @@ import {
   shadowCeiling,
   spriteBandArt,
   type BandArt,
+  type CastKey,
+  type ShadowGrid,
   structureShadowPolygons,
   tileShadowCell,
+  shadowGrid,
   silhouetteProjection,
 } from '../lighting';
 
@@ -148,6 +154,8 @@ export class Canvas2DBackend implements RenderBackend {
   private masks = new WeakMap<HTMLCanvasElement | HTMLImageElement, HTMLCanvasElement>();
   /** One union mask, rebuilt each frame from every upright silhouette. */
   private shadowLayer: HTMLCanvasElement | null = null;
+  /** This frame's shadow mask texels (`drawCastShadows`). */
+  private shadowGridNow: ShadowGrid | null = null;
   /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
   private grounding = DEFAULT_ACTOR_GROUNDING;
   /** One caster at a time, in the exact-max path (see `castInto`). */
@@ -1399,10 +1407,16 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  /** Cast every upright alpha silhouette into one mask, then tint once. */
+  /**
+   * Cast every upright alpha silhouette into one mask, then tint once. The mask
+   * is one texel per world pixel on the world-pixel grid (`shadowGrid`, ADR
+   * 0093): casters are drawn into it with nearest sampling and it is scaled up
+   * nearest, so every shadow is hard-edged and stepped like the art beside it.
+   */
   private drawCastShadows(view: MapView, camera: Camera): void {
-    const width = Math.ceil(camera.viewport.width);
-    const height = Math.ceil(camera.viewport.height);
+    const grid = shadowGrid(camera.viewport, camera.scale, camera.offsetX, camera.offsetY);
+    this.shadowGridNow = grid;
+    const { width, height } = grid;
     if (
       !this.shadowLayer ||
       this.shadowLayer.width !== width ||
@@ -1427,10 +1441,16 @@ export class Canvas2DBackend implements RenderBackend {
         this.castScratch.width = width;
         this.castScratch.height = height;
       }
-      layer.globalCompositeOperation = 'source-over';
+      const scratch = this.castScratch.getContext('2d');
+      if (scratch) this.toShadowTexels(scratch, grid);
+    }
+    layer.setTransform(1, 0, 0, 1, 0, 0);
+    layer.globalCompositeOperation = 'source-over';
+    if (exact) {
       layer.fillStyle = '#000000';
       layer.fillRect(0, 0, width, height);
     } else layer.clearRect(0, 0, width, height);
+    this.toShadowTexels(layer, grid);
     this.drawStructureShadowMask(layer, view, camera);
 
     // Scenery and still props are drawn straight into the union each frame:
@@ -1446,6 +1466,7 @@ export class Canvas2DBackend implements RenderBackend {
       );
     }
     this.drawLiveShadowMask(layer, view, camera);
+    layer.setTransform(1, 0, 0, 1, 0, 0);
     if (exact) {
       this.compositeExactShadow(layer, view, camera, width, height);
       return;
@@ -1457,8 +1478,35 @@ export class Canvas2DBackend implements RenderBackend {
     this.ctx.save();
     this.ctx.globalAlpha = shadowCeiling(this.grounding);
     this.clipShadowGround(this.ctx, view, camera);
-    this.ctx.drawImage(this.shadowLayer, 0, 0);
+    this.drawShadowTexels(this.shadowLayer, grid);
     this.ctx.restore();
+  }
+
+  /** A mask context draws in screen CSS px onto world-pixel texels, sampling its casters nearest. */
+  private toShadowTexels(target: CanvasRenderingContext2D, grid: ShadowGrid): void {
+    target.setTransform(
+      1 / grid.texel,
+      0,
+      0,
+      1 / grid.texel,
+      -grid.originX / grid.texel,
+      -grid.originY / grid.texel,
+    );
+    target.imageSmoothingEnabled = false;
+  }
+
+  /** Lays a world-pixel mask over the screen, each texel a hard block of one world pixel. */
+  private drawShadowTexels(source: HTMLCanvasElement, grid: ShadowGrid): void {
+    const smoothing = this.ctx.imageSmoothingEnabled;
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.drawImage(
+      source,
+      grid.originX,
+      grid.originY,
+      grid.width * grid.texel,
+      grid.height * grid.texel,
+    );
+    this.ctx.imageSmoothingEnabled = smoothing;
   }
 
   /**
@@ -1478,7 +1526,8 @@ export class Canvas2DBackend implements RenderBackend {
    * scratch (transparent, so the source's colours do not matter), turns that to
    * white at the caster's own alpha on black, scales it by `level` (`multiply`
    * by an opaque grey is exact) and `lighten`s it into the layer. `bounds` is
-   * where the caster can have drawn, in layer pixels.
+   * where the caster can have drawn, in screen CSS px; the pixel work is done in
+   * the mask's texels.
    */
   private castInto(
     layer: CanvasRenderingContext2D,
@@ -1487,21 +1536,31 @@ export class Canvas2DBackend implements RenderBackend {
     draw: (target: CanvasRenderingContext2D) => void,
   ): void {
     const scratch = this.exactMax() ? this.castScratch?.getContext('2d') : null;
-    if (!scratch || !this.castScratch) {
+    const grid = this.shadowGridNow;
+    if (!scratch || !this.castScratch || !grid) {
       draw(layer);
       return;
     }
-    const x0 = Math.max(0, Math.floor(bounds.x0) - 1);
-    const y0 = Math.max(0, Math.floor(bounds.y0) - 1);
-    const x1 = Math.min(this.castScratch.width, Math.ceil(bounds.x1) + 1);
-    const y1 = Math.min(this.castScratch.height, Math.ceil(bounds.y1) + 1);
+    const x0 = Math.max(0, Math.floor((bounds.x0 - grid.originX) / grid.texel) - 1);
+    const y0 = Math.max(0, Math.floor((bounds.y0 - grid.originY) / grid.texel) - 1);
+    const x1 = Math.min(
+      this.castScratch.width,
+      Math.ceil((bounds.x1 - grid.originX) / grid.texel) + 1,
+    );
+    const y1 = Math.min(
+      this.castScratch.height,
+      Math.ceil((bounds.y1 - grid.originY) / grid.texel) + 1,
+    );
     if (x1 <= x0 || y1 <= y0) return;
     scratch.save();
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.beginPath();
     scratch.rect(x0, y0, x1 - x0, y1 - y0);
     scratch.clip();
     scratch.clearRect(x0, y0, x1 - x0, y1 - y0);
+    this.toShadowTexels(scratch, grid);
     draw(scratch);
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.globalCompositeOperation = 'source-in';
     scratch.fillStyle = '#ffffff';
     scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
@@ -1513,7 +1572,9 @@ export class Canvas2DBackend implements RenderBackend {
     scratch.fillStyle = `rgb(${grey}, ${grey}, ${grey})`;
     scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
     scratch.restore();
+    this.toShadowTexels(scratch, grid);
     layer.save();
+    layer.setTransform(1, 0, 0, 1, 0, 0);
     layer.globalCompositeOperation = 'lighten';
     layer.drawImage(this.castScratch, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
     layer.restore();
@@ -1528,16 +1589,18 @@ export class Canvas2DBackend implements RenderBackend {
     height: number,
   ): void {
     const scratch = this.castScratch?.getContext('2d');
-    if (!scratch || !this.castScratch || !this.shadowLayer) return;
+    const grid = this.shadowGridNow;
+    if (!scratch || !this.castScratch || !this.shadowLayer || !grid) return;
     this.ctx.save();
     this.clipShadowGround(this.ctx, view, camera);
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.globalCompositeOperation = 'source-over';
     scratch.fillStyle = '#ffffff';
     scratch.fillRect(0, 0, width, height);
     scratch.globalCompositeOperation = 'difference';
     scratch.drawImage(this.shadowLayer, 0, 0);
     this.ctx.globalCompositeOperation = 'multiply';
-    this.ctx.drawImage(this.castScratch, 0, 0);
+    this.drawShadowTexels(this.castScratch, grid);
     scratch.globalCompositeOperation = 'source-over';
     scratch.fillStyle = SHADOW_COLOR;
     scratch.fillRect(0, 0, width, height);
@@ -1545,7 +1608,7 @@ export class Canvas2DBackend implements RenderBackend {
     scratch.drawImage(this.shadowLayer, 0, 0);
     scratch.globalCompositeOperation = 'source-over';
     this.ctx.globalCompositeOperation = 'lighter';
-    this.ctx.drawImage(this.castScratch, 0, 0);
+    this.drawShadowTexels(this.castScratch, grid);
     this.ctx.restore();
     layer.globalCompositeOperation = 'source-over';
   }
@@ -1619,8 +1682,9 @@ export class Canvas2DBackend implements RenderBackend {
     alpha = 1,
     flip = false,
     level = CAST_SHADOW_ALPHA,
+    key: CastKey = CAST_PER_PIXEL,
   ): void {
-    const m = silhouetteProjection(foot.x, foot.y);
+    const m = silhouetteProjection(foot.x, foot.y, key);
     const x0 = flip ? 2 * foot.x - dest.x - dest.w : dest.x;
     this.castInto(
       target,
@@ -1689,6 +1753,34 @@ export class Canvas2DBackend implements RenderBackend {
           placed.w,
           destH,
         );
+        t.restore();
+      },
+    );
+  }
+
+  /**
+   * A prop's contact line: its own silhouette `CONTACT_LINE` world pixels lower,
+   * at the contact level, so a line that deep shows under every edge it
+   * stands on, whatever shape its base is (ADR 0093). It is how the painting's
+   * G1 objects meet the ground (`objects.py`); a figure's band is cut from its
+   * soles instead, because a figure stands on two small feet.
+   */
+  private projectContactLine(
+    target: CanvasRenderingContext2D,
+    source: CanvasImageSource,
+    placed: { x: number; y: number; w: number; h: number },
+    alpha: number,
+    worldPixel: number,
+  ): void {
+    const y = placed.y + CONTACT_LINE * worldPixel;
+    this.castInto(
+      target,
+      this.grounding.contact,
+      { x0: placed.x, y0: y, x1: placed.x + placed.w, y1: y + placed.h },
+      (t) => {
+        t.save();
+        t.globalAlpha = alpha;
+        t.drawImage(source, placed.x, y, placed.w, placed.h);
         t.restore();
       },
     );
@@ -1771,6 +1863,7 @@ export class Canvas2DBackend implements RenderBackend {
           npc.alpha ?? 1,
           false,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         // A painter resident's baked frame is only the cast's stand-in: its band is cut from what is drawn.
         if (band && entry.kind === 'sheet')
@@ -1796,6 +1889,7 @@ export class Canvas2DBackend implements RenderBackend {
             npc.alpha ?? 1,
             false,
             this.grounding.cast,
+            this.grounding.castKey,
           );
         if (band) {
           const k = scale * (npc.poseScale ?? 1);
@@ -1874,6 +1968,7 @@ export class Canvas2DBackend implements RenderBackend {
             castShadowStrength(unit.castShadow),
           !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         if (band)
           this.projectContactMask(
@@ -1912,6 +2007,7 @@ export class Canvas2DBackend implements RenderBackend {
             castShadowStrength(unit.castShadow),
           false,
           this.grounding.cast,
+          this.grounding.castKey,
         );
         if (band)
           this.projectContactMask(
@@ -1941,14 +2037,28 @@ export class Canvas2DBackend implements RenderBackend {
       const box = camera.spriteBox(prop.pos);
       box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
-      this.projectMask(
-        target,
-        sprite,
-        null,
-        { x: box.x, y: box.y, w: box.size, h: box.size },
-        { x: box.x + box.size / 2, y: box.y + FOOT_LINE * box.size },
-        castShadowStrength(prop.castShadow),
-      );
+      const placed = { x: box.x, y: box.y, w: box.size, h: box.size };
+      const strength = castShadowStrength(prop.castShadow);
+      // A prop casts from its own ground, down the scene's key, and meets it on its contact line.
+      const cast = strength > 0 ? groundedCastArt(sprite, this.grounding.castKey) : null;
+      if (cast) {
+        const k = placed.w / Math.max(1, sprite.width);
+        const w = cast.width * k;
+        const h = cast.height * k;
+        this.castInto(
+          target,
+          this.grounding.cast,
+          { x0: placed.x, y0: placed.y, x1: placed.x + w, y1: placed.y + h },
+          (t) => {
+            t.save();
+            t.globalAlpha = strength;
+            t.drawImage(cast, placed.x, placed.y, w, h);
+            t.restore();
+          },
+        );
+      }
+      if (groundTreatment(this.grounding, { castStrength: strength, defaultPool: false }).band)
+        this.projectContactLine(target, sprite, placed, strength, camera.scale);
     }
   }
 

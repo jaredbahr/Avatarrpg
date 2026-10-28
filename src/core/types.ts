@@ -980,10 +980,15 @@ export interface MapScene {
   /** The trees whose leaves drift off in the ambience, in ground tiles at the trunk. */
   readonly canopies?: readonly Vec2[];
   /**
-   * How strongly the renderer grounds figures here (see `ActorGrounding` in
-   * render/lighting.ts). Absent, the defaults every other scene uses.
+   * How strongly the renderer grounds figures and props here, and along which
+   * key their casts fall (see `ActorGrounding` in render/lighting.ts). Absent,
+   * the defaults every other scene uses.
    */
-  readonly actorGrounding?: { readonly cast?: number; readonly contact?: number };
+  readonly actorGrounding?: {
+    readonly cast?: number;
+    readonly contact?: number;
+    readonly castKey?: { readonly x: number; readonly y: number };
+  };
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
   readonly flock?: SceneFlock;

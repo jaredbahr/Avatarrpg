@@ -18,7 +18,6 @@
  */
 
 import { resolveAsset } from '../content/assets/manifest';
-import { FALLBACK_SHADOW_WIDTH, measureArt } from './propFootprint';
 import { resolvePainter } from './painters/registry';
 import { groundShadow } from './painters/shapes';
 import type { PainterOptions } from './painters/units';
@@ -49,21 +48,11 @@ export const MAX_SPRITE_PX = 256;
 /** 128 entries at the cap is 32 MB of canvas: comfortably under the iOS limit. */
 const MAX_ENTRIES = 128;
 
-/**
- * A prop is all pool and no body above it, so it takes less of the figure's
- * density: measured under the rubble heap against the reference's crates.
- */
-const PROP_SHADOW_DENSITY = 0.55;
-
 export class SpriteCache {
   private entries = new Map<string, CacheEntry>();
   private images = new Map<string, HTMLImageElement | null>();
   private loading = new Map<string, Promise<boolean>>();
   private failed = new Set<string>();
-  /** Measured contact-shadow width per prop key; art does not change at runtime. */
-  private propWidths = new Map<string, number>();
-  /** Where each prop's art ends, so a heap that sits high is not shadowed below it. */
-  private propFoot = new Map<string, number>();
 
   /** Painted sprites are cheap to rebuild; drop them all on a big resize. */
   clear(): void {
@@ -106,19 +95,8 @@ export class SpriteCache {
     if (ctx) {
       const image = this.image(key);
       if (image) {
-        // Prop PNGs contain no painted floor or shadow: retain ground contact
-        // on both backends, at the same baseline as their procedural fallback.
-        // The footprint is measured from the art so the feathered rim shows
-        // around the base, which is what stops a crate or a stone pile from
-        // meeting the ground on a bare line.
-        if (key.startsWith('prop.'))
-          groundShadow(
-            ctx,
-            { x: 0, y: 0, size: bucketed },
-            this.propWidth(key, image),
-            PROP_SHADOW_DENSITY,
-            this.propFoot.get(key),
-          );
+        // Prop PNGs carry no floor or shadow, and get none here: the backends
+        // ground every prop in the shared shadow union (ADR 0093).
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       } else {
         const painter = resolvePainter(key);
@@ -160,18 +138,6 @@ export class SpriteCache {
     if (ctx) groundShadow(ctx, { x: 0, y: 0, size: bucketed }, 0.36, density);
     this.entries.set(cacheKey, { canvas });
     return canvas;
-  }
-
-  /** Cached contact-shadow width for a prop's art, measured once per page. */
-  private propWidth(key: string, image: HTMLImageElement): number {
-    const known = this.propWidths.get(key);
-    if (known !== undefined) return known;
-    const measured = measureArt(image);
-    // An image that is still decoding is not cached: the next frame measures it.
-    if (measured === null) return FALLBACK_SHADOW_WIDTH;
-    this.propWidths.set(key, measured.width);
-    if (measured.foot !== null) this.propFoot.set(key, measured.foot);
-    return measured.width;
   }
 
   /**
