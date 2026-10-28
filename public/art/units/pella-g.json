@@ -1,1 +1,2095 @@
-{"frames":{"npc.kid/idle/0":{"frame":{"x":0,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idle/1":{"frame":{"x":128,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idle/2":{"frame":{"x":256,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idle/3":{"frame":{"x":384,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/0":{"frame":{"x":512,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/1":{"frame":{"x":640,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/2":{"frame":{"x":768,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/3":{"frame":{"x":896,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/4":{"frame":{"x":1024,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/5":{"frame":{"x":1152,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/6":{"frame":{"x":1280,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walk/7":{"frame":{"x":1408,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorth/0":{"frame":{"x":1536,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorth/1":{"frame":{"x":1664,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorth/2":{"frame":{"x":1792,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorth/3":{"frame":{"x":1920,"y":0,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthEast/0":{"frame":{"x":0,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthEast/1":{"frame":{"x":128,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthEast/2":{"frame":{"x":256,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthEast/3":{"frame":{"x":384,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthEast/0":{"frame":{"x":512,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthEast/1":{"frame":{"x":640,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthEast/2":{"frame":{"x":768,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthEast/3":{"frame":{"x":896,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouth/0":{"frame":{"x":1024,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouth/1":{"frame":{"x":1152,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouth/2":{"frame":{"x":1280,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouth/3":{"frame":{"x":1408,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthWest/0":{"frame":{"x":1536,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthWest/1":{"frame":{"x":1664,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthWest/2":{"frame":{"x":1792,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleSouthWest/3":{"frame":{"x":1920,"y":192,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleWest/0":{"frame":{"x":0,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleWest/1":{"frame":{"x":128,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleWest/2":{"frame":{"x":256,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleWest/3":{"frame":{"x":384,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthWest/0":{"frame":{"x":512,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthWest/1":{"frame":{"x":640,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthWest/2":{"frame":{"x":768,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/idleNorthWest/3":{"frame":{"x":896,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/0":{"frame":{"x":1024,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/1":{"frame":{"x":1152,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/2":{"frame":{"x":1280,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/3":{"frame":{"x":1408,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/4":{"frame":{"x":1536,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/5":{"frame":{"x":1664,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/6":{"frame":{"x":1792,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorth/7":{"frame":{"x":1920,"y":384,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/0":{"frame":{"x":0,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/1":{"frame":{"x":128,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/2":{"frame":{"x":256,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/3":{"frame":{"x":384,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/4":{"frame":{"x":512,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/5":{"frame":{"x":640,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/6":{"frame":{"x":768,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthEast/7":{"frame":{"x":896,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/0":{"frame":{"x":1024,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/1":{"frame":{"x":1152,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/2":{"frame":{"x":1280,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/3":{"frame":{"x":1408,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/4":{"frame":{"x":1536,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/5":{"frame":{"x":1664,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/6":{"frame":{"x":1792,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthEast/7":{"frame":{"x":1920,"y":576,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/0":{"frame":{"x":0,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/1":{"frame":{"x":128,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/2":{"frame":{"x":256,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/3":{"frame":{"x":384,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/4":{"frame":{"x":512,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/5":{"frame":{"x":640,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/6":{"frame":{"x":768,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouth/7":{"frame":{"x":896,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/0":{"frame":{"x":1024,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/1":{"frame":{"x":1152,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/2":{"frame":{"x":1280,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/3":{"frame":{"x":1408,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/4":{"frame":{"x":1536,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/5":{"frame":{"x":1664,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/6":{"frame":{"x":1792,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkSouthWest/7":{"frame":{"x":1920,"y":768,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/0":{"frame":{"x":0,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/1":{"frame":{"x":128,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/2":{"frame":{"x":256,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/3":{"frame":{"x":384,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/4":{"frame":{"x":512,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/5":{"frame":{"x":640,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/6":{"frame":{"x":768,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkWest/7":{"frame":{"x":896,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/0":{"frame":{"x":1024,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/1":{"frame":{"x":1152,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/2":{"frame":{"x":1280,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/3":{"frame":{"x":1408,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/4":{"frame":{"x":1536,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/5":{"frame":{"x":1664,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/6":{"frame":{"x":1792,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/walkNorthWest/7":{"frame":{"x":1920,"y":960,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/rest/0":{"frame":{"x":0,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/restNorth/0":{"frame":{"x":128,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/restNorthEast/0":{"frame":{"x":256,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/restSouthEast/0":{"frame":{"x":384,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/restSouth/0":{"frame":{"x":512,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/restSouthWest/0":{"frame":{"x":640,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/restWest/0":{"frame":{"x":768,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}},"npc.kid/restNorthWest/0":{"frame":{"x":896,"y":1152,"w":128,"h":192},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":128,"h":192},"sourceSize":{"w":128,"h":192}}},"meta":{"app":"four-nations-tactics","version":"1","image":"pella-g.webp","format":"RGBA8888","size":{"w":2048,"h":1344},"scale":"1"}}
+{
+  "frames": {
+    "npc.kid/idleSouth/0": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouth/1": {
+      "frame": {
+        "x": 68,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouth/2": {
+      "frame": {
+        "x": 134,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouth/3": {
+      "frame": {
+        "x": 200,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/0": {
+      "frame": {
+        "x": 266,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/1": {
+      "frame": {
+        "x": 332,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/2": {
+      "frame": {
+        "x": 398,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/3": {
+      "frame": {
+        "x": 464,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/4": {
+      "frame": {
+        "x": 530,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/5": {
+      "frame": {
+        "x": 596,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/6": {
+      "frame": {
+        "x": 662,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouth/7": {
+      "frame": {
+        "x": 728,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/restSouth/0": {
+      "frame": {
+        "x": 794,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthEast/0": {
+      "frame": {
+        "x": 860,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthEast/1": {
+      "frame": {
+        "x": 926,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthEast/2": {
+      "frame": {
+        "x": 992,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthEast/3": {
+      "frame": {
+        "x": 1058,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/0": {
+      "frame": {
+        "x": 1124,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/1": {
+      "frame": {
+        "x": 1190,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/2": {
+      "frame": {
+        "x": 1256,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/3": {
+      "frame": {
+        "x": 1322,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/4": {
+      "frame": {
+        "x": 1388,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/5": {
+      "frame": {
+        "x": 1454,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/6": {
+      "frame": {
+        "x": 1520,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthEast/7": {
+      "frame": {
+        "x": 1586,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/restSouthEast/0": {
+      "frame": {
+        "x": 1652,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idle/0": {
+      "frame": {
+        "x": 1718,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idle/1": {
+      "frame": {
+        "x": 1784,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idle/2": {
+      "frame": {
+        "x": 1850,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idle/3": {
+      "frame": {
+        "x": 1916,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/0": {
+      "frame": {
+        "x": 1982,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/1": {
+      "frame": {
+        "x": 2,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/2": {
+      "frame": {
+        "x": 68,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/3": {
+      "frame": {
+        "x": 134,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/4": {
+      "frame": {
+        "x": 200,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/5": {
+      "frame": {
+        "x": 266,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/6": {
+      "frame": {
+        "x": 332,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walk/7": {
+      "frame": {
+        "x": 398,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/rest/0": {
+      "frame": {
+        "x": 464,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthEast/0": {
+      "frame": {
+        "x": 530,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthEast/1": {
+      "frame": {
+        "x": 596,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthEast/2": {
+      "frame": {
+        "x": 662,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthEast/3": {
+      "frame": {
+        "x": 728,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/0": {
+      "frame": {
+        "x": 794,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/1": {
+      "frame": {
+        "x": 860,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/2": {
+      "frame": {
+        "x": 926,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/3": {
+      "frame": {
+        "x": 992,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/4": {
+      "frame": {
+        "x": 1058,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/5": {
+      "frame": {
+        "x": 1124,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/6": {
+      "frame": {
+        "x": 1190,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthEast/7": {
+      "frame": {
+        "x": 1256,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/restNorthEast/0": {
+      "frame": {
+        "x": 1322,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorth/0": {
+      "frame": {
+        "x": 1388,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorth/1": {
+      "frame": {
+        "x": 1454,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorth/2": {
+      "frame": {
+        "x": 1520,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorth/3": {
+      "frame": {
+        "x": 1586,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/0": {
+      "frame": {
+        "x": 1652,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/1": {
+      "frame": {
+        "x": 1718,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/2": {
+      "frame": {
+        "x": 1784,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/3": {
+      "frame": {
+        "x": 1850,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/4": {
+      "frame": {
+        "x": 1916,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/5": {
+      "frame": {
+        "x": 1982,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/6": {
+      "frame": {
+        "x": 2,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorth/7": {
+      "frame": {
+        "x": 68,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/restNorth/0": {
+      "frame": {
+        "x": 134,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthWest/0": {
+      "frame": {
+        "x": 200,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthWest/1": {
+      "frame": {
+        "x": 266,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthWest/2": {
+      "frame": {
+        "x": 332,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleNorthWest/3": {
+      "frame": {
+        "x": 398,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/0": {
+      "frame": {
+        "x": 464,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/1": {
+      "frame": {
+        "x": 530,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/2": {
+      "frame": {
+        "x": 596,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/3": {
+      "frame": {
+        "x": 662,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/4": {
+      "frame": {
+        "x": 728,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/5": {
+      "frame": {
+        "x": 794,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/6": {
+      "frame": {
+        "x": 860,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkNorthWest/7": {
+      "frame": {
+        "x": 926,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/restNorthWest/0": {
+      "frame": {
+        "x": 992,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleWest/0": {
+      "frame": {
+        "x": 1058,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleWest/1": {
+      "frame": {
+        "x": 1124,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleWest/2": {
+      "frame": {
+        "x": 1190,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleWest/3": {
+      "frame": {
+        "x": 1256,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/0": {
+      "frame": {
+        "x": 1322,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/1": {
+      "frame": {
+        "x": 1388,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/2": {
+      "frame": {
+        "x": 1454,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/3": {
+      "frame": {
+        "x": 1520,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/4": {
+      "frame": {
+        "x": 1586,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/5": {
+      "frame": {
+        "x": 1652,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/6": {
+      "frame": {
+        "x": 1718,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkWest/7": {
+      "frame": {
+        "x": 1784,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/restWest/0": {
+      "frame": {
+        "x": 1850,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthWest/0": {
+      "frame": {
+        "x": 1916,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthWest/1": {
+      "frame": {
+        "x": 1982,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthWest/2": {
+      "frame": {
+        "x": 2,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/idleSouthWest/3": {
+      "frame": {
+        "x": 68,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/0": {
+      "frame": {
+        "x": 134,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/1": {
+      "frame": {
+        "x": 200,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/2": {
+      "frame": {
+        "x": 266,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/3": {
+      "frame": {
+        "x": 332,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/4": {
+      "frame": {
+        "x": 398,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/5": {
+      "frame": {
+        "x": 464,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/6": {
+      "frame": {
+        "x": 530,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/walkSouthWest/7": {
+      "frame": {
+        "x": 596,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.kid/restSouthWest/0": {
+      "frame": {
+        "x": 662,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "pella-g.webp",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 394
+    },
+    "scale": "1"
+  }
+}
