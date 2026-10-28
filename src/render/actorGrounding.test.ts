@@ -129,13 +129,14 @@ describe('both backends draw the same grounding', () => {
     it(`${file} casts figures and props along the scene key`, () => {
       expect(source.match(/this\.grounding\.castKey/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
     });
-    it(`${file} seats every prop on its contact line`, () => {
+    it(`${file} seats every prop on its contact line and casts it from its own ground`, () => {
       expect(source).toContain('projectContactLine(');
       expect(source).toContain('CONTACT_LINE');
+      expect(source).toContain('groundedCastArt(');
     });
   }
 
-  it('lays the contact line one world pixel under the silhouette, as the painting does', () => {
-    expect(CONTACT_LINE).toBe(1);
+  it('lays the contact line deep enough that a whole world pixel shows under the outline', () => {
+    expect(CONTACT_LINE).toBe(2);
   });
 });

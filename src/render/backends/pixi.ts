@@ -128,6 +128,7 @@ import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } fro
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
+import { groundedCastArt } from '../groundedCastArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -1258,7 +1259,44 @@ export class PixiBackend implements RenderBackend {
   }
 
   /**
-   * A prop's contact line: its silhouette one world pixel lower at the contact
+   * A prop's cast from its own ground (`groundedCastArt`): placed exactly as the
+   * prop is, so its base row is its own shadow and no ground shows between them.
+   */
+  private projectGroundedCast(
+    key: string,
+    source: Sprite,
+    art: HTMLCanvasElement,
+    strength: number,
+  ): void {
+    const cast = groundedCastArt(art, this.grounding.castKey);
+    if (!cast) return;
+    this.castLive.add(key);
+    let shadow = this.castSprites.get(key);
+    if (!shadow) {
+      shadow = new Sprite();
+      this.castSprites.set(key, shadow);
+      this.shadowMaskSources.addChild(shadow);
+    }
+    const texture = this.texture(cast);
+    if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+    shadow.texture = texture;
+    shadow.anchor.set(0, 0);
+    shadow.rotation = 0;
+    shadow.position.copyFrom(source.position);
+    // The cast shares the art's pixel size and origin.
+    const k = source.width / Math.max(1, art.width);
+    shadow.width = cast.width * k;
+    shadow.height = cast.height * k;
+    shadow.alpha = Math.max(
+      0,
+      Math.min(1, (strength * this.grounding.cast) / shadowCeiling(this.grounding)),
+    );
+    shadow.blendMode = 'max';
+    shadow.visible = source.visible && shadow.alpha > 0;
+  }
+
+  /**
+   * A prop's contact line: its silhouette `CONTACT_LINE` world pixels lower at the contact
    * level, so a line that deep shows under every edge it stands on (ADR 0093),
    * as the painting's G1 objects meet the ground.
    */
@@ -1284,7 +1322,8 @@ export class PixiBackend implements RenderBackend {
   }
 
   /**
-   * Adds scenery and still-prop silhouettes to the frame's union. They are
+   * Adds scenery silhouettes to the frame's union (props cast from `drawUnits`,
+   * where their art is, along their own ground: `projectGroundedCast`). They are
    * drawn straight into the viewport mask each frame: a few dozen sprites into
    * a half-resolution target costs less than a cached world-space texture, and
    * the cache's size and offset bookkeeping drew the wrong region once the
@@ -1300,19 +1339,6 @@ export class PixiBackend implements RenderBackend {
         source,
         { x: item.x + item.width / 2, y: item.y + item.height },
         castShadowStrength(item.castShadow),
-      );
-    }
-    for (const prop of view.props) {
-      if (prop.burning || prop.castShadow === false) continue;
-      const source = this.unitSprites.get(`prop:${prop.id}`);
-      if (!source?.visible) continue;
-      this.projectDynamicShadow(
-        `prop:${prop.id}`,
-        source,
-        { x: source.x + TILE / 2, y: source.y + FOOT_LINE * TILE },
-        castShadowStrength(prop.castShadow),
-        this.grounding.cast,
-        this.grounding.castKey,
       );
     }
   }
@@ -2740,7 +2766,8 @@ export class PixiBackend implements RenderBackend {
       const key = `prop:${prop.id}`;
       live.add(key);
       const sprite = this.unitSprite(key);
-      sprite.texture = this.texture(sprites.get(prop.sprite, px, { facing: 1 }));
+      const art = sprites.get(prop.sprite, px, { facing: 1 });
+      sprite.texture = this.texture(art);
       const anchor = box(prop.pos);
       sprite.anchor.set(0, 0);
       sprite.position.set(
@@ -2752,18 +2779,9 @@ export class PixiBackend implements RenderBackend {
       sprite.height = TILE;
       sprite.alpha = 1;
       sprite.visible = true;
-      const propFoot = { x: anchor.x + TILE / 2, y: sprite.y + FOOT_LINE * TILE };
       const propStrength = castShadowStrength(prop.castShadow);
-      if (prop.burning && propStrength > 0)
-        this.projectDynamicShadow(
-          `prop:${prop.id}`,
-          sprite,
-          propFoot,
-          propStrength,
-          this.grounding.cast,
-          this.grounding.castKey,
-        );
-      // A prop meets the ground on its own contact line (ADR 0093).
+      // A prop casts from its own ground and meets it on its contact line (ADR 0093).
+      if (propStrength > 0) this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
       if (groundTreatment(this.grounding, { castStrength: propStrength, defaultPool: false }).band)
         this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
 

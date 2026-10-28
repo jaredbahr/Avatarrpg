@@ -86,10 +86,12 @@ export function shadowCeiling(grounding: Pick<ActorGrounding, 'cast' | 'contact'
 }
 
 /**
- * How far a prop's contact line sits below its silhouette, in world pixels: the
- * painting's G1 objects meet the ground on a line this deep (`objects.py`).
+ * How far a prop's contact line sits below its silhouette, in world pixels. The
+ * painting's G1 objects meet the ground on a 1 px line (`objects.py`), but a
+ * prop's art is four pixels to a world pixel and its outline lands mid-texel,
+ * covering half of a 1 px line; at 2 a whole world pixel shows under every edge.
  */
-export const CONTACT_LINE = 1;
+export const CONTACT_LINE = 2;
 
 /** The sole band of a frame laid flat for contact: height in tiles, spread about the foot, drop in tiles. */
 export const CONTACT_BAND = { height: 0.14, spreadX: 1.4, spreadY: 1, drop: 0.03 } as const;
@@ -427,4 +429,96 @@ export function shadowLevels(alphas: readonly number[]): readonly number[] {
       clean.map((a) => Math.max(1, Math.round(a * SHADOW_LEVEL_SLOTS)) / SHADOW_LEVEL_SLOTS),
     );
   return [...levels, ...Array<number>(SHADOW_LEVEL_SLOTS - levels.length).fill(0)];
+}
+
+/**
+ * The ground under each column of a prop's art (ADR 0093): the lower convex hull
+ * of its silhouette's bottom edge, in art pixels, `-1` where the art has no
+ * pixels at all. A box's base edges are their own hull, so they are on the
+ * ground; a tripod's or a cart's hull is the line between its feet or wheels,
+ * so the bowl or the bed between them stands above it. A figure keeps the foot
+ * projection instead: its hands are not on the ground.
+ */
+export function groundProfile(
+  alpha: (x: number, y: number) => number,
+  width: number,
+  height: number,
+  threshold = 128,
+): Int32Array {
+  const bottom: { x: number; y: number }[] = [];
+  for (let x = 0; x < width; x += 1)
+    for (let y = height - 1; y >= 0; y -= 1)
+      if (alpha(x, y) >= threshold) {
+        bottom.push({ x, y });
+        break;
+      }
+  const base = new Int32Array(width).fill(-1);
+  if (bottom.length === 0) return base;
+  // Monotone chain over the bottom points, keeping the chain that bounds them from below (largest y).
+  const hull: { x: number; y: number }[] = [];
+  for (const p of bottom) {
+    for (;;) {
+      const a = hull[hull.length - 2];
+      const b = hull[hull.length - 1];
+      if (!a || !b) break;
+      // Drop b unless it lies below (larger y than) the segment a -> p.
+      if ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) < 0) break;
+      hull.pop();
+    }
+    hull.push(p);
+  }
+  const first = bottom[0]?.x ?? 0;
+  const last = bottom[bottom.length - 1]?.x ?? 0;
+  for (let i = 0; i < hull.length - 1; i += 1) {
+    const a = hull[i];
+    const b = hull[i + 1];
+    if (!a || !b) continue;
+    for (let x = a.x; x <= b.x; x += 1)
+      base[x] = Math.round(a.y + ((b.y - a.y) * (x - a.x)) / Math.max(1, b.x - a.x));
+  }
+  if (hull.length === 1) base[first] = hull[0]?.y ?? 0;
+  for (let x = 0; x < width; x += 1) if (x < first || x > last) base[x] = -1;
+  return base;
+}
+
+/** A prop's cast as a mask in its art's pixels, from its own ground (`groundProfile`). */
+export interface GroundedCast {
+  readonly width: number;
+  readonly height: number;
+  /** 1 where the cast falls, 0 elsewhere; row-major, `width * height`. */
+  readonly mask: Uint8Array;
+}
+
+/**
+ * Casts a prop's silhouette along `key`, each pixel from the ground under its
+ * own column: a pixel `h` above it lands `key.x * h` right and `key.y * h`
+ * down of that ground point. The base row is its own cast, so the shadow starts
+ * at the base with no gap, wherever the base is on screen. The mask shares the
+ * art's origin and runs past its right and bottom edges as far as the cast does.
+ */
+export function groundedCast(
+  alpha: (x: number, y: number) => number,
+  width: number,
+  height: number,
+  key: CastKey,
+  threshold = 128,
+): GroundedCast {
+  const base = groundProfile(alpha, width, height, threshold);
+  const outW = width + Math.ceil(key.x * height) + 1;
+  const outH = height + Math.ceil(key.y * height) + 1;
+  const mask = new Uint8Array(outW * outH);
+  for (let x = 0; x < width; x += 1) {
+    const ground = base[x] ?? -1;
+    if (ground < 0) continue;
+    for (let y = 0; y <= ground; y += 1) {
+      if (alpha(x, y) < threshold) continue;
+      // Half steps, so a steep column leaves no holes in its cast.
+      for (const rise of [ground - y, ground - y + 0.5]) {
+        const cx = Math.round(x + key.x * rise);
+        const cy = Math.round(ground + key.y * rise);
+        if (cx >= 0 && cy >= 0 && cx < outW && cy < outH) mask[cy * outW + cx] = 1;
+      }
+    }
+  }
+  return { width: outW, height: outH, mask };
 }

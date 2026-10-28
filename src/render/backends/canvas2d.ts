@@ -86,6 +86,7 @@ import {
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
+import { groundedCastArt } from '../groundedCastArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -1758,8 +1759,8 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   /**
-   * A prop's contact line: its own silhouette one world pixel lower, at the
-   * contact level, so a line one world pixel deep shows under every edge it
+   * A prop's contact line: its own silhouette `CONTACT_LINE` world pixels lower,
+   * at the contact level, so a line that deep shows under every edge it
    * stands on, whatever shape its base is (ADR 0093). It is how the painting's
    * G1 objects meet the ground (`objects.py`); a figure's band is cut from its
    * soles instead, because a figure stands on two small feet.
@@ -2037,20 +2038,25 @@ export class Canvas2DBackend implements RenderBackend {
       box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
       const placed = { x: box.x, y: box.y, w: box.size, h: box.size };
-      const foot = { x: box.x + box.size / 2, y: box.y + FOOT_LINE * box.size };
       const strength = castShadowStrength(prop.castShadow);
-      // A prop stands as a figure does: a cast down the scene's key and its base laid flat under it.
-      this.projectMask(
-        target,
-        sprite,
-        null,
-        placed,
-        foot,
-        strength,
-        false,
-        this.grounding.cast,
-        this.grounding.castKey,
-      );
+      // A prop casts from its own ground, down the scene's key, and meets it on its contact line.
+      const cast = strength > 0 ? groundedCastArt(sprite, this.grounding.castKey) : null;
+      if (cast) {
+        const k = placed.w / Math.max(1, sprite.width);
+        const w = cast.width * k;
+        const h = cast.height * k;
+        this.castInto(
+          target,
+          this.grounding.cast,
+          { x0: placed.x, y0: placed.y, x1: placed.x + w, y1: placed.y + h },
+          (t) => {
+            t.save();
+            t.globalAlpha = strength;
+            t.drawImage(cast, placed.x, placed.y, w, h);
+            t.restore();
+          },
+        );
+      }
       if (groundTreatment(this.grounding, { castStrength: strength, defaultPool: false }).band)
         this.projectContactLine(target, sprite, placed, strength, camera.scale);
     }
