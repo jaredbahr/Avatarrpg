@@ -77,7 +77,9 @@ describe('eight-way walk phase across a turn', () => {
       if (entry?.kind !== 'sheet' || entry.facing !== 'both' || !entry.locomotion) continue;
       const name = /([a-z]+)-g\.json$/.exec(entry.atlas)?.[1] ?? '';
       const jog = G1_JOG[name];
-      expect(Boolean(entry.locomotion.jog), key).toBe(jog !== undefined);
+      // Mira never jogs (the owner, 2026-10-28): her sheet keeps the jog's
+      // clock for her ambling walk, but leaves the jog off (ADR 0095).
+      expect(Boolean(entry.locomotion.jog), key).toBe(jog !== undefined && key !== 'npc.elder');
       HEADINGS.forEach((heading, i) => {
         const loop = (base: 'walk' | 'jog') => {
           const def = entry.clips[headingClip(base, heading)];

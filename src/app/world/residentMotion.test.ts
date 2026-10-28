@@ -6,6 +6,7 @@ import { apply } from '../../core/state/reducer';
 import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
 import {
+  RESIDENT_AMBLE,
   RESIDENT_BOB_PX,
   RESIDENT_WALK_LEAN_RAD,
   ResidentWalks,
@@ -256,8 +257,9 @@ describe('ResidentWalks', () => {
       const b = trace[i] as Vec2;
       expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.2);
     }
-    // Mira walks off down the river path and is gone once she has faded there.
-    for (let t = 4050; t <= 20 * TIMING.strollStep; t += 50) w.tick(t, false);
+    // Mira walks off down the river path, at her amble (she never jogs, ADR
+    // 0095), and is gone once she has faded there.
+    for (let t = 4050; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
       drawPos: { x: 17, y: 6 },
@@ -266,6 +268,31 @@ describe('ResidentWalks', () => {
     });
     expect(w.moving()).toBe(false);
     expect(w.walkingTo({ x: 17, y: 6 })).toBe(false);
+  });
+
+  it('walks Mira everywhere at her amble, never on the jog (ADR 0095)', () => {
+    const w = walks();
+    const before = at('midday');
+    w.tick(0, false);
+    w.update(VILLAGE, before, party, true);
+    w.update(VILLAGE, waited(before, 'afternoon'), party, true);
+    const clips = new Set<string>();
+    let start: Vec2 | undefined;
+    let at1s: Vec2 | undefined;
+    for (let t = 50; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) {
+      w.tick(t, false);
+      const mira = figure(w, 'lw.npc.mira');
+      if (!mira) continue;
+      start ??= mira.drawPos;
+      if (t === 1050) at1s = mira.drawPos;
+      if (mira.walking) clips.add(mira.clip ?? '');
+    }
+    // A placement walk, which every other resident jogs, draws her walk...
+    expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
+    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(false);
+    // ...at the amble: after a second she has covered under a tile.
+    if (!start || !at1s) throw new Error('Mira walks off this afternoon');
+    expect(Math.hypot(at1s.x - start.x, at1s.y - start.y)).toBeLessThan(1);
   });
 
   it('keeps a walk running when a command mid-walk leaves the walker’s tile alone', () => {
@@ -278,7 +305,7 @@ describe('ResidentWalks', () => {
       w.update(VILLAGE, after, party, true);
       const trace: Vec2[] = [];
       let ended = -1;
-      for (let t = 50; t <= 20 * TIMING.strollStep; t += 50) {
+      for (let t = 50; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) {
         if (interrupt && t === 1000) {
           // The party walks off; nobody's place changes.
           const walked = apply(CONTENT, after, { type: 'walkTo', pos: { x: 12, y: 7 } }).state;
