@@ -10,7 +10,7 @@
  * context, they never own one.
  */
 
-import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
+import type { Grid, SceneFlock, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
@@ -22,7 +22,6 @@ import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
   actorReticleX,
   actorSilhouetteGeometry,
-  actorShadowDensity,
   fallbackBarTop,
   floaterOwner,
   floaterStartY,
@@ -88,7 +87,7 @@ import {
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
-import { groundedCastArt } from '../groundedCastArt';
+import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -100,8 +99,7 @@ import {
   actorGrounding,
   castShadowStrength,
   contactBandRows,
-  groundTreatment,
-  shadowCeiling,
+  contactBand,
   spriteBandArt,
   type BandArt,
   type CastKey,
@@ -1314,15 +1312,6 @@ export class Canvas2DBackend implements RenderBackend {
       const lift = Math.round((npc.offset?.y ?? 0) * box.size * dpr) / dpr;
       ctx.save();
       ctx.globalAlpha = alpha;
-      const { pool } = groundTreatment(actorGrounding(view.scene), {
-        castStrength: 1,
-        defaultPool: entry.kind !== 'painter',
-      });
-      if (pool) {
-        const s = box.size * scale;
-        const density = actorShadowDensity(view.grid, at, true, width, false);
-        ctx.drawImage(sprites.shadow(s * dpr, density), footX - s / 2, footY - 0.86 * s, s, s);
-      }
       ctx.translate(footX, footY + lift);
       ctx.rotate(npc.lean ?? 0);
       const poseScale = npc.poseScale ?? 1;
@@ -1436,27 +1425,22 @@ export class Canvas2DBackend implements RenderBackend {
     const layer = this.shadowLayer.getContext('2d');
     if (!layer) return;
     this.grounding = actorGrounding(view.scene);
-    const exact = this.exactMax();
-    if (exact) {
-      // The union is a grey level per pixel on opaque black; see `castInto`.
-      if (
-        !this.castScratch ||
-        this.castScratch.width !== width ||
-        this.castScratch.height !== height
-      ) {
-        this.castScratch = document.createElement('canvas');
-        this.castScratch.width = width;
-        this.castScratch.height = height;
-      }
-      const scratch = this.castScratch.getContext('2d');
-      if (scratch) this.toShadowTexels(scratch, grid);
+    // The union is a grey level per pixel on opaque black; see `castInto`.
+    if (
+      !this.castScratch ||
+      this.castScratch.width !== width ||
+      this.castScratch.height !== height
+    ) {
+      this.castScratch = document.createElement('canvas');
+      this.castScratch.width = width;
+      this.castScratch.height = height;
     }
+    const scratch = this.castScratch.getContext('2d');
+    if (scratch) this.toShadowTexels(scratch, grid);
     layer.setTransform(1, 0, 0, 1, 0, 0);
     layer.globalCompositeOperation = 'source-over';
-    if (exact) {
-      layer.fillStyle = '#000000';
-      layer.fillRect(0, 0, width, height);
-    } else layer.clearRect(0, 0, width, height);
+    layer.fillStyle = '#000000';
+    layer.fillRect(0, 0, width, height);
     this.toShadowTexels(layer, grid);
     this.drawStructureShadowMask(layer, view, camera);
 
@@ -1474,19 +1458,7 @@ export class Canvas2DBackend implements RenderBackend {
     }
     this.drawLiveShadowMask(layer, view, camera);
     layer.setTransform(1, 0, 0, 1, 0, 0);
-    if (exact) {
-      this.compositeExactShadow(layer, view, camera, width, height);
-      return;
-    }
-    layer.globalCompositeOperation = 'source-in';
-    layer.fillStyle = SHADOW_COLOR;
-    layer.fillRect(0, 0, width, height);
-    layer.globalCompositeOperation = 'source-over';
-    this.ctx.save();
-    this.ctx.globalAlpha = shadowCeiling(this.grounding);
-    this.clipShadowGround(this.ctx, view, camera);
-    this.drawShadowTexels(this.shadowLayer, grid);
-    this.ctx.restore();
+    this.compositeExactShadow(layer, view, camera, width, height);
   }
 
   /** A mask context draws in screen CSS px onto world-pixel texels, sampling its casters nearest. */
@@ -1517,19 +1489,12 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   /**
-   * A scene with its own grounding mixes casters of different strength, and
-   * ADR 0071 wants an overlap to take the strongest, never to add up. Source-over
-   * of two 0.5 casts gives 0.75, so those scenes keep the union as a grey level
-   * per pixel (white at alpha `a` over black is exactly `a`) and combine casters
-   * with `lighten`, which is a per-channel maximum for opaque sources.
-   */
-  private exactMax(): boolean {
-    return this.grounding.contact > 0 || this.grounding.cast !== CAST_SHADOW_ALPHA;
-  }
-
-  /**
-   * Puts one caster into the union at `level`. A default scene draws it straight
-   * into the layer, as it always did. An exact-max scene draws it alone into the
+   * Puts one caster into the union at `level`. Casters of different strength mix
+   * (every scene has a contact layer, ADR 0093), and ADR 0071 wants an overlap to
+   * take the strongest, never to add up: source-over of two 0.5 casts gives 0.75.
+   * So the union is a grey level per pixel (white at alpha `a` over black is
+   * exactly `a`), combined with `lighten`, a per-channel maximum for opaque
+   * sources. Each caster is drawn alone into the
    * scratch (transparent, so the source's colours do not matter), turns that to
    * white at the caster's own alpha on black, scales it by `level` (`multiply`
    * by an opaque grey is exact) and `lighten`s it into the layer. `bounds` is
@@ -1542,7 +1507,7 @@ export class Canvas2DBackend implements RenderBackend {
     bounds: { x0: number; y0: number; x1: number; y1: number },
     draw: (target: CanvasRenderingContext2D) => void,
   ): void {
-    const scratch = this.exactMax() ? this.castScratch?.getContext('2d') : null;
+    const scratch = this.castScratch?.getContext('2d');
     const grid = this.shadowGridNow;
     if (!scratch || !this.castScratch || !grid) {
       draw(layer);
@@ -1806,6 +1771,10 @@ export class Canvas2DBackend implements RenderBackend {
       const y = piece.y * camera.scale - camera.offsetY;
       const w = piece.width * camera.scale;
       const h = piece.height * camera.scale;
+      if (piece.castFrom === 'base') {
+        this.groundSceneryPiece(target, piece, image, { x, y, w, h }, camera);
+        continue;
+      }
       const foot = { x: x + w / 2, y: y + h };
       const m = silhouetteProjection(foot.x, foot.y);
       this.castInto(
@@ -1833,6 +1802,43 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
+  /**
+   * A solid scenery piece (`castFrom: 'base'`) stands on its whole base as a prop does: its cast from the lower hull
+   * of its own bottom edge along the shared key, and its contact line `CONTACT_LINE` world pixels under its silhouette.
+   */
+  private groundSceneryPiece(
+    target: CanvasRenderingContext2D,
+    piece: SceneScenery,
+    image: HTMLImageElement,
+    placed: { x: number; y: number; w: number; h: number },
+    camera: Camera,
+  ): void {
+    const art = pieceArt(image, piece, (context, width, height) =>
+      drawSceneImage(context, image, piece, 0, 0, width, height),
+    );
+    if (!art) return;
+    const strength = castShadowStrength(piece.castShadow);
+    const cast = groundedCastArt(art, CAST_PER_PIXEL, pieceFeet(piece, camera));
+    if (cast && strength > 0) {
+      const k = placed.w / art.width;
+      const w = cast.width * k;
+      const h = cast.height * k;
+      this.castInto(
+        target,
+        CAST_SHADOW_ALPHA,
+        { x0: placed.x, y0: placed.y, x1: placed.x + w, y1: placed.y + h },
+        (t) => {
+          t.save();
+          t.globalAlpha = strength;
+          t.drawImage(cast, placed.x, placed.y, w, h);
+          t.restore();
+        },
+      );
+    }
+    if (piece.contactShadow !== false)
+      this.projectContactLine(target, art, placed, 1, camera.scale);
+  }
+
   private drawLiveShadowMask(
     target: CanvasRenderingContext2D,
     view: MapView,
@@ -1855,10 +1861,7 @@ export class Canvas2DBackend implements RenderBackend {
         width,
       );
       const entry = resolveAsset(npc.sprite);
-      const { band } = groundTreatment(this.grounding, {
-        castStrength: 1,
-        defaultPool: entry.kind !== 'painter',
-      });
+      const band = contactBand(this.grounding, 1);
       if (frame) {
         const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
         this.projectMask(
@@ -1940,10 +1943,7 @@ export class Canvas2DBackend implements RenderBackend {
       // With a contact layer the foot is the tile's ground, so the walk bob lifts
       // the figure off both shadows instead of dragging the cast along with it.
       const grounded = this.grounding.contact > 0;
-      const { band } = groundTreatment(this.grounding, {
-        castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: true,
-      });
+      const band = contactBand(this.grounding, castShadowStrength(unit.castShadow));
       const foot = {
         x: box.x + width / 2,
         y: box.y - (grounded ? (unit.offset?.y ?? 0) * box.size : 0) + FOOT_LINE * box.size,
@@ -2064,7 +2064,7 @@ export class Canvas2DBackend implements RenderBackend {
           },
         );
       }
-      if (groundTreatment(this.grounding, { castStrength: strength, defaultPool: false }).band)
+      if (contactBand(this.grounding, strength))
         this.projectContactLine(target, sprite, placed, strength, camera.scale);
     }
   }
@@ -2205,39 +2205,6 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const shadowDensity = actorShadowDensity(
-        view.grid,
-        pos,
-        unit.shadow === true,
-        unit.size,
-        this.squareFootprints,
-      );
-      const { pool } = groundTreatment(actorGrounding(view.scene), {
-        castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: shadowDensity > 0,
-      });
-      if (pool) {
-        // On the ground, not on the bob: the tile's foot line, less the ledge.
-        const footprint = this.squareFootprints ? unit.size : 1;
-        // A square unit's ground contact is its rules footprint. Presentation
-        // compensation (the Driller in oblique) enlarges the upright cel only.
-        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : scale;
-        const s = box.size * shadowScale * footprint;
-        const footX = box.x - (unit.offset?.x ?? 0) * box.size + width / 2;
-        const footY =
-          box.y -
-          (unit.offset?.y ?? 0) * box.size +
-          0.86 * box.size -
-          (footprint - 1) * box.size * 0.5;
-        ctx.globalAlpha = alpha;
-        ctx.drawImage(
-          sprites.shadow(s * dpr, shadowDensity),
-          footX - s / 2,
-          footY - 0.86 * s,
-          s,
-          s,
-        );
-      }
       ctx.globalAlpha = alpha;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at device resolution (ADR 0003); the anchor stands on the foot line.

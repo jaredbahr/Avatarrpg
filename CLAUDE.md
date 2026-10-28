@@ -252,7 +252,10 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   smooths, or a mask at screen resolution, brings back the soft edge the pass removed. Every figure and prop on an
   oblique board gets a contact (a figure's sole band, a prop's 2 world px contact line) and a cast along its scene's
   `castKey`: a figure's from its foot row, a prop's from its own base (`groundedCast`), so no ground shows between
-  a box's side edges and its shadow. `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
+  a box's side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is
+  grounded the same way, its feet only inside its footprint; a tree or a hanging lamp does not. Ba Dan's painted
+  objects are shaded in the master by `ba-dan-route-a/tools/shadows.py`, never in the shipped files.
+  `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
   Pixi texture map are bounded LRUs because iOS caps canvas memory; do not

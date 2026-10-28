@@ -655,6 +655,7 @@ export const mapSchema = z
                 flip: z.boolean().optional(),
                 contactShadow: z.literal(false).optional(),
                 castShadow: z.union([z.literal(false), z.literal('reduced')]).optional(),
+                castFrom: z.literal('base').optional(),
               })
               .superRefine(validateSceneFeather)
               .superRefine((piece, ctx) => {
