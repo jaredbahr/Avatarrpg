@@ -212,7 +212,13 @@ for (const largeText of ['normal', 'huge'] as const) {
     const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
     const box = await page.locator('.map-canvas').boundingBox();
     if (!box) throw new Error('Missing battlefield geometry');
-    expect(before.tilePx).toBeCloseTo(largeText === 'huge' ? 40 : 64, 5);
+    // ADR 0088: 40 is a preferred CSS tile, not an integer-zoom stop. Both
+    // configured DPRs (desktop 1 and iPad 2) need a 64px tile to stay on whole
+    // device pixels without going below the 40px touch minimum.
+    expect(before.tilePx).toBeCloseTo(64, 5);
+    const dpr = await page.evaluate(() => window.devicePixelRatio);
+    const deviceScale = (before.tilePx / 64) * dpr;
+    expect(deviceScale).toBeCloseTo(Math.round(deviceScale), 5);
     expect(box.height).toBeGreaterThan(160);
     expect(await page.getByRole('button', { name: /^Focus / }).count()).toBeGreaterThan(0);
 
@@ -254,21 +260,27 @@ test('iPad landscape normal text keeps the lower target inside the map', async (
   ).toBe(true);
 });
 
-test('real viewport resize recomputes compact oblique framing', async ({ page }) => {
-  await page.setViewportSize({ width: 1600, height: 900 });
-  await resetStorage(page, '?renderer=canvas');
-  await startGame(page, ['Kaya'], ['kaya'], 'compact-frame-resize');
-  await enterNode(page, 'battle_forest_road');
-  await takeTurn(page);
-  await waitForIdle(page);
-  await settleLayout(page);
-  const tall = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-  expect(tall.tilePx).toBeGreaterThanOrEqual(96);
+test.describe('resize across integer zoom stops at DPR 2', () => {
+  // A 96px preference floors to 64px at DPR 1 (ADR 0088), so these two
+  // viewports only exercise a scale-changing refit at DPR 2.
+  test.use({ deviceScaleFactor: 2 });
 
-  await page.setViewportSize({ width: 1280, height: 720 });
-  await settleLayout(page);
-  const short = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-  expect(short.tilePx).toBeCloseTo(64, 5);
+  test('real viewport resize recomputes compact oblique framing', async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Kaya'], ['kaya'], 'compact-frame-resize');
+    await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await settleLayout(page);
+    const tall = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    expect(tall.tilePx).toBeGreaterThanOrEqual(96);
+
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await settleLayout(page);
+    const short = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    expect(short.tilePx).toBeCloseTo(64, 5);
+  });
 });
 
 test('Huge text on a tall viewport reserves the expanded decision panel', async ({ page }) => {
@@ -281,7 +293,8 @@ test('Huge text on a tall viewport reserves the expanded decision panel', async 
   await waitForIdle(page);
   await settleLayout(page);
   const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-  expect(before.tilePx).toBeLessThanOrEqual(40.01);
+  // The 40px preference must use the 64px tappable integer stop at DPR 1/2.
+  expect(before.tilePx).toBeCloseTo(64, 5);
   await page.getByRole('button', { name: /^Fire Jab/ }).click();
   await settleLayout(page);
   const aiming = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
