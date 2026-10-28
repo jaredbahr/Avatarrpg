@@ -1,7 +1,7 @@
 # Occlusion reveal review (ADR 0096)
 
 Before (left) and after (right), from two runs of `e2e/occlusion-reveal.review.ts` at the same seed and framing:
-before on `8567471` (main), after on `claude/occlusion-reveal`. 1368x912 viewport, dpr 1, 128 px tiles (integer zoom
+before on `dd76430` (main, figure scale 1.0 from #303), after on `claude/occlusion-reveal` merged with it. 1368x912 viewport, dpr 1, 128 px tiles (integer zoom
 N = 2). `canvas-*` and `webgl-*` are the two backends (WebGL on the container's software rasteriser, forced with
 `?renderer=webgl`).
 
