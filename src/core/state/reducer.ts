@@ -602,7 +602,11 @@ function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
   return cachedGrid(map);
 }
 
-/** Nearest walkable tile adjacent to `target`, for approaching an NPC. */
+/**
+ * Nearest walkable tile adjacent to `target`, for approaching an NPC. A dry
+ * tile beats a nearer one under a surface: the party may wade a shallow canal
+ * on the way, but a conversation never opens with it standing in the water.
+ */
 function findApproach(content: ContentIndex, state: GameState, target: Vec2): Vec2 | null {
   const grid = buildExploreGrid(content, state);
   const map = content.maps.get(state.location.mapId);
@@ -618,6 +622,7 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
   );
   let best: Vec2 | null = null;
   let bestDistance = Infinity;
+  let bestWet = true;
 
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
@@ -640,8 +645,10 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
       );
       if (!path) continue;
       const d = path.path.length;
-      if (d < bestDistance) {
+      const wet = tile.surface !== null && tile.surface !== undefined;
+      if ((bestWet && !wet) || (wet === bestWet && d < bestDistance)) {
         bestDistance = d;
+        bestWet = wet;
         best = candidate;
       }
     }
