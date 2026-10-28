@@ -2,7 +2,7 @@
 
 python3 art/source/grounding/tools/painted_sheet.py <before master> <after master> <out dir>
 Writes one numbered crop pair per object (`NN-<name>-<piece>.png`, before left, after right), then the authored
-barrel and the stray roof tile, and `index.json`.
+barrel, the stray roof tile and Gao's yard, and `index.json`.
 """
 import json
 import os
@@ -35,9 +35,13 @@ def main(before, after, out):
         row.resize((row.width * 3, row.height * 3), Image.NEAREST).save(f'{out}/{name}', optimize=True)
         index.append({'n': n, 'object': o['name'], 'piece': o['piece'], 'world_px': [x0, y0, w, h], 'crop': name})
     # The painted pieces the pass touched that no round set in: the authored barrel and the stray roof tile.
-    extras = [(name, box) for name, box in S.EXTRA_RECTS.items()] + [('roof-tile', S.ROOF_TILE['box'])]
-    for name, (x0, y0, x1, y1) in extras:
-        n = len(index) + 1
+    extras = [(name, box, None) for name, box in S.EXTRA_RECTS.items()] + [('roof-tile', S.ROOF_TILE['box'], None)]
+    # Gao's yard, traced later: one crop over its posts and wheel, numbered as the fault list numbers it (29).
+    pts = [p for shape in S.EXTRA_SHAPES.values() for p in shape]
+    yard = (min(x for x, _ in pts), min(y for _, y in pts), max(x for x, _ in pts), max(y for _, y in pts))
+    extras.append(('gao-yard', yard, 29))
+    for name, (x0, y0, x1, y1), number in extras:
+        n = number or len(index) + 1
         box = (x0 - 24, y0 - 16, x1 + 30, y1 + 22)
         pa, pb = a.crop(box), b.crop(box)
         row = Image.new('RGB', (pa.width * 2 + 3, pa.height), 'white')

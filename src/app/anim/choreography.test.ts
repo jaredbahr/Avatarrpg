@@ -6,7 +6,7 @@ import type { SheetClips } from '../../render/sheets/store';
 import { HIT_SETTLE_MS, TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
 import { HEADINGS, hitClip } from '../../content/assets/clips';
 import { attackMotion } from './attackMotion';
-import { enemyScale } from './actorScale';
+import { enemyScale, partyScale } from './actorScale';
 import { Timeline } from './timeline';
 import { STROLL_RAMP_MS } from './stroll';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
@@ -534,7 +534,7 @@ describe('directed Fire Jab attachments', () => {
     if (pose?.kind !== 'pose' || !pose.scale) throw new Error('Missing release pose');
     const fraction = pose.ease((release.start - pose.start) / pose.duration);
     expect(release.attachments?.from?.scale).toBeCloseTo(
-      1.25 * (pose.scale.from + (pose.scale.to - pose.scale.from) * fraction),
+      partyScale('oblique') * (pose.scale.from + (pose.scale.to - pose.scale.from) * fraction),
       9,
     );
     expect(release.attachments?.from?.offset.x).toBeCloseTo(

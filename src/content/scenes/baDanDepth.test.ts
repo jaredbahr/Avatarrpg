@@ -184,7 +184,8 @@ it('draws no figure over a nearer upright or under a farther one, bar the frozen
 });
 
 it('uses the actor scales the explore scene draws', () => {
-  expect(ACTOR_SCALES).toEqual([1.25, 1.4, 1.5]);
+  // The figures at 1 (ADR 0094), Hanru's painted placeholder level with them, the tea station's 1.5.
+  expect(ACTOR_SCALES.map((k) => Math.round(k * 100) / 100)).toEqual([1, 1.12, 1.5]);
 });
 
 it.each(ACTOR_SCALES)(

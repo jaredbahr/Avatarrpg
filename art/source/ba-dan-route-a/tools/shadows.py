@@ -27,7 +27,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 os.environ.setdefault('ROUTE_A_WORK', 'art/source/ba-dan-route-a/polish')
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import objects as O
 import props_set as P
@@ -42,9 +42,22 @@ SKIP = {'garden-kit'}
 # Painted pieces no round set in. One painted inside a house sprite has no silhouette of its own, so one whose outline is
 # plain is authored here, in world px of the master: Gao's door barrel is a 17 x 36 px upright drum on the plinth, its
 # bottom ink row at y = 523. It darkens no pixel that is already ink dark, so nothing the painting shaded is shaded twice.
-# Not here: the court trees. Their frozen silhouettes run on below the painted roots over a strip of grass and path, so
-# neither the silhouette's bottom nor the bark's colour says where a tree meets the ground (ADR 0093, known faults).
+# Not here: the court trees, whose painted roots already spread into ferns, and the garden's bean poles, too thin to
+# cast on the dark furrows (the fault list's 30 and 31).
 EXTRA_RECTS = {'gao-door-barrel': (1596, 488, 1612, 523)}
+# Gao's yard (the fault list's 29): the two capped posts on the plinth's corners and the cart's wheel, traced from the
+# master at 6x. Each is a box with its cap, or the wheel's ellipse; the cart's bed rides on the wheel and the wall, so the
+# wheel is its foot. Outlines are polygons in world px, inclusive.
+EXTRA_SHAPES = {
+    'gao-yard-post-west': [(1369, 392), (1386, 392), (1386, 401), (1385, 401), (1385, 429), (1370, 429), (1370, 401),
+                           (1369, 401)],
+    'gao-yard-post-east': [(1404, 409), (1421, 409), (1421, 418), (1420, 418), (1420, 447), (1405, 447), (1405, 418),
+                           (1404, 418)],
+    'gao-yard-cart-wheel': [(round(1432.5 + 16.5 * np.cos(t * np.pi / 16)), round(400.5 + 18.5 * np.sin(t * np.pi / 16)))
+                            for t in range(32)],
+}
+# Upright painting no authored cast may fall on: the porch post at the yard's east side stands beside the wheel.
+NOT_GROUND = {'gao-porch-post': (1446, 330, 1454, 440)}
 INK_DARK = 62
 # Uncertain items (ADR 0093's list): a single flat beige tile on the south-west house's roof, one colour, reads as a
 # hole or a stray stone at play zoom. Its pixels take the roof's own tile colour around it.
@@ -265,6 +278,18 @@ def retile(a):
         box[tile] = np.median(lit, axis=0)
 
 
+def authored():
+    """The authored pieces as (name, silhouette, top-left): the rectangles, then the traced outlines."""
+    for name, (x0, y0, x1, y1) in EXTRA_RECTS.items():
+        yield name, np.ones((y1 - y0 + 1, x1 - x0 + 1), bool), (x0, y0)
+    for name, pts in EXTRA_SHAPES.items():
+        x0, y0 = min(x for x, _ in pts), min(y for _, y in pts)
+        x1, y1 = max(x for x, _ in pts), max(y for _, y in pts)
+        m = Image.new('L', (x1 - x0 + 1, y1 - y0 + 1), 0)
+        ImageDraw.Draw(m).polygon([(x - x0, y - y0) for x, y in pts], fill=255, outline=255)
+        yield name, np.asarray(m) > 0, (x0, y0)
+
+
 def main():
     world = Image.open(SRC).convert('RGB')
     shape = (world.height, world.width)
@@ -314,12 +339,13 @@ def main():
         contact |= t
     # The authored pieces inside the house sprites.
     lum = a.mean(axis=2)
-    for name, (x0, y0, x1, y1) in EXTRA_RECTS.items():
-        al = np.ones((y1 - y0 + 1, x1 - x0 + 1), bool)
-        obj, c, t = grounded(al, (x0, y0), shape)
+    for name, al, xy in authored():
+        obj, c, t = grounded(al, xy, shape)
         objs |= obj
         cast |= c & (lum >= INK_DARK)
         contact |= t & (lum >= INK_DARK)
+    for x0, y0, x1, y1 in NOT_GROUND.values():
+        objs[y0:y1 + 1, x0:x1 + 1] = True
     contact &= ~objs
     cast &= ~objs & ~contact
     a[cast] *= O.SHADOW * O.COOL
@@ -327,7 +353,7 @@ def main():
     retile(a)
     Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)).save(OUT, optimize=True)
     print(f'{OUT}: {len(standing)} objects re-shaded ({len(kept)} set by objects.py, {len(bench_fence)} reshaded, '
-          f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS)} painted piece grounded')
+          f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS) + len(EXTRA_SHAPES)} painted pieces grounded')
 
 
 if __name__ == '__main__':

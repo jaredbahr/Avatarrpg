@@ -17,7 +17,8 @@ it('sizes only the small animal discovery below adult NPCs', () => {
 });
 
 it('brings the painted placeholder person down to the old illustrated residents’ height', () => {
-  expect(npcPresentationScale('npc.hanru', 'oblique')).toBe(1.4);
+  // Level with the residents: 1.4 beside the old 1.25 party, so 1.4 x 0.8 at 1 (ADR 0094).
+  expect(npcPresentationScale('npc.hanru', 'oblique')).toBeCloseTo(1.12, 9);
   expect(npcPresentationScale('npc.hanru', undefined)).toBe(1);
 });
 
@@ -58,8 +59,8 @@ it('uses the existing forest attacker at both crossings without changing their a
   expect(
     triggerPresentationScale({ id: 'ambush_road', projection: 'oblique' }, 'unit.enemy.thug'),
   ).toBe(enemyScale('unit.enemy.thug', 1, 'oblique'));
-  // The G thug (ADR 0059) stands at the party's scale on the map's projection.
-  expect(enemyScale('unit.enemy.thug', 1, 'oblique')).toBe(1.25);
+  // The G thug (ADR 0059) stands at the party's scale on the map's projection: 1, the world's grain (ADR 0094).
+  expect(enemyScale('unit.enemy.thug', 1, 'oblique')).toBe(1);
 });
 
 it('keeps the Driller crossing marker compact when its oblique combat body is compensated', () => {
