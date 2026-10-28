@@ -2090,6 +2090,7 @@ export class CombatScene implements Scene {
 
   private resultPanel(battle: BattleState): HTMLElement {
     const victory = battle.phase === 'victory';
+    const anyFell = battle.units.some((unit) => unit.faction === 'party' && !isAlive(unit));
     return el(
       'div',
       { class: 'handoff-banner' },
@@ -2100,7 +2101,9 @@ export class CombatScene implements Scene {
         el('p', {
           class: 'muted',
           text: victory
-            ? 'Everyone who went down is patched up. The party keeps what it earned.'
+            ? anyFell
+              ? 'Everyone who went down is patched up. The party keeps what it earned.'
+              : 'The party keeps what it earned.'
             : 'The fight is lost. Continue to see what happens next.',
         }),
         button('Continue', () => this.app.resolveBattle(), {
