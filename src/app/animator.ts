@@ -24,6 +24,7 @@ import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
 import type { HealthChange, SoundCue } from './anim/choreography';
+import { partyScale } from './anim/actorScale';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
@@ -580,11 +581,15 @@ export class Animator {
   private walkClipTime(travel: { track: MoveTrack; distance: number }, sprite?: string): number {
     const gait = sheetLocomotion(sprite);
     if (!gait) return travel.distance * WALK_MS_PER_TILE;
+    // The sheet's clip time a tile is fitted to its art at one art px a world px
+    // (ADR 0095). Drawn larger, its feet cover more ground a loop, so the loop
+    // plays over more of it and the planted foot stays planted at any figure scale.
+    const scale = partyScale(this.projection);
     return (
       gait.walkStartMs +
       (this.walkPhaseFractions.get(travel.track.unitId) ?? 0) * gait.walkCycleMs +
       integrateAlong(travel.track.curve, travel.distance, (tangent) => {
-        return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))];
+        return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] / scale;
       })
     );
   }
