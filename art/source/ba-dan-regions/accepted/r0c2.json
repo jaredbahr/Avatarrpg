@@ -2,62 +2,53 @@
   "region": "r0c2",
   "source": {
     "path": ".review/route-a/candidates/r0c2.png",
-    "sha256": "316f43e6ba9756f3cbfb146df8a82073eccf25c1592cdf0d5b9ae902df782532"
+    "sha256": "7afde3fab997be1030b1743deef2cf98defb6b9e3b38589895bbd5cfd1603a4b"
   },
   "stored": {
     "path": "/home/user/Avatarrpg/art/source/ba-dan-regions/accepted/r0c2.png",
-    "sha256": "316f43e6ba9756f3cbfb146df8a82073eccf25c1592cdf0d5b9ae902df782532"
+    "sha256": "7afde3fab997be1030b1743deef2cf98defb6b9e3b38589895bbd5cfd1603a4b"
   },
   "gate": {
     "pass": true,
     "frame": {
       "dx": 0,
       "dy": 0,
-      "corr": 0.7723
+      "corr": 0.8588
     },
     "blobs": [
       {
         "n": 1,
         "box": [0, 0, 1536, 1024],
-        "area": 860322,
+        "area": 639512,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7723,
+        "corr": 0.8588,
         "status": "ok"
       },
       {
         "n": 2,
-        "box": [0, 347, 86, 563],
-        "area": 5730,
+        "box": [293, 673, 445, 807],
+        "area": 4087,
         "dx": 0,
         "dy": 0,
-        "corr": 0.7382,
+        "corr": 0.9446,
         "status": "ok"
       },
       {
         "n": 3,
-        "box": [0, 661, 104, 809],
-        "area": 4630,
+        "box": [0, 715, 255, 1024],
+        "area": 50736,
         "dx": 0,
         "dy": 0,
-        "corr": 0.953,
-        "status": "ok"
-      },
-      {
-        "n": 4,
-        "box": [0, 784, 306, 1010],
-        "area": 22567,
-        "dx": 0,
-        "dy": 0,
-        "corr": 0.8195,
+        "corr": 0.8513,
         "status": "ok"
       }
     ],
     "carry": {
-      "pixels": 1268574,
-      "meanAbsDiff": 0.321,
+      "pixels": 823296,
+      "meanAbsDiff": 0.0,
       "p95": 0.0,
-      "fractionOver16": 0.0064
+      "fractionOver16": 0.0
     },
     "warn": [],
     "fail": []

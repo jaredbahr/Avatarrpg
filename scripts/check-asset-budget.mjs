@@ -17,8 +17,10 @@ const FAMILY_BUDGET_MB = 4;
 const UNIT_BUDGET_MB = 8.5;
 // ADR 0075: Ba Dan's pieces are painted at 1.5x the world scale for crispness; the village is the proof the
 // polish can be done. ADR 0076: it is one continuous painting now (12 plates and 2 sprite pages, 4.1 MB), the
-// family measures 7.34 MiB, and the owner allowed the raise (9 October 2026) to the next half MiB.
-const MAPS_BUDGET_MB = 7.5;
+// family measures 7.34 MiB, and the owner allowed the raise (9 October 2026) to the next half MiB. ADR 0088: Ba Dan and the
+// forest's uprights ship at 1 px per world px (27 October 2026), the family measures 5.48 MiB, and the budget comes down to
+// the next half MiB over it, so the freed space goes to the precache total rather than to this family.
+const MAPS_BUDGET_MB = 6;
 /** A family's budget; any family not named here has `FAMILY_BUDGET_MB`. */
 const FAMILY_BUDGETS_MB = new Map([
   ['units', UNIT_BUDGET_MB],

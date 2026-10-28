@@ -30,15 +30,16 @@ it('is every G1 file the scene draws, and draws every one', () => {
   );
 });
 
-it('draws each upright at 1.5 file px per world px, so the registration did not move', () => {
+it('draws each upright at 1 file px per world px, so the registration did not move', () => {
   for (const piece of FOREST_ROAD_SCENE.scenery) {
     if (!piece.url.startsWith('art/maps/forest-g1/')) continue;
     const size = imageSize(readFileSync(`public/${piece.url}`));
     if (!size) throw new Error(`${piece.url} has no size`);
     // Each upright was generated on the rectangle its pre-G1 art was drawn at,
-    // rounded to whole world px; the delivery is 1.5x that.
-    expect(Math.abs(size.width / 1.5 - piece.width), `${piece.id} width`).toBeLessThanOrEqual(1);
-    expect(Math.abs(size.height / 1.5 - piece.height), `${piece.id} height`).toBeLessThanOrEqual(1);
+    // rounded to whole world px, and ships at that size (ADR 0088), so integer
+    // zoom samples it nearest at every N.
+    expect(Math.abs(size.width - piece.width), `${piece.id} width`).toBeLessThanOrEqual(1);
+    expect(Math.abs(size.height - piece.height), `${piece.id} height`).toBeLessThanOrEqual(1);
   }
 });
 

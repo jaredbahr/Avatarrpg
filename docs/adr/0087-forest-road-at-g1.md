@@ -104,3 +104,12 @@ jobs `clean-*` and `foot-*` in the ledger (23 jobs, 147 generations; 99 of them 
 - **Pine feet**: both pines' trunks root into a soil mound with grass; only the rows below the lowest bough change.
 - An invented fern past the east shelf is redrawn as meadow. The bushes past the west corner lie where every ground piece is
   transparent and never show.
+
+## Amendment, 2026-10-27: uprights at 1 px per world px (ADR 0088)
+
+The uprights shipped at 1.5 px per world px (`pieces/uprights-1.5x`, EPX x2 then a 0.75 Lanczos) for the old 1.5 camera; under
+integer zoom they were smoothed at N = 2 while the ground, at 1 px, was crisp. `forest-g1-pack.ts` now encodes
+`pieces/uprights/` (world px) as it is, `select.py` no longer writes the 1.5x copies and the folder is gone, and
+`forest-g1-pack.test.ts` holds each upright's file to its drawn rectangle at 1 px. The ground's delivery scale question above
+is closed the same way: every forest piece is 1 px and is sampled nearest at every N. `public/art/maps/forest-g1` falls from
+1,009,552 B to 860,072 B.

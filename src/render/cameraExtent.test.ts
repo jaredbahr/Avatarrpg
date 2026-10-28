@@ -56,8 +56,8 @@ function expectInside(camera: Camera): void {
 }
 
 describe('Camera.viewExtent on Ba Dan', () => {
-  it('is the painting: 3000 x 1600.67 world px from (-200, -100)', () => {
-    expect(extent).toEqual({ x: -200, y: -100, width: 3000, height: 2401 / 1.5 });
+  it('is the painting: 3000 x 1600 world px from (-200, -100)', () => {
+    expect(extent).toEqual({ x: -200, y: -100, width: 3000, height: 1600 });
   });
 
   it.each(VIEWPORTS)('never shows past the painting at $width x $height', (viewport) => {
