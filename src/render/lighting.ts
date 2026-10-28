@@ -201,6 +201,51 @@ export function projectShadowPoint(
 }
 
 /**
+ * Where the shared shadow mask's texels lie (ADR 0093). The world is pixel art
+ * on a world-pixel grid, so a shadow is too: one mask texel per world pixel,
+ * its edges on the same grid as the art beside it, sampled nearest both ways,
+ * so a cast or a contact band is hard-edged and stepped, never a blur.
+ *
+ * `scale` is CSS px per world px and `offset` the screen offset of world (0, 0)
+ * negated, as the camera keeps them; the origin is the screen point of the first
+ * texel corner at or left of / above the viewport's. The mask is one texel wider
+ * and taller than the viewport so the shifted grid still covers it.
+ */
+export interface ShadowGrid {
+  /** CSS px per texel (the camera scale: one world pixel). */
+  readonly texel: number;
+  /** Screen position of texel (0, 0)'s top-left corner, CSS px, at or before 0. */
+  readonly originX: number;
+  readonly originY: number;
+  /** Texels across and down. */
+  readonly width: number;
+  readonly height: number;
+}
+
+export function shadowGrid(
+  viewport: { readonly width: number; readonly height: number },
+  scale: number,
+  offsetX: number,
+  offsetY: number,
+): ShadowGrid {
+  const texel = scale > 0 && Number.isFinite(scale) ? scale : 1;
+  // World pixel k's left edge is on screen at k * texel - offsetX.
+  const phase = (offset: number) => {
+    const r = -offset % texel;
+    return r > 0 ? r - texel : r;
+  };
+  const originX = phase(offsetX);
+  const originY = phase(offsetY);
+  return {
+    texel,
+    originX,
+    originY,
+    width: Math.ceil((viewport.width - originX) / texel),
+    height: Math.ceil((viewport.height - originY) / texel),
+  };
+}
+
+/**
  * Shadow swept from a renderer-drawn raised edge. `edge` is the top lip and
  * `height` its screen-space rise above the receiving ground. Keeping this
  * primitive independent of either backend makes procedural height answer the
@@ -345,4 +390,28 @@ export function unionShadowCoverage(a: number, b: number): number {
 
 export function castShadowStrength(policy?: false | 'reduced'): number {
   return policy === false ? 0 : policy === 'reduced' ? REDUCED_CAST_ALPHA : 1;
+}
+
+/** How many levels the WebGL shadow composite can snap a texel to (two vec4 uniforms). */
+export const SHADOW_LEVEL_SLOTS = 8;
+
+/**
+ * The levels a frame's casters wrote into the union, for the composite to snap
+ * each texel to (ADR 0093): the distinct alphas, strongest first, padded with
+ * 0 (which is always a candidate). More distinct levels than slots — several
+ * figures fading at once — fall onto eighths, so the set always fits.
+ */
+export function shadowLevels(alphas: readonly number[]): readonly number[] {
+  const clean = alphas.filter((a) => Number.isFinite(a) && a > 0).map((a) => Math.min(1, a));
+  // Two alphas one 8-bit step apart are one level: the mask stores 8 bits.
+  const distinct = (values: readonly number[]) =>
+    [...new Map(values.map((a) => [Math.round(a * 255), a] as const)).values()].sort(
+      (a, b) => b - a,
+    );
+  let levels = distinct(clean);
+  if (levels.length > SHADOW_LEVEL_SLOTS)
+    levels = distinct(
+      clean.map((a) => Math.max(1, Math.round(a * SHADOW_LEVEL_SLOTS)) / SHADOW_LEVEL_SLOTS),
+    );
+  return [...levels, ...Array<number>(SHADOW_LEVEL_SLOTS - levels.length).fill(0)];
 }

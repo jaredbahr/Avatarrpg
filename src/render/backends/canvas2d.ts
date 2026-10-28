@@ -101,8 +101,10 @@ import {
   spriteBandArt,
   type BandArt,
   type CastKey,
+  type ShadowGrid,
   structureShadowPolygons,
   tileShadowCell,
+  shadowGrid,
   silhouetteProjection,
 } from '../lighting';
 
@@ -150,6 +152,8 @@ export class Canvas2DBackend implements RenderBackend {
   private masks = new WeakMap<HTMLCanvasElement | HTMLImageElement, HTMLCanvasElement>();
   /** One union mask, rebuilt each frame from every upright silhouette. */
   private shadowLayer: HTMLCanvasElement | null = null;
+  /** This frame's shadow mask texels (`drawCastShadows`). */
+  private shadowGridNow: ShadowGrid | null = null;
   /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
   private grounding = DEFAULT_ACTOR_GROUNDING;
   /** One caster at a time, in the exact-max path (see `castInto`). */
@@ -1401,10 +1405,16 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  /** Cast every upright alpha silhouette into one mask, then tint once. */
+  /**
+   * Cast every upright alpha silhouette into one mask, then tint once. The mask
+   * is one texel per world pixel on the world-pixel grid (`shadowGrid`, ADR
+   * 0093): casters are drawn into it with nearest sampling and it is scaled up
+   * nearest, so every shadow is hard-edged and stepped like the art beside it.
+   */
   private drawCastShadows(view: MapView, camera: Camera): void {
-    const width = Math.ceil(camera.viewport.width);
-    const height = Math.ceil(camera.viewport.height);
+    const grid = shadowGrid(camera.viewport, camera.scale, camera.offsetX, camera.offsetY);
+    this.shadowGridNow = grid;
+    const { width, height } = grid;
     if (
       !this.shadowLayer ||
       this.shadowLayer.width !== width ||
@@ -1429,10 +1439,16 @@ export class Canvas2DBackend implements RenderBackend {
         this.castScratch.width = width;
         this.castScratch.height = height;
       }
-      layer.globalCompositeOperation = 'source-over';
+      const scratch = this.castScratch.getContext('2d');
+      if (scratch) this.toShadowTexels(scratch, grid);
+    }
+    layer.setTransform(1, 0, 0, 1, 0, 0);
+    layer.globalCompositeOperation = 'source-over';
+    if (exact) {
       layer.fillStyle = '#000000';
       layer.fillRect(0, 0, width, height);
     } else layer.clearRect(0, 0, width, height);
+    this.toShadowTexels(layer, grid);
     this.drawStructureShadowMask(layer, view, camera);
 
     // Scenery and still props are drawn straight into the union each frame:
@@ -1448,6 +1464,7 @@ export class Canvas2DBackend implements RenderBackend {
       );
     }
     this.drawLiveShadowMask(layer, view, camera);
+    layer.setTransform(1, 0, 0, 1, 0, 0);
     if (exact) {
       this.compositeExactShadow(layer, view, camera, width, height);
       return;
@@ -1459,8 +1476,35 @@ export class Canvas2DBackend implements RenderBackend {
     this.ctx.save();
     this.ctx.globalAlpha = shadowCeiling(this.grounding);
     this.clipShadowGround(this.ctx, view, camera);
-    this.ctx.drawImage(this.shadowLayer, 0, 0);
+    this.drawShadowTexels(this.shadowLayer, grid);
     this.ctx.restore();
+  }
+
+  /** A mask context draws in screen CSS px onto world-pixel texels, sampling its casters nearest. */
+  private toShadowTexels(target: CanvasRenderingContext2D, grid: ShadowGrid): void {
+    target.setTransform(
+      1 / grid.texel,
+      0,
+      0,
+      1 / grid.texel,
+      -grid.originX / grid.texel,
+      -grid.originY / grid.texel,
+    );
+    target.imageSmoothingEnabled = false;
+  }
+
+  /** Lays a world-pixel mask over the screen, each texel a hard block of one world pixel. */
+  private drawShadowTexels(source: HTMLCanvasElement, grid: ShadowGrid): void {
+    const smoothing = this.ctx.imageSmoothingEnabled;
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.drawImage(
+      source,
+      grid.originX,
+      grid.originY,
+      grid.width * grid.texel,
+      grid.height * grid.texel,
+    );
+    this.ctx.imageSmoothingEnabled = smoothing;
   }
 
   /**
@@ -1480,7 +1524,8 @@ export class Canvas2DBackend implements RenderBackend {
    * scratch (transparent, so the source's colours do not matter), turns that to
    * white at the caster's own alpha on black, scales it by `level` (`multiply`
    * by an opaque grey is exact) and `lighten`s it into the layer. `bounds` is
-   * where the caster can have drawn, in layer pixels.
+   * where the caster can have drawn, in screen CSS px; the pixel work is done in
+   * the mask's texels.
    */
   private castInto(
     layer: CanvasRenderingContext2D,
@@ -1489,21 +1534,31 @@ export class Canvas2DBackend implements RenderBackend {
     draw: (target: CanvasRenderingContext2D) => void,
   ): void {
     const scratch = this.exactMax() ? this.castScratch?.getContext('2d') : null;
-    if (!scratch || !this.castScratch) {
+    const grid = this.shadowGridNow;
+    if (!scratch || !this.castScratch || !grid) {
       draw(layer);
       return;
     }
-    const x0 = Math.max(0, Math.floor(bounds.x0) - 1);
-    const y0 = Math.max(0, Math.floor(bounds.y0) - 1);
-    const x1 = Math.min(this.castScratch.width, Math.ceil(bounds.x1) + 1);
-    const y1 = Math.min(this.castScratch.height, Math.ceil(bounds.y1) + 1);
+    const x0 = Math.max(0, Math.floor((bounds.x0 - grid.originX) / grid.texel) - 1);
+    const y0 = Math.max(0, Math.floor((bounds.y0 - grid.originY) / grid.texel) - 1);
+    const x1 = Math.min(
+      this.castScratch.width,
+      Math.ceil((bounds.x1 - grid.originX) / grid.texel) + 1,
+    );
+    const y1 = Math.min(
+      this.castScratch.height,
+      Math.ceil((bounds.y1 - grid.originY) / grid.texel) + 1,
+    );
     if (x1 <= x0 || y1 <= y0) return;
     scratch.save();
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.beginPath();
     scratch.rect(x0, y0, x1 - x0, y1 - y0);
     scratch.clip();
     scratch.clearRect(x0, y0, x1 - x0, y1 - y0);
+    this.toShadowTexels(scratch, grid);
     draw(scratch);
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.globalCompositeOperation = 'source-in';
     scratch.fillStyle = '#ffffff';
     scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
@@ -1515,7 +1570,9 @@ export class Canvas2DBackend implements RenderBackend {
     scratch.fillStyle = `rgb(${grey}, ${grey}, ${grey})`;
     scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
     scratch.restore();
+    this.toShadowTexels(scratch, grid);
     layer.save();
+    layer.setTransform(1, 0, 0, 1, 0, 0);
     layer.globalCompositeOperation = 'lighten';
     layer.drawImage(this.castScratch, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
     layer.restore();
@@ -1530,16 +1587,18 @@ export class Canvas2DBackend implements RenderBackend {
     height: number,
   ): void {
     const scratch = this.castScratch?.getContext('2d');
-    if (!scratch || !this.castScratch || !this.shadowLayer) return;
+    const grid = this.shadowGridNow;
+    if (!scratch || !this.castScratch || !this.shadowLayer || !grid) return;
     this.ctx.save();
     this.clipShadowGround(this.ctx, view, camera);
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.globalCompositeOperation = 'source-over';
     scratch.fillStyle = '#ffffff';
     scratch.fillRect(0, 0, width, height);
     scratch.globalCompositeOperation = 'difference';
     scratch.drawImage(this.shadowLayer, 0, 0);
     this.ctx.globalCompositeOperation = 'multiply';
-    this.ctx.drawImage(this.castScratch, 0, 0);
+    this.drawShadowTexels(this.castScratch, grid);
     scratch.globalCompositeOperation = 'source-over';
     scratch.fillStyle = SHADOW_COLOR;
     scratch.fillRect(0, 0, width, height);
@@ -1547,7 +1606,7 @@ export class Canvas2DBackend implements RenderBackend {
     scratch.drawImage(this.shadowLayer, 0, 0);
     scratch.globalCompositeOperation = 'source-over';
     this.ctx.globalCompositeOperation = 'lighter';
-    this.ctx.drawImage(this.castScratch, 0, 0);
+    this.drawShadowTexels(this.castScratch, grid);
     this.ctx.restore();
     layer.globalCompositeOperation = 'source-over';
   }

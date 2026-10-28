@@ -134,6 +134,7 @@ import {
   CONTACT_BAND,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
+  SHADOW_LEVEL_SLOTS,
   SHADOW_RGB,
   actorGrounding,
   castShadowStrength,
@@ -143,6 +144,8 @@ import {
   spriteBandArt,
   type BandArt,
   type CastKey,
+  shadowGrid,
+  shadowLevels,
   structureShadowPolygons,
   tileShadowCell,
   silhouetteProjection,
@@ -164,22 +167,41 @@ const TERRAIN_INDEX: Record<TerrainId, number> = {
 /** The ground pass renders at this fraction of device resolution. */
 const GROUND_RESOLUTION = 0.5;
 
-/** Cast silhouettes need edges, not full sprite colour; half device resolution is sufficient. */
-const SHADOW_RESOLUTION = 0.5;
-
 const SHADOW_RGB_GLSL = SHADOW_RGB.map((channel) => (channel / 255).toFixed(5)).join(', ');
 
-/** The mask's max-unioned coverage is tinted once, so overlaps cannot darken twice. */
+/**
+ * The mask's max-unioned coverage is tinted once, so overlaps cannot darken
+ * twice. A caster's edge texel can hold a fraction of its level where it was
+ * sampled between two of its art's pixels; each texel snaps to the nearest of
+ * the levels the frame's casters wrote (`shadowLevels`, 0 among them), so a
+ * shadow is hard-edged at every caster's own strength (ADR 0093).
+ */
 const CAST_SHADOW_FRAGMENT = `#version 300 es
 precision highp float;
 
 in vec2 vTextureCoord;
 uniform sampler2D uTexture;
 uniform float uCastAlpha;
+uniform vec4 uLevelsA;
+uniform vec4 uLevelsB;
 out vec4 fragColor;
 
+float snapLevel(float a, float level, float best) {
+  return abs(a - level) < abs(a - best) ? level : best;
+}
+
 void main(void) {
-  float alpha = texture(uTexture, vTextureCoord).a * uCastAlpha;
+  float a = texture(uTexture, vTextureCoord).a;
+  float level = 0.0;
+  level = snapLevel(a, uLevelsA.x, level);
+  level = snapLevel(a, uLevelsA.y, level);
+  level = snapLevel(a, uLevelsA.z, level);
+  level = snapLevel(a, uLevelsA.w, level);
+  level = snapLevel(a, uLevelsB.x, level);
+  level = snapLevel(a, uLevelsB.y, level);
+  level = snapLevel(a, uLevelsB.z, level);
+  level = snapLevel(a, uLevelsB.w, level);
+  float alpha = level * uCastAlpha;
   fragColor = vec4(vec3(${SHADOW_RGB_GLSL}) * alpha, alpha);
 }`;
 
@@ -435,6 +457,8 @@ export class PixiBackend implements RenderBackend {
   /** The union's tint alpha: the scene's strongest shadow (`shadowCeiling`). */
   private castUniforms = new UniformGroup({
     uCastAlpha: { value: CAST_SHADOW_ALPHA, type: 'f32' },
+    uLevelsA: { value: new Float32Array(4), type: 'vec4<f32>' },
+    uLevelsB: { value: new Float32Array(4), type: 'vec4<f32>' },
   });
   private groundFilter: Filter | null = null;
   private groundOverlayFilter: Filter | null = null;
@@ -1272,35 +1296,47 @@ export class PixiBackend implements RenderBackend {
     if (!app) return;
     this.grounding = actorGrounding(view.scene);
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
-    // UniformGroup.uniforms is a plain object: the new ceiling is only uploaded by update().
-    (this.castUniforms.uniforms as { uCastAlpha: number }).uCastAlpha = shadowCeiling(
-      this.grounding,
-    );
-    this.castUniforms.update();
     const hasStructure = this.syncStructureShadows(view, camera);
     if (camera.projection === 'oblique') this.syncSceneryShadows(view);
     for (const [key, sprite] of this.castSprites)
       if (!this.castLive.has(key)) sprite.visible = false;
-    const hasDynamic = [...this.castSprites.values()].some((sprite) => sprite.visible);
+    const visible = [...this.castSprites.values()].filter((sprite) => sprite.visible);
     this.castLive.clear();
-    if (!hasDynamic && !hasStructure) {
+    if (visible.length === 0 && !hasStructure) {
       this.shadowComposite.visible = false;
       return;
     }
+    const levels = shadowLevels([
+      ...visible.map((sprite) => sprite.alpha),
+      ...(hasStructure ? [this.structureShadowGfx.alpha] : []),
+    ]);
+    // UniformGroup.uniforms is a plain object: the new values are only uploaded by update().
+    const uniforms = this.castUniforms.uniforms as {
+      uCastAlpha: number;
+      uLevelsA: Float32Array;
+      uLevelsB: Float32Array;
+    };
+    uniforms.uCastAlpha = shadowCeiling(this.grounding);
+    uniforms.uLevelsA.set(levels.slice(0, 4));
+    uniforms.uLevelsB.set(levels.slice(4, SHADOW_LEVEL_SLOTS));
+    this.castUniforms.update();
 
-    // A figure's legs are a few pixels wide: half resolution blurs a contact layer away.
-    const resolution = Math.max(
-      0.5,
-      this.viewport.dpr * (this.grounding.contact > 0 ? 1 : SHADOW_RESOLUTION),
-    );
-    this.shadowMask = (this.shadowMask ?? RenderTexture.create({ dynamic: true })).resize(
-      this.viewport.width,
-      this.viewport.height,
-      resolution,
-    ) as RenderTexture;
-    const ring = camera.clampRingTiles;
+    // One texel per world pixel, its edges on the world-pixel grid (ADR 0093).
     const nx = view.cameraNudge.x * TILE * camera.scale;
     const ny = view.cameraNudge.y * TILE * camera.scale;
+    const grid = shadowGrid(this.viewport, camera.scale, camera.offsetX - nx, camera.offsetY - ny);
+    this.shadowMask = (this.shadowMask ?? RenderTexture.create({ dynamic: true })).resize(
+      grid.width * grid.texel,
+      grid.height * grid.texel,
+      1 / grid.texel,
+    ) as RenderTexture;
+    if (this.shadowMask.source.scaleMode !== 'nearest')
+      this.shadowMask.source.scaleMode = 'nearest';
+    // The mask's texel (0, 0) is the screen's (originX, originY): draw into it shifted by as much.
+    this.shadowMaskSources.position.x -= grid.originX;
+    this.shadowMaskSources.position.y -= grid.originY;
+    this.shadowOutsideRoot.position.set(-grid.originX, -grid.originY);
+    const ring = camera.clampRingTiles;
     const corners = [
       { x: -ring.left, y: -ring.top },
       { x: view.grid.width + ring.right, y: -ring.top },
@@ -1351,11 +1387,13 @@ export class PixiBackend implements RenderBackend {
       target: this.shadowMask,
       clear: false,
     });
+    this.shadowMaskSources.position.x += grid.originX;
+    this.shadowMaskSources.position.y += grid.originY;
     this.shadowComposite.texture = this.shadowMask;
     this.shadowComposite.anchor.set(0, 0);
-    this.shadowComposite.position.set(0, 0);
-    this.shadowComposite.width = this.viewport.width;
-    this.shadowComposite.height = this.viewport.height;
+    this.shadowComposite.position.set(grid.originX, grid.originY);
+    this.shadowComposite.width = grid.width * grid.texel;
+    this.shadowComposite.height = grid.height * grid.texel;
     this.shadowComposite.visible = true;
   }
 
