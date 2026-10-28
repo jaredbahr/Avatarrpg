@@ -1,12 +1,12 @@
 # Portrait expression: Kaya angry — `portrait.kaya.angry`
 
-|               |                                                                                                                       |
-| ------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **Palette**   | `fire` — base `#d1462f`, light `#f0785c`, dark `#8c2416`, accent `#ffb27a`, ink `#1b1410`, background `#f4e9d8`       |
-| **Reference** | `art/raw/reference/unit.fire.kaya.png` — the full-body figure; the image reference, so the portrait matches the sheet |
-| **Deliver**   | `art/raw/portraits/kaya.png` (1024×1024 or larger, PNG)                                                               |
-| **Ships as**  | `public/art/portraits/expressions/angry/kaya.png` (512×512)                                                           |
-| **Manifest**  | `'portrait.kaya.angry': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' }`                            |
+|               |                                                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Palette**   | `fire` — base `#d1462f`, light `#f0785c`, dark `#8c2416`, accent `#ffb27a`, ink `#1b1410`, background `#f4e9d8` |
+| **Reference** | `public/art/portraits/kaya.png` — the shipped neutral; retain its identity, costume and framing                 |
+| **Deliver**   | `art/source/portraits-variants/openai/kaya-angry.png` (1024×1024 or larger, PNG)                                |
+| **Ships as**  | `public/art/portraits/expressions/angry/kaya.png` (512×512)                                                     |
+| **Manifest**  | `'portrait.kaya.angry': { kind: 'image', url: 'art/portraits/expressions/angry/kaya.png', palette: 'fire' }`    |
 
 ## Who
 
