@@ -17,7 +17,10 @@
  *
  * FNT_JOG_ZOOM sets the Ba Dan zoom asked for (default 77 px tiles; `default` keeps the
  * scene's own fit). FNT_JOG_VIDEO=1 records the run (playwright.jog.config.ts), and the
- * party first crosses the slice once in real time, so the video plays at the game's speed.
+ * party first crosses the slice once in real time, so the video plays at the game's speed;
+ * provenance.json's `videoCrossingMs` is where that crossing starts and ends in the video,
+ * for cutting the load. `baDanLeader` is the leader's screen point in each Ba Dan frame,
+ * relative to the frame. FNT_JOG_NO_FOREST=1 skips the forest fight.
  *
  * FNT_JOG_LABEL=after npx playwright test -c playwright.jog.config.ts
  */
@@ -111,6 +114,7 @@ async function film(
   done: () => Promise<boolean>,
   max = 220,
   tail = 8,
+  probe?: (i: number) => Promise<void>,
 ): Promise<number> {
   mkdirSync(folder, { recursive: true });
   let after = -1;
@@ -118,6 +122,7 @@ async function film(
   for (; i < max; i++) {
     await freezeAt(page, t0 + i * STEP_MS);
     await page.screenshot({ path: `${folder}/${String(i).padStart(3, '0')}.png`, clip });
+    await probe?.(i);
     if (after < 0 && (await done())) after = i;
     if (after >= 0 && i - after >= tail) break;
   }
@@ -126,6 +131,8 @@ async function film(
 
 test('canvas jog captures', async ({ page }) => {
   test.setTimeout(1_800_000);
+  // The recording starts with the page, just before the test body.
+  const videoStart = Date.now();
   const label = process.env.FNT_JOG_LABEL ?? 'current';
   const folder = `${process.env.FNT_JOG_DIR ?? '.shots/jog'}/${label}`;
   mkdirSync(folder, { recursive: true });
@@ -175,12 +182,14 @@ test('canvas jog captures', async ({ page }) => {
     // The party crosses the slice once at the game's own pace, for the recording.
     await startAt();
     await page.waitForTimeout(600);
+    const crossing = Date.now() - videoStart;
     await page.locator('.map-canvas').click({ position: await tilePoint(page, 9, 8) });
     await expect
       .poll(() => page.evaluate(() => window.fnt!.app.state!.location.pos.x), { timeout: 20_000 })
       .toBe(9);
     await waitForIdle(page);
     await page.waitForTimeout(800);
+    provenance.videoCrossingMs = [crossing, Date.now() - videoStart];
   }
   await startAt();
   await page.waitForTimeout(600);
@@ -197,13 +206,41 @@ test('canvas jog captures', async ({ page }) => {
     width: Math.round(box.width * 0.8),
     height: Math.round(box.height * 0.6),
   };
-  provenance.baDanFrames = await film(page, `${folder}/ba-dan`, t0, slice, async () =>
-    page.evaluate(
-      () =>
-        window.fnt!.app.state!.location.pos.x === 9 &&
-        !window.fnt!.app.animator.busy(performance.now()),
-    ),
+  const leader: { i: number; x: number; y: number }[] = [];
+  provenance.baDanFrames = await film(
+    page,
+    `${folder}/ba-dan`,
+    t0,
+    slice,
+    async () =>
+      page.evaluate(
+        () =>
+          window.fnt!.app.state!.location.pos.x === 9 &&
+          !window.fnt!.app.animator.busy(performance.now()),
+      ),
+    220,
+    8,
+    async (i) => {
+      const at = await page.evaluate(() => {
+        const app = window.fnt!.app;
+        const id = app.state!.party[0]?.id ?? '';
+        return app.animator.renderPos(performance.now(), id) ?? app.state!.location.pos;
+      });
+      const point = await tilePoint(page, at.x, at.y);
+      // tilePoint is canvas-relative; the frame is a page clip.
+      leader.push({
+        i,
+        x: Math.round(box.x + point.x - slice.x),
+        y: Math.round(box.y + point.y - slice.y),
+      });
+    },
   );
+  provenance.baDanLeader = leader;
+  if (process.env.FNT_JOG_NO_FOREST) {
+    writeFileSync(`${folder}/provenance.json`, JSON.stringify({ ...provenance, errors }, null, 2));
+    expect(errors).toEqual([]);
+    return;
+  }
 
   // The forest fight: Kaya's longest straight move from beside the oil flask.
   await resetStorage(page, '?renderer=canvas');
