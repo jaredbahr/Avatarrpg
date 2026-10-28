@@ -1,0 +1,2855 @@
+{
+  "id": "kaya.bend",
+  "unitAsset": "unit.fire.kaya",
+  "element": "fire",
+  "facings": {
+    "east": {
+      "frames": [
+        "unit.fire.kaya/bendEast/0",
+        "unit.fire.kaya/bendEast/1",
+        "unit.fire.kaya/bendEast/2",
+        "unit.fire.kaya/bendEast/3",
+        "unit.fire.kaya/bendEast/4",
+        "unit.fire.kaya/bendEast/5",
+        "unit.fire.kaya/bendEast/6",
+        "unit.fire.kaya/bendEast/6",
+        "unit.fire.kaya/bendEast/8",
+        "unit.fire.kaya/bendEast/9",
+        "unit.fire.kaya/bendEast/10",
+        "unit.fire.kaya/bendEast/11",
+        "unit.fire.kaya/bendEast/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 109.594,
+              "y": 102.854
+            },
+            "RW": {
+              "x": 107.962,
+              "y": 101.587
+            },
+            "LA": {
+              "x": 99.629,
+              "y": 136.07
+            },
+            "RA": {
+              "x": 90.931,
+              "y": 142.944
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 113.875,
+              "y": 115.488
+            },
+            "RW": {
+              "x": 107.232,
+              "y": 106.694
+            },
+            "LA": {
+              "x": 99.091,
+              "y": 135.936
+            },
+            "RA": {
+              "x": 91.68,
+              "y": 143.328
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 129.5,
+              "y": 104.5
+            },
+            "RW": {
+              "x": 103.987,
+              "y": 107.386
+            },
+            "LA": {
+              "x": 98.592,
+              "y": 135.667
+            },
+            "RA": {
+              "x": 90.931,
+              "y": 143.213
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 107.443,
+              "y": 104.506
+            },
+            "RW": {
+              "x": 104.717,
+              "y": 103.546
+            },
+            "LA": {
+              "x": 98.938,
+              "y": 135.936
+            },
+            "RA": {
+              "x": 90.566,
+              "y": 143.232
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 106.5,
+              "y": 106.5
+            },
+            "RW": {
+              "x": 103.93,
+              "y": 115.142
+            },
+            "LA": {
+              "x": 99.398,
+              "y": 135.955
+            },
+            "RA": {
+              "x": 90.49,
+              "y": 143.04
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 106.042,
+              "y": 105.331
+            },
+            "RW": {
+              "x": 119.808,
+              "y": 97.363
+            },
+            "LA": {
+              "x": 99.475,
+              "y": 135.936
+            },
+            "RA": {
+              "x": 89.798,
+              "y": 142.944
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 106.733,
+              "y": 104.813
+            },
+            "RW": {
+              "x": 125.414,
+              "y": 91.776
+            },
+            "LA": {
+              "x": 99.552,
+              "y": 136.109
+            },
+            "RA": {
+              "x": 90.029,
+              "y": 142.944
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 106.733,
+              "y": 104.813
+            },
+            "RW": {
+              "x": 125.414,
+              "y": 91.776
+            },
+            "LA": {
+              "x": 99.552,
+              "y": 136.109
+            },
+            "RA": {
+              "x": 90.029,
+              "y": 142.944
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 109.344,
+              "y": 104.87
+            },
+            "RW": {
+              "x": 110.342,
+              "y": 103.526
+            },
+            "LA": {
+              "x": 99.629,
+              "y": 136.032
+            },
+            "RA": {
+              "x": 90.125,
+              "y": 142.925
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 108.998,
+              "y": 103.584
+            },
+            "RW": {
+              "x": 107.52,
+              "y": 104.064
+            },
+            "LA": {
+              "x": 99.437,
+              "y": 135.936
+            },
+            "RA": {
+              "x": 90.106,
+              "y": 143.021
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 108.134,
+              "y": 101.53
+            },
+            "RW": {
+              "x": 106.406,
+              "y": 102.182
+            },
+            "LA": {
+              "x": 99.36,
+              "y": 135.898
+            },
+            "RA": {
+              "x": 90.24,
+              "y": 143.078
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 107.539,
+              "y": 100.838
+            },
+            "RW": {
+              "x": 105.466,
+              "y": 100.589
+            },
+            "LA": {
+              "x": 99.245,
+              "y": 135.917
+            },
+            "RA": {
+              "x": 90.182,
+              "y": 143.155
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 109.594,
+              "y": 102.854
+            },
+            "RW": {
+              "x": 107.962,
+              "y": 101.587
+            },
+            "LA": {
+              "x": 99.629,
+              "y": 136.07
+            },
+            "RA": {
+              "x": 90.931,
+              "y": 142.944
+            }
+          }
+        }
+      ]
+    },
+    "southEast": {
+      "frames": [
+        "unit.fire.kaya/bendSouthEast/0",
+        "unit.fire.kaya/bendSouthEast/1",
+        "unit.fire.kaya/bendSouthEast/2",
+        "unit.fire.kaya/bendSouthEast/3",
+        "unit.fire.kaya/bendSouthEast/4",
+        "unit.fire.kaya/bendSouthEast/5",
+        "unit.fire.kaya/bendSouthEast/6",
+        "unit.fire.kaya/bendSouthEast/6",
+        "unit.fire.kaya/bendSouthEast/8",
+        "unit.fire.kaya/bendSouthEast/9",
+        "unit.fire.kaya/bendSouthEast/10",
+        "unit.fire.kaya/bendSouthEast/11",
+        "unit.fire.kaya/bendSouthEast/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 112.09,
+              "y": 107.501
+            },
+            "RW": {
+              "x": 88.781,
+              "y": 118.867
+            },
+            "LA": {
+              "x": 100.992,
+              "y": 137.53
+            },
+            "RA": {
+              "x": 81.504,
+              "y": 142.31
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 117.274,
+              "y": 122.15
+            },
+            "RW": {
+              "x": 83.386,
+              "y": 122.63
+            },
+            "LA": {
+              "x": 100.454,
+              "y": 137.146
+            },
+            "RA": {
+              "x": 81.811,
+              "y": 142.886
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 121.382,
+              "y": 114.278
+            },
+            "RW": {
+              "x": 77.76,
+              "y": 121.421
+            },
+            "LA": {
+              "x": 100.474,
+              "y": 136.8
+            },
+            "RA": {
+              "x": 81.331,
+              "y": 142.522
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 104.986,
+              "y": 107.174
+            },
+            "RW": {
+              "x": 82.368,
+              "y": 118.733
+            },
+            "LA": {
+              "x": 100.589,
+              "y": 137.165
+            },
+            "RA": {
+              "x": 81.101,
+              "y": 142.426
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 107.059,
+              "y": 109.728
+            },
+            "RW": {
+              "x": 78.24,
+              "y": 129.235
+            },
+            "LA": {
+              "x": 100.934,
+              "y": 137.357
+            },
+            "RA": {
+              "x": 81.235,
+              "y": 142.234
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 109.843,
+              "y": 108.73
+            },
+            "RW": {
+              "x": 94.982,
+              "y": 118.522
+            },
+            "LA": {
+              "x": 101.088,
+              "y": 137.376
+            },
+            "RA": {
+              "x": 80.582,
+              "y": 141.85
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 113.011,
+              "y": 109.075
+            },
+            "RW": {
+              "x": 108.154,
+              "y": 116.986
+            },
+            "LA": {
+              "x": 100.934,
+              "y": 137.53
+            },
+            "RA": {
+              "x": 80.717,
+              "y": 141.926
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 113.011,
+              "y": 109.075
+            },
+            "RW": {
+              "x": 108.154,
+              "y": 116.986
+            },
+            "LA": {
+              "x": 100.934,
+              "y": 137.53
+            },
+            "RA": {
+              "x": 80.717,
+              "y": 141.926
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 115.411,
+              "y": 110.189
+            },
+            "RW": {
+              "x": 94.445,
+              "y": 122.534
+            },
+            "LA": {
+              "x": 101.05,
+              "y": 137.51
+            },
+            "RA": {
+              "x": 80.89,
+              "y": 141.984
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 112.589,
+              "y": 108.23
+            },
+            "RW": {
+              "x": 89.126,
+              "y": 121.325
+            },
+            "LA": {
+              "x": 101.011,
+              "y": 137.357
+            },
+            "RA": {
+              "x": 80.87,
+              "y": 142.061
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 109.882,
+              "y": 105.408
+            },
+            "RW": {
+              "x": 86.592,
+              "y": 118.656
+            },
+            "LA": {
+              "x": 100.973,
+              "y": 137.299
+            },
+            "RA": {
+              "x": 80.966,
+              "y": 142.176
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 108.614,
+              "y": 104.333
+            },
+            "RW": {
+              "x": 85.786,
+              "y": 116.678
+            },
+            "LA": {
+              "x": 100.858,
+              "y": 137.261
+            },
+            "RA": {
+              "x": 80.89,
+              "y": 142.214
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 112.09,
+              "y": 107.501
+            },
+            "RW": {
+              "x": 88.781,
+              "y": 118.867
+            },
+            "LA": {
+              "x": 100.992,
+              "y": 137.53
+            },
+            "RA": {
+              "x": 81.504,
+              "y": 142.31
+            }
+          }
+        }
+      ]
+    },
+    "south": {
+      "frames": [
+        "unit.fire.kaya/bendSouth/0",
+        "unit.fire.kaya/bendSouth/1",
+        "unit.fire.kaya/bendSouth/2",
+        "unit.fire.kaya/bendSouth/3",
+        "unit.fire.kaya/bendSouth/4",
+        "unit.fire.kaya/bendSouth/5",
+        "unit.fire.kaya/bendSouth/6",
+        "unit.fire.kaya/bendSouth/6",
+        "unit.fire.kaya/bendSouth/8",
+        "unit.fire.kaya/bendSouth/9",
+        "unit.fire.kaya/bendSouth/10",
+        "unit.fire.kaya/bendSouth/11",
+        "unit.fire.kaya/bendSouth/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 105.792,
+              "y": 110.054
+            },
+            "RW": {
+              "x": 86.131,
+              "y": 111.36
+            },
+            "LA": {
+              "x": 105.043,
+              "y": 141.37
+            },
+            "RA": {
+              "x": 86.304,
+              "y": 135.706
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 108.883,
+              "y": 126.874
+            },
+            "RW": {
+              "x": 78.624,
+              "y": 111.782
+            },
+            "LA": {
+              "x": 104.832,
+              "y": 140.794
+            },
+            "RA": {
+              "x": 85.958,
+              "y": 136.301
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 93.562,
+              "y": 116.122
+            },
+            "RW": {
+              "x": 73.613,
+              "y": 107.808
+            },
+            "LA": {
+              "x": 105.466,
+              "y": 140.621
+            },
+            "RA": {
+              "x": 86.074,
+              "y": 135.821
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 97.229,
+              "y": 105.658
+            },
+            "RW": {
+              "x": 79.93,
+              "y": 107.942
+            },
+            "LA": {
+              "x": 105.254,
+              "y": 140.966
+            },
+            "RA": {
+              "x": 86.131,
+              "y": 135.686
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 99.667,
+              "y": 109.402
+            },
+            "RW": {
+              "x": 74.458,
+              "y": 115.968
+            },
+            "LA": {
+              "x": 105.254,
+              "y": 141.254
+            },
+            "RA": {
+              "x": 86.438,
+              "y": 135.61
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 106.406,
+              "y": 110.861
+            },
+            "RW": {
+              "x": 82.061,
+              "y": 111.59
+            },
+            "LA": {
+              "x": 105.389,
+              "y": 141.331
+            },
+            "RA": {
+              "x": 86.227,
+              "y": 135.014
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 110.515,
+              "y": 113.088
+            },
+            "RW": {
+              "x": 95.981,
+              "y": 117.101
+            },
+            "LA": {
+              "x": 105.062,
+              "y": 141.37
+            },
+            "RA": {
+              "x": 86.17,
+              "y": 135.11
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 110.515,
+              "y": 113.088
+            },
+            "RW": {
+              "x": 95.981,
+              "y": 117.101
+            },
+            "LA": {
+              "x": 105.062,
+              "y": 141.37
+            },
+            "RA": {
+              "x": 86.17,
+              "y": 135.11
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 111.206,
+              "y": 115.027
+            },
+            "RW": {
+              "x": 92.141,
+              "y": 118.061
+            },
+            "LA": {
+              "x": 105.178,
+              "y": 141.389
+            },
+            "RA": {
+              "x": 86.304,
+              "y": 135.206
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 107.232,
+              "y": 111.283
+            },
+            "RW": {
+              "x": 87.206,
+              "y": 114.182
+            },
+            "LA": {
+              "x": 105.312,
+              "y": 141.274
+            },
+            "RA": {
+              "x": 86.304,
+              "y": 135.322
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 104.045,
+              "y": 106.944
+            },
+            "RW": {
+              "x": 84.518,
+              "y": 110.17
+            },
+            "LA": {
+              "x": 105.35,
+              "y": 141.197
+            },
+            "RA": {
+              "x": 86.285,
+              "y": 135.437
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 102.797,
+              "y": 105.197
+            },
+            "RW": {
+              "x": 84.346,
+              "y": 107.942
+            },
+            "LA": {
+              "x": 105.312,
+              "y": 141.139
+            },
+            "RA": {
+              "x": 86.266,
+              "y": 135.437
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 105.792,
+              "y": 110.054
+            },
+            "RW": {
+              "x": 86.131,
+              "y": 111.36
+            },
+            "LA": {
+              "x": 105.043,
+              "y": 141.37
+            },
+            "RA": {
+              "x": 86.304,
+              "y": 135.706
+            }
+          }
+        }
+      ]
+    },
+    "southWest": {
+      "frames": [
+        "unit.fire.kaya/bendSouthWest/0",
+        "unit.fire.kaya/bendSouthWest/1",
+        "unit.fire.kaya/bendSouthWest/2",
+        "unit.fire.kaya/bendSouthWest/3",
+        "unit.fire.kaya/bendSouthWest/4",
+        "unit.fire.kaya/bendSouthWest/5",
+        "unit.fire.kaya/bendSouthWest/6",
+        "unit.fire.kaya/bendSouthWest/6",
+        "unit.fire.kaya/bendSouthWest/8",
+        "unit.fire.kaya/bendSouthWest/9",
+        "unit.fire.kaya/bendSouthWest/10",
+        "unit.fire.kaya/bendSouthWest/11",
+        "unit.fire.kaya/bendSouthWest/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 102.816,
+              "y": 107.309
+            },
+            "RW": {
+              "x": 82.426,
+              "y": 105.83
+            },
+            "LA": {
+              "x": 101.107,
+              "y": 142.022
+            },
+            "RA": {
+              "x": 92.064,
+              "y": 132.365
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 101.587,
+              "y": 124.531
+            },
+            "RW": {
+              "x": 78.067,
+              "y": 103.2
+            },
+            "LA": {
+              "x": 101.395,
+              "y": 141.446
+            },
+            "RA": {
+              "x": 91.258,
+              "y": 132.653
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 76.5,
+              "y": 101.5
+            },
+            "RW": {
+              "x": 77.222,
+              "y": 97.728
+            },
+            "LA": {
+              "x": 102.182,
+              "y": 141.638
+            },
+            "RA": {
+              "x": 91.91,
+              "y": 132.384
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 98.803,
+              "y": 99.686
+            },
+            "RW": {
+              "x": 80.851,
+              "y": 100.435
+            },
+            "LA": {
+              "x": 101.779,
+              "y": 141.811
+            },
+            "RA": {
+              "x": 92.218,
+              "y": 132.326
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 99.898,
+              "y": 104.314
+            },
+            "RW": {
+              "x": 77.837,
+              "y": 106.234
+            },
+            "LA": {
+              "x": 101.414,
+              "y": 142.003
+            },
+            "RA": {
+              "x": 92.467,
+              "y": 132.403
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 105.907,
+              "y": 109.056
+            },
+            "RW": {
+              "x": 70.752,
+              "y": 102.01
+            },
+            "LA": {
+              "x": 101.472,
+              "y": 142.118
+            },
+            "RA": {
+              "x": 92.87,
+              "y": 131.846
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 108.077,
+              "y": 112.877
+            },
+            "RW": {
+              "x": 75.667,
+              "y": 112.339
+            },
+            "LA": {
+              "x": 101.184,
+              "y": 142.022
+            },
+            "RA": {
+              "x": 92.64,
+              "y": 131.866
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 108.077,
+              "y": 112.877
+            },
+            "RW": {
+              "x": 75.667,
+              "y": 112.339
+            },
+            "LA": {
+              "x": 101.184,
+              "y": 142.022
+            },
+            "RA": {
+              "x": 92.64,
+              "y": 131.866
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 106.541,
+              "y": 114.586
+            },
+            "RW": {
+              "x": 84.595,
+              "y": 114.605
+            },
+            "LA": {
+              "x": 101.184,
+              "y": 142.08
+            },
+            "RA": {
+              "x": 92.698,
+              "y": 132.038
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 104.218,
+              "y": 109.248
+            },
+            "RW": {
+              "x": 83.482,
+              "y": 109.19
+            },
+            "LA": {
+              "x": 101.414,
+              "y": 142.042
+            },
+            "RA": {
+              "x": 92.698,
+              "y": 132.115
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 102.758,
+              "y": 103.738
+            },
+            "RW": {
+              "x": 82.579,
+              "y": 104.237
+            },
+            "LA": {
+              "x": 101.51,
+              "y": 142.022
+            },
+            "RA": {
+              "x": 92.563,
+              "y": 132.211
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 102.413,
+              "y": 101.587
+            },
+            "RW": {
+              "x": 83.155,
+              "y": 102.144
+            },
+            "LA": {
+              "x": 101.587,
+              "y": 141.946
+            },
+            "RA": {
+              "x": 92.602,
+              "y": 132.211
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 102.816,
+              "y": 107.309
+            },
+            "RW": {
+              "x": 82.426,
+              "y": 105.83
+            },
+            "LA": {
+              "x": 101.107,
+              "y": 142.022
+            },
+            "RA": {
+              "x": 92.064,
+              "y": 132.365
+            }
+          }
+        }
+      ]
+    },
+    "west": {
+      "frames": [
+        "unit.fire.kaya/bendWest/0",
+        "unit.fire.kaya/bendWest/1",
+        "unit.fire.kaya/bendWest/2",
+        "unit.fire.kaya/bendWest/3",
+        "unit.fire.kaya/bendWest/4",
+        "unit.fire.kaya/bendWest/5",
+        "unit.fire.kaya/bendWest/6",
+        "unit.fire.kaya/bendWest/6",
+        "unit.fire.kaya/bendWest/8",
+        "unit.fire.kaya/bendWest/9",
+        "unit.fire.kaya/bendWest/10",
+        "unit.fire.kaya/bendWest/11",
+        "unit.fire.kaya/bendWest/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 83.021,
+              "y": 100.282
+            },
+            "RW": {
+              "x": 87.955,
+              "y": 118.272
+            },
+            "LA": {
+              "x": 91.814,
+              "y": 145.536
+            },
+            "RA": {
+              "x": 101.491,
+              "y": 137.683
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 78.797,
+              "y": 116.486
+            },
+            "RW": {
+              "x": 88.685,
+              "y": 114.854
+            },
+            "LA": {
+              "x": 92.352,
+              "y": 145.152
+            },
+            "RA": {
+              "x": 100.762,
+              "y": 137.664
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 60.269,
+              "y": 86.17
+            },
+            "RW": {
+              "x": 91.853,
+              "y": 109.862
+            },
+            "LA": {
+              "x": 92.851,
+              "y": 145.594
+            },
+            "RA": {
+              "x": 101.51,
+              "y": 137.683
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 85.133,
+              "y": 92.198
+            },
+            "RW": {
+              "x": 91.162,
+              "y": 113.184
+            },
+            "LA": {
+              "x": 92.486,
+              "y": 145.632
+            },
+            "RA": {
+              "x": 101.856,
+              "y": 137.779
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 84.461,
+              "y": 96.96
+            },
+            "RW": {
+              "x": 91.93,
+              "y": 118.579
+            },
+            "LA": {
+              "x": 92.026,
+              "y": 145.651
+            },
+            "RA": {
+              "x": 101.914,
+              "y": 137.914
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 86.534,
+              "y": 103.469
+            },
+            "RW": {
+              "x": 76.262,
+              "y": 109.402
+            },
+            "LA": {
+              "x": 91.968,
+              "y": 145.766
+            },
+            "RA": {
+              "x": 102.624,
+              "y": 137.587
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 85.843,
+              "y": 107.635
+            },
+            "RW": {
+              "x": 71.5,
+              "y": 119.5
+            },
+            "LA": {
+              "x": 91.91,
+              "y": 145.574
+            },
+            "RA": {
+              "x": 102.374,
+              "y": 137.51
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 85.843,
+              "y": 107.635
+            },
+            "RW": {
+              "x": 71.5,
+              "y": 119.5
+            },
+            "LA": {
+              "x": 91.91,
+              "y": 145.574
+            },
+            "RA": {
+              "x": 102.374,
+              "y": 137.51
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 83.27,
+              "y": 108.48
+            },
+            "RW": {
+              "x": 85.594,
+              "y": 127.104
+            },
+            "LA": {
+              "x": 91.834,
+              "y": 145.613
+            },
+            "RA": {
+              "x": 102.298,
+              "y": 137.683
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 83.616,
+              "y": 102.682
+            },
+            "RW": {
+              "x": 88.397,
+              "y": 121.997
+            },
+            "LA": {
+              "x": 92.006,
+              "y": 145.67
+            },
+            "RA": {
+              "x": 102.298,
+              "y": 137.779
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 84.461,
+              "y": 96.979
+            },
+            "RW": {
+              "x": 89.491,
+              "y": 117.062
+            },
+            "LA": {
+              "x": 92.083,
+              "y": 145.67
+            },
+            "RA": {
+              "x": 102.163,
+              "y": 137.818
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 85.056,
+              "y": 94.848
+            },
+            "RW": {
+              "x": 90.413,
+              "y": 115.238
+            },
+            "LA": {
+              "x": 92.198,
+              "y": 145.651
+            },
+            "RA": {
+              "x": 102.24,
+              "y": 137.837
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 83.021,
+              "y": 100.282
+            },
+            "RW": {
+              "x": 87.955,
+              "y": 118.272
+            },
+            "LA": {
+              "x": 91.814,
+              "y": 145.536
+            },
+            "RA": {
+              "x": 101.491,
+              "y": 137.683
+            }
+          }
+        }
+      ]
+    },
+    "northWest": {
+      "frames": [
+        "unit.fire.kaya/bendNorthWest/0",
+        "unit.fire.kaya/bendNorthWest/1",
+        "unit.fire.kaya/bendNorthWest/2",
+        "unit.fire.kaya/bendNorthWest/3",
+        "unit.fire.kaya/bendNorthWest/4",
+        "unit.fire.kaya/bendNorthWest/5",
+        "unit.fire.kaya/bendNorthWest/6",
+        "unit.fire.kaya/bendNorthWest/6",
+        "unit.fire.kaya/bendNorthWest/8",
+        "unit.fire.kaya/bendNorthWest/9",
+        "unit.fire.kaya/bendNorthWest/10",
+        "unit.fire.kaya/bendNorthWest/11",
+        "unit.fire.kaya/bendNorthWest/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 79.661,
+              "y": 107.021
+            },
+            "RW": {
+              "x": 97.843,
+              "y": 111.859
+            },
+            "LA": {
+              "x": 90.912,
+              "y": 146.035
+            },
+            "RA": {
+              "x": 111.994,
+              "y": 143.923
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 74.477,
+              "y": 121.056
+            },
+            "RW": {
+              "x": 103.219,
+              "y": 109.786
+            },
+            "LA": {
+              "x": 91.469,
+              "y": 145.862
+            },
+            "RA": {
+              "x": 111.667,
+              "y": 143.674
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 70.368,
+              "y": 86.17
+            },
+            "RW": {
+              "x": 108.864,
+              "y": 106.752
+            },
+            "LA": {
+              "x": 91.411,
+              "y": 146.438
+            },
+            "RA": {
+              "x": 112.147,
+              "y": 143.981
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 86.765,
+              "y": 101.011
+            },
+            "RW": {
+              "x": 104.256,
+              "y": 108.902
+            },
+            "LA": {
+              "x": 91.296,
+              "y": 146.342
+            },
+            "RA": {
+              "x": 112.397,
+              "y": 144.173
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 84.691,
+              "y": 105.12
+            },
+            "RW": {
+              "x": 108.365,
+              "y": 115.296
+            },
+            "LA": {
+              "x": 90.95,
+              "y": 146.189
+            },
+            "RA": {
+              "x": 112.243,
+              "y": 144.307
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 81.907,
+              "y": 111.437
+            },
+            "RW": {
+              "x": 92.5,
+              "y": 99.5
+            },
+            "LA": {
+              "x": 90.816,
+              "y": 146.266
+            },
+            "RA": {
+              "x": 112.896,
+              "y": 144.269
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 78.739,
+              "y": 114.739
+            },
+            "RW": {
+              "x": 78.47,
+              "y": 105.35
+            },
+            "LA": {
+              "x": 90.97,
+              "y": 146.093
+            },
+            "RA": {
+              "x": 112.762,
+              "y": 144.115
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 78.739,
+              "y": 114.739
+            },
+            "RW": {
+              "x": 78.47,
+              "y": 105.35
+            },
+            "LA": {
+              "x": 90.97,
+              "y": 146.093
+            },
+            "RA": {
+              "x": 112.762,
+              "y": 144.115
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 76.339,
+              "y": 114.47
+            },
+            "RW": {
+              "x": 92.179,
+              "y": 118.867
+            },
+            "LA": {
+              "x": 90.835,
+              "y": 146.093
+            },
+            "RA": {
+              "x": 112.608,
+              "y": 144.23
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 79.162,
+              "y": 109.402
+            },
+            "RW": {
+              "x": 97.498,
+              "y": 115.565
+            },
+            "LA": {
+              "x": 90.893,
+              "y": 146.208
+            },
+            "RA": {
+              "x": 112.608,
+              "y": 144.326
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 81.869,
+              "y": 104.525
+            },
+            "RW": {
+              "x": 100.032,
+              "y": 111.456
+            },
+            "LA": {
+              "x": 90.931,
+              "y": 146.227
+            },
+            "RA": {
+              "x": 112.512,
+              "y": 144.307
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 83.136,
+              "y": 102.835
+            },
+            "RW": {
+              "x": 100.838,
+              "y": 110.035
+            },
+            "LA": {
+              "x": 91.046,
+              "y": 146.246
+            },
+            "RA": {
+              "x": 112.589,
+              "y": 144.365
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 79.661,
+              "y": 107.021
+            },
+            "RW": {
+              "x": 97.843,
+              "y": 111.859
+            },
+            "LA": {
+              "x": 90.912,
+              "y": 146.035
+            },
+            "RA": {
+              "x": 111.994,
+              "y": 143.923
+            }
+          }
+        }
+      ]
+    },
+    "north": {
+      "frames": [
+        "unit.fire.kaya/bendNorth/0",
+        "unit.fire.kaya/bendNorth/1",
+        "unit.fire.kaya/bendNorth/2",
+        "unit.fire.kaya/bendNorth/3",
+        "unit.fire.kaya/bendNorth/4",
+        "unit.fire.kaya/bendNorth/5",
+        "unit.fire.kaya/bendNorth/6",
+        "unit.fire.kaya/bendNorth/6",
+        "unit.fire.kaya/bendNorth/8",
+        "unit.fire.kaya/bendNorth/9",
+        "unit.fire.kaya/bendNorth/10",
+        "unit.fire.kaya/bendNorth/11",
+        "unit.fire.kaya/bendNorth/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 81.331,
+              "y": 106.445
+            },
+            "RW": {
+              "x": 104.083,
+              "y": 105.062
+            },
+            "LA": {
+              "x": 89.472,
+              "y": 138.739
+            },
+            "RA": {
+              "x": 104.602,
+              "y": 145.574
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 78.317,
+              "y": 118.368
+            },
+            "RW": {
+              "x": 111.437,
+              "y": 106.349
+            },
+            "LA": {
+              "x": 89.683,
+              "y": 138.778
+            },
+            "RA": {
+              "x": 104.966,
+              "y": 145.325
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 93.331,
+              "y": 86.227
+            },
+            "RW": {
+              "x": 116.352,
+              "y": 106.061
+            },
+            "LA": {
+              "x": 89.069,
+              "y": 139.162
+            },
+            "RA": {
+              "x": 104.813,
+              "y": 145.728
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 89.722,
+              "y": 104.467
+            },
+            "RW": {
+              "x": 110.17,
+              "y": 105.37
+            },
+            "LA": {
+              "x": 89.261,
+              "y": 139.123
+            },
+            "RA": {
+              "x": 104.774,
+              "y": 145.978
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 87.322,
+              "y": 107.443
+            },
+            "RW": {
+              "x": 115.526,
+              "y": 114.278
+            },
+            "LA": {
+              "x": 89.28,
+              "y": 138.854
+            },
+            "RA": {
+              "x": 104.467,
+              "y": 145.997
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 80.736,
+              "y": 111.302
+            },
+            "RW": {
+              "x": 108.077,
+              "y": 91.795
+            },
+            "LA": {
+              "x": 89.146,
+              "y": 138.874
+            },
+            "RA": {
+              "x": 104.678,
+              "y": 146.189
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 76.685,
+              "y": 112.723
+            },
+            "RW": {
+              "x": 94.406,
+              "y": 90.931
+            },
+            "LA": {
+              "x": 89.453,
+              "y": 138.835
+            },
+            "RA": {
+              "x": 104.736,
+              "y": 146.016
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 76.685,
+              "y": 112.723
+            },
+            "RW": {
+              "x": 94.406,
+              "y": 90.931
+            },
+            "LA": {
+              "x": 89.453,
+              "y": 138.835
+            },
+            "RA": {
+              "x": 104.736,
+              "y": 146.016
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 76.013,
+              "y": 111.667
+            },
+            "RW": {
+              "x": 98.17,
+              "y": 109.075
+            },
+            "LA": {
+              "x": 89.338,
+              "y": 138.758
+            },
+            "RA": {
+              "x": 104.602,
+              "y": 146.035
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 79.891,
+              "y": 108.326
+            },
+            "RW": {
+              "x": 103.046,
+              "y": 108.422
+            },
+            "LA": {
+              "x": 89.222,
+              "y": 138.835
+            },
+            "RA": {
+              "x": 104.602,
+              "y": 146.131
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 83.04,
+              "y": 104.966
+            },
+            "RW": {
+              "x": 105.638,
+              "y": 105.658
+            },
+            "LA": {
+              "x": 89.184,
+              "y": 138.874
+            },
+            "RA": {
+              "x": 104.621,
+              "y": 146.112
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 84.269,
+              "y": 103.93
+            },
+            "RW": {
+              "x": 105.83,
+              "y": 104.486
+            },
+            "LA": {
+              "x": 89.222,
+              "y": 138.931
+            },
+            "RA": {
+              "x": 104.64,
+              "y": 146.189
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 81.331,
+              "y": 106.445
+            },
+            "RW": {
+              "x": 104.083,
+              "y": 105.062
+            },
+            "LA": {
+              "x": 89.472,
+              "y": 138.739
+            },
+            "RA": {
+              "x": 104.602,
+              "y": 145.574
+            }
+          }
+        }
+      ]
+    },
+    "northEast": {
+      "frames": [
+        "unit.fire.kaya/bendNorthEast/0",
+        "unit.fire.kaya/bendNorthEast/1",
+        "unit.fire.kaya/bendNorthEast/2",
+        "unit.fire.kaya/bendNorthEast/3",
+        "unit.fire.kaya/bendNorthEast/4",
+        "unit.fire.kaya/bendNorthEast/5",
+        "unit.fire.kaya/bendNorthEast/6",
+        "unit.fire.kaya/bendNorthEast/6",
+        "unit.fire.kaya/bendNorthEast/8",
+        "unit.fire.kaya/bendNorthEast/9",
+        "unit.fire.kaya/bendNorthEast/10",
+        "unit.fire.kaya/bendNorthEast/11",
+        "unit.fire.kaya/bendNorthEast/0"
+      ],
+      "frameMs": [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "F1": {
+          "frame": 2,
+          "role": "contact"
+        },
+        "F2": {
+          "frame": 4,
+          "role": "anticipation"
+        },
+        "F3": {
+          "frame": 6,
+          "role": "contact"
+        },
+        "F4": {
+          "frame": 9,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 5,
+      "attacks": [
+        {
+          "id": "fire-strike",
+          "effectId": "fx.fire.fireball",
+          "releases": [
+            {
+              "frame": 2,
+              "launchFrame": 2,
+              "socket": "LW",
+              "launchHoldMs": 60,
+              "impactHoldMs": 60,
+              "flash": 0.75,
+              "shakeTiles": 0.021
+            },
+            {
+              "frame": 6,
+              "launchFrame": 6,
+              "socket": "RW",
+              "launchHoldMs": 100,
+              "impactHoldMs": 100,
+              "flash": 0.75,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 1
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 80.813,
+              "y": 113.222
+            },
+            "RW": {
+              "x": 110.554,
+              "y": 99.533
+            },
+            "LA": {
+              "x": 92.563,
+              "y": 136.109
+            },
+            "RA": {
+              "x": 98.458,
+              "y": 145.997
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 82.003,
+              "y": 124.627
+            },
+            "RW": {
+              "x": 114.835,
+              "y": 103.834
+            },
+            "LA": {
+              "x": 92.294,
+              "y": 136.128
+            },
+            "RA": {
+              "x": 99.226,
+              "y": 146.054
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 105.869,
+              "y": 102.758
+            },
+            "RW": {
+              "x": 115.661,
+              "y": 105.043
+            },
+            "LA": {
+              "x": 91.526,
+              "y": 136.147
+            },
+            "RA": {
+              "x": 98.573,
+              "y": 146.246
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 85.5,
+              "y": 115.5
+            },
+            "RW": {
+              "x": 112.128,
+              "y": 101.837
+            },
+            "LA": {
+              "x": 91.91,
+              "y": 136.262
+            },
+            "RA": {
+              "x": 98.285,
+              "y": 146.4
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 83.674,
+              "y": 116.525
+            },
+            "RW": {
+              "x": 115.066,
+              "y": 112.877
+            },
+            "LA": {
+              "x": 92.275,
+              "y": 136.09
+            },
+            "RA": {
+              "x": 98.035,
+              "y": 146.266
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 77.76,
+              "y": 117.12
+            },
+            "RW": {
+              "x": 121.997,
+              "y": 90.336
+            },
+            "LA": {
+              "x": 92.237,
+              "y": 136.07
+            },
+            "RA": {
+              "x": 97.651,
+              "y": 146.419
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 75.629,
+              "y": 116.909
+            },
+            "RW": {
+              "x": 117.178,
+              "y": 84.634
+            },
+            "LA": {
+              "x": 92.506,
+              "y": 136.186
+            },
+            "RA": {
+              "x": 97.862,
+              "y": 146.304
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 75.629,
+              "y": 116.909
+            },
+            "RW": {
+              "x": 117.178,
+              "y": 84.634
+            },
+            "LA": {
+              "x": 92.506,
+              "y": 136.186
+            },
+            "RA": {
+              "x": 97.862,
+              "y": 146.304
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 77.146,
+              "y": 116.083
+            },
+            "RW": {
+              "x": 108.442,
+              "y": 101.414
+            },
+            "LA": {
+              "x": 92.486,
+              "y": 136.09
+            },
+            "RA": {
+              "x": 97.824,
+              "y": 146.285
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 79.43,
+              "y": 114.374
+            },
+            "RW": {
+              "x": 109.517,
+              "y": 102.317
+            },
+            "LA": {
+              "x": 92.256,
+              "y": 136.07
+            },
+            "RA": {
+              "x": 97.824,
+              "y": 146.381
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 80.87,
+              "y": 112.205
+            },
+            "RW": {
+              "x": 110.419,
+              "y": 100.493
+            },
+            "LA": {
+              "x": 92.179,
+              "y": 136.07
+            },
+            "RA": {
+              "x": 97.939,
+              "y": 146.381
+            }
+          }
+        },
+        {
+          "frame": 11,
+          "sockets": {
+            "LW": {
+              "x": 81.216,
+              "y": 111.61
+            },
+            "RW": {
+              "x": 109.843,
+              "y": 99.206
+            },
+            "LA": {
+              "x": 92.122,
+              "y": 136.109
+            },
+            "RA": {
+              "x": 97.92,
+              "y": 146.477
+            }
+          }
+        },
+        {
+          "frame": 12,
+          "sockets": {
+            "LW": {
+              "x": 80.813,
+              "y": 113.222
+            },
+            "RW": {
+              "x": 110.554,
+              "y": 99.533
+            },
+            "LA": {
+              "x": 92.563,
+              "y": 136.109
+            },
+            "RA": {
+              "x": 98.458,
+              "y": 145.997
+            }
+          }
+        }
+      ]
+    }
+  }
+}

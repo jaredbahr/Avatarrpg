@@ -1,0 +1,1349 @@
+{
+  "kaya/south": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 0,
+        "dy": -2,
+        "iou": 0.93,
+        "along": 2.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -1,
+        "dy": -7,
+        "iou": 0.76,
+        "along": 7.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 0,
+        "dy": -8,
+        "iou": 0.8,
+        "along": 8.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 1,
+        "dy": -4,
+        "iou": 0.82,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 0,
+        "dy": -3,
+        "iou": 0.83,
+        "along": 3.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 0,
+        "dy": -9,
+        "iou": 0.78,
+        "along": 9.0
+      }
+    ],
+    "back_per_cel": 5.5,
+    "loop_tiles": 0.729,
+    "colours": 580,
+    "chest_line": 65,
+    "height": 75
+  },
+  "kaya/south-east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -9,
+        "dy": -2,
+        "iou": 0.92,
+        "along": 8.94
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -9,
+        "dy": -4,
+        "iou": 0.79,
+        "along": 9.83
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -10,
+        "dy": -6,
+        "iou": 0.73,
+        "along": 11.62
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -9,
+        "dy": -1,
+        "iou": 0.87,
+        "along": 8.49
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -9,
+        "dy": 0,
+        "iou": 0.74,
+        "along": 8.05
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -11,
+        "dy": -12,
+        "iou": 0.85,
+        "along": 15.2
+      }
+    ],
+    "back_per_cel": 9.385,
+    "loop_tiles": 0.787,
+    "colours": 433,
+    "chest_line": 63,
+    "height": 76
+  },
+  "kaya/east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -13,
+        "dy": 3,
+        "iou": 0.74,
+        "along": 13.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -13,
+        "dy": -1,
+        "iou": 0.86,
+        "along": 13.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -13,
+        "dy": -1,
+        "iou": 0.62,
+        "along": 13.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -13,
+        "dy": 1,
+        "iou": 0.86,
+        "along": 13.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -13,
+        "dy": -1,
+        "iou": 0.76,
+        "along": 13.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -15,
+        "dy": -1,
+        "iou": 0.53,
+        "along": 15.0
+      }
+    ],
+    "back_per_cel": 13.0,
+    "loop_tiles": 0.862,
+    "colours": 402,
+    "chest_line": 64,
+    "height": 76
+  },
+  "kaya/north-east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -11,
+        "dy": 7,
+        "iou": 0.74,
+        "along": 12.96
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -9,
+        "dy": 4,
+        "iou": 0.78,
+        "along": 9.83
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -7,
+        "dy": 2,
+        "iou": 0.81,
+        "along": 7.15
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -14,
+        "dy": 10,
+        "iou": 0.65,
+        "along": 16.99
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -5,
+        "dy": -2,
+        "iou": 0.56,
+        "along": 3.58
+      }
+    ],
+    "back_per_cel": 9.83,
+    "loop_tiles": 0.824,
+    "colours": 370,
+    "chest_line": 66,
+    "height": 73
+  },
+  "kaya/north": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 0,
+        "dy": 7,
+        "iou": 0.84,
+        "along": 7.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 3,
+        "dy": 4,
+        "iou": 0.62,
+        "along": 4.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 0,
+        "dy": 5,
+        "iou": 0.86,
+        "along": 5.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 0,
+        "dy": 7,
+        "iou": 0.83,
+        "along": 7.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -3,
+        "dy": 4,
+        "iou": 0.65,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 0,
+        "dy": 5,
+        "iou": 1.0,
+        "along": 5.0
+      }
+    ],
+    "back_per_cel": 5.0,
+    "loop_tiles": 0.663,
+    "colours": 388,
+    "chest_line": 67,
+    "height": 72
+  },
+  "kaya/north-west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 14,
+        "dy": 12,
+        "iou": 0.59,
+        "along": 17.88
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 5,
+        "dy": -3,
+        "iou": 0.86,
+        "along": 3.13
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 7,
+        "dy": 1,
+        "iou": 0.88,
+        "along": 6.71
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 10,
+        "dy": 6,
+        "iou": 0.83,
+        "along": 11.62
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 7,
+        "dy": 4,
+        "iou": 0.81,
+        "along": 8.05
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 10,
+        "dy": 4,
+        "iou": 0.94,
+        "along": 10.73
+      }
+    ],
+    "back_per_cel": 9.39,
+    "loop_tiles": 0.787,
+    "colours": 373,
+    "chest_line": 65,
+    "height": 72
+  },
+  "kaya/west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 12,
+        "dy": 1,
+        "iou": 0.65,
+        "along": 12.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 14,
+        "dy": 1,
+        "iou": 0.94,
+        "along": 14.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 14,
+        "dy": 0,
+        "iou": 0.77,
+        "along": 14.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 9,
+        "dy": 4,
+        "iou": 0.67,
+        "along": 9.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 14,
+        "dy": 0,
+        "iou": 0.87,
+        "along": 14.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 13,
+        "dy": -1,
+        "iou": 0.88,
+        "along": 13.0
+      }
+    ],
+    "back_per_cel": 13.5,
+    "loop_tiles": 0.895,
+    "colours": 407,
+    "chest_line": 64,
+    "height": 76
+  },
+  "kaya/south-west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 10,
+        "dy": -2,
+        "iou": 0.77,
+        "along": 9.83
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 2,
+        "dy": 1,
+        "iou": 0.92,
+        "along": 1.34
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 12,
+        "dy": -8,
+        "iou": 0.79,
+        "along": 14.3
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 10,
+        "dy": -2,
+        "iou": 0.8,
+        "along": 9.83
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 9,
+        "dy": -1,
+        "iou": 0.8,
+        "along": 8.49
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 9,
+        "dy": -7,
+        "iou": 0.88,
+        "along": 11.17
+      }
+    ],
+    "back_per_cel": 9.83,
+    "loop_tiles": 0.824,
+    "colours": 522,
+    "chest_line": 65,
+    "height": 76
+  },
+  "sura/south": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 0,
+        "dy": -3,
+        "iou": 0.89,
+        "along": 3.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -1,
+        "dy": -5,
+        "iou": 0.89,
+        "along": 5.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 0,
+        "dy": -10,
+        "iou": 0.78,
+        "along": 10.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 0,
+        "dy": -4,
+        "iou": 0.74,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 1,
+        "dy": -4,
+        "iou": 0.71,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 0,
+        "dy": -10,
+        "iou": 0.73,
+        "along": 10.0
+      }
+    ],
+    "back_per_cel": 4.5,
+    "loop_tiles": 0.597,
+    "colours": 365,
+    "chest_line": 63,
+    "height": 76
+  },
+  "sura/south-east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -8,
+        "dy": -2,
+        "iou": 0.86,
+        "along": 8.05
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -10,
+        "dy": -3,
+        "iou": 0.86,
+        "along": 10.28
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -11,
+        "dy": -8,
+        "iou": 0.73,
+        "along": 13.41
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -8,
+        "dy": -1,
+        "iou": 0.89,
+        "along": 7.6
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -8,
+        "dy": 2,
+        "iou": 0.83,
+        "along": 6.26
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -11,
+        "dy": -11,
+        "iou": 0.83,
+        "along": 14.75
+      }
+    ],
+    "back_per_cel": 9.165,
+    "loop_tiles": 0.769,
+    "colours": 300,
+    "chest_line": 64,
+    "height": 75
+  },
+  "sura/east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -14,
+        "dy": 2,
+        "iou": 0.75,
+        "along": 14.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -14,
+        "dy": 0,
+        "iou": 0.83,
+        "along": 14.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -12,
+        "dy": -1,
+        "iou": 0.67,
+        "along": 12.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -14,
+        "dy": 1,
+        "iou": 0.78,
+        "along": 14.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -9,
+        "dy": -1,
+        "iou": 0.72,
+        "along": 9.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -17,
+        "dy": -1,
+        "iou": 0.63,
+        "along": 17.0
+      }
+    ],
+    "back_per_cel": 14.0,
+    "loop_tiles": 0.928,
+    "colours": 276,
+    "chest_line": 66,
+    "height": 75
+  },
+  "sura/north-east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -12,
+        "dy": 8,
+        "iou": 0.75,
+        "along": 14.3
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -9,
+        "dy": 4,
+        "iou": 0.89,
+        "along": 9.83
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -6,
+        "dy": 1,
+        "iou": 0.81,
+        "along": 5.81
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -15,
+        "dy": 10,
+        "iou": 0.76,
+        "along": 17.88
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -5,
+        "dy": -2,
+        "iou": 0.58,
+        "along": 3.58
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -9,
+        "dy": 6,
+        "iou": 0.65,
+        "along": 10.73
+      }
+    ],
+    "back_per_cel": 10.280000000000001,
+    "loop_tiles": 0.862,
+    "colours": 265,
+    "chest_line": 65,
+    "height": 74
+  },
+  "sura/north": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 0,
+        "dy": 6,
+        "iou": 0.91,
+        "along": 6.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 4,
+        "dy": -1,
+        "iou": 0.69,
+        "along": -1.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 0,
+        "dy": 4,
+        "iou": 0.9,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 0,
+        "dy": 8,
+        "iou": 0.81,
+        "along": 8.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 0,
+        "dy": 6,
+        "iou": 0.6,
+        "along": 6.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 0,
+        "dy": 5,
+        "iou": 0.84,
+        "along": 5.0
+      }
+    ],
+    "back_per_cel": 5.5,
+    "loop_tiles": 0.729,
+    "colours": 270,
+    "chest_line": 68,
+    "height": 72
+  },
+  "sura/north-west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 13,
+        "dy": 12,
+        "iou": 0.4,
+        "along": 16.99
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 5,
+        "dy": -3,
+        "iou": 0.86,
+        "along": 3.13
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 8,
+        "dy": 3,
+        "iou": 0.71,
+        "along": 8.49
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 10,
+        "dy": 6,
+        "iou": 0.92,
+        "along": 11.62
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 9,
+        "dy": 4,
+        "iou": 0.82,
+        "along": 9.83
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 8,
+        "dy": 5,
+        "iou": 0.81,
+        "along": 9.39
+      }
+    ],
+    "back_per_cel": 9.61,
+    "loop_tiles": 0.806,
+    "colours": 307,
+    "chest_line": 66,
+    "height": 72
+  },
+  "sura/west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 13,
+        "dy": 4,
+        "iou": 0.74,
+        "along": 13.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 13,
+        "dy": -1,
+        "iou": 0.84,
+        "along": 13.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 14,
+        "dy": -1,
+        "iou": 0.81,
+        "along": 14.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 13,
+        "dy": 2,
+        "iou": 0.67,
+        "along": 13.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 14,
+        "dy": 0,
+        "iou": 0.9,
+        "along": 14.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 14,
+        "dy": -1,
+        "iou": 0.85,
+        "along": 14.0
+      }
+    ],
+    "back_per_cel": 13.5,
+    "loop_tiles": 0.895,
+    "colours": 328,
+    "chest_line": 64,
+    "height": 75
+  },
+  "sura/south-west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 10,
+        "dy": -2,
+        "iou": 0.82,
+        "along": 9.83
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 2,
+        "dy": 1,
+        "iou": 0.72,
+        "along": 1.34
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 2,
+        "dy": -11,
+        "iou": 0.77,
+        "along": 6.71
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 10,
+        "dy": -3,
+        "iou": 0.74,
+        "along": 10.28
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 7,
+        "dy": 0,
+        "iou": 0.86,
+        "along": 6.26
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 11,
+        "dy": -7,
+        "iou": 0.79,
+        "along": 12.96
+      }
+    ],
+    "back_per_cel": 8.27,
+    "loop_tiles": 0.694,
+    "colours": 347,
+    "chest_line": 63,
+    "height": 76
+  },
+  "bo/south": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 0,
+        "dy": -3,
+        "iou": 0.89,
+        "along": 3.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -1,
+        "dy": -6,
+        "iou": 0.78,
+        "along": 6.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 0,
+        "dy": -9,
+        "iou": 0.9,
+        "along": 9.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 0,
+        "dy": -4,
+        "iou": 0.91,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": 1,
+        "dy": -4,
+        "iou": 0.75,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 0,
+        "dy": -9,
+        "iou": 0.82,
+        "along": 9.0
+      }
+    ],
+    "back_per_cel": 5.0,
+    "loop_tiles": 0.663,
+    "colours": 758,
+    "chest_line": 64,
+    "height": 73
+  },
+  "bo/south-east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -9,
+        "dy": -1,
+        "iou": 0.86,
+        "along": 8.49
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -12,
+        "dy": -6,
+        "iou": 0.83,
+        "along": 13.41
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -9,
+        "dy": -6,
+        "iou": 0.78,
+        "along": 10.73
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -8,
+        "dy": -1,
+        "iou": 0.8,
+        "along": 7.6
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -10,
+        "dy": 2,
+        "iou": 0.74,
+        "along": 8.05
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -11,
+        "dy": -11,
+        "iou": 0.85,
+        "along": 14.75
+      }
+    ],
+    "back_per_cel": 9.61,
+    "loop_tiles": 0.806,
+    "colours": 729,
+    "chest_line": 61,
+    "height": 76
+  },
+  "bo/east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -14,
+        "dy": 2,
+        "iou": 0.83,
+        "along": 14.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -12,
+        "dy": 0,
+        "iou": 0.89,
+        "along": 12.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -13,
+        "dy": -1,
+        "iou": 0.65,
+        "along": 13.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -15,
+        "dy": 1,
+        "iou": 0.82,
+        "along": 15.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -6,
+        "dy": 5,
+        "iou": 0.53,
+        "along": 6.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -20,
+        "dy": -5,
+        "iou": 0.83,
+        "along": 20.0
+      }
+    ],
+    "back_per_cel": 13.5,
+    "loop_tiles": 0.895,
+    "colours": 632,
+    "chest_line": 64,
+    "height": 75
+  },
+  "bo/north-east": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -9,
+        "dy": 6,
+        "iou": 0.82,
+        "along": 10.73
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -9,
+        "dy": 4,
+        "iou": 0.83,
+        "along": 9.83
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -9,
+        "dy": 2,
+        "iou": 0.85,
+        "along": 8.94
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -13,
+        "dy": 12,
+        "iou": 0.73,
+        "along": 16.99
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -5,
+        "dy": -1,
+        "iou": 0.55,
+        "along": 4.02
+      }
+    ],
+    "back_per_cel": 9.83,
+    "loop_tiles": 0.824,
+    "colours": 611,
+    "chest_line": 63,
+    "height": 76
+  },
+  "bo/north": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": 0,
+        "dy": 5,
+        "iou": 0.72,
+        "along": 5.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": 5,
+        "dy": 0,
+        "iou": 0.54,
+        "along": -0.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": 0,
+        "dy": 5,
+        "iou": 0.92,
+        "along": 5.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": 0,
+        "dy": 7,
+        "iou": 0.87,
+        "along": 7.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -3,
+        "dy": 4,
+        "iou": 0.6,
+        "along": 4.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": 0,
+        "dy": 5,
+        "iou": 0.88,
+        "along": 5.0
+      }
+    ],
+    "back_per_cel": 5.0,
+    "loop_tiles": 0.663,
+    "colours": 678,
+    "chest_line": 67,
+    "height": 72
+  },
+  "bo/west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -14,
+        "dy": 2,
+        "iou": 0.83,
+        "along": 14.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -12,
+        "dy": 0,
+        "iou": 0.89,
+        "along": 12.0
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -13,
+        "dy": -1,
+        "iou": 0.65,
+        "along": 13.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -15,
+        "dy": 1,
+        "iou": 0.82,
+        "along": 15.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -6,
+        "dy": 5,
+        "iou": 0.53,
+        "along": 6.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -20,
+        "dy": -5,
+        "iou": 0.83,
+        "along": 20.0
+      }
+    ],
+    "back_per_cel": 13.5,
+    "loop_tiles": 0.895,
+    "colours": 632,
+    "chest_line": 64,
+    "height": 75,
+    "mirrored_from": "east"
+  },
+  "bo/south-west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -9,
+        "dy": -1,
+        "iou": 0.86,
+        "along": 8.49
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -12,
+        "dy": -6,
+        "iou": 0.83,
+        "along": 13.41
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -9,
+        "dy": -6,
+        "iou": 0.78,
+        "along": 10.73
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -8,
+        "dy": -1,
+        "iou": 0.8,
+        "along": 7.6
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -10,
+        "dy": 2,
+        "iou": 0.74,
+        "along": 8.05
+      },
+      {
+        "side": "LEFT",
+        "pair": [5, 0],
+        "dx": -11,
+        "dy": -11,
+        "iou": 0.85,
+        "along": 14.75
+      }
+    ],
+    "back_per_cel": 9.61,
+    "loop_tiles": 0.806,
+    "colours": 729,
+    "chest_line": 61,
+    "height": 76,
+    "mirrored_from": "south-east"
+  },
+  "bo/north-west": {
+    "pairs": [
+      {
+        "side": "RIGHT",
+        "pair": [0, 1],
+        "dx": -9,
+        "dy": 6,
+        "iou": 0.82,
+        "along": 10.73
+      },
+      {
+        "side": "RIGHT",
+        "pair": [1, 2],
+        "dx": -9,
+        "dy": 4,
+        "iou": 0.83,
+        "along": 9.83
+      },
+      {
+        "side": "RIGHT",
+        "pair": [2, 3],
+        "dx": -9,
+        "dy": 2,
+        "iou": 0.85,
+        "along": 8.94
+      },
+      {
+        "side": "LEFT",
+        "pair": [3, 4],
+        "dx": -13,
+        "dy": 12,
+        "iou": 0.73,
+        "along": 16.99
+      },
+      {
+        "side": "LEFT",
+        "pair": [4, 5],
+        "dx": -5,
+        "dy": -1,
+        "iou": 0.55,
+        "along": 4.02
+      }
+    ],
+    "back_per_cel": 9.83,
+    "loop_tiles": 0.824,
+    "colours": 611,
+    "chest_line": 63,
+    "height": 76,
+    "mirrored_from": "north-east"
+  }
+}
