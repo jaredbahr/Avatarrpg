@@ -306,10 +306,15 @@ test('the demo, played through', async ({ page }, info) => {
     return b?.units.find((u) => u.id === b.order[b.turnIndex]) ?? null;
   };
 
-  const confirm = async () => {
+  /** Confirms; `midStill` names a still taken while the action plays. */
+  const confirm = async (midStill?: string) => {
     const button = page.locator('.confirm-bar').getByRole('button', { name: /^Confirm$/ });
     await expect(button).toBeEnabled({ timeout: 15_000 });
     await button.click();
+    if (midStill) {
+      await page.waitForTimeout(slow ? 2500 : 700);
+      await beat(midStill);
+    }
     await waitForIdle(page, slow ? 300_000 : 30_000);
   };
 
@@ -353,7 +358,7 @@ test('the demo, played through', async ({ page }, info) => {
       return false;
     }
     if (still) await beat(still);
-    await confirm();
+    await confirm(still ? `${still.replace(/-aim$/, '')}-bend` : undefined);
     return true;
   };
 
@@ -368,14 +373,21 @@ test('the demo, played through', async ({ page }, info) => {
 
   const endTurn = async () => {
     trace.push(`${Date.now() - t0} end turn`);
-    const end = page.getByRole('button', { name: /^(End turn|Wait|End)/ }).first();
-    if (await end.count()) {
+    const end = page.getByRole('button', { name: /^End turn/ }).first();
+    // With AP left the first tap only warns; a second tap ends the turn.
+    for (let tap = 0; tap < 2; tap++) {
+      const b = (await battle()).battle;
+      const acting = b?.units.find((u) => u.id === b.order[b.turnIndex]);
+      if (!b || b.phase !== 'active' || acting?.faction !== 'party') break;
+      if (!(await end.isEnabled({ timeout: 2_000 }).catch(() => false))) break;
+      if (tap === 1 && acting.id !== lastActing) break;
+      lastActing = acting.id;
       await end.click();
-      const yes = page.locator('.confirm-bar').getByRole('button', { name: /^Confirm$/ });
-      if (await yes.isVisible().catch(() => false)) await yes.click();
+      await page.waitForTimeout(300);
     }
     await waitForIdle(page, slow ? 300_000 : 30_000);
   };
+  let lastActing = '';
 
   let flaskBroken = false;
   let shortcut = false;
@@ -392,6 +404,36 @@ test('the demo, played through', async ({ page }, info) => {
     );
     save();
     const isKaya = unit.characterId === 'kaya';
+    if (isKaya && !flaskBroken && dist(unit.pos, FLASK) > 5) {
+      // Review shortcut: stand her within range so the flask beat happens on turn one.
+      const spot = await page.evaluate((flask) => {
+        const app = window.fnt!.app;
+        const s = app.state!;
+        const b = s.battle!;
+        const acting = b.order[b.turnIndex];
+        for (const [dx, dy] of [
+          [-5, 0],
+          [-4, 0],
+          [-4, -1],
+          [-4, 1],
+          [-3, 0],
+        ]) {
+          const pos = { x: flask.x + dx!, y: flask.y + dy! };
+          const tile = b.grid.tiles[pos.y * b.grid.width + pos.x];
+          if (!tile || tile.blocked || tile.surface) continue;
+          if (b.units.some((u) => u.hp > 0 && u.pos.x === pos.x && u.pos.y === pos.y)) continue;
+          app.state = {
+            ...s,
+            battle: { ...b, units: b.units.map((u) => (u.id === acting ? { ...u, pos } : u)) },
+          };
+          app.resync();
+          return pos;
+        }
+        return null;
+      }, FLASK);
+      trace.push(`${Date.now() - t0} kaya placed at ${JSON.stringify(spot)}`);
+      await settleLayout(page, slow ? 120_000 : 30_000);
+    }
     if (isKaya && !flaskBroken) {
       flaskBroken = await useAt(/^Fire Jab/, FLASK, 'flask-aim');
       if (!flaskBroken) {
@@ -403,12 +445,12 @@ test('the demo, played through', async ({ page }, info) => {
       }
       if (flaskBroken) {
         await page.waitForTimeout(500);
-        await beat('flask-burning');
+        await beat('flask-burning', 'Kaya stood within range by the fixture on her first turn');
       }
       await endTurn();
       continue;
     }
-    if ((flaskBroken || turn >= 9) && !shortcut) {
+    if ((flaskBroken || turn >= 12) && !shortcut) {
       // End it: real attacks on 1 HP enemies, so the victory and aftermath play.
       shortcut = true;
       trace.push(`${Date.now() - t0} shortcut: enemies to 1 HP`);
