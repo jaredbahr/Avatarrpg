@@ -45,3 +45,11 @@ Generate three candidates and pick by the checklist, not by which one is prettie
 ## Check
 
 Run `checklist.md` before committing. For this portrait in particular: The high ponytail and the red sash tails. She must read as fast even standing still. The two fire characters differ by hair: hers tied up, his swept back.
+
+## Expression edits, 2026-10-28
+
+The shipped portrait remains neutral. Exact OpenAI edit prompts are recorded in
+[kaya.angry.md](kaya.angry.md), [kaya.worried.md](kaya.worried.md) and
+[kaya.warm.md](kaya.warm.md). Raw outputs, processing and review evidence live
+in `art/source/portraits-variants/`. Only the expression region is composited;
+the neutral fixes all non-face artwork. Owner visual acceptance is pending.

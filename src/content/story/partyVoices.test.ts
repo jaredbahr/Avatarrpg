@@ -96,6 +96,10 @@ describe('party contributions in the quarry run', () => {
 describe('party voices along the road and the quarry floor', () => {
   const name = (id: string) => CONTENT.characters.get(id)?.name;
 
+  it('uses Kaya’s warm expression for her post-victory teasing', () => {
+    expect(said(game(['kaya']), 'defeat_gate').expression).toBe('warm');
+  });
+
   it('voices only nodes that exist in the story', () => {
     const missing = VOICES.map((voice) => voice.node).filter((node) => !CONTENT.story.has(node));
     expect(missing).toEqual([]);

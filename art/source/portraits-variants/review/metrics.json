@@ -1,0 +1,26 @@
+[
+  {
+    "file": "public/art/portraits/expressions/angry/kaya.png",
+    "bytes": 108856,
+    "sha256": "464922100ddfc68093a73ad59c214d018b9876426acf8860dc408cf2fd4800e2",
+    "changedPixels": 14381,
+    "changesOutsideFaceBoundingBox": 0,
+    "changedBounds": [212, 171, 351, 317]
+  },
+  {
+    "file": "public/art/portraits/expressions/worried/kaya.png",
+    "bytes": 109542,
+    "sha256": "19792fd2c87faf33dfa5da45d15734f2ed2a4f46bfbe7bf2e73f038b7d05ecb2",
+    "changedPixels": 11933,
+    "changesOutsideFaceBoundingBox": 0,
+    "changedBounds": [212, 171, 351, 317]
+  },
+  {
+    "file": "public/art/portraits/expressions/warm/kaya.png",
+    "bytes": 109413,
+    "sha256": "c6b5e946d9e2cd70ecefad931ec3821bb5a5bf4236709a344148eb2a6decc70d",
+    "changedPixels": 14379,
+    "changesOutsideFaceBoundingBox": 0,
+    "changedBounds": [213, 171, 352, 318]
+  }
+]
