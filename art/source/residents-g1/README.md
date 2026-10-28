@@ -60,6 +60,13 @@ a job the ledger already holds instead of paying twice. Run everything from the 
    reduction like a root. The one-cel `hit` is the east hit's deepest flinch (cel 2) and `ko` the south-east knockout's
    last cel, each a trimmed cel with its own rectangle and anchor (`banditsG1.ts`).
 
+## The jog (ADR 0095)
+
+A tenth clip family, `jog`, ten cels in eight headings, from CMU 09_01 (run) with the fore-aft leg swing lengthened 1.6
+times (`motion.json` `_shared.jog`, `motion.py`'s `stride`, `arms` and `scale_clip`). It is made like the walk (design,
+`gen_clip.py`, `assemble.py`, the packer) and plays for every move at the brisk pace; the walk stays on the sheet for
+slow moves. Registration, the margin clamp, the timing fit and the review are in `art/source/jog-g1/README.md`.
+
 ## Motion (all CMU Graphics Lab, mocap.cs.cmu.edu; credited in `NOTICE.md`)
 
 | clip                      | take           | notes                                                                        |
