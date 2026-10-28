@@ -67,5 +67,14 @@ them are the superseded first round of takes (every job, seed and verdict is in 
 - Known faults ship as they are, pending review (the README lists them all): the watch's south-east walk drops its spear
   in four cels; the bruiser's north-west club swings in from behind his left side; Dorin's south-east spear point is split;
   Gao's peppers read as a dark strap; every knockout ends on a held cel 5; a few 1-2 px foot specks.
+- **Walk foot slide (known, as the party's; ADR 0067, ADR 0093).** Measured with the grounding pass's `walk_stride.py`
+  (branch `claude/grounding-pass`, `art/source/grounding/tools/`): over one 8-cel loop the soles account for 4-22% of the
+  travel the game gives the figure (household 0.07-0.19, watch 0.09-0.22, Mira 0.10-0.22, Gao 0.10-0.20, Pella
+  0.04-0.16, Dorin 0.10-0.21, thug 0.13-0.20, slinger 0.11-0.20, bruiser 0.13-0.22); the rest is slide. At ADR 0067's
+  500 ms a tile (1.825 tiles a 912 ms loop, figures drawn at 1.25), no slide would need a step of about 66 art px east,
+  42 south-east and 33 south on a 59 px figure in a 64 px cel: more than the cel and about 1.1x body height at east, so
+  a longer stride alone cannot remove it (about 2x the CMU stride still leaves roughly 60% slide). The walks ship as the
+  party's do; the pace and stride question goes to the owner as one decision across every G walk (a longer stride with a
+  faster per-heading cadence, or a slower pace).
 - Credits: CMU 08_01 and 77_02 are credited for the residents' and bandits' walks and breathing; the Mixamo walk credit
   narrows to the quarry bender.
