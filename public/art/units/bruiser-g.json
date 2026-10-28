@@ -260,7 +260,7 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/idleSouthEast/0": {
+    "unit.enemy.bruiser/jogSouth/0": {
       "frame": {
         "x": 1276,
         "y": 2,
@@ -280,7 +280,7 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/idleSouthEast/1": {
+    "unit.enemy.bruiser/jogSouth/1": {
       "frame": {
         "x": 1374,
         "y": 2,
@@ -300,7 +300,7 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/idleSouthEast/2": {
+    "unit.enemy.bruiser/jogSouth/2": {
       "frame": {
         "x": 1472,
         "y": 2,
@@ -320,7 +320,7 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/idleSouthEast/3": {
+    "unit.enemy.bruiser/jogSouth/3": {
       "frame": {
         "x": 1570,
         "y": 2,
@@ -340,7 +340,7 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/walkSouthEast/0": {
+    "unit.enemy.bruiser/jogSouth/4": {
       "frame": {
         "x": 1668,
         "y": 2,
@@ -360,7 +360,7 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/walkSouthEast/1": {
+    "unit.enemy.bruiser/jogSouth/5": {
       "frame": {
         "x": 1766,
         "y": 2,
@@ -380,7 +380,7 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/walkSouthEast/2": {
+    "unit.enemy.bruiser/jogSouth/6": {
       "frame": {
         "x": 1864,
         "y": 2,
@@ -400,9 +400,209 @@
         "h": 96
       }
     },
-    "unit.enemy.bruiser/walkSouthEast/3": {
+    "unit.enemy.bruiser/jogSouth/7": {
       "frame": {
         "x": 2,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouth/8": {
+      "frame": {
+        "x": 100,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouth/9": {
+      "frame": {
+        "x": 198,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/idleSouthEast/0": {
+      "frame": {
+        "x": 296,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/idleSouthEast/1": {
+      "frame": {
+        "x": 394,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/idleSouthEast/2": {
+      "frame": {
+        "x": 492,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/idleSouthEast/3": {
+      "frame": {
+        "x": 590,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/walkSouthEast/0": {
+      "frame": {
+        "x": 688,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/walkSouthEast/1": {
+      "frame": {
+        "x": 786,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/walkSouthEast/2": {
+      "frame": {
+        "x": 884,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/walkSouthEast/3": {
+      "frame": {
+        "x": 982,
         "y": 100,
         "w": 96,
         "h": 96
@@ -422,7 +622,7 @@
     },
     "unit.enemy.bruiser/walkSouthEast/4": {
       "frame": {
-        "x": 100,
+        "x": 1080,
         "y": 100,
         "w": 96,
         "h": 96
@@ -442,7 +642,7 @@
     },
     "unit.enemy.bruiser/walkSouthEast/5": {
       "frame": {
-        "x": 198,
+        "x": 1178,
         "y": 100,
         "w": 96,
         "h": 96
@@ -462,7 +662,7 @@
     },
     "unit.enemy.bruiser/walkSouthEast/6": {
       "frame": {
-        "x": 296,
+        "x": 1276,
         "y": 100,
         "w": 96,
         "h": 96
@@ -482,7 +682,7 @@
     },
     "unit.enemy.bruiser/walkSouthEast/7": {
       "frame": {
-        "x": 394,
+        "x": 1374,
         "y": 100,
         "w": 96,
         "h": 96
@@ -502,8 +702,208 @@
     },
     "unit.enemy.bruiser/restSouthEast/0": {
       "frame": {
-        "x": 492,
+        "x": 1472,
         "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/0": {
+      "frame": {
+        "x": 1570,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/1": {
+      "frame": {
+        "x": 1668,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/2": {
+      "frame": {
+        "x": 1766,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/3": {
+      "frame": {
+        "x": 1864,
+        "y": 100,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/4": {
+      "frame": {
+        "x": 2,
+        "y": 198,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/5": {
+      "frame": {
+        "x": 100,
+        "y": 198,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/6": {
+      "frame": {
+        "x": 198,
+        "y": 198,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/7": {
+      "frame": {
+        "x": 296,
+        "y": 198,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/8": {
+      "frame": {
+        "x": 394,
+        "y": 198,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthEast/9": {
+      "frame": {
+        "x": 492,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -523,7 +923,7 @@
     "unit.enemy.bruiser/idle/0": {
       "frame": {
         "x": 590,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -543,7 +943,7 @@
     "unit.enemy.bruiser/idle/1": {
       "frame": {
         "x": 688,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -563,7 +963,7 @@
     "unit.enemy.bruiser/idle/2": {
       "frame": {
         "x": 786,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -583,7 +983,7 @@
     "unit.enemy.bruiser/idle/3": {
       "frame": {
         "x": 884,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -603,7 +1003,7 @@
     "unit.enemy.bruiser/walk/0": {
       "frame": {
         "x": 982,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -623,7 +1023,7 @@
     "unit.enemy.bruiser/walk/1": {
       "frame": {
         "x": 1080,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -643,7 +1043,7 @@
     "unit.enemy.bruiser/walk/2": {
       "frame": {
         "x": 1178,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -663,7 +1063,7 @@
     "unit.enemy.bruiser/walk/3": {
       "frame": {
         "x": 1276,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -683,7 +1083,7 @@
     "unit.enemy.bruiser/walk/4": {
       "frame": {
         "x": 1374,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -703,7 +1103,7 @@
     "unit.enemy.bruiser/walk/5": {
       "frame": {
         "x": 1472,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -723,7 +1123,7 @@
     "unit.enemy.bruiser/walk/6": {
       "frame": {
         "x": 1570,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -743,7 +1143,7 @@
     "unit.enemy.bruiser/walk/7": {
       "frame": {
         "x": 1668,
-        "y": 100,
+        "y": 198,
         "w": 96,
         "h": 96
       },
@@ -763,7 +1163,207 @@
     "unit.enemy.bruiser/rest/0": {
       "frame": {
         "x": 1766,
-        "y": 100,
+        "y": 198,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/0": {
+      "frame": {
+        "x": 1864,
+        "y": 198,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/1": {
+      "frame": {
+        "x": 2,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/2": {
+      "frame": {
+        "x": 100,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/3": {
+      "frame": {
+        "x": 198,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/4": {
+      "frame": {
+        "x": 296,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/5": {
+      "frame": {
+        "x": 394,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/6": {
+      "frame": {
+        "x": 492,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/7": {
+      "frame": {
+        "x": 590,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/8": {
+      "frame": {
+        "x": 688,
+        "y": 296,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jog/9": {
+      "frame": {
+        "x": 786,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -782,8 +1382,8 @@
     },
     "unit.enemy.bruiser/idleNorthEast/0": {
       "frame": {
-        "x": 1864,
-        "y": 100,
+        "x": 884,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -802,8 +1402,8 @@
     },
     "unit.enemy.bruiser/idleNorthEast/1": {
       "frame": {
-        "x": 2,
-        "y": 198,
+        "x": 982,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -822,8 +1422,8 @@
     },
     "unit.enemy.bruiser/idleNorthEast/2": {
       "frame": {
-        "x": 100,
-        "y": 198,
+        "x": 1080,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -842,8 +1442,8 @@
     },
     "unit.enemy.bruiser/idleNorthEast/3": {
       "frame": {
-        "x": 198,
-        "y": 198,
+        "x": 1178,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -862,8 +1462,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/0": {
       "frame": {
-        "x": 296,
-        "y": 198,
+        "x": 1276,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -882,8 +1482,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/1": {
       "frame": {
-        "x": 394,
-        "y": 198,
+        "x": 1374,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -902,8 +1502,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/2": {
       "frame": {
-        "x": 492,
-        "y": 198,
+        "x": 1472,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -922,8 +1522,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/3": {
       "frame": {
-        "x": 590,
-        "y": 198,
+        "x": 1570,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -942,8 +1542,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/4": {
       "frame": {
-        "x": 688,
-        "y": 198,
+        "x": 1668,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -962,8 +1562,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/5": {
       "frame": {
-        "x": 786,
-        "y": 198,
+        "x": 1766,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -982,8 +1582,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/6": {
       "frame": {
-        "x": 884,
-        "y": 198,
+        "x": 1864,
+        "y": 296,
         "w": 96,
         "h": 96
       },
@@ -1002,8 +1602,8 @@
     },
     "unit.enemy.bruiser/walkNorthEast/7": {
       "frame": {
-        "x": 982,
-        "y": 198,
+        "x": 2,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1022,8 +1622,208 @@
     },
     "unit.enemy.bruiser/restNorthEast/0": {
       "frame": {
+        "x": 100,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/0": {
+      "frame": {
+        "x": 198,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/1": {
+      "frame": {
+        "x": 296,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/2": {
+      "frame": {
+        "x": 394,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/3": {
+      "frame": {
+        "x": 492,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/4": {
+      "frame": {
+        "x": 590,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/5": {
+      "frame": {
+        "x": 688,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/6": {
+      "frame": {
+        "x": 786,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/7": {
+      "frame": {
+        "x": 884,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/8": {
+      "frame": {
+        "x": 982,
+        "y": 394,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthEast/9": {
+      "frame": {
         "x": 1080,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1043,7 +1843,7 @@
     "unit.enemy.bruiser/idleNorth/0": {
       "frame": {
         "x": 1178,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1063,7 +1863,7 @@
     "unit.enemy.bruiser/idleNorth/1": {
       "frame": {
         "x": 1276,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1083,7 +1883,7 @@
     "unit.enemy.bruiser/idleNorth/2": {
       "frame": {
         "x": 1374,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1103,7 +1903,7 @@
     "unit.enemy.bruiser/idleNorth/3": {
       "frame": {
         "x": 1472,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1123,7 +1923,7 @@
     "unit.enemy.bruiser/walkNorth/0": {
       "frame": {
         "x": 1570,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1143,7 +1943,7 @@
     "unit.enemy.bruiser/walkNorth/1": {
       "frame": {
         "x": 1668,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1163,7 +1963,7 @@
     "unit.enemy.bruiser/walkNorth/2": {
       "frame": {
         "x": 1766,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1183,7 +1983,7 @@
     "unit.enemy.bruiser/walkNorth/3": {
       "frame": {
         "x": 1864,
-        "y": 198,
+        "y": 394,
         "w": 96,
         "h": 96
       },
@@ -1203,7 +2003,7 @@
     "unit.enemy.bruiser/walkNorth/4": {
       "frame": {
         "x": 2,
-        "y": 296,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1223,7 +2023,7 @@
     "unit.enemy.bruiser/walkNorth/5": {
       "frame": {
         "x": 100,
-        "y": 296,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1243,7 +2043,7 @@
     "unit.enemy.bruiser/walkNorth/6": {
       "frame": {
         "x": 198,
-        "y": 296,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1263,7 +2063,7 @@
     "unit.enemy.bruiser/walkNorth/7": {
       "frame": {
         "x": 296,
-        "y": 296,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1283,7 +2083,207 @@
     "unit.enemy.bruiser/restNorth/0": {
       "frame": {
         "x": 394,
-        "y": 296,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/0": {
+      "frame": {
+        "x": 492,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/1": {
+      "frame": {
+        "x": 590,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/2": {
+      "frame": {
+        "x": 688,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/3": {
+      "frame": {
+        "x": 786,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/4": {
+      "frame": {
+        "x": 884,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/5": {
+      "frame": {
+        "x": 982,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/6": {
+      "frame": {
+        "x": 1080,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/7": {
+      "frame": {
+        "x": 1178,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/8": {
+      "frame": {
+        "x": 1276,
+        "y": 492,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorth/9": {
+      "frame": {
+        "x": 1374,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1302,8 +2302,8 @@
     },
     "unit.enemy.bruiser/idleNorthWest/0": {
       "frame": {
-        "x": 492,
-        "y": 296,
+        "x": 1472,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1322,8 +2322,8 @@
     },
     "unit.enemy.bruiser/idleNorthWest/1": {
       "frame": {
-        "x": 590,
-        "y": 296,
+        "x": 1570,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1342,8 +2342,8 @@
     },
     "unit.enemy.bruiser/idleNorthWest/2": {
       "frame": {
-        "x": 688,
-        "y": 296,
+        "x": 1668,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1362,8 +2362,8 @@
     },
     "unit.enemy.bruiser/idleNorthWest/3": {
       "frame": {
-        "x": 786,
-        "y": 296,
+        "x": 1766,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1382,8 +2382,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/0": {
       "frame": {
-        "x": 884,
-        "y": 296,
+        "x": 1864,
+        "y": 492,
         "w": 96,
         "h": 96
       },
@@ -1402,8 +2402,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/1": {
       "frame": {
-        "x": 982,
-        "y": 296,
+        "x": 2,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1422,8 +2422,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/2": {
       "frame": {
-        "x": 1080,
-        "y": 296,
+        "x": 100,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1442,8 +2442,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/3": {
       "frame": {
-        "x": 1178,
-        "y": 296,
+        "x": 198,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1462,8 +2462,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/4": {
       "frame": {
-        "x": 1276,
-        "y": 296,
+        "x": 296,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1482,8 +2482,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/5": {
       "frame": {
-        "x": 1374,
-        "y": 296,
+        "x": 394,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1502,8 +2502,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/6": {
       "frame": {
-        "x": 1472,
-        "y": 296,
+        "x": 492,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1522,8 +2522,8 @@
     },
     "unit.enemy.bruiser/walkNorthWest/7": {
       "frame": {
-        "x": 1570,
-        "y": 296,
+        "x": 590,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1542,8 +2542,208 @@
     },
     "unit.enemy.bruiser/restNorthWest/0": {
       "frame": {
+        "x": 688,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/0": {
+      "frame": {
+        "x": 786,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/1": {
+      "frame": {
+        "x": 884,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/2": {
+      "frame": {
+        "x": 982,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/3": {
+      "frame": {
+        "x": 1080,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/4": {
+      "frame": {
+        "x": 1178,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/5": {
+      "frame": {
+        "x": 1276,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/6": {
+      "frame": {
+        "x": 1374,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/7": {
+      "frame": {
+        "x": 1472,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/8": {
+      "frame": {
+        "x": 1570,
+        "y": 590,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogNorthWest/9": {
+      "frame": {
         "x": 1668,
-        "y": 296,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1563,7 +2763,7 @@
     "unit.enemy.bruiser/idleWest/0": {
       "frame": {
         "x": 1766,
-        "y": 296,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1583,7 +2783,7 @@
     "unit.enemy.bruiser/idleWest/1": {
       "frame": {
         "x": 1864,
-        "y": 296,
+        "y": 590,
         "w": 96,
         "h": 96
       },
@@ -1603,7 +2803,7 @@
     "unit.enemy.bruiser/idleWest/2": {
       "frame": {
         "x": 2,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1623,7 +2823,7 @@
     "unit.enemy.bruiser/idleWest/3": {
       "frame": {
         "x": 100,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1643,7 +2843,7 @@
     "unit.enemy.bruiser/walkWest/0": {
       "frame": {
         "x": 198,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1663,7 +2863,7 @@
     "unit.enemy.bruiser/walkWest/1": {
       "frame": {
         "x": 296,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1683,7 +2883,7 @@
     "unit.enemy.bruiser/walkWest/2": {
       "frame": {
         "x": 394,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1703,7 +2903,7 @@
     "unit.enemy.bruiser/walkWest/3": {
       "frame": {
         "x": 492,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1723,7 +2923,7 @@
     "unit.enemy.bruiser/walkWest/4": {
       "frame": {
         "x": 590,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1743,7 +2943,7 @@
     "unit.enemy.bruiser/walkWest/5": {
       "frame": {
         "x": 688,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1763,7 +2963,7 @@
     "unit.enemy.bruiser/walkWest/6": {
       "frame": {
         "x": 786,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1783,7 +2983,7 @@
     "unit.enemy.bruiser/walkWest/7": {
       "frame": {
         "x": 884,
-        "y": 394,
+        "y": 688,
         "w": 96,
         "h": 96
       },
@@ -1803,7 +3003,207 @@
     "unit.enemy.bruiser/restWest/0": {
       "frame": {
         "x": 982,
-        "y": 394,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/0": {
+      "frame": {
+        "x": 1080,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/1": {
+      "frame": {
+        "x": 1178,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/2": {
+      "frame": {
+        "x": 1276,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/3": {
+      "frame": {
+        "x": 1374,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/4": {
+      "frame": {
+        "x": 1472,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/5": {
+      "frame": {
+        "x": 1570,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/6": {
+      "frame": {
+        "x": 1668,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/7": {
+      "frame": {
+        "x": 1766,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/8": {
+      "frame": {
+        "x": 1864,
+        "y": 688,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogWest/9": {
+      "frame": {
+        "x": 2,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1822,8 +3222,8 @@
     },
     "unit.enemy.bruiser/idleSouthWest/0": {
       "frame": {
-        "x": 1080,
-        "y": 394,
+        "x": 100,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1842,8 +3242,8 @@
     },
     "unit.enemy.bruiser/idleSouthWest/1": {
       "frame": {
-        "x": 1178,
-        "y": 394,
+        "x": 198,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1862,8 +3262,8 @@
     },
     "unit.enemy.bruiser/idleSouthWest/2": {
       "frame": {
-        "x": 1276,
-        "y": 394,
+        "x": 296,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1882,8 +3282,8 @@
     },
     "unit.enemy.bruiser/idleSouthWest/3": {
       "frame": {
-        "x": 1374,
-        "y": 394,
+        "x": 394,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1902,8 +3302,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/0": {
       "frame": {
-        "x": 1472,
-        "y": 394,
+        "x": 492,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1922,8 +3322,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/1": {
       "frame": {
-        "x": 1570,
-        "y": 394,
+        "x": 590,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1942,8 +3342,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/2": {
       "frame": {
-        "x": 1668,
-        "y": 394,
+        "x": 688,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1962,8 +3362,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/3": {
       "frame": {
-        "x": 1766,
-        "y": 394,
+        "x": 786,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -1982,8 +3382,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/4": {
       "frame": {
-        "x": 1864,
-        "y": 394,
+        "x": 884,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -2002,8 +3402,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/5": {
       "frame": {
-        "x": 2,
-        "y": 492,
+        "x": 982,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -2022,8 +3422,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/6": {
       "frame": {
-        "x": 100,
-        "y": 492,
+        "x": 1080,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -2042,8 +3442,8 @@
     },
     "unit.enemy.bruiser/walkSouthWest/7": {
       "frame": {
-        "x": 198,
-        "y": 492,
+        "x": 1178,
+        "y": 786,
         "w": 96,
         "h": 96
       },
@@ -2062,8 +3462,208 @@
     },
     "unit.enemy.bruiser/restSouthWest/0": {
       "frame": {
+        "x": 1276,
+        "y": 786,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/0": {
+      "frame": {
+        "x": 1374,
+        "y": 786,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/1": {
+      "frame": {
+        "x": 1472,
+        "y": 786,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/2": {
+      "frame": {
+        "x": 1570,
+        "y": 786,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/3": {
+      "frame": {
+        "x": 1668,
+        "y": 786,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/4": {
+      "frame": {
+        "x": 1766,
+        "y": 786,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/5": {
+      "frame": {
+        "x": 1864,
+        "y": 786,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/6": {
+      "frame": {
+        "x": 2,
+        "y": 884,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/7": {
+      "frame": {
+        "x": 100,
+        "y": 884,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/8": {
+      "frame": {
+        "x": 198,
+        "y": 884,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "unit.enemy.bruiser/jogSouthWest/9": {
+      "frame": {
         "x": 296,
-        "y": 492,
+        "y": 884,
         "w": 96,
         "h": 96
       },
@@ -2083,7 +3683,7 @@
     "unit.enemy.bruiser/cast/0": {
       "frame": {
         "x": 394,
-        "y": 492,
+        "y": 884,
         "w": 96,
         "h": 96
       },
@@ -2103,7 +3703,7 @@
     "unit.enemy.bruiser/cast/1": {
       "frame": {
         "x": 492,
-        "y": 492,
+        "y": 884,
         "w": 96,
         "h": 96
       },
@@ -2123,7 +3723,7 @@
     "unit.enemy.bruiser/cast/2": {
       "frame": {
         "x": 590,
-        "y": 492,
+        "y": 884,
         "w": 96,
         "h": 96
       },
@@ -2143,7 +3743,7 @@
     "unit.enemy.bruiser/hit/0": {
       "frame": {
         "x": 688,
-        "y": 492,
+        "y": 884,
         "w": 44,
         "h": 69
       },
@@ -2163,7 +3763,7 @@
     "unit.enemy.bruiser/ko/0": {
       "frame": {
         "x": 734,
-        "y": 492,
+        "y": 884,
         "w": 86,
         "h": 75
       },
@@ -2188,7 +3788,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 1962,
-      "h": 590
+      "h": 982
     },
     "scale": "1"
   }

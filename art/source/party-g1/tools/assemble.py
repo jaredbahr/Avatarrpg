@@ -145,6 +145,32 @@ def kp_px(entry, W):
     return {j['label']: (j['x'] * W, j['y'] * W) for j in entry}
 
 
+def clamp_margin(im, m=MARGIN):
+    """Clear the ink inside the clear margin; returns the cel and how many pixels went (a toe or a spear tip, ADR 0095)."""
+    a = np.asarray(im).copy(); keep = np.zeros(a.shape[:2], bool); keep[m:-m, m:-m] = True
+    lost = int(((a[..., 3] > 0) & ~keep).sum()); a[~keep] = 0
+    return Image.fromarray(a), lost
+
+
+def jog(char, d, job, idle, idle_dy, put):
+    """The jog (ADR 0095): cropped from its 96 canvas as the walk is, its two contact cels' soles (motion.py's
+    `contact_rows`) set on idle cel 0's sole in every heading (the walk's north rule, level with idle, sank the run's
+    back-view feet 2-3 px), and moved by the rounded mean upper-body offset against idle when that exceeds 1 px. No
+    mean-row bound: a run's flight cels leave the ground."""
+    design = json.load(open(HERE / f'design/{char}/jog-{d}.json')); n = SPECS['_shared']['jog']['frames']
+    gen = load_gen(job, n, char)
+    lost = sum(int(alpha(c)[:, :16].sum() + alpha(c)[:, 80:].sum()) for c in gen)
+    cels = [shift(c.crop((16, 0, 80, 96)), 0, idle_dy) for c in gen]
+    base = lowest(idle[0]); cr = design['info']['contact_rows']
+    dy = -int(round((lowest(cels[cr['LA']['cel']]) + lowest(cels[cr['RA']['cel']])) / 2 - base))
+    off = np.mean([upper_offset(shift(c, 0, dy), idle[0]) for c in cels]); dx = int(round(off)) if abs(off) > 1 else 0
+    placed = [clamp_margin(shift(c, dx, dy)) for c in cels]
+    put(heading_clip('jog', d), [c for c, _ in placed])
+    clamped = sum(n for _, n in placed)
+    if lost or clamped: print(f'  {char} jog {d}: {lost} px of ink outside the 64 px cel, {clamped} px inside its margin cleared')
+    return dict(jog_job=job, jogDx=dx, jogDy=dy, jog_contact_rows=cr, jogLostPx=lost, jogClampedPx=clamped)
+
+
 def build(char):
     A = json.load(open(HERE / 'assembly.json'))[char]
     key = KEYS[char]; out = HERE / f'cels/{char}'
@@ -189,6 +215,7 @@ def build(char):
         rest_dy = lowest(idle[0]) - lowest(walk[rest])   # a passing cel's sole sits up-screen of where she stops
         put(heading_clip('walk', d), walk); put(heading_clip('rest', d), [shift(walk[rest], 0, rest_dy)])
         placement[d] = dict(walk_job=job, idleDy=idle_dy[d], walkDx=dx, walkDy=dy, restCel=rest, restDy=rest_dy, contact_rows=cr)
+        if 'jog' in A: placement[d].update(jog(char, d, A['jog'][d], idle, idle_dy[d], put))
         # hit: stance, H1-H3, stance
         job = A['hit'][d]; gen = load_gen(job, 3, char); root96 = on_canvas(stance_root[d], 96)
         frames, box, anchor = trim([root96] + gen, 96, idle_dy[d])
