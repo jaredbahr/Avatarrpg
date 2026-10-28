@@ -4,6 +4,9 @@ Jared, 2026-10-28: "Look at the characters and the rest of the world. Do you see
 animations are off." His chosen direction to test: **characters match world**. The Ba Dan painting stays exactly as it
 is, and the figures are redrawn in its rendering, at its size, with designed animation.
 
+**Superseded for the party by phase 2a** (`art/source/party-world/`, ADR 0097): Kaya's, Sura's and Bo's test atlases
+are removed and `?style=world` draws theirs; Gao's remains here.
+
 **This is a style test, not a rollout.** Nothing ships by default. The four test sheets show only with `?style=world`
 (for example `/?style=world&renderer=canvas`), so one build shows the old and the new figures in the same Ba Dan slice.
 
