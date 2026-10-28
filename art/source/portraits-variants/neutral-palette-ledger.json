@@ -7,10 +7,7 @@
       "sourceBytes": 249776,
       "packedSHA256": "86196d1f9dad6e2c80b555ff7c2de557e288beab8234cffc0e4381f1c3e116b8",
       "packedBytes": 118160,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -19,10 +16,7 @@
       "sourceBytes": 184910,
       "packedSHA256": "47683164b64bdfc1cc8fbb5f302b63a75399a5e30b1270d953d038915d51a42d",
       "packedBytes": 113971,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -31,10 +25,7 @@
       "sourceBytes": 296799,
       "packedSHA256": "ce5946a1dac2f8ba8c37db98de9cbc828d715c01dcb7f8b732b0c7cb3cb065a0",
       "packedBytes": 164019,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -43,10 +34,7 @@
       "sourceBytes": 386074,
       "packedSHA256": "7691c3dda2f7f16405dd17c57ac5222ec36641b9acb6bd861c447f4a3bc3022b",
       "packedBytes": 157542,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -55,10 +43,7 @@
       "sourceBytes": 192984,
       "packedSHA256": "190b71a79cf6368cf077691d388c165c891fbf98647785c73c37aa9704079f0f",
       "packedBytes": 109140,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -67,10 +52,7 @@
       "sourceBytes": 185888,
       "packedSHA256": "a4118b28123f318234a9b916fc59ad64454a9687b6a7df7e43d8f730d0e00c65",
       "packedBytes": 113133,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -79,10 +61,7 @@
       "sourceBytes": 291551,
       "packedSHA256": "6bb3205f9e07ae96a8e2b286bf37c2d105580b72e76b05adec610c3c91199d52",
       "packedBytes": 176910,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -91,10 +70,7 @@
       "sourceBytes": 262195,
       "packedSHA256": "d089b4854a41efc5e5444a94c7714d90e2fe9cefe90bf914cd78bf27a4c63a75",
       "packedBytes": 115176,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -103,10 +79,7 @@
       "sourceBytes": 237788,
       "packedSHA256": "f4367cd935ad136bb190689151a5cda400c0fe9ef516076ca8078a55ac893996",
       "packedBytes": 106666,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -115,10 +88,7 @@
       "sourceBytes": 245852,
       "packedSHA256": "c1acfc79681bf93133ab8cf45d5861f323c57e0a2f520b8dbcdb75199c1236b8",
       "packedBytes": 122776,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -127,10 +97,7 @@
       "sourceBytes": 248690,
       "packedSHA256": "3e30ef49f5455e28a4bd92b07b1ef32bab9e516d8db37520fb49a5d820d1583d",
       "packedBytes": 112087,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -139,10 +106,7 @@
       "sourceBytes": 225541,
       "packedSHA256": "0676cf37dbc95a1eee056ee59523770042561a71b469cbac7aec062ad5ef8fa5",
       "packedBytes": 115908,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     },
     {
@@ -151,10 +115,7 @@
       "sourceBytes": 255223,
       "packedSHA256": "01bf767bdb3e1123551f28a077dbf5d8587205dd0d37c7304ae252afa5260abc",
       "packedBytes": 114148,
-      "size": [
-        512,
-        512
-      ],
+      "size": [512, 512],
       "colors": 256
     }
   ]
