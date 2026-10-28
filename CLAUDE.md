@@ -247,12 +247,20 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
   lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
   lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
+- **A native-G1 figure jogs at the brisk pace and walks only when slow** (ADR 0095). Its sheet's `locomotion.jog`
+  makes the animator draw `jog*`, and `walkMsPerTile` is the jog's, fitted to the drawn feet (`G1_JOG`, `G1_HEADING`).
+  The `walk*` clips stay for slow moves: a resident's routine errand ambles at `RESIDENT_AMBLE` times the stroll and
+  draws the walk at the rate `G1_AMBLE` sets. A new slow or scripted move must draw the walk on a clock whose ms a tile
+  is the walk's own; the walk at the brisk pace slides 5-16 px a stance cel. Measure with `walk_stride.py --manifest`.
 - **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
   on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
   smooths, or a mask at screen resolution, brings back the soft edge the pass removed. Every figure and prop on an
   oblique board gets a contact (a figure's sole band, a prop's 2 world px contact line) and a cast along its scene's
   `castKey`: a figure's from its foot row, a prop's from its own base (`groundedCast`), so no ground shows between
-  a box's side edges and its shadow. `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
+  a box's side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is
+  grounded the same way, its feet only inside its footprint; a tree or a hanging lamp does not. Ba Dan's painted
+  objects are shaded in the master by `ba-dan-route-a/tools/shadows.py`, never in the shipped files.
+  `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
   Pixi texture map are bounded LRUs because iOS caps canvas memory; do not

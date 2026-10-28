@@ -40,6 +40,13 @@ any new take there).
 5. **Action text names an empty-hand form**, never an element ("fire bending" painted flames into the cels).
 6. **Registration** (`assemble.py`): ADR 0050's rules with art:validate's bounds scaled to the grid.
 
+## The jog (ADR 0095)
+
+A tenth clip family, `jog`, ten cels in eight headings, from CMU 09_01 (run) with the fore-aft leg swing lengthened 1.6
+times (`motion.json` `_shared.jog`, `motion.py`'s `stride`, `arms` and `scale_clip`). It is made like the walk (design,
+`gen_clip.py`, `assemble.py`, the packer) and plays for every move at the brisk pace; the walk stays on the sheet for
+slow moves. Registration, the margin clamp, the timing fit and the review are in `art/source/jog-g1/README.md`.
+
 ## Motion (all CMU Graphics Lab, mocap.cs.cmu.edu; credited in `NOTICE.md`)
 
 | clip                      | take                                                                                               | notes                                                                                  |

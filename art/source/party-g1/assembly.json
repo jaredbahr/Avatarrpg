@@ -35,6 +35,16 @@
    "south-west": "kaya-ko-south-west-s9501",
    "north-east": "kaya-ko-north-east-s9501",
    "north-west": "kaya-ko-north-west-s9501"
+  },
+  "jog": {
+   "south": "kaya-jog-south-s9901",
+   "south-east": "kaya-jog-south-east-s9901",
+   "east": "kaya-jog-east-s9901",
+   "north-east": "kaya-jog-north-east-s9901",
+   "north": "kaya-jog-north-s9901",
+   "north-west": "kaya-jog-north-west-s9901",
+   "west": "kaya-jog-west-s9901",
+   "south-west": "kaya-jog-south-west-s9901"
   }
  },
  "sura": {
@@ -73,6 +83,16 @@
    "south-west": "sura-ko-south-west-s9502",
    "north-east": "sura-ko-north-east-s9502",
    "north-west": "sura-ko-north-west-s9502"
+  },
+  "jog": {
+   "south": "sura-jog-south-s9901",
+   "south-east": "sura-jog-south-east-s9901",
+   "east": "sura-jog-east-s9901",
+   "north-east": "sura-jog-north-east-s9901",
+   "north": "sura-jog-north-s9901",
+   "north-west": "sura-jog-north-west-s9901",
+   "west": "sura-jog-west-s9901",
+   "south-west": "sura-jog-south-west-s9901"
   }
  },
  "bo": {
@@ -111,6 +131,16 @@
    "south-west": "bo-ko-south-west-s9501",
    "north-east": "bo-ko-north-east-s9501",
    "north-west": "bo-ko-north-west-s9501"
+  },
+  "jog": {
+   "south": "bo-jog-south-s9901",
+   "south-east": "bo-jog-south-east-s9901",
+   "east": "bo-jog-east-s9901",
+   "north-east": "bo-jog-north-east-s9901",
+   "north": "bo-jog-north-s9901",
+   "north-west": "bo-jog-north-west-s9901",
+   "west": "bo-jog-west-s9901",
+   "south-west": "bo-jog-south-west-s9901"
   }
  },
  "note": "The take each clip and heading uses (raw/<take>/). Superseded takes stay in raw/ and ledger.json; reasons in \"why\".",

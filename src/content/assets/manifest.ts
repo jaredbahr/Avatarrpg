@@ -29,7 +29,14 @@
  * the clip logic run the same path whether the art is real or not.
  */
 
-import type { ClipDef, ClipName, Heading, LocomotionDef, MeleeDirection } from './clips';
+import type {
+  ClipDef,
+  ClipName,
+  Heading,
+  HeadingClipBase,
+  LocomotionDef,
+  MeleeDirection,
+} from './clips';
 import { HEADINGS, headingClip } from './clips';
 import { BANDITS_G1_TRIMS } from './banditsG1';
 import { PARTY_G1_TRIMS } from './partyG1';
@@ -164,18 +171,82 @@ function rikoSheet(): SheetEntry {
 /** One complete authored G walk loop covers this many logical ground tiles. */
 export const G_STRIDE_TILES = 1.825;
 
+/** The jog (ADR 0095): one loop of ten cels at 60 ms a cel. */
+const JOG_CELS = 10;
+const JOG_CEL_MS = 60;
+/** It starts on cel 1, the first planted cel after a contact, and settles on a half-loop from there. */
+const JOG_START_CEL = 1;
+
 /**
- * Distance-phased clip time for a G walk. The source art's measured root
- * travel varies sharply by heading and made short in-game moves cycle several
- * times. One stride target keeps the authored loop coherent while preserving
- * every existing cel and its order.
+ * Tiles one jog loop covers east on the drawn cels, by name: the scalar of
+ * `walk_stride.py`'s fits over the eight headings against `G1_HEADING`, the
+ * shape every name shares (the median, east 1). Back views cover more ground
+ * a loop than front views, as drawn (ADR 0095). The jog's clip time a tile
+ * follows, so its planted foot holds the ground at any pace.
  */
-function gWalkMsPerTile(frameCount: number): Record<Heading, number> {
-  const msPerTile = (frameCount * 114) / G_STRIDE_TILES;
-  return Object.fromEntries(HEADINGS.map((heading) => [heading, msPerTile])) as Record<
-    Heading,
-    number
-  >;
+export const G1_JOG: Readonly<Record<string, number>> = {
+  kaya: 1,
+  sura: 1.02,
+  bo: 1.03,
+  thug: 1.13,
+  slinger: 1.08,
+  bruiser: 1.23,
+  household: 1.06,
+  watch: 1.07,
+  mira: 1.21,
+  gao: 1.15,
+  pella: 0.84,
+  dorin: 1.15,
+};
+/** A jog loop's length on each heading against east's, in `HEADINGS` order. */
+export const G1_HEADING = [1, 0.99, 0.88, 1.1, 1.05, 1.24, 1.17, 1.15];
+/**
+ * A resident's walk covers this share of its jog's loop (the six residents'
+ * median), which sets the walk's rate when an errand ambles on the jog's clock.
+ */
+export const G1_AMBLE = 0.43;
+
+/**
+ * A G1 sheet's eight-way idle, rest, walk and jog (ADR 0095), and the
+ * locomotion that plays the jog for every brisk move. The walk keeps its
+ * authored 114 ms a cel; a resident's (`amble`) plays on the jog's distance
+ * clock at the rate that makes one walk loop cover its own ground, which is
+ * how an errand ambles without sliding.
+ */
+function g1Locomotion(
+  clips: Partial<Record<ClipName, ClipDef>>,
+  frames: (clip: ClipName, count: number) => string[],
+  name: string,
+  walkCels: number,
+  amble?: boolean,
+): LocomotionDef {
+  const jog = G1_JOG[name];
+  // Without a jog (the quarry bender's 128 px G sheet) the walk keeps ADR
+  // 0067's shared stride, from cel 2, the quarter-cycle passing pose.
+  const [cels, celMs, start] = jog ? [JOG_CELS, JOG_CEL_MS, JOG_START_CEL] : [walkCels, 114, 2];
+  const msPerTile = {} as Record<Heading, number>;
+  HEADINGS.forEach((heading, i) => {
+    const g = jog ? (G1_HEADING[i] ?? 1) * jog : G_STRIDE_TILES;
+    const add = (base: HeadingClipBase, count: number, fps: number) => {
+      const clip = headingClip(base, heading);
+      clips[clip] = { frames: frames(clip, count), fps, loop: true };
+    };
+    msPerTile[heading] = (cels * celMs) / g;
+    add('idle', 4, 4);
+    add('rest', 1, 1);
+    if (jog) add('jog', cels, 1000 / celMs);
+    // A resident's walk plays on the jog's clock when its errand ambles, at
+    // the rate that makes one walk loop cover the walk's own ground.
+    add('walk', walkCels, amble ? (walkCels * 1000) / (G1_AMBLE * cels * celMs) : 1000 / 114);
+  });
+  return {
+    headings: 8,
+    jog: !!jog,
+    walkMsPerTile: msPerTile,
+    walkStartMs: start * celMs,
+    walkCycleMs: cels * celMs,
+    authoredBob: true,
+  };
 }
 
 /**
@@ -187,13 +258,6 @@ function gWalkMsPerTile(frameCount: number): Record<Heading, number> {
 function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): SheetEntry {
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
-  const walk = (clip: ClipName): ClipDef => ({
-    frames: frames(clip, 12),
-    fps: 1000 / 114,
-    loop: true,
-  });
-  const idle = (clip: ClipName): ClipDef => ({ frames: frames(clip, 4), fps: 4, loop: true });
-  const rest = (clip: ClipName): ClipDef => ({ frames: frames(clip, 1), fps: 1, loop: true });
   // The approved guard loop plays eight cels at 150 ms each (ADR 0052).
   const stance = (clip: ClipName): ClipDef => ({
     frames: frames(clip, 8),
@@ -205,12 +269,9 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
     cast: { frames: frames('cast', 3), fps: 8, loop: false, ...trims.cast },
     ko: { frames: frames('ko', 1), fps: 1, loop: false, ...trims.ko },
   };
-  for (const heading of HEADINGS) {
-    clips[headingClip('idle', heading)] = idle(headingClip('idle', heading));
-    clips[headingClip('walk', heading)] = walk(headingClip('walk', heading));
-    clips[headingClip('rest', heading)] = rest(headingClip('rest', heading));
+  const locomotion = g1Locomotion(clips, frames, name, 12);
+  for (const heading of HEADINGS)
     clips[headingClip('stance', heading)] = stance(headingClip('stance', heading));
-  }
   // The riverside draws Kaya and Sura from this sheet too (ADR 0054): their
   // wave and seated tea, reduced onto the same grid, ride on page 1.
   if (name === 'kaya' || name === 'sura') {
@@ -236,14 +297,7 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    // Cel 3 is the first passing pose after the opening contact.
-    locomotion: {
-      headings: 8,
-      walkMsPerTile: gWalkMsPerTile(12),
-      walkStartMs: 3 * 114,
-      walkCycleMs: 12 * 114,
-      authoredBob: true,
-    },
+    locomotion,
     palette,
     clips,
   };
@@ -274,23 +328,7 @@ function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
     hit: { frames: frames('hit', 1), fps: 1, loop: false, ...g1?.hit },
     ko: { frames: frames('ko', 1), fps: 1, loop: false, ...g1?.ko },
   };
-  for (const heading of HEADINGS) {
-    clips[headingClip('idle', heading)] = {
-      frames: frames(headingClip('idle', heading), 4),
-      fps: 4,
-      loop: true,
-    };
-    clips[headingClip('walk', heading)] = {
-      frames: frames(headingClip('walk', heading), 8),
-      fps: 1000 / 114,
-      loop: true,
-    };
-    clips[headingClip('rest', heading)] = {
-      frames: frames(headingClip('rest', heading), 1),
-      fps: 1,
-      loop: true,
-    };
-  }
+  const locomotion = g1Locomotion(clips, frames, name, 8);
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
@@ -308,14 +346,7 @@ function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    // Cel 2 is the equivalent quarter-cycle passing pose in the eight-cel family.
-    locomotion: {
-      headings: 8,
-      walkMsPerTile: gWalkMsPerTile(8),
-      walkStartMs: 2 * 114,
-      walkCycleMs: 8 * 114,
-      authoredBob: true,
-    },
+    locomotion,
     palette,
     clips,
   };
@@ -334,23 +365,7 @@ function residentGSheet(name: ResidentGName, key: string, palette: string): Shee
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
   const clips: Partial<Record<ClipName, ClipDef>> = {};
-  for (const heading of HEADINGS) {
-    clips[headingClip('idle', heading)] = {
-      frames: frames(headingClip('idle', heading), 4),
-      fps: 4,
-      loop: true,
-    };
-    clips[headingClip('walk', heading)] = {
-      frames: frames(headingClip('walk', heading), 8),
-      fps: 1000 / 114,
-      loop: true,
-    };
-    clips[headingClip('rest', heading)] = {
-      frames: frames(headingClip('rest', heading), 1),
-      fps: 1,
-      loop: true,
-    };
-  }
+  const locomotion = g1Locomotion(clips, frames, name, 8, true);
   // The grid the packer used (`residentGrid.ts`): 64 px a tile, a 64x96 cel,
   // which is the default cel for that grid, so no frame size is declared.
   const grid = residentGrid();
@@ -361,13 +376,7 @@ function residentGSheet(name: ResidentGName, key: string, palette: string): Shee
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: {
-      headings: 8,
-      walkMsPerTile: gWalkMsPerTile(8),
-      walkStartMs: 2 * 114,
-      walkCycleMs: 8 * 114,
-      authoredBob: true,
-    },
+    locomotion,
     palette,
     clips,
   };

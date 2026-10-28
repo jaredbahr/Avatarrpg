@@ -260,9 +260,209 @@
         "h": 96
       }
     },
-    "npc.dorin/idleSouthEast/0": {
+    "npc.dorin/jogSouth/0": {
       "frame": {
         "x": 860,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/1": {
+      "frame": {
+        "x": 926,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/2": {
+      "frame": {
+        "x": 992,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/3": {
+      "frame": {
+        "x": 1058,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/4": {
+      "frame": {
+        "x": 1124,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/5": {
+      "frame": {
+        "x": 1190,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/6": {
+      "frame": {
+        "x": 1256,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/7": {
+      "frame": {
+        "x": 1322,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/8": {
+      "frame": {
+        "x": 1388,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouth/9": {
+      "frame": {
+        "x": 1454,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthEast/0": {
+      "frame": {
+        "x": 1520,
         "y": 2,
         "w": 64,
         "h": 96
@@ -282,7 +482,7 @@
     },
     "npc.dorin/idleSouthEast/1": {
       "frame": {
-        "x": 926,
+        "x": 1586,
         "y": 2,
         "w": 64,
         "h": 96
@@ -302,7 +502,7 @@
     },
     "npc.dorin/idleSouthEast/2": {
       "frame": {
-        "x": 992,
+        "x": 1652,
         "y": 2,
         "w": 64,
         "h": 96
@@ -322,7 +522,7 @@
     },
     "npc.dorin/idleSouthEast/3": {
       "frame": {
-        "x": 1058,
+        "x": 1718,
         "y": 2,
         "w": 64,
         "h": 96
@@ -342,7 +542,7 @@
     },
     "npc.dorin/walkSouthEast/0": {
       "frame": {
-        "x": 1124,
+        "x": 1784,
         "y": 2,
         "w": 64,
         "h": 96
@@ -362,7 +562,7 @@
     },
     "npc.dorin/walkSouthEast/1": {
       "frame": {
-        "x": 1190,
+        "x": 1850,
         "y": 2,
         "w": 64,
         "h": 96
@@ -382,7 +582,7 @@
     },
     "npc.dorin/walkSouthEast/2": {
       "frame": {
-        "x": 1256,
+        "x": 1916,
         "y": 2,
         "w": 64,
         "h": 96
@@ -402,7 +602,7 @@
     },
     "npc.dorin/walkSouthEast/3": {
       "frame": {
-        "x": 1322,
+        "x": 1982,
         "y": 2,
         "w": 64,
         "h": 96
@@ -422,8 +622,8 @@
     },
     "npc.dorin/walkSouthEast/4": {
       "frame": {
-        "x": 1388,
-        "y": 2,
+        "x": 2,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -442,8 +642,8 @@
     },
     "npc.dorin/walkSouthEast/5": {
       "frame": {
-        "x": 1454,
-        "y": 2,
+        "x": 68,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -462,8 +662,8 @@
     },
     "npc.dorin/walkSouthEast/6": {
       "frame": {
-        "x": 1520,
-        "y": 2,
+        "x": 134,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -482,8 +682,8 @@
     },
     "npc.dorin/walkSouthEast/7": {
       "frame": {
-        "x": 1586,
-        "y": 2,
+        "x": 200,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -502,8 +702,208 @@
     },
     "npc.dorin/restSouthEast/0": {
       "frame": {
-        "x": 1652,
-        "y": 2,
+        "x": 266,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/0": {
+      "frame": {
+        "x": 332,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/1": {
+      "frame": {
+        "x": 398,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/2": {
+      "frame": {
+        "x": 464,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/3": {
+      "frame": {
+        "x": 530,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/4": {
+      "frame": {
+        "x": 596,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/5": {
+      "frame": {
+        "x": 662,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/6": {
+      "frame": {
+        "x": 728,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/7": {
+      "frame": {
+        "x": 794,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/8": {
+      "frame": {
+        "x": 860,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthEast/9": {
+      "frame": {
+        "x": 926,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -522,8 +922,8 @@
     },
     "npc.dorin/idle/0": {
       "frame": {
-        "x": 1718,
-        "y": 2,
+        "x": 992,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -542,8 +942,8 @@
     },
     "npc.dorin/idle/1": {
       "frame": {
-        "x": 1784,
-        "y": 2,
+        "x": 1058,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -562,8 +962,8 @@
     },
     "npc.dorin/idle/2": {
       "frame": {
-        "x": 1850,
-        "y": 2,
+        "x": 1124,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -582,8 +982,8 @@
     },
     "npc.dorin/idle/3": {
       "frame": {
-        "x": 1916,
-        "y": 2,
+        "x": 1190,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -602,8 +1002,8 @@
     },
     "npc.dorin/walk/0": {
       "frame": {
-        "x": 1982,
-        "y": 2,
+        "x": 1256,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -622,7 +1022,7 @@
     },
     "npc.dorin/walk/1": {
       "frame": {
-        "x": 2,
+        "x": 1322,
         "y": 100,
         "w": 64,
         "h": 96
@@ -642,7 +1042,7 @@
     },
     "npc.dorin/walk/2": {
       "frame": {
-        "x": 68,
+        "x": 1388,
         "y": 100,
         "w": 64,
         "h": 96
@@ -662,7 +1062,7 @@
     },
     "npc.dorin/walk/3": {
       "frame": {
-        "x": 134,
+        "x": 1454,
         "y": 100,
         "w": 64,
         "h": 96
@@ -682,7 +1082,7 @@
     },
     "npc.dorin/walk/4": {
       "frame": {
-        "x": 200,
+        "x": 1520,
         "y": 100,
         "w": 64,
         "h": 96
@@ -702,7 +1102,7 @@
     },
     "npc.dorin/walk/5": {
       "frame": {
-        "x": 266,
+        "x": 1586,
         "y": 100,
         "w": 64,
         "h": 96
@@ -722,7 +1122,7 @@
     },
     "npc.dorin/walk/6": {
       "frame": {
-        "x": 332,
+        "x": 1652,
         "y": 100,
         "w": 64,
         "h": 96
@@ -742,7 +1142,7 @@
     },
     "npc.dorin/walk/7": {
       "frame": {
-        "x": 398,
+        "x": 1718,
         "y": 100,
         "w": 64,
         "h": 96
@@ -762,8 +1162,208 @@
     },
     "npc.dorin/rest/0": {
       "frame": {
-        "x": 464,
+        "x": 1784,
         "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/0": {
+      "frame": {
+        "x": 1850,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/1": {
+      "frame": {
+        "x": 1916,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/2": {
+      "frame": {
+        "x": 1982,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/3": {
+      "frame": {
+        "x": 2,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/4": {
+      "frame": {
+        "x": 68,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/5": {
+      "frame": {
+        "x": 134,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/6": {
+      "frame": {
+        "x": 200,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/7": {
+      "frame": {
+        "x": 266,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/8": {
+      "frame": {
+        "x": 332,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jog/9": {
+      "frame": {
+        "x": 398,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -782,8 +1382,8 @@
     },
     "npc.dorin/idleNorthEast/0": {
       "frame": {
-        "x": 530,
-        "y": 100,
+        "x": 464,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -802,8 +1402,8 @@
     },
     "npc.dorin/idleNorthEast/1": {
       "frame": {
-        "x": 596,
-        "y": 100,
+        "x": 530,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -822,8 +1422,8 @@
     },
     "npc.dorin/idleNorthEast/2": {
       "frame": {
-        "x": 662,
-        "y": 100,
+        "x": 596,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -842,8 +1442,8 @@
     },
     "npc.dorin/idleNorthEast/3": {
       "frame": {
-        "x": 728,
-        "y": 100,
+        "x": 662,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -862,606 +1462,6 @@
     },
     "npc.dorin/walkNorthEast/0": {
       "frame": {
-        "x": 794,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthEast/1": {
-      "frame": {
-        "x": 860,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthEast/2": {
-      "frame": {
-        "x": 926,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthEast/3": {
-      "frame": {
-        "x": 992,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthEast/4": {
-      "frame": {
-        "x": 1058,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthEast/5": {
-      "frame": {
-        "x": 1124,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthEast/6": {
-      "frame": {
-        "x": 1190,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthEast/7": {
-      "frame": {
-        "x": 1256,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/restNorthEast/0": {
-      "frame": {
-        "x": 1322,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorth/0": {
-      "frame": {
-        "x": 1388,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorth/1": {
-      "frame": {
-        "x": 1454,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorth/2": {
-      "frame": {
-        "x": 1520,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorth/3": {
-      "frame": {
-        "x": 1586,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/0": {
-      "frame": {
-        "x": 1652,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/1": {
-      "frame": {
-        "x": 1718,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/2": {
-      "frame": {
-        "x": 1784,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/3": {
-      "frame": {
-        "x": 1850,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/4": {
-      "frame": {
-        "x": 1916,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/5": {
-      "frame": {
-        "x": 1982,
-        "y": 100,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/6": {
-      "frame": {
-        "x": 2,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorth/7": {
-      "frame": {
-        "x": 68,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/restNorth/0": {
-      "frame": {
-        "x": 134,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorthWest/0": {
-      "frame": {
-        "x": 200,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorthWest/1": {
-      "frame": {
-        "x": 266,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorthWest/2": {
-      "frame": {
-        "x": 332,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/idleNorthWest/3": {
-      "frame": {
-        "x": 398,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthWest/0": {
-      "frame": {
-        "x": 464,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthWest/1": {
-      "frame": {
-        "x": 530,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthWest/2": {
-      "frame": {
-        "x": 596,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthWest/3": {
-      "frame": {
-        "x": 662,
-        "y": 198,
-        "w": 64,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 64,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 96
-      }
-    },
-    "npc.dorin/walkNorthWest/4": {
-      "frame": {
         "x": 728,
         "y": 198,
         "w": 64,
@@ -1480,7 +1480,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkNorthWest/5": {
+    "npc.dorin/walkNorthEast/1": {
       "frame": {
         "x": 794,
         "y": 198,
@@ -1500,7 +1500,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkNorthWest/6": {
+    "npc.dorin/walkNorthEast/2": {
       "frame": {
         "x": 860,
         "y": 198,
@@ -1520,7 +1520,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkNorthWest/7": {
+    "npc.dorin/walkNorthEast/3": {
       "frame": {
         "x": 926,
         "y": 198,
@@ -1540,7 +1540,7 @@
         "h": 96
       }
     },
-    "npc.dorin/restNorthWest/0": {
+    "npc.dorin/walkNorthEast/4": {
       "frame": {
         "x": 992,
         "y": 198,
@@ -1560,7 +1560,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleWest/0": {
+    "npc.dorin/walkNorthEast/5": {
       "frame": {
         "x": 1058,
         "y": 198,
@@ -1580,7 +1580,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleWest/1": {
+    "npc.dorin/walkNorthEast/6": {
       "frame": {
         "x": 1124,
         "y": 198,
@@ -1600,7 +1600,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleWest/2": {
+    "npc.dorin/walkNorthEast/7": {
       "frame": {
         "x": 1190,
         "y": 198,
@@ -1620,7 +1620,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleWest/3": {
+    "npc.dorin/restNorthEast/0": {
       "frame": {
         "x": 1256,
         "y": 198,
@@ -1640,7 +1640,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/0": {
+    "npc.dorin/jogNorthEast/0": {
       "frame": {
         "x": 1322,
         "y": 198,
@@ -1660,7 +1660,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/1": {
+    "npc.dorin/jogNorthEast/1": {
       "frame": {
         "x": 1388,
         "y": 198,
@@ -1680,7 +1680,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/2": {
+    "npc.dorin/jogNorthEast/2": {
       "frame": {
         "x": 1454,
         "y": 198,
@@ -1700,7 +1700,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/3": {
+    "npc.dorin/jogNorthEast/3": {
       "frame": {
         "x": 1520,
         "y": 198,
@@ -1720,7 +1720,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/4": {
+    "npc.dorin/jogNorthEast/4": {
       "frame": {
         "x": 1586,
         "y": 198,
@@ -1740,7 +1740,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/5": {
+    "npc.dorin/jogNorthEast/5": {
       "frame": {
         "x": 1652,
         "y": 198,
@@ -1760,7 +1760,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/6": {
+    "npc.dorin/jogNorthEast/6": {
       "frame": {
         "x": 1718,
         "y": 198,
@@ -1780,7 +1780,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkWest/7": {
+    "npc.dorin/jogNorthEast/7": {
       "frame": {
         "x": 1784,
         "y": 198,
@@ -1800,7 +1800,7 @@
         "h": 96
       }
     },
-    "npc.dorin/restWest/0": {
+    "npc.dorin/jogNorthEast/8": {
       "frame": {
         "x": 1850,
         "y": 198,
@@ -1820,7 +1820,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleSouthWest/0": {
+    "npc.dorin/jogNorthEast/9": {
       "frame": {
         "x": 1916,
         "y": 198,
@@ -1840,7 +1840,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleSouthWest/1": {
+    "npc.dorin/idleNorth/0": {
       "frame": {
         "x": 1982,
         "y": 198,
@@ -1860,7 +1860,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleSouthWest/2": {
+    "npc.dorin/idleNorth/1": {
       "frame": {
         "x": 2,
         "y": 296,
@@ -1880,7 +1880,7 @@
         "h": 96
       }
     },
-    "npc.dorin/idleSouthWest/3": {
+    "npc.dorin/idleNorth/2": {
       "frame": {
         "x": 68,
         "y": 296,
@@ -1900,7 +1900,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/0": {
+    "npc.dorin/idleNorth/3": {
       "frame": {
         "x": 134,
         "y": 296,
@@ -1920,7 +1920,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/1": {
+    "npc.dorin/walkNorth/0": {
       "frame": {
         "x": 200,
         "y": 296,
@@ -1940,7 +1940,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/2": {
+    "npc.dorin/walkNorth/1": {
       "frame": {
         "x": 266,
         "y": 296,
@@ -1960,7 +1960,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/3": {
+    "npc.dorin/walkNorth/2": {
       "frame": {
         "x": 332,
         "y": 296,
@@ -1980,7 +1980,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/4": {
+    "npc.dorin/walkNorth/3": {
       "frame": {
         "x": 398,
         "y": 296,
@@ -2000,7 +2000,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/5": {
+    "npc.dorin/walkNorth/4": {
       "frame": {
         "x": 464,
         "y": 296,
@@ -2020,7 +2020,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/6": {
+    "npc.dorin/walkNorth/5": {
       "frame": {
         "x": 530,
         "y": 296,
@@ -2040,7 +2040,7 @@
         "h": 96
       }
     },
-    "npc.dorin/walkSouthWest/7": {
+    "npc.dorin/walkNorth/6": {
       "frame": {
         "x": 596,
         "y": 296,
@@ -2060,10 +2060,1610 @@
         "h": 96
       }
     },
-    "npc.dorin/restSouthWest/0": {
+    "npc.dorin/walkNorth/7": {
       "frame": {
         "x": 662,
         "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restNorth/0": {
+      "frame": {
+        "x": 728,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/0": {
+      "frame": {
+        "x": 794,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/1": {
+      "frame": {
+        "x": 860,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/2": {
+      "frame": {
+        "x": 926,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/3": {
+      "frame": {
+        "x": 992,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/4": {
+      "frame": {
+        "x": 1058,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/5": {
+      "frame": {
+        "x": 1124,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/6": {
+      "frame": {
+        "x": 1190,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/7": {
+      "frame": {
+        "x": 1256,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/8": {
+      "frame": {
+        "x": 1322,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorth/9": {
+      "frame": {
+        "x": 1388,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/0": {
+      "frame": {
+        "x": 1454,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/1": {
+      "frame": {
+        "x": 1520,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/2": {
+      "frame": {
+        "x": 1586,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleNorthWest/3": {
+      "frame": {
+        "x": 1652,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/0": {
+      "frame": {
+        "x": 1718,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/1": {
+      "frame": {
+        "x": 1784,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/2": {
+      "frame": {
+        "x": 1850,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/3": {
+      "frame": {
+        "x": 1916,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/4": {
+      "frame": {
+        "x": 1982,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/5": {
+      "frame": {
+        "x": 2,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/6": {
+      "frame": {
+        "x": 68,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkNorthWest/7": {
+      "frame": {
+        "x": 134,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restNorthWest/0": {
+      "frame": {
+        "x": 200,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/0": {
+      "frame": {
+        "x": 266,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/1": {
+      "frame": {
+        "x": 332,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/2": {
+      "frame": {
+        "x": 398,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/3": {
+      "frame": {
+        "x": 464,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/4": {
+      "frame": {
+        "x": 530,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/5": {
+      "frame": {
+        "x": 596,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/6": {
+      "frame": {
+        "x": 662,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/7": {
+      "frame": {
+        "x": 728,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/8": {
+      "frame": {
+        "x": 794,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogNorthWest/9": {
+      "frame": {
+        "x": 860,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/0": {
+      "frame": {
+        "x": 926,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/1": {
+      "frame": {
+        "x": 992,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/2": {
+      "frame": {
+        "x": 1058,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleWest/3": {
+      "frame": {
+        "x": 1124,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/0": {
+      "frame": {
+        "x": 1190,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/1": {
+      "frame": {
+        "x": 1256,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/2": {
+      "frame": {
+        "x": 1322,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/3": {
+      "frame": {
+        "x": 1388,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/4": {
+      "frame": {
+        "x": 1454,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/5": {
+      "frame": {
+        "x": 1520,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/6": {
+      "frame": {
+        "x": 1586,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkWest/7": {
+      "frame": {
+        "x": 1652,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restWest/0": {
+      "frame": {
+        "x": 1718,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/0": {
+      "frame": {
+        "x": 1784,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/1": {
+      "frame": {
+        "x": 1850,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/2": {
+      "frame": {
+        "x": 1916,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/3": {
+      "frame": {
+        "x": 1982,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/4": {
+      "frame": {
+        "x": 2,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/5": {
+      "frame": {
+        "x": 68,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/6": {
+      "frame": {
+        "x": 134,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/7": {
+      "frame": {
+        "x": 200,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/8": {
+      "frame": {
+        "x": 266,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogWest/9": {
+      "frame": {
+        "x": 332,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/0": {
+      "frame": {
+        "x": 398,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/1": {
+      "frame": {
+        "x": 464,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/2": {
+      "frame": {
+        "x": 530,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/idleSouthWest/3": {
+      "frame": {
+        "x": 596,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/0": {
+      "frame": {
+        "x": 662,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/1": {
+      "frame": {
+        "x": 728,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/2": {
+      "frame": {
+        "x": 794,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/3": {
+      "frame": {
+        "x": 860,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/4": {
+      "frame": {
+        "x": 926,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/5": {
+      "frame": {
+        "x": 992,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/6": {
+      "frame": {
+        "x": 1058,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/walkSouthWest/7": {
+      "frame": {
+        "x": 1124,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/restSouthWest/0": {
+      "frame": {
+        "x": 1190,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/0": {
+      "frame": {
+        "x": 1256,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/1": {
+      "frame": {
+        "x": 1322,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/2": {
+      "frame": {
+        "x": 1388,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/3": {
+      "frame": {
+        "x": 1454,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/4": {
+      "frame": {
+        "x": 1520,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/5": {
+      "frame": {
+        "x": 1586,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/6": {
+      "frame": {
+        "x": 1652,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/7": {
+      "frame": {
+        "x": 1718,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/8": {
+      "frame": {
+        "x": 1784,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "npc.dorin/jogSouthWest/9": {
+      "frame": {
+        "x": 1850,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2088,7 +3688,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 2048,
-      "h": 394
+      "h": 590
     },
     "scale": "1"
   }

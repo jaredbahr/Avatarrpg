@@ -109,6 +109,16 @@ export const STAND_TOLERANCE = 6;
 export const STRIDE_ABOVE = 12;
 export const STRIDE_BELOW = 10;
 /**
+ * A jog's envelope (ADR 0095). Its flight cels leave the ground, lifting the
+ * lowest sole up to 13 px at G1 (the bruiser's south-west), and its long stride
+ * carries the lowest foot up to 26.5 px from the column; its contacts are set
+ * on idle's sole by registration (`assemble.py`), so it has no clip-level
+ * foot row bound: in a back view the trailing foot, nearer the camera, draws
+ * below the planted sole. It sinks no further than a walk.
+ */
+export const JOG_ABOVE = 28;
+export const JOG_CENTRE = 56;
+/**
  * How far the feet's centre may sit from the anchor column, standing and
  * mid-stride. A full 13 px/cel stride on a down-screen diagonal carries the
  * lowest (leading) foot up to 29 px from the column while the body stays on it.
@@ -383,7 +393,7 @@ export async function validateSheets(
           line - STAND_TOLERANCE * g,
           Math.min(line, idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : line),
         );
-        for (const base of ['idle', 'walk', 'rest', 'stance'] as const) {
+        for (const base of ['idle', 'walk', 'jog', 'rest', 'stance'] as const) {
           const clip = headingClip(base, heading);
           const rows: number[] = [];
           for (const name of clips[clip]?.frames ?? []) {
@@ -401,7 +411,8 @@ export async function validateSheets(
             const standing = base === 'idle';
             const grounded = standing
               ? Math.abs(foot - line) <= STAND_TOLERANCE * g
-              : foot >= stands - STRIDE_ABOVE * g && foot <= line + STRIDE_BELOW * g;
+              : foot >= stands - (base === 'jog' ? JOG_ABOVE : STRIDE_ABOVE) * g &&
+                foot <= line + STRIDE_BELOW * g;
             if (!grounded) {
               problems.push(
                 `${key}: cel "${name}" puts its feet at row ${foot}, off the foot line ${line}`,
@@ -409,7 +420,13 @@ export async function validateSheets(
             }
             // A guard stance stands feet apart, a stride's width (ADR 0052).
             const centred =
-              (standing ? STAND_CENTRE : base === 'rest' ? REST_CENTRE : STRIDE_CENTRE) * g;
+              (standing
+                ? STAND_CENTRE
+                : base === 'rest'
+                  ? REST_CENTRE
+                  : base === 'jog'
+                    ? JOG_CENTRE
+                    : STRIDE_CENTRE) * g;
             if (Math.abs(centre - column) > centred) {
               problems.push(
                 `${key}: cel "${name}" centres its feet at x ${centre.toFixed(1)}, off the anchor ${column}`,
@@ -417,7 +434,7 @@ export async function validateSheets(
             }
           }
           const idleRow = idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : undefined;
-          if (base !== 'idle' && idleRow !== undefined && rows.length > 0) {
+          if (base !== 'idle' && base !== 'jog' && idleRow !== undefined && rows.length > 0) {
             const mean = rows.reduce((sum, row) => sum + row, 0) / rows.length;
             if (Math.abs(mean - idleRow) > FOOT_ROW_TOLERANCE * g) {
               problems.push(

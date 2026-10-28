@@ -54,6 +54,20 @@
     "restSouth/00.png"
    ]
   },
+  "jogSouth": {
+   "cels": [
+    "jogSouth/00.png",
+    "jogSouth/01.png",
+    "jogSouth/02.png",
+    "jogSouth/03.png",
+    "jogSouth/04.png",
+    "jogSouth/05.png",
+    "jogSouth/06.png",
+    "jogSouth/07.png",
+    "jogSouth/08.png",
+    "jogSouth/09.png"
+   ]
+  },
   "hitSouth": {
    "cels": [
     "hitSouth/00.png",
@@ -131,6 +145,20 @@
   "restSouthEast": {
    "cels": [
     "restSouthEast/00.png"
+   ]
+  },
+  "jogSouthEast": {
+   "cels": [
+    "jogSouthEast/00.png",
+    "jogSouthEast/01.png",
+    "jogSouthEast/02.png",
+    "jogSouthEast/03.png",
+    "jogSouthEast/04.png",
+    "jogSouthEast/05.png",
+    "jogSouthEast/06.png",
+    "jogSouthEast/07.png",
+    "jogSouthEast/08.png",
+    "jogSouthEast/09.png"
    ]
   },
   "hitSouthEast": {
@@ -212,6 +240,20 @@
     "rest/00.png"
    ]
   },
+  "jog": {
+   "cels": [
+    "jog/00.png",
+    "jog/01.png",
+    "jog/02.png",
+    "jog/03.png",
+    "jog/04.png",
+    "jog/05.png",
+    "jog/06.png",
+    "jog/07.png",
+    "jog/08.png",
+    "jog/09.png"
+   ]
+  },
   "hitEast": {
    "cels": [
     "hitEast/00.png",
@@ -289,6 +331,20 @@
   "restNorthEast": {
    "cels": [
     "restNorthEast/00.png"
+   ]
+  },
+  "jogNorthEast": {
+   "cels": [
+    "jogNorthEast/00.png",
+    "jogNorthEast/01.png",
+    "jogNorthEast/02.png",
+    "jogNorthEast/03.png",
+    "jogNorthEast/04.png",
+    "jogNorthEast/05.png",
+    "jogNorthEast/06.png",
+    "jogNorthEast/07.png",
+    "jogNorthEast/08.png",
+    "jogNorthEast/09.png"
    ]
   },
   "hitNorthEast": {
@@ -370,6 +426,20 @@
     "restNorth/00.png"
    ]
   },
+  "jogNorth": {
+   "cels": [
+    "jogNorth/00.png",
+    "jogNorth/01.png",
+    "jogNorth/02.png",
+    "jogNorth/03.png",
+    "jogNorth/04.png",
+    "jogNorth/05.png",
+    "jogNorth/06.png",
+    "jogNorth/07.png",
+    "jogNorth/08.png",
+    "jogNorth/09.png"
+   ]
+  },
   "hitNorth": {
    "cels": [
     "hitNorth/00.png",
@@ -447,6 +517,20 @@
   "restNorthWest": {
    "cels": [
     "restNorthWest/00.png"
+   ]
+  },
+  "jogNorthWest": {
+   "cels": [
+    "jogNorthWest/00.png",
+    "jogNorthWest/01.png",
+    "jogNorthWest/02.png",
+    "jogNorthWest/03.png",
+    "jogNorthWest/04.png",
+    "jogNorthWest/05.png",
+    "jogNorthWest/06.png",
+    "jogNorthWest/07.png",
+    "jogNorthWest/08.png",
+    "jogNorthWest/09.png"
    ]
   },
   "hitNorthWest": {
@@ -528,6 +612,20 @@
     "restWest/00.png"
    ]
   },
+  "jogWest": {
+   "cels": [
+    "jogWest/00.png",
+    "jogWest/01.png",
+    "jogWest/02.png",
+    "jogWest/03.png",
+    "jogWest/04.png",
+    "jogWest/05.png",
+    "jogWest/06.png",
+    "jogWest/07.png",
+    "jogWest/08.png",
+    "jogWest/09.png"
+   ]
+  },
   "hitWest": {
    "cels": [
     "hitWest/00.png",
@@ -605,6 +703,20 @@
   "restSouthWest": {
    "cels": [
     "restSouthWest/00.png"
+   ]
+  },
+  "jogSouthWest": {
+   "cels": [
+    "jogSouthWest/00.png",
+    "jogSouthWest/01.png",
+    "jogSouthWest/02.png",
+    "jogSouthWest/03.png",
+    "jogSouthWest/04.png",
+    "jogSouthWest/05.png",
+    "jogSouthWest/06.png",
+    "jogSouthWest/07.png",
+    "jogSouthWest/08.png",
+    "jogSouthWest/09.png"
    ]
   },
   "hitSouthWest": {
@@ -3625,6 +3737,21 @@
      "row": 82.11
     }
    },
+   "jog_job": "sura-jog-south-s9901",
+   "jogDx": 0,
+   "jogDy": -8,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 82.71
+    },
+    "RA": {
+     "cel": 1,
+     "row": 82.39
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-south-s9501",
    "bend_job": "sura-bend-south-s9502"
   },
@@ -3645,6 +3772,21 @@
      "row": 79.33
     }
    },
+   "jog_job": "sura-jog-south-east-s9901",
+   "jogDx": 0,
+   "jogDy": -4,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 80.52
+    },
+    "RA": {
+     "cel": 1,
+     "row": 80.29
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-south-east-s9501",
    "ko_job": "sura-ko-south-east-s9502",
    "bend_job": "sura-bend-south-east-s9502"
@@ -3666,6 +3808,21 @@
      "row": 76.04
     }
    },
+   "jog_job": "sura-jog-east-s9901",
+   "jogDx": 0,
+   "jogDy": 0,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 78.86
+    },
+    "RA": {
+     "cel": 1,
+     "row": 78.7
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-east-s9501",
    "bend_job": "sura-bend-east-s9502"
   },
@@ -3686,6 +3843,21 @@
      "row": 71.56
     }
    },
+   "jog_job": "sura-jog-north-east-s9901",
+   "jogDx": 0,
+   "jogDy": 0,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 76.22
+    },
+    "RA": {
+     "cel": 1,
+     "row": 76.1
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-north-east-s9501",
    "ko_job": "sura-ko-north-east-s9502",
    "bend_job": "sura-bend-north-east-s9502"
@@ -3707,6 +3879,21 @@
      "row": 73.14
     }
    },
+   "jog_job": "sura-jog-north-s9901",
+   "jogDx": 0,
+   "jogDy": -2,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 79.03
+    },
+    "RA": {
+     "cel": 1,
+     "row": 78.88
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-north-s9501",
    "bend_job": "sura-bend-north-s9502"
   },
@@ -3727,6 +3914,21 @@
      "row": 71.05
     }
    },
+   "jog_job": "sura-jog-north-west-s9901",
+   "jogDx": 0,
+   "jogDy": 0,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 76.36
+    },
+    "RA": {
+     "cel": 1,
+     "row": 76.13
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-north-west-s9501",
    "ko_job": "sura-ko-north-west-s9502",
    "bend_job": "sura-bend-north-west-s9502"
@@ -3748,6 +3950,21 @@
      "row": 75.27
     }
    },
+   "jog_job": "sura-jog-west-s9901",
+   "jogDx": 0,
+   "jogDy": -1,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 78.94
+    },
+    "RA": {
+     "cel": 1,
+     "row": 78.64
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-west-s9501",
    "bend_job": "sura-bend-west-s9502"
   },
@@ -3768,6 +3985,21 @@
      "row": 78.65
     }
    },
+   "jog_job": "sura-jog-south-west-s9901",
+   "jogDx": 0,
+   "jogDy": -4,
+   "jog_contact_rows": {
+    "LA": {
+     "cel": 6,
+     "row": 80.48
+    },
+    "RA": {
+     "cel": 1,
+     "row": 80.14
+    }
+   },
+   "jogLostPx": 0,
+   "jogClampedPx": 0,
    "hit_job": "sura-hit-south-west-s9501",
    "ko_job": "sura-ko-south-west-s9502",
    "bend_job": "sura-bend-south-west-s9502"

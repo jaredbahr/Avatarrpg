@@ -81,9 +81,13 @@ def pts3d(J, f):
     return P
 
 
-def gait_cycle(J, clip):
-    """(start, period, fwd): one left-foot-forward peak to the next on the straightest steady cycle (residents' rule)."""
+def gait_cycle(J, clip, cycle=None):
+    """(start, period, fwd): one left-foot-forward peak to the next on the straightest steady cycle (residents' rule).
+    `cycle` [start, period] names it instead, for a take too short for the detector (one stride of a run across the room)."""
     root = J['root']; n = len(root); fps = 120
+    if cycle:
+        p, per = cycle; d = root[p + per, :2] - root[p, :2]; L = float(np.linalg.norm(d))
+        return float(p), float(per), np.array([*(d / L), 0.0]), {'p': p, 'per': per, 'speed': round(L / per * fps, 3)}
     vel = np.zeros((n, 2)); h = 30
     for f in range(n): vel[f] = (root[min(n - 1, f + h), :2] - root[max(0, f - h), :2])
     off = np.array([(J['lank'][f] - J['rank'][f])[:2] @ (vel[f] / (np.linalg.norm(vel[f]) + 1e-9)) for f in range(n)])
@@ -121,9 +125,10 @@ def skeleton(char, spec, d):
 
 def char_scale(char, spec):
     """Pixels per performer unit for this character, root and canvas: the median over the eight headings of the root
-    skeleton's neck-to-pelvis length over the performer's (CMU 08_01 standing, projected the same way). One number per
+    skeleton's neck-to-pelvis length over the performer's (CMU 08_01 standing, projected the same way; a take by another
+    performer names its own `scale_clip` and `scale_frame`, so a taller runner does not run further). One number per
     character, so a heading whose skeleton estimate came out short does not get a smaller or larger motion."""
-    J, _, _ = load('08_01'); P = pts3d(J, 0); up = np.array([0, 0, 1.0])
+    J, _, _ = load(spec.get('scale_clip', '08_01')); P = pts3d(J, spec.get('scale_frame', 0)); up = np.array([0, 0, 1.0])
     L = float(np.linalg.norm(P['NECK'] - P['M']) * math.cos(math.radians(PITCH)))
     out = []
     for d in DIRS:
@@ -152,7 +157,7 @@ def take_delta(clip, ref, f, travel):
 def build_delta(char, cand, spec, d):
     J, fps, n = load(spec['clip']); up = np.array([0, 0, 1.0]); proj = camera(d); info = {}
     if spec['kind'] == 'walk':
-        start, period, fwd, info = gait_cycle(J, spec['clip'])
+        start, period, fwd, info = gait_cycle(J, spec['clip'], spec.get('cycle'))
         fs = [(start + period * i / spec['frames'], 1.0) for i in range(spec['frames'])]
         ref_f = fs[0][0]
     else:
@@ -179,6 +184,11 @@ def build_delta(char, cand, spec, d):
             for k in X: X[k] = X[k] + np.array([0, 0, dz])
             for k in LEGS: X[k][0] = X['M'][0] + track * (X[k][0] - X['M'][0])
         X0 = {k: np.mean([X[k] for X in Xs], axis=0) for k in Xs[0]}
+        # The jog (ADR 0095): `stride` scales the knees' and ankles' fore-aft swing about the cycle mean, so a planted foot
+        # sweeps back as far as the game carries the figure at a believable cadence; `arms` does the same for elbows and wrists.
+        for keys, g in ((LEGS, spec.get('stride', 1.0)), (('REL', 'LEL', 'RW', 'LW'), spec.get('arms', 1.0))):
+            for X in Xs:
+                for k in keys: X[k][1] = X0[k][1] + g * (X[k][1] - X0[k][1])
     else:
         X0 = frame(ref_f)
     S = skeleton(char, spec, d)

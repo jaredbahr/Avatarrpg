@@ -260,9 +260,209 @@
         "h": 96
       }
     },
-    "unit.enemy.thug/idleSouthEast/0": {
+    "unit.enemy.thug/jogSouth/0": {
       "frame": {
         "x": 1068,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/1": {
+      "frame": {
+        "x": 1150,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/2": {
+      "frame": {
+        "x": 1232,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/3": {
+      "frame": {
+        "x": 1314,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/4": {
+      "frame": {
+        "x": 1396,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/5": {
+      "frame": {
+        "x": 1478,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/6": {
+      "frame": {
+        "x": 1560,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/7": {
+      "frame": {
+        "x": 1642,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/8": {
+      "frame": {
+        "x": 1724,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouth/9": {
+      "frame": {
+        "x": 1806,
+        "y": 2,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/idleSouthEast/0": {
+      "frame": {
+        "x": 1888,
         "y": 2,
         "w": 80,
         "h": 96
@@ -282,8 +482,8 @@
     },
     "unit.enemy.thug/idleSouthEast/1": {
       "frame": {
-        "x": 1150,
-        "y": 2,
+        "x": 2,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -302,8 +502,8 @@
     },
     "unit.enemy.thug/idleSouthEast/2": {
       "frame": {
-        "x": 1232,
-        "y": 2,
+        "x": 84,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -322,8 +522,8 @@
     },
     "unit.enemy.thug/idleSouthEast/3": {
       "frame": {
-        "x": 1314,
-        "y": 2,
+        "x": 166,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -342,8 +542,8 @@
     },
     "unit.enemy.thug/walkSouthEast/0": {
       "frame": {
-        "x": 1396,
-        "y": 2,
+        "x": 248,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -362,8 +562,8 @@
     },
     "unit.enemy.thug/walkSouthEast/1": {
       "frame": {
-        "x": 1478,
-        "y": 2,
+        "x": 330,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -382,8 +582,8 @@
     },
     "unit.enemy.thug/walkSouthEast/2": {
       "frame": {
-        "x": 1560,
-        "y": 2,
+        "x": 412,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -402,8 +602,8 @@
     },
     "unit.enemy.thug/walkSouthEast/3": {
       "frame": {
-        "x": 1642,
-        "y": 2,
+        "x": 494,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -422,8 +622,8 @@
     },
     "unit.enemy.thug/walkSouthEast/4": {
       "frame": {
-        "x": 1724,
-        "y": 2,
+        "x": 576,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -442,8 +642,8 @@
     },
     "unit.enemy.thug/walkSouthEast/5": {
       "frame": {
-        "x": 1806,
-        "y": 2,
+        "x": 658,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -462,8 +662,8 @@
     },
     "unit.enemy.thug/walkSouthEast/6": {
       "frame": {
-        "x": 1888,
-        "y": 2,
+        "x": 740,
+        "y": 100,
         "w": 80,
         "h": 96
       },
@@ -482,7 +682,7 @@
     },
     "unit.enemy.thug/walkSouthEast/7": {
       "frame": {
-        "x": 2,
+        "x": 822,
         "y": 100,
         "w": 80,
         "h": 96
@@ -502,7 +702,207 @@
     },
     "unit.enemy.thug/restSouthEast/0": {
       "frame": {
-        "x": 84,
+        "x": 904,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/0": {
+      "frame": {
+        "x": 986,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/1": {
+      "frame": {
+        "x": 1068,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/2": {
+      "frame": {
+        "x": 1150,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/3": {
+      "frame": {
+        "x": 1232,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/4": {
+      "frame": {
+        "x": 1314,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/5": {
+      "frame": {
+        "x": 1396,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/6": {
+      "frame": {
+        "x": 1478,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/7": {
+      "frame": {
+        "x": 1560,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/8": {
+      "frame": {
+        "x": 1642,
+        "y": 100,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthEast/9": {
+      "frame": {
+        "x": 1724,
         "y": 100,
         "w": 80,
         "h": 96
@@ -522,7 +922,7 @@
     },
     "unit.enemy.thug/idle/0": {
       "frame": {
-        "x": 166,
+        "x": 1806,
         "y": 100,
         "w": 80,
         "h": 96
@@ -542,7 +942,7 @@
     },
     "unit.enemy.thug/idle/1": {
       "frame": {
-        "x": 248,
+        "x": 1888,
         "y": 100,
         "w": 80,
         "h": 96
@@ -562,8 +962,8 @@
     },
     "unit.enemy.thug/idle/2": {
       "frame": {
-        "x": 330,
-        "y": 100,
+        "x": 2,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -582,8 +982,8 @@
     },
     "unit.enemy.thug/idle/3": {
       "frame": {
-        "x": 412,
-        "y": 100,
+        "x": 84,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -602,8 +1002,8 @@
     },
     "unit.enemy.thug/walk/0": {
       "frame": {
-        "x": 494,
-        "y": 100,
+        "x": 166,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -622,8 +1022,8 @@
     },
     "unit.enemy.thug/walk/1": {
       "frame": {
-        "x": 576,
-        "y": 100,
+        "x": 248,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -642,8 +1042,8 @@
     },
     "unit.enemy.thug/walk/2": {
       "frame": {
-        "x": 658,
-        "y": 100,
+        "x": 330,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -662,8 +1062,8 @@
     },
     "unit.enemy.thug/walk/3": {
       "frame": {
-        "x": 740,
-        "y": 100,
+        "x": 412,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -682,8 +1082,8 @@
     },
     "unit.enemy.thug/walk/4": {
       "frame": {
-        "x": 822,
-        "y": 100,
+        "x": 494,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -702,8 +1102,8 @@
     },
     "unit.enemy.thug/walk/5": {
       "frame": {
-        "x": 904,
-        "y": 100,
+        "x": 576,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -722,8 +1122,8 @@
     },
     "unit.enemy.thug/walk/6": {
       "frame": {
-        "x": 986,
-        "y": 100,
+        "x": 658,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -742,8 +1142,8 @@
     },
     "unit.enemy.thug/walk/7": {
       "frame": {
-        "x": 1068,
-        "y": 100,
+        "x": 740,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -762,8 +1162,208 @@
     },
     "unit.enemy.thug/rest/0": {
       "frame": {
+        "x": 822,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/0": {
+      "frame": {
+        "x": 904,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/1": {
+      "frame": {
+        "x": 986,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/2": {
+      "frame": {
+        "x": 1068,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/3": {
+      "frame": {
         "x": 1150,
-        "y": 100,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/4": {
+      "frame": {
+        "x": 1232,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/5": {
+      "frame": {
+        "x": 1314,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/6": {
+      "frame": {
+        "x": 1396,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/7": {
+      "frame": {
+        "x": 1478,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/8": {
+      "frame": {
+        "x": 1560,
+        "y": 198,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jog/9": {
+      "frame": {
+        "x": 1642,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -782,8 +1382,8 @@
     },
     "unit.enemy.thug/idleNorthEast/0": {
       "frame": {
-        "x": 1232,
-        "y": 100,
+        "x": 1724,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -802,8 +1402,8 @@
     },
     "unit.enemy.thug/idleNorthEast/1": {
       "frame": {
-        "x": 1314,
-        "y": 100,
+        "x": 1806,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -822,8 +1422,8 @@
     },
     "unit.enemy.thug/idleNorthEast/2": {
       "frame": {
-        "x": 1396,
-        "y": 100,
+        "x": 1888,
+        "y": 198,
         "w": 80,
         "h": 96
       },
@@ -842,8 +1442,8 @@
     },
     "unit.enemy.thug/idleNorthEast/3": {
       "frame": {
-        "x": 1478,
-        "y": 100,
+        "x": 2,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -862,8 +1462,8 @@
     },
     "unit.enemy.thug/walkNorthEast/0": {
       "frame": {
-        "x": 1560,
-        "y": 100,
+        "x": 84,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -882,8 +1482,8 @@
     },
     "unit.enemy.thug/walkNorthEast/1": {
       "frame": {
-        "x": 1642,
-        "y": 100,
+        "x": 166,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -902,8 +1502,8 @@
     },
     "unit.enemy.thug/walkNorthEast/2": {
       "frame": {
-        "x": 1724,
-        "y": 100,
+        "x": 248,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -922,8 +1522,8 @@
     },
     "unit.enemy.thug/walkNorthEast/3": {
       "frame": {
-        "x": 1806,
-        "y": 100,
+        "x": 330,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -942,8 +1542,8 @@
     },
     "unit.enemy.thug/walkNorthEast/4": {
       "frame": {
-        "x": 1888,
-        "y": 100,
+        "x": 412,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -962,8 +1562,8 @@
     },
     "unit.enemy.thug/walkNorthEast/5": {
       "frame": {
-        "x": 2,
-        "y": 198,
+        "x": 494,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -982,8 +1582,8 @@
     },
     "unit.enemy.thug/walkNorthEast/6": {
       "frame": {
-        "x": 84,
-        "y": 198,
+        "x": 576,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -1002,8 +1602,8 @@
     },
     "unit.enemy.thug/walkNorthEast/7": {
       "frame": {
-        "x": 166,
-        "y": 198,
+        "x": 658,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -1022,8 +1622,208 @@
     },
     "unit.enemy.thug/restNorthEast/0": {
       "frame": {
-        "x": 248,
-        "y": 198,
+        "x": 740,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/0": {
+      "frame": {
+        "x": 822,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/1": {
+      "frame": {
+        "x": 904,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/2": {
+      "frame": {
+        "x": 986,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/3": {
+      "frame": {
+        "x": 1068,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/4": {
+      "frame": {
+        "x": 1150,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/5": {
+      "frame": {
+        "x": 1232,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/6": {
+      "frame": {
+        "x": 1314,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/7": {
+      "frame": {
+        "x": 1396,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/8": {
+      "frame": {
+        "x": 1478,
+        "y": 296,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthEast/9": {
+      "frame": {
+        "x": 1560,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -1042,8 +1842,8 @@
     },
     "unit.enemy.thug/idleNorth/0": {
       "frame": {
-        "x": 330,
-        "y": 198,
+        "x": 1642,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -1062,8 +1862,8 @@
     },
     "unit.enemy.thug/idleNorth/1": {
       "frame": {
-        "x": 412,
-        "y": 198,
+        "x": 1724,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -1082,8 +1882,8 @@
     },
     "unit.enemy.thug/idleNorth/2": {
       "frame": {
-        "x": 494,
-        "y": 198,
+        "x": 1806,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -1102,8 +1902,8 @@
     },
     "unit.enemy.thug/idleNorth/3": {
       "frame": {
-        "x": 576,
-        "y": 198,
+        "x": 1888,
+        "y": 296,
         "w": 80,
         "h": 96
       },
@@ -1122,8 +1922,8 @@
     },
     "unit.enemy.thug/walkNorth/0": {
       "frame": {
-        "x": 658,
-        "y": 198,
+        "x": 2,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1142,8 +1942,8 @@
     },
     "unit.enemy.thug/walkNorth/1": {
       "frame": {
-        "x": 740,
-        "y": 198,
+        "x": 84,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1162,8 +1962,8 @@
     },
     "unit.enemy.thug/walkNorth/2": {
       "frame": {
-        "x": 822,
-        "y": 198,
+        "x": 166,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1182,8 +1982,8 @@
     },
     "unit.enemy.thug/walkNorth/3": {
       "frame": {
-        "x": 904,
-        "y": 198,
+        "x": 248,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1202,8 +2002,8 @@
     },
     "unit.enemy.thug/walkNorth/4": {
       "frame": {
-        "x": 986,
-        "y": 198,
+        "x": 330,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1222,8 +2022,8 @@
     },
     "unit.enemy.thug/walkNorth/5": {
       "frame": {
-        "x": 1068,
-        "y": 198,
+        "x": 412,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1242,8 +2042,8 @@
     },
     "unit.enemy.thug/walkNorth/6": {
       "frame": {
-        "x": 1150,
-        "y": 198,
+        "x": 494,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1262,8 +2062,8 @@
     },
     "unit.enemy.thug/walkNorth/7": {
       "frame": {
-        "x": 1232,
-        "y": 198,
+        "x": 576,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1282,8 +2082,208 @@
     },
     "unit.enemy.thug/restNorth/0": {
       "frame": {
+        "x": 658,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/0": {
+      "frame": {
+        "x": 740,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/1": {
+      "frame": {
+        "x": 822,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/2": {
+      "frame": {
+        "x": 904,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/3": {
+      "frame": {
+        "x": 986,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/4": {
+      "frame": {
+        "x": 1068,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/5": {
+      "frame": {
+        "x": 1150,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/6": {
+      "frame": {
+        "x": 1232,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/7": {
+      "frame": {
         "x": 1314,
-        "y": 198,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/8": {
+      "frame": {
+        "x": 1396,
+        "y": 394,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorth/9": {
+      "frame": {
+        "x": 1478,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1302,8 +2302,8 @@
     },
     "unit.enemy.thug/idleNorthWest/0": {
       "frame": {
-        "x": 1396,
-        "y": 198,
+        "x": 1560,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1322,8 +2322,8 @@
     },
     "unit.enemy.thug/idleNorthWest/1": {
       "frame": {
-        "x": 1478,
-        "y": 198,
+        "x": 1642,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1342,8 +2342,8 @@
     },
     "unit.enemy.thug/idleNorthWest/2": {
       "frame": {
-        "x": 1560,
-        "y": 198,
+        "x": 1724,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1362,8 +2362,8 @@
     },
     "unit.enemy.thug/idleNorthWest/3": {
       "frame": {
-        "x": 1642,
-        "y": 198,
+        "x": 1806,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1382,8 +2382,8 @@
     },
     "unit.enemy.thug/walkNorthWest/0": {
       "frame": {
-        "x": 1724,
-        "y": 198,
+        "x": 1888,
+        "y": 394,
         "w": 80,
         "h": 96
       },
@@ -1402,8 +2402,8 @@
     },
     "unit.enemy.thug/walkNorthWest/1": {
       "frame": {
-        "x": 1806,
-        "y": 198,
+        "x": 2,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1422,8 +2422,8 @@
     },
     "unit.enemy.thug/walkNorthWest/2": {
       "frame": {
-        "x": 1888,
-        "y": 198,
+        "x": 84,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1442,8 +2442,8 @@
     },
     "unit.enemy.thug/walkNorthWest/3": {
       "frame": {
-        "x": 2,
-        "y": 296,
+        "x": 166,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1462,8 +2462,8 @@
     },
     "unit.enemy.thug/walkNorthWest/4": {
       "frame": {
-        "x": 84,
-        "y": 296,
+        "x": 248,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1482,8 +2482,8 @@
     },
     "unit.enemy.thug/walkNorthWest/5": {
       "frame": {
-        "x": 166,
-        "y": 296,
+        "x": 330,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1502,8 +2502,8 @@
     },
     "unit.enemy.thug/walkNorthWest/6": {
       "frame": {
-        "x": 248,
-        "y": 296,
+        "x": 412,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1522,8 +2522,8 @@
     },
     "unit.enemy.thug/walkNorthWest/7": {
       "frame": {
-        "x": 330,
-        "y": 296,
+        "x": 494,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1542,8 +2542,208 @@
     },
     "unit.enemy.thug/restNorthWest/0": {
       "frame": {
-        "x": 412,
-        "y": 296,
+        "x": 576,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/0": {
+      "frame": {
+        "x": 658,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/1": {
+      "frame": {
+        "x": 740,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/2": {
+      "frame": {
+        "x": 822,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/3": {
+      "frame": {
+        "x": 904,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/4": {
+      "frame": {
+        "x": 986,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/5": {
+      "frame": {
+        "x": 1068,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/6": {
+      "frame": {
+        "x": 1150,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/7": {
+      "frame": {
+        "x": 1232,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/8": {
+      "frame": {
+        "x": 1314,
+        "y": 492,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogNorthWest/9": {
+      "frame": {
+        "x": 1396,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1562,8 +2762,8 @@
     },
     "unit.enemy.thug/idleWest/0": {
       "frame": {
-        "x": 494,
-        "y": 296,
+        "x": 1478,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1582,8 +2782,8 @@
     },
     "unit.enemy.thug/idleWest/1": {
       "frame": {
-        "x": 576,
-        "y": 296,
+        "x": 1560,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1602,8 +2802,8 @@
     },
     "unit.enemy.thug/idleWest/2": {
       "frame": {
-        "x": 658,
-        "y": 296,
+        "x": 1642,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1622,8 +2822,8 @@
     },
     "unit.enemy.thug/idleWest/3": {
       "frame": {
-        "x": 740,
-        "y": 296,
+        "x": 1724,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1642,8 +2842,8 @@
     },
     "unit.enemy.thug/walkWest/0": {
       "frame": {
-        "x": 822,
-        "y": 296,
+        "x": 1806,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1662,8 +2862,8 @@
     },
     "unit.enemy.thug/walkWest/1": {
       "frame": {
-        "x": 904,
-        "y": 296,
+        "x": 1888,
+        "y": 492,
         "w": 80,
         "h": 96
       },
@@ -1682,8 +2882,8 @@
     },
     "unit.enemy.thug/walkWest/2": {
       "frame": {
-        "x": 986,
-        "y": 296,
+        "x": 2,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1702,8 +2902,8 @@
     },
     "unit.enemy.thug/walkWest/3": {
       "frame": {
-        "x": 1068,
-        "y": 296,
+        "x": 84,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1722,8 +2922,8 @@
     },
     "unit.enemy.thug/walkWest/4": {
       "frame": {
-        "x": 1150,
-        "y": 296,
+        "x": 166,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1742,8 +2942,8 @@
     },
     "unit.enemy.thug/walkWest/5": {
       "frame": {
-        "x": 1232,
-        "y": 296,
+        "x": 248,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1762,8 +2962,8 @@
     },
     "unit.enemy.thug/walkWest/6": {
       "frame": {
-        "x": 1314,
-        "y": 296,
+        "x": 330,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1782,8 +2982,8 @@
     },
     "unit.enemy.thug/walkWest/7": {
       "frame": {
-        "x": 1396,
-        "y": 296,
+        "x": 412,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1802,8 +3002,208 @@
     },
     "unit.enemy.thug/restWest/0": {
       "frame": {
-        "x": 1478,
-        "y": 296,
+        "x": 494,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/0": {
+      "frame": {
+        "x": 576,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/1": {
+      "frame": {
+        "x": 658,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/2": {
+      "frame": {
+        "x": 740,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/3": {
+      "frame": {
+        "x": 822,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/4": {
+      "frame": {
+        "x": 904,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/5": {
+      "frame": {
+        "x": 986,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/6": {
+      "frame": {
+        "x": 1068,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/7": {
+      "frame": {
+        "x": 1150,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/8": {
+      "frame": {
+        "x": 1232,
+        "y": 590,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogWest/9": {
+      "frame": {
+        "x": 1314,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1822,8 +3222,8 @@
     },
     "unit.enemy.thug/idleSouthWest/0": {
       "frame": {
-        "x": 1560,
-        "y": 296,
+        "x": 1396,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1842,8 +3242,8 @@
     },
     "unit.enemy.thug/idleSouthWest/1": {
       "frame": {
-        "x": 1642,
-        "y": 296,
+        "x": 1478,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1862,8 +3262,8 @@
     },
     "unit.enemy.thug/idleSouthWest/2": {
       "frame": {
-        "x": 1724,
-        "y": 296,
+        "x": 1560,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1882,8 +3282,8 @@
     },
     "unit.enemy.thug/idleSouthWest/3": {
       "frame": {
-        "x": 1806,
-        "y": 296,
+        "x": 1642,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1902,8 +3302,8 @@
     },
     "unit.enemy.thug/walkSouthWest/0": {
       "frame": {
-        "x": 1888,
-        "y": 296,
+        "x": 1724,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1922,8 +3322,8 @@
     },
     "unit.enemy.thug/walkSouthWest/1": {
       "frame": {
-        "x": 2,
-        "y": 394,
+        "x": 1806,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1942,8 +3342,8 @@
     },
     "unit.enemy.thug/walkSouthWest/2": {
       "frame": {
-        "x": 84,
-        "y": 394,
+        "x": 1888,
+        "y": 590,
         "w": 80,
         "h": 96
       },
@@ -1962,8 +3362,8 @@
     },
     "unit.enemy.thug/walkSouthWest/3": {
       "frame": {
-        "x": 166,
-        "y": 394,
+        "x": 2,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -1982,8 +3382,8 @@
     },
     "unit.enemy.thug/walkSouthWest/4": {
       "frame": {
-        "x": 248,
-        "y": 394,
+        "x": 84,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2002,8 +3402,8 @@
     },
     "unit.enemy.thug/walkSouthWest/5": {
       "frame": {
-        "x": 330,
-        "y": 394,
+        "x": 166,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2022,8 +3422,8 @@
     },
     "unit.enemy.thug/walkSouthWest/6": {
       "frame": {
-        "x": 412,
-        "y": 394,
+        "x": 248,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2042,8 +3442,8 @@
     },
     "unit.enemy.thug/walkSouthWest/7": {
       "frame": {
-        "x": 494,
-        "y": 394,
+        "x": 330,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2062,8 +3462,208 @@
     },
     "unit.enemy.thug/restSouthWest/0": {
       "frame": {
+        "x": 412,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/0": {
+      "frame": {
+        "x": 494,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/1": {
+      "frame": {
         "x": 576,
-        "y": 394,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/2": {
+      "frame": {
+        "x": 658,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/3": {
+      "frame": {
+        "x": 740,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/4": {
+      "frame": {
+        "x": 822,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/5": {
+      "frame": {
+        "x": 904,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/6": {
+      "frame": {
+        "x": 986,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/7": {
+      "frame": {
+        "x": 1068,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/8": {
+      "frame": {
+        "x": 1150,
+        "y": 688,
+        "w": 80,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 96
+      }
+    },
+    "unit.enemy.thug/jogSouthWest/9": {
+      "frame": {
+        "x": 1232,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2082,8 +3682,8 @@
     },
     "unit.enemy.thug/cast/0": {
       "frame": {
-        "x": 658,
-        "y": 394,
+        "x": 1314,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2102,8 +3702,8 @@
     },
     "unit.enemy.thug/cast/1": {
       "frame": {
-        "x": 740,
-        "y": 394,
+        "x": 1396,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2122,8 +3722,8 @@
     },
     "unit.enemy.thug/cast/2": {
       "frame": {
-        "x": 822,
-        "y": 394,
+        "x": 1478,
+        "y": 688,
         "w": 80,
         "h": 96
       },
@@ -2142,8 +3742,8 @@
     },
     "unit.enemy.thug/hit/0": {
       "frame": {
-        "x": 904,
-        "y": 394,
+        "x": 1560,
+        "y": 688,
         "w": 42,
         "h": 69
       },
@@ -2162,8 +3762,8 @@
     },
     "unit.enemy.thug/ko/0": {
       "frame": {
-        "x": 948,
-        "y": 394,
+        "x": 1604,
+        "y": 688,
         "w": 80,
         "h": 71
       },
@@ -2188,7 +3788,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 1970,
-      "h": 492
+      "h": 786
     },
     "scale": "1"
   }

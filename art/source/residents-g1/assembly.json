@@ -9,6 +9,16 @@
       "north-west": "household-walk-north-west-s9711",
       "west": "household-walk-west-s9711",
       "south-west": "household-walk-south-west-s9711"
+    },
+    "jog": {
+      "south": "household-jog-south-s9901",
+      "south-east": "household-jog-south-east-s9901",
+      "east": "household-jog-east-s9901",
+      "north-east": "household-jog-north-east-s9901",
+      "north": "household-jog-north-s9901",
+      "north-west": "household-jog-north-west-s9901",
+      "west": "household-jog-west-s9901",
+      "south-west": "household-jog-south-west-s9901"
     }
   },
   "watch": {
@@ -21,6 +31,16 @@
       "north-west": "watch-walk-north-west-s9711",
       "west": "watch-walk-west-s9711",
       "south-west": "watch-walk-south-west-s9711"
+    },
+    "jog": {
+      "south": "watch-jog-south-s9901",
+      "south-east": "watch-jog-south-east-s9901",
+      "east": "watch-jog-east-s9901",
+      "north-east": "watch-jog-north-east-s9901",
+      "north": "watch-jog-north-s9901",
+      "north-west": "watch-jog-north-west-s9901",
+      "west": "watch-jog-west-s9901",
+      "south-west": "watch-jog-south-west-s9901"
     }
   },
   "mira": {
@@ -33,6 +53,16 @@
       "north-west": "mira-walk-north-west-s9711",
       "west": "mira-walk-west-s9711",
       "south-west": "mira-walk-south-west-s9711"
+    },
+    "jog": {
+      "south": "mira-jog-south-s9901",
+      "south-east": "mira-jog-south-east-s9901",
+      "east": "mira-jog-east-s9901",
+      "north-east": "mira-jog-north-east-s9901",
+      "north": "mira-jog-north-s9901",
+      "north-west": "mira-jog-north-west-s9901",
+      "west": "mira-jog-west-s9901",
+      "south-west": "mira-jog-south-west-s9901"
     }
   },
   "gao": {
@@ -45,6 +75,16 @@
       "north-west": "gao-walk-north-west-s9711",
       "west": "gao-walk-west-s9711",
       "south-west": "gao-walk-south-west-s9711"
+    },
+    "jog": {
+      "south": "gao-jog-south-s9901",
+      "south-east": "gao-jog-south-east-s9901",
+      "east": "gao-jog-east-s9901",
+      "north-east": "gao-jog-north-east-s9901",
+      "north": "gao-jog-north-s9901",
+      "north-west": "gao-jog-north-west-s9901",
+      "west": "gao-jog-west-s9901",
+      "south-west": "gao-jog-south-west-s9901"
     }
   },
   "pella": {
@@ -57,6 +97,16 @@
       "north-west": "pella-walk-north-west-s9711",
       "west": "pella-walk-west-s9711",
       "south-west": "pella-walk-south-west-s9711"
+    },
+    "jog": {
+      "south": "pella-jog-south-s9901",
+      "south-east": "pella-jog-south-east-s9901",
+      "east": "pella-jog-east-s9901",
+      "north-east": "pella-jog-north-east-s9901",
+      "north": "pella-jog-north-s9901",
+      "north-west": "pella-jog-north-west-s9901",
+      "west": "pella-jog-west-s9901",
+      "south-west": "pella-jog-south-west-s9901"
     }
   },
   "dorin": {
@@ -69,6 +119,16 @@
       "north-west": "dorin-walk-north-west-s9711",
       "west": "dorin-walk-west-s9711",
       "south-west": "dorin-walk-south-west-s9711"
+    },
+    "jog": {
+      "south": "dorin-jog-south-s9901",
+      "south-east": "dorin-jog-south-east-s9901",
+      "east": "dorin-jog-east-s9901",
+      "north-east": "dorin-jog-north-east-s9901",
+      "north": "dorin-jog-north-s9901",
+      "north-west": "dorin-jog-north-west-s9901",
+      "west": "dorin-jog-west-s9901",
+      "south-west": "dorin-jog-south-west-s9901"
     }
   },
   "thug": {
@@ -97,6 +157,16 @@
       "south-west": "thug-ko-south-west-s9711",
       "north-east": "thug-ko-north-east-s9711",
       "north-west": "thug-ko-north-west-s9711"
+    },
+    "jog": {
+      "south": "thug-jog-south-s9901",
+      "south-east": "thug-jog-south-east-s9901",
+      "east": "thug-jog-east-s9902",
+      "north-east": "thug-jog-north-east-s9901",
+      "north": "thug-jog-north-s9901",
+      "north-west": "thug-jog-north-west-s9901",
+      "west": "thug-jog-west-s9901",
+      "south-west": "thug-jog-south-west-s9901"
     }
   },
   "slinger": {
@@ -125,6 +195,16 @@
       "south-west": "slinger-ko-south-west-s9711",
       "north-east": "slinger-ko-north-east-s9711",
       "north-west": "slinger-ko-north-west-s9711"
+    },
+    "jog": {
+      "south": "slinger-jog-south-s9901",
+      "south-east": "slinger-jog-south-east-s9901",
+      "east": "slinger-jog-east-s9901",
+      "north-east": "slinger-jog-north-east-s9901",
+      "north": "slinger-jog-north-s9901",
+      "north-west": "slinger-jog-north-west-s9901",
+      "west": "slinger-jog-west-s9901",
+      "south-west": "slinger-jog-south-west-s9901"
     }
   },
   "bruiser": {
@@ -153,10 +233,21 @@
       "south-west": "bruiser-ko-south-west-s9711",
       "north-east": "bruiser-ko-north-east-s9711",
       "north-west": "bruiser-ko-north-west-s9711"
+    },
+    "jog": {
+      "south": "bruiser-jog-south-s9901",
+      "south-east": "bruiser-jog-south-east-s9901",
+      "east": "bruiser-jog-east-s9901",
+      "north-east": "bruiser-jog-north-east-s9901",
+      "north": "bruiser-jog-north-s9901",
+      "north-west": "bruiser-jog-north-west-s9901",
+      "west": "bruiser-jog-west-s9901",
+      "south-west": "bruiser-jog-south-west-s9901"
     }
   },
   "_why": {
     "all takes": "s9711, regenerated from the roots re-locked to their own palette (roots_palette.py); the s9701/s9702 takes were animated from roots locked to the muddy shipped palette, so their colours did not match the idle",
-    "ko (all)": "the take's last cel (CMU frame 170) smears or ghosts too often (s9701: about half the diagonals; the bruiser's south-west stood back up); frames 142 and 170 are both the body lying flat, so cel 6 holds cel 5 on every diagonal"
+    "ko (all)": "the take's last cel (CMU frame 170) smears or ghosts too often (s9701: about half the diagonals; the bruiser's south-west stood back up); frames 142 and 170 are both the body lying flat, so cel 6 holds cel 5 on every diagonal",
+    "thug/jog/east": "s9901 drew the club as a detached grey squiggle in cels 0-1, which the island clean would drop; s9902 keeps it in hand in every cel"
   }
 }

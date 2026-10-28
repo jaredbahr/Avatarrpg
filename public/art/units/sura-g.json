@@ -340,9 +340,209 @@
         "h": 96
       }
     },
-    "unit.water.sura/idleSouthEast/0": {
+    "unit.water.sura/jogSouth/0": {
       "frame": {
         "x": 1124,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/1": {
+      "frame": {
+        "x": 1190,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/2": {
+      "frame": {
+        "x": 1256,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/3": {
+      "frame": {
+        "x": 1322,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/4": {
+      "frame": {
+        "x": 1388,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/5": {
+      "frame": {
+        "x": 1454,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/6": {
+      "frame": {
+        "x": 1520,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/7": {
+      "frame": {
+        "x": 1586,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/8": {
+      "frame": {
+        "x": 1652,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouth/9": {
+      "frame": {
+        "x": 1718,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/idleSouthEast/0": {
+      "frame": {
+        "x": 1784,
         "y": 2,
         "w": 64,
         "h": 96
@@ -362,7 +562,7 @@
     },
     "unit.water.sura/idleSouthEast/1": {
       "frame": {
-        "x": 1190,
+        "x": 1850,
         "y": 2,
         "w": 64,
         "h": 96
@@ -382,7 +582,7 @@
     },
     "unit.water.sura/idleSouthEast/2": {
       "frame": {
-        "x": 1256,
+        "x": 1916,
         "y": 2,
         "w": 64,
         "h": 96
@@ -402,7 +602,7 @@
     },
     "unit.water.sura/idleSouthEast/3": {
       "frame": {
-        "x": 1322,
+        "x": 1982,
         "y": 2,
         "w": 64,
         "h": 96
@@ -422,8 +622,8 @@
     },
     "unit.water.sura/walkSouthEast/0": {
       "frame": {
-        "x": 1388,
-        "y": 2,
+        "x": 2,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -442,8 +642,8 @@
     },
     "unit.water.sura/walkSouthEast/1": {
       "frame": {
-        "x": 1454,
-        "y": 2,
+        "x": 68,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -462,8 +662,8 @@
     },
     "unit.water.sura/walkSouthEast/2": {
       "frame": {
-        "x": 1520,
-        "y": 2,
+        "x": 134,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -482,8 +682,8 @@
     },
     "unit.water.sura/walkSouthEast/3": {
       "frame": {
-        "x": 1586,
-        "y": 2,
+        "x": 200,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -502,8 +702,8 @@
     },
     "unit.water.sura/walkSouthEast/4": {
       "frame": {
-        "x": 1652,
-        "y": 2,
+        "x": 266,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -522,8 +722,8 @@
     },
     "unit.water.sura/walkSouthEast/5": {
       "frame": {
-        "x": 1718,
-        "y": 2,
+        "x": 332,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -542,8 +742,8 @@
     },
     "unit.water.sura/walkSouthEast/6": {
       "frame": {
-        "x": 1784,
-        "y": 2,
+        "x": 398,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -562,8 +762,8 @@
     },
     "unit.water.sura/walkSouthEast/7": {
       "frame": {
-        "x": 1850,
-        "y": 2,
+        "x": 464,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -582,8 +782,8 @@
     },
     "unit.water.sura/walkSouthEast/8": {
       "frame": {
-        "x": 1916,
-        "y": 2,
+        "x": 530,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -602,8 +802,8 @@
     },
     "unit.water.sura/walkSouthEast/9": {
       "frame": {
-        "x": 1982,
-        "y": 2,
+        "x": 596,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -622,7 +822,7 @@
     },
     "unit.water.sura/walkSouthEast/10": {
       "frame": {
-        "x": 2,
+        "x": 662,
         "y": 100,
         "w": 64,
         "h": 96
@@ -642,7 +842,7 @@
     },
     "unit.water.sura/walkSouthEast/11": {
       "frame": {
-        "x": 68,
+        "x": 728,
         "y": 100,
         "w": 64,
         "h": 96
@@ -662,7 +862,207 @@
     },
     "unit.water.sura/restSouthEast/0": {
       "frame": {
-        "x": 134,
+        "x": 794,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/0": {
+      "frame": {
+        "x": 860,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/1": {
+      "frame": {
+        "x": 926,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/2": {
+      "frame": {
+        "x": 992,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/3": {
+      "frame": {
+        "x": 1058,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/4": {
+      "frame": {
+        "x": 1124,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/5": {
+      "frame": {
+        "x": 1190,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/6": {
+      "frame": {
+        "x": 1256,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/7": {
+      "frame": {
+        "x": 1322,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/8": {
+      "frame": {
+        "x": 1388,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthEast/9": {
+      "frame": {
+        "x": 1454,
         "y": 100,
         "w": 64,
         "h": 96
@@ -682,7 +1082,7 @@
     },
     "unit.water.sura/idle/0": {
       "frame": {
-        "x": 200,
+        "x": 1520,
         "y": 100,
         "w": 64,
         "h": 96
@@ -702,7 +1102,7 @@
     },
     "unit.water.sura/idle/1": {
       "frame": {
-        "x": 266,
+        "x": 1586,
         "y": 100,
         "w": 64,
         "h": 96
@@ -722,7 +1122,7 @@
     },
     "unit.water.sura/idle/2": {
       "frame": {
-        "x": 332,
+        "x": 1652,
         "y": 100,
         "w": 64,
         "h": 96
@@ -742,7 +1142,7 @@
     },
     "unit.water.sura/idle/3": {
       "frame": {
-        "x": 398,
+        "x": 1718,
         "y": 100,
         "w": 64,
         "h": 96
@@ -762,7 +1162,7 @@
     },
     "unit.water.sura/walk/0": {
       "frame": {
-        "x": 464,
+        "x": 1784,
         "y": 100,
         "w": 64,
         "h": 96
@@ -782,7 +1182,7 @@
     },
     "unit.water.sura/walk/1": {
       "frame": {
-        "x": 530,
+        "x": 1850,
         "y": 100,
         "w": 64,
         "h": 96
@@ -802,7 +1202,7 @@
     },
     "unit.water.sura/walk/2": {
       "frame": {
-        "x": 596,
+        "x": 1916,
         "y": 100,
         "w": 64,
         "h": 96
@@ -822,7 +1222,7 @@
     },
     "unit.water.sura/walk/3": {
       "frame": {
-        "x": 662,
+        "x": 1982,
         "y": 100,
         "w": 64,
         "h": 96
@@ -842,8 +1242,8 @@
     },
     "unit.water.sura/walk/4": {
       "frame": {
-        "x": 728,
-        "y": 100,
+        "x": 2,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -862,8 +1262,8 @@
     },
     "unit.water.sura/walk/5": {
       "frame": {
-        "x": 794,
-        "y": 100,
+        "x": 68,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -882,8 +1282,8 @@
     },
     "unit.water.sura/walk/6": {
       "frame": {
-        "x": 860,
-        "y": 100,
+        "x": 134,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -902,8 +1302,8 @@
     },
     "unit.water.sura/walk/7": {
       "frame": {
-        "x": 926,
-        "y": 100,
+        "x": 200,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -922,8 +1322,8 @@
     },
     "unit.water.sura/walk/8": {
       "frame": {
-        "x": 992,
-        "y": 100,
+        "x": 266,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -942,8 +1342,8 @@
     },
     "unit.water.sura/walk/9": {
       "frame": {
-        "x": 1058,
-        "y": 100,
+        "x": 332,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -962,8 +1362,8 @@
     },
     "unit.water.sura/walk/10": {
       "frame": {
-        "x": 1124,
-        "y": 100,
+        "x": 398,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -982,8 +1382,8 @@
     },
     "unit.water.sura/walk/11": {
       "frame": {
-        "x": 1190,
-        "y": 100,
+        "x": 464,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1002,8 +1402,208 @@
     },
     "unit.water.sura/rest/0": {
       "frame": {
-        "x": 1256,
-        "y": 100,
+        "x": 530,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/0": {
+      "frame": {
+        "x": 596,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/1": {
+      "frame": {
+        "x": 662,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/2": {
+      "frame": {
+        "x": 728,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/3": {
+      "frame": {
+        "x": 794,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/4": {
+      "frame": {
+        "x": 860,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/5": {
+      "frame": {
+        "x": 926,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/6": {
+      "frame": {
+        "x": 992,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/7": {
+      "frame": {
+        "x": 1058,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/8": {
+      "frame": {
+        "x": 1124,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jog/9": {
+      "frame": {
+        "x": 1190,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1022,8 +1622,8 @@
     },
     "unit.water.sura/idleNorthEast/0": {
       "frame": {
-        "x": 1322,
-        "y": 100,
+        "x": 1256,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1042,8 +1642,8 @@
     },
     "unit.water.sura/idleNorthEast/1": {
       "frame": {
-        "x": 1388,
-        "y": 100,
+        "x": 1322,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1062,8 +1662,8 @@
     },
     "unit.water.sura/idleNorthEast/2": {
       "frame": {
-        "x": 1454,
-        "y": 100,
+        "x": 1388,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1082,8 +1682,8 @@
     },
     "unit.water.sura/idleNorthEast/3": {
       "frame": {
-        "x": 1520,
-        "y": 100,
+        "x": 1454,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1102,8 +1702,8 @@
     },
     "unit.water.sura/walkNorthEast/0": {
       "frame": {
-        "x": 1586,
-        "y": 100,
+        "x": 1520,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1122,8 +1722,8 @@
     },
     "unit.water.sura/walkNorthEast/1": {
       "frame": {
-        "x": 1652,
-        "y": 100,
+        "x": 1586,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1142,8 +1742,8 @@
     },
     "unit.water.sura/walkNorthEast/2": {
       "frame": {
-        "x": 1718,
-        "y": 100,
+        "x": 1652,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1162,8 +1762,8 @@
     },
     "unit.water.sura/walkNorthEast/3": {
       "frame": {
-        "x": 1784,
-        "y": 100,
+        "x": 1718,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1182,8 +1782,8 @@
     },
     "unit.water.sura/walkNorthEast/4": {
       "frame": {
-        "x": 1850,
-        "y": 100,
+        "x": 1784,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1202,8 +1802,8 @@
     },
     "unit.water.sura/walkNorthEast/5": {
       "frame": {
-        "x": 1916,
-        "y": 100,
+        "x": 1850,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1222,8 +1822,8 @@
     },
     "unit.water.sura/walkNorthEast/6": {
       "frame": {
-        "x": 1982,
-        "y": 100,
+        "x": 1916,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1242,7 +1842,7 @@
     },
     "unit.water.sura/walkNorthEast/7": {
       "frame": {
-        "x": 2,
+        "x": 1982,
         "y": 198,
         "w": 64,
         "h": 96
@@ -1262,8 +1862,8 @@
     },
     "unit.water.sura/walkNorthEast/8": {
       "frame": {
-        "x": 68,
-        "y": 198,
+        "x": 2,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1282,8 +1882,8 @@
     },
     "unit.water.sura/walkNorthEast/9": {
       "frame": {
-        "x": 134,
-        "y": 198,
+        "x": 68,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1302,8 +1902,8 @@
     },
     "unit.water.sura/walkNorthEast/10": {
       "frame": {
-        "x": 200,
-        "y": 198,
+        "x": 134,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1322,8 +1922,8 @@
     },
     "unit.water.sura/walkNorthEast/11": {
       "frame": {
-        "x": 266,
-        "y": 198,
+        "x": 200,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1342,8 +1942,208 @@
     },
     "unit.water.sura/restNorthEast/0": {
       "frame": {
+        "x": 266,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/0": {
+      "frame": {
         "x": 332,
-        "y": 198,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/1": {
+      "frame": {
+        "x": 398,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/2": {
+      "frame": {
+        "x": 464,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/3": {
+      "frame": {
+        "x": 530,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/4": {
+      "frame": {
+        "x": 596,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/5": {
+      "frame": {
+        "x": 662,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/6": {
+      "frame": {
+        "x": 728,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/7": {
+      "frame": {
+        "x": 794,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/8": {
+      "frame": {
+        "x": 860,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthEast/9": {
+      "frame": {
+        "x": 926,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1362,8 +2162,8 @@
     },
     "unit.water.sura/idleNorth/0": {
       "frame": {
-        "x": 398,
-        "y": 198,
+        "x": 992,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1382,8 +2182,8 @@
     },
     "unit.water.sura/idleNorth/1": {
       "frame": {
-        "x": 464,
-        "y": 198,
+        "x": 1058,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1402,8 +2202,8 @@
     },
     "unit.water.sura/idleNorth/2": {
       "frame": {
-        "x": 530,
-        "y": 198,
+        "x": 1124,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1422,8 +2222,8 @@
     },
     "unit.water.sura/idleNorth/3": {
       "frame": {
-        "x": 596,
-        "y": 198,
+        "x": 1190,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1442,8 +2242,8 @@
     },
     "unit.water.sura/walkNorth/0": {
       "frame": {
-        "x": 662,
-        "y": 198,
+        "x": 1256,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1462,8 +2262,8 @@
     },
     "unit.water.sura/walkNorth/1": {
       "frame": {
-        "x": 728,
-        "y": 198,
+        "x": 1322,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1482,8 +2282,8 @@
     },
     "unit.water.sura/walkNorth/2": {
       "frame": {
-        "x": 794,
-        "y": 198,
+        "x": 1388,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1502,8 +2302,8 @@
     },
     "unit.water.sura/walkNorth/3": {
       "frame": {
-        "x": 860,
-        "y": 198,
+        "x": 1454,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1522,8 +2322,8 @@
     },
     "unit.water.sura/walkNorth/4": {
       "frame": {
-        "x": 926,
-        "y": 198,
+        "x": 1520,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1542,8 +2342,8 @@
     },
     "unit.water.sura/walkNorth/5": {
       "frame": {
-        "x": 992,
-        "y": 198,
+        "x": 1586,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1562,8 +2362,8 @@
     },
     "unit.water.sura/walkNorth/6": {
       "frame": {
-        "x": 1058,
-        "y": 198,
+        "x": 1652,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1582,8 +2382,8 @@
     },
     "unit.water.sura/walkNorth/7": {
       "frame": {
-        "x": 1124,
-        "y": 198,
+        "x": 1718,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1602,8 +2402,8 @@
     },
     "unit.water.sura/walkNorth/8": {
       "frame": {
-        "x": 1190,
-        "y": 198,
+        "x": 1784,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1622,8 +2422,8 @@
     },
     "unit.water.sura/walkNorth/9": {
       "frame": {
-        "x": 1256,
-        "y": 198,
+        "x": 1850,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1642,8 +2442,8 @@
     },
     "unit.water.sura/walkNorth/10": {
       "frame": {
-        "x": 1322,
-        "y": 198,
+        "x": 1916,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1662,8 +2462,8 @@
     },
     "unit.water.sura/walkNorth/11": {
       "frame": {
-        "x": 1388,
-        "y": 198,
+        "x": 1982,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1682,8 +2482,208 @@
     },
     "unit.water.sura/restNorth/0": {
       "frame": {
-        "x": 1454,
-        "y": 198,
+        "x": 2,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/0": {
+      "frame": {
+        "x": 68,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/1": {
+      "frame": {
+        "x": 134,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/2": {
+      "frame": {
+        "x": 200,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/3": {
+      "frame": {
+        "x": 266,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/4": {
+      "frame": {
+        "x": 332,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/5": {
+      "frame": {
+        "x": 398,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/6": {
+      "frame": {
+        "x": 464,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/7": {
+      "frame": {
+        "x": 530,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/8": {
+      "frame": {
+        "x": 596,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorth/9": {
+      "frame": {
+        "x": 662,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1702,8 +2702,8 @@
     },
     "unit.water.sura/idleNorthWest/0": {
       "frame": {
-        "x": 1520,
-        "y": 198,
+        "x": 728,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1722,8 +2722,8 @@
     },
     "unit.water.sura/idleNorthWest/1": {
       "frame": {
-        "x": 1586,
-        "y": 198,
+        "x": 794,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1742,8 +2742,8 @@
     },
     "unit.water.sura/idleNorthWest/2": {
       "frame": {
-        "x": 1652,
-        "y": 198,
+        "x": 860,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1762,8 +2762,8 @@
     },
     "unit.water.sura/idleNorthWest/3": {
       "frame": {
-        "x": 1718,
-        "y": 198,
+        "x": 926,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1782,8 +2782,8 @@
     },
     "unit.water.sura/walkNorthWest/0": {
       "frame": {
-        "x": 1784,
-        "y": 198,
+        "x": 992,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1802,8 +2802,8 @@
     },
     "unit.water.sura/walkNorthWest/1": {
       "frame": {
-        "x": 1850,
-        "y": 198,
+        "x": 1058,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1822,8 +2822,8 @@
     },
     "unit.water.sura/walkNorthWest/2": {
       "frame": {
-        "x": 1916,
-        "y": 198,
+        "x": 1124,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1842,8 +2842,8 @@
     },
     "unit.water.sura/walkNorthWest/3": {
       "frame": {
-        "x": 1982,
-        "y": 198,
+        "x": 1190,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1862,8 +2862,8 @@
     },
     "unit.water.sura/walkNorthWest/4": {
       "frame": {
-        "x": 2,
-        "y": 296,
+        "x": 1256,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1882,8 +2882,8 @@
     },
     "unit.water.sura/walkNorthWest/5": {
       "frame": {
-        "x": 68,
-        "y": 296,
+        "x": 1322,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1902,8 +2902,8 @@
     },
     "unit.water.sura/walkNorthWest/6": {
       "frame": {
-        "x": 134,
-        "y": 296,
+        "x": 1388,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1922,8 +2922,8 @@
     },
     "unit.water.sura/walkNorthWest/7": {
       "frame": {
-        "x": 200,
-        "y": 296,
+        "x": 1454,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1942,8 +2942,8 @@
     },
     "unit.water.sura/walkNorthWest/8": {
       "frame": {
-        "x": 266,
-        "y": 296,
+        "x": 1520,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1962,8 +2962,8 @@
     },
     "unit.water.sura/walkNorthWest/9": {
       "frame": {
-        "x": 332,
-        "y": 296,
+        "x": 1586,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1982,8 +2982,8 @@
     },
     "unit.water.sura/walkNorthWest/10": {
       "frame": {
-        "x": 398,
-        "y": 296,
+        "x": 1652,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -2002,8 +3002,8 @@
     },
     "unit.water.sura/walkNorthWest/11": {
       "frame": {
-        "x": 464,
-        "y": 296,
+        "x": 1718,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -2022,8 +3022,208 @@
     },
     "unit.water.sura/restNorthWest/0": {
       "frame": {
-        "x": 530,
-        "y": 296,
+        "x": 1784,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/0": {
+      "frame": {
+        "x": 1850,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/1": {
+      "frame": {
+        "x": 1916,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/2": {
+      "frame": {
+        "x": 1982,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/3": {
+      "frame": {
+        "x": 2,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/4": {
+      "frame": {
+        "x": 68,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/5": {
+      "frame": {
+        "x": 134,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/6": {
+      "frame": {
+        "x": 200,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/7": {
+      "frame": {
+        "x": 266,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/8": {
+      "frame": {
+        "x": 332,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogNorthWest/9": {
+      "frame": {
+        "x": 398,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2042,8 +3242,8 @@
     },
     "unit.water.sura/idleWest/0": {
       "frame": {
-        "x": 596,
-        "y": 296,
+        "x": 464,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2062,8 +3262,8 @@
     },
     "unit.water.sura/idleWest/1": {
       "frame": {
-        "x": 662,
-        "y": 296,
+        "x": 530,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2082,8 +3282,8 @@
     },
     "unit.water.sura/idleWest/2": {
       "frame": {
-        "x": 728,
-        "y": 296,
+        "x": 596,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2102,8 +3302,8 @@
     },
     "unit.water.sura/idleWest/3": {
       "frame": {
-        "x": 794,
-        "y": 296,
+        "x": 662,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2122,8 +3322,8 @@
     },
     "unit.water.sura/walkWest/0": {
       "frame": {
-        "x": 860,
-        "y": 296,
+        "x": 728,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2142,8 +3342,8 @@
     },
     "unit.water.sura/walkWest/1": {
       "frame": {
-        "x": 926,
-        "y": 296,
+        "x": 794,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2162,8 +3362,8 @@
     },
     "unit.water.sura/walkWest/2": {
       "frame": {
-        "x": 992,
-        "y": 296,
+        "x": 860,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2182,8 +3382,8 @@
     },
     "unit.water.sura/walkWest/3": {
       "frame": {
-        "x": 1058,
-        "y": 296,
+        "x": 926,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2202,8 +3402,8 @@
     },
     "unit.water.sura/walkWest/4": {
       "frame": {
-        "x": 1124,
-        "y": 296,
+        "x": 992,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2222,8 +3422,8 @@
     },
     "unit.water.sura/walkWest/5": {
       "frame": {
-        "x": 1190,
-        "y": 296,
+        "x": 1058,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2242,8 +3442,8 @@
     },
     "unit.water.sura/walkWest/6": {
       "frame": {
-        "x": 1256,
-        "y": 296,
+        "x": 1124,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2262,8 +3462,8 @@
     },
     "unit.water.sura/walkWest/7": {
       "frame": {
-        "x": 1322,
-        "y": 296,
+        "x": 1190,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2282,8 +3482,8 @@
     },
     "unit.water.sura/walkWest/8": {
       "frame": {
-        "x": 1388,
-        "y": 296,
+        "x": 1256,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2302,8 +3502,8 @@
     },
     "unit.water.sura/walkWest/9": {
       "frame": {
-        "x": 1454,
-        "y": 296,
+        "x": 1322,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2322,8 +3522,8 @@
     },
     "unit.water.sura/walkWest/10": {
       "frame": {
-        "x": 1520,
-        "y": 296,
+        "x": 1388,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2342,8 +3542,8 @@
     },
     "unit.water.sura/walkWest/11": {
       "frame": {
-        "x": 1586,
-        "y": 296,
+        "x": 1454,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2362,8 +3562,208 @@
     },
     "unit.water.sura/restWest/0": {
       "frame": {
+        "x": 1520,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/0": {
+      "frame": {
+        "x": 1586,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/1": {
+      "frame": {
         "x": 1652,
-        "y": 296,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/2": {
+      "frame": {
+        "x": 1718,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/3": {
+      "frame": {
+        "x": 1784,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/4": {
+      "frame": {
+        "x": 1850,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/5": {
+      "frame": {
+        "x": 1916,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/6": {
+      "frame": {
+        "x": 1982,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/7": {
+      "frame": {
+        "x": 2,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/8": {
+      "frame": {
+        "x": 68,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogWest/9": {
+      "frame": {
+        "x": 134,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2382,8 +3782,8 @@
     },
     "unit.water.sura/idleSouthWest/0": {
       "frame": {
-        "x": 1718,
-        "y": 296,
+        "x": 200,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2402,8 +3802,8 @@
     },
     "unit.water.sura/idleSouthWest/1": {
       "frame": {
-        "x": 1784,
-        "y": 296,
+        "x": 266,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2422,8 +3822,8 @@
     },
     "unit.water.sura/idleSouthWest/2": {
       "frame": {
-        "x": 1850,
-        "y": 296,
+        "x": 332,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2442,8 +3842,8 @@
     },
     "unit.water.sura/idleSouthWest/3": {
       "frame": {
-        "x": 1916,
-        "y": 296,
+        "x": 398,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2462,8 +3862,8 @@
     },
     "unit.water.sura/walkSouthWest/0": {
       "frame": {
-        "x": 1982,
-        "y": 296,
+        "x": 464,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2482,8 +3882,8 @@
     },
     "unit.water.sura/walkSouthWest/1": {
       "frame": {
-        "x": 2,
-        "y": 394,
+        "x": 530,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2502,8 +3902,8 @@
     },
     "unit.water.sura/walkSouthWest/2": {
       "frame": {
-        "x": 68,
-        "y": 394,
+        "x": 596,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2522,8 +3922,8 @@
     },
     "unit.water.sura/walkSouthWest/3": {
       "frame": {
-        "x": 134,
-        "y": 394,
+        "x": 662,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2542,8 +3942,8 @@
     },
     "unit.water.sura/walkSouthWest/4": {
       "frame": {
-        "x": 200,
-        "y": 394,
+        "x": 728,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2562,8 +3962,8 @@
     },
     "unit.water.sura/walkSouthWest/5": {
       "frame": {
-        "x": 266,
-        "y": 394,
+        "x": 794,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2582,8 +3982,8 @@
     },
     "unit.water.sura/walkSouthWest/6": {
       "frame": {
-        "x": 332,
-        "y": 394,
+        "x": 860,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2602,8 +4002,8 @@
     },
     "unit.water.sura/walkSouthWest/7": {
       "frame": {
-        "x": 398,
-        "y": 394,
+        "x": 926,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2622,8 +4022,8 @@
     },
     "unit.water.sura/walkSouthWest/8": {
       "frame": {
-        "x": 464,
-        "y": 394,
+        "x": 992,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2642,8 +4042,8 @@
     },
     "unit.water.sura/walkSouthWest/9": {
       "frame": {
-        "x": 530,
-        "y": 394,
+        "x": 1058,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2662,8 +4062,8 @@
     },
     "unit.water.sura/walkSouthWest/10": {
       "frame": {
-        "x": 596,
-        "y": 394,
+        "x": 1124,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2682,8 +4082,8 @@
     },
     "unit.water.sura/walkSouthWest/11": {
       "frame": {
-        "x": 662,
-        "y": 394,
+        "x": 1190,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2702,8 +4102,208 @@
     },
     "unit.water.sura/restSouthWest/0": {
       "frame": {
-        "x": 728,
-        "y": 394,
+        "x": 1256,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/0": {
+      "frame": {
+        "x": 1322,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/1": {
+      "frame": {
+        "x": 1388,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/2": {
+      "frame": {
+        "x": 1454,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/3": {
+      "frame": {
+        "x": 1520,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/4": {
+      "frame": {
+        "x": 1586,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/5": {
+      "frame": {
+        "x": 1652,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/6": {
+      "frame": {
+        "x": 1718,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/7": {
+      "frame": {
+        "x": 1784,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/8": {
+      "frame": {
+        "x": 1850,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.water.sura/jogSouthWest/9": {
+      "frame": {
+        "x": 1916,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2722,8 +4322,8 @@
     },
     "unit.water.sura/cast/0": {
       "frame": {
-        "x": 794,
-        "y": 394,
+        "x": 1982,
+        "y": 590,
         "w": 39,
         "h": 68
       },
@@ -2742,8 +4342,8 @@
     },
     "unit.water.sura/cast/1": {
       "frame": {
-        "x": 835,
-        "y": 394,
+        "x": 2,
+        "y": 688,
         "w": 39,
         "h": 68
       },
@@ -2762,8 +4362,8 @@
     },
     "unit.water.sura/cast/2": {
       "frame": {
-        "x": 876,
-        "y": 394,
+        "x": 43,
+        "y": 688,
         "w": 39,
         "h": 68
       },
@@ -2782,8 +4382,8 @@
     },
     "unit.water.sura/ko/0": {
       "frame": {
-        "x": 917,
-        "y": 394,
+        "x": 84,
+        "y": 688,
         "w": 74,
         "h": 67
       },
@@ -2802,8 +4402,8 @@
     },
     "unit.water.sura/wave/0": {
       "frame": {
-        "x": 993,
-        "y": 394,
+        "x": 160,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2822,8 +4422,8 @@
     },
     "unit.water.sura/wave/1": {
       "frame": {
-        "x": 1059,
-        "y": 394,
+        "x": 226,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2842,8 +4442,8 @@
     },
     "unit.water.sura/tea/0": {
       "frame": {
-        "x": 1125,
-        "y": 394,
+        "x": 292,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2862,8 +4462,8 @@
     },
     "unit.water.sura/tea/1": {
       "frame": {
-        "x": 1191,
-        "y": 394,
+        "x": 358,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2888,7 +4488,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 2048,
-      "h": 492
+      "h": 786
     },
     "scale": "1"
   }

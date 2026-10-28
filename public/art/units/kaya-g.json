@@ -340,9 +340,209 @@
         "h": 96
       }
     },
-    "unit.fire.kaya/idleSouthEast/0": {
+    "unit.fire.kaya/jogSouth/0": {
       "frame": {
         "x": 1124,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/1": {
+      "frame": {
+        "x": 1190,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/2": {
+      "frame": {
+        "x": 1256,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/3": {
+      "frame": {
+        "x": 1322,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/4": {
+      "frame": {
+        "x": 1388,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/5": {
+      "frame": {
+        "x": 1454,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/6": {
+      "frame": {
+        "x": 1520,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/7": {
+      "frame": {
+        "x": 1586,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/8": {
+      "frame": {
+        "x": 1652,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouth/9": {
+      "frame": {
+        "x": 1718,
+        "y": 2,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/idleSouthEast/0": {
+      "frame": {
+        "x": 1784,
         "y": 2,
         "w": 64,
         "h": 96
@@ -362,7 +562,7 @@
     },
     "unit.fire.kaya/idleSouthEast/1": {
       "frame": {
-        "x": 1190,
+        "x": 1850,
         "y": 2,
         "w": 64,
         "h": 96
@@ -382,7 +582,7 @@
     },
     "unit.fire.kaya/idleSouthEast/2": {
       "frame": {
-        "x": 1256,
+        "x": 1916,
         "y": 2,
         "w": 64,
         "h": 96
@@ -402,7 +602,7 @@
     },
     "unit.fire.kaya/idleSouthEast/3": {
       "frame": {
-        "x": 1322,
+        "x": 1982,
         "y": 2,
         "w": 64,
         "h": 96
@@ -422,8 +622,8 @@
     },
     "unit.fire.kaya/walkSouthEast/0": {
       "frame": {
-        "x": 1388,
-        "y": 2,
+        "x": 2,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -442,8 +642,8 @@
     },
     "unit.fire.kaya/walkSouthEast/1": {
       "frame": {
-        "x": 1454,
-        "y": 2,
+        "x": 68,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -462,8 +662,8 @@
     },
     "unit.fire.kaya/walkSouthEast/2": {
       "frame": {
-        "x": 1520,
-        "y": 2,
+        "x": 134,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -482,8 +682,8 @@
     },
     "unit.fire.kaya/walkSouthEast/3": {
       "frame": {
-        "x": 1586,
-        "y": 2,
+        "x": 200,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -502,8 +702,8 @@
     },
     "unit.fire.kaya/walkSouthEast/4": {
       "frame": {
-        "x": 1652,
-        "y": 2,
+        "x": 266,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -522,8 +722,8 @@
     },
     "unit.fire.kaya/walkSouthEast/5": {
       "frame": {
-        "x": 1718,
-        "y": 2,
+        "x": 332,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -542,8 +742,8 @@
     },
     "unit.fire.kaya/walkSouthEast/6": {
       "frame": {
-        "x": 1784,
-        "y": 2,
+        "x": 398,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -562,8 +762,8 @@
     },
     "unit.fire.kaya/walkSouthEast/7": {
       "frame": {
-        "x": 1850,
-        "y": 2,
+        "x": 464,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -582,8 +782,8 @@
     },
     "unit.fire.kaya/walkSouthEast/8": {
       "frame": {
-        "x": 1916,
-        "y": 2,
+        "x": 530,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -602,8 +802,8 @@
     },
     "unit.fire.kaya/walkSouthEast/9": {
       "frame": {
-        "x": 1982,
-        "y": 2,
+        "x": 596,
+        "y": 100,
         "w": 64,
         "h": 96
       },
@@ -622,7 +822,7 @@
     },
     "unit.fire.kaya/walkSouthEast/10": {
       "frame": {
-        "x": 2,
+        "x": 662,
         "y": 100,
         "w": 64,
         "h": 96
@@ -642,7 +842,7 @@
     },
     "unit.fire.kaya/walkSouthEast/11": {
       "frame": {
-        "x": 68,
+        "x": 728,
         "y": 100,
         "w": 64,
         "h": 96
@@ -662,7 +862,207 @@
     },
     "unit.fire.kaya/restSouthEast/0": {
       "frame": {
-        "x": 134,
+        "x": 794,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/0": {
+      "frame": {
+        "x": 860,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/1": {
+      "frame": {
+        "x": 926,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/2": {
+      "frame": {
+        "x": 992,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/3": {
+      "frame": {
+        "x": 1058,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/4": {
+      "frame": {
+        "x": 1124,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/5": {
+      "frame": {
+        "x": 1190,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/6": {
+      "frame": {
+        "x": 1256,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/7": {
+      "frame": {
+        "x": 1322,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/8": {
+      "frame": {
+        "x": 1388,
+        "y": 100,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthEast/9": {
+      "frame": {
+        "x": 1454,
         "y": 100,
         "w": 64,
         "h": 96
@@ -682,7 +1082,7 @@
     },
     "unit.fire.kaya/idle/0": {
       "frame": {
-        "x": 200,
+        "x": 1520,
         "y": 100,
         "w": 64,
         "h": 96
@@ -702,7 +1102,7 @@
     },
     "unit.fire.kaya/idle/1": {
       "frame": {
-        "x": 266,
+        "x": 1586,
         "y": 100,
         "w": 64,
         "h": 96
@@ -722,7 +1122,7 @@
     },
     "unit.fire.kaya/idle/2": {
       "frame": {
-        "x": 332,
+        "x": 1652,
         "y": 100,
         "w": 64,
         "h": 96
@@ -742,7 +1142,7 @@
     },
     "unit.fire.kaya/idle/3": {
       "frame": {
-        "x": 398,
+        "x": 1718,
         "y": 100,
         "w": 64,
         "h": 96
@@ -762,7 +1162,7 @@
     },
     "unit.fire.kaya/walk/0": {
       "frame": {
-        "x": 464,
+        "x": 1784,
         "y": 100,
         "w": 64,
         "h": 96
@@ -782,7 +1182,7 @@
     },
     "unit.fire.kaya/walk/1": {
       "frame": {
-        "x": 530,
+        "x": 1850,
         "y": 100,
         "w": 64,
         "h": 96
@@ -802,7 +1202,7 @@
     },
     "unit.fire.kaya/walk/2": {
       "frame": {
-        "x": 596,
+        "x": 1916,
         "y": 100,
         "w": 64,
         "h": 96
@@ -822,7 +1222,7 @@
     },
     "unit.fire.kaya/walk/3": {
       "frame": {
-        "x": 662,
+        "x": 1982,
         "y": 100,
         "w": 64,
         "h": 96
@@ -842,8 +1242,8 @@
     },
     "unit.fire.kaya/walk/4": {
       "frame": {
-        "x": 728,
-        "y": 100,
+        "x": 2,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -862,8 +1262,8 @@
     },
     "unit.fire.kaya/walk/5": {
       "frame": {
-        "x": 794,
-        "y": 100,
+        "x": 68,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -882,8 +1282,8 @@
     },
     "unit.fire.kaya/walk/6": {
       "frame": {
-        "x": 860,
-        "y": 100,
+        "x": 134,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -902,8 +1302,8 @@
     },
     "unit.fire.kaya/walk/7": {
       "frame": {
-        "x": 926,
-        "y": 100,
+        "x": 200,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -922,8 +1322,8 @@
     },
     "unit.fire.kaya/walk/8": {
       "frame": {
-        "x": 992,
-        "y": 100,
+        "x": 266,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -942,8 +1342,8 @@
     },
     "unit.fire.kaya/walk/9": {
       "frame": {
-        "x": 1058,
-        "y": 100,
+        "x": 332,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -962,8 +1362,8 @@
     },
     "unit.fire.kaya/walk/10": {
       "frame": {
-        "x": 1124,
-        "y": 100,
+        "x": 398,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -982,8 +1382,8 @@
     },
     "unit.fire.kaya/walk/11": {
       "frame": {
-        "x": 1190,
-        "y": 100,
+        "x": 464,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1002,8 +1402,208 @@
     },
     "unit.fire.kaya/rest/0": {
       "frame": {
-        "x": 1256,
-        "y": 100,
+        "x": 530,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/0": {
+      "frame": {
+        "x": 596,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/1": {
+      "frame": {
+        "x": 662,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/2": {
+      "frame": {
+        "x": 728,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/3": {
+      "frame": {
+        "x": 794,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/4": {
+      "frame": {
+        "x": 860,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/5": {
+      "frame": {
+        "x": 926,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/6": {
+      "frame": {
+        "x": 992,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/7": {
+      "frame": {
+        "x": 1058,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/8": {
+      "frame": {
+        "x": 1124,
+        "y": 198,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jog/9": {
+      "frame": {
+        "x": 1190,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1022,8 +1622,8 @@
     },
     "unit.fire.kaya/idleNorthEast/0": {
       "frame": {
-        "x": 1322,
-        "y": 100,
+        "x": 1256,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1042,8 +1642,8 @@
     },
     "unit.fire.kaya/idleNorthEast/1": {
       "frame": {
-        "x": 1388,
-        "y": 100,
+        "x": 1322,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1062,8 +1662,8 @@
     },
     "unit.fire.kaya/idleNorthEast/2": {
       "frame": {
-        "x": 1454,
-        "y": 100,
+        "x": 1388,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1082,8 +1682,8 @@
     },
     "unit.fire.kaya/idleNorthEast/3": {
       "frame": {
-        "x": 1520,
-        "y": 100,
+        "x": 1454,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1102,8 +1702,8 @@
     },
     "unit.fire.kaya/walkNorthEast/0": {
       "frame": {
-        "x": 1586,
-        "y": 100,
+        "x": 1520,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1122,8 +1722,8 @@
     },
     "unit.fire.kaya/walkNorthEast/1": {
       "frame": {
-        "x": 1652,
-        "y": 100,
+        "x": 1586,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1142,8 +1742,8 @@
     },
     "unit.fire.kaya/walkNorthEast/2": {
       "frame": {
-        "x": 1718,
-        "y": 100,
+        "x": 1652,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1162,8 +1762,8 @@
     },
     "unit.fire.kaya/walkNorthEast/3": {
       "frame": {
-        "x": 1784,
-        "y": 100,
+        "x": 1718,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1182,8 +1782,8 @@
     },
     "unit.fire.kaya/walkNorthEast/4": {
       "frame": {
-        "x": 1850,
-        "y": 100,
+        "x": 1784,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1202,8 +1802,8 @@
     },
     "unit.fire.kaya/walkNorthEast/5": {
       "frame": {
-        "x": 1916,
-        "y": 100,
+        "x": 1850,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1222,8 +1822,8 @@
     },
     "unit.fire.kaya/walkNorthEast/6": {
       "frame": {
-        "x": 1982,
-        "y": 100,
+        "x": 1916,
+        "y": 198,
         "w": 64,
         "h": 96
       },
@@ -1242,7 +1842,7 @@
     },
     "unit.fire.kaya/walkNorthEast/7": {
       "frame": {
-        "x": 2,
+        "x": 1982,
         "y": 198,
         "w": 64,
         "h": 96
@@ -1262,8 +1862,8 @@
     },
     "unit.fire.kaya/walkNorthEast/8": {
       "frame": {
-        "x": 68,
-        "y": 198,
+        "x": 2,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1282,8 +1882,8 @@
     },
     "unit.fire.kaya/walkNorthEast/9": {
       "frame": {
-        "x": 134,
-        "y": 198,
+        "x": 68,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1302,8 +1902,8 @@
     },
     "unit.fire.kaya/walkNorthEast/10": {
       "frame": {
-        "x": 200,
-        "y": 198,
+        "x": 134,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1322,8 +1922,8 @@
     },
     "unit.fire.kaya/walkNorthEast/11": {
       "frame": {
-        "x": 266,
-        "y": 198,
+        "x": 200,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1342,8 +1942,208 @@
     },
     "unit.fire.kaya/restNorthEast/0": {
       "frame": {
+        "x": 266,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/0": {
+      "frame": {
         "x": 332,
-        "y": 198,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/1": {
+      "frame": {
+        "x": 398,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/2": {
+      "frame": {
+        "x": 464,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/3": {
+      "frame": {
+        "x": 530,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/4": {
+      "frame": {
+        "x": 596,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/5": {
+      "frame": {
+        "x": 662,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/6": {
+      "frame": {
+        "x": 728,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/7": {
+      "frame": {
+        "x": 794,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/8": {
+      "frame": {
+        "x": 860,
+        "y": 296,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthEast/9": {
+      "frame": {
+        "x": 926,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1362,8 +2162,8 @@
     },
     "unit.fire.kaya/idleNorth/0": {
       "frame": {
-        "x": 398,
-        "y": 198,
+        "x": 992,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1382,8 +2182,8 @@
     },
     "unit.fire.kaya/idleNorth/1": {
       "frame": {
-        "x": 464,
-        "y": 198,
+        "x": 1058,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1402,8 +2202,8 @@
     },
     "unit.fire.kaya/idleNorth/2": {
       "frame": {
-        "x": 530,
-        "y": 198,
+        "x": 1124,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1422,8 +2222,8 @@
     },
     "unit.fire.kaya/idleNorth/3": {
       "frame": {
-        "x": 596,
-        "y": 198,
+        "x": 1190,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1442,8 +2242,8 @@
     },
     "unit.fire.kaya/walkNorth/0": {
       "frame": {
-        "x": 662,
-        "y": 198,
+        "x": 1256,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1462,8 +2262,8 @@
     },
     "unit.fire.kaya/walkNorth/1": {
       "frame": {
-        "x": 728,
-        "y": 198,
+        "x": 1322,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1482,8 +2282,8 @@
     },
     "unit.fire.kaya/walkNorth/2": {
       "frame": {
-        "x": 794,
-        "y": 198,
+        "x": 1388,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1502,8 +2302,8 @@
     },
     "unit.fire.kaya/walkNorth/3": {
       "frame": {
-        "x": 860,
-        "y": 198,
+        "x": 1454,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1522,8 +2322,8 @@
     },
     "unit.fire.kaya/walkNorth/4": {
       "frame": {
-        "x": 926,
-        "y": 198,
+        "x": 1520,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1542,8 +2342,8 @@
     },
     "unit.fire.kaya/walkNorth/5": {
       "frame": {
-        "x": 992,
-        "y": 198,
+        "x": 1586,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1562,8 +2362,8 @@
     },
     "unit.fire.kaya/walkNorth/6": {
       "frame": {
-        "x": 1058,
-        "y": 198,
+        "x": 1652,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1582,8 +2382,8 @@
     },
     "unit.fire.kaya/walkNorth/7": {
       "frame": {
-        "x": 1124,
-        "y": 198,
+        "x": 1718,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1602,8 +2402,8 @@
     },
     "unit.fire.kaya/walkNorth/8": {
       "frame": {
-        "x": 1190,
-        "y": 198,
+        "x": 1784,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1622,8 +2422,8 @@
     },
     "unit.fire.kaya/walkNorth/9": {
       "frame": {
-        "x": 1256,
-        "y": 198,
+        "x": 1850,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1642,8 +2442,8 @@
     },
     "unit.fire.kaya/walkNorth/10": {
       "frame": {
-        "x": 1322,
-        "y": 198,
+        "x": 1916,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1662,8 +2462,8 @@
     },
     "unit.fire.kaya/walkNorth/11": {
       "frame": {
-        "x": 1388,
-        "y": 198,
+        "x": 1982,
+        "y": 296,
         "w": 64,
         "h": 96
       },
@@ -1682,8 +2482,208 @@
     },
     "unit.fire.kaya/restNorth/0": {
       "frame": {
-        "x": 1454,
-        "y": 198,
+        "x": 2,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/0": {
+      "frame": {
+        "x": 68,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/1": {
+      "frame": {
+        "x": 134,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/2": {
+      "frame": {
+        "x": 200,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/3": {
+      "frame": {
+        "x": 266,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/4": {
+      "frame": {
+        "x": 332,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/5": {
+      "frame": {
+        "x": 398,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/6": {
+      "frame": {
+        "x": 464,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/7": {
+      "frame": {
+        "x": 530,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/8": {
+      "frame": {
+        "x": 596,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorth/9": {
+      "frame": {
+        "x": 662,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1702,8 +2702,8 @@
     },
     "unit.fire.kaya/idleNorthWest/0": {
       "frame": {
-        "x": 1520,
-        "y": 198,
+        "x": 728,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1722,8 +2722,8 @@
     },
     "unit.fire.kaya/idleNorthWest/1": {
       "frame": {
-        "x": 1586,
-        "y": 198,
+        "x": 794,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1742,8 +2742,8 @@
     },
     "unit.fire.kaya/idleNorthWest/2": {
       "frame": {
-        "x": 1652,
-        "y": 198,
+        "x": 860,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1762,8 +2762,8 @@
     },
     "unit.fire.kaya/idleNorthWest/3": {
       "frame": {
-        "x": 1718,
-        "y": 198,
+        "x": 926,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1782,8 +2782,8 @@
     },
     "unit.fire.kaya/walkNorthWest/0": {
       "frame": {
-        "x": 1784,
-        "y": 198,
+        "x": 992,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1802,8 +2802,8 @@
     },
     "unit.fire.kaya/walkNorthWest/1": {
       "frame": {
-        "x": 1850,
-        "y": 198,
+        "x": 1058,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1822,8 +2822,8 @@
     },
     "unit.fire.kaya/walkNorthWest/2": {
       "frame": {
-        "x": 1916,
-        "y": 198,
+        "x": 1124,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1842,8 +2842,8 @@
     },
     "unit.fire.kaya/walkNorthWest/3": {
       "frame": {
-        "x": 1982,
-        "y": 198,
+        "x": 1190,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1862,8 +2862,8 @@
     },
     "unit.fire.kaya/walkNorthWest/4": {
       "frame": {
-        "x": 2,
-        "y": 296,
+        "x": 1256,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1882,8 +2882,8 @@
     },
     "unit.fire.kaya/walkNorthWest/5": {
       "frame": {
-        "x": 68,
-        "y": 296,
+        "x": 1322,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1902,8 +2902,8 @@
     },
     "unit.fire.kaya/walkNorthWest/6": {
       "frame": {
-        "x": 134,
-        "y": 296,
+        "x": 1388,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1922,8 +2922,8 @@
     },
     "unit.fire.kaya/walkNorthWest/7": {
       "frame": {
-        "x": 200,
-        "y": 296,
+        "x": 1454,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1942,8 +2942,8 @@
     },
     "unit.fire.kaya/walkNorthWest/8": {
       "frame": {
-        "x": 266,
-        "y": 296,
+        "x": 1520,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1962,8 +2962,8 @@
     },
     "unit.fire.kaya/walkNorthWest/9": {
       "frame": {
-        "x": 332,
-        "y": 296,
+        "x": 1586,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -1982,8 +2982,8 @@
     },
     "unit.fire.kaya/walkNorthWest/10": {
       "frame": {
-        "x": 398,
-        "y": 296,
+        "x": 1652,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -2002,8 +3002,8 @@
     },
     "unit.fire.kaya/walkNorthWest/11": {
       "frame": {
-        "x": 464,
-        "y": 296,
+        "x": 1718,
+        "y": 394,
         "w": 64,
         "h": 96
       },
@@ -2022,8 +3022,208 @@
     },
     "unit.fire.kaya/restNorthWest/0": {
       "frame": {
-        "x": 530,
-        "y": 296,
+        "x": 1784,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/0": {
+      "frame": {
+        "x": 1850,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/1": {
+      "frame": {
+        "x": 1916,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/2": {
+      "frame": {
+        "x": 1982,
+        "y": 394,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/3": {
+      "frame": {
+        "x": 2,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/4": {
+      "frame": {
+        "x": 68,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/5": {
+      "frame": {
+        "x": 134,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/6": {
+      "frame": {
+        "x": 200,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/7": {
+      "frame": {
+        "x": 266,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/8": {
+      "frame": {
+        "x": 332,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogNorthWest/9": {
+      "frame": {
+        "x": 398,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2042,8 +3242,8 @@
     },
     "unit.fire.kaya/idleWest/0": {
       "frame": {
-        "x": 596,
-        "y": 296,
+        "x": 464,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2062,8 +3262,8 @@
     },
     "unit.fire.kaya/idleWest/1": {
       "frame": {
-        "x": 662,
-        "y": 296,
+        "x": 530,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2082,8 +3282,8 @@
     },
     "unit.fire.kaya/idleWest/2": {
       "frame": {
-        "x": 728,
-        "y": 296,
+        "x": 596,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2102,8 +3302,8 @@
     },
     "unit.fire.kaya/idleWest/3": {
       "frame": {
-        "x": 794,
-        "y": 296,
+        "x": 662,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2122,8 +3322,8 @@
     },
     "unit.fire.kaya/walkWest/0": {
       "frame": {
-        "x": 860,
-        "y": 296,
+        "x": 728,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2142,8 +3342,8 @@
     },
     "unit.fire.kaya/walkWest/1": {
       "frame": {
-        "x": 926,
-        "y": 296,
+        "x": 794,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2162,8 +3362,8 @@
     },
     "unit.fire.kaya/walkWest/2": {
       "frame": {
-        "x": 992,
-        "y": 296,
+        "x": 860,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2182,8 +3382,8 @@
     },
     "unit.fire.kaya/walkWest/3": {
       "frame": {
-        "x": 1058,
-        "y": 296,
+        "x": 926,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2202,8 +3402,8 @@
     },
     "unit.fire.kaya/walkWest/4": {
       "frame": {
-        "x": 1124,
-        "y": 296,
+        "x": 992,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2222,8 +3422,8 @@
     },
     "unit.fire.kaya/walkWest/5": {
       "frame": {
-        "x": 1190,
-        "y": 296,
+        "x": 1058,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2242,8 +3442,8 @@
     },
     "unit.fire.kaya/walkWest/6": {
       "frame": {
-        "x": 1256,
-        "y": 296,
+        "x": 1124,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2262,8 +3462,8 @@
     },
     "unit.fire.kaya/walkWest/7": {
       "frame": {
-        "x": 1322,
-        "y": 296,
+        "x": 1190,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2282,8 +3482,8 @@
     },
     "unit.fire.kaya/walkWest/8": {
       "frame": {
-        "x": 1388,
-        "y": 296,
+        "x": 1256,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2302,8 +3502,8 @@
     },
     "unit.fire.kaya/walkWest/9": {
       "frame": {
-        "x": 1454,
-        "y": 296,
+        "x": 1322,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2322,8 +3522,8 @@
     },
     "unit.fire.kaya/walkWest/10": {
       "frame": {
-        "x": 1520,
-        "y": 296,
+        "x": 1388,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2342,8 +3542,8 @@
     },
     "unit.fire.kaya/walkWest/11": {
       "frame": {
-        "x": 1586,
-        "y": 296,
+        "x": 1454,
+        "y": 492,
         "w": 64,
         "h": 96
       },
@@ -2362,8 +3562,208 @@
     },
     "unit.fire.kaya/restWest/0": {
       "frame": {
+        "x": 1520,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/0": {
+      "frame": {
+        "x": 1586,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/1": {
+      "frame": {
         "x": 1652,
-        "y": 296,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/2": {
+      "frame": {
+        "x": 1718,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/3": {
+      "frame": {
+        "x": 1784,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/4": {
+      "frame": {
+        "x": 1850,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/5": {
+      "frame": {
+        "x": 1916,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/6": {
+      "frame": {
+        "x": 1982,
+        "y": 492,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/7": {
+      "frame": {
+        "x": 2,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/8": {
+      "frame": {
+        "x": 68,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogWest/9": {
+      "frame": {
+        "x": 134,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2382,8 +3782,8 @@
     },
     "unit.fire.kaya/idleSouthWest/0": {
       "frame": {
-        "x": 1718,
-        "y": 296,
+        "x": 200,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2402,8 +3802,8 @@
     },
     "unit.fire.kaya/idleSouthWest/1": {
       "frame": {
-        "x": 1784,
-        "y": 296,
+        "x": 266,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2422,8 +3822,8 @@
     },
     "unit.fire.kaya/idleSouthWest/2": {
       "frame": {
-        "x": 1850,
-        "y": 296,
+        "x": 332,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2442,8 +3842,8 @@
     },
     "unit.fire.kaya/idleSouthWest/3": {
       "frame": {
-        "x": 1916,
-        "y": 296,
+        "x": 398,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2462,8 +3862,8 @@
     },
     "unit.fire.kaya/walkSouthWest/0": {
       "frame": {
-        "x": 1982,
-        "y": 296,
+        "x": 464,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2482,8 +3882,8 @@
     },
     "unit.fire.kaya/walkSouthWest/1": {
       "frame": {
-        "x": 2,
-        "y": 394,
+        "x": 530,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2502,8 +3902,8 @@
     },
     "unit.fire.kaya/walkSouthWest/2": {
       "frame": {
-        "x": 68,
-        "y": 394,
+        "x": 596,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2522,8 +3922,8 @@
     },
     "unit.fire.kaya/walkSouthWest/3": {
       "frame": {
-        "x": 134,
-        "y": 394,
+        "x": 662,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2542,8 +3942,8 @@
     },
     "unit.fire.kaya/walkSouthWest/4": {
       "frame": {
-        "x": 200,
-        "y": 394,
+        "x": 728,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2562,8 +3962,8 @@
     },
     "unit.fire.kaya/walkSouthWest/5": {
       "frame": {
-        "x": 266,
-        "y": 394,
+        "x": 794,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2582,8 +3982,8 @@
     },
     "unit.fire.kaya/walkSouthWest/6": {
       "frame": {
-        "x": 332,
-        "y": 394,
+        "x": 860,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2602,8 +4002,8 @@
     },
     "unit.fire.kaya/walkSouthWest/7": {
       "frame": {
-        "x": 398,
-        "y": 394,
+        "x": 926,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2622,8 +4022,8 @@
     },
     "unit.fire.kaya/walkSouthWest/8": {
       "frame": {
-        "x": 464,
-        "y": 394,
+        "x": 992,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2642,8 +4042,8 @@
     },
     "unit.fire.kaya/walkSouthWest/9": {
       "frame": {
-        "x": 530,
-        "y": 394,
+        "x": 1058,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2662,8 +4062,8 @@
     },
     "unit.fire.kaya/walkSouthWest/10": {
       "frame": {
-        "x": 596,
-        "y": 394,
+        "x": 1124,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2682,8 +4082,8 @@
     },
     "unit.fire.kaya/walkSouthWest/11": {
       "frame": {
-        "x": 662,
-        "y": 394,
+        "x": 1190,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2702,8 +4102,208 @@
     },
     "unit.fire.kaya/restSouthWest/0": {
       "frame": {
-        "x": 728,
-        "y": 394,
+        "x": 1256,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/0": {
+      "frame": {
+        "x": 1322,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/1": {
+      "frame": {
+        "x": 1388,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/2": {
+      "frame": {
+        "x": 1454,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/3": {
+      "frame": {
+        "x": 1520,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/4": {
+      "frame": {
+        "x": 1586,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/5": {
+      "frame": {
+        "x": 1652,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/6": {
+      "frame": {
+        "x": 1718,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/7": {
+      "frame": {
+        "x": 1784,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/8": {
+      "frame": {
+        "x": 1850,
+        "y": 590,
+        "w": 64,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 96
+      }
+    },
+    "unit.fire.kaya/jogSouthWest/9": {
+      "frame": {
+        "x": 1916,
+        "y": 590,
         "w": 64,
         "h": 96
       },
@@ -2722,8 +4322,8 @@
     },
     "unit.fire.kaya/cast/0": {
       "frame": {
-        "x": 794,
-        "y": 394,
+        "x": 1982,
+        "y": 590,
         "w": 57,
         "h": 69
       },
@@ -2742,8 +4342,8 @@
     },
     "unit.fire.kaya/cast/1": {
       "frame": {
-        "x": 853,
-        "y": 394,
+        "x": 2,
+        "y": 688,
         "w": 57,
         "h": 69
       },
@@ -2762,8 +4362,8 @@
     },
     "unit.fire.kaya/cast/2": {
       "frame": {
-        "x": 912,
-        "y": 394,
+        "x": 61,
+        "y": 688,
         "w": 57,
         "h": 69
       },
@@ -2782,8 +4382,8 @@
     },
     "unit.fire.kaya/ko/0": {
       "frame": {
-        "x": 971,
-        "y": 394,
+        "x": 120,
+        "y": 688,
         "w": 80,
         "h": 77
       },
@@ -2802,8 +4402,8 @@
     },
     "unit.fire.kaya/wave/0": {
       "frame": {
-        "x": 1053,
-        "y": 394,
+        "x": 202,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2822,8 +4422,8 @@
     },
     "unit.fire.kaya/wave/1": {
       "frame": {
-        "x": 1119,
-        "y": 394,
+        "x": 268,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2842,8 +4442,8 @@
     },
     "unit.fire.kaya/tea/0": {
       "frame": {
-        "x": 1185,
-        "y": 394,
+        "x": 334,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2862,8 +4462,8 @@
     },
     "unit.fire.kaya/tea/1": {
       "frame": {
-        "x": 1251,
-        "y": 394,
+        "x": 400,
+        "y": 688,
         "w": 64,
         "h": 96
       },
@@ -2888,7 +4488,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 2048,
-      "h": 492
+      "h": 786
     },
     "scale": "1"
   }

@@ -13,10 +13,12 @@ import { FOOT_LINE } from './sheets/bake';
 import {
   CAST_PER_PIXEL,
   CONTACT_LINE,
+  footprintSpan,
   groundProfile,
   groundedCast,
   projectShadowPoint,
 } from './lighting';
+import { FOREST_ROAD_SCENE } from '../content/scenes/forestRoad';
 
 const art = (rows: string[]) => ({
   alpha: (x: number, y: number) => (rows[y]?.[x] === '#' ? 255 : 0),
@@ -33,6 +35,28 @@ describe('a prop stands on the hull of its bottom edge', () => {
   it("stands a tripod's bowl above the line between its feet", () => {
     const tripod = art(['#####', '#####', '#...#', '#...#']);
     expect([...groundProfile(tripod.alpha, tripod.width, tripod.height)]).toEqual([3, 3, 3, 3, 3]);
+  });
+
+  it("does not stand a signpost on its arm's tip when it knows the footprint", () => {
+    // A post at column 4 with an arm out to column 0 near the top; the footprint's ground is rows 5 to 7.
+    const sign = art(['#####', '#####', '....#', '....#', '....#', '....#', '....#']);
+    const feet = () => ({ top: 5, bottom: 7 });
+    const free = groundProfile(sign.alpha, sign.width, sign.height);
+    const footed = groundProfile(sign.alpha, sign.width, sign.height, 128, feet);
+    // Without the footprint the arm's tip is a hull vertex and stands on its own bottom.
+    expect(free[0]).toBe(1);
+    // With it the arm stands over the ground the post stands on.
+    expect([...footed]).toEqual([6, 6, 6, 6, 6]);
+  });
+
+  it('spans a footprint diamond column by column', () => {
+    // One cell, ground corners (0,0) (2,1) (0,2) (-2,1) in art px around x = 2: a 4 x 2 diamond.
+    const span = footprintSpan([{ x: 0, y: 0 }], (p) => ({
+      x: 2 + (p.x - p.y) * 2,
+      y: (p.x + p.y) * 1,
+    }));
+    expect(span(1)).toEqual({ top: 0.25, bottom: 1.75 });
+    expect(span(10)).toBeNull();
   });
 
   it('casts down-right from the base, the base row its own cast', () => {
@@ -142,5 +166,26 @@ describe("why props do not use the figures' foot projection", () => {
       if (lowest >= 0 && !cast.has(`${x},${lowest + 1}`) && lowest < foot.y - 8) gaps += 1;
     }
     expect(gaps).toBeGreaterThan(png.width / 8);
+  });
+});
+
+describe('solid forest scenery stands on its own base', () => {
+  const pieces = FOREST_ROAD_SCENE.scenery;
+  it('casts the cottage and every roadside prop but the lantern from its base', () => {
+    const based = pieces.filter((p) => p.castFrom === 'base').map((p) => p.id);
+    expect(based).toContain('forest-keeper-lodge');
+    for (const id of [
+      'signpost',
+      'fence-a',
+      'fence-b',
+      'fence-c',
+      'woodpile',
+      'milestone',
+      'quarry-blocks',
+    ])
+      expect(based).toContain(`forest-roadside-${id}`);
+    // A hanging lamp and a canopy are not on the ground: they keep the foot projection.
+    expect(based).not.toContain('forest-roadside-lantern');
+    expect(based.filter((id) => /pine|alder|tree/.test(id))).toEqual([]);
   });
 });

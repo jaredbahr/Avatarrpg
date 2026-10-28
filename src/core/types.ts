@@ -938,6 +938,13 @@ export interface SceneScenery extends SceneImage {
   readonly contactShadow?: false;
   /** Runtime cast-shadow policy for art that already contains ground shade. */
   readonly castShadow?: false | 'reduced';
+  /**
+   * `'base'` for a solid piece that stands on its whole base — a building, a fence, a signpost, a log, a block: its
+   * cast starts from the lower hull of its own bottom edge and it meets the ground on a contact line, as a prop does
+   * (ADR 0093). Without it a piece is cast from the bottom centre of its box, which is right for a tree (its canopy
+   * is not on the ground) and wrong for anything whose base runs across its box at different heights.
+   */
+  readonly castFrom?: 'base';
 }
 
 export interface MapScene {
