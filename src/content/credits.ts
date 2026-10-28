@@ -51,13 +51,13 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     licence: 'CMU Motion Capture Database terms',
   },
   {
-    what: 'The motion of the party’s walks, breathing, fighting stance and bends',
+    what: 'The motion of the party’s, residents’ and bandits’ walks and breathing, and the party’s stance and bends',
     work: 'CMU Graphics Lab Motion Capture Database, subject 8 trial 1, subject 77 trials 2 and 3, subject 143 trial 23, subject 135 trial 4 and subject 12 trial 4',
     authors: 'Carnegie Mellon University Graphics Lab',
     licence: 'CMU Motion Capture Database terms',
   },
   {
-    what: 'The motion of the thug’s and the quarry bandits’ walks',
+    what: 'The motion of the quarry bender’s walk',
     work: 'Mixamo “Unarmed Walk Forward”',
     authors: 'Adobe Mixamo',
     licence: 'Adobe Mixamo terms',

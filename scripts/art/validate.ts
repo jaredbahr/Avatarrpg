@@ -79,23 +79,17 @@ export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
   'unit.fire.kaya': ['art/source/party-g1/pins/kaya.json'],
   'unit.water.sura': ['art/source/party-g1/pins/sura.json'],
   'unit.earth.bo': ['art/source/party-g1/pins/bo.json'],
-  'unit.enemy.thug': ['art/source/thug-g/pins.json', 'art/source/thug-actions-g/pins.json'],
-  'unit.enemy.slinger': [
-    'art/source/slinger-g/pins.json',
-    'art/source/slinger-actions-g/pins.json',
-  ],
-  'unit.enemy.bruiser': [
-    'art/source/bruiser-g/pins.json',
-    'art/source/bruiser-actions-g/pins.json',
-  ],
+  // The forest bandits and the Ba Dan residents at native G1 (ADR 0091, `residents-g1.ts`).
+  'unit.enemy.thug': ['art/source/residents-g1/pins/thug.json'],
+  'unit.enemy.slinger': ['art/source/residents-g1/pins/slinger.json'],
+  'unit.enemy.bruiser': ['art/source/residents-g1/pins/bruiser.json'],
   'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
-  // The Ba Dan residents (issue #284, `resident-g.ts`).
-  'npc.household': ['art/source/household-g/pins.json'],
-  'npc.guard': ['art/source/watch-g/pins.json'],
-  'npc.elder': ['art/source/mira-g/pins.json'],
-  'npc.shopkeeper': ['art/source/gao-g/pins.json'],
-  'npc.kid': ['art/source/pella-g/pins.json'],
-  'npc.dorin': ['art/source/dorin-g/pins.json'],
+  'npc.household': ['art/source/residents-g1/pins/household.json'],
+  'npc.guard': ['art/source/residents-g1/pins/watch.json'],
+  'npc.elder': ['art/source/residents-g1/pins/mira.json'],
+  'npc.shopkeeper': ['art/source/residents-g1/pins/gao.json'],
+  'npc.kid': ['art/source/residents-g1/pins/pella.json'],
+  'npc.dorin': ['art/source/residents-g1/pins/dorin.json'],
 };
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
@@ -446,7 +440,7 @@ export async function validateSheets(
         const def = clips[clip];
         if (!def?.anchor) continue;
         // An enemy has no fighting stance: its idle's first cel is the stance
-        // its hits and knockouts start and end on (`enemy-clips.ts`).
+        // its hits and knockouts start and end on (`residents-g1.ts`, ADR 0091).
         const stanceClip = headingClip('stance', heading);
         const stanceFound = find(
           `${key}/${clips[stanceClip] ? stanceClip : headingClip('idle', heading)}/0`,

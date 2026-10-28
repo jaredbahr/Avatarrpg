@@ -1,0 +1,600 @@
+{
+  "key": "unit.enemy.slinger",
+  "kind": "bandit",
+  "grid": {
+    "pixelsPerTile": 64,
+    "frame": [64, 96],
+    "foot": [32.0, 81.6],
+    "margin": 4
+  },
+  "clips": {
+    "idleSouth": {
+      "cels": ["idleSouth/00.png", "idleSouth/01.png", "idleSouth/02.png", "idleSouth/03.png"]
+    },
+    "walkSouth": {
+      "cels": [
+        "walkSouth/00.png",
+        "walkSouth/01.png",
+        "walkSouth/02.png",
+        "walkSouth/03.png",
+        "walkSouth/04.png",
+        "walkSouth/05.png",
+        "walkSouth/06.png",
+        "walkSouth/07.png"
+      ]
+    },
+    "restSouth": {
+      "cels": ["restSouth/00.png"]
+    },
+    "idleSouthEast": {
+      "cels": [
+        "idleSouthEast/00.png",
+        "idleSouthEast/01.png",
+        "idleSouthEast/02.png",
+        "idleSouthEast/03.png"
+      ]
+    },
+    "walkSouthEast": {
+      "cels": [
+        "walkSouthEast/00.png",
+        "walkSouthEast/01.png",
+        "walkSouthEast/02.png",
+        "walkSouthEast/03.png",
+        "walkSouthEast/04.png",
+        "walkSouthEast/05.png",
+        "walkSouthEast/06.png",
+        "walkSouthEast/07.png"
+      ]
+    },
+    "restSouthEast": {
+      "cels": ["restSouthEast/00.png"]
+    },
+    "idle": {
+      "cels": ["idle/00.png", "idle/01.png", "idle/02.png", "idle/03.png"]
+    },
+    "walk": {
+      "cels": [
+        "walk/00.png",
+        "walk/01.png",
+        "walk/02.png",
+        "walk/03.png",
+        "walk/04.png",
+        "walk/05.png",
+        "walk/06.png",
+        "walk/07.png"
+      ]
+    },
+    "rest": {
+      "cels": ["rest/00.png"]
+    },
+    "idleNorthEast": {
+      "cels": [
+        "idleNorthEast/00.png",
+        "idleNorthEast/01.png",
+        "idleNorthEast/02.png",
+        "idleNorthEast/03.png"
+      ]
+    },
+    "walkNorthEast": {
+      "cels": [
+        "walkNorthEast/00.png",
+        "walkNorthEast/01.png",
+        "walkNorthEast/02.png",
+        "walkNorthEast/03.png",
+        "walkNorthEast/04.png",
+        "walkNorthEast/05.png",
+        "walkNorthEast/06.png",
+        "walkNorthEast/07.png"
+      ]
+    },
+    "restNorthEast": {
+      "cels": ["restNorthEast/00.png"]
+    },
+    "idleNorth": {
+      "cels": ["idleNorth/00.png", "idleNorth/01.png", "idleNorth/02.png", "idleNorth/03.png"]
+    },
+    "walkNorth": {
+      "cels": [
+        "walkNorth/00.png",
+        "walkNorth/01.png",
+        "walkNorth/02.png",
+        "walkNorth/03.png",
+        "walkNorth/04.png",
+        "walkNorth/05.png",
+        "walkNorth/06.png",
+        "walkNorth/07.png"
+      ]
+    },
+    "restNorth": {
+      "cels": ["restNorth/00.png"]
+    },
+    "idleNorthWest": {
+      "cels": [
+        "idleNorthWest/00.png",
+        "idleNorthWest/01.png",
+        "idleNorthWest/02.png",
+        "idleNorthWest/03.png"
+      ]
+    },
+    "walkNorthWest": {
+      "cels": [
+        "walkNorthWest/00.png",
+        "walkNorthWest/01.png",
+        "walkNorthWest/02.png",
+        "walkNorthWest/03.png",
+        "walkNorthWest/04.png",
+        "walkNorthWest/05.png",
+        "walkNorthWest/06.png",
+        "walkNorthWest/07.png"
+      ]
+    },
+    "restNorthWest": {
+      "cels": ["restNorthWest/00.png"]
+    },
+    "idleWest": {
+      "cels": ["idleWest/00.png", "idleWest/01.png", "idleWest/02.png", "idleWest/03.png"]
+    },
+    "walkWest": {
+      "cels": [
+        "walkWest/00.png",
+        "walkWest/01.png",
+        "walkWest/02.png",
+        "walkWest/03.png",
+        "walkWest/04.png",
+        "walkWest/05.png",
+        "walkWest/06.png",
+        "walkWest/07.png"
+      ]
+    },
+    "restWest": {
+      "cels": ["restWest/00.png"]
+    },
+    "idleSouthWest": {
+      "cels": [
+        "idleSouthWest/00.png",
+        "idleSouthWest/01.png",
+        "idleSouthWest/02.png",
+        "idleSouthWest/03.png"
+      ]
+    },
+    "walkSouthWest": {
+      "cels": [
+        "walkSouthWest/00.png",
+        "walkSouthWest/01.png",
+        "walkSouthWest/02.png",
+        "walkSouthWest/03.png",
+        "walkSouthWest/04.png",
+        "walkSouthWest/05.png",
+        "walkSouthWest/06.png",
+        "walkSouthWest/07.png"
+      ]
+    },
+    "restSouthWest": {
+      "cels": ["restSouthWest/00.png"]
+    },
+    "hitSouth": {
+      "cels": ["hitSouth/00.png", "hitSouth/01.png", "hitSouth/02.png", "hitSouth/03.png"],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 40,
+        "h": 67
+      },
+      "anchor": {
+        "x": 0.625,
+        "y": 0.934328
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "hitSouthEast": {
+      "cels": [
+        "hitSouthEast/00.png",
+        "hitSouthEast/01.png",
+        "hitSouthEast/02.png",
+        "hitSouthEast/03.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 43,
+        "h": 67
+      },
+      "anchor": {
+        "x": 0.627907,
+        "y": 0.919403
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "hitEast": {
+      "cels": ["hitEast/00.png", "hitEast/01.png", "hitEast/02.png", "hitEast/03.png"],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 28,
+        "h": 67
+      },
+      "anchor": {
+        "x": 0.535714,
+        "y": 0.934328
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "hitNorthEast": {
+      "cels": [
+        "hitNorthEast/00.png",
+        "hitNorthEast/01.png",
+        "hitNorthEast/02.png",
+        "hitNorthEast/03.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 33,
+        "h": 68
+      },
+      "anchor": {
+        "x": 0.454545,
+        "y": 0.95
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "hitNorth": {
+      "cels": ["hitNorth/00.png", "hitNorth/01.png", "hitNorth/02.png", "hitNorth/03.png"],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 39,
+        "h": 67
+      },
+      "anchor": {
+        "x": 0.487179,
+        "y": 0.934328
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "hitNorthWest": {
+      "cels": [
+        "hitNorthWest/00.png",
+        "hitNorthWest/01.png",
+        "hitNorthWest/02.png",
+        "hitNorthWest/03.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 41,
+        "h": 68
+      },
+      "anchor": {
+        "x": 0.609756,
+        "y": 0.95
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "hitWest": {
+      "cels": ["hitWest/00.png", "hitWest/01.png", "hitWest/02.png", "hitWest/03.png"],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 32,
+        "h": 67
+      },
+      "anchor": {
+        "x": 0.65625,
+        "y": 0.934328
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "hitSouthWest": {
+      "cels": [
+        "hitSouthWest/00.png",
+        "hitSouthWest/01.png",
+        "hitSouthWest/02.png",
+        "hitSouthWest/03.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 0],
+      "frameSize": {
+        "w": 35,
+        "h": 66
+      },
+      "anchor": {
+        "x": 0.628571,
+        "y": 0.933333
+      },
+      "fps": 10.416667,
+      "loop": false,
+      "frameMs": [40, 150, 120, 80, 90]
+    },
+    "koSouthEast": {
+      "cels": [
+        "koSouthEast/00.png",
+        "koSouthEast/01.png",
+        "koSouthEast/02.png",
+        "koSouthEast/03.png",
+        "koSouthEast/04.png",
+        "koSouthEast/05.png",
+        "koSouthEast/06.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 4, 5, 6],
+      "frameSize": {
+        "w": 75,
+        "h": 74
+      },
+      "anchor": {
+        "x": 0.466667,
+        "y": 0.832432
+      },
+      "fps": 7.692308,
+      "loop": false,
+      "frameMs": [40, 160, 60, 50, 110, 90, 400]
+    },
+    "koSouthWest": {
+      "cels": [
+        "koSouthWest/00.png",
+        "koSouthWest/01.png",
+        "koSouthWest/02.png",
+        "koSouthWest/03.png",
+        "koSouthWest/04.png",
+        "koSouthWest/05.png",
+        "koSouthWest/06.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 4, 5, 6],
+      "frameSize": {
+        "w": 76,
+        "h": 72
+      },
+      "anchor": {
+        "x": 0.578947,
+        "y": 0.855556
+      },
+      "fps": 7.692308,
+      "loop": false,
+      "frameMs": [40, 160, 60, 50, 110, 90, 400]
+    },
+    "koNorthEast": {
+      "cels": [
+        "koNorthEast/00.png",
+        "koNorthEast/01.png",
+        "koNorthEast/02.png",
+        "koNorthEast/03.png",
+        "koNorthEast/04.png",
+        "koNorthEast/05.png",
+        "koNorthEast/06.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 4, 5, 6],
+      "frameSize": {
+        "w": 76,
+        "h": 72
+      },
+      "anchor": {
+        "x": 0.434211,
+        "y": 0.897222
+      },
+      "fps": 7.692308,
+      "loop": false,
+      "frameMs": [40, 160, 60, 50, 110, 90, 400]
+    },
+    "koNorthWest": {
+      "cels": [
+        "koNorthWest/00.png",
+        "koNorthWest/01.png",
+        "koNorthWest/02.png",
+        "koNorthWest/03.png",
+        "koNorthWest/04.png",
+        "koNorthWest/05.png",
+        "koNorthWest/06.png"
+      ],
+      "frameNames": [0, 1, 2, 3, 4, 5, 6],
+      "frameSize": {
+        "w": 71,
+        "h": 69
+      },
+      "anchor": {
+        "x": 0.619718,
+        "y": 0.936232
+      },
+      "fps": 7.692308,
+      "loop": false,
+      "frameMs": [40, 160, 60, 50, 110, 90, 400]
+    },
+    "cast": {
+      "cels": ["cast/00.png", "cast/01.png", "cast/02.png"],
+      "fps": 8,
+      "loop": false,
+      "source": "the old sheet's cast, redrawn (curate.json)"
+    },
+    "hit": {
+      "cels": ["hit/00.png"],
+      "frameSize": {
+        "w": 28,
+        "h": 67
+      },
+      "anchor": {
+        "x": 0.535714,
+        "y": 0.934328
+      },
+      "fps": 1,
+      "loop": false,
+      "source": "hitEast cel 2"
+    },
+    "ko": {
+      "cels": ["ko/00.png"],
+      "frameSize": {
+        "w": 75,
+        "h": 74
+      },
+      "anchor": {
+        "x": 0.466667,
+        "y": 0.832432
+      },
+      "fps": 1,
+      "loop": false,
+      "source": "koSouthEast last cel"
+    }
+  },
+  "placement": {
+    "south": {
+      "walk_job": "slinger-walk-south-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -5,
+      "restCel": 2,
+      "restDy": 2,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 84.95
+        },
+        "RA": {
+          "cel": 4,
+          "row": 84.53
+        }
+      },
+      "hit_job": "slinger-hit-south-s9711"
+    },
+    "south-east": {
+      "walk_job": "slinger-walk-south-east-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -1,
+      "restCel": 2,
+      "restDy": 3,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 81.62
+        },
+        "RA": {
+          "cel": 4,
+          "row": 81.76
+        }
+      },
+      "hit_job": "slinger-hit-south-east-s9711",
+      "ko_job": "slinger-ko-south-east-s9711"
+    },
+    "east": {
+      "walk_job": "slinger-walk-east-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": 0,
+      "restCel": 6,
+      "restDy": 0,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 77.98
+        },
+        "RA": {
+          "cel": 4,
+          "row": 78.29
+        }
+      },
+      "hit_job": "slinger-hit-east-s9711"
+    },
+    "north-east": {
+      "walk_job": "slinger-walk-north-east-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -3,
+      "restCel": 6,
+      "restDy": 4,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 72.71
+        },
+        "RA": {
+          "cel": 4,
+          "row": 72.82
+        }
+      },
+      "hit_job": "slinger-hit-north-east-s9711",
+      "ko_job": "slinger-ko-north-east-s9711"
+    },
+    "north": {
+      "walk_job": "slinger-walk-north-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -3,
+      "restCel": 2,
+      "restDy": 2,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 73.28
+        },
+        "RA": {
+          "cel": 4,
+          "row": 72.82
+        }
+      },
+      "hit_job": "slinger-hit-north-s9711"
+    },
+    "north-west": {
+      "walk_job": "slinger-walk-north-west-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -3,
+      "restCel": 2,
+      "restDy": 3,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 73.44
+        },
+        "RA": {
+          "cel": 4,
+          "row": 72.42
+        }
+      },
+      "hit_job": "slinger-hit-north-west-s9711",
+      "ko_job": "slinger-ko-north-west-s9711"
+    },
+    "west": {
+      "walk_job": "slinger-walk-west-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": 0,
+      "restCel": 2,
+      "restDy": 0,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 78.54
+        },
+        "RA": {
+          "cel": 4,
+          "row": 77.35
+        }
+      },
+      "hit_job": "slinger-hit-west-s9711"
+    },
+    "south-west": {
+      "walk_job": "slinger-walk-south-west-s9711",
+      "idleDy": 0,
+      "walkDx": 0,
+      "walkDy": -3,
+      "restCel": 2,
+      "restDy": 3,
+      "contact_rows": {
+        "LA": {
+          "cel": 0,
+          "row": 82.47
+        },
+        "RA": {
+          "cel": 4,
+          "row": 81.48
+        }
+      },
+      "hit_job": "slinger-hit-south-west-s9711",
+      "ko_job": "slinger-ko-south-west-s9711"
+    }
+  }
+}
