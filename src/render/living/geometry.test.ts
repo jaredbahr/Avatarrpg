@@ -3,7 +3,7 @@ import { Camera } from '../camera';
 import { FOOT_Y, hitsPebble, hitsVillager, riversideWalkTime } from './geometry';
 import { frameIndex, resolveClip } from '../sheets/resolveClip';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
-import { ASSETS, G_STRIDE_TILES } from '../../content/assets/manifest';
+import { ASSETS, G1_HEADING, G1_JOG } from '../../content/assets/manifest';
 import { WALK_MS_PER_TILE } from '../../app/animator';
 
 describe('riverside ground and gesture coordinates', () => {
@@ -31,19 +31,27 @@ describe('riverside ground and gesture coordinates', () => {
   it('keeps the animator phase for a four-way sheet', () => {
     expect(riversideWalkTime(WALK_MS_PER_TILE)).toBe(WALK_MS_PER_TILE);
   });
-  it('keeps the G logical stride cadence at riverside scale in every heading', () => {
-    for (const key of ['unit.fire.kaya', 'unit.water.sura'] as const) {
+  it('keeps the G jog cadence at riverside scale in every heading', () => {
+    for (const [key, name] of [
+      ['unit.fire.kaya', 'kaya'],
+      ['unit.water.sura', 'sura'],
+    ] as const) {
       const entry = ASSETS[key];
       if (entry?.kind !== 'sheet' || !entry.locomotion) throw new Error(`G sheet ${key}`);
-      for (const heading of HEADINGS) {
-        const clip = resolveClip(entry.clips, headingClip('walk', heading));
-        if (!clip?.exact) throw new Error(`${key} walk ${heading}`);
-        const clipTime = riversideWalkTime(entry.locomotion.walkMsPerTile[heading]);
+      HEADINGS.forEach((heading, i) => {
+        // The riverside draws the clip the animator picks: at the brisk
+        // stroll, the jog (ADR 0095).
+        const clip = resolveClip(entry.clips, headingClip('jog', heading));
+        if (!clip?.exact) throw new Error(`${key} jog ${heading}`);
+        const clipTime = riversideWalkTime(entry.locomotion!.walkMsPerTile[heading]);
         const cels = clipTime * (clip.def.fps / 1000);
-        expect(clip.def.frames.length / cels, `${key} ${heading}`).toBeCloseTo(G_STRIDE_TILES, 8);
+        expect(clip.def.frames.length / cels, `${key} ${heading}`).toBeCloseTo(
+          (G1_JOG[name] ?? 0) * (G1_HEADING[i] ?? 1),
+          8,
+        );
         // The cel index the life layer asks for is that same clock.
-        expect(frameIndex(clip, clipTime, undefined)).toBe(Math.floor(cels) % 12);
-      }
+        expect(frameIndex(clip, clipTime, undefined)).toBe(Math.floor(cels) % 10);
+      });
     }
   });
 });

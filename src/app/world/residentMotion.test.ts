@@ -516,7 +516,8 @@ describe('routines (Working Ba Dan)', () => {
 
   it('carries the basket over the bridge and back, pausing on each side', () => {
     const w = walks();
-    const frames = play(w, at('midday', AWAY[0]), 0, 60_000);
+    // The errand ambles at RESIDENT_AMBLE times the stroll (ADR 0095).
+    const frames = play(w, at('midday', AWAY[0]), 0, 120_000);
     const carrier = of(frames, CARRIER);
     const tiles = carrier.map((f) => key(f.drawPos));
     expect(tiles).toContain('9,6'); // on the bridge deck
@@ -563,6 +564,7 @@ describe('routines (Working Ba Dan)', () => {
     const walk = gao.slice(first, after);
     expect(walk.length).toBeGreaterThan(4);
     // The sheet authors the stride and its bob (issue #284): eight-way clips, nothing added.
+    // An errand leg ambles, so it draws the walk, never the jog (ADR 0095).
     expect(walk.every((figure) => /^(walk|idle)/.test(figure.clip ?? ''))).toBe(true);
     expect(walk.some((figure) => (figure.clip ?? '').startsWith('walk'))).toBe(true);
     expect(walk.every((figure) => figure.offset === undefined && figure.lean === 0)).toBe(true);
@@ -666,10 +668,15 @@ describe('routines (Working Ba Dan)', () => {
     const walking = apply(CONTENT, state, { type: 'walkTo', pos: beside }).state;
     expect(walking.screen).toBe('explore');
     let t = reached.t + 50;
+    const clips = new Set<string>();
     for (; t <= reached.t + 10_000 && v.walkingTo(SHOP); t += 50) {
       v.tick(t, false);
       v.update(VILLAGE, walking, [beside], true);
+      clips.add(gao(v)?.clip ?? '');
     }
+    // Called home, he jogs at the brisk pace; his errand legs amble on the walk (ADR 0095).
+    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(true);
+    expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(false);
     // Home on the next leg, not after the four-second hold at the crates.
     expect(t - reached.t).toBeLessThan(2_500);
     expect(gao(v)).toMatchObject({ drawPos: SHOP, walking: false });

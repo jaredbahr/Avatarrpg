@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ASSETS, G_STRIDE_TILES } from '../../content/assets/manifest';
+import {
+  ASSETS,
+  G1_AMBLE,
+  G1_HEADING,
+  G1_JOG,
+  G_STRIDE_TILES,
+} from '../../content/assets/manifest';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
 import type { ContentIndex, Vec2 } from '../../core/types';
 import { smoothPath } from '../../render/geometry/curve';
@@ -11,8 +17,10 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 const KAYA = 'unit.fire.kaya';
 /** A four-way sheet: a fixed near-authored clip phase per tile. */
 const FOUR_WAY = 'unit.earth.linmei';
-/** Kaya's walk cel: the clip's nominal 114 ms cadence. */
-const CEL_MS = 114;
+/** Kaya's moving cel: the jog's nominal 60 ms cadence (ADR 0095). */
+const CEL_MS = 60;
+/** Where Kaya's jog starts: its first planted cel. */
+const START_MS = 1 * CEL_MS;
 
 function gait() {
   const sheet = ASSETS[KAYA];
@@ -64,18 +72,29 @@ const E: [number, number] = [1, 0];
 const N: [number, number] = [0, -1];
 
 describe('eight-way walk phase across a turn', () => {
-  it('plays every G walk at the declared stride in every heading', () => {
+  it('plays every G jog, and every G walk, at the declared stride in every heading', () => {
     for (const [key, entry] of Object.entries(ASSETS)) {
       if (entry?.kind !== 'sheet' || entry.facing !== 'both' || !entry.locomotion) continue;
-      for (const heading of HEADINGS) {
-        const walk = entry.clips[headingClip('walk', heading)];
-        if (!walk) throw new Error(`${key} walk ${heading}`);
-        const celsPerTile = entry.locomotion.walkMsPerTile[heading] * (walk.fps / 1000);
-        expect(walk.frames.length / celsPerTile, `${key} ${heading}`).toBeCloseTo(
-          G_STRIDE_TILES,
-          8,
-        );
-      }
+      const name = /([a-z]+)-g\.json$/.exec(entry.atlas)?.[1] ?? '';
+      const jog = G1_JOG[name];
+      expect(Boolean(entry.locomotion.jog), key).toBe(jog !== undefined);
+      HEADINGS.forEach((heading, i) => {
+        const loop = (base: 'walk' | 'jog') => {
+          const def = entry.clips[headingClip(base, heading)];
+          if (!def) throw new Error(`${key} ${base} ${heading}`);
+          return def.frames.length / (entry.locomotion!.walkMsPerTile[heading] * (def.fps / 1000));
+        };
+        if (jog === undefined) {
+          // The quarry bender's 128 px sheet keeps ADR 0067's shared stride.
+          expect(loop('walk'), `${key} ${heading}`).toBeCloseTo(G_STRIDE_TILES, 8);
+          return;
+        }
+        // The jog covers its fitted loop (ADR 0095); a resident's walk, which
+        // only an errand plays, covers its share of it on the same clock.
+        expect(loop('jog'), `${key} ${heading}`).toBeCloseTo(jog * (G1_HEADING[i] ?? 1), 8);
+        if (key.startsWith('npc.'))
+          expect(loop('walk') / loop('jog'), `${key} ${heading}`).toBeCloseTo(G1_AMBLE, 8);
+      });
     }
   });
 
@@ -115,7 +134,7 @@ describe('eight-way walk phase across a turn', () => {
     for (const sample of trace(a, KAYA)) {
       const x = sample.pos.x - FROM.x;
       if (x > 2) break;
-      expect(sample.clipTime).toBeCloseTo(3 * CEL_MS + x * gait().east, 6);
+      expect(sample.clipTime).toBeCloseTo(START_MS + x * gait().east, 6);
     }
   });
 
@@ -133,7 +152,7 @@ describe('eight-way walk phase across a turn', () => {
       for (const t of [50, 150, 300, a.finishesAt - 1]) {
         const legacy = a.unitPose(t, 'p', FOUR_WAY)?.clipTime ?? -1;
         expect(
-          (a.unitPose(t, 'p', KAYA)?.clipTime ?? 0) - 3 * CEL_MS,
+          (a.unitPose(t, 'p', KAYA)?.clipTime ?? 0) - START_MS,
           `${projection} ${t}`,
         ).toBeCloseTo((legacy / WALK_MS_PER_TILE) * rate, 6);
       }

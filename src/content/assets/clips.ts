@@ -10,52 +10,36 @@
 
 export const BASE_CLIP_NAMES = ['idle', 'walk', 'cast', 'melee', 'hit', 'ko', 'wave'] as const;
 export type BaseClipName = (typeof BASE_CLIP_NAMES)[number];
-export const CLIP_NAMES = [
+/** The seven headings a heading clip names; east is the unsuffixed clip. */
+const SIDES = [
+  'North',
+  'NorthEast',
+  'SouthEast',
+  'South',
+  'SouthWest',
+  'West',
+  'NorthWest',
+] as const;
+const sided = <B extends string>(base: B) =>
+  SIDES.map((side) => `${base}${side}` as `${B}${(typeof SIDES)[number]}`);
+/** Every clip but the jog, in the order a painter's baked sheet lays them out (`layout.ts`). */
+export const BAKED_CLIP_NAMES = [
   ...BASE_CLIP_NAMES,
-  'idleNorth',
-  'idleNorthEast',
-  'idleSouthEast',
-  'idleSouth',
-  'idleSouthWest',
-  'idleWest',
-  'idleNorthWest',
-  'walkNorth',
-  'walkNorthEast',
-  'walkSouthEast',
-  'walkSouth',
-  'walkSouthWest',
-  'walkWest',
-  'walkNorthWest',
+  ...sided('idle'),
+  ...sided('walk'),
   'rest',
-  'restNorth',
-  'restNorthEast',
-  'restSouthEast',
-  'restSouth',
-  'restSouthWest',
-  'restWest',
-  'restNorthWest',
+  ...sided('rest'),
   'tea',
   'stance',
-  'stanceNorth',
-  'stanceNorthEast',
-  'stanceSouthEast',
-  'stanceSouth',
-  'stanceSouthWest',
-  'stanceWest',
-  'stanceNorthWest',
-  'koNorthEast',
-  'koSouthEast',
-  'koSouthWest',
-  'koNorthWest',
+  ...sided('stance'),
+  ...(['NorthEast', 'SouthEast', 'SouthWest', 'NorthWest'] as const).map(
+    (side) => `ko${side}` as const,
+  ),
   'hitEast',
-  'hitSouthEast',
-  'hitSouth',
-  'hitSouthWest',
-  'hitWest',
-  'hitNorthWest',
-  'hitNorth',
-  'hitNorthEast',
+  ...sided('hit'),
 ] as const;
+/** Every clip a sheet can carry: a G1 sheet's jog too (ADR 0095), which no painter bakes. */
+export const CLIP_NAMES = [...BAKED_CLIP_NAMES, 'jog', .../* @__PURE__ */ sided('jog')] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
 /** The eight screen headings an eight-way locomotion sheet authors, clockwise from east. */
@@ -75,10 +59,16 @@ export type Heading = (typeof HEADINGS)[number];
  * A sheet's declared locomotion capability (ADR 0050). Absent means the legacy
  * four-way contract: a mirrored side walk plus front and back poses. An
  * eight-way sheet carries an idle, walk and rest clip for every heading and
- * the clip time its walk plays per logical tile of travel in each.
+ * the clip time its moving clip plays per logical tile of travel in each.
  */
 export interface LocomotionDef {
   readonly headings: 8;
+  /**
+   * The sheet also carries a jog in every heading, and every move at the brisk
+   * pace plays it instead of the walk (ADR 0095); the timing below is then the
+   * jog's. The walk stays for the slow routine errands (`residentMotion.ts`).
+   */
+  readonly jog?: boolean;
   readonly walkMsPerTile: Readonly<Record<Heading, number>>;
   /** Start on a planted passing pose instead of the loop's widest stride. */
   readonly walkStartMs: number;
@@ -89,9 +79,9 @@ export interface LocomotionDef {
 }
 
 /** The clip families an eight-way sheet authors per heading. */
-export type HeadingClipBase = 'idle' | 'walk' | 'rest' | 'stance';
+export type HeadingClipBase = 'idle' | 'walk' | 'jog' | 'rest' | 'stance';
 
-/** The idle, walk, rest or stance clip for a heading; east is the unsuffixed clip. */
+/** The idle, walk, jog, rest or stance clip for a heading; east is the unsuffixed clip. */
 export function headingClip(base: HeadingClipBase, heading: Heading): ClipName {
   if (heading === 'east') return base;
   return `${base}${heading[0]?.toUpperCase() ?? ''}${heading.slice(1)}` as ClipName;
@@ -193,6 +183,14 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   walkSouthWest: { min: 4, max: 12 },
   walkWest: { min: 4, max: 12 },
   walkNorthWest: { min: 4, max: 12 },
+  jog: { min: 4, max: 12 },
+  jogNorth: { min: 4, max: 12 },
+  jogNorthEast: { min: 4, max: 12 },
+  jogSouthEast: { min: 4, max: 12 },
+  jogSouth: { min: 4, max: 12 },
+  jogSouthWest: { min: 4, max: 12 },
+  jogWest: { min: 4, max: 12 },
+  jogNorthWest: { min: 4, max: 12 },
   rest: { min: 1, max: 1 },
   restNorth: { min: 1, max: 1 },
   restNorthEast: { min: 1, max: 1 },
@@ -241,7 +239,7 @@ export function isTimedBareClip(clip: ClipName, def: ClipDef): boolean {
  * still mirrored. One test for both backends (ADR 0002).
  */
 export function authoredForBothSides(clip: ClipName): boolean {
-  return /^(idle|walk|rest|stance)|^(ko|hit)[A-Z]/.test(clip);
+  return /^(idle|walk|jog|rest|stance)|^(ko|hit)[A-Z]/.test(clip);
 }
 
 /** The clip's length in ms when it plays once through: its frame holds, or its frames at `fps`. */

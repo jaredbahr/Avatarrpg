@@ -214,6 +214,8 @@ interface Track {
   readonly walkEnd: number;
   readonly end: number;
   readonly fade: number;
+  /** A routine errand's leg: it ambles, so it draws the walk, not the jog. */
+  readonly amble?: boolean;
 }
 
 /** One person as the map draws them now. */
@@ -246,7 +248,7 @@ export interface ResidentFigure {
 }
 
 /** The idle a heading clip settles into. */
-const idleOf = (clip: ClipName): ClipName => clip.replace(/^(walk|rest)/, 'idle') as ClipName;
+const idleOf = (clip: ClipName): ClipName => clip.replace(/^(walk|jog|rest)/, 'idle') as ClipName;
 /** One idle loop: four cels at 4 fps. */
 const G_IDLE_CYCLE_MS = 1000;
 
@@ -269,6 +271,14 @@ const WORK_LEAN_RAD = 0.03;
 
 /** A resident stride has two planted contacts and never lifts more than two pixels at 1x. */
 export const RESIDENT_STRIDE_MS = 500;
+/**
+ * How much slower a routine errand goes than the brisk stroll (ADR 0095): 2 s a
+ * tile, where the walk, whose feet cover about half a tile a loop, plays at its
+ * authored rate with its planted foot on the ground. Every other move (a
+ * placement, a call home) keeps the brisk pace and jogs. The errand's animator
+ * is read on a clock slowed this much.
+ */
+export const RESIDENT_AMBLE = 4;
 export const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
 export const RESIDENT_CONTACT_MS = 60;
 export const RESIDENT_BOB_PX = 2;
@@ -578,6 +588,7 @@ export class ResidentWalks {
         errand.walk = this.walk(
           { kind: 'walk', who, from: at, path: next.path, enter: false, leave: false },
           map,
+          true,
         );
       } else {
         // Home waits for nobody's tile to clear unless called, and goes round
@@ -595,7 +606,11 @@ export class ResidentWalks {
                 [[...taken, ...clear].map(posKey)],
               );
         errand.walk = path
-          ? this.walk({ kind: 'walk', who, from: at, path, enter: false, leave: false }, map)
+          ? this.walk(
+              { kind: 'walk', who, from: at, path, enter: false, leave: false },
+              map,
+              !recalled && !near,
+            )
           : this.fade({ kind: 'fade', who, from: at, to: who.pos });
       }
       errand.leg = index;
@@ -619,7 +634,11 @@ export class ResidentWalks {
     return { motion, animator: null, start: at, walkEnd: at + out, end, fade };
   }
 
-  private walk(motion: Extract<ResidentMotion, { kind: 'walk' }>, map: MapDef): Track {
+  private walk(
+    motion: Extract<ResidentMotion, { kind: 'walk' }>,
+    map: MapDef,
+    amble?: boolean,
+  ): Track {
     const id = motion.who.id;
     const fade = FADE_MS * (this.reduced() ? 0.02 : 1);
     const at = this.clock;
@@ -631,9 +650,12 @@ export class ResidentWalks {
       [],
       { silentSteps: true, delayMs: motion.enter ? FADE_MS : 0 },
     );
-    const walkEnd = Math.max(at + (motion.enter ? fade : 0), animator.finishesAt);
+    const walkEnd = Math.max(
+      at + (motion.enter ? fade : 0),
+      at + (animator.finishesAt - at) * (amble ? RESIDENT_AMBLE : 1),
+    );
     const end = walkEnd + (motion.leave ? fade : 0);
-    return { motion, animator, start: at, walkEnd, end, fade };
+    return { motion, animator, start: at, walkEnd, end, fade, amble };
   }
 
   /** Everyone the map draws now: the people last planned for, and anyone still walking off. */
@@ -735,10 +757,13 @@ export class ResidentWalks {
     }
     const animator = track.animator;
     const end = motion.path.at(-1) ?? motion.from;
-    const drawPos = animator?.renderPos(c, who.id) ?? (c < walkEnd ? motion.from : end);
-    const clip = animator?.locomotion(c, who.id, 'rest', who.sprite).clip ?? 'rest';
+    // An errand's animator runs on its own slowed clock.
+    const t = track.amble ? start + (c - start) / RESIDENT_AMBLE : c;
+    const drawPos = animator?.renderPos(t, who.id) ?? (c < walkEnd ? motion.from : end);
+    const moving = animator?.locomotion(t, who.id, 'rest', who.sprite).clip ?? 'rest';
+    const clip = (track.amble ? moving.replace('jog', 'walk') : moving) as ClipName;
     const facing = animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1;
-    const clipTime = animator?.unitPose(c, who.id, who.sprite)?.clipTime ?? 0;
+    const clipTime = animator?.unitPose(t, who.id, who.sprite)?.clipTime ?? 0;
     // A G sheet plants an idle cel at a turn, as the party's does (ADR 0067);
     // the figure is still on its route, so it is still walking.
     const gait = sheetLocomotion(who.sprite)?.headings === 8;
