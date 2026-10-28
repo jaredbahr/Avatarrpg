@@ -275,8 +275,9 @@ export const RESIDENT_STRIDE_MS = 500;
  * How much slower a routine errand goes than the brisk stroll (ADR 0095): 2 s a
  * tile, where the walk, whose feet cover about half a tile a loop, plays at its
  * authored rate with its planted foot on the ground. Every other move (a
- * placement, a call home) keeps the brisk pace and jogs. The errand's animator
- * is read on a clock slowed this much.
+ * placement, a call home) keeps the brisk pace and jogs, except for a figure
+ * whose sheet has no jog (Mira), who ambles everywhere. The ambling animator is
+ * read on a clock slowed this much.
  */
 export const RESIDENT_AMBLE = 4;
 export const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
@@ -637,22 +638,26 @@ export class ResidentWalks {
   private walk(
     motion: Extract<ResidentMotion, { kind: 'walk' }>,
     map: MapDef,
-    amble?: boolean,
+    errand?: boolean,
   ): Track {
     const id = motion.who.id;
     const fade = FADE_MS * (this.reduced() ? 0.02 : 1);
     const at = this.clock;
+    // A G sheet without a jog walks everywhere at the amble (Mira, ADR 0095).
+    const amble = errand || sheetLocomotion(motion.who.sprite)?.jog === false;
+    const slow = amble ? RESIDENT_AMBLE : 1;
     const animator = new Animator(this.content, { motionReduced: this.reduced });
     animator.setProjection(map.projection ?? 'orthographic');
     animator.push(
       at,
       [{ type: 'partyWalked', unitId: id, from: motion.from, path: motion.path }],
       [],
-      { silentSteps: true, delayMs: motion.enter ? FADE_MS : 0 },
+      // Read on the slowed clock, the fade-in still lasts FADE_MS.
+      { silentSteps: true, delayMs: motion.enter ? FADE_MS / slow : 0 },
     );
     const walkEnd = Math.max(
       at + (motion.enter ? fade : 0),
-      at + (animator.finishesAt - at) * (amble ? RESIDENT_AMBLE : 1),
+      at + (animator.finishesAt - at) * slow,
     );
     const end = walkEnd + (motion.leave ? fade : 0);
     return { motion, animator, start: at, walkEnd, end, fade, amble };

@@ -252,8 +252,10 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   (`G1_JOG`, `G1_HEADING`); `Animator.walkClipTime` divides it by the figure scale (1.25 on oblique boards, ADR 0094's
   amendment), so it stays planted at any scale.
   The `walk*` clips stay for slow moves: a resident's routine errand ambles at `RESIDENT_AMBLE` times the stroll and
-  draws the walk at the rate `G1_AMBLE` sets. A new slow or scripted move must draw the walk on a clock whose ms a tile
-  is the walk's own; the walk at the brisk pace slides 5-16 px a stance cel. Measure with `walk_stride.py --manifest`.
+  draws the walk at the rate `G1_AMBLE` sets. Mira never jogs (owner, 2026-10-28): her sheet leaves `jog` off
+  (`G1_WALKS_ONLY`), so every move of hers ambles; do not give her the jog back. A new slow or scripted move must
+  draw the walk on a clock whose ms a tile is the walk's own; the walk at the brisk pace slides 5-16 px a stance cel.
+  Measure with `walk_stride.py --manifest`.
 - **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
   on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
   smooths, or a mask at screen resolution, brings back the soft edge the pass removed. Every figure and prop on an
