@@ -288,4 +288,6 @@ as feet only the columns that reach the piece's footprint (a hanging lantern or 
 same key and tone; then a 1 px contact line under every edge that stands on that ground. A pixel a later polish step had
 repainted is capped at the unshaded ground around it, so the lift leaves no pale ghost. The garden plot (repainted by
 `garden.py`) is not re-shaded. All six regions passed the gate without `--force`. Before and after of each object:
-`art/source/grounding/painted/` (ADR 0093's fault list).
+`art/source/grounding/painted/` (ADR 0093's fault list). A second look grounds Gao's yard posts and cart wheel from outlines traced at
+6x (`EXTRA_SHAPES`), keeping their cast off the porch post (`NOT_GROUND`); the court trees and the garden plot are kept
+(fault list 29 to 31).

@@ -120,10 +120,10 @@ and things." Painted Ba Dan pieces came into scope. The numbered list, with a be
    (`groundedCast` with the piece's footprint as its feet, `footprintSpan` / `pieceFeet`, and the contact line), on
    both backends. The forest's keeper's lodge and its roadside props opt in; the lantern (its lamp hangs) and every
    tree keep the foot projection. `propGrounding.test.ts` holds the signpost case and the forest's opt-ins.
-3. **Not fixed, flagged.** Gao's yard posts and handcart, painted inside the house sprite with no silhouette of their
-   own or an outline plain enough to author; the court trees' bases, whose frozen silhouettes run below the painted
-   roots over grass and path (both deterministic attempts drew a streak along the path); the garden plot, repainted
-   whole by `garden.py`. Each needs a region repaint through `regions.py guide` and the gate.
+3. **Flagged, then revisited.** Gao's yard posts and cart are traced in `shadows.py` (`EXTRA_SHAPES`: two boxes under
+   their caps and the wheel's ellipse) and grounded as the barrel is, the porch post beside them kept out of the cast
+   (`NOT_GROUND`). The court trees' bases (roots spread into ferns; a trunk cast would streak across the path) and the
+   garden plot (2 px bean poles over dark furrows) are kept. No PixelLab generation was needed.
 4. **The radial pool is gone.** No figure on an oblique board reached it once every scene had a contact layer; only a
    figure with `castShadow: false` still did, and that now means no shadow at all. Both backends drop the pool and
    Canvas drops the non-exact union path, which no scene took. The bundle needed the room: the forest's scenery

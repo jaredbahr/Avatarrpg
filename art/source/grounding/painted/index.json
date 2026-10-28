@@ -166,5 +166,12 @@
     "piece": null,
     "world_px": [990, 648, 31, 23],
     "crop": "24-roof-tile.png"
+  },
+  {
+    "n": 29,
+    "object": "gao-yard",
+    "piece": null,
+    "world_px": [1369, 382, 81, 66],
+    "crop": "29-gao-yard.png"
   }
 ]
