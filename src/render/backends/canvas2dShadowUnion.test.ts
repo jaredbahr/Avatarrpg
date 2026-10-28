@@ -193,7 +193,6 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
       ctx: mainCtx,
       // One texel per pixel: the union's arithmetic is what is under test, not the grid.
       shadowGridNow: shadowGrid({ width: W, height: H }, 1, 0, 0),
-      exactMax: proto.exactMax,
       castInto: proto.castInto,
       toShadowTexels: proto.toShadowTexels,
       drawShadowTexels: proto.drawShadowTexels,

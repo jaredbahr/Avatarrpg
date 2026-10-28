@@ -53,7 +53,7 @@ import {
   sway,
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
-import { sceneryZ, shadowZ } from './depthOrder';
+import { sceneryZ } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
@@ -76,7 +76,6 @@ import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
   actorReticleX,
   actorSilhouetteGeometry,
-  actorShadowDensity,
   fallbackBarTop,
   floaterFontPx,
   floaterOwner,
@@ -2788,19 +2787,6 @@ export class PixiBackend implements RenderBackend {
           { x: footX, y: ground + FOOT_LINE * TILE },
           alpha,
         );
-      if (treatment.pool) {
-        const shadowKey = `shadow:${npc.id}`;
-        live.add(shadowKey);
-        const shadow = this.unitSprite(shadowKey);
-        const density = actorShadowDensity(view.grid, at, true, width, false);
-        shadow.texture = this.texture(sprites.shadow(px * scale, density));
-        shadow.anchor.set(0.5, 0.86);
-        shadow.position.set(footX, ground + FOOT_LINE * TILE);
-        shadow.width = shadow.height = TILE * scale;
-        shadow.alpha = alpha;
-        shadow.zIndex = shadowZ(sprite.zIndex);
-        shadow.visible = true;
-      }
 
       // A small "talk" pip so a child can tell an NPC from scenery.
       if (!npc.quiet)
@@ -2879,37 +2865,10 @@ export class PixiBackend implements RenderBackend {
       const sprite = this.unitSprite(unit.id);
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const shadowDensity = actorShadowDensity(
-        view.grid,
-        pos,
-        unit.shadow === true,
-        unit.size,
-        this.squareFootprints,
-      );
       const treatment = groundTreatment(this.grounding, {
         castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: shadowDensity > 0,
+        defaultPool: false,
       });
-      if (treatment.pool) {
-        // On the ground, not on the bob (explore maps, ADR 0015; grass, canvas2d.ts).
-        const key = `shadow:${unit.id}`;
-        live.add(key);
-        const shadow = this.unitSprite(key);
-        shadow.texture = this.texture(sprites.shadow(px * (unit.scale ?? 1), shadowDensity));
-        shadow.anchor.set(0.5, 0.86);
-        const footprint = this.squareFootprints ? unit.size : 1;
-        shadow.position.set(
-          anchor.x + width / 2,
-          anchor.y + (0.86 - lift - (footprint - 1) * 0.5) * TILE,
-        );
-        // Keep a square unit's contact shadow on its rules footprint even when
-        // its upright cel has projection-specific presentation compensation.
-        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : (unit.scale ?? 1);
-        shadow.width = shadow.height = TILE * shadowScale * footprint;
-        shadow.alpha = alpha;
-        shadow.zIndex = shadowZ(depth(pos, unit.size));
-        shadow.visible = true;
-      }
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.

@@ -258,11 +258,12 @@ describe('scene actor grounding', () => {
     const read = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8');
     for (const source of [read('./backends/pixi.ts'), read('./backends/canvas2d.ts')]) {
       expect(source).toContain('actorGrounding(view.scene)');
-      expect(source).toContain('shadowCeiling(this.grounding)');
       expect(source).toContain('contactBandRows(');
       expect(source).toContain('CONTACT_BAND.drop');
       expect(source).toContain('CONTACT_BAND.spreadX');
       expect(source).toContain('CONTACT_BAND.spreadY');
     }
+    // WebGL writes each caster as a fraction of the tint's ceiling; Canvas writes absolute levels (`castInto`).
+    expect(read('./backends/pixi.ts')).toContain('shadowCeiling(this.grounding)');
   });
 });

@@ -38,7 +38,7 @@ and 3, 4x nearest crops) found:
    every figure that casts gets the sole band cut from its own frame (ADR 0077) and loses the radial pool, on every
    oblique board. Ba Dan keeps `{ cast: 0.5, contact: 0.8 }`. The forest and the quarry paint no shadows of their own,
    so 0.6 keeps the band clearly darker than the cast it sits in, in the ratio Ba Dan's has. A figure with
-   `castShadow: false` keeps its pool, as before.
+   `castShadow: false` draws no shadow at all (amendment below).
 3. **A prop stands on its own base.** Two parts, both in the union:
    - **Its cast starts at its base** (`groundedCast`, `groundProfile`). A prop's art is a solid object whose base is a
      shape on screen, not a point: a box's base is a V (front corner low, side corners higher), a tripod's or a cart's
@@ -90,7 +90,7 @@ shipped files.
 
 ## Consequences
 
-Every scene now takes ADR 0077's exact-max Canvas path (it is chosen whenever a contact layer exists); its per-caster
+Every scene now takes ADR 0077's exact-max Canvas path (since the amendment, the only one); its per-caster
 blits are bounded to each caster's box, and the mask is now a quarter (N = 2) to a ninth (N = 3) of the pixels it
 was, so the path costs less than the old default did. WebGL renders the mask at world resolution, also a fraction of
 the old half-device target. A shadow's edge now steps a whole world pixel at a time; under a camera ease between
@@ -123,3 +123,7 @@ and things." Painted Ba Dan pieces came into scope. The numbered list, with a be
    own or an outline plain enough to author; the court trees' bases, whose frozen silhouettes run below the painted
    roots over grass and path (both deterministic attempts drew a streak along the path); the garden plot, repainted
    whole by `garden.py`. Each needs a region repaint through `regions.py guide` and the gate.
+4. **The radial pool is gone.** No figure on an oblique board reached it once every scene had a contact layer; only a
+   figure with `castShadow: false` still did, and that now means no shadow at all. Both backends drop the pool and
+   Canvas drops the non-exact union path, which no scene took. The bundle needed the room: the forest's scenery
+   grounding put it over its 360 KB budget.
