@@ -29,13 +29,13 @@ antialiasing).
 
 ## Consequences
 
-| measure                         | before              | after       |
-| ------------------------------- | ------------------- | ----------- |
-| `public/art/maps/ba-dan-scene`  | 3,605,650 B         | 2,174,672 B |
-| `public/art/maps/forest-g1`     | 1,009,552 B         | 860,072 B   |
-| maps family                     | 6.98 MiB            | 5.48 MiB    |
-| Ba Dan decoded (ground + pages) | 67.2 MiB            | 29.7 MiB    |
-| precache (at merge, with #296)  | about 23.5 of 25 MB | see the PR  |
+| measure                         | before              | after                     |
+| ------------------------------- | ------------------- | ------------------------- |
+| `public/art/maps/ba-dan-scene`  | 3,605,650 B         | 2,174,672 B               |
+| `public/art/maps/forest-g1`     | 1,009,552 B         | 860,072 B                 |
+| maps family                     | 6.98 MiB            | 5.48 MiB                  |
+| Ba Dan decoded (ground + pages) | 67.2 MiB            | 29.7 MiB                  |
+| precache (built `dist`)         | about 23.5 of 25 MB | 20.72 of 25 MB, with #296 |
 
 - At N = 2 the share of 2 x 2 device-pixel blocks that are one colour (one art px each) in the Ba Dan slice rose from 9-29 % to
   86-100 % (paving, roof and canopy samples); the remainder is the lossy ground codec and the figures.
