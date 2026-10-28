@@ -5,6 +5,7 @@
  * slowly this container draws.
  *
  * For the canvas backend it writes, under FNT_JOG_DIR (default .shots/jog/<label>):
+ * - gao-door.png: Gao at his shopfront beside his door, before the party sets off;
  * - ba-dan/NNN.png: the slice (as e2e/ba-dan-demo.review.ts frames it) every
  *   40 ms while the party crosses it, road to bridge;
  * - forest/NNN.png: Kaya's longest straight move from beside the oil flask,
@@ -13,6 +14,10 @@
  * `art/source/jog-g1/tools/gifs.sh` turns each folder into a GIF.
  *
  * Local review fixture only: not a playthrough, not a CI check.
+ *
+ * FNT_JOG_ZOOM sets the Ba Dan zoom asked for (default 77 px tiles; `default` keeps the
+ * scene's own fit). FNT_JOG_VIDEO=1 records the run (playwright.jog.config.ts), and the
+ * party first crosses the slice once in real time, so the video plays at the game's speed.
  *
  * FNT_JOG_LABEL=after npx playwright test -c playwright.jog.config.ts
  */
@@ -139,14 +144,45 @@ test('canvas jog captures', async ({ page }) => {
   await enterNode(page, 'village_explore');
   await waitForIdle(page);
   await settleLayout(page);
-  await zoom(page, 77);
-  await page.evaluate(() => {
-    const app = window.fnt!.app;
-    const state = app.state!;
-    app.adoptSave({ ...state, location: { ...state.location, pos: { x: 1, y: 8 } } }, undefined);
+  const zoomTo = process.env.FNT_JOG_ZOOM ?? '77';
+  if (zoomTo !== 'default') await zoom(page, Number(zoomTo));
+  const tilePx = await page.evaluate(() => window.fnt!.app.rendererCamera()!.tilePx);
+  const startAt = async () => {
+    await page.evaluate(() => {
+      const app = window.fnt!.app;
+      const state = app.state!;
+      app.adoptSave({ ...state, location: { ...state.location, pos: { x: 1, y: 8 } } }, undefined);
+    });
+    await waitForIdle(page);
+    await centerTile(page, 5, 7);
+  };
+  // Gao at his shopfront (9, 4), his door up the steps behind him.
+  await startAt();
+  await centerTile(page, 9, 3.5);
+  await page.waitForTimeout(600);
+  const view = await page.locator('.map-canvas').boundingBox();
+  if (!view) throw new Error('No canvas');
+  await page.screenshot({
+    path: `${folder}/gao-door.png`,
+    clip: {
+      x: Math.round(view.x + view.width / 2 - tilePx * 1.75),
+      y: Math.round(view.y + view.height / 2 - tilePx * 1.75),
+      width: Math.round(tilePx * 3.5),
+      height: Math.round(tilePx * 3),
+    },
   });
-  await waitForIdle(page);
-  await centerTile(page, 5, 7);
+  if (process.env.FNT_JOG_VIDEO) {
+    // The party crosses the slice once at the game's own pace, for the recording.
+    await startAt();
+    await page.waitForTimeout(600);
+    await page.locator('.map-canvas').click({ position: await tilePoint(page, 9, 8) });
+    await expect
+      .poll(() => page.evaluate(() => window.fnt!.app.state!.location.pos.x), { timeout: 20_000 })
+      .toBe(9);
+    await waitForIdle(page);
+    await page.waitForTimeout(800);
+  }
+  await startAt();
   await page.waitForTimeout(600);
   const box = await page.locator('.map-canvas').boundingBox();
   if (!box) throw new Error('No canvas');

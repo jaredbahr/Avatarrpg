@@ -14,6 +14,8 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${port}`,
     viewport: { width: 1368, height: 912 },
     serviceWorkers: 'block',
+    // FNT_JOG_VIDEO=1 records the run; the real-time crossing of Ba Dan is in it.
+    video: process.env.FNT_JOG_VIDEO ? { mode: 'on', size: { width: 1368, height: 912 } } : 'off',
     launchOptions: process.env.FNT_REVIEW_BROWSER_CHANNEL
       ? { channel: process.env.FNT_REVIEW_BROWSER_CHANNEL }
       : {},
