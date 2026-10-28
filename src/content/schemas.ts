@@ -157,12 +157,25 @@ const flagValue = z.union([z.boolean(), z.number(), z.string()]);
  */
 export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
   z.union([
-    z.object({
-      kind: z.literal('flag'),
-      key: z.string().min(1),
-      op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
-      value: flagValue.optional(),
-    }),
+    z
+      .object({
+        kind: z.literal('flag'),
+        key: z.string().min(1),
+        op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
+        value: flagValue.optional(),
+      })
+      .superRefine((condition, context) => {
+        if (
+          (condition.op === 'gte' || condition.op === 'lte') &&
+          typeof condition.value !== 'number'
+        ) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['value'],
+            message: `${condition.op} requires a numeric value`,
+          });
+        }
+      }),
     z.object({
       kind: z.literal('partyHas'),
       element: elementId.optional(),
