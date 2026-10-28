@@ -1,3 +1,4 @@
+import type { ClipName } from '../content/assets/clips';
 import { FOOT_LINE } from './sheets/bake';
 
 /** One scene light shared by painted geometry and both runtime backends. */
@@ -398,6 +399,21 @@ export function structureShadowPolygons(
 /** Opaque masks use max coverage; fixed alpha is applied only when composited. */
 export function unionShadowCoverage(a: number, b: number): number {
   return Math.max(a, b);
+}
+
+/**
+ * The cel a figure casts its shadow from (ADR 0093's amendment, owner,
+ * 2026-10-28: "Shadows are off and it makes it look like their legs are
+ * growing"). While it stands, walks, jogs or settles, a figure casts its
+ * heading's idle, first cel: one steady shape at its feet, not the swing of its
+ * legs sheared across the ground and jumping from cel to cel. Its contact band
+ * still follows the drawn feet. An action (a bend, a hit, a knockout) casts its
+ * own frame, so a body that falls lies on its shadow: null, cast the frame.
+ */
+export function castFrame(clip: ClipName): { clip: ClipName; clipTime: 0 } | null {
+  return /^(walk|jog|rest|idle|stance)/.test(clip)
+    ? { clip: clip.replace(/^(walk|jog|rest|stance)/, 'idle') as ClipName, clipTime: 0 }
+    : null;
 }
 
 export function castShadowStrength(policy?: false | 'reduced'): number {
