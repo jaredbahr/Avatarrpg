@@ -192,3 +192,43 @@ a row (no gap between legs), larger for a larger or two-tile figure. Before and 
 Known faults: the pool does not follow a figure's stance, so a wide-legged action pose can show a boot past it; the
 painted world has no figures to sample, so the pool's size is judged by eye against the barrel's and the table's;
 the forest's tone is not fitted (it names no ink).
+
+## Amendment, 2026-10-28: a figure stands on its own soles
+
+The owner, relayed, on #319 and the world-style figures: **"Better. They're still floating."** Measured on every idle
+and walk cel of the eight-way sheets and the `?style=world` sheets, at the oblique figure scale:
+
+- **The cels did not stand on their anchor.** A sheet's anchor is one foot line for every cel, but the drawn soles
+  were not on it: the shipped walks' lowest sole ran from 8 world px below the line (sunk) to 9.5 above it (hovering),
+  the world-style walks from 5.5 below to 3.5 above, and several idles 2 px above.
+- **The pool sat beside the feet.** On a three-quarter heading the anchor is near one foot. The resting feet's middle
+  was 3 to 9 world px to the side of the anchor the pool was centred on, so it read as offset down-right or
+  down-left of the figure.
+
+Decision:
+
+1. **Every standing or walking cel stands on its lowest sole.** When an atlas loads, the store measures each idle,
+   walk, jog, rest and stance cel's pixels (`feetFromPixels` in `src/render/sheets/feet.ts`, `atlasFeet` in the
+   store) and stands it by `plantAnchor`: the sheet's anchor with its foot line moved to the row under the cel's
+   lowest opaque sole, when that is within 0.16 tile of it (further is not a foot). Both backends draw from the
+   resolved anchor, so the planted foot is on the tile's ground point in every cel. The art's bob, the body against
+   its planted foot, is kept. Actions (hits, knockouts, bends, casts) keep their authored anchor. Measured from the
+   art at load, it holds for any sheet a redraw ships, with no data to keep in step.
+2. **The pool centres on the feet.** `poolOffset` moves the pool to the middle of the heading's resting soles
+   (its idle cel's), mirrored with the body: one offset a heading, so the pool is still steady while the legs move.
+3. **A contact line under each planted sole.** A sole is a column whose lowest pixel is within `SOLE_REACH`
+   (0.05 tile) of the lowest: the near foot and the far foot a few rows higher, never a lifted swing foot.
+   `soleContactArt` lays the painting's contact tone on each sole's bottom row and the row under it, one pixel wider
+   either side, placed exactly as the cel is drawn, so a 1–2 world px dark line shows where the boot meets the
+   ground. It follows the drawn soles cel by cel; the pool around it does not. A figure with no measured feet (a
+   painter placeholder, a bend cel) keeps the pool's elliptical core as its contact.
+
+`src/render/sheets/feet.test.ts` decodes every shipped eight-way sheet and the `?style=world` sheets and holds every
+idle and walk cel's lowest opaque row on its resolved anchor within one world pixel (it fails without the planting:
+Kaya's idle by 1.8, the world Kaya's walk by 3.5). `store.test.ts` holds the store to it end to end, and
+`canvas2d.test.ts` the contact's placement and the pool's offset. Before and after crops, a mid-walk strip among
+them, are in `art/source/grounding/review/figure-planting/`.
+
+Known faults: a cel whose soles are more than 0.16 tile off its anchor keeps the authored line (none ships); the
+contact line steps with the art's own pixel grid at 1.25 world px an art px on the shipped sheets; the jog is not
+played (ADR 0095), so its cels are planted but unseen.
