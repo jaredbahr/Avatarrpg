@@ -10,9 +10,10 @@
  * - badan-walk-strip.png: the leader's feet every half cel of one walk east, side
  *   by side; the camera follows the leader, so the paving moves under them and a
  *   planted foot that drifts against it shows;
- * - forest-wide-N<n>.png and forest-feet-<who>-4x.png / forest-prop-<id>-4x.png:
- *   the first fight, the party on the road, bandits on the tier-1 bank and the
- *   tier-2 perch (the raised-tile lift), and every prop's base;
+ * - forest-wide-<frame>-N<n>.png and forest-<frame>-<who>-N<n>-4x.png: the first
+ *   fight framed on the bank, the road and the keeper's lodge: the party on the
+ *   road, bandits on the tier-1 bank and the tier-2 perch (the raised-tile lift),
+ *   every prop's base, and the solid roadside scenery;
  * - provenance.json: revision, renderer, zoom, every crop's ground point.
  *
  * Local review fixture only: not a playthrough, not a CI check.
@@ -342,6 +343,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       for (const [frame, tag] of [
         [FOREST_FRAME, 'bank'],
         [[3, 5], 'road'],
+        // The keeper's lodge and the roadside props on the north verge.
+        [[1, 1], 'lodge'],
       ] as const) {
         await centerTile(page, frame[0], frame[1]);
         await page.waitForTimeout(500);

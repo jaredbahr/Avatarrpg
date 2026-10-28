@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Canvas2DBackend } from './canvas2d';
 import { sheets } from '../sheets/store';
 import { sprites } from '../spriteCache';
-import { DEFAULT_ACTOR_GROUNDING, SHADOW_COLOR, groundTreatment, shadowGrid } from '../lighting';
+import { DEFAULT_ACTOR_GROUNDING, SHADOW_COLOR, contactBand, shadowGrid } from '../lighting';
 import type { ActorGrounding } from '../lighting';
 
 /*
@@ -193,7 +193,6 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
       ctx: mainCtx,
       // One texel per pixel: the union's arithmetic is what is under test, not the grid.
       shadowGridNow: shadowGrid({ width: W, height: H }, 1, 0, 0),
-      exactMax: proto.exactMax,
       castInto: proto.castInto,
       toShadowTexels: proto.toShadowTexels,
       drawShadowTexels: proto.drawShadowTexels,
@@ -278,14 +277,13 @@ describe("what a figure's feet get", () => {
     anchor: { x: 0.5, y: 0.85 },
     pixelsPerTile: 64,
   };
-  // The kinds the backends tell apart: what each draws as its radial pool in a default scene.
+  // The kinds of figure the backends tell apart; each gets the same band.
   const kinds = {
-    'sheet frame': { sprite: 'unit.fire.tenzo', frame: true, unit: false, pool: false },
-    'painter resident': { sprite: 'npc.hanru', frame: true, unit: false, pool: false },
-    'single-image resident': { sprite: 'world.tea_station', frame: false, unit: false, pool: true },
-    // A Ba Dan resident on a G sheet keeps the party's pool (issue #284).
-    'G-sheet resident': { sprite: 'npc.shopkeeper', frame: true, unit: false, pool: true },
-    'painter-fallback unit': { sprite: 'unit.fire.tenzo', frame: false, unit: true, pool: true },
+    'sheet frame': { sprite: 'unit.fire.tenzo', frame: true, unit: false },
+    'painter resident': { sprite: 'npc.hanru', frame: true, unit: false },
+    'single-image resident': { sprite: 'world.tea_station', frame: false, unit: false },
+    'G-sheet resident': { sprite: 'npc.shopkeeper', frame: true, unit: false },
+    'painter-fallback unit': { sprite: 'unit.fire.tenzo', frame: false, unit: true },
   } as const;
 
   /** Drives the Canvas live mask for one figure and returns the band art it asked for. */
@@ -329,20 +327,12 @@ describe("what a figure's feet get", () => {
   };
 
   for (const kind of Object.keys(kinds) as (keyof typeof kinds)[]) {
-    it(`gives a ${kind} exactly one of band or pool in a contact scene`, () => {
-      const bands = bandsFor(contact, kind).length;
-      const { pool } = groundTreatment(contact, { castStrength: 1, defaultPool: kinds[kind].pool });
-      expect(bands).toBe(1);
-      expect(pool).toBe(false);
+    it(`gives a ${kind} exactly one band in a contact scene`, () => {
+      expect(bandsFor(contact, kind)).toHaveLength(1);
     });
 
-    it(`gives a ${kind} its band and no pool in a scene that sets nothing (ADR 0093)`, () => {
+    it(`gives a ${kind} its band in a scene that sets nothing (ADR 0093)`, () => {
       expect(bandsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(1);
-      const { pool } = groundTreatment(DEFAULT_ACTOR_GROUNDING, {
-        castStrength: 1,
-        defaultPool: kinds[kind].pool,
-      });
-      expect(pool).toBe(false);
     });
   }
 
@@ -351,10 +341,7 @@ describe("what a figure's feet get", () => {
     expect((args?.[1] as { source: unknown }).source).toEqual({ width: 64, height: 64 });
   });
 
-  it('keeps a pool for a figure that casts nothing, even in a contact scene', () => {
-    expect(groundTreatment(contact, { castStrength: 0, defaultPool: true })).toEqual({
-      band: false,
-      pool: true,
-    });
+  it('gives a figure that casts nothing no band', () => {
+    expect(contactBand(contact, 0)).toBe(false);
   });
 });

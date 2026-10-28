@@ -38,7 +38,7 @@ and 3, 4x nearest crops) found:
    every figure that casts gets the sole band cut from its own frame (ADR 0077) and loses the radial pool, on every
    oblique board. Ba Dan keeps `{ cast: 0.5, contact: 0.8 }`. The forest and the quarry paint no shadows of their own,
    so 0.6 keeps the band clearly darker than the cast it sits in, in the ratio Ba Dan's has. A figure with
-   `castShadow: false` keeps its pool, as before.
+   `castShadow: false` draws no shadow at all (amendment below).
 3. **A prop stands on its own base.** Two parts, both in the union:
    - **Its cast starts at its base** (`groundedCast`, `groundProfile`). A prop's art is a solid object whose base is a
      shape on screen, not a point: a box's base is a V (front corner low, side corners higher), a tripod's or a cart's
@@ -85,21 +85,46 @@ shipped files.
   N = 2 or 3 and every figure resamples soft, whatever its shadow does. This is ADR 0089's art scale and is out of
   this pass's scope; the shadows are on the world grid regardless. Resolved by ADR 0094: figures are drawn at 1.0 (owner,
   2026-10-28).
-- **Painted Ba Dan objects float** (follow-up PR). Gao's table, the south and north displays, the bench and the basket
-  groups carry casts that sit below or beside their legs instead of at them, and little or no contact. Cause:
-  `objects.py` `set_in` measures every pixel's height from the object's single lowest row, so on an oblique piece the
-  top and the back legs are cast as if they stood on the front legs' row, and the shadow lands as a flat band under
-  the front feet; `polish.py` then shortened the bench's and fence's casts. The fix is a cast from each piece's own
-  footprint and height, set into the master and regenerated.
 - **The riverside** draws through the living layer (`VillageLife`) with its own shadows and is not covered here.
 - **Combat ambience and orthographic boards.** No board ships orthographic today; one that did would get the same
   grid at its camera scale.
 
 ## Consequences
 
-Every scene now takes ADR 0077's exact-max Canvas path (it is chosen whenever a contact layer exists); its per-caster
+Every scene now takes ADR 0077's exact-max Canvas path (since the amendment, the only one); its per-caster
 blits are bounded to each caster's box, and the mask is now a quarter (N = 2) to a ninth (N = 3) of the pixels it
 was, so the path costs less than the old default did. WebGL renders the mask at world resolution, also a fraction of
 the old half-device target. A shadow's edge now steps a whole world pixel at a time; under a camera ease between
 integer zooms the grid follows the scale, so the blocks grow with the art. The review fixture is
 `npx playwright test -c playwright.grounding.config.ts` (`FNT_GROUNDING_LABEL`, `FNT_GROUNDING_DIR`).
+
+## Amendment, 2026-10-28: the painted half and the forest's scenery
+
+The owner, relayed: "a lot of items still appear to be floating. Shadows are wrong or non-existent. Uncertain items
+and things." Painted Ba Dan pieces came into scope. The numbered list, with a before and after crop per item, is
+`art/source/grounding/faults.md`.
+
+1. **Painted objects stand on their own base.** `objects.py` and `props_set.py` cast each object by measuring every
+   pixel's height from its lowest row, so an oblique piece's shadow lay as a flat band below its front feet (Gao's
+   table, the displays, the planters, the baskets), and `reshade` had cut the bench's and fence's casts to stubs.
+   `art/source/ba-dan-route-a/tools/shadows.py` lifts those shadows exactly (their masks are deterministic, as
+   `props_set.lift` already used; a pixel a later polish step repainted is capped at the unshaded ground round it, so
+   no pale ghost is left), casts each of the 22 objects from the lower hull of its own bottom edge along the painted
+   key at `objects.py`'s tone, and lays its 1 px contact line where it meets the ground. Only columns whose bottom
+   reaches the piece's footprint are feet, and what lies past the feet stands level with the end foot, so a hanging
+   lamp, a sign's arm or a roof's eave is not a foot. The output is `world/world-g1-grounded.png`, the master the
+   regions are now cut from (`regions_back.py`, all six through the gate without `--force`; `regen.sh --check` holds
+   the shipped art to it). The pass also grounds the barrel by Gao's door, whose plain outline is authored there, and
+   gives a stray beige roof tile the roof's colour.
+2. **Solid scenery stands on its own base at runtime.** `SceneScenery.castFrom: 'base'` grounds a piece as a prop is
+   (`groundedCast` with the piece's footprint as its feet, `footprintSpan` / `pieceFeet`, and the contact line), on
+   both backends. The forest's keeper's lodge and its roadside props opt in; the lantern (its lamp hangs) and every
+   tree keep the foot projection. `propGrounding.test.ts` holds the signpost case and the forest's opt-ins.
+3. **Not fixed, flagged.** Gao's yard posts and handcart, painted inside the house sprite with no silhouette of their
+   own or an outline plain enough to author; the court trees' bases, whose frozen silhouettes run below the painted
+   roots over grass and path (both deterministic attempts drew a streak along the path); the garden plot, repainted
+   whole by `garden.py`. Each needs a region repaint through `regions.py guide` and the gate.
+4. **The radial pool is gone.** No figure on an oblique board reached it once every scene had a contact layer; only a
+   figure with `castShadow: false` still did, and that now means no shadow at all. Both backends drop the pool and
+   Canvas drops the non-exact union path, which no scene took. The bundle needed the room: the forest's scenery
+   grounding put it over its 360 KB budget. ADR 0077's `groundTreatment` is now `contactBand`, the one question left.
