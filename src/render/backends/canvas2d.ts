@@ -20,8 +20,10 @@ import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
+  activeGroundCue,
   actorReticleX,
   actorSilhouetteGeometry,
+  combatActorSilhouetteGeometry,
   fallbackBarTop,
   floaterOwner,
   floaterStartY,
@@ -2081,23 +2083,20 @@ export class Canvas2DBackend implements RenderBackend {
       const footprint = this.squareFootprints ? unit.size : 1;
       const width = box.size * unit.size;
       const centreLift = (footprint - 1) * box.size * 0.5;
-      // Active-unit ring, drawn under the sprite.
+      // A stepped active-unit frame, drawn under the sprite like the former ring.
       if (unit.id === view.activeUnitId) {
-        ctx.save();
-        ctx.strokeStyle = OVERLAY.active;
-        ctx.lineWidth = Math.max(2, box.size * 0.06);
-        ctx.globalAlpha = 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2);
-        ctx.beginPath();
-        ctx.ellipse(
+        const cue = activeGroundCue(
           marker.x + width / 2,
           marker.y + box.size * 0.86 - centreLift,
-          width * 0.42,
-          box.size * footprint * 0.14,
-          0,
-          0,
-          Math.PI * 2,
+          width,
+          box.size,
+          footprint,
+          camera.scale,
         );
-        ctx.stroke();
+        ctx.save();
+        ctx.globalAlpha = view.crispOverlays ? 1 : 0.96;
+        strokeCuePolygon(ctx, cue.outer, HP_COLORS.frame, camera.scale * 3);
+        strokeCuePolygon(ctx, cue.inner, OVERLAY.active, camera.scale);
         ctx.restore();
       } else if (unit.id === view.selectedUnitId) {
         ctx.save();
@@ -2193,12 +2192,12 @@ export class Canvas2DBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const silhouette = actorSilhouetteGeometry(
+      const silhouette = combatActorSilhouetteGeometry(
         { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
-        26,
+        camera.scale,
       );
       this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {
@@ -2298,19 +2297,27 @@ export class Canvas2DBackend implements RenderBackend {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
     const fill = hpFill(unit.faction, fraction, hatch);
+    const pixel = bar.pixelSize;
+    const innerX = barX + pixel;
+    const innerY = barY + pixel;
+    const innerWidth = Math.max(pixel, barWidth - pixel * 2);
+    const innerHeight = Math.max(pixel, barHeight - pixel * 2);
 
-    // An ink-framed track, filled in the unit's side colour (pixi.ts matches).
-    ctx.fillStyle = HP_COLORS.back;
+    // The frame and one-pixel upper edge stay sharp at the camera's pixel scale.
+    ctx.fillStyle = HP_COLORS.frame;
     ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillStyle = HP_COLORS.back;
+    ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
     ctx.fillStyle = fill;
-    ctx.fillRect(barX, barY, barWidth * fraction, barHeight);
-    ctx.strokeStyle = HP_COLORS.frame;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1);
+    ctx.fillRect(innerX, innerY, innerWidth * fraction, innerHeight);
+    ctx.fillStyle = HP_COLORS.highlight;
+    ctx.fillRect(innerX, innerY, innerWidth, pixel);
 
     // The side's cap, so the bar reads by shape as well as colour.
     const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX);
     if (cap.length === 0) return;
+    ctx.strokeStyle = HP_COLORS.frame;
+    ctx.lineWidth = pixel;
     ctx.beginPath();
     for (let i = 0; i < cap.length; i += 2) ctx.lineTo(cap[i] ?? 0, cap[i + 1] ?? 0);
     ctx.closePath();
@@ -2479,6 +2486,26 @@ function traceInto(ctx: CanvasRenderingContext2D, poly: readonly Pt[], begin = t
   if (begin) ctx.beginPath();
   poly.forEach((p, index) => (index ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
   ctx.closePath();
+}
+
+/** Stroke a world-pixel-snapped active-unit cue polygon. */
+function strokeCuePolygon(
+  ctx: CanvasRenderingContext2D,
+  points: readonly number[],
+  color: string,
+  width: number,
+): void {
+  if (points.length < 6) return;
+  ctx.beginPath();
+  ctx.moveTo(points[0] ?? 0, points[1] ?? 0);
+  for (let index = 2; index < points.length; index += 2)
+    ctx.lineTo(points[index] ?? 0, points[index + 1] ?? 0);
+  ctx.closePath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.lineJoin = 'miter';
+  ctx.lineCap = 'square';
+  ctx.stroke();
 }
 
 /**

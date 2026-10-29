@@ -23,6 +23,8 @@ export function actorHealthBar(
   scale: number,
   headroom = 0,
   minimumWidth = 0,
+  minimumHeight = 0,
+  pixelSize = 1,
 ) {
   // Headroom is measured relative to an unscaled tile top. Scale the entire
   // foot-to-head distance, not just the portion above that tile.
@@ -32,16 +34,86 @@ export function actorHealthBar(
   // Keep a near-head width, but let small phone viewports request a readable
   // floor. Both are in the same (world) units as the geometry.
   const headWidth = tileSize * scale * 0.32;
-  const barWidth = Math.min(width * scale, Math.max(headWidth, minimumWidth));
-  const barHeight = Math.max(3, tileSize * 0.06);
+  const actorWidth = width * scale;
+  const requestedWidth = Math.min(actorWidth, Math.max(headWidth, minimumWidth));
+  // Snap the width without growing beyond the actor, then move the snapped
+  // centre by half a pixel for odd widths so both edges land on pixel bounds.
+  const maxWidthPixels = Math.floor(actorWidth / pixelSize);
+  const widthPixels = Math.max(1, Math.min(maxWidthPixels, Math.round(requestedWidth / pixelSize)));
+  const barWidth = widthPixels * pixelSize;
+  const centreParity = (widthPixels % 2) / 2;
+  const centreInPixels = (x + width / 2) / pixelSize;
+  const centreX = (Math.round(centreInPixels - centreParity) + centreParity) * pixelSize;
+  const barHeight = snapPixel(Math.max(3, tileSize * 0.06, minimumHeight), pixelSize);
   const gap = Math.max(1.8, tileSize * 0.028);
+  const barX = centreX - barWidth / 2;
+  const barY = snapPixel(silhouetteTop - gap - barHeight, pixelSize);
   return {
-    x: x + (width - barWidth) / 2,
-    // The extra pixel is the bar's ink frame.
-    y: silhouetteTop - gap - barHeight - 1,
+    x: barX,
+    y: barY,
     width: barWidth,
     height: barHeight,
     silhouetteTop,
+    /** One logical world pixel, expressed in the caller's coordinate space. */
+    pixelSize,
+  };
+}
+
+function snapPixel(value: number, pixelSize: number): number {
+  return Math.round(value / pixelSize) * pixelSize;
+}
+
+export interface ActiveGroundCue {
+  /** Eight-point angular outer keyline, centred under the actor's feet. */
+  readonly outer: readonly number[];
+  /** Inset active-color stroke; the terrain inside it stays visible. */
+  readonly inner: readonly number[];
+}
+
+/**
+ * Pixel-aligned ground marker for the acting unit. Its two nested stepped
+ * outlines replace the thin, smooth ellipse while retaining the under-feet
+ * location and approximate footprint. Coordinates and pixelSize use the
+ * caller's units: Canvas passes screen CSS units; Pixi passes world px.
+ */
+export function activeGroundCue(
+  centreX: number,
+  centreY: number,
+  footprintWidth: number,
+  tileHeight: number,
+  heightTiles: 1 | 2,
+  pixelSize: number,
+): ActiveGroundCue {
+  const halfHeight = tileHeight * heightTiles * 0.16;
+  const outerRx = footprintWidth * 0.44;
+  const innerRx = footprintWidth * 0.37;
+  const innerRy = Math.max(pixelSize, halfHeight - pixelSize * 3);
+  const points = (rx: number, ry: number): number[] => {
+    const snap = (value: number) => snapPixel(value, pixelSize);
+    const shoulderX = rx * 0.62;
+    const shoulderY = ry * 0.42;
+    return [
+      snap(centreX - shoulderX),
+      snap(centreY - ry),
+      snap(centreX + shoulderX),
+      snap(centreY - ry),
+      snap(centreX + rx),
+      snap(centreY - shoulderY),
+      snap(centreX + rx),
+      snap(centreY + shoulderY),
+      snap(centreX + shoulderX),
+      snap(centreY + ry),
+      snap(centreX - shoulderX),
+      snap(centreY + ry),
+      snap(centreX - rx),
+      snap(centreY + shoulderY),
+      snap(centreX - rx),
+      snap(centreY - shoulderY),
+    ];
+  };
+  return {
+    outer: points(outerRx, halfHeight),
+    inner: points(innerRx, innerRy),
   };
 }
 
@@ -57,6 +129,10 @@ export interface ActorSilhouetteGeometry {
   readonly badgeY: number;
   readonly reticleY: number;
 }
+
+/** Minimum combat health-bar dimensions in logical world pixels. */
+export const COMBAT_HEALTH_BAR_MIN_WIDTH = 36;
+export const COMBAT_HEALTH_BAR_MIN_HEIGHT = 8;
 
 export interface HealthBarPlacement {
   readonly id: string;
@@ -229,6 +305,8 @@ export function actorSilhouetteGeometry(
   frameHeadroom: number | null,
   scale: number,
   minimumBarWidth = 0,
+  minimumBarHeight = 0,
+  pixelSize = 1,
 ): ActorSilhouetteGeometry {
   const bar = actorHealthBar(
     box.x,
@@ -238,6 +316,8 @@ export function actorSilhouetteGeometry(
     scale,
     actorHeadroom(frameHeadroom, heightTiles),
     minimumBarWidth,
+    minimumBarHeight,
+    pixelSize,
   );
   const radius = Math.max(4, box.size * 0.09);
   return {
@@ -250,6 +330,25 @@ export function actorSilhouetteGeometry(
         ? bar.silhouetteTop - box.size * 0.04
         : box.y - box.size * 0.04,
   };
+}
+
+/** Shared combat bar sizing for both renderers and camera-framing callers. */
+export function combatActorSilhouetteGeometry(
+  box: ActorSpriteBox,
+  heightTiles: 1 | 2,
+  frameHeadroom: number | null,
+  scale: number,
+  pixelSize = 1,
+): ActorSilhouetteGeometry {
+  return actorSilhouetteGeometry(
+    box,
+    heightTiles,
+    frameHeadroom,
+    scale,
+    COMBAT_HEALTH_BAR_MIN_WIDTH * pixelSize,
+    COMBAT_HEALTH_BAR_MIN_HEIGHT * pixelSize,
+    pixelSize,
+  );
 }
 
 /**
