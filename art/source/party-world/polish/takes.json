@@ -1,0 +1,19 @@
+{
+  "_why": "Which take each of Kaya's clips uses (raw/<job>-s<seed>). East's walk was retaken (532) for the smeared feet in cel 5; 532 smears them too and opens a hole in the thigh in cel 3, so 531 stays. Hits and bends are 542 (seed 541 drew the flinch at #321's amplitude and the jab at 1.15 reach: neither read at zoom 1).",
+  "walk": {
+    "south": 531,
+    "south-east": 531,
+    "east": 531,
+    "north-east": 531,
+    "north": 531,
+    "north-west": 531,
+    "west": 531,
+    "south-west": 531
+  },
+  "hit": 542,
+  "ko": 541,
+  "bend": 542,
+  "wave": 553,
+  "tea0": 551,
+  "tea1": 561
+}
