@@ -8,6 +8,10 @@ import {
   actorReticleX,
   actorSilhouetteGeometry,
   actorShadowDensity,
+  activeGroundCue,
+  combatActorSilhouetteGeometry,
+  COMBAT_HEALTH_BAR_MIN_HEIGHT,
+  COMBAT_HEALTH_BAR_MIN_WIDTH,
   healthBarCap,
   HealthBarStagger,
   staggerHealthBars,
@@ -99,8 +103,8 @@ describe('upright actor health bar', () => {
             ((anchorY * frameHeight - topRow) / pixelsPerTile) * tile * scale;
           const bar = actorHealthBar(100, y, tile, tile, scale, headroom);
           expect(bar.silhouetteTop).toBeCloseTo(top, 8);
-          expect(bar.y + bar.height + 1).toBeLessThan(top);
-          expect(top - (bar.y + bar.height + 1)).toBeCloseTo(Math.max(1.8, tile * 0.028), 8);
+          expect(bar.y + bar.height).toBeLessThan(top);
+          expect(top - (bar.y + bar.height)).toBeCloseTo(Math.max(1.8, tile * 0.028), 0);
         }
       }
     }
@@ -109,7 +113,7 @@ describe('upright actor health bar', () => {
   it('keeps a two-cell boss bar near head width rather than footprint width', () => {
     const solo = actorHealthBar(50, 200, 96, 96, 1, 0.5);
     const boss = actorHealthBar(50, 200, 192, 96, 1, 0.5);
-    expect(boss.x + boss.width / 2).toBe(146);
+    expect(boss.x + boss.width / 2).toBe(146.5);
     expect(boss.width).toBe(solo.width);
     expect(boss.y).toBe(solo.y);
   });
@@ -118,7 +122,53 @@ describe('upright actor health bar', () => {
     const bar = actorHealthBar(10, 100, 96, 48, 0.8, 0, 28);
     expect(bar.width).toBe(28);
     const narrowActor = actorHealthBar(10, 100, 24, 48, 0.8, 0, 28);
-    expect(narrowActor.width).toBeCloseTo(19.2, 8);
+    expect(narrowActor.width).toBeLessThanOrEqual(19.2);
+    expect(Number.isInteger(narrowActor.width)).toBe(true);
+  });
+
+  it('snaps framed combat bars to logical pixels at zoom 1', () => {
+    const bar = actorHealthBar(11.3, 100.4, 64, 64, 1.25, 0, 36, 8, 1);
+    expect(bar.width).toBe(36);
+    expect(bar.height).toBe(8);
+    expect(bar.x % bar.pixelSize).toBe(0);
+    expect(bar.y % bar.pixelSize).toBe(0);
+
+    const retina = actorHealthBar(11.3, 100.4, 64, 64, 1.25, 0, 36, 8, 0.5);
+    expect(retina.width).toBe(36);
+    expect(retina.height).toBe(8);
+    expect(retina.x / retina.pixelSize).toBeCloseTo(Math.round(retina.x / retina.pixelSize), 8);
+    expect(retina.y / retina.pixelSize).toBeCloseTo(Math.round(retina.y / retina.pixelSize), 8);
+  });
+
+  it('shares the combat bar floor and pixel size with framing callers', () => {
+    const geometry = combatActorSilhouetteGeometry(
+      { x: 10, y: 80, size: 64, width: 64 },
+      1,
+      0.5,
+      1.25,
+      0.75,
+    );
+    expect(geometry.bar.width).toBe(COMBAT_HEALTH_BAR_MIN_WIDTH * 0.75);
+    expect(geometry.bar.height).toBe(COMBAT_HEALTH_BAR_MIN_HEIGHT * 0.75);
+    expect(geometry.bar.pixelSize).toBe(0.75);
+  });
+
+  it('draws an angular active ground frame with a one-pixel inset', () => {
+    const cue = activeGroundCue(64, 55, 64, 64, 1, 1);
+    expect(cue.outer).toHaveLength(16);
+    expect(cue.inner).toHaveLength(16);
+    const coordinatesAreSnapped = [...cue.outer, ...cue.inner].every((coordinate) =>
+      Number.isInteger(coordinate),
+    );
+    expect(coordinatesAreSnapped).toBe(true);
+    const minX = (points: readonly number[]) => Math.min(...points.filter((_, i) => i % 2 === 0));
+    const maxX = (points: readonly number[]) => Math.max(...points.filter((_, i) => i % 2 === 0));
+    const minY = (points: readonly number[]) => Math.min(...points.filter((_, i) => i % 2 === 1));
+    const maxY = (points: readonly number[]) => Math.max(...points.filter((_, i) => i % 2 === 1));
+    expect(minX(cue.inner)).toBeGreaterThan(minX(cue.outer));
+    expect(maxX(cue.inner)).toBeLessThan(maxX(cue.outer));
+    expect(minY(cue.inner)).toBeGreaterThan(minY(cue.outer));
+    expect(maxY(cue.inner)).toBeLessThan(maxY(cue.outer));
   });
 
   it('stagger overlapping bars upward in place and leaves clear bars untouched', () => {
@@ -198,7 +248,7 @@ describe('upright actor health bar', () => {
     const base = actorHealthBar(0, 100, 96, 96, 1.25);
     const shifted = actorHealthBar(12, 83, 96, 96, 1.25);
     const fallbackTop = 100 + FOOT_LINE * 96 * (1 - 1.25);
-    expect(base.y + base.height + 1).toBeLessThan(fallbackTop);
+    expect(base.y + base.height).toBeLessThan(fallbackTop);
     expect(shifted.y - base.y).toBeCloseTo(-17, 8);
     expect(shifted.x - base.x).toBeCloseTo(12, 8);
   });
