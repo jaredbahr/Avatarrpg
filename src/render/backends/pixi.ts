@@ -139,6 +139,10 @@ import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } fro
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
+import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
+import { resolvePixelMarkDraws } from '../pixelMarkRendering';
+import { snapWorldPoints } from '../pixelMarks';
+import { talkPipMark } from '../pixelOverlayGeometry';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
@@ -428,6 +432,11 @@ export class PixiBackend implements RenderBackend {
   private decorGfx = new Graphics();
   private groundRings = new Graphics();
   private unitLayer = new Container();
+  /** Talk cues remain in the labels pass, above the depth-sorted actors. */
+  private pixelTalkLayer = new Container();
+  private pixelTalkSprites: Sprite[] = [];
+  private pixelTalkUsed = 0;
+  private pixelMarkDrawables = new PixelMarkDrawableCache(pixelMarkCanvas);
   /** World-space projected silhouettes; rendered to one viewport union mask per frame. */
   private shadowMaskSources = new Container();
   private structureShadowGfx = new Graphics();
@@ -666,7 +675,7 @@ export class PixiBackend implements RenderBackend {
       this.bendOver,
     );
     this.climbCues.addChild(this.climbGfx, this.climbLabelLayer);
-    this.labels.addChild(this.fxGfx, this.floaterLayer);
+    this.labels.addChild(this.pixelTalkLayer, this.fxGfx, this.floaterLayer);
     this.groundStack.addChild(this.root);
     this.liftSprite.visible = false;
     app.stage.addChild(
@@ -694,6 +703,8 @@ export class PixiBackend implements RenderBackend {
     // Cast sprites retain cached texture sources. Detach them before those
     // sources and the renderer backing store are invalidated by a resize.
     this.dropCastShadows();
+    this.clearPixelTalkSprites();
+    this.pixelMarkDrawables.clear();
     this.dropTextures();
     this.decor.clear();
     this.decorPx = 0;
@@ -742,6 +753,8 @@ export class PixiBackend implements RenderBackend {
     this.groundOverlayFilter = null;
     this.shadowFilter = null;
     this.dropTextures();
+    this.pixelMarkDrawables.clear();
+    this.pixelTalkSprites = [];
     this.unitSprites.clear();
     this.breezePools.clear();
     this.sceneTextures.clear();
@@ -767,6 +780,8 @@ export class PixiBackend implements RenderBackend {
       this.pending = { view, camera };
       return;
     }
+
+    this.pixelMarkDrawables.beginFrame();
 
     this.lifted = camera.projection === 'oblique';
     this.marginGfx.clear();
@@ -916,6 +931,7 @@ export class PixiBackend implements RenderBackend {
     });
 
     app.renderer.render(app.stage);
+    this.pixelMarkDrawables.endFrame();
     this.trimTextures();
   }
 
@@ -2755,6 +2771,7 @@ export class PixiBackend implements RenderBackend {
     rings.clear();
     const px = this.spritePx(camera);
     this.grounding = actorGrounding(view.scene);
+    this.pixelTalkUsed = 0;
 
     const live = new Set<string>();
     this.barTops.clear();
@@ -2849,16 +2866,26 @@ export class PixiBackend implements RenderBackend {
           : undefined,
       );
 
-      // A small "talk" pip so a child can tell an NPC from scenery.
-      if (!npc.quiet)
-        g.circle(
-          x + TILE * width * 0.5,
-          y + TILE * (FOOT_LINE - npcPipLift(npc.sprite, scale)),
-          TILE * 0.07,
-        ).fill({
-          color: '#f0c674',
-          alpha: alpha * (0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2)),
-        });
+      // A small G1 talk pip stays in the labels layer, above depth-sorted art.
+      if (!npc.quiet) {
+        const pulse = (Math.sin(view.time / 500) + 1) / 2;
+        this.drawTalkPip(
+          camera,
+          {
+            x: x + TILE * width * 0.5,
+            y: y + TILE * (FOOT_LINE - npcPipLift(npc.sprite, scale)),
+          },
+          alpha * (0.55 + 0.35 * pulse),
+          view.cameraNudge,
+        );
+      }
+    }
+
+    for (let i = this.pixelTalkUsed; i < this.pixelTalkSprites.length; i++) {
+      const pip = this.pixelTalkSprites[i];
+      if (!pip) continue;
+      pip.visible = false;
+      pip.texture = Texture.EMPTY;
     }
 
     for (const prop of view.props) {
@@ -3088,6 +3115,40 @@ export class PixiBackend implements RenderBackend {
       this.barTops.set(candidate.id, bar.y);
       this.drawHealthBar(g, candidate.unit, bar, candidate.actorX, view.hatch, camera.scale);
     }
+  }
+
+  private drawTalkPip(camera: Camera, point: Vec2, alpha: number, nudge: Vec2): void {
+    const anchor = snapWorldPoints([point])[0];
+    if (!anchor) return;
+    const cue = talkPipMark(anchor, alpha);
+    const draw = resolvePixelMarkDraws(camera, [cue], this.pixelMarkDrawables, nudge)[0];
+    if (!draw) return;
+    const index = this.pixelTalkUsed++;
+    let sprite = this.pixelTalkSprites[index];
+    if (!sprite) {
+      sprite = new Sprite(Texture.EMPTY);
+      this.pixelTalkSprites[index] = sprite;
+      this.pixelTalkLayer.addChild(sprite);
+    }
+    sprite.texture = this.texture(draw.source);
+    sprite.anchor.set(0, 0);
+    sprite.position.set(draw.bounds.left, draw.bounds.top);
+    sprite.scale.set(1, 1);
+    sprite.width = draw.bounds.width;
+    sprite.height = draw.bounds.height;
+    sprite.alpha = draw.alpha;
+    sprite.visible = true;
+    this.sampleArt(sprite, camera.scale);
+  }
+
+  private clearPixelTalkSprites(): void {
+    for (const sprite of this.pixelTalkSprites) {
+      sprite.texture = Texture.EMPTY;
+      sprite.removeFromParent();
+      sprite.destroy();
+    }
+    this.pixelTalkSprites = [];
+    this.pixelTalkUsed = 0;
   }
 
   /** The covered part of each hidden party member, over every piece, as on Canvas 2D. */

@@ -10,6 +10,9 @@ import {
   snapWorldPoints,
 } from './pixelMarks';
 import type { PixelMarkSpec } from './pixelMarks';
+import { PixelMarkDrawableCache } from './pixelMarkDrawables';
+import { pixelMarkChunkPlans } from './pixelMarks';
+import { talkPipMark } from './pixelOverlayGeometry';
 
 const COLORS = {
   gold: 'rgba(240, 198, 116, 0.6)',
@@ -97,6 +100,15 @@ describe('G1 pixel marks', () => {
       { x: 0, y: 5 },
       { x: -3, y: 0 },
     ]);
+  });
+
+  it('keeps a moving talk pip on one anchor-independent raster source', () => {
+    const first = talkPipMark({ x: 100, y: 120 }, 0.7);
+    const moved = talkPipMark({ x: 101, y: 120 }, 0.4);
+
+    expect(moved.spec).toEqual(first.spec);
+    expect(moved.anchor).toEqual({ x: 101, y: 120 });
+    expect(pixelMarkRasterKey(moved.spec)).toBe(pixelMarkRasterKey(first.spec));
   });
 
   it('rejects fractional coordinates, strokes outside 1–2 px, and oversized masks', () => {
@@ -249,6 +261,55 @@ describe('G1 pixel marks', () => {
     expect(chunks).toHaveLength(1);
     expect(chunks[0]?.raster).toMatchObject({ left: 0, top: 0, width: 1, height: 1 });
     expect(chunks[0]?.clip).toEqual(visible);
+  });
+
+  it('retains renderer sources for a visible set larger than the CPU raster LRU', () => {
+    const spec: PixelMarkSpec = {
+      bounds: { left: 0, top: 0, width: 1800, height: 900 },
+      palette: { gold: COLORS.gold },
+      operations: [
+        {
+          kind: 'polygon',
+          color: 'gold',
+          points: [
+            { x: 0, y: 0 },
+            { x: 1800, y: 0 },
+            { x: 1800, y: 900 },
+            { x: 0, y: 900 },
+          ],
+        },
+      ],
+    };
+    let creates = 0;
+    const cache = new PixelMarkDrawableCache((raster) => {
+      creates += 1;
+      return { rasterKey: raster.key };
+    }, 1024);
+    const draws = (visible = spec.bounds) => {
+      const result = new Map<string, { rasterKey: string }>();
+      cache.beginFrame();
+      for (const plan of pixelMarkChunkPlans(spec, visible)) {
+        const source = cache.get(spec, plan.bounds);
+        if (source.drawable) {
+          result.set(plan.key, source.drawable);
+        }
+      }
+      cache.endFrame();
+      return result;
+    };
+
+    const first = draws();
+    const firstCount = creates;
+    const repeated = draws();
+    expect(first.size).toBeGreaterThan(16);
+    for (const [key, source] of first) expect(repeated.get(key)).toBe(source);
+    expect(creates).toBe(firstCount);
+    expect(cache.rasterizationCount).toBe(firstCount);
+
+    const panned = draws({ left: 1, top: 1, width: 510, height: 510 });
+    const interiorKey = [...panned.keys()][0] ?? '';
+    expect(panned.get(interiorKey)).toBe(first.get(interiorKey));
+    expect(creates).toBe(firstCount);
   });
 });
 
