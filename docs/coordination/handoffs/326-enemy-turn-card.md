@@ -31,17 +31,25 @@ returns no handle, the confirmation does not arm.
 
 ## Verification and remaining gates
 
-- `npm ci --no-audit --no-fund` passed with cache set to `/tmp/avatar326-npm-cache`.
-  The default cache attempt failed because `/home/agent/.npm` is unavailable;
-  no repo files or lockfiles were changed by installation.
-- Focused Vitest: `src/app/ui/Toasts.test.ts`,
-  `src/app/scenes/CombatScene.test.ts` and `CombatSceneHud.test.ts` passed (26
-  tests at `2026-10-29 05:33 UTC`). Coverage includes repeated-turn sync
-  announcing once, turn-change AP cleanup, enemy/ally card DOM without actions or
-  Move/choice text, toast expiry, fade dismissal, clear and stack eviction.
-- `npm run typecheck`, focused ESLint, and Prettier checks passed after that
-  test run; rerun them after any subsequent edits.
-- Full `ci:local`, browser/accessibility and visual review have not been run.
-  Request the serialized heavy-check slot before full CI/build/browser checks;
-  those gates remain required before publication. No push, PR, release bump,
-  merge or deployment is performed from this checkpoint.
+- Source checkpoint: `197162e22e9f1328b5474efd831ebea049fee098`, based on
+  `bc77ae2eceb6740dd4c143cae61595a1f4884bc2`. Implementation ran on Luna High,
+  followed by independent orchestration review and lifecycle refinements.
+- `npm ci --no-audit --no-fund` passed using a writable temporary cache;
+  no lockfile or dependency changes were needed.
+- Focused tests passed: 27 tests covering enemy/ally cards without controls,
+  single turn announcements, targeted toast expiry/dismissal/eviction,
+  turn-change/unmount cleanup, and suppressed-confirmation safety.
+- Full `npm run ci:local` passed all nine stages on source checkpoint
+  `197162e22e9f1328b5474efd831ebea049fee098` on 2026-10-29: typecheck, lint,
+  formatting, 3009 tests in 258 files, build, bundle budget, art validation,
+  asset budget and balance. Local Node was 24.22.1; CI pins Node 22.
+- This handoff update is documentation-only after that full run; formatting
+  and diff checks cover it, not a claim of another full exact-head run.
+- Browser, accessibility, camera/pinch reflow, Largest-text and visual acceptance
+  remain unverified. In particular, `combat-pan-reflow.spec.ts` and
+  `hud-large-text.spec.ts` still need execution. Physical-device testing is also
+  not established. Skipped PR browser/gallery suites are not acceptance evidence.
+- Publish as a draft for later review only. No readiness, auto-merge, merge,
+  release bump or deployment is claimed. New remote commit checks remain required.
+- Preserve separately owned #331 action-header and #332 prop-label changes when
+  integrating; this change does not rewrite either section or alter pacing/art.
