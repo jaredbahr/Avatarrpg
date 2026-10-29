@@ -22,8 +22,9 @@ the view control, target framing, and the small state transitions needed for
 tap, Recentre, gestures and turn changes. `combatEnemyView.ts` owns the bounded
 camera framing calculation; the opening and camera lifecycle stay with #327.
 
-Integrate only after #327 transfers or lands. Preserve both owners' `CombatScene`
-changes when reconciling; do not replace the file from either branch. In
+#327 is a soft dependency in the live issue, so this view can land first.
+Whichever branch lands second must preserve both owners' `CombatScene` changes
+when reconciling; do not replace the file from either branch. In
 particular, once #327's glide API is present, `showEnemies()` must cancel an
 active glide before it starts framing, following the existing manual view
 actions. This branch intentionally does not add a private compatibility hook
@@ -36,7 +37,10 @@ party, waits for the first party turn, and asserts the live oil flask at `(13,6)
 and every living enemy/prop tile center are inside the actual canvas at
 1280×800 and 834×1194. It also checks the tap and Recentre return paths, that a
 return tap leaves actor position/AP unchanged, default and Huge-text phone
-button heights, user zoom takeover, and turn-change cleanup.
+button heights, and user zoom takeover. A separate mobile case keeps the
+temporary enemy view active through a real turn change and checks that the new
+acting unit is framed; the first case separately checks that user-owned zoom
+survives a turn change.
 
 The current-code run passed in `/usr/bin/chromium` using port 4346. Screenshots
 captured for review at `/tmp/avatarrpg-328-show-enemies-1280x800.png` and

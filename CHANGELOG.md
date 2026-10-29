@@ -2,6 +2,9 @@
 
 ## 0.2.12 — release candidate
 
+- Add a Show enemies view that frames living enemies and props. Tap the board
+  or use Recentre to return to the acting unit without spending an action.
+
 - Keep WebGL scene textures alive while sprites still use them. Texture-cache
   cleanup now runs after rendering and preserves live sources and frame views,
   so repeated bending no longer leaves Pixi batching destroyed elevation art.

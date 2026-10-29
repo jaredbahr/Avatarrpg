@@ -4,6 +4,37 @@ Current delivery mandate: [finish the complete run through the Driller](finish-t
 
 **Next steps (2026-10-29):** the phased plan (M1 art lock, M2 demo-flow polish, M3 the quarry slice through the Driller, and CI health) is in [the roadmap's next stretch](../roadmap.md#next-stretch-2026-10-29). Its issues are tracked in [#348](https://github.com/jaredbahr/Avatarrpg/issues/348). Codex takes the code issues and Claude sessions take the PixelLab art.
 
+## Follow-up assignments (2026-10-29)
+
+The checked nine-issue v0.2.12 candidate is pushed at `049e160e` on
+`codex/ci-health-and-prop-labels`: all nine local CI stages (3,039 tests),
+22 Chromium cases and the targeted victory gallery passed. Remote API writes
+remain blocked; ordinary GitHub issue/PR HTML reads now provide live ownership
+and acceptance criteria. No merge or deployment is claimed.
+
+- **#328 — Luna High:** accessible Show enemies view control and camera framing,
+  with desktop/portrait projected-tile proof. Implemented at `3c2a8f74`;
+  focused checks and visual review passed, along with six combined Chromium
+  camera/reflow/motion/resident cases. The separate turn-change regression is integrated at `871851fd`.
+  Full local CI remains the publication gate. The live issue permits this option;
+  #327 is a soft dependency, so this task avoids its opening/glide lifecycle.
+  Worktree `/workspace/avatarrpg-328`, based on the checked candidate.
+- **#325 — Luna High:** Chromium investigation of huge-text reflow,
+  resident phase change and motion transitions passed all five selected cases at
+  `049e160e`; no cause or source fix was established. Existing waits observe
+  camera, animator and route state. WebKit closure remains pending exact-engine
+  evidence and the issue's consecutive remote runs. Worktree `/workspace/avatarrpg-325`.
+- **#344 — Luna Max:** extend the reusable demo-flow review fixture through both
+  quarry custody routes and homecoming, preserving legal commands and explicit
+  shortcut provenance. Worktree `/workspace/avatarrpg-344`. Root owns the final
+  visual audit; this fixture is separate from product fixes.
+
+Live #324 comments identify another cloud worker on
+`codex/324-riverside-drill-completion`; its VillageLife/riverside investigation
+remains with that owner. Existing PRs #352–#355 and the separate canal PR #356
+also remain with their owners. Local integration evidence does not authorize
+publishing competing source PRs or bypassing required exact-head checks.
+
 ## Active Codex issue batch (2026-10-29)
 
 One integration owner is preparing `codex/ci-health-and-prop-labels` from `bc77ae2e`.
