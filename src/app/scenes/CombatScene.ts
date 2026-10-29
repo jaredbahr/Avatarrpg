@@ -1429,6 +1429,7 @@ export class CombatScene implements Scene {
           el('span', { class: 'enemy-turn-copy', text: actingTurnCopy(unit) }),
         ),
       );
+      if (this.logOpen) hud.appendChild(this.logPanel());
       return;
     }
 

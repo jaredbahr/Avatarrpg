@@ -209,7 +209,7 @@ describe('non-party combat acting card', () => {
     });
     vi.stubGlobal('HTMLInputElement', class extends FakeElement {});
     vi.stubGlobal('HTMLButtonElement', class extends FakeElement {});
-    vi.stubGlobal('window', { devicePixelRatio: 1 });
+    vi.stubGlobal('window', { devicePixelRatio: 1, setTimeout: vi.fn(() => 1) });
     vi.stubGlobal('getComputedStyle', () => ({ fontSize: '16px' }));
 
     const unit = actor(faction, name);
@@ -220,19 +220,21 @@ describe('non-party combat acting card', () => {
       turnIndex: 0,
     } as unknown as BattleState;
     const scene = Object.create(CombatScene.prototype) as unknown as {
-      app: { state: { battle: BattleState }; content: typeof CONTENT };
+      app: { state: { battle: BattleState; log: string[] }; content: typeof CONTENT };
       host: HTMLElement;
       battleOpening: null;
       mode: { kind: string };
       pending: null;
+      logOpen: boolean;
       needsHandoff(): boolean;
       renderHud(): void;
     };
-    scene.app = { state: { battle }, content: CONTENT };
+    scene.app = { state: { battle, log: ['The battle log remains readable.'] }, content: CONTENT };
     scene.host = host as unknown as HTMLElement;
     scene.battleOpening = null;
     scene.mode = { kind: 'idle' };
     scene.pending = null;
+    scene.logOpen = false;
     scene.needsHandoff = () => false;
 
     scene.renderHud();
@@ -245,5 +247,19 @@ describe('non-party combat acting card', () => {
     expect(hud.querySelectorAll('.enemy-turn-portrait')).toHaveLength(1);
     expect(hud.querySelectorAll('.enemy-turn-card')[0]?.getAttribute('aria-hidden')).toBe('true');
     expect(overlays.children).toHaveLength(0);
+
+    scene.logOpen = true;
+    scene.renderHud();
+    expect(hud.querySelectorAll('.enemy-turn-card')).toHaveLength(1);
+    expect(hud.querySelectorAll('.action-button')).toHaveLength(0);
+    expect(hud.querySelectorAll('.log-panel')).toHaveLength(1);
+    expect(hud.querySelectorAll('.log-panel')[0]?.textContent).toContain(
+      'The battle log remains readable.',
+    );
+
+    scene.logOpen = false;
+    scene.renderHud();
+    expect(hud.querySelectorAll('.enemy-turn-card')).toHaveLength(1);
+    expect(hud.querySelectorAll('.log-panel')).toHaveLength(0);
   });
 });
