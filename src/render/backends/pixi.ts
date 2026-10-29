@@ -250,9 +250,9 @@ interface BreezePool {
  */
 const SPRITE_BUCKET = 32;
 
-/** Textures kept alive; older ones are destroyed rather than left on the GPU. */
+/** Idle canvas texture budget; textures still bound to sprites remain live. */
 const MAX_TEXTURES = 128;
-/** Frame views onto those textures (one per pose per sheet); cheap, but bounded all the same. */
+/** Idle frame-view budget; attached sprites may temporarily take the map above it. */
 const MAX_FRAME_TEXTURES = 512;
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
@@ -914,6 +914,7 @@ export class PixiBackend implements RenderBackend {
     });
 
     app.renderer.render(app.stage);
+    this.trimTextures();
   }
 
   /**
@@ -2673,13 +2674,37 @@ export class PixiBackend implements RenderBackend {
     }
     const texture = Texture.from(canvas, true);
     this.textureCache.set(canvas, texture);
-    while (this.textureCache.size > MAX_TEXTURES) {
-      const oldest = this.textureCache.keys().next().value;
-      if (!oldest) break;
-      this.textureCache.get(oldest)?.destroy(true);
-      this.textureCache.delete(oldest);
-    }
     return texture;
+  }
+
+  /** Release idle textures after all of this frame's sprites have been bound and rendered. */
+  private trimTextures(): void {
+    if (this.textureCache.size <= MAX_TEXTURES && this.frameTextures.size <= MAX_FRAME_TEXTURES)
+      return;
+    const live = new Set<Texture>();
+    const sources = new Set<Texture['source']>();
+    const visit = (node: Container): void => {
+      if (node instanceof Sprite) {
+        live.add(node.texture);
+        sources.add(node.texture.source);
+      }
+      for (const child of node.children) visit(child);
+    };
+    if (this.app) visit(this.app.stage);
+    // This offstage container is rendered separately into the cast-shadow mask.
+    visit(this.shadowMaskSources);
+    for (const [key, texture] of this.frameTextures) {
+      if (this.frameTextures.size <= MAX_FRAME_TEXTURES) break;
+      if (live.has(texture)) continue;
+      this.frameTextures.delete(key);
+      texture.destroy(false);
+    }
+    for (const [canvas, texture] of this.textureCache) {
+      if (this.textureCache.size <= MAX_TEXTURES) break;
+      if (sources.has(texture.source)) continue;
+      this.textureCache.delete(canvas);
+      texture.destroy(true);
+    }
   }
 
   private dropTextures(): void {
@@ -2706,12 +2731,6 @@ export class PixiBackend implements RenderBackend {
     }
     const texture = new Texture({ source: base.source, frame: new Rectangle(f.x, f.y, f.w, f.h) });
     this.frameTextures.set(key, texture);
-    while (this.frameTextures.size > MAX_FRAME_TEXTURES) {
-      const oldest = this.frameTextures.keys().next().value;
-      if (!oldest) break;
-      this.frameTextures.get(oldest)?.destroy(false);
-      this.frameTextures.delete(oldest);
-    }
     return texture;
   }
 
