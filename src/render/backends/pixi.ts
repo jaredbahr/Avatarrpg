@@ -72,7 +72,6 @@ import { ParticleLayer } from '../fx/particleLayer';
 import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
-import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
   activeGroundCue,
   actorReticleX,
@@ -100,9 +99,9 @@ import {
   clusters,
 } from '../geometry/lift';
 import type { LiftPlan, Pt, Rect } from '../geometry/lift';
-import { contourLoops, isHole } from '../geometry/contour';
+import { contourLoops, isHole, traceRegions } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
-import { nearestDistanceAlong, sampleAt, smoothPath } from '../geometry/curve';
+import { smoothPath } from '../geometry/curve';
 import {
   FLOATING_NUMBER,
   HP_CAP,
@@ -128,7 +127,6 @@ import {
   floaterScale,
   npcClip,
   unitMarkerGroundPoint,
-  type AimArc,
   type BendFxSprite,
   type MapView,
   type OverlayLayer,
@@ -142,7 +140,19 @@ import { scaleModeFor } from '../pixelSampling';
 import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
 import { resolvePixelMarkDraws } from '../pixelMarkRendering';
 import { snapWorldPoints } from '../pixelMarks';
-import { talkPipMark } from '../pixelOverlayGeometry';
+import {
+  aimArcPixelMarks,
+  exitMark,
+  healthBarSpikeMark,
+  hoverCalmMark,
+  koCrossMark,
+  overlayPixelMarks,
+  pathPixelMarks,
+  selectedRingMark,
+  talkPipMark,
+  targetReticleMark,
+} from '../pixelOverlayGeometry';
+import type { PixelOverlayCue } from '../pixelOverlayGeometry';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
@@ -260,9 +270,6 @@ const SPRITE_BUCKET = 32;
 const MAX_TEXTURES = 128;
 /** Idle frame-view budget; attached sprites may temporarily take the map above it. */
 const MAX_FRAME_TEXTURES = 512;
-
-/** The rounded square a hovered tile gets, in tile units from its corner. */
-const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
 /** Pixi ordering point, exported so backend parity is testable without WebGL. */
 export function pixiActorDepth(
@@ -425,18 +432,29 @@ export class PixiBackend implements RenderBackend {
   private shadeLayer = new Container();
   private shadeSprites: Sprite[] = [];
   private overlayGfx = new Graphics();
+  /** G1 pixels that lie on the ground, between the existing overlay and route passes. */
+  private pixelOverlayLayer = new Container();
+  private overlayTopGfx = new Graphics();
   /** Upright vapour below actors; sprites and their shared texture are reused. */
   private steamLayer = new Container();
   private steamPuffs: Sprite[] = [];
   private pathGfx = new Graphics();
+  private pixelPathLayer = new Container();
+  private pixelExitLayer = new Container();
   private decorGfx = new Graphics();
   private groundRings = new Graphics();
+  private pixelRingLayer = new Container();
   private unitLayer = new Container();
   /** Talk cues remain in the labels pass, above the depth-sorted actors. */
   private pixelTalkLayer = new Container();
+  private pixelForegroundLayer = new Container();
   private pixelTalkSprites: Sprite[] = [];
   private pixelTalkUsed = 0;
   private pixelMarkDrawables = new PixelMarkDrawableCache(pixelMarkCanvas);
+  private pixelMarkSources = new Map<string, HTMLCanvasElement>();
+  private retiredPixelSources = new Set<HTMLCanvasElement>();
+  private pixelSpritePools = new Map<Container, Sprite[]>();
+  private pixelSpriteUsed = new Map<Container, number>();
   /** World-space projected silhouettes; rendered to one viewport union mask per frame. */
   private shadowMaskSources = new Container();
   private structureShadowGfx = new Graphics();
@@ -529,6 +547,7 @@ export class PixiBackend implements RenderBackend {
    * frame until something changes, and a WeakMap forgets them with it.
    */
   private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  private squareLoops = new WeakMap<OverlayLayer, Vec2[][]>();
   private obscuringLoops = new WeakMap<readonly Vec2[], Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
 
@@ -652,8 +671,12 @@ export class PixiBackend implements RenderBackend {
       this.decorLayer,
       this.shadeLayer,
       this.overlayGfx,
+      this.pixelOverlayLayer,
+      this.overlayTopGfx,
       this.pathGfx,
+      this.pixelPathLayer,
       this.fxUnder.container,
+      this.pixelExitLayer,
       this.decorGfx,
     );
     this.unitLayer.sortableChildren = true;
@@ -669,13 +692,19 @@ export class PixiBackend implements RenderBackend {
     this.upright.addChild(
       this.steamLayer,
       this.groundRings,
+      this.pixelRingLayer,
       this.bendUnder,
       this.unitLayer,
       this.flockLayer,
       this.bendOver,
     );
     this.climbCues.addChild(this.climbGfx, this.climbLabelLayer);
-    this.labels.addChild(this.pixelTalkLayer, this.fxGfx, this.floaterLayer);
+    this.labels.addChild(
+      this.pixelTalkLayer,
+      this.fxGfx,
+      this.pixelForegroundLayer,
+      this.floaterLayer,
+    );
     this.groundStack.addChild(this.root);
     this.liftSprite.visible = false;
     app.stage.addChild(
@@ -704,6 +733,7 @@ export class PixiBackend implements RenderBackend {
     // sources and the renderer backing store are invalidated by a resize.
     this.dropCastShadows();
     this.clearPixelTalkSprites();
+    this.clearPixelSprites();
     this.pixelMarkDrawables.clear();
     this.dropTextures();
     this.decor.clear();
@@ -746,6 +776,7 @@ export class PixiBackend implements RenderBackend {
     this.dropCastShadows();
     this.dropLift();
     this.liftBuild.destroy();
+    this.clearPixelSprites();
     this.app?.stage.destroy({ children: true });
     this.app?.renderer.destroy(false);
     this.app = null;
@@ -803,6 +834,7 @@ export class PixiBackend implements RenderBackend {
       m.ty + view.cameraNudge.y * nudge,
     );
     this.root.setFromMatrix(this.groundTransform);
+    this.positionPixelGroundLayers(camera);
     this.elevationBaseLayer.setFromMatrix(this.groundTransform);
     this.fxOver.container.setFromMatrix(this.groundTransform);
     for (const layer of [
@@ -844,9 +876,10 @@ export class PixiBackend implements RenderBackend {
         : 'none';
     this.syncDecor(view, camera, decorMode, painted);
     this.syncShade(view, camera, scenePainted);
-    this.drawOverlays(view);
-    this.drawPath(view);
-    this.drawDecor(view);
+    this.pixelSpriteUsed.clear();
+    this.drawOverlays(view, camera);
+    this.drawPath(view, camera);
+    this.drawDecor(view, camera);
     this.drawClimbMarkers(view, camera);
     this.drawUnits(view, camera);
     try {
@@ -890,14 +923,20 @@ export class PixiBackend implements RenderBackend {
     this.fxUnder.draw(emitters, oblique);
     this.fxOver.draw(emitters, oblique);
     this.drawFloaters(view, camera);
+    // The lift target reads these layers before the final stage render.
+    this.hideUnusedPixelSprites();
     // The marks over the ground and its art, which the lift pass moves by a
     // raised cell's whole lift: those that change only with the ground (the
     // decor over art), and the live ones. Procedural ground lifts its own.
     const live: Container[] = [
       this.groundOverlaySprite,
       this.overlayGfx,
+      this.pixelOverlayLayer,
+      this.overlayTopGfx,
       this.pathGfx,
+      this.pixelPathLayer,
       this.fxUnder.container,
+      this.pixelExitLayer,
       this.decorGfx,
     ];
     if (painted && !partialScene) live.push(this.groundSprite);
@@ -931,7 +970,11 @@ export class PixiBackend implements RenderBackend {
     });
 
     app.renderer.render(app.stage);
-    this.pixelMarkDrawables.endFrame();
+    for (const key of this.pixelMarkDrawables.endFrame()) {
+      const source = this.pixelMarkSources.get(key);
+      if (source) this.retiredPixelSources.add(source);
+      this.pixelMarkSources.delete(key);
+    }
     this.trimTextures();
   }
 
@@ -1015,6 +1058,8 @@ export class PixiBackend implements RenderBackend {
       view.hoverTile && `${view.hoverTile.x},${view.hoverTile.y}`,
       identity(view.path),
       view.pathFrom && `${view.pathFrom.x},${view.pathFrom.y}`,
+      view.pathOrigin && `${view.pathOrigin.x},${view.pathOrigin.y}`,
+      view.pathStart,
       view.aimArc && JSON.stringify(view.aimArc),
       identity(view.obscuringTiles),
       view.weatherIntensity,
@@ -2165,46 +2210,43 @@ export class PixiBackend implements RenderBackend {
   /* Overlays, path, decor                                             */
   /* ---------------------------------------------------------------- */
 
-  private drawOverlays(view: MapView): void {
+  private drawOverlays(view: MapView, camera: Camera): void {
     const g = this.overlayGfx;
     g.clear();
+    const top = this.overlayTopGfx;
+    top.clear();
     this.drawObscurement(view, g);
 
-    if (!view.crispOverlays) {
-      this.drawContourOverlays(view);
-    } else
-      for (const layer of view.overlays) {
-        if (layer.tiles.length === 0) continue;
-        const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
-        const [fill, edge] = overlayColors(layer.kind);
-
-        for (const pos of layer.tiles) {
-          g.rect(pos.x * TILE, pos.y * TILE, TILE, TILE).fill({ color: fill });
-        }
-
-        // Only the outside of the region gets a border, so a move range reads as
-        // one shape instead of a grid of boxes.
-        if (edge) {
-          for (const pos of layer.tiles) {
-            const x = pos.x * TILE;
-            const y = pos.y * TILE;
-            if (!members.has(`${pos.x},${pos.y - 1}`)) g.moveTo(x, y).lineTo(x + TILE, y);
-            if (!members.has(`${pos.x + 1},${pos.y}`))
-              g.moveTo(x + TILE, y).lineTo(x + TILE, y + TILE);
-            if (!members.has(`${pos.x},${pos.y + 1}`))
-              g.moveTo(x, y + TILE).lineTo(x + TILE, y + TILE);
-            if (!members.has(`${pos.x - 1},${pos.y}`)) g.moveTo(x, y).lineTo(x, y + TILE);
-          }
-          g.stroke({ width: 3, color: edge });
-        }
+    for (const layer of view.overlays) {
+      if (layer.tiles.length === 0) continue;
+      const cache = view.crispOverlays ? this.squareLoops : this.loops;
+      let loops = cache.get(layer);
+      if (!loops) {
+        loops = view.crispOverlays ? traceRegions(layer.tiles) : contourLoops(layer.tiles);
+        cache.set(layer, loops);
       }
+      this.appendPixelMarks(
+        this.pixelOverlayLayer,
+        camera,
+        overlayPixelMarks(`overlay:${layer.kind}`, layer.kind, loops, camera, overlayColors),
+        view.cameraNudge,
+      );
+    }
 
     if (view.hoverTile) {
-      g.rect(view.hoverTile.x * TILE, view.hoverTile.y * TILE, TILE, TILE).fill({
-        color: OVERLAY.hover,
-      });
+      const cues =
+        view.crispOverlays && view.calmPath && view.path.length > 0
+          ? [hoverCalmMark(view.hoverTile, camera)]
+          : overlayPixelMarks(
+              'hover',
+              'hover',
+              traceRegions([view.hoverTile]),
+              camera,
+              overlayColors,
+            );
+      this.appendPixelMarks(this.pixelOverlayLayer, camera, cues, view.cameraNudge);
     }
-    this.drawCliffCues(view);
+    this.drawCliffCues(view, top);
   }
 
   /** Warm, ground-hugging tactical veil and board-bounded sand weather. */
@@ -2323,8 +2365,7 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
-  private drawCliffCues(view: MapView): void {
-    const g = this.overlayGfx;
+  private drawCliffCues(view: MapView, g: Graphics): void {
     const tangent = TILE * 0.08;
     const normal = TILE * 0.1;
     const inset = TILE * 0.03;
@@ -2396,9 +2437,8 @@ export class PixiBackend implements RenderBackend {
 
   /** The target cue stays in the post-unit labels pass. */
   private drawTargetReticle(view: MapView, camera: Camera): void {
-    const g = this.fxGfx;
     const cue = view.targetReticle;
-    if (!cue) return;
+    if (!cue || (!cue.elevation && !cue.obscured)) return;
     const target = view.units.find((unit) =>
       footprintCells(unit.pos, unit.size, this.squareFootprints).some(
         (cell) => cell.x === cue.pos.x && cell.y === cue.pos.y,
@@ -2441,32 +2481,14 @@ export class PixiBackend implements RenderBackend {
       scale,
     );
     const cy = this.squareFootprints ? silhouette.reticleY : box.y - lift * TILE - TILE * 0.04;
-    const outline = Math.max(3 / camera.scale, TILE * 0.065);
-    if (cue.elevation) {
-      const direction = cue.elevation === 'above' ? -1 : 1;
-      g.poly(
-        [
-          cx - TILE * 0.13,
-          cy - direction * TILE * 0.08,
-          cx,
-          cy + direction * TILE * 0.13,
-          cx + TILE * 0.13,
-          cy - direction * TILE * 0.08,
-        ],
-        true,
-      )
-        .stroke({ width: outline, color: OVERLAY.pathUnder })
-        .fill({ color: OVERLAY.reticleCue });
-    }
-    if (cue.obscured) {
-      const cloudX = cx + TILE * 0.27;
-      const cloudY = cy;
-      g.circle(cloudX - TILE * 0.06, cloudY, TILE * 0.075)
-        .circle(cloudX + TILE * 0.03, cloudY - TILE * 0.025, TILE * 0.095)
-        .circle(cloudX + TILE * 0.12, cloudY, TILE * 0.065)
-        .rect(cloudX - TILE * 0.12, cloudY, TILE * 0.25, TILE * 0.07)
-        .stroke({ width: outline, color: OVERLAY.pathUnder })
-        .fill({ color: OVERLAY.reticleCue });
+    const anchor = snapWorldPoints([{ x: cx, y: cy }])[0];
+    if (anchor) {
+      this.appendPixelMarks(
+        this.pixelForegroundLayer,
+        camera,
+        [targetReticleMark(anchor, cue)],
+        view.cameraNudge,
+      );
     }
   }
 
@@ -2484,181 +2506,49 @@ export class PixiBackend implements RenderBackend {
     return text;
   }
 
-  /**
-   * Overlays as rounded contours (ADR 0007). Each layer's loops are traced
-   * once per layer object; holes are cut from the outer loop they sit in.
-   */
-  private drawContourOverlays(view: MapView): void {
-    const g = this.overlayGfx;
-
-    for (const layer of view.overlays) {
-      if (layer.tiles.length === 0) continue;
-      let loops = this.loops.get(layer);
-      if (!loops) {
-        loops = contourLoops(layer.tiles);
-        this.loops.set(layer, loops);
-      }
-      const [fill, edge] = overlayColors(layer.kind);
-
-      const outers = loops.filter((loop) => !isHole(loop));
-      const holes = loops.filter(isHole);
-      for (const outer of outers) {
-        g.poly(flatten(outer), true);
-        for (const hole of holes) {
-          const probe = hole[0];
-          if (probe && insideLoop(probe, outer)) g.poly(flatten(hole), true).cut();
-        }
-        g.fill({ color: fill });
-      }
-
-      if (edge) {
-        for (const loop of loops) {
-          g.poly(flatten(loop), true).stroke({
-            width: TILE * OVERLAY.softWidth,
-            color: edge,
-            alpha: OVERLAY.softAlpha,
-            join: 'round',
-          });
-          g.poly(flatten(loop), true).stroke({
-            width: Math.max(2, TILE * OVERLAY.edgeWidth),
-            color: edge,
-            join: 'round',
-          });
-        }
-      }
+  private drawPath(view: MapView, camera: Camera): void {
+    if (
+      view.pathFrom &&
+      view.path.length > 0 &&
+      (!this.curve || this.curve.path !== view.path || this.curve.from !== view.pathFrom)
+    ) {
+      this.curve = {
+        path: view.path,
+        from: view.pathFrom,
+        curve: smoothPath(view.pathFrom, view.path),
+      };
     }
-
-    if (view.hoverTile) {
-      const { x, y } = view.hoverTile;
-      const loop = HOVER_LOOP.flatMap((p) => [(x + p.x) * TILE, (y + p.y) * TILE]);
-      if (view.calmPath && view.path.length > 0) {
-        g.poly(loop, true).stroke({
-          width: Math.max(1, TILE * OVERLAY.calmPathWidth),
-          color: OVERLAY.calmPath,
-          alpha: 0.45,
-        });
-      } else {
-        g.poly(loop, true).fill({ color: OVERLAY.hover });
-      }
-    }
-  }
-
-  private drawPath(view: MapView): void {
-    const g = this.pathGfx;
-    g.clear();
-
-    if (view.path.length > 0) {
-      if (view.pathFrom && (!view.crispOverlays || view.calmPath)) {
-        this.drawCurvedPath(view, view.pathFrom);
-      } else {
-        view.path.forEach((pos: Vec2, index: number) => {
-          const cx = pos.x * TILE + TILE / 2;
-          const cy = pos.y * TILE + TILE / 2;
-          if (index === view.path.length - 1) {
-            g.moveTo(cx - TILE * 0.18, cy + TILE * 0.12)
-              .lineTo(cx, cy - TILE * 0.18)
-              .lineTo(cx + TILE * 0.18, cy + TILE * 0.12)
-              .stroke({ width: Math.max(2, TILE * 0.07), color: OVERLAY.path });
-          } else {
-            g.circle(cx, cy, TILE * 0.07).fill({ color: OVERLAY.path });
-          }
-        });
-      }
-    }
-
-    if (view.aimArc) this.drawAimArc(view.aimArc);
-  }
-
-  /**
-   * The throw being aimed: the flight's own curve as dots in the element's
-   * light tone over an ink line, with an arrowhead where it lands. The same
-   * points the Canvas 2D backend draws (ADR 0002: a preview is board truth).
-   */
-  private drawAimArc(arc: AimArc): void {
-    const g = this.pathGfx;
-    const points = aimArcPoints(arc.from, arc.to, arc.arc);
-    g.poly(flatten(points), false).stroke({
-      width: Math.max(4, TILE * 0.1),
-      color: OVERLAY.pathUnder,
-      cap: 'round',
-      join: 'round',
-    });
-    for (let i = 0; i < points.length - 1; i += 2) {
-      const p = points[i];
-      if (p) g.circle(p.x * TILE, p.y * TILE, TILE * 0.05).fill({ color: arc.color });
-    }
-    const last = points[points.length - 1];
-    if (!last) return;
-    const tip = { x: last.x * TILE, y: last.y * TILE };
-    g.poly(arrowheadPolygon(tip, arcHeading(points), TILE), true).fill({ color: arc.color });
-  }
-
-  /** The route as one curve through the tile centres, with an arrowhead on its last tangent. */
-  private drawCurvedPath(view: MapView, from: Vec2): void {
-    const g = this.pathGfx;
-    if (!this.curve || this.curve.path !== view.path || this.curve.from !== from) {
-      this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
-    }
-    const curve = this.curve.curve;
-    const start = view.pathOrigin
-      ? nearestDistanceAlong(curve, view.pathOrigin, view.pathStart, view.path.length)
-      : 0;
-    const first = sampleAt(curve, start).pos;
-
-    const trace = (width: number, color: string): void => {
-      g.moveTo(first.x * TILE, first.y * TILE);
-      curve.points.forEach((point, index) => {
-        if ((curve.cumulative[index] ?? 0) > start) g.lineTo(point.x * TILE, point.y * TILE);
-      });
-      g.stroke({ width, color, cap: 'round', join: 'round' });
-    };
-
-    trace(
-      Math.max(1, TILE * (view.calmPath ? OVERLAY.calmPathUnderWidth : OVERLAY.pathUnderWidth)),
-      view.calmPath ? OVERLAY.calmPathUnder : OVERLAY.pathUnder,
+    this.appendPixelMarks(
+      this.pixelPathLayer,
+      camera,
+      pathPixelMarks(view, camera, this.curve?.curve),
+      view.cameraNudge,
     );
-    trace(
-      Math.max(1, TILE * (view.calmPath ? OVERLAY.calmPathWidth : OVERLAY.pathWidth)),
-      view.calmPath && view.crispOverlays
-        ? OVERLAY.calmPathContrast
-        : view.calmPath
-          ? OVERLAY.calmPath
-          : OVERLAY.path,
-    );
-
-    const end = sampleAt(curve, curve.length);
-    const tip = { x: end.pos.x * TILE, y: end.pos.y * TILE };
-    if (view.calmPath) {
-      g.circle(tip.x, tip.y, TILE * OVERLAY.calmPathMarkerScale).stroke({
-        width: Math.max(1, TILE * OVERLAY.calmPathWidth),
-        color: view.crispOverlays ? OVERLAY.calmPathContrast : OVERLAY.calmPath,
-      });
-    } else {
-      g.poly(arrowheadPolygon(tip, end.tangent, TILE * OVERLAY.pathArrowScale), true).fill({
-        color: OVERLAY.path,
-      });
+    if (view.aimArc) {
+      this.appendPixelMarks(
+        this.pixelPathLayer,
+        camera,
+        aimArcPixelMarks(view.aimArc, camera),
+        view.cameraNudge,
+      );
     }
   }
 
-  private drawDecor(view: MapView): void {
-    const g = this.decorGfx;
-    g.clear();
-
+  private drawDecor(view: MapView, camera: Camera): void {
+    this.decorGfx.clear();
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
       const pulse = (Math.sin(view.time / 420) + 1) / 2;
-      const cx = exit.pos.x * TILE + TILE / 2;
-      const cy = exit.pos.y * TILE + TILE / 2;
-      g.circle(cx, cy, TILE * (0.24 + 0.06 * pulse)).stroke({
-        width: Math.max(2, TILE * 0.05),
-        color: '#f0c674',
-        alpha: 0.5 + 0.4 * pulse,
-      });
-      g.moveTo(cx - TILE * 0.1, cy)
-        .lineTo(cx + TILE * 0.12, cy)
-        .moveTo(cx + TILE * 0.02, cy - TILE * 0.1)
-        .lineTo(cx + TILE * 0.12, cy)
-        .lineTo(cx + TILE * 0.02, cy + TILE * 0.1)
-        .stroke({ width: Math.max(2, TILE * 0.05), color: '#f0c674' });
+      const anchor = snapWorldPoints([
+        camera.groundPoint({ x: exit.pos.x + 0.5, y: exit.pos.y + 0.5 }),
+      ])[0];
+      if (anchor) {
+        this.appendPixelMarks(
+          this.pixelExitLayer,
+          camera,
+          [exitMark(anchor, 0.55 + 0.35 * pulse)],
+          view.cameraNudge,
+        );
+      }
     }
   }
 
@@ -2697,7 +2587,11 @@ export class PixiBackend implements RenderBackend {
 
   /** Release idle textures after all of this frame's sprites have been bound and rendered. */
   private trimTextures(): void {
-    if (this.textureCache.size <= MAX_TEXTURES && this.frameTextures.size <= MAX_FRAME_TEXTURES)
+    if (
+      this.textureCache.size <= MAX_TEXTURES &&
+      this.frameTextures.size <= MAX_FRAME_TEXTURES &&
+      this.retiredPixelSources.size === 0
+    )
       return;
     const live = new Set<Texture>();
     const sources = new Set<Texture['source']>();
@@ -2711,6 +2605,16 @@ export class PixiBackend implements RenderBackend {
     if (this.app) visit(this.app.stage);
     // This offstage container is rendered separately into the cast-shadow mask.
     visit(this.shadowMaskSources);
+    // The drawable cache's byte budget owns idle G1 canvases. Retire their Pixi
+    // wrappers only after rendering, and only after every live sprite lets go.
+    for (const canvas of this.retiredPixelSources) {
+      const texture = this.textureCache.get(canvas);
+      if (texture && sources.has(texture.source)) continue;
+      this.retiredPixelSources.delete(canvas);
+      if (!texture) continue;
+      this.textureCache.delete(canvas);
+      texture.destroy(true);
+    }
     for (const [key, texture] of this.frameTextures) {
       if (this.frameTextures.size <= MAX_FRAME_TEXTURES) break;
       if (live.has(texture)) continue;
@@ -2726,6 +2630,8 @@ export class PixiBackend implements RenderBackend {
   }
 
   private dropTextures(): void {
+    this.retiredPixelSources.clear();
+    this.pixelMarkSources.clear();
     for (const texture of this.frameTextures.values()) texture.destroy(false);
     this.frameTextures.clear();
     for (const texture of this.textureCache.values()) texture.destroy(true);
@@ -3072,26 +2978,33 @@ export class PixiBackend implements RenderBackend {
         rings.poly([...cue.outer], true).stroke({ width: 3, color: HP_COLORS.frame });
         rings.poly([...cue.inner], true).stroke({ width: 1, color: OVERLAY.active });
       } else if (unit.id === view.selectedUnitId) {
-        rings
-          .ellipse(
-            marker.x + width / 2,
-            marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
-            width * 0.4,
-            TILE * heightTiles * 0.12,
-          )
-          .stroke({
-            width: Math.max(1, TILE * 0.03),
-            color: 'rgba(255,255,255,0.6)',
-          });
+        const centre = snapWorldPoints([
+          {
+            x: marker.x + width / 2,
+            y: marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
+          },
+        ])[0];
+        if (centre) {
+          this.appendPixelMarks(
+            this.pixelRingLayer,
+            camera,
+            [selectedRingMark(centre, width * 0.4, TILE * heightTiles * 0.12)],
+            view.cameraNudge,
+          );
+        }
       }
 
       if (unit.fallen) {
         // A fallen unit gets a clear cross rather than just fading out.
-        g.moveTo(x + width * 0.3, y + TILE * 0.35)
-          .lineTo(x + width * 0.7, y + TILE * 0.75)
-          .moveTo(x + width * 0.7, y + TILE * 0.35)
-          .lineTo(x + width * 0.3, y + TILE * 0.75)
-          .stroke({ width: Math.max(2, TILE * 0.06), color: 'rgba(226,88,74,0.85)' });
+        const centre = snapWorldPoints([{ x: x + width / 2, y: y + TILE * 0.55 }])[0];
+        if (centre) {
+          this.appendPixelMarks(
+            this.pixelForegroundLayer,
+            camera,
+            [koCrossMark(centre, width)],
+            view.cameraNudge,
+          );
+        }
         continue;
       }
 
@@ -3113,7 +3026,15 @@ export class PixiBackend implements RenderBackend {
       const bar = placements.get(candidate.id);
       if (!bar) continue;
       this.barTops.set(candidate.id, bar.y);
-      this.drawHealthBar(g, candidate.unit, bar, candidate.actorX, view.hatch, camera.scale);
+      this.drawHealthBar(
+        g,
+        candidate.unit,
+        bar,
+        candidate.actorX,
+        view.hatch,
+        camera,
+        view.cameraNudge,
+      );
     }
   }
 
@@ -3123,6 +3044,7 @@ export class PixiBackend implements RenderBackend {
     const cue = talkPipMark(anchor, alpha);
     const draw = resolvePixelMarkDraws(camera, [cue], this.pixelMarkDrawables, nudge)[0];
     if (!draw) return;
+    this.pixelMarkSources.set(draw.sourceKey, draw.source);
     const index = this.pixelTalkUsed++;
     let sprite = this.pixelTalkSprites[index];
     if (!sprite) {
@@ -3149,6 +3071,74 @@ export class PixiBackend implements RenderBackend {
     }
     this.pixelTalkSprites = [];
     this.pixelTalkUsed = 0;
+  }
+
+  /** Cancel the logical oblique basis while retaining camera zoom, pan and shake. */
+  private positionPixelGroundLayers(camera: Camera): void {
+    const origin = camera.groundPoint({ x: 0, y: 0 });
+    const inverse =
+      camera.projection === 'oblique'
+        ? new Matrix(0.5, -0.5, 1, 1, -0.5 * origin.x - origin.y, 0.5 * origin.x - origin.y)
+        : new Matrix(1, 0, 0, 1, -origin.x, -origin.y);
+    for (const layer of [this.pixelOverlayLayer, this.pixelPathLayer, this.pixelExitLayer]) {
+      layer.setFromMatrix(inverse);
+    }
+  }
+
+  /** Append source-backed marks to their established Pixi layer in call order. */
+  private appendPixelMarks(
+    layer: Container,
+    camera: Camera,
+    cues: readonly PixelOverlayCue[],
+    nudge: Vec2,
+  ): void {
+    let pool = this.pixelSpritePools.get(layer);
+    if (!pool) {
+      pool = [];
+      this.pixelSpritePools.set(layer, pool);
+    }
+    for (const draw of resolvePixelMarkDraws(camera, cues, this.pixelMarkDrawables, nudge)) {
+      this.pixelMarkSources.set(draw.sourceKey, draw.source);
+      const index = this.pixelSpriteUsed.get(layer) ?? 0;
+      let sprite = pool[index];
+      if (!sprite) {
+        sprite = new Sprite(Texture.EMPTY);
+        pool[index] = sprite;
+        layer.addChild(sprite);
+      }
+      this.pixelSpriteUsed.set(layer, index + 1);
+      sprite.texture = this.texture(draw.source);
+      sprite.anchor.set(0, 0);
+      sprite.position.set(draw.bounds.left, draw.bounds.top);
+      sprite.width = draw.bounds.width;
+      sprite.height = draw.bounds.height;
+      sprite.alpha = draw.alpha;
+      sprite.visible = true;
+      this.sampleArt(sprite, camera.scale);
+    }
+  }
+
+  private hideUnusedPixelSprites(): void {
+    for (const [layer, pool] of this.pixelSpritePools) {
+      for (let i = this.pixelSpriteUsed.get(layer) ?? 0; i < pool.length; i++) {
+        const sprite = pool[i];
+        if (!sprite) continue;
+        sprite.visible = false;
+        sprite.texture = Texture.EMPTY;
+      }
+    }
+  }
+
+  private clearPixelSprites(): void {
+    for (const pool of this.pixelSpritePools.values()) {
+      for (const sprite of pool) {
+        sprite.texture = Texture.EMPTY;
+        sprite.removeFromParent();
+        sprite.destroy();
+      }
+    }
+    this.pixelSpritePools.clear();
+    this.pixelSpriteUsed.clear();
   }
 
   /** The covered part of each hidden party member, over every piece, as on Canvas 2D. */
@@ -3195,8 +3185,8 @@ export class PixiBackend implements RenderBackend {
     bar: ReturnType<typeof actorSilhouetteGeometry>['bar'],
     actorX: number,
     hatch: boolean,
-    /** CSS px per world unit (the camera scale), so the cap keeps its minimum. */
-    cssScale: number,
+    camera: Camera,
+    nudge: Vec2,
   ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
@@ -3215,8 +3205,24 @@ export class PixiBackend implements RenderBackend {
     g.rect(innerX, innerY, innerWidth, pixel).fill({ color: HP_COLORS.highlight });
 
     // The side's cap, so the bar reads by shape as well as colour.
-    const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX, 1 / cssScale);
+    const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX, 1 / camera.scale);
     if (cap.length === 0) return;
+    if (HP_CAP[unit.faction] === 'spike') {
+      const anchor = snapWorldPoints([{ x: cap[0] ?? 0, y: barY + barHeight / 2 }])[0];
+      if (!anchor) return;
+      const points: Vec2[] = [];
+      for (let i = 0; i + 1 < cap.length; i += 2) {
+        const point = snapWorldPoints([{ x: cap[i] ?? 0, y: cap[i + 1] ?? 0 }])[0];
+        if (point) points.push({ x: point.x - anchor.x, y: point.y - anchor.y });
+      }
+      this.appendPixelMarks(
+        this.pixelForegroundLayer,
+        camera,
+        [healthBarSpikeMark(anchor, points, hpFill(unit.faction, 1, hatch), HP_COLORS.frame)],
+        nudge,
+      );
+      return;
+    }
     g.poly(cap)
       .fill({ color: hpFill(unit.faction, 1, hatch) })
       .stroke({ width: 1, color: HP_COLORS.frame });
