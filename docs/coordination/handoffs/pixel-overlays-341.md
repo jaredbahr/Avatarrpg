@@ -2,7 +2,7 @@
 
 ## Scope and ownership
 
-The Canvas adapter, shared geometry/cache helpers, tests, ADR 0100 and this handoff are owned by `codex/fix-341-pixel-overlays` in `/workspace/avatarrpg-341`. The Pixi adapter is a separate, scoped commit from `renderer_fix_review`; the visual capture harness is owned by `readability_queue_triage` in its isolated review worktree. Root integrates the returned commits. The earlier `501e704f` #336 dependency is already in root's tree and must not be returned as a new #341 change. The build version remains 0.2.12.
+The Canvas adapter, shared geometry/cache helpers, tests, ADR 0100 and this handoff are owned by `codex/fix-341-pixel-overlays` in `/workspace/avatarrpg-341`. The Pixi adapter was authored as an isolated `pixi.ts`-only commit by `renderer_fix_review` and cherry-picked into this branch as `fbae88e0` (source commit `92b5b021`). The visual capture harness is owned by `readability_queue_triage` in its isolated review worktree. The earlier `501e704f` #336 dependency is already in root's tree and must not be returned as a new #341 change. The build version remains 0.2.12.
 
 ## Cue inventory and draw order
 
@@ -34,9 +34,9 @@ Large marks use source-grid-aligned chunks no larger than 256 px on a side. Chun
 - `0035a8a4` — shared overlay geometry, projection handling and raised-top culling.
 - `01eebd27` — idle drawable cache entry cap and regression.
 - `2c4bfb27` — Canvas overlay, actor and enemy spike adapter.
-- The Pixi renderer returns its own adapter-only commit; integrate it after confirmation from `renderer_fix_review`.
+- `fbae88e0` — Pixi overlay, actor and enemy spike adapter (reviewer's source commit `92b5b021`).
 
-Root has already integrated the shared helper checkpoints through `0035a8a4` at `e3dc175e`; it will integrate `01eebd27` and `2c4bfb27` separately. Do not cherry-pick duplicate commits.
+Root has already integrated the shared helper checkpoints through `0035a8a4` at `e3dc175e`; it should integrate `01eebd27`, `2c4bfb27`, `fbae88e0` and `a3279892` from this branch. Do not cherry-pick duplicate commits.
 
 ## Focused checks and review captures
 
