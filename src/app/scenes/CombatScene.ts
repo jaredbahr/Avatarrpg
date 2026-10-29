@@ -95,6 +95,8 @@ const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
 /** Turn changes use a gentle, short presentation glide. */
 const COMBAT_TURN_GLIDE_MS = 420;
+/** Give the render loop a frame to settle an expired glide before AI playback. */
+const COMBAT_AI_GLIDE_RETRY_MS = 16;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -1071,7 +1073,7 @@ export class CombatScene implements Scene {
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
       this.clearPending();
-      this.aiScheduled = false;
+      this.stopAiTimer();
 
       // A new player's turn needs the hand-off card before anything is shown.
       if (unit && unit.faction === 'party' && !this.app.session.solo) {
@@ -1091,7 +1093,9 @@ export class CombatScene implements Scene {
       const followedStillMoving =
         this.cameraFollow.kind === 'following' &&
         this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
-      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera, true);
+      // Establish the initial actor immediately so the first settled HUD
+      // measurement can choose compact framing before later turns glide.
+      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera, this.layoutMeasuredAfterSync);
     }
 
     if (battle.phase !== 'active' && !this.resultShown) {
@@ -1130,15 +1134,30 @@ export class CombatScene implements Scene {
 
     this.aiScheduled = true;
     const delay = Math.max(0, this.app.animator.finishesAt - performance.now()) + 260;
-    this.aiTimer = window.setTimeout(() => {
-      this.aiTimer = null;
-      // The pause menu can freeze or hold the scene between scheduling and
-      // this callback; a parked fight must not advance behind the menu.
-      if (this.suspended || this.aiHeld) return;
-      if (this.app.state?.battle?.phase !== 'active') return;
-      if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
-      this.app.dispatch({ type: 'runAiTurn' });
-    }, delay);
+    const schedule = (wait: number): void => {
+      const timer = window.setTimeout(() => {
+        // A canceled callback must not clear a newer actor's owned timer.
+        if (this.aiTimer !== timer) return;
+        this.aiTimer = null;
+        // The pause menu can freeze or hold the scene between scheduling and
+        // this callback; a parked fight must not advance behind the menu.
+        if (this.suspended || this.aiHeld) return;
+        if (this.app.state?.battle?.phase !== 'active') return;
+        if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
+        const glide = this.cameraGlide;
+        if (glide) {
+          // The ordinary action delay may end before the incoming actor is
+          // revealed. Wait for the render loop to finish that reveal, even if
+          // its wall-clock deadline has passed before the next frame arrives.
+          const remaining = glide.startedAt + glide.duration - performance.now();
+          schedule(Math.max(COMBAT_AI_GLIDE_RETRY_MS, remaining));
+          return;
+        }
+        this.app.dispatch({ type: 'runAiTurn' });
+      }, wait);
+      this.aiTimer = timer;
+    };
+    schedule(delay);
   }
 
   /* ---------------------------------------------------------------- */
