@@ -1838,7 +1838,6 @@ export class CombatScene implements Scene {
     }
 
     for (const prop of preview.props) {
-      const from = `(${prop.from.x + 1},${prop.from.y + 1})`;
       const affected = [...prop.affectedAllies, ...prop.affectedEnemies]
         .map((unit) => unit.name)
         .join(', ');
@@ -1848,7 +1847,7 @@ export class CombatScene implements Scene {
       chips.appendChild(
         el('span', {
           class: 'chip chip-terrain',
-          text: `${prop.name} at ${from}: ${consequence}${suffix}`,
+          text: `${prop.name}: ${consequence}${suffix}`,
         }),
       );
     }
