@@ -306,9 +306,9 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
     let point = await paintedTileCentre(page, pos);
     if (!point) throw new Error('no camera');
     // Portrait combat can fit the acting unit while a legal target sits beyond
-    // the canvas. Pan with the ordinary pointer gesture, then reproject the
-    // tile: a coordinate computed before the drag is no longer its screen tap.
-    for (let pan = 0; pan < 8; pan++) {
+    // the canvas. Zoom out with the ordinary wheel gesture, then reproject the
+    // tile: a coordinate computed before the zoom is no longer its screen tap.
+    for (let zoom = 0; zoom < 8; zoom++) {
       await settleLayout(page, slow ? 120_000 : 30_000);
       point = await paintedTileCentre(page, pos);
       const box = await canvas.boundingBox();
@@ -324,25 +324,19 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       }, point);
       if (point.x >= left && point.x <= right && point.y >= top && point.y <= bottom && receivesTap)
         break;
-      const clamp = (value: number, low: number, high: number) =>
-        Math.max(low, Math.min(high, value));
-      const desiredX = receivesTap ? clamp(point.x, left, right) : (left + right) / 2;
-      const desiredY = receivesTap ? clamp(point.y, top, bottom) : (top + bottom) / 2;
-      const drag = (difference: number, limit: number) => {
-        if (difference === 0) return 0;
-        const step = clamp(difference, -limit, limit);
-        // The canvas recognizer needs more than ten pixels before it pans.
-        return Math.sign(step) * Math.max(16, Math.abs(step));
-      };
-      const dx = drag(desiredX - point.x, Math.min(180, (right - left) / 3));
-      let dy = drag(desiredY - point.y, Math.min(180, (bottom - top) / 3));
-      if (dx === 0 && dy === 0) dy = -40;
-      const start = { x: (left + right) / 2, y: (top + bottom) / 2 };
-      recordInput('mouse-drag-pan', 'map-canvas', { tile: pos, from: start, by: { x: dx, y: dy } });
-      await page.mouse.move(start.x, start.y);
-      await page.mouse.down();
-      await page.mouse.move(start.x + dx, start.y + dy, { steps: 8 });
-      await page.mouse.up();
+      const centre = { x: (left + right) / 2, y: (top + bottom) / 2 };
+      const wheelHitsCanvas = await canvas.evaluate(
+        (element, at) => document.elementFromPoint(at.x, at.y) === element,
+        centre,
+      );
+      if (!wheelHitsCanvas) {
+        throw new Error(
+          `The visible canvas is blocked before zooming toward ${JSON.stringify(pos)}.`,
+        );
+      }
+      recordInput('mouse-wheel-zoom-out', 'map-canvas', { tile: pos, at: centre, deltaY: 160 });
+      await page.mouse.move(centre.x, centre.y);
+      await page.mouse.wheel(0, 160);
     }
     await settleLayout(page, slow ? 120_000 : 30_000);
     point = await paintedTileCentre(page, pos);
