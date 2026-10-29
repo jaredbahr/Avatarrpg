@@ -774,20 +774,21 @@ export const BEATS: readonly Beat[] = [
           await endTurn(ctx.page, active.id);
           const beat = await ctx.page.evaluate(() => {
             const app = window.fnt?.app;
-            const scene = (app as unknown as {
-              scene: {
-                renderer: { camera: { scale: number } };
-                suspend: () => void;
-              };
-            }).scene;
+            const scene = (
+              app as unknown as {
+                scene: {
+                  renderer: { camera: { scale: number } };
+                  suspend: () => void;
+                };
+              }
+            ).scene;
             const phase = app?.state?.battle?.phase;
             const scale = scene.renderer.camera.scale;
             const cardVisible = Boolean(document.querySelector('.result-panel'));
             const activeBeat = Boolean(
               document.querySelector('.combat-scene[data-victory-beat="active"]'),
             );
-            const controlsEnabled =
-              document.querySelector('.turn-chip:not(:disabled)') !== null;
+            const controlsEnabled = document.querySelector('.turn-chip:not(:disabled)') !== null;
             // Paint once with the normal render path, then hold the scene for
             // a stable review capture while the fake clock is paused.
             scene.suspend();
