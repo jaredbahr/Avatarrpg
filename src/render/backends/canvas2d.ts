@@ -18,7 +18,7 @@ import { Camera, TILE } from '../camera';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
-import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
+import { contourLoops, traceRegions } from '../geometry/contour';
 import {
   activeGroundCue,
   actorReticleX,
@@ -33,7 +33,6 @@ import {
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import { liftAlong, liftAt } from '../geometry/elevation';
-import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import {
   clip,
@@ -45,7 +44,7 @@ import {
   polyBounds,
 } from '../geometry/lift';
 import type { LiftPlan, Pt, Rect } from '../geometry/lift';
-import { nearestDistanceAlong, sampleAt, smoothPath } from '../geometry/curve';
+import { smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { drawBendFx } from '../fx/bendFxDraw';
@@ -54,7 +53,21 @@ import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../s
 import { drawArt } from '../pixelSampling';
 import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
 import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRendering';
-import { screenToBoardPixel, talkPipMark } from '../pixelOverlayGeometry';
+import {
+  aimArcPixelMarks,
+  boardPixelFromTile,
+  exitMark,
+  healthBarSpikeMark,
+  hoverCalmMark,
+  koCrossMark,
+  overlayPixelMarks,
+  pathPixelMarks,
+  screenToBoardPixel,
+  selectedRingMark,
+  talkPipMark,
+  targetReticleMark,
+} from '../pixelOverlayGeometry';
+import type { PixelOverlayCue } from '../pixelOverlayGeometry';
 import { RevealLayer, revealBox, revealsUnit } from '../reveal';
 import type { RevealFigure } from '../reveal';
 import type { GroundingCanvas } from '../groundingLayer';
@@ -64,17 +77,11 @@ import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
 import { paintedWaterIsDry, surfaceIsPainted } from '../sceneSurfaces';
 import { HP_CAP, HP_COLORS, MAP_MARGIN_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
-import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
+import { paintFloatingNumber } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
 import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
-import {
-  paintExitMarker,
-  paintGridLine,
-  paintOverlay,
-  paintSurface,
-  paintTerrain,
-} from '../painters/tiles';
+import { paintGridLine, paintSurface, paintTerrain } from '../painters/tiles';
 import { npcPose, sprites } from '../spriteCache';
 import { npcPipLift } from '../npcPip';
 import {
@@ -112,9 +119,6 @@ import {
   shadowGrid,
   silhouetteProjection,
 } from '../lighting';
-
-/** The rounded square a hovered tile gets, in tile units from its corner. */
-const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
 /** Canvas ordering point, exported so parity can be tested without a drawing context. */
 export function canvasActorDepth(
@@ -163,6 +167,7 @@ export class Canvas2DBackend implements RenderBackend {
    * frame until something changes, and a WeakMap forgets them with it.
    */
   private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  private squareLoops = new WeakMap<OverlayLayer, Vec2[][]>();
   /** Steam regions are memoised by the view's stable obscuring-cell array. */
   private obscuringLoops = new WeakMap<readonly Vec2[], Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
@@ -365,11 +370,11 @@ export class Canvas2DBackend implements RenderBackend {
             }
           : null;
       const liveMarks = () => {
-        this.drawOverlays(view, ground);
-        this.drawPath(view, ground);
-        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+        this.drawOverlays(view, ground, camera);
+        this.drawPath(view, camera);
+        if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
         this.drawFxLayer(view, ground, 'under', true);
-        this.drawExit(view, ground);
+        this.drawExit(view, camera, view.cameraNudge);
       };
       // The lift layer copies the flat ground, so it is brought up to date
       // before any mark is drawn over it.
@@ -468,7 +473,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.revealFigures = [];
       for (const occupant of occupants) occupant.draw();
       this.drawReveal(view, camera);
-      this.flushHealthBars();
+      this.flushHealthBars(camera, view.cameraNudge);
       this.drawTargetReticle(view, camera);
       this.drawFlock(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
@@ -484,9 +489,9 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawOverlays(view, camera);
       this.drawSteamPuffs(view, camera);
       this.drawPath(view, camera);
-      if (view.aimArc) this.drawAimArc(view.aimArc, camera);
+      if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
       this.drawFxLayer(view, camera, 'under');
-      this.drawExit(view, camera);
+      this.drawExit(view, camera, view.cameraNudge);
       this.drawClimbMarkers(view, camera);
       this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
@@ -494,7 +499,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
-      this.flushHealthBars();
+      this.flushHealthBars(camera, view.cameraNudge);
       this.drawTargetReticle(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
@@ -837,51 +842,47 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.restore();
   }
 
-  private drawOverlays(view: MapView, camera: Camera): void {
+  private drawPixelCues(
+    cues: readonly PixelOverlayCue[],
+    camera: Camera,
+    plane: 'ground' | 'screen',
+    nudge: Vec2 = { x: 0, y: 0 },
+  ): void {
+    for (const draw of resolvePixelMarkDraws(camera, cues, this.pixelMarkDrawables, nudge)) {
+      drawCanvasPixelMark(this.ctx, camera, draw, nudge, plane);
+    }
+  }
+
+  private drawOverlays(view: MapView, camera: Camera, markCamera = camera): void {
     this.drawObscurement(view, camera);
-    if (view.crispOverlays) {
-      this.drawCrispOverlays(view, camera);
-    } else {
-      const { ctx } = this;
-      const origin = camera.toScreen({ x: 0, y: 0 });
-      const size = origin.size;
-
-      for (const layer of view.overlays) {
-        if (layer.tiles.length === 0) continue;
-        let loops = this.loops.get(layer);
-        if (!loops) {
-          loops = contourLoops(layer.tiles);
-          this.loops.set(layer, loops);
-        }
-        const [fill, edge] = overlayColors(layer.kind);
-
-        ctx.save();
-        ctx.beginPath();
-        for (const loop of loops) tracePolygon(ctx, loop, origin, size);
-        ctx.fillStyle = fill;
-        ctx.fill('evenodd');
-        if (edge) {
-          ctx.lineJoin = 'round';
-          ctx.strokeStyle = edge;
-          ctx.globalAlpha = OVERLAY.softAlpha;
-          ctx.lineWidth = size * OVERLAY.softWidth;
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-          ctx.lineWidth = Math.max(2, size * OVERLAY.edgeWidth);
-          ctx.stroke();
-        }
-        ctx.restore();
+    for (const layer of view.overlays) {
+      if (layer.tiles.length === 0) continue;
+      const cache = view.crispOverlays ? this.squareLoops : this.loops;
+      let loops = cache.get(layer);
+      if (!loops) {
+        loops = view.crispOverlays ? traceRegions(layer.tiles) : contourLoops(layer.tiles);
+        cache.set(layer, loops);
       }
+      this.drawPixelCues(
+        overlayPixelMarks(`overlay:${layer.kind}`, layer.kind, loops, markCamera, overlayColors),
+        markCamera,
+        'ground',
+        view.cameraNudge,
+      );
+    }
 
-      if (view.hoverTile) {
-        const box = camera.toScreen(view.hoverTile);
-        ctx.save();
-        ctx.beginPath();
-        tracePolygon(ctx, HOVER_LOOP, box, box.size);
-        ctx.fillStyle = OVERLAY.hover;
-        ctx.fill();
-        ctx.restore();
-      }
+    if (view.hoverTile) {
+      const cues =
+        view.crispOverlays && view.calmPath && view.path.length > 0
+          ? [hoverCalmMark(view.hoverTile, markCamera)]
+          : overlayPixelMarks(
+              'hover',
+              'hover',
+              traceRegions([view.hoverTile]),
+              markCamera,
+              overlayColors,
+            );
+      this.drawPixelCues(cues, markCamera, 'ground', view.cameraNudge);
     }
     this.drawCliffCues(view, camera);
   }
@@ -1056,13 +1057,8 @@ export class Canvas2DBackend implements RenderBackend {
 
   /** The target cue stays above units so it remains attached to its target. */
   private drawTargetReticle(view: MapView, camera: Camera): void {
-    const ctx = this.ctx;
-    const size = camera.toScreen({ x: 0, y: 0 }).size;
-    ctx.save();
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
     const cue = view.targetReticle;
-    if (cue) {
+    if (cue && (cue.elevation || cue.obscured)) {
       const target = view.units.find((unit) =>
         footprintCells(unit.pos, unit.size, this.squareFootprints).some(
           (cell) => cell.x === cue.pos.x && cell.y === cue.pos.y,
@@ -1104,212 +1100,45 @@ export class Canvas2DBackend implements RenderBackend {
       const cy = this.squareFootprints
         ? silhouette.reticleY
         : box.y - lift * box.size - box.size * 0.04;
-      ctx.fillStyle = OVERLAY.reticleCue;
-      ctx.strokeStyle = OVERLAY.pathUnder;
-      ctx.lineWidth = Math.max(3, size * 0.065);
-      if (cue.elevation) {
-        const direction = cue.elevation === 'above' ? -1 : 1;
-        ctx.beginPath();
-        ctx.moveTo(cx - size * 0.13, cy - direction * size * 0.08);
-        ctx.lineTo(cx, cy + direction * size * 0.13);
-        ctx.lineTo(cx + size * 0.13, cy - direction * size * 0.08);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
-      }
-      if (cue.obscured) {
-        const x = cx + size * 0.27;
-        const y = cy;
-        ctx.beginPath();
-        ctx.arc(x - size * 0.06, y, size * 0.07, Math.PI, 0);
-        ctx.arc(x + size * 0.04, y - size * 0.015, size * 0.09, Math.PI, 0);
-        ctx.lineTo(x + size * 0.12, y + size * 0.06);
-        ctx.lineTo(x - size * 0.13, y + size * 0.06);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
-      }
-    }
-    ctx.restore();
-  }
-
-  /** The pre-contour look, kept for High contrast: a square per tile, hard edges. */
-  private drawCrispOverlays(view: MapView, camera: Camera): void {
-    const { ctx } = this;
-
-    for (const layer of view.overlays) {
-      if (layer.tiles.length === 0) continue;
-      const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
-      const [fill, edge] = overlayColors(layer.kind);
-
-      for (const pos of layer.tiles) {
-        const box = camera.toScreen(pos);
-        if (!camera.isVisible(pos)) continue;
-        // Only the outside of the region gets a border, so a move range reads
-        // as one shape instead of a grid of boxes.
-        paintOverlay(ctx, box, fill, edge, {
-          top: !members.has(`${pos.x},${pos.y - 1}`),
-          right: !members.has(`${pos.x + 1},${pos.y}`),
-          bottom: !members.has(`${pos.x},${pos.y + 1}`),
-          left: !members.has(`${pos.x - 1},${pos.y}`),
-        });
-      }
-    }
-
-    if (view.hoverTile) {
-      const box = camera.toScreen(view.hoverTile);
-      if (view.calmPath && view.path.length > 0) {
-        ctx.save();
-        ctx.globalAlpha = 0.45;
-        ctx.strokeStyle = OVERLAY.calmPath;
-        ctx.lineWidth = Math.max(1, box.size * OVERLAY.calmPathWidth);
-        ctx.beginPath();
-        HOVER_LOOP.forEach((point, index) => {
-          const x = box.x + point.x * box.size;
-          const y = box.y + point.y * box.size;
-          if (index === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        });
-        ctx.closePath();
-        ctx.stroke();
-        ctx.restore();
-      } else {
-        paintOverlay(ctx, box, OVERLAY.hover, null, null);
-      }
+      this.drawPixelCues(
+        [targetReticleMark(screenToBoardPixel(camera, { x: cx, y: cy }), cue)],
+        camera,
+        'screen',
+        view.cameraNudge,
+      );
     }
   }
 
   private drawPath(view: MapView, camera: Camera): void {
     if (view.path.length === 0) return;
-    const { ctx } = this;
-
-    if (!view.pathFrom || (view.crispOverlays && !view.calmPath)) {
-      view.path.forEach((pos: Vec2, index: number) => {
-        const box = camera.toScreen(pos);
-        if (index === view.path.length - 1) paintPathArrow(ctx, box, OVERLAY.path);
-        else paintPathDot(ctx, box, OVERLAY.path);
-      });
-      return;
+    if (
+      view.pathFrom &&
+      (!this.curve || this.curve.path !== view.path || this.curve.from !== view.pathFrom)
+    ) {
+      this.curve = {
+        path: view.path,
+        from: view.pathFrom,
+        curve: smoothPath(view.pathFrom, view.path),
+      };
     }
-
-    const from = view.pathFrom;
-    if (!this.curve || this.curve.path !== view.path || this.curve.from !== from) {
-      this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
-    }
-    const curve = this.curve.curve;
-    const start = view.pathOrigin
-      ? nearestDistanceAlong(curve, view.pathOrigin, view.pathStart, view.path.length)
-      : 0;
-    const first = sampleAt(curve, start).pos;
-    const origin = camera.toScreen({ x: 0, y: 0 });
-    const size = origin.size;
-
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(origin.x + first.x * size, origin.y + first.y * size);
-    curve.points.forEach((p, index) => {
-      if ((curve.cumulative[index] ?? 0) <= start) return;
-      const x = origin.x + p.x * size;
-      const y = origin.y + p.y * size;
-      ctx.lineTo(x, y);
-    });
-    ctx.strokeStyle = view.calmPath ? OVERLAY.calmPathUnder : OVERLAY.pathUnder;
-    ctx.lineWidth = Math.max(
-      1,
-      size * (view.calmPath ? OVERLAY.calmPathUnderWidth : OVERLAY.pathUnderWidth),
+    this.drawPixelCues(
+      pathPixelMarks(view, camera, this.curve?.curve),
+      camera,
+      'ground',
+      view.cameraNudge,
     );
-    ctx.stroke();
-    ctx.strokeStyle =
-      view.calmPath && view.crispOverlays
-        ? OVERLAY.calmPathContrast
-        : view.calmPath
-          ? OVERLAY.calmPath
-          : OVERLAY.path;
-    ctx.lineWidth = Math.max(1, size * (view.calmPath ? OVERLAY.calmPathWidth : OVERLAY.pathWidth));
-    if (!view.calmPath) {
-      // A slow crawl along a combat move route, so it reads as a direction of travel.
-      ctx.setLineDash([size * 0.22, size * 0.16]);
-      ctx.lineDashOffset = -((view.time / 30) % (size * 0.38));
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // The arrowhead sits on the last tangent, pointing the way the walk ends.
-    const end = sampleAt(curve, curve.length);
-    const tip = { x: origin.x + end.pos.x * size, y: origin.y + end.pos.y * size };
-    if (view.calmPath) {
-      ctx.beginPath();
-      ctx.arc(tip.x, tip.y, size * OVERLAY.calmPathMarkerScale, 0, Math.PI * 2);
-      ctx.stroke();
-    } else {
-      this.fillPolygon(
-        arrowheadPolygon(tip, end.tangent, size * OVERLAY.pathArrowScale),
-        OVERLAY.path,
-      );
-    }
-    ctx.restore();
   }
 
-  /**
-   * The throw being aimed: the flight's own curve as dots in the element's
-   * light tone over an ink line, with an arrowhead where it lands. Still,
-   * so reduce motion needs nothing; nothing here is on the timeline.
-   */
-  private drawAimArc(arc: AimArc, camera: Camera): void {
-    const { ctx } = this;
-    const origin = camera.toScreen({ x: 0, y: 0 });
-    const size = origin.size;
-    const points = aimArcPoints(arc.from, arc.to, arc.arc).map((p) => ({
-      x: origin.x + p.x * size,
-      y: origin.y + p.y * size,
-    }));
-
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    points.forEach((p, index) => {
-      if (index === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-    });
-    ctx.strokeStyle = OVERLAY.pathUnder;
-    ctx.lineWidth = Math.max(4, size * 0.1);
-    ctx.stroke();
-
-    ctx.fillStyle = arc.color;
-    for (let i = 0; i < points.length - 1; i += 2) {
-      const p = points[i];
-      if (!p) continue;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(1.5, size * 0.05), 0, Math.PI * 2);
-      ctx.fill();
-    }
-    const tip = points[points.length - 1];
-    if (tip) this.fillPolygon(arrowheadPolygon(tip, arcHeading(points), size), arc.color);
-    ctx.restore();
+  /** The throw being aimed: the flight's own curve as G1 dots over an ink line. */
+  private drawAimArc(arc: AimArc, camera: Camera, nudge: Vec2): void {
+    this.drawPixelCues(aimArcPixelMarks(arc, camera), camera, 'ground', nudge);
   }
 
-  private fillPolygon(flat: readonly number[], color: string): void {
-    const { ctx } = this;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    for (let i = 0; i + 1 < flat.length; i += 2) {
-      const x = flat[i] ?? 0;
-      const y = flat[i + 1] ?? 0;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  private drawExit(view: MapView, camera: Camera): void {
+  private drawExit(view: MapView, camera: Camera, nudge: Vec2): void {
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
-      const box = camera.toScreen(exit.pos);
       const pulse = (Math.sin(view.time / 420) + 1) / 2;
-      paintExitMarker(this.ctx, box, '#f0c674', pulse);
+      const anchor = boardPixelFromTile(camera, { x: exit.pos.x + 0.5, y: exit.pos.y + 0.5 });
+      this.drawPixelCues([exitMark(anchor, 0.55 + 0.35 * pulse)], camera, 'ground', nudge);
     }
   }
 
@@ -2107,21 +1936,22 @@ export class Canvas2DBackend implements RenderBackend {
         strokeCuePolygon(ctx, cue.inner, OVERLAY.active, camera.scale);
         ctx.restore();
       } else if (unit.id === view.selectedUnitId) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-        ctx.lineWidth = Math.max(1, box.size * 0.03);
-        ctx.beginPath();
-        ctx.ellipse(
-          marker.x + width / 2,
-          marker.y + box.size * 0.86 - centreLift,
-          width * 0.4,
-          box.size * footprint * 0.12,
-          0,
-          0,
-          Math.PI * 2,
+        const centre = screenToBoardPixel(camera, {
+          x: marker.x + width / 2,
+          y: marker.y + box.size * 0.86 - centreLift,
+        });
+        this.drawPixelCues(
+          [
+            selectedRingMark(
+              centre,
+              (width * 0.4) / camera.scale,
+              (box.size * footprint * 0.12) / camera.scale,
+            ),
+          ],
+          camera,
+          'screen',
+          view.cameraNudge,
         );
-        ctx.stroke();
-        ctx.restore();
       }
     }
   }
@@ -2281,16 +2111,16 @@ export class Canvas2DBackend implements RenderBackend {
         this.drawStatusBadges(unit, box.x, width, box.size, silhouette.badgeY);
       } else {
         // A fallen unit gets a clear cross rather than just fading out.
-        ctx.save();
-        ctx.strokeStyle = 'rgba(226,88,74,0.85)';
-        ctx.lineWidth = Math.max(2, box.size * 0.06);
-        ctx.beginPath();
-        ctx.moveTo(box.x + width * 0.3, box.y + box.size * 0.35);
-        ctx.lineTo(box.x + width * 0.7, box.y + box.size * 0.75);
-        ctx.moveTo(box.x + width * 0.7, box.y + box.size * 0.35);
-        ctx.lineTo(box.x + width * 0.3, box.y + box.size * 0.75);
-        ctx.stroke();
-        ctx.restore();
+        const anchor = screenToBoardPixel(camera, {
+          x: box.x + width / 2,
+          y: box.y + box.size * 0.55,
+        });
+        this.drawPixelCues(
+          [koCrossMark(anchor, width / camera.scale)],
+          camera,
+          'screen',
+          view.cameraNudge,
+        );
       }
     }
   }
@@ -2300,6 +2130,8 @@ export class Canvas2DBackend implements RenderBackend {
     bar: ReturnType<typeof actorSilhouetteGeometry>['bar'],
     actorX: number,
     hatch: boolean,
+    camera: Camera,
+    nudge: Vec2,
   ): void {
     const { ctx } = this;
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
@@ -2324,6 +2156,21 @@ export class Canvas2DBackend implements RenderBackend {
     // The side's cap, so the bar reads by shape as well as colour.
     const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX);
     if (cap.length === 0) return;
+    if (HP_CAP[unit.faction] === 'spike') {
+      const anchor = screenToBoardPixel(camera, { x: cap[0] ?? 0, y: barY + barHeight / 2 });
+      const points: Vec2[] = [];
+      for (let i = 0; i + 1 < cap.length; i += 2) {
+        const point = screenToBoardPixel(camera, { x: cap[i] ?? 0, y: cap[i + 1] ?? 0 });
+        points.push({ x: point.x - anchor.x, y: point.y - anchor.y });
+      }
+      this.drawPixelCues(
+        [healthBarSpikeMark(anchor, points, hpFill(unit.faction, 1, hatch), HP_COLORS.frame)],
+        camera,
+        'screen',
+        nudge,
+      );
+      return;
+    }
     ctx.strokeStyle = HP_COLORS.frame;
     ctx.lineWidth = pixel;
     ctx.beginPath();
@@ -2334,13 +2181,13 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.stroke();
   }
 
-  private flushHealthBars(): void {
+  private flushHealthBars(camera: Camera, nudge: Vec2): void {
     const placements = this.healthBarStagger.place(this.pendingHealthBars);
     for (const candidate of this.pendingHealthBars) {
       const bar = placements.get(candidate.id);
       if (!bar) continue;
       this.barTops.set(candidate.id, bar.y);
-      this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch);
+      this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch, camera, nudge);
     }
     this.pendingHealthBars = [];
   }
