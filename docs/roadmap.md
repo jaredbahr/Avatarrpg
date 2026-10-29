@@ -16,6 +16,118 @@ Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 `docs/art-bible.md`. Device tiers and the manual checklist are
 `docs/device-matrix.md`.
 
+## Next stretch (2026-10-29)
+
+Owner, 2026-10-29: "make sure we have a road map planned out for a bit with issues created. I want you to lean on
+codex tackling issues. wrap up whatever is currently working then let codex jump in on issues to tackle next steps."
+The plan covers about four weeks, to 2026-11-26. Every task is a GitHub issue, and they are grouped in the tracking issue
+[#348](https://github.com/jaredbahr/Avatarrpg/issues/348). The finish line is unchanged ([AGENTS.md](../AGENTS.md),
+[finish through the Driller](coordination/finish-through-driller.md)): a polished village → quarry → back run, then
+the Driller.
+
+**Routing.** Codex takes code, wiring, tests, UI, camera, pacing and docs. Art generation needs PixelLab credits, so it
+belongs to Claude sessions unless an issue says otherwise. "Ready" below means an agent can start it today with no
+decision outstanding.
+
+### Where things stand
+
+- Ba Dan and the forest-road fight are 1 px pixel art (ADR 0090). The quarry gate, the cutting and the Driller floor
+  are still the older painted scenes.
+- Figures draw at the interim 1.25× (ADR 0094's amendment) and walk at 750 ms a tile with 70 ms cels (ADR 0095's
+  amendment). Shadows are a calm pool with planted feet (ADR 0093's amendments), and a party member behind a house is
+  a silhouette (ADR 0096).
+- Owner-approved 2026-10-28: "characters match the world". Kaya, Sura and Bo exist in the world's rendering behind
+  `?style=world` (ADR 0097), and the default is not switched. Kaya's polish pass (steeper camera, consistent rendering,
+  eight headings, riverside clips) is running in a Claude session. If Jared approves her, the recipe rolls to Sura, Bo,
+  the three bandits and the six residents.
+- `main`'s browser e2e has failed on every push since 2026-10-28. Three specs fail every run, and more are
+  intermittent. Each shard stops at its first failure, so the intermittent ones hide behind the steady ones.
+
+### Phases
+
+| Week (from) | Codex (code, now)                                         | Claude (art, PixelLab)                                   | Owner                                |
+| ----------- | --------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------ |
+| 1 (10-29)   | CI health first (#322–#325), then M2 (#326–#336)          | Kaya's polish pass (in progress)                         | Kaya reference: approve or redirect  |
+| 2 (11-05)   | M2 continues; #341 overlays; #344 quarry review run       | #337 Sura and Bo; #342 fire surfaces and Fire Jab        | Enemy move pace in combat (item 4)   |
+| 3 (11-12)   | #340 party default switch                                 | #338 bandits; #339 residents                             | Sign off the style guide text (#343) |
+| 4 (11-19)   | #343 retire the interim, lock the guide; #345 integration | #345 quarry maps; #346 quarry figures; #347 seven heroes | Credit budget for #347               |
+
+The weeks are a sequence, not deadlines. A blocked art issue never holds up Codex's M2 or CI work.
+
+### M1: art lock
+
+Everything on screen is in one rendering, and the style guide says so.
+
+| Issue | Task                                                                             | Who               | Ready | Blocked on                         |
+| ----- | -------------------------------------------------------------------------------- | ----------------- | ----- | ---------------------------------- |
+| —     | Approve Kaya's polished world-style reference                                    | Jared             | —     | the polish session                 |
+| #337  | Sura and Bo to Kaya's recipe                                                     | Claude (PixelLab) | no    | Kaya's approval                    |
+| #338  | Bandits (thug, slinger, bruiser), phase 2b, default on landing                   | Claude (PixelLab) | no    | Kaya's approval, #337              |
+| #339  | Six residents, phase 2c, default on landing                                      | Claude (PixelLab) | no    | Kaya's approval, #338              |
+| #340  | World-style party as the default; G1 party sheets and their ~41 pins migrated    | Codex             | no    | #337                               |
+| #341  | Talk cue, exit marker, rings, intent arrows and KO mark on the world-pixel grid  | Codex             | yes   | —                                  |
+| #342  | Burning oil and fire surfaces; a Fire Jab that reads at zoom 1                   | Claude (PixelLab) | no    | best after Kaya's approval         |
+| #343  | Retire `?style=world` and the 1.25× interim; lock art bible and player-view note | Codex             | no    | #338, #339, #340; owner's sign-off |
+
+Optional and not scheduled: a natural-stride jog (ADR 0095's amendment keeps the jog cels unplayed until a redraw).
+It needs the owner's ask and about three generations a heading.
+
+### M2: demo-flow polish (Codex, now)
+
+These are the deferred items of the [2026-10-28 demo-flow audit](demo-flow-playtest.md). All are code only.
+
+| Issue | Audit items | Task                                                                           | Ready |
+| ----- | ----------- | ------------------------------------------------------------------------------ | ----- |
+| #326  | 29, 30      | Enemy turns show an "is acting" card; the stale AP warning clears              | yes   |
+| #327  | 4, 26       | The combat camera glides to the next actor (pace excluded)                     | yes   |
+| #328  | 6           | The first party turn shows the enemies and the flask                           | yes   |
+| #329  | 7, 9        | The objective card collapses off the board; toasts keep clear of it            | yes   |
+| #330  | 8           | iPad portrait combat: one-row header, a unit card that doesn't stretch         | yes   |
+| #331  | 23          | Two-line ability description in a fixed-height header                          | yes   |
+| #332  | 24          | Prop chip without grid coordinates                                             | yes   |
+| #333  | 34          | A victory beat on the party before the card                                    | yes   |
+| #334  | 3, 15       | The ambush opens without a jump back and returns the party clear of the rubble | yes   |
+| #335  | 14          | The Ba Dan canal is walkable only at its crossings                             | yes   |
+| #336  | 28          | Framed health bars, an acting marker, a slimmer turn strip                     | yes   |
+
+The audit's art items (11, 16, 18, 19, 20, 31) are in M1 (#341, #342), and item 16 resolves when every figure is on the
+world grid.
+
+### M3: the quarry slice, to the locked style, through the Driller
+
+| Issue | Task                                                                                 | Who                          | Ready | Blocked on        |
+| ----- | ------------------------------------------------------------------------------------ | ---------------------------- | ----- | ----------------- |
+| #344  | Demo-flow review run and audit through the quarry, the Driller and the walk home     | Codex                        | yes   | —                 |
+| #345  | Quarry gate, cutting and Driller floor as 1 px Route A paintings                     | Claude art, Codex integrates | no    | M1 (#343)         |
+| #346  | Quarry bender, deserter, mercenaries, crossbowman and the Driller in the world style | Claude (PixelLab)            | no    | M1 (#343)         |
+| #347  | The other seven heroes in the world style                                            | Claude (PixelLab)            | no    | M1, credit budget |
+
+The audit from #344 becomes M3's list of code issues, in the same severity format.
+
+### Ongoing: CI health (Codex, now; first)
+
+| Issue | Task                                                                                                        | Ready           |
+| ----- | ----------------------------------------------------------------------------------------------------------- | --------------- |
+| #322  | `bending-cels.spec` on WebGL: Pixi throws on a null `alphaMode`                                             | yes             |
+| #323  | `resident-motion.spec` Gao tap: the talk never opens                                                        | yes             |
+| #324  | `00-riverside.spec` (canvas) on WebKit iPad: Wave never re-enables                                          | yes             |
+| #325  | Intermittent: WebKit combat-focus/obscurement, combat-pan-reflow, motion-transitions, resident phase change | after #322–#324 |
+
+Browser e2e runs only on pushes to `main`, nightly and on dispatch (the cost rule in `.github/workflows/ci.yml`). An
+issue that touches a spec dispatches CI once on its branch and links the run.
+
+### Open questions for the owner
+
+- Kaya's polished reference: approve, or name what to change (gates all of M1's art).
+- Enemy move pace in combat (audit item 4): keep the explore walk, or move faster in combat.
+- Whether a wading cue for the forest puddle (still walkable by rule) is wanted as art.
+- The PixelLab credit budget for the seven remaining heroes (#347).
+
+### Already owned, not duplicated
+
+#284 (art-direction umbrella), #299 and PR #310 (expression portraits, Codex's), #277 (one polished NPC corner;
+overlaps #339), and draft PRs #278 and #275.
+
 ## Settled decisions
 
 | Question          | Decision                                                                                                                                                                                  | Record                                   |
