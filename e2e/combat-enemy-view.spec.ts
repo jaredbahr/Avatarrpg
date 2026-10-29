@@ -155,3 +155,65 @@ test('Show enemies frames the forest ambush, then restores the acting-unit view'
   const afterTurn = await page.evaluate(() => window.fnt!.app.rendererCamera());
   expect(afterTurn?.tilePx).toBe(pinchFrame?.tilePx);
 });
+
+test('a turn change from Show enemies restores the new acting-unit frame', async ({ page }) => {
+  test.setTimeout(45_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(
+    page,
+    PARTY.map((member) => member.player),
+    PARTY.map((member) => member.character),
+    'first-turn-context-328-turn-change',
+  );
+  await enterNode(page, 'battle_forest_road');
+  await takeTurn(page);
+  await waitForIdle(page);
+
+  await page.getByRole('button', { name: 'More', exact: true }).click();
+  await page.getByRole('button', { name: 'Show enemies', exact: true }).click();
+  const showing = () =>
+    page.evaluate(() => {
+      const scene = (window.fnt!.app as unknown as { scene?: { showingEnemiesView?: boolean } })
+        .scene;
+      return scene?.showingEnemiesView ?? false;
+    });
+  expect(await showing()).toBe(true);
+  const enemyFrame = await page.evaluate(() => window.fnt!.app.rendererCamera());
+  const actorBeforeTurn = await page.evaluate(() => {
+    const battle = window.fnt!.app.state!.battle!;
+    return battle.order[battle.turnIndex] ?? null;
+  });
+
+  await page.evaluate(() => {
+    const app = window.fnt!.app;
+    const battle = app.state!.battle!;
+    const unitId = battle.order[battle.turnIndex]!;
+    app.dispatch({ type: 'endTurn', unitId });
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const battle = window.fnt!.app.state!.battle!;
+        return battle.order[battle.turnIndex] ?? null;
+      }),
+    )
+    .not.toBe(actorBeforeTurn);
+  expect(await showing()).toBe(false);
+
+  const actorPos = await page.evaluate(() => {
+    const battle = window.fnt!.app.state!.battle!;
+    const id = battle.order[battle.turnIndex];
+    return battle.units.find((unit) => unit.id === id)?.pos ?? null;
+  });
+  expect(actorPos).not.toBeNull();
+  const point = await paintedTileCentre(page, actorPos!);
+  const box = await page.locator('.combat-scene .map-canvas').boundingBox();
+  expect(point).not.toBeNull();
+  expect(box).not.toBeNull();
+  expect(point!.x).toBeGreaterThanOrEqual(box!.x);
+  expect(point!.x).toBeLessThanOrEqual(box!.x + box!.width);
+  expect(point!.y).toBeGreaterThanOrEqual(box!.y);
+  expect(point!.y).toBeLessThanOrEqual(box!.y + box!.height);
+  expect(await page.evaluate(() => window.fnt!.app.rendererCamera())).not.toEqual(enemyFrame);
+});
