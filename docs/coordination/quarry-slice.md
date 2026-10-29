@@ -24,15 +24,22 @@ advanced to `71f33c26` during this review and remains separately owned.
 | #335  | Canal worker                  | Ba Dan collision/pathfinding at existing crossings                | Integrated; 62 focused tests and real conversation passed          |
 | #334  | Ambush state owner (Sol High) | Ambush/aftermath party placement                                  | Integrated; 960 paired and 360 side fights plus save checks passed |
 | #336  | Readability worker            | Shared health bars, acting cue and landscape turn strip           | Integrated; Canvas/WebGL visual review and focused checks passed   |
-| #341  | Pixel overlay worker          | Pixel masks, bounded drawable sources and existing overlay layers | Implementation and renderer review in progress                     |
+| #341  | Overlay/backend owners        | Pixel masks, bounded drawable sources and existing overlay layers | Integrated; eight-configuration Chromium matrix passed             |
 | #344  | Route reviewer                | Trade/escort progression, saves, homecoming and visual triage     | Both pre-overlay Canvas routes passed; capture gaps recorded       |
 | #324  | Integration owner             | Riverside form lock on WebKit iPad                                | Diagnosis recorded; exact-engine validation pending                |
 
 #336's shared pixel-based health/active cues and landscape turn strip are
-integrated and visually reviewed. #341's remaining overlay marks are in progress
-after that backend transfer. #328 is diagnosed but its opening/focus lifecycle waits
+integrated and visually reviewed. #341's overlay adapters are integrated after
+that backend transfer; 19 focused tests and two Pixi browser regressions pass.
+The combined production build is 371.4 KB gzip against the unchanged 380 KB
+budget. Its final eight-configuration Canvas/Pixi × N1/N2 × DPR1/DPR2 matrix passed in 6.2 minutes, including complete cue visibility, actor overlap and warm-source reuse. The final clean-root gate and push receipt belong to `/workspace/avatarrpg-env/final-demo-verification.md`; earlier component results do not replace them.
+Luna Max implemented the bounded raster/cache/Canvas work; difficult Pixi
+ground transforms, lift layering and texture lifetime escalated to Sol High,
+preserving the helper checkpoint in an isolated backend worktree.
+#328 is diagnosed but its opening/focus lifecycle waits
 for the existing #327 owner to transfer or integrate that work. ADR 0098 records
-#334's authored approach contract; ADR 0099 records the victory presentation beat.
+#334's authored approach contract; ADR 0099 records the victory presentation beat,
+and ADR 0100 records world-pixel overlays.
 
 Pre-overlay route review at `9a66b0ab` passed trade and escort through the
 Driller, both homecoming save/reloads and the cleared-boss revisit (24 and 28

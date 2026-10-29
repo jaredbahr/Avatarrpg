@@ -25,7 +25,7 @@ portrait layout rules remain separate.
 - `src/styles/hud.css` adds only a landscape-wide, default-text rule for
   `.turn-strip` and `.turn-chip`. Chips stay touch height, labels keep their
   accessible names and crowded orders scroll horizontally.
-- The ignored E2E review capture stages full party bars and a damaged active
+- The focused E2E writes ignored review captures of full party bars and a damaged active
   enemy, then records 1280×800 and 1180×820 views on both backends under
   `.shots/combat-readability/`, including full-page desktop views with the
   compact initiative strip.

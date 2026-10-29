@@ -18,7 +18,9 @@ Ground marks are authored in projected-world pixels, before camera scale and pan
 
 The normal range contour keeps its rounded loop geometry. High contrast keeps square tile-set contours. Both use the same snapped palette masks. Route and aim lines keep their existing endpoints, arrow direction, and cue meaning. The route's dash pattern has a stable source phase so an animation clock does not invalidate every raster chunk; pulse and fade opacity remain draw-time values.
 
-Existing colours, opacity, anchors, cue semantics, and pulse timing remain. In particular, talk pips retain `npcPipLift` and their resident alpha, exits retain the current pulse, the target marker keeps its elevation/cloud meanings, and the enemy spike is made from the exact existing `healthBarCap` points and colours. Health-bar frame/fill, ally diamond, combat active-unit frame, climb and cliff cues, and obscuration veil stay in their existing renderers.
+Use the existing palette, semantic anchors and pulse durations. Talk pips retain `npcPipLift` and their resident alpha; the shared exit badge combines a ring with the right-facing chevron and applies the existing pulse to the whole mark. The target marker keeps its elevation/cloud meanings, and the enemy spike is made from the existing `healthBarCap` points and colours. Health-bar frame/fill, ally diamond, combat active-unit frame, climb and cliff cues, and obscuration veil stay in their existing renderers.
+
+The enemy spike's local vertices are snapped relative to its raw cap midpoint, then the midpoint alone is snapped as the moving placement anchor. A camera pan therefore moves the source without changing its raster geometry or cache key.
 
 Fractional overview zoom keeps the established linear sampling policy. At whole device-pixel stops, Canvas uses nearest sampling through `drawArt` and Pixi uses the matching source scale mode, following ADR 0088. Pixel masks do not change camera or picking geometry.
 

@@ -24,6 +24,9 @@
 - Give combat health bars a pixel-aligned frame and highlight, make the acting
   unit's ground outline clearer, and compact the default-text landscape turn
   strip while preserving touch targets.
+- Draw talk, exit, selection, move, aim, target and KO cues from shared world-pixel
+  masks on Canvas and WebGL. Keep raised-ground clipping and actor overlap, reuse
+  sources across warm frames and pans, and retire idle textures safely.
 
 ## 0.2.11 — release candidate
 
