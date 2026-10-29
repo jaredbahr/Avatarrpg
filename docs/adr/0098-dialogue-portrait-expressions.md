@@ -1,4 +1,4 @@
-# ADR 0097: Optional dialogue expressions load on first use
+# ADR 0098: Optional dialogue expressions load on first use
 
 **Status:** proposed proof, 2026-10-28; issue #299. Owner visual acceptance pending.
 

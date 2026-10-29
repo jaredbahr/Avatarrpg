@@ -27,7 +27,8 @@ Optional expression fields resolve through node/party variants in the pure
 story engine. Both UI presentations use registered expression keys only.
 Unknown keys, cold images and failed/offline requests retain neutral, with its
 painter only if neutral itself is unavailable. Workbox excludes expression PNGs
-from precache. No budget is raised. ADR0097 records this proposed proof.
+from precache. No budget is raised.
+[ADR0098](../../adr/0098-dialogue-portrait-expressions.md) records this proposed proof.
 
 ## Validation and delivery
 
