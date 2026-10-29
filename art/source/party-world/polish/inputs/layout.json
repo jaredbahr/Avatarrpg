@@ -1,0 +1,134 @@
+{
+  "crop": [1040, 980, 1552, 1492],
+  "stance_seed": 512,
+  "figures": [
+    {
+      "kind": "idle",
+      "dir": "south",
+      "x": 48,
+      "y": 43,
+      "w": 33,
+      "h": 70
+    },
+    {
+      "kind": "idle",
+      "dir": "south-east",
+      "x": 178,
+      "y": 43,
+      "w": 27,
+      "h": 70
+    },
+    {
+      "kind": "idle",
+      "dir": "east",
+      "x": 308,
+      "y": 43,
+      "w": 25,
+      "h": 70
+    },
+    {
+      "kind": "idle",
+      "dir": "north-east",
+      "x": 432,
+      "y": 43,
+      "w": 33,
+      "h": 70
+    },
+    {
+      "kind": "idle",
+      "dir": "north",
+      "x": 46,
+      "y": 171,
+      "w": 35,
+      "h": 70
+    },
+    {
+      "kind": "idle",
+      "dir": "north-west",
+      "x": 176,
+      "y": 171,
+      "w": 32,
+      "h": 70
+    },
+    {
+      "kind": "idle",
+      "dir": "west",
+      "x": 306,
+      "y": 171,
+      "w": 27,
+      "h": 70
+    },
+    {
+      "kind": "idle",
+      "dir": "south-west",
+      "x": 434,
+      "y": 171,
+      "w": 27,
+      "h": 70
+    },
+    {
+      "kind": "stance",
+      "dir": "south",
+      "x": 46,
+      "y": 299,
+      "w": 36,
+      "h": 70
+    },
+    {
+      "kind": "stance",
+      "dir": "south-east",
+      "x": 172,
+      "y": 300,
+      "w": 39,
+      "h": 69
+    },
+    {
+      "kind": "stance",
+      "dir": "east",
+      "x": 302,
+      "y": 300,
+      "w": 35,
+      "h": 69
+    },
+    {
+      "kind": "stance",
+      "dir": "north-east",
+      "x": 427,
+      "y": 299,
+      "w": 42,
+      "h": 70
+    },
+    {
+      "kind": "stance",
+      "dir": "north",
+      "x": 46,
+      "y": 429,
+      "w": 37,
+      "h": 68
+    },
+    {
+      "kind": "stance",
+      "dir": "north-west",
+      "x": 170,
+      "y": 431,
+      "w": 44,
+      "h": 66
+    },
+    {
+      "kind": "stance",
+      "dir": "west",
+      "x": 306,
+      "y": 429,
+      "w": 28,
+      "h": 68
+    },
+    {
+      "kind": "stance",
+      "dir": "south-west",
+      "x": 430,
+      "y": 428,
+      "w": 35,
+      "h": 69
+    }
+  ]
+}

@@ -69,8 +69,12 @@ def main():
             clips[ko] = {'frames': list(ref['frames']), 'fps': ref['fps'], 'loop': False,
                          'frameMs': ref['frameMs'], 'frameSize': {'w': 192, 'h': 192},
                          'anchor': {'x': 0.5, 'y': round(GROUND[192] / 192, 6)}}
-        if name in ('kaya', 'sura'):
-            # The riverside's wave and seated tea (ADR 0054) are not redrawn: the G1 sheet's cels, 1.25x nearest onto
+        if name == 'kaya':
+            # Kaya's riverside wave and tea are drawn in the world rendering (kp_riverside.py, kp_assemble.py).
+            for clip in ('wave', 'tea'):
+                for i in range(2): loco.append((f'{key}/{clip}/{i}', c / f'riverside/{clip}-{i}.png'))
+        elif name == 'sura':
+            # Sura's riverside wave and seated tea (ADR 0054) are not redrawn: the G1 sheet's cels, 1.25x nearest onto
             # this grid (one G1 art px is 1.25 world px, as it was drawn), their foot line on this sheet's.
             g1 = json.load(open(REPO / f'public/art/units/{name}-g.json'))
             img = Image.open(REPO / f'public/art/units/{g1["meta"]["image"]}').convert('RGBA')

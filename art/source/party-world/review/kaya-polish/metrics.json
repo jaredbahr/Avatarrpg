@@ -1,0 +1,126 @@
+{
+  "boil": {
+    "before": {
+      "walk/south": 0.101,
+      "walk/south-east": 0.15,
+      "walk/east": 0.209,
+      "walk/north-east": 0.253,
+      "walk/north": 0.119,
+      "walk/north-west": 0.162,
+      "walk/west": 0.178,
+      "walk/south-west": 0.057,
+      "hit/south": 0.649,
+      "hit/south-east": 0.658,
+      "hit/east": 0.719,
+      "hit/north-east": 0.62,
+      "hit/north": 0.54,
+      "hit/north-west": 0.545,
+      "hit/west": 0.693,
+      "hit/south-west": 0.598,
+      "ko/south-east": 0.853,
+      "ko/north-east": 0.783,
+      "ko/north-west": 0.817,
+      "ko/south-west": 0.86,
+      "bend/south": 0.34,
+      "bend/south-east": 0.431,
+      "bend/east": 0.373,
+      "bend/north-east": 0.278,
+      "bend/north": 0.33,
+      "bend/north-west": 0.342,
+      "bend/west": 0.416,
+      "bend/south-west": 0.313
+    },
+    "after": {
+      "walk/south": 0.002,
+      "walk/south-east": 0.004,
+      "walk/east": 0.026,
+      "walk/north-east": 0.006,
+      "walk/north": 0.0,
+      "walk/north-west": 0.015,
+      "walk/west": 0.017,
+      "walk/south-west": 0.021,
+      "hit/south": 0.495,
+      "hit/south-east": 0.744,
+      "hit/east": 0.462,
+      "hit/north-east": 0.276,
+      "hit/north": 0.374,
+      "hit/north-west": 0.566,
+      "hit/west": 0.367,
+      "hit/south-west": 0.423,
+      "ko/south-east": 0.738,
+      "ko/north-east": 0.705,
+      "ko/north-west": 0.693,
+      "ko/south-west": 0.799,
+      "bend/south": 0.363,
+      "bend/south-east": 0.316,
+      "bend/east": 0.318,
+      "bend/north-east": 0.2,
+      "bend/north": 0.306,
+      "bend/north-west": 0.304,
+      "bend/west": 0.246,
+      "bend/south-west": 0.357
+    }
+  },
+  "colours": {
+    "before": {
+      "idle_mean": 434.4,
+      "walk_mean": 25.5,
+      "sheet_total": 3114
+    },
+    "after": {
+      "idle_mean": 56.5,
+      "walk_mean": 54.7,
+      "sheet_total": 64
+    }
+  },
+  "summary": {
+    "walk": {
+      "before": {
+        "mean": 0.154,
+        "min": 0.057,
+        "max": 0.253
+      },
+      "after": {
+        "mean": 0.011,
+        "min": 0.0,
+        "max": 0.026
+      }
+    },
+    "hit": {
+      "before": {
+        "mean": 0.628,
+        "min": 0.54,
+        "max": 0.719
+      },
+      "after": {
+        "mean": 0.463,
+        "min": 0.276,
+        "max": 0.744
+      }
+    },
+    "ko": {
+      "before": {
+        "mean": 0.828,
+        "min": 0.783,
+        "max": 0.86
+      },
+      "after": {
+        "mean": 0.734,
+        "min": 0.693,
+        "max": 0.799
+      }
+    },
+    "bend": {
+      "before": {
+        "mean": 0.353,
+        "min": 0.278,
+        "max": 0.431
+      },
+      "after": {
+        "mean": 0.301,
+        "min": 0.2,
+        "max": 0.363
+      }
+    }
+  }
+}

@@ -54,3 +54,22 @@ mirroring only where a figure is truly symmetric. The PixelLab balance was about
 
 `public/art/units/world/` adds 0.81 MB to the units family (6.97 of 8.5 MiB with the G1 party sheets still on disk; #317's party test atlases are removed). The flag shows the whole party in the
 new rendering in exploration and in a fight; the default is unchanged until the last group lands.
+
+## Amendment, 2026-10-29: Kaya polish
+
+Owner, 2026-10-29: "lets get kaya with the polished animations and directions then show me that. If its good we can push
+it on the rest." Kaya's world sheet is redrawn as the reference for the other eleven figures
+(`art/source/party-world/README.md`, "Kaya polish"); Sura's and Bo's stay as above, and the default is unchanged.
+
+- **Steeper roots.** Each heading's idle is redrawn from #321's by `edit-image-pro-flash`, told to raise the camera to
+  the town map's high oblique and keep adult proportions, then restyled into the world with #321's settings. She stands
+  70 world px (72-76 before): the steeper view foreshortens her. This retires "Not done: steeper camera" above.
+- **One palette, one rendering.** One 64-colour Kaya palette for every clip and heading (each heading had its own).
+  Every generated cel takes its heading's root back part by part (`kp_texture.py`); the walk's head and torso are the
+  root's own pixels, so its boil falls from 15% to 1% of the trunk a cel pair.
+- **Timing, unchanged contract.** Clip names, frame counts, key frames and the shipped hit, knockout and bend timing
+  are kept; the walk's step is 0.5 body heights, so at 750 ms a tile it plays at 105-128 ms a cel (87-101 before) and
+  the brisk cap is never reached. The hit's motion is 1.7x and the bend's reach 1.35x so both read at zoom 1.
+- **Riverside.** Kaya's wave and tea are drawn in the new rendering (the G1 cels before).
+
+The sheet is 23 KB smaller than #321's Kaya. Faults and credits are in the README.
