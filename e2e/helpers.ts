@@ -332,7 +332,9 @@ export async function settleMapCanvas(page: Page): Promise<void> {
 export async function waitForIdle(page: Page, timeout = 20_000): Promise<void> {
   try {
     await page.waitForFunction(
-      () => window.fnt?.app.animator.busy(performance.now()) === false,
+      () =>
+        window.fnt?.app.animator.busy(performance.now()) === false &&
+        document.querySelector('.combat-scene')?.getAttribute('data-camera-glide') !== 'active',
       undefined,
       { timeout },
     );
@@ -342,7 +344,11 @@ export async function waitForIdle(page: Page, timeout = 20_000): Promise<void> {
         const animator = window.fnt?.app.animator;
         if (!animator) return 'the game is not on the page';
         const left = Math.round(animator.finishesAt - performance.now());
-        return left > 0 ? `${left} ms of playback left` : 'no frame reached the end of playback';
+        const playback =
+          left > 0 ? `${left} ms of playback left` : 'no frame reached the end of playback';
+        const gliding =
+          document.querySelector('.combat-scene')?.getAttribute('data-camera-glide') === 'active';
+        return gliding ? `camera glide still active; ${playback}` : playback;
       })
       .catch(() => 'the page could not be read back');
     const detail = error instanceof Error ? error.message : String(error);

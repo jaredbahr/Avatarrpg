@@ -17,6 +17,10 @@ import type { Ability, ContentIndex, GameEvent, Unit, Vec2 } from '../../core/ty
 import { isBendingAttack } from '../anim/bendHandoff';
 import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/scenes/baDan';
 
+// Preserve the practice module's established export while sharing the easing
+// primitive with other presentation systems.
+export { glidePoint } from '../anim/glide';
+
 export interface PracticeGround {
   readonly mapId: string;
   /** What the action calls the place, under its name. */
@@ -179,13 +183,3 @@ export function practiceFrame(benders: readonly Vec2[], mark: Vec2): Vec2 {
 
 /** How long the camera takes to glide onto a practice and back, in ms. */
 export const PRACTICE_GLIDE_MS = 450;
-
-/**
- * The point a glide from `from` to `to` has reached `elapsed` ms in: an
- * ease-in-out over `ms`, arriving exactly at `to` (and at once when `ms` is 0).
- */
-export function glidePoint(from: Vec2, to: Vec2, elapsed: number, ms: number): Vec2 {
-  const t = ms <= 0 ? 1 : Math.min(1, Math.max(0, elapsed / ms));
-  const k = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-  return { x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k };
-}

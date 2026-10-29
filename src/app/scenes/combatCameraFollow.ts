@@ -1,4 +1,17 @@
 import type { ActorBodyBounds } from '../../render/geometry/actorSilhouette';
+import type { Vec2 } from '../../core/types';
+import { glidePoint } from '../anim/glide';
+
+export interface CombatCameraGlide {
+  readonly from: Vec2;
+  readonly to: Vec2;
+  readonly startedAt: number;
+  readonly duration: number;
+}
+
+export function combatCameraGlidePoint(glide: CombatCameraGlide, now: number): Vec2 {
+  return glidePoint(glide.from, glide.to, now - glide.startedAt, glide.duration);
+}
 
 export function shouldFollowAnimatedLargeActor(options: {
   readonly size: 1 | 2;

@@ -66,13 +66,14 @@ test('camera follows the moving boss and returns to the next actor with motion o
   await page.evaluate(() => {
     type FollowProbe = {
       animatedFrames: number;
+      glideSeen: boolean;
       outside: {
         points: { x: number; y: number }[];
         viewport: { width: number; height: number };
       }[];
     };
     const win = window as Window & { bossFollowProbe?: FollowProbe };
-    win.bossFollowProbe = { animatedFrames: 0, outside: [] };
+    win.bossFollowProbe = { animatedFrames: 0, glideSeen: false, outside: [] };
     const app = window.fnt!.app;
     const scene = (
       app as unknown as {
@@ -87,6 +88,19 @@ test('camera follows the moving boss and returns to the next actor with motion o
         };
       }
     ).scene;
+    const combatRoot = document.querySelector('.combat-scene');
+    if (!combatRoot) throw new Error('Missing combat root');
+    const latchFollowGlide = () => {
+      if (combatRoot.getAttribute('data-camera-glide') !== 'active') return;
+      if (win.bossFollowProbe!.animatedFrames > 0) {
+        win.bossFollowProbe!.glideSeen = true;
+        observer.disconnect();
+        return;
+      }
+      requestAnimationFrame(latchFollowGlide);
+    };
+    const observer = new MutationObserver(latchFollowGlide);
+    observer.observe(combatRoot, { attributes: true, attributeFilter: ['data-camera-glide'] });
     const draw = scene.renderer.draw.bind(scene.renderer);
     scene.renderer.draw = (view) => {
       draw(view);
@@ -127,6 +141,19 @@ test('camera follows the moving boss and returns to the next actor with motion o
       ),
     )
     .toBeGreaterThan(0);
+  // The large actor owns the camera during its animation; on release the
+  // follow owner hands off to the eased centre for the next actor.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            (window as Window & { bossFollowProbe?: { glideSeen: boolean } }).bossFollowProbe
+              ?.glideSeen ?? false,
+        ),
+      { timeout: 20_000, intervals: [50] },
+    )
+    .toBe(true);
   await waitForIdle(page);
   await takeTurn(page);
   const follow = await page.evaluate(

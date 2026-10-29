@@ -1,7 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PropInstance, Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
 import { Camera } from '../../render/camera';
+import {
+  combatCameraFollowDecision,
+  combatCameraGlidePoint,
+  type CombatCameraGlide,
+} from './combatCameraFollow';
 import {
   CombatScene,
   combatFocusPosition,
@@ -58,6 +63,298 @@ function unit(id: string, pos: Vec2, extra: Partial<Unit> = {}): Unit {
     ...extra,
   };
 }
+
+interface CameraSceneHarness {
+  renderer: { camera: Camera; destroy?: () => void };
+  host?: HTMLElement | null;
+  frame?: number;
+  suspended?: boolean;
+  aiHeld?: boolean;
+  freshBattleEntry?: boolean;
+  topBarKey?: string;
+  recentreButton?: HTMLButtonElement | null;
+  actorButton?: HTMLButtonElement | null;
+  moreDismiss?: (() => void) | null;
+  detach?: (() => void) | null;
+  inspector?: { close: () => void } | null;
+  canvas?: HTMLCanvasElement | null;
+  stopAiTimer?: () => void;
+  cameraGlide: CombatCameraGlide | null;
+  manualCamera: boolean;
+  followSuspended: boolean;
+  battleOpening: null;
+  pending: null;
+  mode: { kind: 'idle' };
+  moreOpen: boolean;
+  skipBattleOpening: () => boolean;
+  setCameraGlideMarker: (active: boolean) => void;
+  syncRecentre: () => void;
+  active: () => Unit;
+  centreOnActiveUnit: (unit: Unit | undefined, camera?: Camera, animate?: boolean) => void;
+  zoomBy: (factor: number, at: Vec2) => void;
+  pan: (dx: number, dy: number) => void;
+  recentre: () => void;
+  refit: () => void;
+  cancelCameraGlide: () => void;
+  updateCameraGlide: (now: number, camera?: Camera) => void;
+  unmount: () => void;
+}
+
+function cameraSceneHarness(): CameraSceneHarness {
+  const camera = new Camera(
+    { width: 420, height: 320, dpr: 1.5 },
+    { width: 6, height: 6 },
+    'orthographic',
+  );
+  camera.fit();
+  camera.zoomAt({ x: 210, y: 160 }, 1.8);
+  const scene = Object.create(CombatScene.prototype) as CameraSceneHarness;
+  scene.renderer = { camera };
+  scene.cameraGlide = null;
+  scene.manualCamera = false;
+  scene.followSuspended = false;
+  scene.battleOpening = null;
+  scene.pending = null;
+  scene.mode = { kind: 'idle' };
+  scene.moreOpen = false;
+  scene.skipBattleOpening = () => false;
+  scene.syncRecentre = () => undefined;
+  scene.active = () => unit('active', { x: 4, y: 4 });
+  return scene;
+}
+
+describe('combat camera glide ownership', () => {
+  beforeEach(() => {
+    vi.stubGlobal('document', { documentElement: { dataset: {} } });
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  const glide = {
+    from: { x: 20, y: 30 },
+    to: { x: 200, y: 220 },
+    startedAt: 100,
+    duration: 420,
+  };
+
+  it('keeps fitted boards unchanged when a turn asks for centring', () => {
+    const scene = cameraSceneHarness();
+    scene.renderer.camera.fit();
+    const before = {
+      x: scene.renderer.camera.offsetX,
+      y: scene.renderer.camera.offsetY,
+      scale: scene.renderer.camera.scale,
+    };
+    scene.centreOnActiveUnit(scene.active(), scene.renderer.camera, true);
+    expect(scene.cameraGlide).toBeNull();
+    expect(scene.renderer.camera.offsetX).toBe(before.x);
+    expect(scene.renderer.camera.offsetY).toBe(before.y);
+    expect(scene.renderer.camera.scale).toBe(before.scale);
+  });
+
+  it('cuts directly to the actor under reduced motion', () => {
+    const scene = cameraSceneHarness();
+    (document.documentElement.dataset as Record<string, string>).reduceMotion = 'on';
+    const expected = new Camera(
+      { width: 420, height: 320, dpr: 1.5 },
+      { width: 6, height: 6 },
+      'orthographic',
+    );
+    expected.fit();
+    expected.zoomAt({ x: 210, y: 160 }, 1.8);
+    expected.centreOn(scene.active().pos, scene.active().size);
+
+    scene.centreOnActiveUnit(scene.active(), scene.renderer.camera, true);
+
+    expect(scene.cameraGlide).toBeNull();
+    expect(scene.renderer.camera.offsetX).toBe(expected.offsetX);
+    expect(scene.renderer.camera.offsetY).toBe(expected.offsetY);
+  });
+
+  it('cancels an active glide on pan, pinch zoom, and explicit Recentre', () => {
+    const scene = cameraSceneHarness();
+    scene.cameraGlide = { ...glide, startedAt: performance.now() };
+    scene.renderer.camera.panBy(1_000_000, 1_000_000);
+    const panStop = {
+      x: scene.renderer.camera.offsetX,
+      y: scene.renderer.camera.offsetY,
+    };
+    scene.manualCamera = false;
+    scene.followSuspended = false;
+    scene.cameraGlide = { ...glide, startedAt: performance.now() };
+    scene.pan(1_000_000, 1_000_000);
+    expect(scene.renderer.camera.offsetX).toBe(panStop.x);
+    expect(scene.renderer.camera.offsetY).toBe(panStop.y);
+    expect(scene.cameraGlide).toBeNull();
+    expect(scene.manualCamera).toBe(true);
+    expect(scene.followSuspended).toBe(true);
+    scene.updateCameraGlide(performance.now() + 1000, scene.renderer.camera);
+    expect(scene.renderer.camera.offsetX).toBe(panStop.x);
+    expect(scene.renderer.camera.offsetY).toBe(panStop.y);
+
+    scene.renderer.camera.scale = 2.5;
+    scene.renderer.camera.clamp();
+    const zoomStop = {
+      x: scene.renderer.camera.offsetX,
+      y: scene.renderer.camera.offsetY,
+      scale: scene.renderer.camera.scale,
+    };
+    scene.manualCamera = false;
+    scene.followSuspended = false;
+    scene.cameraGlide = { ...glide, startedAt: performance.now() };
+    scene.zoomBy(2, { x: 210, y: 160 });
+    expect(scene.renderer.camera.offsetX).toBe(zoomStop.x);
+    expect(scene.renderer.camera.offsetY).toBe(zoomStop.y);
+    expect(scene.renderer.camera.scale).toBe(zoomStop.scale);
+    expect(scene.cameraGlide).toBeNull();
+    expect(scene.manualCamera).toBe(true);
+    expect(scene.followSuspended).toBe(true);
+    scene.updateCameraGlide(performance.now() + 1000, scene.renderer.camera);
+    expect(scene.renderer.camera.offsetX).toBe(zoomStop.x);
+    expect(scene.renderer.camera.offsetY).toBe(zoomStop.y);
+    expect(scene.renderer.camera.scale).toBe(zoomStop.scale);
+
+    scene.manualCamera = false;
+    scene.followSuspended = false;
+    scene.renderer.camera.fit();
+    scene.cameraGlide = glide;
+    scene.recentre();
+    expect(scene.cameraGlide).toBeNull();
+    expect(scene.manualCamera).toBe(false);
+    expect(scene.followSuspended).toBe(false);
+  });
+
+  it('retargets on HUD reflow without snapping the active glide to its actor', () => {
+    const scene = cameraSceneHarness();
+    scene.cameraGlide = { ...glide, startedAt: performance.now() };
+    const before = {
+      x: scene.renderer.camera.offsetX,
+      y: scene.renderer.camera.offsetY,
+    };
+    scene.refit();
+    expect(scene.cameraGlide).not.toBeNull();
+    expect(scene.cameraGlide?.from).toEqual(before);
+    expect(scene.renderer.camera.offsetX).toBe(before.x);
+    expect(scene.renderer.camera.offsetY).toBe(before.y);
+  });
+
+  it('updates offset frames to the exact target without scaling, and motion changes cut it', () => {
+    const scene = cameraSceneHarness();
+    const camera = scene.renderer.camera;
+    const combatRoot = { dataset: {} as Record<string, string> };
+    scene.host = { querySelector: () => combatRoot } as unknown as HTMLElement;
+    const from = { x: camera.offsetX, y: camera.offsetY };
+    camera.centreOn(scene.active().pos, scene.active().size);
+    const to = { x: camera.offsetX, y: camera.offsetY };
+    camera.offsetX = from.x;
+    camera.offsetY = from.y;
+    const scale = camera.scale;
+    const glide = { from, to, startedAt: 1000, duration: 420 };
+    scene.cameraGlide = glide;
+    scene.setCameraGlideMarker(true);
+
+    scene.updateCameraGlide(1210, camera);
+    expect(camera.offsetX).toBe(combatCameraGlidePoint(glide, 1210).x);
+    expect(camera.offsetY).toBe(combatCameraGlidePoint(glide, 1210).y);
+    expect(camera.scale).toBe(scale);
+    expect(combatRoot.dataset.cameraGlide).toBe('active');
+
+    scene.updateCameraGlide(1420, camera);
+    expect(camera.offsetX).toBe(to.x);
+    expect(camera.offsetY).toBe(to.y);
+    expect(camera.scale).toBe(scale);
+    expect(scene.cameraGlide).toBeNull();
+    expect(combatRoot.dataset.cameraGlide).toBeUndefined();
+
+    camera.centreOn({ x: 0, y: 0 }, 1);
+    const reducedTo = { x: camera.offsetX, y: camera.offsetY };
+    const reducedFrom = { x: reducedTo.x + 20, y: reducedTo.y + 15 };
+    camera.offsetX = reducedFrom.x;
+    camera.offsetY = reducedFrom.y;
+    scene.cameraGlide = { from: reducedFrom, to: reducedTo, startedAt: 2000, duration: 420 };
+    scene.setCameraGlideMarker(true);
+    (document.documentElement.dataset as Record<string, string>).reduceMotion = 'on';
+
+    scene.updateCameraGlide(2100, camera);
+
+    expect(camera.offsetX).toBe(reducedTo.x);
+    expect(camera.offsetY).toBe(reducedTo.y);
+    expect(camera.scale).toBe(scale);
+    expect(scene.cameraGlide).toBeNull();
+    expect(combatRoot.dataset.cameraGlide).toBeUndefined();
+  });
+
+  it('clamps to the fitted frame and cancels when a resize makes the board fit', () => {
+    const scene = cameraSceneHarness();
+    const camera = scene.renderer.camera;
+    scene.cameraGlide = { ...glide, startedAt: performance.now() };
+    camera.viewport = { width: 800, height: 600, dpr: 1.5 };
+    const expected = new Camera(camera.viewport, camera.grid, camera.projection);
+    expected.scale = camera.scale;
+    expected.offsetX = camera.offsetX;
+    expected.offsetY = camera.offsetY;
+    expected.clamp();
+
+    scene.refit();
+
+    expect(scene.cameraGlide).toBeNull();
+    expect(camera.offsetX).toBe(expected.offsetX);
+    expect(camera.offsetY).toBe(expected.offsetY);
+  });
+
+  it('lets follow own the frame, then glides on the release hand-off', () => {
+    const state = { kind: 'following', unitId: 'boss' } as const;
+    const following = combatCameraFollowDecision(state, {
+      animatedUnitId: 'boss',
+      activeUnitId: 'hero',
+      followSuspended: false,
+      reducedMotion: false,
+    });
+    expect(following.owner).toBe('follow');
+
+    const scene = cameraSceneHarness();
+    scene.cameraGlide = glide;
+    scene.cancelCameraGlide();
+    expect(scene.cameraGlide).toBeNull();
+
+    const released = combatCameraFollowDecision(following.state, {
+      animatedUnitId: null,
+      activeUnitId: 'hero',
+      followSuspended: false,
+      reducedMotion: false,
+    });
+    expect(released.owner).toBe('recentre');
+    scene.centreOnActiveUnit(scene.active(), scene.renderer.camera, true);
+    expect(scene.cameraGlide?.duration).toBe(420);
+  });
+
+  it('clears the active marker and glide state during teardown', () => {
+    const scene = cameraSceneHarness();
+    const combatRoot = { dataset: { cameraGlide: 'active' } };
+    scene.cameraGlide = { ...glide, startedAt: performance.now() };
+    scene.host = {
+      querySelector: () => combatRoot,
+    } as unknown as HTMLElement;
+    scene.frame = 0;
+    scene.stopAiTimer = () => undefined;
+    scene.renderer.destroy = () => undefined;
+    scene.suspended = false;
+    scene.aiHeld = false;
+    scene.freshBattleEntry = false;
+    scene.topBarKey = '';
+    scene.recentreButton = null;
+    scene.actorButton = null;
+    scene.moreDismiss = null;
+    scene.detach = null;
+    scene.inspector = null;
+    scene.canvas = null;
+
+    scene.unmount();
+
+    expect(scene.cameraGlide).toBeNull();
+    expect(combatRoot.dataset.cameraGlide).toBeUndefined();
+  });
+});
 
 describe('held knockout facing', () => {
   it("keeps a mirrored sheet's bare knockout the way the unit fell", () => {
