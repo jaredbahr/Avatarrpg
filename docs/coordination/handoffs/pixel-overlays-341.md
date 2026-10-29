@@ -55,7 +55,7 @@ npx vitest run \
 
 The 19 helper tests cover hard palette/alpha, integer geometry bounds, local-anchor culling and stable source identity, shaken/raised viewport reach, large contour and line chunk parity, seam compositing, CPU/drawable bounds, repeated-frame cache reuse, route/aim arrow direction in both projections, combined elevation/cloud reticles in both directions, and local spike snapping. The last cap fix also passed typecheck/lint and a numeric check through the actual camera/actor/bar helpers: Canvas and Pixi produce one identical raster key at scale 2, DPR 1/2 and Y pan 0/1 CSS px. Existing bar-anchor rounding can still move a cap's placement by one G1 pixel; that is separate from the corrected source geometry.
 
-The final matrix passed in `/workspace/avatarrpg-341-review` with test-only revision `b7720228d18cdabf7d94158e5fc7ebe32563aed9` (root copy `3f0fb69e`). Its `src` tree is `31a2f262cd67452fa9a69576e9d568ff1163fe3b`, identical to the integrated product source. Activated command:
+The final matrix passed in `/workspace/avatarrpg-341-review` with test-only revision `b7720228d18cdabf7d94158e5fc7ebe32563aed9` (root copy `3f0fb69e`). Its `src` tree is `31a2f262cd67452fa9a69576e9d568ff1163fe3b`. The integrated runtime and pixel test match this revision; the later combined gate adds only a resident-motion unit-test completion-bound correction under `src`. The final source-equivalence receipt records that narrow test-only difference explicitly. Activated command:
 
 ```sh
 npx playwright test \
