@@ -235,6 +235,31 @@ describe('settled party formation', () => {
     expect(trail.head).toEqual({ x: 6, y: 5 });
   });
 
+  it('keeps gathering local around a barrier while allowing a distant companion to catch up', () => {
+    const divided = buildGrid({
+      ...BA_DAN_VILLAGE,
+      width: 7,
+      height: 5,
+      rows: ['TTTTTTT', 'T,,T,,T', 'T,,T,,T', 'T,,T,,T', 'T,,,,,T'],
+      npcs: [],
+    });
+    const before = [
+      { x: 1, y: 1 },
+      { x: 5, y: 1 },
+    ];
+    const held = new PartyTrail(before);
+    expect(held.settle(divided)).toEqual([]);
+    expect(held.positions(2)).toEqual(before);
+
+    const distant = new PartyTrail([
+      { x: 7, y: 4 },
+      { x: 0, y: 4 },
+    ]);
+    const routes = distant.settle(open);
+    expect(routes[0]?.path).toHaveLength(5);
+    expect(distance(distant.positions(2)[1] ?? { x: 0, y: 4 }, { x: 7, y: 4 })).toBe(2);
+  });
+
   it('does not gather through a blocked diagonal or teleport from disconnected ground', () => {
     const pocket = buildGrid({
       ...BA_DAN_VILLAGE,
@@ -341,6 +366,154 @@ describe('reserved movement batches', () => {
     const plan = trail.planWalk(path, 3, open);
     expect(plan?.batches[0]?.length).toBe(2);
     expect(plan?.batches[0]?.every((route) => route.index !== 0)).toBe(true);
+  });
+
+  it('retries a parking seat that would seal the next companion inside a dry pocket', () => {
+    const pocket = buildGrid({
+      ...BA_DAN_VILLAGE,
+      width: 6,
+      height: 5,
+      rows: ['TTTTTT', 'TT,,TT', ',,,,,,', ',,,,,,', 'T,TTT,'],
+      npcs: [],
+    });
+    const avoid = [
+      { x: 1, y: 2 },
+      { x: 3, y: 3 },
+    ];
+    const before = [
+      { x: 3, y: 1 },
+      { x: 2, y: 2 },
+      { x: 2, y: 3 },
+      { x: 1, y: 3 },
+      { x: 4, y: 3 },
+    ];
+    const path = [
+      { x: 2, y: 2 },
+      { x: 2, y: 3 },
+    ];
+    const trail = new PartyTrail(before);
+    const plan = trail.planWalk(path, 5, pocket, avoid);
+    expect(plan).not.toBeNull();
+    // (4,2) is the nearest parking seat, but blocks the only escape from
+    // (2,3). The first companion must continue to (5,2) before the other parks.
+    expect(plan?.batches[0]?.find((route) => route.index === 1)?.path.at(-1)).toEqual({
+      x: 5,
+      y: 2,
+    });
+    expect(plan?.batches.flat().find((route) => route.index === 0)?.path).toEqual(path);
+    const positions = [...before];
+    for (const batch of plan?.batches ?? []) {
+      const end = Math.max(
+        ...batch.map(
+          (route) =>
+            (route.delayMs ?? 0) +
+            strollTiming(smoothPath(route.from, route.path).length, TIMING.strollStep).duration,
+        ),
+      );
+      for (const route of batch) {
+        expect(route.from).toEqual(positions[route.index]);
+        expect(
+          pathCost(
+            { grid: pocket, blocked: new Set(avoid.map(posKey)), surfaces: new Map(), size: 1 },
+            route.from,
+            route.path,
+          ),
+        ).not.toBeNull();
+      }
+      for (let time = 0; time <= end + 5; time += 5) {
+        const drawn = positions.map((position, index) => {
+          const route = batch.find((candidate) => candidate.index === index);
+          return route ? sample(route, time - (route.delayMs ?? 0)) : position;
+        });
+        for (let i = 0; i < drawn.length; i++)
+          for (let j = i + 1; j < drawn.length; j++) {
+            const a = drawn[i];
+            const b = drawn[j];
+            if (a && b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(0.8);
+          }
+      }
+      for (const route of batch) positions[route.index] = route.path.at(-1) ?? route.from;
+    }
+    expect(positions).toEqual(trail.positions(5));
+  });
+
+  it('advances a distant companion around a barrier in short legal prefixes', () => {
+    const divided = buildGrid({
+      ...BA_DAN_VILLAGE,
+      width: 7,
+      height: 6,
+      rows: ['TTTTTTT', 'T,,T,,T', 'T,,T,,T', 'T,,T,,T', 'T,,T,,T', 'T,,,,,T'],
+      npcs: [],
+    });
+    const trail = new PartyTrail([
+      { x: 1, y: 2 },
+      { x: 4, y: 1 },
+    ]);
+    for (let step = 0; step < 8; step++) {
+      const path = [{ x: 1, y: step % 2 === 0 ? 1 : 2 }];
+      const plan = trail.planWalk(path, 2, divided);
+      expect(plan).not.toBeNull();
+      for (const route of plan?.batches.flat() ?? []) {
+        expect(route.path).toHaveLength(1);
+        expect(
+          pathCost(
+            { grid: divided, blocked: new Set(), surfaces: new Map(), size: 1 },
+            route.from,
+            route.path,
+          ),
+        ).not.toBeNull();
+      }
+      if (step === 0) expect(trail.positions(2)[1]).toEqual({ x: 4, y: 2 });
+      expect(trail.head).toEqual(path[0]);
+    }
+    // The dry route first leads south, away from the leader. Repeated short
+    // taps must still let the companion round the wall and catch up.
+    const follower = trail.positions(2)[1] ?? { x: 4, y: 1 };
+    expect(distance(follower, trail.head ?? { x: 1, y: 2 })).toBeLessThanOrEqual(2);
+  });
+
+  it('finishes a legal water crossing on dry ground when shortening a catch-up route', () => {
+    const stream = {
+      ...open,
+      tiles: open.tiles.map((tile, index) =>
+        index % open.width === 3 || index % open.width === 4
+          ? { ...tile, surface: { id: 'water' as const, duration: -1, spread: 0 } }
+          : tile,
+      ),
+    };
+    const trail = new PartyTrail([
+      { x: 1, y: 4 },
+      { x: 5, y: 4 },
+    ]);
+    const plan = trail.planWalk([{ x: 1, y: 3 }], 2, stream);
+    expect(plan).not.toBeNull();
+    const route = plan?.batches.flat().find((route) => route.index === 1);
+    expect(route?.path).toHaveLength(3);
+    const seat = trail.positions(2)[1] ?? { x: 5, y: 4 };
+    expect(seat.x).toBe(2);
+    expect(tileAt(stream, seat)?.surface?.id).not.toBe('water');
+  });
+
+  it('keeps six companions following a long narrow crossing together', () => {
+    const corridor = buildGrid({
+      ...BA_DAN_VILLAGE,
+      width: 20,
+      height: 3,
+      rows: ['T'.repeat(20), ','.repeat(20), 'T'.repeat(20)],
+      npcs: [],
+    });
+    const before = Array.from({ length: 6 }, (_, index) => ({ x: 5 - index, y: 1 }));
+    const path = Array.from({ length: 12 }, (_, index) => ({ x: 6 + index, y: 1 }));
+    const trail = new PartyTrail(before);
+    const plan = trail.planWalk(path, 6, corridor);
+    expect(plan?.batches).toHaveLength(1);
+    const routes = plan?.batches[0] ?? [];
+    expect(routes).toHaveLength(6);
+    expect(routes.every((route) => route.path.length === 12)).toBe(true);
+    expect(routes.every((route) => (route.delayMs ?? 0) < 300)).toBe(true);
+    expect(trail.positions(6)).toEqual(
+      Array.from({ length: 6 }, (_, index) => ({ x: 17 - index, y: 1 })),
+    );
   });
 
   it('reports unavailable clearance without changing seats in a one-cell corridor', () => {

@@ -149,7 +149,8 @@ export class PartyTrail {
 
   /**
    * Gather on reachable ground within two tiles of the leader. Reservations
-   * retain every other member's current seat; a crowded pocket simply keeps
+   * retain every other member's current seat. A gathering route never exceeds
+   * the member's current separation from the leader; a crowded pocket keeps
    * its existing formation. Routes use the rules' diagonal/collision checks.
    * The caller must animate these routes before accepting another walk.
    */
@@ -170,7 +171,11 @@ export class PartyTrail {
         ).values(),
       ]
         .filter(
-          ({ pos }) => distance(pos, head) <= 2 && !blocked.has(posKey(pos)) && drySeat(grid, pos),
+          ({ pos, path }) =>
+            distance(pos, head) <= 2 &&
+            path.length <= distance(from, head) &&
+            !blocked.has(posKey(pos)) &&
+            drySeat(grid, pos),
         )
         .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
       const choice = choices[0];
@@ -203,12 +208,21 @@ export class PartyTrail {
     const destination = path.at(-1);
     if (!head || !destination) return null;
     const leader: FollowerRoute = { index: 0, from: head, path };
-    const positions = [...before];
-    const clearance: FollowerRoute[] = [];
     const budget = grid.width * grid.height;
-    for (let index = 1; index < count; index++) {
+    // The nearest parking seat can seal another companion's only escape.
+    // Retry a bounded number of seats before falling back to an unavailable plan.
+    let remainingChoices = 32;
+    const clear = (
+      index: number,
+      positions: Vec2[],
+      routes: FollowerRoute[],
+    ): { positions: Vec2[]; routes: FollowerRoute[] } | null => {
+      if (index >= count) {
+        const timed = temporalRoutes(routes, before);
+        return timed ? { positions, routes: timed } : null;
+      }
       const from = positions[index];
-      if (!from || !routeNearPoint(leader, from)) continue;
+      if (!from || !routeNearPoint(leader, from)) return clear(index + 1, positions, routes);
       const blocked = new Set([...avoid, ...positions.filter((_, i) => i !== index)].map(posKey));
       const candidates = [
         ...reachable(
@@ -224,11 +238,18 @@ export class PartyTrail {
             !routeNearPoint(leader, cell.pos),
         )
         .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
-      const choice = candidates[0];
-      if (!choice) return null;
-      positions[index] = choice.pos;
-      clearance.push({ index, from, path: choice.path });
-    }
+      for (const choice of candidates) {
+        if (remainingChoices-- <= 0) break;
+        const next = [...positions];
+        next[index] = choice.pos;
+        const result = clear(index + 1, next, [...routes, { index, from, path: choice.path }]);
+        if (result) return result;
+      }
+      return null;
+    };
+    const clearance = clear(1, [...before], []);
+    if (!clearance) return null;
+    const positions = [...clearance.positions];
     const afterClearance = [...positions];
     const desired = [...[...path].reverse(), ...before];
     const routes: FollowerRoute[] = [leader];
@@ -262,12 +283,24 @@ export class PartyTrail {
         });
       const choice = candidates[0];
       if (!choice || !choice.path.length) continue;
-      positions[index] = choice.pos;
-      routes.push({ index, from, path: choice.path });
+      // A short walk warrants a short adjustment. Follow the start of a real
+      // catch-up route even when an obstacle initially takes it away from the
+      // leader, rather than waiting forever for a nearer seat to become local.
+      let stepCount = choice.path.length;
+      if (path.length <= count) {
+        stepCount = Math.min(path.length, stepCount);
+        while (stepCount > 0 && !drySeat(grid, choice.path[stepCount - 1] ?? from)) stepCount--;
+        // A legal water crossing must reach its next dry bank before stopping.
+        if (stepCount === 0) stepCount = choice.path.findIndex((pos) => drySeat(grid, pos)) + 1;
+      }
+      if (stepCount === 0) continue;
+      const steps = choice.path.slice(0, stepCount);
+      positions[index] = steps.at(-1) ?? from;
+      routes.push({ index, from, path: steps });
     }
-    const clearPhase = temporalRoutes(clearance, before);
+    const clearPhase = clearance.routes;
     const travelPhase = temporalRoutes(routes, afterClearance);
-    if (!clearPhase || !travelPhase) return null;
+    if (!travelPhase) return null;
     this.line = positions;
     this.formation = { grid, avoid: [...avoid] };
     return { batches: [...(clearPhase.length ? [clearPhase] : []), travelPhase] };
