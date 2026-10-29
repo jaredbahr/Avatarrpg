@@ -327,7 +327,13 @@ describe('pause owns combat progression (F5)', () => {
   });
 
   function combatScene() {
-    return { name: 'combat', holdAi: vi.fn(), releaseAi: vi.fn() };
+    return {
+      name: 'combat',
+      holdAi: vi.fn(),
+      releaseAi: vi.fn(),
+      pausePresentation: vi.fn(),
+      resumePresentation: vi.fn(),
+    };
   }
 
   it('holds a fight on pause and releases it once the pause is gone', () => {
@@ -336,27 +342,40 @@ describe('pause owns combat progression (F5)', () => {
 
     app.openPause();
     expect(scene.holdAi).toHaveBeenCalledOnce();
+    expect(scene.pausePresentation).toHaveBeenCalledOnce();
     expect(scene.releaseAi).not.toHaveBeenCalled();
+    expect(scene.resumePresentation).not.toHaveBeenCalled();
 
     // A nested Save or Settings dialog does not close the pause, so reopening
     // is a no-op and the fight stays held.
     app.openPause();
     expect(scene.holdAi).toHaveBeenCalledOnce();
+    expect(scene.pausePresentation).toHaveBeenCalledOnce();
     expect(scene.releaseAi).not.toHaveBeenCalled();
+    expect(scene.resumePresentation).not.toHaveBeenCalled();
 
     pauseMenus.at(-1)?.close();
     expect(scene.releaseAi).toHaveBeenCalledOnce();
+    expect(scene.resumePresentation).toHaveBeenCalledOnce();
   });
 
   it('leaves an explore scene running', () => {
-    const scene = { name: 'explore', holdAi: vi.fn(), releaseAi: vi.fn() };
+    const scene = {
+      name: 'explore',
+      holdAi: vi.fn(),
+      releaseAi: vi.fn(),
+      pausePresentation: vi.fn(),
+      resumePresentation: vi.fn(),
+    };
     const app = makeApp({ scene, state: freshExplore() });
 
     app.openPause();
     expect(scene.holdAi).not.toHaveBeenCalled();
+    expect(scene.pausePresentation).not.toHaveBeenCalled();
 
     pauseMenus.at(-1)?.close();
     expect(scene.releaseAi).not.toHaveBeenCalled();
+    expect(scene.resumePresentation).not.toHaveBeenCalled();
   });
 
   it('closes the pause and force-routes on a load, dropping the held scene', () => {
@@ -364,10 +383,12 @@ describe('pause owns combat progression (F5)', () => {
     const app = makeApp({ scene, state: freshExplore() });
     app.openPause();
     expect(scene.holdAi).toHaveBeenCalledOnce();
+    expect(scene.pausePresentation).toHaveBeenCalledOnce();
 
     app.adoptSave(abilityDebt(freshExplore(), 'flame_arc'), undefined);
 
     expect(scene.releaseAi).toHaveBeenCalledOnce();
+    expect(scene.resumePresentation).toHaveBeenCalledOnce();
     expect(internals(app).routeToState).toHaveBeenCalledWith(true);
   });
 });

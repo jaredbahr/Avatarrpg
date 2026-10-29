@@ -699,9 +699,35 @@ export const BEATS: readonly Beat[] = [
       if (!active) throw new Error('Nobody is acting.');
       await fellEnemies(ctx.page);
       await endTurn(ctx.page, active.id);
+      await ctx.page.locator('.combat-scene[data-victory-beat="active"]').waitFor();
+      // Suspend before the renderer's first long frame can consume the hold.
+      // The scene still paints one final undimmed frame, then freezes for capture.
+      await ctx.page.evaluate(() => {
+        const scene = (window.fnt?.app as unknown as { scene: { suspend: () => void } }).scene;
+        scene.suspend();
+      });
+      if (await ctx.page.locator('.result-panel').count()) {
+        throw new Error('The victory card appeared before its presentation beat.');
+      }
+      if (await ctx.page.locator('.turn-chip:not(:disabled)').count()) {
+        throw new Error('Terminal turn-strip controls stayed enabled during the victory beat.');
+      }
+      await ctx.shoot(
+        'The unobscured battlefield frames the living party before the result card.',
+        'party-beat',
+      );
+      await ctx.page.evaluate(() => {
+        const scene = (window.fnt?.app as unknown as { scene: { resume: () => void } }).scene;
+        scene.resume();
+      });
+      // Resume and advance the presentation to the established result card.
+      await ctx.page.clock.runFor(750);
       await ctx.page.locator('.result-panel').waitFor();
       await waitForIdle(ctx.page, ctx.idleTimeout);
       await ctx.shoot(this.note);
+      await ctx.page.locator('.result-panel button').click();
+      await ctx.page.locator('.result-panel').waitFor({ state: 'detached' });
+      await ctx.page.waitForFunction(() => window.fnt?.app.state?.battle?.phase !== 'victory');
     },
   },
   {

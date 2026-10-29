@@ -88,9 +88,18 @@ import {
   shouldFollowAnimatedLargeActor,
   type CombatCameraFollowState,
 } from './combatCameraFollow';
+import {
+  advanceVictoryBeat,
+  beginVictoryBeat,
+  frameLivingParty,
+  livingPartyFocus,
+  pauseVictoryBeat as pauseVictoryBeatClock,
+  type VictoryBeatClock,
+} from './victoryBeat';
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
+const VICTORY_BEAT_HOLD_MS = 700;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -275,6 +284,9 @@ export class CombatScene implements Scene {
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
   private resultShown = false;
+  private victoryBeat: VictoryBeatClock | null = null;
+  private victoryFocus: Vec2 | null = null;
+  private presentationHeld = false;
   private logOpen = false;
   /** The phone header's More list, and the listeners that close it. */
   private moreOpen = false;
@@ -296,9 +308,13 @@ export class CombatScene implements Scene {
   mount(host: HTMLElement): void {
     this.suspended = false;
     this.aiHeld = false;
+    this.presentationHeld = false;
     this.host = host;
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     this.battleOpening = null;
+    this.resultShown = false;
+    this.victoryBeat = null;
+    this.victoryFocus = null;
     this.layoutMeasuredAfterSync = false;
     this.flushedAt = null;
     clear(host);
@@ -325,7 +341,11 @@ export class CombatScene implements Scene {
     this.frame = 0;
     this.suspended = false;
     this.aiHeld = false;
+    this.presentationHeld = false;
     this.battleOpening = null;
+    this.victoryBeat = null;
+    this.victoryFocus = null;
+    this.setVictoryBeatMarker(false);
     this.freshBattleEntry = false;
     this.recentreButton = null;
     this.actorButton = null;
@@ -351,6 +371,7 @@ export class CombatScene implements Scene {
     // opening hold completes. Resolve it now so returning to that same scene
     // never replays a fresh-battle introduction.
     if (this.battleOpening) this.skipBattleOpening();
+    this.pauseVictoryBeat();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.paintingStill = true;
@@ -363,6 +384,7 @@ export class CombatScene implements Scene {
   resume(): void {
     if (!this.suspended) return;
     this.suspended = false;
+    this.pauseVictoryBeat();
     this.loop();
     this.maybeRunAi();
   }
@@ -383,6 +405,16 @@ export class CombatScene implements Scene {
     if (!this.aiHeld) return;
     this.aiHeld = false;
     this.maybeRunAi();
+  }
+
+  pausePresentation(): void {
+    this.presentationHeld = true;
+    this.pauseVictoryBeat();
+  }
+
+  resumePresentation(): void {
+    this.presentationHeld = false;
+    this.pauseVictoryBeat();
   }
 
   private stopAiTimer(): void {
@@ -438,6 +470,12 @@ export class CombatScene implements Scene {
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    if (this.victoryBeat && this.victoryFocus) {
+      camera.clamp();
+      this.victoryFocus = frameLivingParty(camera, this.battle()?.units ?? []) ?? this.victoryFocus;
+      this.syncRecentre();
+      return;
+    }
     if (this.battleOpening) {
       // A HUD reflow during the hold must not snap the formation back to the
       // actor. Keep the opening's frame intact and let the normal clamp absorb
@@ -562,7 +600,7 @@ export class CombatScene implements Scene {
 
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
-    if (!camera) return;
+    if (!camera || this.victoryBeat) return;
     if (this.battleOpening) this.skipBattleOpening();
     const before = camera.scale;
     camera.zoomAt(at, factor);
@@ -575,7 +613,7 @@ export class CombatScene implements Scene {
 
   private pan(dx: number, dy: number): void {
     const camera = this.renderer?.camera;
-    if (!camera) return;
+    if (!camera || this.victoryBeat) return;
     if (this.battleOpening) this.skipBattleOpening();
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
@@ -587,6 +625,7 @@ export class CombatScene implements Scene {
 
   /** Camera navigation never selects a target or spends an action. */
   private focusUnit(id: string): void {
+    if (this.victoryBeat) return;
     if (this.battleOpening) this.skipBattleOpening();
     const unit = this.battle()?.units.find(
       (candidate) => candidate.id === id && isAlive(candidate),
@@ -606,6 +645,62 @@ export class CombatScene implements Scene {
     const fitted = this.renderer?.camera.fitted ?? true;
     if (button.hidden !== fitted) button.hidden = fitted;
     if (this.actorButton) this.actorButton.hidden = fitted;
+  }
+
+  private startVictoryBeat(battle: BattleState): void {
+    this.victoryFocus = this.renderer
+      ? frameLivingParty(this.renderer.camera, battle.units)
+      : livingPartyFocus(battle.units);
+    if (this.victoryFocus && this.renderer) {
+      this.renderer.camera.centreOn(this.victoryFocus);
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
+    this.inspector?.close();
+    this.inspector = null;
+    this.setMoreOpen(false, false);
+    this.victoryBeat =
+      this.victoryFocus && !motionReduced()
+        ? beginVictoryBeat(performance.now(), VICTORY_BEAT_HOLD_MS)
+        : null;
+    this.setVictoryBeatMarker(this.victoryBeat !== null);
+  }
+
+  private pauseVictoryBeat(): void {
+    if (this.victoryBeat) this.victoryBeat = pauseVictoryBeatClock(this.victoryBeat);
+  }
+
+  private updateVictoryBeat(now: number): void {
+    const beat = this.victoryBeat;
+    if (!beat) return;
+    if (this.battle()?.phase !== 'victory') {
+      this.victoryBeat = null;
+      this.victoryFocus = null;
+      this.setVictoryBeatMarker(false);
+      this.renderTopBar();
+      this.renderHud();
+      return;
+    }
+
+    const step = advanceVictoryBeat(
+      beat,
+      now,
+      this.suspended || this.presentationHeld || this.paintingStill,
+      motionReduced(),
+    );
+    this.victoryBeat = step.complete ? null : step.clock;
+    if (step.complete) {
+      this.setVictoryBeatMarker(false);
+      this.renderTopBar();
+      this.renderHud();
+    }
+  }
+
+  private setVictoryBeatMarker(active: boolean): void {
+    const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
+    if (!scene) return;
+    if (active) scene.dataset.victoryBeat = 'active';
+    else delete scene.dataset.victoryBeat;
   }
 
   private setupRenderer(): void {
@@ -864,6 +959,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     if (this.skipBattleOpening()) return;
+    if (this.victoryBeat || battle.phase !== 'active') return;
     if (this.app.animator.busy(performance.now())) return;
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
@@ -892,6 +988,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     if (this.skipBattleOpening()) return;
+    if (this.victoryBeat || battle.phase !== 'active') return;
     const resolved = this.resolvePointer(x, y, 'inspect');
     if (!resolved) return;
     const target = resolved.unit
@@ -1070,8 +1167,14 @@ export class CombatScene implements Scene {
       if (!followedStillMoving) this.centreOnActiveUnit(unit, camera);
     }
 
+    if (battle.phase === 'active') this.resultShown = false;
     if (battle.phase !== 'active' && !this.resultShown) {
       this.resultShown = true;
+      if (battle.phase === 'victory') this.startVictoryBeat(battle);
+    } else if (battle.phase !== 'victory' && this.victoryBeat) {
+      this.victoryBeat = null;
+      this.victoryFocus = null;
+      this.setVictoryBeatMarker(false);
     }
 
     this.renderTopBar();
@@ -1133,7 +1236,7 @@ export class CombatScene implements Scene {
     const weather = weatherAt(this.app.content, battle.encounterId, battle.round);
     const weatherText = weatherChipText(this.app.content.tuning, weather);
     const weatherShortText = weatherChipShortText(this.app.content.tuning, weather);
-    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}`;
+    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}|${battle.phase}|${Boolean(this.victoryBeat)}`;
     if (key === this.topBarKey && bar.childElementCount > 0) return;
     this.topBarKey = key;
     // On a rebuild, the button that had focus is found again by its key, so a
@@ -1181,9 +1284,11 @@ export class CombatScene implements Scene {
     // lay the same buttons inline and never show the toggle (`.combat-more`).
     // The toggle is its mark alone, named for a screen reader: the plate
     // needs the width.
+    const victoryBeat = this.victoryBeat !== null;
     const toggle = button('', () => this.setMoreOpen(!this.moreOpen, true), {
       class: 'btn-ghost combat-more-toggle',
       title: 'View and help',
+      disabled: victoryBeat,
     });
     toggle.append(mark(UI_MARKS.more), el('span', { class: 'visually-hidden', text: 'More' }));
     toggle.setAttribute('aria-controls', 'combat-more');
@@ -1206,7 +1311,11 @@ export class CombatScene implements Scene {
     const recentre = button(
       'Recentre',
       folded(() => this.recentre()),
-      { class: 'btn-ghost', title: 'Reset the battlefield view around the acting unit' },
+      {
+        class: 'btn-ghost',
+        title: 'Reset the battlefield view around the acting unit',
+        disabled: victoryBeat,
+      },
     );
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
@@ -1219,7 +1328,11 @@ export class CombatScene implements Scene {
         const unit = this.active();
         if (unit) this.focusUnit(unit.id);
       }),
-      { class: 'btn-ghost', title: 'Return to the acting unit without changing zoom' },
+      {
+        class: 'btn-ghost',
+        title: 'Return to the acting unit without changing zoom',
+        disabled: victoryBeat,
+      },
     );
     actor.hidden = this.renderer?.camera.fitted ?? true;
     actor.dataset.key = 'actor';
@@ -1231,7 +1344,7 @@ export class CombatScene implements Scene {
       const tipButton = button(
         'Tip',
         folded(() => this.app.toasts.show(advice, 'info', 6000)),
-        { class: 'btn-ghost', title: advice },
+        { class: 'btn-ghost', title: advice, disabled: victoryBeat },
       );
       tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
       tipButton.dataset.key = 'tip';
@@ -1246,7 +1359,7 @@ export class CombatScene implements Scene {
         this.renderTopBar();
         this.renderHud();
       },
-      { class: 'btn-ghost' },
+      { class: 'btn-ghost', disabled: victoryBeat },
     );
     logButton.prepend(mark(UI_MARKS.log, 'mark-inline'));
     logButton.dataset.key = 'log';
@@ -1354,7 +1467,11 @@ export class CombatScene implements Scene {
         'button',
         {
           class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
-          attrs: { type: 'button', 'aria-label': `Focus ${unit.name}` },
+          attrs: {
+            type: 'button',
+            'aria-label': `Focus ${unit.name}`,
+            ...(this.victoryBeat ? { disabled: '' } : {}),
+          },
           onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
@@ -1382,6 +1499,7 @@ export class CombatScene implements Scene {
     clear(overlays);
 
     if (battle.phase !== 'active') {
+      if (battle.phase === 'victory' && this.victoryBeat) return;
       overlays.appendChild(this.resultPanel(battle));
       return;
     }
@@ -2145,7 +2263,8 @@ export class CombatScene implements Scene {
     this.app.stats?.frame(now);
     this.app.animator.prune(now);
     this.updateBattleOpening(now);
-    this.keepAnimatedLargeActorInView(now, battle);
+    this.updateVictoryBeat(now);
+    if (battle.phase === 'active') this.keepAnimatedLargeActorInView(now, battle);
 
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
@@ -2155,7 +2274,11 @@ export class CombatScene implements Scene {
     let rangeBonusTiles: readonly Vec2[] = [];
     let targetReticle: TargetReticleCue | null = null;
 
-    const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
+    const interactive =
+      battle.phase === 'active' &&
+      this.isPlayerTurn() &&
+      !this.needsHandoff() &&
+      !this.app.animator.busy(now);
 
     if (interactive && unit) {
       const pending = this.pending;
@@ -2298,7 +2421,7 @@ export class CombatScene implements Scene {
       bendFx: this.app.animator.bendFx(now),
       floaters,
       cameraNudge: this.app.animator.cameraNudge(now),
-      activeUnitId: unit?.id ?? null,
+      activeUnitId: battle.phase === 'active' ? (unit?.id ?? null) : null,
       selectedUnitId: null,
       hoverTile:
         interactive && !(SQUARE_FOOTPRINTS && this.mode.kind === 'move' && unit?.size === 2)
