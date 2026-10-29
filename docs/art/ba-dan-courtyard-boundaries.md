@@ -43,11 +43,12 @@ ground boundaries and worn door approaches still need assessment in that view.
 
 ## Canal court edge
 
-The lower court now carries a continuous short canal in the y6 slice: runtime
-water at (6,6)–(8,6) and (10,6)–(12,6), with the existing road surface at
-(9,6) as a dry footbridge crossing. The water remains the authored walkable
-`~` surface; the painted channel in `edge-water.webp` (`canalBanks()`) carries the low
-stone coping without introducing a wall that could strand an older save. (The
+The lower court carries the continuous row-6 canal: permanent water at
+(0,6)–(8,6) and (10,6)–(12,6), with the road at (9,6) as a dry footbridge
+crossing and dry paving beyond the eastern end at (13,6). In #335, the village-local
+`~` surface blocks walking without blocking sight; loaded canal positions reconcile
+to walkable ground. The painted channel in `edge-water.webp` carries the low
+stone coping. (The
 earlier transparent plate `canal-banks.webp` is retired and no longer ships.) Rows y5, y7 and y8 stay open, and route
 checks cover all NPCs, both exits and the spawn.
 

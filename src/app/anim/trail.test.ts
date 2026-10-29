@@ -261,6 +261,21 @@ describe('reserved movement batches', () => {
     rows: Array.from({ length: 9 }, () => ',,,,,,,,,'),
     npcs: [],
   });
+  const canalSeats = [
+    { x: 11, y: 3 },
+    { x: 10, y: 4 },
+    { x: 10, y: 5 },
+    { x: 9, y: 5 },
+    { x: 12, y: 5 },
+  ];
+  const canalPath = [
+    { x: 10, y: 4 },
+    { x: 10, y: 5 },
+  ];
+  const canalNpcs = [
+    { x: 11, y: 5 },
+    { x: 9, y: 4 },
+  ];
 
   function sample(
     route: { from: { x: number; y: number }; path: readonly { x: number; y: number }[] },
@@ -341,6 +356,33 @@ describe('reserved movement batches', () => {
     const plan = trail.planWalk(path, 3, open);
     expect(plan?.batches[0]?.length).toBe(2);
     expect(plan?.batches[0]?.every((route) => route.index !== 0)).toBe(true);
+  });
+
+  it('tries a farther clearance seat when the nearest one traps another follower at the canal', () => {
+    const trail = new PartyTrail(canalSeats);
+    const plan = trail.planWalk(canalPath, 5, grid, canalNpcs);
+    expect(plan).not.toBeNull();
+    expect(plan?.batches[0]?.map((route) => route.path.at(-1))).toEqual([
+      { x: 13, y: 4 },
+      { x: 12, y: 4 },
+    ]);
+    expect(new Set(trail.positions(5).map(posKey)).size).toBe(5);
+    for (const route of plan?.batches.flat() ?? []) {
+      expect(
+        pathCost(
+          { grid, blocked: new Set(canalNpcs.map(posKey)), surfaces: new Map(), size: 1 },
+          route.from,
+          route.path,
+        ),
+      ).not.toBeNull();
+    }
+  });
+
+  it('keeps seats when a follower has a clearance seat but every choice traps the next one', () => {
+    const trail = new PartyTrail(canalSeats);
+    const avoid = [...canalNpcs, { x: 13, y: 4 }, { x: 13, y: 5 }, { x: 13, y: 6 }];
+    expect(trail.planWalk(canalPath, 5, grid, avoid)).toBeNull();
+    expect(trail.positions(5)).toEqual(canalSeats);
   });
 
   it('reports unavailable clearance without changing seats in a one-cell corridor', () => {
@@ -490,6 +532,7 @@ it('keeps the five-leg courtyard audit separated without the serial cadence regr
   trail.settle(grid, avoid);
   let positions = trail.positions(5);
   let total = 0;
+  let serialTotal = 0;
   const checkPhase = (routes: readonly FollowerRoute[]) => {
     const tracks = routes.map((route) => {
       const curve = smoothPath(route.from, route.path);
@@ -521,6 +564,7 @@ it('keeps the five-leg courtyard audit separated without the serial cadence regr
       return route?.path.at(-1) ?? position;
     });
     total += end;
+    serialTotal += tracks.reduce((sum, track) => sum + track.timing.duration, 0);
   };
   for (const target of [
     { x: 10, y: 7 },
@@ -544,7 +588,7 @@ it('keeps the five-leg courtyard audit separated without the serial cadence regr
     expect(positions).toEqual(trail.positions(5));
     expect(trail.head).toEqual(target);
   }
-  // The five walkers overlap within each phase. This is a pace-derived budget
-  // for the whole audit, not five copies of each route laid end to end.
-  expect(total).toBeLessThan(32 * TIMING.strollStep);
+  // The canal lengthens legal routes; compare the actual phase schedule with
+  // the same routes played serially to guard the five-walker overlap.
+  expect(total).toBeLessThan(serialTotal / 2);
 });

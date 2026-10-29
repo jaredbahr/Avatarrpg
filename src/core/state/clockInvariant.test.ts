@@ -15,7 +15,7 @@ import { createGame } from './createGame';
 import { apply } from './reducer';
 import type { Command, GameState } from '../types';
 
-/** Explore, on the courtyard one tile from Mira's table at (10,5). */
+/** Explore, on dry paving at Mira's rest spot, one tile from her table. */
 function exploring(): GameState {
   const base = createGame(CONTENT, {
     seed: 'clock-invariant',
@@ -25,7 +25,7 @@ function exploring(): GameState {
   return {
     ...base,
     screen: 'explore',
-    location: { mapId: 'ba_dan_village', pos: { x: 10, y: 6 } },
+    location: { mapId: 'ba_dan_village', pos: { x: 10, y: 5 } },
     story: { ...base.story, nodeId: 'village_explore' },
   };
 }
@@ -65,11 +65,16 @@ suite('the world clock invariant', () => {
     const commands: readonly Command[] = [
       { type: 'enterNode', nodeId: 'village_explore' },
       { type: 'setFlags', flags: { ruon_spared: true } },
-      { type: 'walkTo', pos: { x: 11, y: 6 } },
+      { type: 'walkTo', pos: { x: 10, y: 4 } },
     ];
     for (const command of commands) {
       const result = apply(CONTENT, state, command);
       expect(result.state.world.clock).toEqual(state.world.clock);
+      if (command.type === 'walkTo') {
+        expect(result.state.location.pos).toEqual(command.pos);
+        expect(result.events.some((event) => event.type === 'partyWalked')).toBe(true);
+        expect(result.events.some((event) => event.type === 'message')).toBe(false);
+      }
     }
 
     // Entering `act1_victory` is the one legitimate exception: it is the
