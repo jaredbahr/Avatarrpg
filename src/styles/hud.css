@@ -1692,41 +1692,53 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 /*
- * What the player is doing, above the buttons: one line that never wraps,
- * so the HUD keeps its height whichever mode the turn is in.
+ * What the player is doing, above the buttons. The description may use two
+ * lines, but the header always reserves exactly two so changing modes never
+ * moves the board underneath a target.
  */
 .ability-header {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 1.75rem;
+  height: 1.875rem;
+  min-height: 1.875rem;
+  max-height: 1.875rem;
   padding: 0 var(--sp-1);
   color: var(--c-ink-dim);
   font-size: var(--fs-sm);
-  white-space: nowrap;
+  line-height: 1.1;
   overflow: hidden;
 }
 
 .ability-header .mark {
+  flex-shrink: 0;
   width: 1.25rem;
   height: 1.25rem;
   color: var(--el, var(--c-ink-dim));
 }
 
 .ability-header strong {
+  flex: 0 0 auto;
   color: var(--c-ink);
   font-size: var(--fs-md);
+  white-space: nowrap;
 }
 
 .header-cost {
+  flex-shrink: 0;
   color: var(--c-gold-deep);
   font-weight: 700;
 }
 
 .header-desc {
+  display: -webkit-box;
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 /* Mark above, name, cost under: the mockup's large action buttons. */
