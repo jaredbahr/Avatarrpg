@@ -2157,11 +2157,14 @@ export class Canvas2DBackend implements RenderBackend {
     const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX);
     if (cap.length === 0) return;
     if (HP_CAP[unit.faction] === 'spike') {
-      const anchor = screenToBoardPixel(camera, { x: cap[0] ?? 0, y: barY + barHeight / 2 });
+      const rawAnchor = { x: cap[0] ?? 0, y: barY + barHeight / 2 };
+      const anchor = screenToBoardPixel(camera, rawAnchor);
       const points: Vec2[] = [];
       for (let i = 0; i + 1 < cap.length; i += 2) {
-        const point = screenToBoardPixel(camera, { x: cap[i] ?? 0, y: cap[i + 1] ?? 0 });
-        points.push({ x: point.x - anchor.x, y: point.y - anchor.y });
+        points.push({
+          x: ((cap[i] ?? 0) - rawAnchor.x) / camera.scale,
+          y: ((cap[i + 1] ?? 0) - rawAnchor.y) / camera.scale,
+        });
       }
       this.drawPixelCues(
         [healthBarSpikeMark(anchor, points, hpFill(unit.faction, 1, hatch), HP_COLORS.frame)],

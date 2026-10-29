@@ -4,11 +4,32 @@ import { rasterizePixelMark } from './pixelMarks';
 import {
   aimArcPixelMarks,
   boardPixelFromTile,
+  healthBarSpikeMark,
   pathPixelMarks,
   targetReticleMark,
 } from './pixelOverlayGeometry';
 
 describe('pixel overlay geometry', () => {
+  it('snaps enemy cap vertices relative to a movable anchor', () => {
+    const points = [
+      { x: 0, y: -4.5 },
+      { x: 0, y: 4.5 },
+      { x: -6.3, y: 0 },
+    ];
+    const first = healthBarSpikeMark({ x: 113, y: 44 }, points, '#d14747', '#241b24');
+    const panned = healthBarSpikeMark({ x: 113, y: 43 }, points, '#d14747', '#241b24');
+    const operation = first.spec.operations[0];
+
+    expect(operation?.kind).toBe('polygon');
+    if (operation?.kind !== 'polygon') return;
+    expect(operation.points).toEqual([
+      { x: 0, y: -5 },
+      { x: 0, y: 5 },
+      { x: -6, y: 0 },
+    ]);
+    expect(panned.spec).toEqual(first.spec);
+  });
+
   it.each(['above', 'below'] as const)(
     'keeps elevation and obscured cues distinct when the target is %s',
     (elevation) => {

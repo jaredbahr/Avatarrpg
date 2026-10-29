@@ -172,9 +172,17 @@ export function healthBarSpikeMark(
   fill: string,
   frame: string,
 ): PixelOverlayCue {
+  const localPoints = snapWorldPoints(points);
   return pixelMark(
     'enemy-health-spike',
-    [{ kind: 'polygon', color: 'fill', points, outline: { color: 'frame', width: 1 } }],
+    [
+      {
+        kind: 'polygon',
+        color: 'fill',
+        points: localPoints,
+        outline: { color: 'frame', width: 1 },
+      },
+    ],
     { fill, frame },
     1,
     2,
