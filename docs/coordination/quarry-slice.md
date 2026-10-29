@@ -7,16 +7,41 @@ Current delivery mandate: [finish the complete run through the Driller](finish-t
 ## Active Codex issue batch (2026-10-29)
 
 One integration owner is preparing `codex/ci-health-and-prop-labels` from `bc77ae2e`.
-These are local assignments; no fix is accepted until its focused checks and the
-combined local CI gate pass. Existing work on #326, #327, #329 and #330 is kept
-with its current remote branches.
+Baseline `7d6a5515` is pushed and passed all nine local CI steps (2,998 tests)
+and eleven Chromium browser checks. It remains unmerged while GitHub API access
+is blocked. The same unreleased v0.2.12 candidate now continues with the local
+assignments below; each new revision needs its combined checks. Existing work on
+#326, #327, #329 and #330 stays with its current remote branches. The #327 branch
+advanced to `71f33c26` during this review and remains separately owned.
 
-| Issue | Owner                     | Boundary                                                          | State                                                |
-| ----- | ------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------- |
-| #322  | Renderer owner (Sol High) | WebGL texture-cache lifetime and its regression coverage          | Focused WebGL technique and fallback checks passed   |
-| #323  | Resident worker           | Gao tap/pending conversation regression and its completion budget | Real-tap regression repaired and passed              |
-| #332  | Prop chip worker          | Prop target label and its existing browser coverage               | Coordinate removal passed its existing browser check |
-| #324  | Integration owner         | Riverside form lock on WebKit iPad                                | Diagnosis recorded; exact-engine validation pending  |
+| Issue | Owner                         | Boundary                                                          | State                                                              |
+| ----- | ----------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| #322  | Renderer owner (Sol High)     | WebGL texture-cache lifetime and its regression coverage          | Focused WebGL technique and fallback checks passed                 |
+| #323  | Resident worker               | Gao tap/pending conversation regression and its completion budget | Real-tap regression repaired and passed                            |
+| #332  | Prop chip worker              | Prop target label and its existing browser coverage               | Coordinate removal passed its existing browser check               |
+| #331  | Ability header worker         | Two-line ability copy with stable board/header geometry           | Integrated; visual review and focused checks passed                |
+| #333  | Victory beat worker           | Victory framing/hold and presentation lifecycle                   | Integrated; integer zoom and shared bar bounds corrected           |
+| #335  | Canal worker                  | Ba Dan collision/pathfinding at existing crossings                | Integrated; 62 focused tests and real conversation passed          |
+| #334  | Ambush state owner (Sol High) | Ambush/aftermath party placement                                  | Integrated; 960 paired and 360 side fights plus save checks passed |
+| #336  | Readability worker            | Shared health bars, acting cue and landscape turn strip           | Integrated; Canvas/WebGL visual review and focused checks passed   |
+| #341  | Pixel overlay worker          | Pixel masks, bounded drawable sources and existing overlay layers | Implementation and renderer review in progress                     |
+| #344  | Route reviewer                | Trade/escort progression, saves, homecoming and visual triage     | Both pre-overlay Canvas routes passed; capture gaps recorded       |
+| #324  | Integration owner             | Riverside form lock on WebKit iPad                                | Diagnosis recorded; exact-engine validation pending                |
+
+#336's shared pixel-based health/active cues and landscape turn strip are
+integrated and visually reviewed. #341's remaining overlay marks are in progress
+after that backend transfer. #328 is diagnosed but its opening/focus lifecycle waits
+for the existing #327 owner to transfer or integrate that work. ADR 0098 records
+#334's authored approach contract; ADR 0099 records the victory presentation beat.
+
+Pre-overlay route review at `9a66b0ab` passed trade and escort through the
+Driller, both homecoming save/reloads and the cleared-boss revisit (24 and 28
+checkpoints). The served label was `v0.2.12 · build 9a66b0a-modified`, with only
+this coordination document modified. The harness stages enemy HP to finish
+fights, so this establishes progression and save continuity rather than combat
+balance, manual tactics, listening or physical-device acceptance. #334's separate
+paired AI sweep records materially easier six-character opening fights; the
+placement tradeoff is accepted for the tutorial, without enemy compensation.
 
 The integration owner owns release metadata and shared coordination documents.
 Worker handoffs carry the tested revisions and remaining checks; this table does

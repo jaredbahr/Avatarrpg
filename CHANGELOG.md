@@ -9,6 +9,21 @@
   preserving the approved walking pace and the real tap-to-talk assertions.
 - Show prop names and break consequences in combat preview chips without raw
   grid coordinates.
+- Keep ability descriptions in a two-line header with a stable height, including
+  Huge text, while preserving the ability name, cost and touch controls.
+- Show a brief, undimmed view of the surviving party before the victory card.
+  Frame the party and its health bars, pause the beat with the game, and skip
+  the hold under Reduce motion.
+- Start the forest ambush near the party's walked approach and return them to
+  clear road before the aftermath conversation. The new starting positions make
+  this opening fight easier for six-character parties in the paired AI sweep;
+  enemy rosters, rewards and combat rules are unchanged.
+- Keep Ba Dan's permanent canal water impassable, with the existing bridge and
+  dry eastern path as crossings. Old saves standing in the canal reconcile to
+  reachable dry ground.
+- Give combat health bars a pixel-aligned frame and highlight, make the acting
+  unit's ground outline clearer, and compact the default-text landscape turn
+  strip while preserving touch targets.
 
 ## 0.2.11 — release candidate
 
