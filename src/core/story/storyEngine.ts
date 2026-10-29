@@ -17,6 +17,7 @@ import type {
   GameEvent,
   GameState,
   PendingChoice,
+  PortraitExpression,
   StepResult,
   StoryNode,
   StoryOption,
@@ -76,10 +77,16 @@ export function currentNode(content: ContentIndex, state: GameState): StoryNode 
 export function resolveDialogue(
   state: GameState,
   node: Extract<StoryNode, { kind: 'dialogue' | 'choice' }>,
-): { speaker: string; portrait: string; lines: readonly string[] } {
+): {
+  speaker: string;
+  portrait: string;
+  expression?: PortraitExpression;
+  lines: readonly string[];
+} {
   const base = {
     speaker: node.speaker,
     portrait: node.portrait,
+    expression: node.expression,
     lines: node.kind === 'dialogue' ? node.lines : [node.prompt],
   };
   for (const variant of node.variants ?? []) {
@@ -87,6 +94,7 @@ export function resolveDialogue(
     return {
       speaker: variant.speaker ?? base.speaker,
       portrait: variant.portrait ?? base.portrait,
+      expression: variant.expression ?? base.expression,
       lines: variant.lines,
     };
   }

@@ -110,6 +110,7 @@ export const VOICES = [
   {
     node: 'defeat_gate',
     character: 'kaya',
+    expression: 'warm',
     lines: [
       "I came down those switchbacks a lot faster than I went up. I'd like it noted that I was first back up, too.",
       "The gate's open. Nobody on the wall. Ruon is in the yard, and he's putting his sabre on the ground.",
@@ -191,6 +192,7 @@ export function withPartyVoices(nodes: readonly StoryNode[]): readonly StoryNode
             },
             speaker: character.name,
             portrait: character.portrait,
+            ...('expression' in voice ? { expression: voice.expression } : {}),
             lines: voice.lines,
           };
         }),

@@ -1132,8 +1132,12 @@ export interface DialogueVariant {
   readonly when: Condition;
   readonly speaker?: string;
   readonly portrait?: string;
+  readonly expression?: PortraitExpression;
   readonly lines: readonly string[];
 }
+
+/** Optional painted facial expression used while a dialogue node is visible. */
+export type PortraitExpression = 'angry' | 'worried' | 'warm';
 
 export type StoryNode =
   | {
@@ -1141,6 +1145,7 @@ export type StoryNode =
       readonly kind: 'dialogue';
       readonly speaker: string;
       readonly portrait: string;
+      readonly expression?: PortraitExpression;
       readonly lines: readonly string[];
       readonly next: string;
       /** First match wins; falls back to `lines` when none do. */
@@ -1151,6 +1156,7 @@ export type StoryNode =
       readonly kind: 'choice';
       readonly speaker: string;
       readonly portrait: string;
+      readonly expression?: PortraitExpression;
       readonly prompt: string;
       readonly options: readonly StoryOption[];
       readonly variants?: readonly DialogueVariant[];

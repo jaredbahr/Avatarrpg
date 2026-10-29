@@ -254,6 +254,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         },
         speaker: 'Kaya',
         portrait: 'portrait.kaya',
+        expression: 'angry',
         lines: [
           'They took our supplies. I saw quarry dust on their clothes.',
           'I want to know who put them out here.',
@@ -271,6 +272,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         when: { kind: 'partyHas', characterId: 'kaya' },
         speaker: 'Kaya',
         portrait: 'portrait.kaya',
+        expression: 'worried',
         lines: [
           'Quarry dust in their cuffs. My mother used to make the stonecutters shake it out before they came inside.',
           'I thought we were going up there to get these people home. Why are they guarding the road?',

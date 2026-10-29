@@ -1,0 +1,35 @@
+[
+  {
+    "character": "kaya",
+    "expression": "angry",
+    "tool": "built-in OpenAI image editing",
+    "reference": "public/art/portraits/kaya.png at base8567471282553160d86f988aae15b8cf1af689cc",
+    "prompt": "docs/art/prompts/portraits/kaya.angry.md",
+    "source": "art/source/portraits-variants/openai/kaya-angry.png",
+    "sourceSHA256": "2b90c55787932c9dc105cf7a96783e409af09f7dd083e780f7ba26c2899ca74f",
+    "final": "public/art/portraits/expressions/angry/kaya.png",
+    "acceptance": "owner pending"
+  },
+  {
+    "character": "kaya",
+    "expression": "worried",
+    "tool": "built-in OpenAI image editing",
+    "reference": "public/art/portraits/kaya.png at base8567471282553160d86f988aae15b8cf1af689cc",
+    "prompt": "docs/art/prompts/portraits/kaya.worried.md",
+    "source": "art/source/portraits-variants/openai/kaya-worried.png",
+    "sourceSHA256": "212bd1fbb92bdb2ff2471eae4b9e3cdbdb69ff4bca48532491caac0be7d6cb6c",
+    "final": "public/art/portraits/expressions/worried/kaya.png",
+    "acceptance": "owner pending"
+  },
+  {
+    "character": "kaya",
+    "expression": "warm",
+    "tool": "built-in OpenAI image editing",
+    "reference": "public/art/portraits/kaya.png at base8567471282553160d86f988aae15b8cf1af689cc",
+    "prompt": "docs/art/prompts/portraits/kaya.warm.md",
+    "source": "art/source/portraits-variants/openai/kaya-warm.png",
+    "sourceSHA256": "633256ed520f3a17c9cad80daf7019d17b4f3b003d635a2f2771921fed313a03",
+    "final": "public/art/portraits/expressions/warm/kaya.png",
+    "acceptance": "owner pending"
+  }
+]
