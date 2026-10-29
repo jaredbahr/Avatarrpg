@@ -3358,6 +3358,27 @@ html[data-contrast='high'] .hud-panel::after {
   }
 }
 
+/* Leave room for the expanded objective at the narrowest Largest-text layout. */
+@media (max-width: 36rem) and (orientation: portrait) {
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row {
+    flex-basis: 7.5rem;
+    min-width: 7.5rem;
+    text-align: left;
+  }
+
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row .unit-panel-body {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+    max-width: 2.5rem;
+    max-height: 2.5rem;
+  }
+}
+
 /*
  * Large text, landscape: the world stays the majority of the screen.
  *
