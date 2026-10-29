@@ -84,14 +84,22 @@ export async function recordRiversideDiagnostics(page: Page) {
           // A diagnostic probe must not surface as an application pageerror.
         }
       };
+      const clickLabel = (event: MouseEvent): string | null => {
+        const button = event.target instanceof Element ? event.target.closest('button') : null;
+        if (!button?.closest('.village-controls, .explore-conversation')) return null;
+        return button.textContent?.trim() ?? 'button';
+      };
+      document.addEventListener('click', (event) => {
+        const label = clickLabel(event);
+        if (label !== null) sample(`after click: ${label}`);
+      });
+      // A microtask scheduled in capture can run before the target handler.
+      // Observe the two event phases directly instead.
       document.addEventListener(
         'click',
         (event) => {
-          const button = event.target instanceof Element ? event.target.closest('button') : null;
-          if (!button?.closest('.village-controls, .explore-conversation')) return;
-          const label = button.textContent?.trim() ?? 'button';
-          sample(`before click: ${label}`);
-          queueMicrotask(() => sample(`after click: ${label}`));
+          const label = clickLabel(event);
+          if (label !== null) sample(`before click: ${label}`);
         },
         true,
       );
