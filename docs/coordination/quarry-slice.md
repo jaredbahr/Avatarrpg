@@ -21,7 +21,7 @@ advanced to `71f33c26` during this review and remains separately owned.
 | #332  | Prop chip worker              | Prop target label and its existing browser coverage               | Coordinate removal passed its existing browser check               |
 | #331  | Ability header worker         | Two-line ability copy with stable board/header geometry           | Integrated; visual review and focused checks passed                |
 | #333  | Victory beat worker           | Victory framing/hold and presentation lifecycle                   | Integrated; integer zoom and shared bar bounds corrected           |
-| #335  | Canal worker                  | Ba Dan collision/pathfinding at existing crossings                | Integrated; 62 focused tests and real conversation passed          |
+| #335  | Canal worker                  | Ba Dan collision/pathfinding at existing crossings                | Integrated; collision, clearance and map-layout regressions fixed  |
 | #334  | Ambush state owner (Sol High) | Ambush/aftermath party placement                                  | Integrated; 960 paired and 360 side fights plus save checks passed |
 | #336  | Readability worker            | Shared health bars, acting cue and landscape turn strip           | Integrated; Canvas/WebGL visual review and focused checks passed   |
 | #341  | Overlay/backend owners        | Pixel masks, bounded drawable sources and existing overlay layers | Integrated; eight-configuration Chromium matrix passed             |

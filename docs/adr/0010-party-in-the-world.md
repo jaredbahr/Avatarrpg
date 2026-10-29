@@ -74,3 +74,28 @@ others is a presentation question. So is walking: the route is the rules'
   goes through the save schema, and this record is amended.
 - `Animator.push` has two modes. Combat never uses `alongside`; the village
   uses it only for follower routes, whose tracks are as long as the leader's.
+
+## Canal-clearance amendment — 2026-10-29
+
+The oblique scene plans dry resting seats and a clearance phase before overlapping
+travel. New permanent-water collision exposed a greedy parking choice: the first
+companion could occupy the next companion's only escape. The planner now tries at
+most 32 clearance-seat choices in deterministic order, validating their timed
+separation before accepting a plan. An unavailable plan still leaves its seats
+unchanged.
+
+Gathering keeps its existing two-tile target radius and avoids a route longer
+than the member's current grid separation from the leader just to improve a
+resting seat. Short leader walks advance companions along a prefix of their best
+legal catch-up route, preserving progress even when an obstacle initially takes
+that route away from the leader. A water-crossing prefix reaches the next dry
+bank before stopping. Longer leader-follow routes retain their existing policy.
+The rules leader route, pace, saved state and RNG are unchanged.
+
+The original five-leg courtyard audit remains unchanged: every planned phase
+keeps at least 0.8 tiles of separation at five-millisecond samples and completes
+in 22.201 seconds within its 24-second pace budget. Focused cases cover the
+blocked escape, local gathering, distant and U-shaped catch-up, dry stream
+landings and six party members through a narrow crossing. The actual browser audit
+is `e2e/party-spacing.spec.ts`; final integration receipts must identify its tested
+commit rather than substituting the unit result for browser execution.
