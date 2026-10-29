@@ -1,0 +1,448 @@
+{
+  "reviewDate": "2026-10-29",
+  "reviewTimezone": "America/Chicago",
+  "records": [
+    {
+      "custody": "trade",
+      "project": "desktop-canvas",
+      "fixtureCommit": "4304e988eebd8d99fdd7b3b6c1bb5880ca75d2d8",
+      "productTree": "5b45759e05d7a17a4c6c88da268f9a7bcffb8d45",
+      "visibleBuild": "v0.2.12 \u00b7 build 4304e98",
+      "beatCount": 86,
+      "stagedShortcuts": [
+        {
+          "encounterId": "enc_forest_road",
+          "afterPartyActivations": 3,
+          "atMs": 142557,
+          "clockUtc": "2026-10-29T22:42:09.099Z",
+          "method": "stage-living-enemies-to-1-hp",
+          "reason": "Three party activations followed the visible fire-on-oil turn; staged the remaining enemies to keep the route moving."
+        },
+        {
+          "encounterId": "enc_grumbler",
+          "afterPartyActivations": 3,
+          "atMs": 307552,
+          "clockUtc": "2026-10-29T22:44:54.094Z",
+          "method": "stage-living-enemies-to-1-hp",
+          "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+        }
+      ],
+      "video": "quarry-trade-desktop-canvas.mp4",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 960,
+            "height": 600,
+            "r_frame_rate": "24/1"
+          }
+        ],
+        "format": {
+          "duration": "431.791667",
+          "size": "19655399"
+        }
+      },
+      "rawVideoSha256": "7a0e13713e45fd629ef10e4ec804c431076a59e99c1430a716264e9a5f9993d2",
+      "rawBeatManifestSha256": "d425e0da7c687e8633864fbe156fd76d60ce9c7bc78b48317f156cd95ae6a586"
+    },
+    {
+      "custody": "escort",
+      "project": "ipad-canvas",
+      "fixtureCommit": "3c4138c2893643ea179b24be889de96876f6c6d3",
+      "productTree": "5b45759e05d7a17a4c6c88da268f9a7bcffb8d45",
+      "visibleBuild": "v0.2.12 \u00b7 build 3c4138c",
+      "beatCount": 89,
+      "stagedShortcuts": [
+        {
+          "encounterId": "enc_forest_road",
+          "afterPartyActivations": 3,
+          "atMs": 179882,
+          "clockUtc": "2026-10-29T22:57:12.506Z",
+          "method": "stage-living-enemies-to-1-hp",
+          "reason": "Three party activations followed the visible fire-on-oil turn; staged the remaining enemies to keep the route moving."
+        },
+        {
+          "encounterId": "enc_ambush",
+          "afterPartyActivations": 3,
+          "atMs": 368617,
+          "clockUtc": "2026-10-29T23:00:21.241Z",
+          "method": "stage-living-enemies-to-1-hp",
+          "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+        },
+        {
+          "encounterId": "enc_grumbler",
+          "afterPartyActivations": 3,
+          "atMs": 480488,
+          "clockUtc": "2026-10-29T23:02:13.112Z",
+          "method": "stage-living-enemies-to-1-hp",
+          "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+        }
+      ],
+      "video": "quarry-escort-ipad-canvas.mp4",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 614,
+            "height": 884,
+            "r_frame_rate": "24/1"
+          }
+        ],
+        "format": {
+          "duration": "638.458333",
+          "size": "16246593"
+        }
+      },
+      "rawVideoSha256": "9c1d5bbbdd8bb6e8622a9989816b0c61e3f7ca383a48f39767dddf0925853666",
+      "rawBeatManifestSha256": "a1d50d9e59524e43fea092e09f65b794dac0bffe0cb1537fdeaffafc094f65c2"
+    }
+  ],
+  "afterFix": {
+    "commit": "d540deff9ad4a980fa137467253cbcfabceedcac",
+    "productTree": "3de1d7e4f0a63965919ff5792943c1a3c662522b",
+    "scope": "Only headless ending-stage CSS differs from recorded product source; focused direct-ending-node evidence, not another route recording.",
+    "receipt": "ending-summary-after.receipt.json"
+  },
+  "conversion": {
+    "desktop": "H264, 960x600, 24fps, CRF30, fast, no audio",
+    "portrait": "H264, 614x884, 24fps, CRF32, fast, no audio",
+    "stills": "Scaled WebP; selected-still indexes preserve original beat names/times. Three explicitly timed video frame extractions are labeled in the audit.",
+    "manifests": "Original captured JSON values preserved; whitespace normalized."
+  },
+  "files": [
+    {
+      "name": "ending-summary-after-desktop-actions.webp",
+      "bytes": 24354,
+      "sha256": "6eabdebab3c3bb0508df6198b0a090f9610aabc50eb79335635bed5169cb667f"
+    },
+    {
+      "name": "ending-summary-after-desktop.webp",
+      "bytes": 24354,
+      "sha256": "6eabdebab3c3bb0508df6198b0a090f9610aabc50eb79335635bed5169cb667f"
+    },
+    {
+      "name": "ending-summary-after-phone-huge-actions.webp",
+      "bytes": 12594,
+      "sha256": "8d9e267a029bcbe8122f0eb4ffa088a1a42680e0f65374eb76a108733c3abf25"
+    },
+    {
+      "name": "ending-summary-after-phone-huge.webp",
+      "bytes": 15862,
+      "sha256": "b87157e1f99d4d0e1ef6d960dfeaaeba2c91e9a707753d88f285d9388e0e0639"
+    },
+    {
+      "name": "ending-summary-after-portrait-actions.webp",
+      "bytes": 24456,
+      "sha256": "21087c54a8165ab1e94865b0f108f7259c6f43285c6946df52492a9fe0453c1f"
+    },
+    {
+      "name": "ending-summary-after-portrait.webp",
+      "bytes": 24456,
+      "sha256": "21087c54a8165ab1e94865b0f108f7259c6f43285c6946df52492a9fe0453c1f"
+    },
+    {
+      "name": "ending-summary-after.receipt.json",
+      "bytes": 1286,
+      "sha256": "e00e11f019fc26a69a987aa8d24853a3a26d34012798e38c83f7e9e654a6460c"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-01-title.webp",
+      "bytes": 78630,
+      "sha256": "4d2051e6b30dd3dc20ab36156ebdc07cd3558e5f8e595916610dfaa836d06a97"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-06-setup-party.webp",
+      "bytes": 40746,
+      "sha256": "dcd50eb033fe1c9de59e21abba7f60a611d605b666feeb30b6c680061a63197a"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-13-practice-bending.webp",
+      "bytes": 86566,
+      "sha256": "1634b9f5b0b6d309e5821e87ad1ddd9d4c9ad85e4774c8f3780fd2ec94bbffdd"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-16-mira-conversation.webp",
+      "bytes": 63352,
+      "sha256": "07c7bbde2d5dfd94c227c9d704e40c0bb7c8ab411d8b213987cde8526a547a8d"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-19-forest-transition.webp",
+      "bytes": 89500,
+      "sha256": "d3aea18acae70477bc6e7c606fb63edc19403f7c95aa22184e330abb79e103f7"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-25-combat-first-turn.webp",
+      "bytes": 78574,
+      "sha256": "bc31b71e563acf6289506502a48bfef4a70b233b136d0acd300de6b09306a3cc"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-26-flask-aim.webp",
+      "bytes": 70796,
+      "sha256": "320546a04523433b0aa41785770d01a26a4e6591702922a7b55a7a6ac6a5e8df"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-28-flask-burning.webp",
+      "bytes": 78264,
+      "sha256": "ca685c4f22a0ba865db2eab4cc5538000fe113291e2b6a217f6543697e17dc4e"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-34-quarry-gate-arrival.webp",
+      "bytes": 68958,
+      "sha256": "c9b0fe47bed3c40b856116a07adae4fcad35d6f15fd8dba421c4c5937fffcd92"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-44-ruon-custody-choice.webp",
+      "bytes": 48994,
+      "sha256": "0b1442b0a034e007b9bf2573646fd210c63c7059807aff89c678a54eac14597d"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-49-cutting-arrival.webp",
+      "bytes": 70584,
+      "sha256": "236e9ea9581cece193a51750e590fa35e2a2fafb4ee4930c79ec681a6af041f8"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-55-quarry-floor-arrival.webp",
+      "bytes": 68138,
+      "sha256": "c00a1f880b539bbb805f4dda7a810f8a0b23388a9ad12b9ac48997776bb9b1fd"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-64-driller-enemy-view.webp",
+      "bytes": 80292,
+      "sha256": "89eaa43ce8facdb402f6f70feb45dff18a644ef97be627266504628ba865b78e"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-66-driller-victory.webp",
+      "bytes": 21018,
+      "sha256": "aa8f92da6c0bbbc08c95963238363dcb4b52047b240651a13eb3d29e43e08e50"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-67-driller-outcome.webp",
+      "bytes": 104194,
+      "sha256": "66ba83c182a59d0512f435802942557aff19dc1d36668de76f9554acb8289ace"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-72-driller-ending-summary.webp",
+      "bytes": 24266,
+      "sha256": "e0dbbb8e70867b4f7b5581bb02b5edefc188d4077148b6174ff168527daa9b52"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-79-ba-dan-return.webp",
+      "bytes": 88194,
+      "sha256": "8a1fbdfa8457ae6849ffb9a81a95021b27d0320b468b6e20002c6723cd28f299"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-80-dorin-homecoming.webp",
+      "bytes": 54524,
+      "sha256": "3079d788dc583274cb8344432e6da24a7a7d6a9c218429e225bf315966ba76f4"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-83-mira-homecoming.webp",
+      "bytes": 64384,
+      "sha256": "9ed4dbc3bbf483d53eedd9002fe1d0fb2524199099a13f645ff1ed1b0ce9fcf5"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-86-gao-homecoming.webp",
+      "bytes": 64814,
+      "sha256": "da436f1b2216df8e9a5d3b6770173a9b95b65ea31280eb225fc6ca199469f9d3"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-89-ba-dan-custody-response.webp",
+      "bytes": 98816,
+      "sha256": "685d3d861c894dbc1185f4a3659eeb32228623f1990a4357f189f57ecf71b67c"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-beats-1.webp",
+      "bytes": 176120,
+      "sha256": "0bc82216d9428b2aad298b6bc0dda3ecc5a27535df8a496e59c5f3697eb7e706"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-beats-2.webp",
+      "bytes": 141844,
+      "sha256": "7b4d95e74124dc70c283aba6eb6b8b9cf4bedec34dd12337a69f8cb453e63715"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-beats-3.webp",
+      "bytes": 159562,
+      "sha256": "d1c21087bce598d4752b093b025c86145c6bedc06121f408d5fe1483d1d8daf5"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas-beats-4.webp",
+      "bytes": 105486,
+      "sha256": "0e7ae36837126cecdd0882ee9221a8301adef5bc4b683ec2274238dedd37cd95"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas.beats.json",
+      "bytes": 146538,
+      "sha256": "26baa15b3a8c064a1e1617273d7ecf2cca94b969cbdef2a1f7eef0dcb5a6a352"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas.mp4",
+      "bytes": 16246593,
+      "sha256": "88b3e313383b237015a26b59126e9f949fef4d8c0ca4bc10e01063bd07b61e15"
+    },
+    {
+      "name": "quarry-escort-ipad-canvas.stills.json",
+      "bytes": 3672,
+      "sha256": "c5d3856fb63c7279c67119a36cf53fdc15e80366a0124fa856c3e6a39cc4e11a"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-01-title.webp",
+      "bytes": 103320,
+      "sha256": "f73843922b55ae686b9fdbded5204a13e322d63ebcd9edd46b3e35203dac67aa"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-06-setup-party.webp",
+      "bytes": 36102,
+      "sha256": "3a8abc191157fe1a655e8bd6978438c394b34baaafc627b3a026ad444401c71e"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-13-practice-bending.webp",
+      "bytes": 88152,
+      "sha256": "c3f30c788d38c7e6be3b50ed8ac38ff6a68f85f6a24266022bb5aa9a66897035"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-16-mira-conversation.webp",
+      "bytes": 55006,
+      "sha256": "6c95573f9aff139c29c60b8a94e2d66640894f90c5832b5c698d6ef913eb5c5e"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-19-forest-transition.webp",
+      "bytes": 83908,
+      "sha256": "b8c188f4f1c7403187dd990d193624db834cc591c6d764ad88d5e6725c7db03e"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-25-combat-first-turn.webp",
+      "bytes": 102630,
+      "sha256": "026b2c0cd6cb3510ac5b2cd92057b19a10cb109f4a8bf0ce422517e3147db848"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-26-flask-aim.webp",
+      "bytes": 86926,
+      "sha256": "4d3b8e7b843a07283ce61e1ca55d1ed98e7217861afa8eb8b779da188803f400"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-28-flask-burning.webp",
+      "bytes": 102022,
+      "sha256": "2418e9fa618839d992af8e4c019ed1cd2ca2a60dedfcff057ee01e1b2915004d"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-34-quarry-gate-arrival.webp",
+      "bytes": 65702,
+      "sha256": "9295f0f9118ba354c85c8bbaaacd865c42679e9ced0de9c9535a87cc6310108c"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-44-ruon-custody-choice.webp",
+      "bytes": 46060,
+      "sha256": "97fea080c3a277ee79078c499f2ecf58d5c182d3a48d4333a9e8cf6a6c52599a"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-50-cutting-arrival.webp",
+      "bytes": 1112,
+      "sha256": "5386e94cc4db8d9cf7938662123f09bb055503ef99f32cf4e5046ff0c2771b80"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-52-quarry-floor-arrival.webp",
+      "bytes": 67248,
+      "sha256": "8aca37fb39c590d6a0c74a0aa498f55283a71508fa920b1a83675aa560aaa29f"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-61-driller-enemy-view.webp",
+      "bytes": 82846,
+      "sha256": "0a162a78c5c9ef3beb0dd97456efd255a80a69565ed8128c499b6f4d46b02ad6"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-63-driller-victory.webp",
+      "bytes": 25836,
+      "sha256": "140b5da918826e4ede90cb4442610059b8e301383bc7512404fc33bb6d3cc175"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-64-driller-outcome.webp",
+      "bytes": 144238,
+      "sha256": "1424c9b591e24a1e160e379105321565b16c98dff03aae7470ab40b5f189bbe7"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-69-driller-ending-summary.webp",
+      "bytes": 14096,
+      "sha256": "930a9948351b0e83d20142591599629c26f7396db6919258aa8032ec145c7317"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-76-ba-dan-return.webp",
+      "bytes": 84712,
+      "sha256": "518f7b40019e822b29ced0f5689bf2b1e07bd6be69c3c13dc20912490606b5d5"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-77-dorin-homecoming.webp",
+      "bytes": 44660,
+      "sha256": "247b38874fe1edb1e7e5a48abadc0dc4ca98db535a2eee868c493ac5ce28d0b5"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-80-mira-homecoming.webp",
+      "bytes": 53824,
+      "sha256": "d0dea67a40c5b965d39b4c120e27c88bc921df7fd93dc7fc3a288937272dc4d2"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-83-gao-trade-consequence.webp",
+      "bytes": 57180,
+      "sha256": "76c655c9fda5f37ebc191fb1efd8066921926efd717d45f7a5b116a3215f47ae"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-86-ba-dan-custody-response.webp",
+      "bytes": 94914,
+      "sha256": "2dce92513772e417be071a98456141f618344cf97f03041ca026abb0bf3dcb76"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-beats-1.webp",
+      "bytes": 334224,
+      "sha256": "d4b10aa360ef78d09203c50ec054363e083adaa3c59a393df35ff6598b6f4a24"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-beats-2.webp",
+      "bytes": 263076,
+      "sha256": "21701c0f0f240db900dffe8b21a0883ac0963ec9cb2125f473f3b469076661fc"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-beats-3.webp",
+      "bytes": 301516,
+      "sha256": "5ed468952120d8bc5931280bc1d166642f94f2543032b69b308f4111c12030e9"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-beats-4.webp",
+      "bytes": 139942,
+      "sha256": "992c637934965365f703cc11f5f0815885e6d0cde956d5f3311cd359fd4decb3"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-video-125-enemy-turn.webp",
+      "bytes": 87388,
+      "sha256": "4a913bd1b89976ae695e84470aafba399b5e4a592f6825a5fb6d11b336d53494"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-video-237-cutting.webp",
+      "bytes": 66854,
+      "sha256": "a2b9a8b175cdb7ea64f2b44c2fa54c586b416f6b20531ece82682cace4bd847b"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas-video-3715-forest-return.webp",
+      "bytes": 65164,
+      "sha256": "b8ef019fa0e18fba68a1b13825a4b689bd0bb53d73256514e75b39a5ea610ef5"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas.beats.json",
+      "bytes": 136773,
+      "sha256": "019c3690caeb7184e53617a591a54e879e214c6d63859a5b760b2ee09b552531"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas.mp4",
+      "bytes": 19655399,
+      "sha256": "f1da54cad0933eb4f95253a7f04305544e867e5d8a686cd69c048b8c7f17789a"
+    },
+    {
+      "name": "quarry-trade-desktop-canvas.stills.json",
+      "bytes": 3731,
+      "sha256": "00b9cdf9ce2bf20c21792999bca47a48d6c07f134ecf5f07611c072a3e3e0954"
+    }
+  ]
+}

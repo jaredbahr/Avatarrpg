@@ -16,7 +16,10 @@ and acceptance criteria. No merge or deployment is claimed.
   with desktop/portrait projected-tile proof. Implemented at `3c2a8f74`;
   focused checks and visual review passed, along with six combined Chromium
   camera/reflow/motion/resident cases. The separate turn-change regression is integrated at `871851fd`.
-  Full local CI remains the publication gate. The live issue permits this option;
+  All nine local CI stages passed at `b2ff0aac` (3,042 tests / 263 files),
+  along with seven combined Chromium cases and the victory gallery. The branch
+  is pushed at that SHA; PR/merge/deployment remain blocked and unclaimed.
+  The live issue permits this option;
   #327 is a soft dependency, so this task avoids its opening/glide lifecycle.
   Worktree `/workspace/avatarrpg-328`, based on the checked candidate.
 - **#325 — Luna High:** Chromium investigation of huge-text reflow,
@@ -24,10 +27,17 @@ and acceptance criteria. No merge or deployment is claimed.
   `049e160e`; no cause or source fix was established. Existing waits observe
   camera, animator and route state. WebKit closure remains pending exact-engine
   evidence and the issue's consecutive remote runs. Worktree `/workspace/avatarrpg-325`.
-- **#344 — Luna Max:** extend the reusable demo-flow review fixture through both
-  quarry custody routes and homecoming, preserving legal commands and explicit
-  shortcut provenance. Worktree `/workspace/avatarrpg-344`. Root owns the final
-  visual audit; this fixture is separate from product fixes.
+- **#344 — Luna Max, then Sol High:** initial fixture work was escalated after
+  repeated cross-scene input/navigation races. Complete clean Canvas recordings
+  passed desktop trade at `4304e988` (86 beats) and portrait escort at `3c4138c`
+  (89 beats), on the identical `5b45759e` product tree. Both reach the Driller,
+  all five outcome frames, summary and Dorin/Mira/Gao homecoming; staged HP and
+  wheel/touch input are explicit in the manifests. The compressed evidence and
+  severity-graded [audit](../demo-flow-playtest-quarry.md) preserve the remaining
+  art and owned UI gaps. Root integrated the separate ending-summary fix
+  `ad1c1c66` found during review; its focused three-viewport check passed.
+  Full integrated-head CI remains the next publication gate. Worktree
+  `/workspace/avatarrpg-344`; no product fixes were put in the fixture commits.
 
 Live #324 comments identify another cloud worker on
 `codex/324-riverside-drill-completion`; its VillageLife/riverside investigation

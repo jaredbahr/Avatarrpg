@@ -49,5 +49,10 @@ complete silhouette and health bar. The portrait run is Chromium viewport
 coverage; physical iPad testing is not claimed.
 
 Focused verification passed: the three `combatEnemyView` unit cases, TypeScript
-typecheck, targeted ESLint and Prettier checks. Full CI remains with the
-integration owner.
+typecheck, targeted ESLint and Prettier checks. Integration verification at clean root `b2ff0aac` passed all nine
+`npm run ci:local` stages (3,042 tests / 263 files), both enemy-view browser
+cases plus five combined camera/motion/resident cases, and the victory gallery.
+The production title showed `v0.2.12 · build b2ff0aa`, with service workers
+blocked. The candidate branch is pushed and independently verified at that SHA.
+Detailed local receipts are in `/workspace/avatarrpg-env/enemy-view-verification.md`;
+no PR, remote CI, merge or deployment is claimed.

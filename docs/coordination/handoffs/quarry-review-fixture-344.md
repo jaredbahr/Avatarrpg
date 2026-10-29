@@ -1,6 +1,6 @@
 # Quarry review fixture — issue #344
 
-- **Updated:** 2026-10-29 UTC; implementation owner `/root/quarry_story_driver_review`; integration owner root.
+- **Updated:** 2026-10-29, America/Chicago; implementation owner `/root/quarry_story_driver_review`; integration owner root.
 - **Outcome:** the review-only Playwright driver now covers title/setup, Ba Dan practice and Mira, the forest ambush, both custody branches, the quarry gate and cutting, Driller outcome, and homecoming. It records visible build identity, input trace, story/map/encounter beats, and any staged enemy HP. No product fix or final aesthetic acceptance is claimed.
 - **Acceptance:** desktop Canvas trade and iPad Canvas escort both passed from the title through Ba Dan homecoming. Their raw video, `beats.json`, and all beat stills are retained. Root owns the compressed review assets and severity-graded visual audit.
 - **Location:** `/workspace/avatarrpg-344`, branch `codex/quarry-review-344`; based on `049e160e04e87619d5379481e1414b0abd3b2878`, with #328 source cherry-picked as `ba1081936833d0b34adb544468b7dfae7b438018`. The product source tree must remain `5b45759e05d7a17a4c6c88da268f9a7bcffb8d45`.

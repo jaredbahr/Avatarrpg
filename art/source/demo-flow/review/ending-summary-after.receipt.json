@@ -1,0 +1,53 @@
+[
+  {
+    "name": "desktop",
+    "width": 1280,
+    "height": 800,
+    "head": "d540deff9ad4a980fa137467253cbcfabceedcac",
+    "titleLabel": "Game version 0.2.12, build d540def",
+    "dpr": 1,
+    "method": "direct real ending node; Read summary; normal scrolling",
+    "geometry": {
+      "x": 176,
+      "y": 319.5,
+      "width": 928,
+      "height": 456.5,
+      "scrollHeight": 455,
+      "clientHeight": 455
+    }
+  },
+  {
+    "name": "portrait",
+    "width": 820,
+    "height": 1180,
+    "head": "d540deff9ad4a980fa137467253cbcfabceedcac",
+    "titleLabel": "Game version 0.2.12, build d540def",
+    "dpr": 1,
+    "method": "direct real ending node; Read summary; normal scrolling",
+    "geometry": {
+      "x": 32,
+      "y": 622.75,
+      "width": 756,
+      "height": 533.25,
+      "scrollHeight": 531,
+      "clientHeight": 531
+    }
+  },
+  {
+    "name": "phone-huge",
+    "width": 390,
+    "height": 844,
+    "head": "d540deff9ad4a980fa137467253cbcfabceedcac",
+    "titleLabel": "Game version 0.2.12, build d540def",
+    "dpr": 1,
+    "method": "direct real ending node; Read summary; normal scrolling",
+    "geometry": {
+      "x": 18,
+      "y": 318.484375,
+      "width": 354,
+      "height": 489.515625,
+      "scrollHeight": 1733,
+      "clientHeight": 488
+    }
+  }
+]

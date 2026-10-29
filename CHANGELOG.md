@@ -2,6 +2,8 @@
 
 ## 0.2.12 — release candidate
 
+- Ending summaries use the full reading area instead of a narrow empty-portrait
+  column, with reachable actions on phones at Huge text.
 - Add a Show enemies view that frames living enemies and props. Tap the board
   or use Recentre to return to the acting unit without spending an action.
 

@@ -2,8 +2,24 @@
 
 - **Updated:** 2026-10-29 UTC; integration owner `/root`.
 - **Location:** `/workspace/avatarrpg-ci-health`, branch `codex/ci-health-and-prop-labels`, based on `bc77ae2e`. Release candidate v0.2.12; no deployment is claimed.
-- **Scope:** #322, #323, #331–#336, and #341, with a bounded #344 route review. Worker handoffs record focused evidence; combined local CI and remote checks must pass before delivery. `7d6a5515` is the earlier pushed three-issue checkpoint. The final clean-root gate and push receipt will be recorded in `/workspace/avatarrpg-env/final-demo-verification.md`; do not substitute the baseline results for the complete candidate.
+- **Scope:** #322, #323, #328, #331–#336, and #341, with a bounded #344 route review. Worker handoffs record focused evidence; combined local CI and remote checks must pass before delivery. `7d6a5515` is the earlier pushed three-issue checkpoint. The final clean-root gate and push receipt will be recorded in `/workspace/avatarrpg-env/final-demo-verification.md`; do not substitute the baseline results for the complete candidate.
 - **Ownership:** root owns release metadata, integration and shared coordination. All nine source fixes and the pixel regression harness have transferred to root. Sol High independently reviewed the difficult renderer lifetime/transform contract without finding an actionable defect. Existing branches for #326, #327, #329 and #330 are outside this batch; #327 advanced to `71f33c26` during the review and remains separately owned. #328 waits for that camera lifecycle's integration or ownership transfer.
+
+The subsequent #328 follow-up is pushed at `b2ff0aac`: all nine local CI stages
+passed (3,042 tests / 263 files), seven focused Chromium cases passed, and the
+victory gallery passed. The clean production title showed `v0.2.12 · build
+b2ff0aa`. See `first-turn-context-328.md` and the local
+`/workspace/avatarrpg-env/enemy-view-verification.md` receipt. #325 still has no
+confirmed cause or source fix; the five selected Chromium cases passed on both
+the baseline and this follow-up. WebKit and consecutive full remote runs remain
+open. The complete canonical #344 fixture/audit is now a separate follow-up: clean
+desktop trade and portrait escort recordings passed through both custody
+responses, with 86/89 beats on identical product source. See
+`../../demo-flow-playtest-quarry.md`. The audit found the speakerless ending
+summary using the portrait column; the separate scoped CSS fix `ad1c1c66`
+passes desktop, portrait and Huge-phone layout/action checks. All recorded
+shortcuts and remaining art/UI gaps are explicit. A new integrated-head local
+gate is required before publishing these follow-ups.
 
 ## Findings and changes
 
