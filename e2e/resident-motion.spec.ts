@@ -447,8 +447,21 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
   expect(homeReached).toBe(true);
   expect(await page.evaluate(() => window.fnt!.app.state!.screen)).toBe('explore');
   // Advance only page time for the longer party stroll so Gao's home hold
-  // cannot start another errand mid-skip.
-  await page.clock.fastForward(10_000);
+  // cannot start another errand mid-skip. The party route is much longer than
+  // a fixed ten-second guess at the current 750 ms/tile pace, so use the
+  // active animation's own end time and render the queued-talk handoff after it.
+  const partyWalk = await page.evaluate(() => {
+    const app = window.fnt!.app;
+    const now = performance.now();
+    return {
+      busy: app.animator.busy(now),
+      remainingMs: Math.max(0, app.animator.finishesAt - now),
+    };
+  });
+  expect(partyWalk.busy).toBe(true);
+  expect(partyWalk.remainingMs).toBeGreaterThan(0);
+  expect(partyWalk.remainingMs).toBeLessThan(FAKE_CLOCK_WALK_BUDGET_MS);
+  await page.clock.fastForward(partyWalk.remainingMs + CLOCK_STEP_MS * 2);
   let opened = false;
   for (let step = 0; step < 10 && !opened; step++) {
     await page.clock.runFor(100);

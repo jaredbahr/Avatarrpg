@@ -1,0 +1,16 @@
+# CI #323: Gao's queued talk completion
+
+- **Updated:** 2026-10-29 UTC; owner `/root/workflow_audit`; root is integration owner.
+- **Outcome:** make the resident-tap browser regression wait for the actual party walk duration before checking the queued conversation. Test-only; no runtime, phase-flake (#325), or art changes.
+- **Acceptance:** the real tap on Gao's drawn body recalls him home, queues the party walk, then opens `shopkeeper_gao` dialogue with Gao on his rules tile. The test asserts an active, bounded party animation before advancing time and retains all talk and home-position assertions.
+- **Location:** `/workspace/avatarrpg-323`, branch `codex/fix-323-resident-tap`, based on `bc77ae2e` (`origin/main`). No PR or push. Current edits are in `e2e/resident-motion.spec.ts` and this handoff.
+- **Worktree state:** implementation and handoff are uncommitted. `node_modules`, `dist`, and `test-results` are ignored. Focused preview server has exited; setup config is `/workspace/avatarrpg-env/playwright-323.config.ts`, with `FNT_E2E_PORT=4323`.
+- **Completed:** replaced the fixed 10-second page-clock jump with `app.animator.finishesAt - performance.now()`, bounded by the existing 180-second cap, then rendered the queued-talk handoff. Page time advances while Gao's resident clock stays still.
+- **Diagnosis:** before the patch, the focused test failed twice at its final `opened` assertion. The captured Playwright UI still showed `Next: Gao the Shopkeeper` and a disabled `Talk Walking` control: the tap and queued destination were correct, while the party animation remained active. The test allowed only 10 seconds plus ten 100 ms rendered polls. Exploration pace is now 750 ms per tile (ADR 0095); the route from `(20,11)` to the shop approach can exceed that guess. Runtime `ExploreScene.requestWalk` and resident recall behavior did not need changes.
+- **Verification:** from the activated environment, the pre-fix reproduction failed twice:
+  `FNT_E2E_PORT=4323 npm run e2e -- --config /workspace/avatarrpg-env/playwright-323.config.ts --project=surface-touch e2e/resident-motion.spec.ts --grep 'Gao at his crates' --repeat-each=2`.
+  After the change, the same repeated command passed both runs (24.8s and 20.3s); final code with an explicit `animator.busy()` assertion passed once (9.3s). Each run's Playwright web server performed the production build/typecheck. Full CI and #325 cases were not run.
+- **Decisions:** follows ADR 0047 §7: the party waits beside an errand resident, then talks once the resident returns. The player-view target calls for real, reachable conversation opportunities; the browser test keeps an actual body tap and end-to-end dialogue check.
+- **Coordination:** bounded ownership is `e2e/resident-motion.spec.ts` plus this handoff. Root owns integration and will review/rerun the combined relevant checks. Avoid #322's particle-layer work and #324's `VillageLife` work.
+- **Next actions:** root reviews the diff and runs the selected combined resident cases; commit only after review, with no push/PR from this worker.
+- **Completion/transfer:** pending root integration; worker retains this bounded task until review.
