@@ -97,7 +97,7 @@ def run(endpoint, payload, name, inputs=None, notes=''):
     while job:
         time.sleep(6)
         try: j = req('GET', f'/background-jobs/{job}')
-        except RuntimeError: continue
+        except (RuntimeError, OSError): continue   # a reset connection while polling: poll again, never pay twice
         status = j.get('status')
         if status in ('completed', 'failed', 'error', 'cancelled'): last = j; break
         if time.time() - t0 > 3600: status = 'timeout'; last = j; break
