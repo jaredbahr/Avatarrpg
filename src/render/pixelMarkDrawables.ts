@@ -15,6 +15,7 @@ export function pixelMarkCanvas(raster: PixelMarkRaster): HTMLCanvasElement {
 
 /** Idle renderer sources stay bounded; the visible frame may exceed this budget. */
 export const PIXEL_MARK_DRAWABLE_CACHE_BYTES = 8 * 1024 * 1024;
+export const PIXEL_MARK_DRAWABLE_CACHE_ENTRIES = 256;
 
 interface Entry<T> {
   readonly drawable: T | null;
@@ -36,9 +37,13 @@ export class PixelMarkDrawableCache<T> {
   constructor(
     private readonly create: (raster: PixelMarkRaster) => T,
     private readonly idleByteLimit = PIXEL_MARK_DRAWABLE_CACHE_BYTES,
+    private readonly idleEntryLimit = PIXEL_MARK_DRAWABLE_CACHE_ENTRIES,
   ) {
     if (!Number.isSafeInteger(idleByteLimit) || idleByteLimit < 0) {
       throw new Error(`Invalid pixel-mark drawable cache budget: ${idleByteLimit}`);
+    }
+    if (!Number.isSafeInteger(idleEntryLimit) || idleEntryLimit < 0) {
+      throw new Error(`Invalid pixel-mark drawable cache entry budget: ${idleEntryLimit}`);
     }
   }
 
@@ -73,7 +78,7 @@ export class PixelMarkDrawableCache<T> {
 
   endFrame(): string[] {
     const evicted: string[] = [];
-    while (this.bytes > this.idleByteLimit) {
+    while (this.bytes > this.idleByteLimit || this.entries.size > this.idleEntryLimit) {
       let removed = false;
       for (const [key, entry] of this.entries) {
         if (this.usedThisFrame.has(key)) continue;
