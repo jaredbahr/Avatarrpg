@@ -6,6 +6,7 @@ import {
   beginVictoryBeat,
   frameLivingParty,
   livingPartyFocus,
+  victoryActorBounds,
 } from './victoryBeat';
 
 function unit(
@@ -86,33 +87,27 @@ describe('victory beat', () => {
       unit('west', 'party', { x: 2, y: 4 }),
       unit('east', 'party', { x: 16, y: 6 }),
     ];
+    const boundsFor = (survivor: Unit) =>
+      victoryActorBounds(camera, survivor, { pos: survivor.pos, scale: 1, frameHeadroom: 1.5 });
 
     const focus = livingPartyFocus(survivors);
-    const framing = frameLivingParty(camera, survivors);
+    const framing = frameLivingParty(camera, survivors, boundsFor);
 
     expect(framing).toEqual(focus);
     expect(camera.scale).toBeLessThan(1.5);
     expect(camera.scale).toBeGreaterThan(camera.fitScale());
     for (const survivor of survivors) {
-      const corners = [
-        survivor.pos,
-        { x: survivor.pos.x + survivor.size, y: survivor.pos.y },
-        { x: survivor.pos.x + survivor.size, y: survivor.pos.y + survivor.size },
-        { x: survivor.pos.x, y: survivor.pos.y + survivor.size },
-      ];
-      for (const corner of corners) {
-        const point = camera.project(corner);
-        expect(point.x).toBeGreaterThanOrEqual(48);
-        expect(point.x).toBeLessThanOrEqual(camera.viewport.width - 48);
-        expect(point.y).toBeGreaterThanOrEqual(48);
-        expect(point.y).toBeLessThanOrEqual(camera.viewport.height - 48);
-      }
+      const bounds = boundsFor(survivor);
+      expect(bounds.left).toBeGreaterThanOrEqual(0);
+      expect(bounds.right).toBeLessThanOrEqual(camera.viewport.width);
+      expect(bounds.top).toBeGreaterThanOrEqual(0);
+      expect(bounds.bottom).toBeLessThanOrEqual(camera.viewport.height);
     }
   });
 
   it('keeps pixel-art integer zoom stops while framing a spread party', () => {
     const camera = new Camera(
-      { width: 1600, height: 900, dpr: 2 },
+      { width: 1000, height: 600, dpr: 2 },
       { width: 20, height: 12 },
       'oblique',
     );
@@ -123,10 +118,27 @@ describe('victory beat', () => {
       unit('west', 'party', { x: 2, y: 4 }),
       unit('east', 'party', { x: 16, y: 6 }),
     ];
+    const boundsFor = (survivor: Unit) =>
+      victoryActorBounds(camera, survivor, { pos: survivor.pos, scale: 1.25, frameHeadroom: 1.5 });
+    const zoomAt = camera.zoomAt.bind(camera);
+    const scalesAfterZoom: number[] = [];
+    camera.zoomAt = (point, factor) => {
+      zoomAt(point, factor);
+      scalesAfterZoom.push(camera.scale);
+    };
 
-    frameLivingParty(camera, survivors);
+    frameLivingParty(camera, survivors, boundsFor);
 
     expect(camera.scale).toBeLessThan(2);
+    expect(scalesAfterZoom[0]).toBe(2);
+    expect(scalesAfterZoom.length).toBeGreaterThan(2);
     expect(camera.onWholeDevicePixels).toBe(true);
+    for (const survivor of survivors) {
+      const bounds = boundsFor(survivor);
+      expect(bounds.left).toBeGreaterThanOrEqual(0);
+      expect(bounds.right).toBeLessThanOrEqual(camera.viewport.width);
+      expect(bounds.top).toBeGreaterThanOrEqual(0);
+      expect(bounds.bottom).toBeLessThanOrEqual(camera.viewport.height);
+    }
   });
 });

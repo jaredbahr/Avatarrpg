@@ -697,24 +697,114 @@ export const BEATS: readonly Beat[] = [
       await openBattle(ctx);
       const active = await actor(ctx.page);
       if (!active) throw new Error('Nobody is acting.');
-      await fellEnemies(ctx.page);
-      await endTurn(ctx.page, active.id);
-      await ctx.page.locator('.combat-scene[data-victory-beat="active"]').waitFor();
-      // Suspend before the renderer's first long frame can consume the hold.
-      // The scene still paints one final undimmed frame, then freezes for capture.
-      await ctx.page.evaluate(() => {
-        const scene = (window.fnt?.app as unknown as { scene: { suspend: () => void } }).scene;
-        scene.suspend();
+      const zoomedScale = await ctx.page.evaluate(() => {
+        const app = window.fnt?.app;
+        const state = app?.state;
+        const battle = state?.battle;
+        if (!app || !state || !battle) throw new Error('No fight is running.');
+        const party = battle.units.filter((unit) => unit.faction === 'party' && unit.hp > 0);
+        const enemies = battle.units.filter((unit) => unit.faction === 'enemy' && unit.hp > 0);
+        const occupiedByEnemies = new Set(enemies.map((unit) => `${unit.pos.x},${unit.pos.y}`));
+        const candidates: Vec2[] = [];
+        for (let y = 1; y < battle.grid.height - 1; y += 1) {
+          for (let x = 1; x < battle.grid.width - 1; x += 1) {
+            const tile = battle.grid.tiles[y * battle.grid.width + x];
+            if (tile && !tile.blocked && !occupiedByEnemies.has(`${x},${y}`))
+              candidates.push({ x, y });
+          }
+        }
+        const targets = [
+          { x: 2, y: 2 },
+          { x: battle.grid.width - 3, y: 2 },
+          { x: 2, y: battle.grid.height - 3 },
+          { x: battle.grid.width - 3, y: battle.grid.height - 3 },
+        ];
+        const placements = new Map<string, Vec2>();
+        for (const [index, unit] of party.entries()) {
+          const target = targets[index];
+          if (!target) break;
+          candidates.sort(
+            (a, b) =>
+              Math.abs(a.x - target.x) +
+              Math.abs(a.y - target.y) -
+              (Math.abs(b.x - target.x) + Math.abs(b.y - target.y)),
+          );
+          const [at] = candidates.splice(0, 1);
+          if (!at) throw new Error('Could not find a clear party framing tile.');
+          placements.set(unit.id, at);
+        }
+        app.state = {
+          ...state,
+          battle: {
+            ...battle,
+            units: battle.units.map((unit) => {
+              const pos = placements.get(unit.id);
+              return pos ? { ...unit, pos } : unit;
+            }),
+          },
+        };
+        app.resync();
+
+        const scene = (
+          app as unknown as {
+            scene: {
+              renderer: {
+                camera: {
+                  viewport: { width: number; height: number };
+                  scale: number;
+                  zoomAt: (at: { x: number; y: number }, factor: number) => void;
+                };
+              };
+            };
+          }
+        ).scene;
+        const camera = scene.renderer.camera;
+        camera.zoomAt({ x: camera.viewport.width / 2, y: camera.viewport.height / 2 }, 100);
+        return camera.scale;
       });
-      if (await ctx.page.locator('.result-panel').count()) {
-        throw new Error('The victory card appeared before its presentation beat.');
-      }
-      if (await ctx.page.locator('.turn-chip:not(:disabled)').count()) {
-        throw new Error('Terminal turn-strip controls stayed enabled during the victory beat.');
-      }
-      await ctx.shoot(
+      if (zoomedScale < 1.5)
+        throw new Error(`Expected a close zoom before victory, got ${zoomedScale}.`);
+      await fellEnemies(ctx.page);
+      // The filmstrip harness pauses its fake clock and captures without a
+      // curtain/RAF wait, so the gallery can stage the active beat atomically.
+      await ctx.filmstrip(
         'The unobscured battlefield frames the living party before the result card.',
-        'party-beat',
+        [0],
+        async () => {
+          await endTurn(ctx.page, active.id);
+          const beat = await ctx.page.evaluate(() => {
+            const app = window.fnt?.app;
+            const scene = (app as unknown as {
+              scene: {
+                renderer: { camera: { scale: number } };
+                suspend: () => void;
+              };
+            }).scene;
+            const phase = app?.state?.battle?.phase;
+            const scale = scene.renderer.camera.scale;
+            const cardVisible = Boolean(document.querySelector('.result-panel'));
+            const activeBeat = Boolean(
+              document.querySelector('.combat-scene[data-victory-beat="active"]'),
+            );
+            const controlsEnabled =
+              document.querySelector('.turn-chip:not(:disabled)') !== null;
+            // Paint once with the normal render path, then hold the scene for
+            // a stable review capture while the fake clock is paused.
+            scene.suspend();
+            return { phase, scale, cardVisible, activeBeat, controlsEnabled };
+          });
+          if (beat.phase !== 'victory' || !beat.activeBeat) {
+            throw new Error(`Expected an active victory beat, got phase=${beat.phase}.`);
+          }
+          if (beat.cardVisible) throw new Error('The victory card appeared before its beat.');
+          if (beat.controlsEnabled)
+            throw new Error('Terminal turn-strip controls stayed enabled during the victory beat.');
+          if (beat.scale >= zoomedScale) {
+            throw new Error(
+              `Victory did not zoom out from ${zoomedScale} to frame the dispersed party.`,
+            );
+          }
+        },
       );
       await ctx.page.evaluate(() => {
         const scene = (window.fnt?.app as unknown as { scene: { resume: () => void } }).scene;
