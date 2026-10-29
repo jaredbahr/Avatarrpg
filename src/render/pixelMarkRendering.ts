@@ -23,7 +23,14 @@ export function resolvePixelMarkDraws(
   const visible = visibleBoardPixels(camera, nudge);
   const draws: PixelMarkDraw[] = [];
   for (const cue of cues) {
-    for (const plan of pixelMarkChunkPlans(cue.spec, visible)) {
+    const localVisible = cue.anchor
+      ? {
+          ...visible,
+          left: visible.left - cue.anchor.x,
+          top: visible.top - cue.anchor.y,
+        }
+      : visible;
+    for (const plan of pixelMarkChunkPlans(cue.spec, localVisible)) {
       const source = cache.get(cue.spec, plan.bounds);
       if (!source.drawable) continue;
       draws.push({
