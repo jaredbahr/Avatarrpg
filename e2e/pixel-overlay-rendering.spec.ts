@@ -1,0 +1,1014 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { expect, test, type Browser, type Page } from '@playwright/test';
+import { PNG } from 'pngjs';
+import { CONTENT } from '../src/content';
+import { RngCursor } from '../src/core/rng';
+import { reachable } from '../src/core/rules/grid';
+import { BattleDraft } from '../src/core/state/battleDraft';
+import type { G1Bounds } from '../src/render/pixelMarks';
+import type { MapView, RenderUnit } from '../src/render/view';
+import { allowSoftwareWebgl } from './budget';
+import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import { groundPoint } from './projection';
+
+const REVIEW_DIR = resolve(process.cwd(), '.shots/pixel-overlay-review');
+const VIEWPORT = { width: 1280, height: 800 };
+const MARK_CENTRES = {
+  move: { x: 6.5, y: 6.5 },
+  target: { x: 7.5, y: 5.5 },
+  area: { x: 8.5, y: 6.5 },
+  rangeBonus: { x: 9.5, y: 6.5 },
+  hover: { x: 10.5, y: 6.5 },
+  path: { x: 7.5, y: 7.5 },
+  aim: { x: 7.5, y: 3.5 },
+  exit: { x: 8.5, y: 7.5 },
+  targetReticle: { x: 8.5, y: 5.5 },
+  selected: { x: 8.5, y: 4.86 },
+  ko: { x: 10.5, y: 4.55 },
+  talk: { x: 6.5, y: 6.5 },
+  healthBar: { x: 8.5, y: 6.5 },
+} as const;
+const MARK_NAMES = Object.keys(MARK_CENTRES) as (keyof typeof MARK_CENTRES)[];
+
+type Crop = { dataUrl: string; width: number; height: number };
+type DrawTiming = { firstDrawMs: number; repeatedDrawMs: number; cues: string };
+type MarkName = keyof typeof MARK_CENTRES;
+type MarkMetric = {
+  pixels: number;
+  width: number;
+  height: number;
+  mask: Uint8Array;
+  bounds: { x: number; y: number; width: number; height: number };
+};
+type MarkCrops = Record<MarkName, { before: Crop; after: Crop }> & {
+  plainReticle: Crop;
+  noOpBase: Crop;
+  occlusion: { before: Crop; after: Crop; actorless: Crop };
+};
+
+function maskMetrics(beforeUrl: string, afterUrl: string, threshold = 18): MarkMetric {
+  const before = PNG.sync.read(Buffer.from(beforeUrl.split(',')[1] ?? '', 'base64'));
+  const after = PNG.sync.read(Buffer.from(afterUrl.split(',')[1] ?? '', 'base64'));
+  if (before.width !== after.width || before.height !== after.height) {
+    throw new Error('The mark probe crops have different dimensions.');
+  }
+  let left = before.width;
+  let top = before.height;
+  let right = -1;
+  let bottom = -1;
+  let pixels = 0;
+  const mask = new Uint8Array(before.width * before.height);
+  for (let y = 0; y < before.height; y++) {
+    for (let x = 0; x < before.width; x++) {
+      const i = (y * before.width + x) * 4;
+      const delta =
+        Math.abs((before.data[i] ?? 0) - (after.data[i] ?? 0)) +
+        Math.abs((before.data[i + 1] ?? 0) - (after.data[i + 1] ?? 0)) +
+        Math.abs((before.data[i + 2] ?? 0) - (after.data[i + 2] ?? 0));
+      if (delta < threshold) continue;
+      mask[y * before.width + x] = 1;
+      pixels++;
+      left = Math.min(left, x);
+      top = Math.min(top, y);
+      right = Math.max(right, x);
+      bottom = Math.max(bottom, y);
+    }
+  }
+  return {
+    pixels,
+    width: before.width,
+    height: before.height,
+    mask,
+    bounds: {
+      x: left,
+      y: top,
+      width: right >= left ? right - left + 1 : 0,
+      height: bottom >= top ? bottom - top + 1 : 0,
+    },
+  };
+}
+
+function maskCoverageWithin(source: MarkMetric, target: MarkMetric, tolerance: number): number {
+  let matched = 0;
+  for (let y = 0; y < source.height; y++) {
+    for (let x = 0; x < source.width; x++) {
+      if (!source.mask[y * source.width + x]) continue;
+      let found = false;
+      for (let dy = -tolerance; dy <= tolerance && !found; dy++) {
+        for (let dx = -tolerance; dx <= tolerance; dx++) {
+          const tx = x + dx;
+          const ty = y + dy;
+          if (
+            tx >= 0 &&
+            ty >= 0 &&
+            tx < target.width &&
+            ty < target.height &&
+            target.mask[ty * target.width + tx]
+          ) {
+            found = true;
+            break;
+          }
+        }
+      }
+      if (found) matched++;
+    }
+  }
+  return matched / Math.max(1, source.pixels);
+}
+
+function erodeMask(source: MarkMetric, radius: number): MarkMetric {
+  const mask = new Uint8Array(source.mask.length);
+  let pixels = 0;
+  let left = source.width;
+  let top = source.height;
+  let right = -1;
+  let bottom = -1;
+  for (let y = radius; y < source.height - radius; y++) {
+    for (let x = radius; x < source.width - radius; x++) {
+      let interior = true;
+      for (let dy = -radius; dy <= radius && interior; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          if (!source.mask[(y + dy) * source.width + x + dx]) {
+            interior = false;
+            break;
+          }
+        }
+      }
+      if (!interior) continue;
+      mask[y * source.width + x] = 1;
+      pixels++;
+      left = Math.min(left, x);
+      top = Math.min(top, y);
+      right = Math.max(right, x);
+      bottom = Math.max(bottom, y);
+    }
+  }
+  return {
+    pixels,
+    width: source.width,
+    height: source.height,
+    mask,
+    bounds: {
+      x: left,
+      y: top,
+      width: right >= left ? right - left + 1 : 0,
+      height: bottom >= top ? bottom - top + 1 : 0,
+    },
+  };
+}
+
+function maskIntersectionPixelsInBox(
+  a: MarkMetric,
+  b: MarkMetric,
+  box: { left: number; top: number; right: number; bottom: number },
+): number {
+  if (a.width !== b.width || a.height !== b.height) throw new Error('Mask dimensions differ.');
+  let count = 0;
+  for (let y = Math.max(0, box.top); y < Math.min(a.height, box.bottom); y++) {
+    for (let x = Math.max(0, box.left); x < Math.min(a.width, box.right); x++) {
+      const index = y * a.width + x;
+      count += (a.mask[index] ?? 0) * (b.mask[index] ?? 0);
+    }
+  }
+  return count;
+}
+
+function maskPixelsInBox(
+  mask: MarkMetric,
+  box: { left: number; top: number; right: number; bottom: number },
+): number {
+  let count = 0;
+  for (let y = Math.max(0, box.top); y < Math.min(mask.height, box.bottom); y++) {
+    for (let x = Math.max(0, box.left); x < Math.min(mask.width, box.right); x++) {
+      count += mask.mask[y * mask.width + x] ?? 0;
+    }
+  }
+  return count;
+}
+
+function torsoInteriorBox(mask: MarkMetric, zoom: number, dpr: number) {
+  const pixelsPerWorldPixel = zoom * dpr;
+  const centerX = mask.bounds.x + mask.bounds.width / 2;
+  const halfWidth = 10 * pixelsPerWorldPixel;
+  return {
+    left: Math.floor(centerX - halfWidth),
+    right: Math.ceil(centerX + halfWidth),
+    top: Math.floor(mask.bounds.y + mask.bounds.height * 0.35),
+    bottom: Math.ceil(mask.bounds.y + mask.bounds.height * 0.68),
+  };
+}
+
+async function captureGameplayMove(
+  page: Page,
+  backend: 'canvas' | 'webgl',
+  dpr: number,
+): Promise<DrawTiming> {
+  await resetStorage(page, `?renderer=${backend}`);
+  await startGame(page, ['Kaya'], ['kaya'], 'pixel-review-move-parity');
+  await enterNode(page, 'battle_forest_road');
+  expect(await takeTurn(page)).toBe(true);
+  await waitForIdle(page);
+  expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(backend);
+
+  await page.getByRole('button', { name: /^Move/ }).click();
+  const state = await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const battle = app?.state?.battle;
+    const camera = app?.rendererCamera();
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    if (!app || !battle || !camera || !canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    return {
+      battle,
+      rng: app.state?.rng ?? 0,
+      camera,
+      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+    };
+  });
+  expect(state, 'real move preview has a mounted battle and measured camera').not.toBeNull();
+  if (!state) throw new Error('Missing real move preview state.');
+  const draft = new BattleDraft(CONTENT, state.battle, new RngCursor(state.rng));
+  const activeId = draft.order[draft.turnIndex];
+  const active = activeId ? draft.unit(activeId) : null;
+  expect(active, 'real preview has a living acting unit').toBeTruthy();
+  if (!active) throw new Error('Missing acting unit.');
+  const destination = [...reachable(draft.moveContext(active), active.pos, active.move).values()]
+    .filter((cell) => cell.pos.x !== active.pos.x || cell.pos.y !== active.pos.y)
+    .map((cell) => ({
+      cell,
+      point: groundPoint(state.camera, { x: cell.pos.x + 0.5, y: cell.pos.y + 0.5 }),
+    }))
+    .filter(
+      ({ point }) =>
+        point.x > 8 &&
+        point.x < state.rect.width - 8 &&
+        point.y > 8 &&
+        point.y < state.rect.height - 8,
+    )
+    .sort(
+      (a, b) =>
+        Math.abs(a.cell.pos.x - active.pos.x) +
+        Math.abs(a.cell.pos.y - active.pos.y) -
+        (Math.abs(b.cell.pos.x - active.pos.x) + Math.abs(b.cell.pos.y - active.pos.y)),
+    )[0];
+  expect(destination, 'a reachable painted destination is visible').toBeTruthy();
+  if (!destination) throw new Error('No visible legal movement target.');
+
+  await page.mouse.click(state.rect.x + destination.point.x, state.rect.y + destination.point.y);
+  await expect(page.locator('.confirm-bar')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Confirm$/ })).toBeEnabled();
+  const drawTiming = await page.evaluate(() => {
+    const renderer = (
+      window.fnt!.app as unknown as {
+        scene: {
+          renderer: {
+            lastView: MapView | null;
+            draw(view: MapView): void;
+          };
+        };
+      }
+    ).scene.renderer;
+    const view = renderer.lastView;
+    if (!view) throw new Error('The live movement preview has no MapView.');
+    const firstStart = performance.now();
+    renderer.draw(view);
+    const firstDrawMs = performance.now() - firstStart;
+    const repeatStart = performance.now();
+    renderer.draw(view);
+    const repeatedDrawMs = performance.now() - repeatStart;
+    return {
+      firstDrawMs,
+      repeatedDrawMs,
+      cues: `overlays=${view.overlays.length},path=${view.path.length},target=${view.targetReticle ? 1 : 0}`,
+    };
+  });
+  await page.screenshot({
+    path: resolve(REVIEW_DIR, `gameplay-${backend}-dpr${dpr}-move-preview.png`),
+  });
+  await page.getByRole('button', { name: /^Confirm$/ }).click();
+  await waitForIdle(page);
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const unit = window.fnt?.app.state?.battle?.units.find((candidate) => candidate.id === id);
+        return unit ? `${unit.pos.x},${unit.pos.y}` : null;
+      }, active.id),
+    )
+    .toBe(`${destination.cell.pos.x},${destination.cell.pos.y}`);
+  await page.screenshot({
+    path: resolve(REVIEW_DIR, `gameplay-${backend}-dpr${dpr}-move-confirmed.png`),
+  });
+  return drawTiming;
+}
+
+async function captureStagedMarks(
+  page: Page,
+  zoom: 1 | 2,
+): Promise<{
+  crops: MarkCrops;
+  cache: {
+    warm: number;
+    repeated: number;
+    smallPan: number;
+    entries: number;
+    bytes: number;
+    warmMs: number;
+    repeatedMs: number;
+    spike: {
+      warmKey: string | null;
+      repeatedKey: string | null;
+      panKey: string | null;
+      repeatSameSource: boolean;
+      panSameSource: boolean;
+    };
+  };
+  actual: {
+    dpr: number;
+    scale: number;
+    tilePx: number;
+    targetAnchor: { x: number; y: number };
+    anchors: Partial<Record<MarkName, { x: number; y: number }>>;
+  };
+}> {
+  return page.evaluate(
+    ({ requestedZoom, centres }) => {
+      type RuntimeRenderer = {
+        camera: {
+          scale: number;
+          offsetX: number;
+          offsetY: number;
+          viewport: { dpr: number; width: number; height: number };
+          centreOn(pos: { x: number; y: number }, size?: 1 | 2): void;
+          panBy(dx: number, dy: number): void;
+          project(pos: { x: number; y: number }): { x: number; y: number };
+        };
+        lastView: MapView | null;
+        draw(view: MapView): void;
+        backendName: 'canvas' | 'webgl';
+        backend: {
+          pixelMarkDrawables: {
+            rasterizationCount: number;
+            size: number;
+            byteLength: number;
+            entries: Map<string, { drawable: HTMLCanvasElement | null }>;
+          };
+        } & Record<string, unknown>;
+      };
+      const app = window.fnt!.app;
+      const renderer = (app as unknown as { scene: { renderer: RuntimeRenderer } }).scene.renderer;
+      const source = renderer.lastView;
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!source || !canvas) throw new Error('Missing the real MapView or battle canvas.');
+      const camera = renderer.camera;
+      camera.scale = requestedZoom;
+      camera.centreOn({ x: source.grid.width / 2, y: source.grid.height / 2 });
+      const party = source.units.find((unit) => unit.faction === 'party');
+      const enemy = source.units.find((unit) => unit.faction === 'enemy');
+      if (!party || !enemy) throw new Error('Staged marks need one party actor and one enemy.');
+      const stagedUnit = (
+        unit: RenderUnit,
+        id: string,
+        pos: { x: number; y: number },
+        changes: Partial<RenderUnit> = {},
+      ): RenderUnit => ({
+        ...unit,
+        ...changes,
+        id,
+        pos,
+        renderPos: pos,
+        offset: { x: 0, y: 0 },
+        scale: 1,
+        alpha: 1,
+        clip: undefined,
+        clipTime: 0,
+        clipFrame: undefined,
+        bend: undefined,
+      });
+      const occlusionActor = stagedUnit(party, 'pixel-review-occlusion-actor', { x: 6, y: 4 });
+      const chosen = stagedUnit(party, 'pixel-review-selected', { x: 8, y: 4 });
+      const knockedOut = stagedUnit(party, 'pixel-review-ko', { x: 10, y: 4 }, { fallen: true });
+      const hostile = stagedUnit(enemy, 'pixel-review-hostile', { x: 8, y: 6 });
+      const cueView: MapView = {
+        ...source,
+        time: 640_000,
+        units: [occlusionActor, chosen, knockedOut, hostile],
+        npcs: [
+          {
+            id: 'pixel-review-talk',
+            pos: { x: 6, y: 6 },
+            sprite: party.sprite,
+            name: 'Talk pip probe',
+            quiet: false,
+            scale: 1,
+          },
+        ],
+        overlays: [
+          // Keep the per-cue visibility probe clear of unit sprites. A separate
+          // isolated probe below verifies move-mask occlusion beneath a unit.
+          { kind: 'move', tiles: [{ x: 6, y: 6 }] },
+          { kind: 'target', tiles: [{ x: 7, y: 6 }] },
+          { kind: 'area', tiles: [{ x: 8, y: 6 }] },
+          { kind: 'rangeBonus', tiles: [{ x: 9, y: 6 }] },
+        ],
+        hoverTile: { x: 10, y: 6 },
+        path: [
+          { x: 7, y: 7 },
+          { x: 8, y: 7 },
+        ],
+        pathFrom: { x: 6, y: 7 },
+        pathOrigin: null,
+        pathStart: 0,
+        calmPath: false,
+        aimArc: { from: { x: 6.2, y: 3.5 }, to: { x: 8.8, y: 3.5 }, arc: 0.5, color: '#7ec8e3' },
+        exit: null,
+        exits: [{ pos: { x: 8, y: 7 }, label: 'Review exit' }],
+        targetReticle: { pos: { x: 8, y: 5 }, elevation: 'above', obscured: true },
+        selectedUnitId: chosen.id,
+        activeUnitId: null,
+        cameraNudge: { x: 0, y: 0 },
+      };
+      const canvasRect = canvas.getBoundingClientRect();
+      const backingScaleX = canvas.width / canvasRect.width;
+      const backingScaleY = canvas.height / canvasRect.height;
+      const captureScreen = (
+        point: { x: number; y: number },
+        cssWidth = 164,
+        cssHeight = cssWidth,
+      ): Crop => {
+        const width = Math.round(cssWidth * backingScaleX);
+        const height = Math.round(cssHeight * backingScaleY);
+        const sx = Math.max(
+          0,
+          Math.min(canvas.width - width, Math.round((point.x - cssWidth / 2) * backingScaleX)),
+        );
+        const sy = Math.max(
+          0,
+          Math.min(canvas.height - height, Math.round((point.y - cssHeight / 2) * backingScaleY)),
+        );
+        const crop = document.createElement('canvas');
+        crop.width = width;
+        crop.height = height;
+        const context = crop.getContext('2d');
+        if (!context) throw new Error('Could not allocate mark-crop canvas.');
+        context.drawImage(canvas, sx, sy, width, height, 0, 0, width, height);
+        return { dataUrl: crop.toDataURL('image/png'), width, height };
+      };
+      const capture = (centre: { x: number; y: number }): Crop =>
+        captureScreen(camera.project(centre));
+      const captureOcclusionView = (view: MapView): Crop => {
+        renderer.draw(view);
+        return captureScreen(camera.project({ x: 6.5, y: 4.5 }), 260, 260);
+      };
+      const cueGeometry = {} as Partial<Record<MarkName, G1Bounds>>;
+      const markScreenRects = {} as Partial<
+        Record<MarkName, { left: number; top: number; width: number; height: number }>
+      >;
+      const prefixes: Record<MarkName, readonly string[]> = {
+        move: ['overlay:move:'],
+        target: ['overlay:target:'],
+        area: ['overlay:area:'],
+        rangeBonus: ['overlay:rangeBonus:'],
+        hover: ['hover:', 'hover-calm'],
+        path: ['route-', 'route-dots:'],
+        aim: ['aim-arc'],
+        exit: ['exit'],
+        targetReticle: ['target-reticle'],
+        selected: ['selected-ring'],
+        ko: ['ko-cross'],
+        talk: ['talk'],
+        healthBar: ['enemy-health-spike'],
+      };
+      const cueAnchors = {} as Partial<Record<MarkName, { x: number; y: number }>>;
+      const captureMark = (name: MarkName): Crop => {
+        const geometry = cueGeometry[name];
+        if (geometry) {
+          const scale = camera.scale;
+          const left = geometry.left * scale - camera.offsetX;
+          const top = geometry.top * scale - camera.offsetY;
+          const cssWidth = geometry.width * scale + 8 * scale;
+          const cssHeight = geometry.height * scale + 8 * scale;
+          const x = left + (geometry.width * scale) / 2;
+          const y = top + (geometry.height * scale) / 2;
+          markScreenRects[name] = {
+            left: left - 4 * scale,
+            top: top - 4 * scale,
+            width: cssWidth,
+            height: cssHeight,
+          };
+          if (
+            left - 4 * scale < 0 ||
+            top - 4 * scale < 0 ||
+            left + geometry.width * scale + 4 * scale > camera.viewport.width ||
+            top + geometry.height * scale + 4 * scale > camera.viewport.height
+          ) {
+            throw new Error(
+              `${name} full pixel-mark bounds ${left.toFixed(1)},${top.toFixed(1)} ${geometry.width * scale}x${geometry.height * scale} are outside ${camera.viewport.width}x${camera.viewport.height} at zoom ${scale}`,
+            );
+          }
+          return captureScreen({ x, y }, cssWidth, cssHeight);
+        }
+        if (name === 'talk') {
+          // Talk pips are emitted by the NPC draw path rather than the shared
+          // cue adapter. Centre on the measured 8-way adult pip lift above its
+          // known ground anchor, then keep a full marker-sized crop around it.
+          const ground = camera.project(centres[name]);
+          return captureScreen({ x: ground.x, y: ground.y - 64 * camera.scale * 1.02 }, 40, 40);
+        }
+        const anchor = cueAnchors[name];
+        return anchor
+          ? captureScreen({
+              x: anchor.x * camera.scale - camera.offsetX,
+              y: anchor.y * camera.scale - camera.offsetY,
+            })
+          : capture(centres[name]);
+      };
+      const centreOnMark = (name: MarkName): void => {
+        const geometry = cueGeometry[name];
+        if (!geometry) {
+          camera.centreOn(centres[name]);
+          return;
+        }
+        const centreX = (geometry.left + geometry.width / 2) * camera.scale - camera.offsetX;
+        const centreY = (geometry.top + geometry.height / 2) * camera.scale - camera.offsetY;
+        camera.panBy(camera.viewport.width / 2 - centreX, camera.viewport.height / 2 - centreY);
+      };
+      const afterView = (view: MapView, name: MarkName): Crop => {
+        renderer.draw(view);
+        return captureMark(name);
+      };
+      const drawComparisonView = (view: MapView, name: MarkName): Crop => {
+        // Pixi retains raised-top pixels for the same semantic MapView across
+        // the adapter seam. Filtered test probes must invalidate that cached
+        // lift only for this before/after capture; perf draws below stay warm.
+        if (renderer.backendName === 'webgl') renderer.backend.marksKey = '';
+        return afterView(view, name);
+      };
+      const drawOcclusionComparison = (view: MapView): Crop => {
+        if (renderer.backendName === 'webgl') renderer.backend.marksKey = '';
+        return captureOcclusionView(view);
+      };
+      const observedBackend = renderer.backend;
+      const adapterName = renderer.backendName === 'canvas' ? 'drawPixelCues' : 'appendPixelMarks';
+      const unwrapped = observedBackend[adapterName] as
+        ((...args: unknown[]) => unknown) | undefined;
+      if (!unwrapped) throw new Error(`Missing ${adapterName} pixel-mark adapter seam.`);
+      observedBackend[adapterName] = (...args: unknown[]): unknown => {
+        const cuesIndex = adapterName === 'drawPixelCues' ? 0 : 2;
+        const cues = args[cuesIndex] as
+          | readonly {
+              id: string;
+              anchor?: { x: number; y: number };
+              spec?: { bounds: G1Bounds };
+            }[]
+          | undefined;
+        for (const cue of cues ?? []) {
+          for (const name of Object.keys(prefixes) as MarkName[]) {
+            if (prefixes[name].some((prefix) => cue.id.startsWith(prefix))) {
+              if (cue.anchor) cueAnchors[name] = cue.anchor;
+              if (cue.spec?.bounds) {
+                const left = (cue.anchor?.x ?? 0) + cue.spec.bounds.left;
+                const top = (cue.anchor?.y ?? 0) + cue.spec.bounds.top;
+                const right = left + cue.spec.bounds.width;
+                const bottom = top + cue.spec.bounds.height;
+                const previous = cueGeometry[name];
+                if (previous) {
+                  const unionLeft = Math.min(previous.left, left);
+                  const unionTop = Math.min(previous.top, top);
+                  const unionRight = Math.max(previous.left + previous.width, right);
+                  const unionBottom = Math.max(previous.top + previous.height, bottom);
+                  cueGeometry[name] = {
+                    left: unionLeft,
+                    top: unionTop,
+                    width: unionRight - unionLeft,
+                    height: unionBottom - unionTop,
+                  };
+                } else {
+                  cueGeometry[name] = {
+                    left,
+                    top,
+                    width: cue.spec.bounds.width,
+                    height: cue.spec.bounds.height,
+                  };
+                }
+              }
+            }
+          }
+        }
+        return unwrapped.apply(observedBackend, args);
+      };
+      camera.centreOn({ x: source.grid.width / 2, y: source.grid.height / 2 });
+      renderer.draw(cueView);
+      observedBackend[adapterName] = unwrapped;
+      const emittedTargetAnchor = cueAnchors.targetReticle;
+      if (!emittedTargetAnchor)
+        throw new Error('The staged target reticle did not emit a pixel mark.');
+      const after = {} as Record<MarkName, Crop>;
+      const comparisonView = (name: MarkName): MapView => ({
+        ...cueView,
+        units: cueView.units.map((unit) => ({
+          ...unit,
+          showHealth: name === 'healthBar' && unit.id === hostile.id,
+        })),
+      });
+      for (const name of Object.keys(centres) as MarkName[]) {
+        centreOnMark(name);
+        const probeView = comparisonView(name);
+        if (name === 'healthBar') drawComparisonView(probeView, name);
+        after[name] = drawComparisonView(probeView, name);
+      }
+      const before = {} as Record<MarkName, Crop>;
+      const backendObject = renderer.backend;
+      const methodName = renderer.backendName === 'canvas' ? 'drawPixelCues' : 'appendPixelMarks';
+      const original = backendObject[methodName] as ((...args: unknown[]) => unknown) | undefined;
+      if (!original) throw new Error(`Missing ${methodName} pixel-mark adapter seam.`);
+      for (const name of Object.keys(centres) as MarkName[]) {
+        if (name === 'talk') {
+          centreOnMark(name);
+          const talkView = comparisonView(name);
+          const quietView: MapView = {
+            ...talkView,
+            npcs: talkView.npcs.map((npc) => ({ ...npc, quiet: true })),
+          };
+          before[name] = drawComparisonView(quietView, name);
+          continue;
+        }
+        const wrapped = (...args: unknown[]): unknown => {
+          const cuesIndex = methodName === 'drawPixelCues' ? 0 : 2;
+          const cues = args[cuesIndex] as readonly { id: string }[] | undefined;
+          if (!cues) throw new Error(`Missing pixel cue list in ${methodName}.`);
+          args[cuesIndex] = cues.filter(
+            (cue) => !prefixes[name].some((prefix) => cue.id.startsWith(prefix)),
+          );
+          return original.apply(backendObject, args);
+        };
+        backendObject[methodName] = wrapped;
+        try {
+          centreOnMark(name);
+          const probeView = comparisonView(name);
+          before[name] = drawComparisonView(probeView, name);
+        } finally {
+          backendObject[methodName] = original;
+        }
+      }
+
+      const occlusionBase: MapView = {
+        ...cueView,
+        overlays: [],
+        hoverTile: null,
+        path: [],
+        pathFrom: null,
+        aimArc: null,
+        exits: [],
+        targetReticle: null,
+        selectedUnitId: null,
+        activeUnitId: null,
+        units: [{ ...occlusionActor, showHealth: false }],
+        npcs: [],
+      };
+      const occlusionOverlay: MapView = {
+        ...occlusionBase,
+        overlays: [{ kind: 'move', tiles: [{ x: 6, y: 4 }] }],
+      };
+      const occlusionActorless: MapView = { ...occlusionBase, units: [] };
+      camera.centreOn({ x: 6, y: 4 });
+      const occlusionBefore = drawOcclusionComparison(occlusionBase);
+      const occlusionAfter = drawOcclusionComparison(occlusionOverlay);
+      const occlusionActorlessCrop = drawOcclusionComparison(occlusionActorless);
+
+      // Exercise the valid, unadorned combat aim shape through the real backend.
+      // A normal same-elevation, clear target has no cue pixels and must be a no-op.
+      const noCuesView: MapView = {
+        ...cueView,
+        units: cueView.units.map((unit) => ({ ...unit, showHealth: false })),
+        overlays: [],
+        hoverTile: null,
+        path: [],
+        pathFrom: null,
+        aimArc: null,
+        exits: [],
+        targetReticle: null,
+        selectedUnitId: null,
+        npcs: cueView.npcs.map((npc) => ({ ...npc, quiet: true })),
+      };
+      const plainReticleView: MapView = {
+        ...noCuesView,
+        // Match the initially observed staged reticle position so the no-op
+        // crop covers the mark even when combat has since advanced the unit.
+        targetReticle: { pos: { x: 8, y: 5 }, elevation: null, obscured: false },
+      };
+      const noOpBase = drawComparisonView(noCuesView, 'targetReticle');
+      const plainReticle = drawComparisonView(plainReticleView, 'targetReticle');
+
+      // Cache reuse is measured synchronously so the animated app loop cannot
+      // add unrelated frames between the repeated source draws.
+      camera.scale = requestedZoom;
+      centreOnMark('healthBar');
+      captureMark('healthBar'); // Assert the spike's complete padded bounds are visible.
+      const spikeToken = () => {
+        for (const [key, entry] of renderer.backend.pixelMarkDrawables.entries) {
+          if (key.includes('#d94a3a') && entry.drawable) return { key, source: entry.drawable };
+        }
+        return null;
+      };
+      const warmStart = performance.now();
+      renderer.draw(cueView);
+      const warmMs = performance.now() - warmStart;
+      const warm = renderer.backend.pixelMarkDrawables.rasterizationCount;
+      const warmSpike = spikeToken();
+      const repeatStart = performance.now();
+      renderer.draw(cueView);
+      const repeatedMs = performance.now() - repeatStart;
+      const repeated = renderer.backend.pixelMarkDrawables.rasterizationCount;
+      const repeatedSpike = spikeToken();
+      camera.panBy(0, 1);
+      renderer.draw(cueView);
+      const smallPan = renderer.backend.pixelMarkDrawables.rasterizationCount;
+      const panSpike = spikeToken();
+
+      const crops = {} as Record<MarkName, { before: Crop; after: Crop }>;
+      for (const name of Object.keys(centres) as MarkName[])
+        crops[name] = { before: before[name], after: after[name] };
+      return {
+        crops: {
+          ...crops,
+          plainReticle,
+          noOpBase,
+          occlusion: {
+            before: occlusionBefore,
+            after: occlusionAfter,
+            actorless: occlusionActorlessCrop,
+          },
+        },
+        cache: {
+          warm,
+          repeated,
+          smallPan,
+          entries: renderer.backend.pixelMarkDrawables.size,
+          bytes: renderer.backend.pixelMarkDrawables.byteLength,
+          warmMs,
+          repeatedMs,
+          spike: {
+            warmKey: warmSpike?.key ?? null,
+            repeatedKey: repeatedSpike?.key ?? null,
+            panKey: panSpike?.key ?? null,
+            repeatSameSource: Boolean(warmSpike && repeatedSpike?.source === warmSpike.source),
+            panSameSource: Boolean(warmSpike && panSpike?.source === warmSpike.source),
+          },
+        },
+        actual: {
+          dpr: camera.viewport.dpr,
+          scale: camera.scale,
+          tilePx: 64 * camera.scale,
+          targetAnchor: emittedTargetAnchor as { x: number; y: number },
+          anchors: cueAnchors,
+          markGeometry: cueGeometry,
+          markScreenRects,
+          drawableKeys: [...renderer.backend.pixelMarkDrawables.entries.keys()],
+        },
+      };
+    },
+    { requestedZoom: zoom, centres: MARK_CENTRES },
+  );
+}
+
+async function backendRun(
+  browser: Browser,
+  backend: 'canvas' | 'webgl',
+  dpr: number,
+  zoomsToCapture: readonly (1 | 2)[] = [1, 2],
+) {
+  const context = await browser.newContext({
+    baseURL: test.info().project.use.baseURL as string,
+    viewport: VIEWPORT,
+    deviceScaleFactor: dpr,
+    hasTouch: true,
+  });
+  const page = await context.newPage();
+  try {
+    mkdirSync(REVIEW_DIR, { recursive: true });
+    const gameplayTiming = await captureGameplayMove(page, backend, dpr);
+    const zooms = {} as Record<'1' | '2', Awaited<ReturnType<typeof captureStagedMarks>>>;
+    for (const zoom of zoomsToCapture) {
+      zooms[String(zoom) as '1' | '2'] = await captureStagedMarks(page, zoom);
+    }
+    return { zooms, gameplayTiming };
+  } finally {
+    await context.close();
+  }
+}
+
+for (const dpr of [1, 2] as const) {
+  test(`pixel overlay marks render with backend parity at DPR ${dpr}, camera zoom 1 and 2`, async ({
+    browser,
+  }) => {
+    test.setTimeout(600_000);
+    allowSoftwareWebgl(test, 'webgl');
+    const canvas = await backendRun(browser, 'canvas', dpr);
+    const webgl = await backendRun(browser, 'webgl', dpr);
+    const masks = {
+      canvas: {} as Record<'1' | '2', Record<MarkName, MarkMetric>>,
+      webgl: {} as Record<'1' | '2', Record<MarkName, MarkMetric>>,
+    };
+
+    for (const zoom of [1, 2] as const) {
+      const canvasRun = canvas.zooms[String(zoom) as '1' | '2'];
+      const webglRun = webgl.zooms[String(zoom) as '1' | '2'];
+      expect(canvasRun.actual).toMatchObject({ dpr, scale: zoom, tilePx: 64 * zoom });
+      expect(webglRun.actual).toMatchObject({ dpr, scale: zoom, tilePx: 64 * zoom });
+      for (const name of ['targetReticle', 'selected', 'ko', 'healthBar', 'exit'] as const) {
+        const canvasAnchor = canvasRun.actual.anchors[name];
+        const pixiAnchor = webglRun.actual.anchors[name];
+        expect(canvasAnchor, `${name} emits a Canvas world anchor`).toBeTruthy();
+        expect(pixiAnchor, `${name} emits a Pixi world anchor`).toBeTruthy();
+        if (!canvasAnchor || !pixiAnchor) continue;
+        expect(
+          Math.abs(canvasAnchor.x - pixiAnchor.x),
+          `${name} anchor x agrees within one G1 pixel at zoom ${zoom}`,
+        ).toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(canvasAnchor.y - pixiAnchor.y),
+          `${name} anchor y agrees within one G1 pixel at zoom ${zoom}`,
+        ).toBeLessThanOrEqual(1);
+      }
+      expect(canvasRun.cache.repeated, 'a warm repeated frame must reuse mark sources').toBe(
+        canvasRun.cache.warm,
+      );
+      expect(canvasRun.cache.smallPan, 'a small camera pan must reuse mark sources').toBe(
+        canvasRun.cache.warm,
+      );
+      expect(webglRun.cache.repeated, 'a warm repeated frame must reuse mark sources').toBe(
+        webglRun.cache.warm,
+      );
+      expect(webglRun.cache.smallPan, 'a small camera pan must reuse mark sources').toBe(
+        webglRun.cache.warm,
+      );
+      for (const [backend, cache] of [
+        ['canvas', canvasRun.cache],
+        ['pixi', webglRun.cache],
+      ] as const) {
+        expect(cache.spike.warmKey, `${backend} cached the enemy spike source`).toBeTruthy();
+        expect(cache.spike.repeatedKey, `${backend} spike key is stable on a repeated frame`).toBe(
+          cache.spike.warmKey,
+        );
+        expect(cache.spike.panKey, `${backend} spike key is stable after a 1 CSS px Y pan`).toBe(
+          cache.spike.warmKey,
+        );
+        expect(cache.spike.repeatSameSource).toBe(true);
+        expect(cache.spike.panSameSource).toBe(true);
+      }
+      expect(canvasRun.cache.entries).toBeGreaterThan(0);
+      expect(webglRun.cache.entries).toBeGreaterThan(0);
+      expect(canvasRun.cache.bytes).toBeGreaterThan(0);
+      expect(webglRun.cache.bytes).toBeGreaterThan(0);
+      test.info().annotations.push({
+        type: 'pixel-overlay-timing',
+        description: `DPR${dpr} zoom${zoom} Canvas warm=${canvasRun.cache.warmMs.toFixed(2)}ms repeat=${canvasRun.cache.repeatedMs.toFixed(2)}ms; Pixi warm=${webglRun.cache.warmMs.toFixed(2)}ms repeat=${webglRun.cache.repeatedMs.toFixed(2)}ms`,
+      });
+      test.info().annotations.push({
+        type: 'pixel-overlay-cache',
+        description: `DPR${dpr} zoom${zoom} Canvas raster=${canvasRun.cache.warm}/${canvasRun.cache.repeated}/${canvasRun.cache.smallPan} spike=${canvasRun.cache.spike.repeatSameSource}/${canvasRun.cache.spike.panSameSource}; Pixi raster=${webglRun.cache.warm}/${webglRun.cache.repeated}/${webglRun.cache.smallPan} spike=${webglRun.cache.spike.repeatSameSource}/${webglRun.cache.spike.panSameSource}`,
+      });
+      masks.canvas[String(zoom) as '1' | '2'] = {} as Record<MarkName, MarkMetric>;
+      masks.webgl[String(zoom) as '1' | '2'] = {} as Record<MarkName, MarkMetric>;
+
+      for (const name of MARK_NAMES) {
+        const canvasCrop = canvasRun.crops[name];
+        const webglCrop = webglRun.crops[name];
+        const canvasMask = maskMetrics(canvasCrop.before.dataUrl, canvasCrop.after.dataUrl);
+        const webglMask = maskMetrics(webglCrop.before.dataUrl, webglCrop.after.dataUrl);
+        masks.canvas[String(zoom) as '1' | '2'][name] = canvasMask;
+        masks.webgl[String(zoom) as '1' | '2'][name] = webglMask;
+        for (const [backend, crop] of [
+          ['canvas', canvasCrop.after],
+          ['webgl', webglCrop.after],
+        ] as const) {
+          writeFileSync(
+            resolve(REVIEW_DIR, `mark-${backend}-dpr${dpr}-zoom${zoom}-${name}.png`),
+            Buffer.from(crop.dataUrl.split(',')[1] ?? '', 'base64'),
+          );
+        }
+        expect(
+          canvasMask.pixels,
+          `${name} is visible in the Canvas crop at zoom ${zoom}`,
+        ).toBeGreaterThan(0);
+        expect(
+          webglMask.pixels,
+          `${name} is visible in the Pixi crop at zoom ${zoom}`,
+        ).toBeGreaterThan(0);
+        if (name === 'talk') {
+          const edge = zoom * dpr;
+          for (const [backend, mask] of [
+            ['Canvas', canvasMask],
+            ['Pixi', webglMask],
+          ] as const) {
+            expect(
+              mask.bounds.x,
+              `${backend} talk pip stays inside the crop's left edge`,
+            ).toBeGreaterThanOrEqual(edge);
+            expect(
+              mask.bounds.y,
+              `${backend} talk pip stays inside the crop's top edge`,
+            ).toBeGreaterThanOrEqual(edge);
+            expect(
+              mask.width - mask.bounds.x - mask.bounds.width,
+              `${backend} talk pip stays inside the crop's right edge`,
+            ).toBeGreaterThanOrEqual(edge);
+            expect(
+              mask.height - mask.bounds.y - mask.bounds.height,
+              `${backend} talk pip stays inside the crop's bottom edge`,
+            ).toBeGreaterThanOrEqual(edge);
+            expect(
+              Math.abs(mask.bounds.width - 9 * edge),
+              `${backend} talk pip retains its full radius-4 circle`,
+            ).toBeLessThanOrEqual(edge);
+            expect(
+              Math.abs(mask.bounds.height - 9 * edge),
+              `${backend} talk pip retains its full radius-4 circle`,
+            ).toBeLessThanOrEqual(edge);
+          }
+        }
+
+        // One G1 pixel of edge allowance, represented in device pixels at this
+        // actual CSS zoom and DPR; interior coverage must still agree closely.
+        const tolerance = zoom * dpr;
+        expect(
+          Math.abs(canvasMask.bounds.width - webglMask.bounds.width),
+          `${name} mask width agrees across backends at zoom ${zoom}`,
+        ).toBeLessThanOrEqual(tolerance);
+        expect(
+          Math.abs(canvasMask.bounds.height - webglMask.bounds.height),
+          `${name} mask height agrees across backends at zoom ${zoom}`,
+        ).toBeLessThanOrEqual(tolerance);
+        expect(
+          maskCoverageWithin(canvasMask, webglMask, tolerance),
+          `${name} Canvas pixels match a Pixi pixel within one G1 edge at zoom ${zoom}`,
+        ).toBeGreaterThanOrEqual(0.98);
+        expect(
+          maskCoverageWithin(webglMask, canvasMask, tolerance),
+          `${name} Pixi pixels match a Canvas pixel within one G1 edge at zoom ${zoom}`,
+        ).toBeGreaterThanOrEqual(0.98);
+      }
+
+      for (const [backend, run] of [
+        ['canvas', canvasRun],
+        ['webgl', webglRun],
+      ] as const) {
+        const occlusion = maskMetrics(
+          run.crops.occlusion.before.dataUrl,
+          run.crops.occlusion.after.dataUrl,
+        );
+        const actorControl = maskMetrics(
+          run.crops.occlusion.actorless.dataUrl,
+          run.crops.occlusion.before.dataUrl,
+          60,
+        );
+        const actorInterior = erodeMask(actorControl, 2 * zoom * dpr);
+        const torsoBox = torsoInteriorBox(actorControl, zoom, dpr);
+        const torsoPixels = maskPixelsInBox(actorInterior, torsoBox);
+        expect(
+          torsoPixels,
+          `${backend} eroded torso interior remains a meaningful opaque control`,
+        ).toBeGreaterThan(40 * zoom * zoom * dpr * dpr);
+        expect(
+          maskIntersectionPixelsInBox(actorInterior, occlusion, torsoBox),
+          `${backend} move-range mask leaves the opaque torso interior unchanged`,
+        ).toBe(0);
+      }
+
+      const blankCanvasMask = maskMetrics(
+        canvasRun.crops.noOpBase.dataUrl,
+        canvasRun.crops.plainReticle.dataUrl,
+      );
+      const blankWebglMask = maskMetrics(
+        webglRun.crops.noOpBase.dataUrl,
+        webglRun.crops.plainReticle.dataUrl,
+      );
+      expect(blankCanvasMask.pixels, 'null/false target cues do not draw a Canvas marker').toBe(0);
+      expect(blankWebglMask.pixels, 'null/false target cues do not draw a Pixi marker').toBe(0);
+    }
+
+    for (const backend of ['canvas', 'webgl'] as const) {
+      for (const name of ['selected', 'ko'] as const) {
+        const atN1 = masks[backend]['1'][name].bounds;
+        const atN2 = masks[backend]['2'][name].bounds;
+        expect(atN1.width).toBeGreaterThan(0);
+        expect(atN1.height).toBeGreaterThan(0);
+        expect(atN2.width).toBeGreaterThan(0);
+        expect(atN2.height).toBeGreaterThan(0);
+        expect(
+          Math.abs(atN2.width - 2 * atN1.width),
+          `${backend} ${name} width preserves its world size at camera zoom 2`,
+        ).toBeLessThanOrEqual(6 * dpr);
+        expect(
+          Math.abs(atN2.height - 2 * atN1.height),
+          `${backend} ${name} height preserves its world size at camera zoom 2`,
+        ).toBeLessThanOrEqual(6 * dpr);
+      }
+    }
+    test.info().annotations.push({
+      type: 'real-gameplay-draw-timing',
+      description: `DPR${dpr} preview Canvas first=${canvas.gameplayTiming.firstDrawMs.toFixed(2)}ms repeat=${canvas.gameplayTiming.repeatedDrawMs.toFixed(2)}ms (${canvas.gameplayTiming.cues}); Pixi first=${webgl.gameplayTiming.firstDrawMs.toFixed(2)}ms repeat=${webgl.gameplayTiming.repeatedDrawMs.toFixed(2)}ms (${webgl.gameplayTiming.cues})`,
+    });
+  });
+}
