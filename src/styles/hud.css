@@ -3635,3 +3635,116 @@ html[data-contrast='high'] .hud-panel::after {
     max-width: 7rem;
   }
 }
+
+/* An iPad held upright is not a phone: keep the encounter title, Pause and
+   More on one header line, but let the battlefield keep its width. Landscape
+   tablets continue to use the inline controls above. */
+@media (orientation: portrait) and (min-width: 36.01rem) and (max-width: 55rem) {
+  .combat-scene .combat-bar {
+    position: relative;
+    z-index: var(--z-menu);
+    flex-wrap: nowrap;
+  }
+
+  .combat-scene .combat-bar > button {
+    flex-shrink: 0;
+    padding-inline: var(--sp-2);
+  }
+
+  .combat-scene .combat-bar .combat-more-toggle {
+    display: grid;
+    place-items: center;
+  }
+
+  .combat-scene .title-plate {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .combat-scene .title-plate > .title-plate-name {
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .combat-scene .combat-more {
+    position: absolute;
+    top: 100%;
+    right: var(--sp-3);
+    display: none;
+    flex-direction: column;
+    gap: var(--sp-1);
+    min-width: 12rem;
+    max-height: calc(var(--more-room, 100dvh) - var(--toast-reserve, 0rem) - var(--sp-2));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--sp-2);
+    border: var(--hairline) solid var(--c-ink-line);
+    border-radius: var(--radius);
+    background: var(--surface-1);
+    box-shadow: var(--shadow-2);
+  }
+
+  .combat-scene .combat-more.open {
+    display: flex;
+  }
+
+  .combat-scene .combat-more > button {
+    flex-shrink: 0;
+    text-align: start;
+  }
+
+  /* A short horizontal initiative ribbon returns a full row to the board;
+     names remain available on the chips while the order scrolls if needed. */
+  .combat-scene .turn-strip {
+    align-items: center;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  .combat-scene .turn-chip {
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--sp-1);
+    min-width: var(--tap);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  .combat-scene .turn-chip .painter {
+    max-width: 2.5rem;
+    max-height: 2.5rem;
+  }
+
+  .combat-scene .turn-chip:not(.active) span {
+    max-width: 5rem;
+  }
+
+  /* Keep the acting card at its content height instead of stretching it to
+     the action stack. Both columns shrink before they wrap at Largest text. */
+  .combat-scene .hud {
+    align-items: flex-start;
+    max-height: 32dvh;
+    overflow-y: auto;
+  }
+
+  .combat-scene .unit-panel {
+    align-self: flex-start;
+    flex: 0 1 10rem;
+    min-width: 10rem;
+  }
+
+  .combat-scene .action-bar {
+    flex: 1 1 20rem;
+    min-width: 20rem;
+  }
+
+  .combat-scene .action-row {
+    gap: var(--sp-1);
+  }
+
+  .combat-scene .action-button {
+    min-width: 0;
+    min-height: var(--tap);
+    padding: var(--sp-1) var(--sp-2);
+  }
+}
