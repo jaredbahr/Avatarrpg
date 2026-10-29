@@ -77,3 +77,76 @@ The recordings (Ba Dan walk and the forest fight, load cut) are not committed.
 7. **Credits.** 293.4 generations ledgered, 6 of them the two north bends submitted before a container restart,
    billed but never collected (`lost-at-restart-...`). The balance fell 308.4 (341.2 to 32.8): the other 15 were billed
    between the camera probe and the restyles and are unexplained (most likely the probe billed as a 512 edit).
+
+## Kaya polish (2026-10-29)
+
+Owner, 2026-10-29: "Pixel lab is refreshed. lets get kaya with the polished animations and directions then show me that.
+If its good we can push it on the rest." Kaya alone is redrawn as the reference the other eleven figures will copy; it
+replaces #321's Kaya under `?style=world` (Sura and Bo are unchanged, and so is the default). Every call is ledgered in
+`ledger.json` (job names `kp-*` and `walk-kaya-*-s531/532`).
+
+| step | tool                                            | what                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | cost                    |
+| ---- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| 1    | `kp_probe.py`                                   | **steeper roots**: `edit-image-pro-flash` (text) on each of #321's restyled idle roots, told to raise the camera to the town map's ~40 degrees (crown, shoulder tops and feet seen from above) and, from seed 520, to keep adult proportions (502/503 came back with childlike heads). `create-image-pro-flash` with the root as style image was probed and rejected (a clean anime figure, not steeper)                                                                                                                                                                                 | 6 a heading a seed      |
+| 2    | `polish/curate.json`, `kp_pre.py`               | one candidate a heading (seeds 521, 522; reasons in the file), scaled to one 70 px standing height (the steeper camera foreshortens her; #321 stood 72-76) on a 128 canvas, sole on row 112                                                                                                                                                                                                                                                                                                                                                                                              | 0                       |
+| 3    | `kp_skel.py`, `kp_stance.py`                    | `estimate-skeleton` on the new idles and #321's stances; #321's stance as a per-joint offset from its idle, scaled and pressed 0.9 vertically, laid on the new idle's skeleton; `animate-with-skeleton-v3` poses the new idle into it (last of 3 frames)                                                                                                                                                                                                                                                                                                                                 | 2 a heading             |
+| 4    | `kp_restyle.py`                                 | the 16 new roots (8 idle, 8 stance) on #321's world crop, restyled with #321's settings (seed 11), cut out and hue-locked to their source: `roots/kaya/`                                                                                                                                                                                                                                                                                                                                                                                                                                 | 25                      |
+| 5    | `kp_walk.py`, `gen_walk.py`                     | design.py's six-pose walk on the new skeletons, the ground in #321's body heights (75 px) so a step covers the same ground, the step 0.5 body heights (#321: 0.45) for a calmer cadence; seed 531 (east retaken at 532, kept 531: `polish/takes.json`)                                                                                                                                                                                                                                                                                                                                   | 3 a heading             |
+| 6    | `kp_clips.py`                                   | hits, knockouts and bends: #321's motions (party-g1's CMU retargets) carried onto the new stance skeleton as per-joint offsets, scaled and pressed 0.9; the hit's offsets 1.7x and the bend's arms 1.35x so they read at zoom 1 (seed 542; the knockouts 541)                                                                                                                                                                                                                                                                                                                            | 2 a hit, 3 a ko or bend |
+| 7    | `kp_riverside.py`                               | the wave (`animate-with-skeleton-v3` from the south-east idle, one arm raised and swung) and the seated tea (`edit-image-pro-flash` from the south idle; tea 1 edited from tea 0, with tea 0's folded legs pasted below the lap)                                                                                                                                                                                                                                                                                                                                                         | 2 + 6 + 6               |
+| 8    | `kp_palette.py`                                 | **one Kaya palette**: k-means (64, seeded) in OKLab over the 16 roots: `polish/palette.json`. Locking the roots to it moves a pixel 0.0024 OKLab on average (just noticeable is about 0.02)                                                                                                                                                                                                                                                                                                                                                                                              | 0                       |
+| 9    | `kp_texture.py`, `kp_body.py`, `kp_assemble.py` | **one rendering**: every generated cel gets the heading's root back, part by part (head, torso, eight limb segments from the skeletons; each part mapped onto the root's by its bone, nudged to the best silhouette overlap; a pixel takes the root's colour where the root's same part has a close one). The walk's head and torso are the root's own pixels, moved by one offset: no boil there by construction. Then every cel of every clip goes through the one palette. Idle: root + 1 px breath; stance: root + a 1 px sink of the body above the hips (a ready loop); rest: root | 0                       |
+| 10   | `pack.py`                                       | as #321, Kaya's riverside from her new cels                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | 0                       |
+| 11   | `kp_review.py`, `kp_report.py`                  | `review/kaya-polish/turntable-*.png` (every clip in every heading she draws, 4x) and `metrics.json`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | 0                       |
+
+```sh
+python3 -I art/source/party-world/tools/kp_probe.py edit 521 south ... && python3 -I art/source/party-world/tools/kp_probe.py edit 522 south ...
+python3 -I art/source/party-world/tools/kp_pre.py && python3 -I art/source/party-world/tools/kp_skel.py kp-skel-pre-idle-2 polish/pre/idle/<dir>.png ...
+python3 -I art/source/party-world/tools/kp_stance.py 512 south ... && python3 -I art/source/party-world/tools/kp_restyle.py compose 512
+python3 -I art/source/party-world/tools/kp_restyle.py restyle 11 && python3 -I art/source/party-world/tools/kp_restyle.py extract 11
+python3 -I art/source/party-world/tools/kp_skel.py kp-skel-roots roots/kaya/<idle|stance>/<dir>.png ...   # then into roots/kaya/<kind>/skeleton/
+python3 -I art/source/party-world/tools/kp_walk.py && python3 -I art/source/party-world/tools/gen_walk.py 531 kaya:south ...
+python3 -I art/source/party-world/tools/kp_clips.py 542 hit:south bend:south ... && python3 -I art/source/party-world/tools/kp_clips.py 541 ko:south-east ...
+python3 -I art/source/party-world/tools/kp_riverside.py wave 553 && ... tea0 551 && ... tea1 561 551
+python3 -I art/source/party-world/tools/kp_palette.py 64 && python3 -I art/source/party-world/tools/kp_assemble.py
+python3 -I art/source/party-world/tools/pack.py && npx prettier --write src/content/assets/worldParty.ts public/art/units/world
+python3 -I art/source/party-world/tools/kp_review.py && python3 -I art/source/party-world/tools/kp_report.py <#321's cels/kaya>
+FNT_KP_LABEL=after npx playwright test -c playwright.kaya-polish.config.ts   # recordings; cut the load with timing.json
+```
+
+### What changed for Kaya
+
+| item              | #321                                                     | polish                                                                                        |
+| ----------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| camera            | the G1 drawings' slightly side-on body                   | redrawn roots seen from the board's high oblique: crown, shoulder tops and feet from above    |
+| height            | 72-76 world px                                           | 70 (foreshortened by the steeper view)                                                        |
+| palette           | one per heading (each clip locked to its heading's root) | one for the whole sheet, 64 colours                                                           |
+| walk texture      | 25 colours a cel against the idle's 434: a visible step  | 55 against 57                                                                                 |
+| walk boil (trunk) | 15.4% of head and torso a cel pair (5.7-25.3)            | 1.1% (0-2.6)                                                                                  |
+| walk cadence      | 87-101 ms a cel at 750 ms a tile                         | 105-128 (loops 0.84-1.03 tiles; opposite headings share the mean of their two measured loops) |
+| hit               | #321's flinch, barely visible                            | 1.7x the offsets: a clear recoil                                                              |
+| bend              | jab at 1.15 reach                                        | 1.35 reach                                                                                    |
+| wave, tea         | the G1 cels, scaled                                      | drawn in the new rendering                                                                    |
+| sheet size        | 294 KB                                                   | 271 KB                                                                                        |
+
+Boil is `kp_boil.py`: the head and torso of each cel (from its requested skeleton), the next cel shifted by up to 3 px
+to its best match, the share of that region that still differs. Hits, knockouts and bends turn and drop the trunk
+itself, so their figure is mostly motion, not boil; measured the same way they fall from 63 to 46% (hit), 83 to 73%
+(knockout) and 35 to 30% (bend). `review/kaya-polish/metrics.json` has every heading.
+
+### Known faults (Kaya polish)
+
+1. **Faces in the front views are small.** The steeper camera hides the eyes under the fringe in the south and
+   south-west views, and the restyle smooths the face to a few skin tones; the south stance has no readable features.
+   A face inpaint on the four front headings would cost about 24.
+2. **The walk's contact cels are long strides**, east and west most (0.5 body heights a step at a pace of about 2.8 m/s,
+   which the 750 ms a tile pace forces): at zoom 1 they read as a brisk walk. East cel 5 smears the boots (both seeds).
+3. **Texture transfer limits.** The limbs keep the generator's own drawing where the root has no close colour, so a
+   swinging coat tail or a sleeve over the coat stays flatter than the trunk; a few cels keep 1-2 px stray hair at the
+   ponytail tip.
+4. **Knockouts and bends** keep small smears from the generator (the south-east fall's last coat cel, the south-west
+   fall's fourth cel).
+5. **Credits.** 426 generations ledgered; the balance fell 591 (20,000 to 19,409). The gap is spread over the run,
+   most of it (65) between the last stance job and the restyle's submission, 11 on the 512 restyle itself (the same
+   gap #321 saw on its 512 jobs), and two jobs (a hit and a bend) whose connection was reset while polling and were
+   resubmitted (`pl.py` now polls through a reset).
