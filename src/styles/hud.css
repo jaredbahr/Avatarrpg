@@ -1005,6 +1005,17 @@ html[data-contrast='high'] .title-card .tagline {
     calc(var(--sp-5) + env(safe-area-inset-bottom, 0px));
 }
 
+/* Endings have no speaker heading, so their summary uses the full stage. */
+.stage[data-kind='end'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.stage[data-kind='end'] .end-panel {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(100%, 58rem);
+}
+
 .stage-head {
   flex: 0 0 auto;
   position: relative;
@@ -2580,6 +2591,10 @@ html[data-contrast='high'] .hud-panel::after {
     grid-template-rows: auto minmax(0, 1fr);
     align-items: end;
     gap: var(--sp-2);
+  }
+
+  .stage[data-kind='end'] {
+    grid-template-rows: minmax(0, 1fr);
   }
 
   .stage-head {
