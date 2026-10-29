@@ -6,6 +6,7 @@ import { apply } from '../../core/state/reducer';
 import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
 import {
+  FADE_MS,
   RESIDENT_AMBLE,
   RESIDENT_BOB_PX,
   RESIDENT_WALK_LEAN_RAD,
@@ -17,7 +18,8 @@ import {
 import type { ResidentMotion } from './residentMotion';
 import { previewWalk } from './walking';
 import { TIMING } from '../anim/choreography';
-import { STROLL_RAMP_MS } from '../anim/stroll';
+import { STROLL_RAMP_MS, strollTiming } from '../anim/stroll';
+import { smoothPath } from '../../render/geometry/curve';
 
 /**
  * The resident walk planner (ADR 0047 §7, W8): who walks where when the
@@ -49,6 +51,18 @@ const waited = (state: GameState, until: DayPhase) =>
 
 const byId = (motions: readonly ResidentMotion[]) =>
   new Map(motions.map((motion) => [motion.who.id, motion]));
+
+function miraWalkDuration(before: GameState, after: GameState, party: readonly Vec2[]) {
+  const mira = byId(
+    planResidentMotion({ content: CONTENT, map: VILLAGE, before, after, party }),
+  ).get('lw.npc.mira');
+  if (!mira || mira.kind !== 'walk')
+    throw new Error('Mira should walk her authored riverside route');
+  const curve = smoothPath(mira.from, mira.path);
+  const duration =
+    strollTiming(curve.length, TIMING.strollStep).duration * RESIDENT_AMBLE + FADE_MS;
+  return Math.ceil(duration / 50) * 50;
+}
 
 /** Every step one of the eight neighbours, on open ground, never squeezing past a corner. */
 function expectWalkable(map: MapDef, from: Vec2, path: readonly Vec2[]) {
@@ -259,7 +273,8 @@ describe('ResidentWalks', () => {
     }
     // Mira walks off down the river path, at her amble (ADR 0095), and is gone
     // once she has faded there.
-    for (let t = 4050; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) w.tick(t, false);
+    const duration = miraWalkDuration(before, after, party);
+    for (let t = 4050; t <= duration; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
       drawPos: { x: 17, y: 6 },
@@ -303,9 +318,10 @@ describe('ResidentWalks', () => {
       w.update(VILLAGE, before, party, true);
       const after = waited(before, 'afternoon');
       w.update(VILLAGE, after, party, true);
+      const duration = miraWalkDuration(before, after, party);
       const trace: Vec2[] = [];
       let ended = -1;
-      for (let t = 50; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) {
+      for (let t = 50; t <= duration; t += 50) {
         if (interrupt && t === 1000) {
           // The party walks off; nobody's place changes.
           const walked = apply(CONTENT, after, { type: 'walkTo', pos: { x: 12, y: 7 } }).state;
