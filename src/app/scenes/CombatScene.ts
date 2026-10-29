@@ -81,8 +81,9 @@ import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
+import { frameCombatEnemyView } from './combatEnemyView';
 import { liftAlong } from '../../render/geometry/elevation';
-import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
+import { actorBodyBounds, actorSilhouetteGeometry } from '../../render/geometry/actorSilhouette';
 import {
   actorKeepInViewDelta,
   combatCameraFollowDecision,
@@ -234,6 +235,7 @@ export class CombatScene implements Scene {
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
   private actorButton: HTMLButtonElement | null = null;
+  private showingEnemiesView = false;
   /** Set by App only for a newly-created battle; saves never carry this. */
   private freshBattleEntry = false;
   /** One presentation-only formation frame before the first hand-off. */
@@ -563,6 +565,7 @@ export class CombatScene implements Scene {
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    this.showingEnemiesView = false;
     this.manualCamera = false;
     this.followSuspended = false;
     if (camera.projection === 'oblique') {
@@ -608,6 +611,7 @@ export class CombatScene implements Scene {
     const before = camera.scale;
     camera.zoomAt(at, factor);
     if (camera.scale !== before) {
+      this.showingEnemiesView = false;
       this.manualCamera = true;
       this.followSuspended = true;
     }
@@ -621,6 +625,7 @@ export class CombatScene implements Scene {
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
     if (camera.offsetX !== before.x || camera.offsetY !== before.y) {
+      this.showingEnemiesView = false;
       this.manualCamera = true;
       this.followSuspended = true;
     }
@@ -635,6 +640,7 @@ export class CombatScene implements Scene {
     );
     const camera = this.renderer?.camera;
     if (!unit || !camera) return;
+    this.showingEnemiesView = false;
     camera.centreOn(combatFocusPosition(unit), unit.size);
     this.manualCamera = true;
     this.followSuspended = true;
@@ -646,8 +652,55 @@ export class CombatScene implements Scene {
     const button = this.recentreButton;
     if (!button) return;
     const fitted = this.renderer?.camera.fitted ?? true;
-    if (button.hidden !== fitted) button.hidden = fitted;
-    if (this.actorButton) this.actorButton.hidden = fitted;
+    const hidden = fitted && !this.showingEnemiesView;
+    if (button.hidden !== hidden) button.hidden = hidden;
+    if (this.actorButton) this.actorButton.hidden = hidden;
+  }
+
+  /** Temporarily frames every living enemy and prop without changing turn state. */
+  private showEnemies(): void {
+    const battle = this.battle();
+    const camera = this.renderer?.camera;
+    if (!battle || !camera || this.victoryBeat) return;
+    if (this.battleOpening) this.skipBattleOpening();
+    const enemies = battle.units.filter((unit) => unit.faction === 'enemy' && isAlive(unit));
+    const targets = [
+      ...enemies.flatMap((unit) => occupiedCells(unit)),
+      ...battle.props.filter((prop) => prop.hp > 0).map((prop) => prop.pos),
+    ];
+    const enemyBounds = (view: Camera) => {
+      const now = performance.now();
+      return enemies.flatMap((unit) => {
+        const pos = this.app.animator.renderPos(now, unit.id) ?? unit.pos;
+        const scale = enemyScale(unit.sprite, 1, view.projection);
+        const box = view.spriteBox(pos, unit.size, SQUARE_FOOTPRINTS);
+        box.y -= liftAlong(battle.grid, pos, view.projection) * box.size;
+        const frameHeadroom = sheets.silhouetteHeadroom(unit.sprite);
+        const bounds = actorBodyBounds(
+          { ...box, width: box.size * unit.size },
+          unit.size,
+          frameHeadroom,
+          scale,
+        );
+        const bar = actorSilhouetteGeometry(
+          { ...box, width: box.size * unit.size },
+          unit.size,
+          frameHeadroom,
+          scale,
+        ).bar;
+        return [
+          { x: bounds.left, y: bar.y },
+          { x: bounds.right, y: bar.y },
+          { x: bounds.left, y: bounds.bottom },
+          { x: bounds.right, y: bounds.bottom },
+        ];
+      });
+    };
+    if (!frameCombatEnemyView(camera, targets, enemyBounds)) return;
+    this.showingEnemiesView = true;
+    this.manualCamera = true;
+    this.followSuspended = true;
+    this.syncRecentre();
   }
 
   private frameVictoryParty(camera: Camera, battle: BattleState): Vec2 | null {
@@ -988,6 +1041,11 @@ export class CombatScene implements Scene {
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
 
+    if (this.showingEnemiesView) {
+      this.recentre();
+      return;
+    }
+
     const resolved = this.resolvePointer(x, y, 'tap');
     if (!resolved) return;
     const tile = resolved.tile;
@@ -1166,6 +1224,8 @@ export class CombatScene implements Scene {
     if (activeId !== this.lastActiveId) {
       if (this.battleOpening) this.skipBattleOpening();
       this.lastActiveId = activeId;
+      if (this.showingEnemiesView) this.manualCamera = false;
+      this.showingEnemiesView = false;
       this.mode = { kind: 'idle' };
       this.clearPending();
       this.aiScheduled = false;
@@ -1346,6 +1406,18 @@ export class CombatScene implements Scene {
     recentre.dataset.key = 'recentre';
     this.recentreButton = recentre;
     more.appendChild(recentre);
+    const showEnemies = button(
+      'Show enemies',
+      folded(() => this.showEnemies()),
+      {
+        class: 'btn-ghost',
+        title: 'Frame all living enemies and props',
+        disabled: victoryBeat,
+      },
+    );
+    showEnemies.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
+    showEnemies.dataset.key = 'show-enemies';
+    more.appendChild(showEnemies);
     const actor = button(
       'Acting unit',
       folded(() => {
