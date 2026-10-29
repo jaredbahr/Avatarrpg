@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.12 — release candidate
+
+- Keep WebGL scene textures alive while sprites still use them. Texture-cache
+  cleanup now runs after rendering and preserves live sources and frame views,
+  so repeated bending no longer leaves Pixi batching destroyed elevation art.
+- Wait for the party's actual approach in the Gao conversation browser check,
+  preserving the approved walking pace and the real tap-to-talk assertions.
+- Show prop names and break consequences in combat preview chips without raw
+  grid coordinates.
+
 ## 0.2.11 — release candidate
 
 - Make the forest road feel alive (ADR 0056). Its pines lean in a wind that

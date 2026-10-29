@@ -4,6 +4,24 @@ Current delivery mandate: [finish the complete run through the Driller](finish-t
 
 **Next steps (2026-10-29):** the phased plan (M1 art lock, M2 demo-flow polish, M3 the quarry slice through the Driller, and CI health) is in [the roadmap's next stretch](../roadmap.md#next-stretch-2026-10-29). Its issues are tracked in [#348](https://github.com/jaredbahr/Avatarrpg/issues/348). Codex takes the code issues and Claude sessions take the PixelLab art.
 
+## Active Codex issue batch (2026-10-29)
+
+One integration owner is preparing `codex/ci-health-and-prop-labels` from `bc77ae2e`.
+These are local assignments; no fix is accepted until its focused checks and the
+combined local CI gate pass. Existing work on #326, #327, #329 and #330 is kept
+with its current remote branches.
+
+| Issue | Owner                     | Boundary                                                          | State                                                |
+| ----- | ------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------- |
+| #322  | Renderer owner (Sol High) | WebGL texture-cache lifetime and its regression coverage          | Focused WebGL technique and fallback checks passed   |
+| #323  | Resident worker           | Gao tap/pending conversation regression and its completion budget | Real-tap regression repaired and passed              |
+| #332  | Prop chip worker          | Prop target label and its existing browser coverage               | Coordinate removal passed its existing browser check |
+| #324  | Integration owner         | Riverside form lock on WebKit iPad                                | Diagnosis recorded; exact-engine validation pending  |
+
+The integration owner owns release metadata and shared coordination documents.
+Worker handoffs carry the tested revisions and remaining checks; this table does
+not establish a merge, deployment, or visual acceptance.
+
 Scope approved by Jared on 17 September 2026: a polished, continuous playable
 trip from Ba Dan through the road and quarry, resolving its events and returning
 to the village. No new regions are needed to prove this experience.
