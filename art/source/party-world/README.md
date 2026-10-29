@@ -144,9 +144,11 @@ itself, so their figure is mostly motion, not boil; measured the same way they f
 3. **Texture transfer limits.** The limbs keep the generator's own drawing where the root has no close colour, so a
    swinging coat tail or a sleeve over the coat stays flatter than the trunk; a few cels keep 1-2 px stray hair at the
    ponytail tip.
-4. **Knockouts and bends** keep small smears from the generator (the south-east fall's last coat cel, the south-west
+4. **The jab reads side-on only.** East, west, north-east, south-west and north-west strike clearly; in the south,
+   south-east and north views the punch travels toward or away from the camera and reads as a small arm movement.
+5. **Knockouts and bends** keep small smears from the generator (the south-east fall's last coat cel, the south-west
    fall's fourth cel).
-5. **Credits.** 426 generations ledgered; the balance fell 591 (20,000 to 19,409). The gap is spread over the run,
+6. **Credits.** 426 generations ledgered; the balance fell 591 (20,000 to 19,409). The gap is spread over the run,
    most of it (65) between the last stance job and the restyle's submission, 11 on the 512 restyle itself (the same
    gap #321 saw on its 512 jobs), and two jobs (a hit and a bend) whose connection was reset while polling and were
    resubmitted (`pl.py` now polls through a reset).
