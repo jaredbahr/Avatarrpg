@@ -302,10 +302,52 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
 
   /** A tap where a player would put a finger: the tile's painted centre. */
   const tapTile = async (pos: Vec2) => {
-    await settleLayout(page, slow ? 120_000 : 30_000);
-    const point = await paintedTileCentre(page, pos);
+    const canvas = page.locator('.map-canvas');
+    let point = await paintedTileCentre(page, pos);
     if (!point) throw new Error('no camera');
-    const hitTest = await page.locator('.map-canvas').evaluate((canvas, tapPoint) => {
+    // Portrait combat can fit the acting unit while a legal target sits beyond
+    // the canvas. Pan with the ordinary pointer gesture, then reproject the
+    // tile: a coordinate computed before the drag is no longer its screen tap.
+    for (let pan = 0; pan < 8; pan++) {
+      await settleLayout(page, slow ? 120_000 : 30_000);
+      point = await paintedTileCentre(page, pos);
+      const box = await canvas.boundingBox();
+      const viewport = page.viewportSize();
+      if (!point || !box || !viewport) throw new Error('The map camera is unavailable.');
+      const left = Math.max(box.x + 36, 36);
+      const right = Math.min(box.x + box.width - 36, viewport.width - 36);
+      const top = Math.max(box.y + 36, 36);
+      const bottom = Math.min(box.y + box.height - 36, viewport.height - 36);
+      if (left >= right || top >= bottom) throw new Error('The map has no tappable viewport.');
+      const receivesTap = await canvas.evaluate((element, target) => {
+        return document.elementFromPoint(target.x, target.y) === element;
+      }, point);
+      if (point.x >= left && point.x <= right && point.y >= top && point.y <= bottom && receivesTap)
+        break;
+      const clamp = (value: number, low: number, high: number) =>
+        Math.max(low, Math.min(high, value));
+      const desiredX = receivesTap ? clamp(point.x, left, right) : (left + right) / 2;
+      const desiredY = receivesTap ? clamp(point.y, top, bottom) : (top + bottom) / 2;
+      const drag = (difference: number, limit: number) => {
+        if (difference === 0) return 0;
+        const step = clamp(difference, -limit, limit);
+        // The canvas recognizer needs more than ten pixels before it pans.
+        return Math.sign(step) * Math.max(16, Math.abs(step));
+      };
+      const dx = drag(desiredX - point.x, Math.min(180, (right - left) / 3));
+      let dy = drag(desiredY - point.y, Math.min(180, (bottom - top) / 3));
+      if (dx === 0 && dy === 0) dy = -40;
+      const start = { x: (left + right) / 2, y: (top + bottom) / 2 };
+      recordInput('mouse-drag-pan', 'map-canvas', { tile: pos, from: start, by: { x: dx, y: dy } });
+      await page.mouse.move(start.x, start.y);
+      await page.mouse.down();
+      await page.mouse.move(start.x + dx, start.y + dy, { steps: 8 });
+      await page.mouse.up();
+    }
+    await settleLayout(page, slow ? 120_000 : 30_000);
+    point = await paintedTileCentre(page, pos);
+    if (!point) throw new Error('no camera');
+    const hitTest = await canvas.evaluate((canvas, tapPoint) => {
       const rect = canvas.getBoundingClientRect();
       const hit = document.elementFromPoint(tapPoint.x, tapPoint.y);
       return {
