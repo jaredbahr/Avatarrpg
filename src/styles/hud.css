@@ -1932,6 +1932,7 @@ html[data-contrast='high'] .hud-panel::after {
 .enemy-turn-card {
   display: flex;
   flex: 0 1 auto;
+  align-self: flex-start;
   align-items: center;
   gap: var(--sp-2);
   min-width: 0;
