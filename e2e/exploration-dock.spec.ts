@@ -144,6 +144,14 @@ for (const layout of [
     const toast = page.locator('.toasts .toast').last();
     await expect(toast).toBeVisible();
     await expect(page.locator('.toasts')).toHaveAttribute('data-place', 'map');
+    // Playwright visibility allows opacity 0. The finite entry animation can
+    // still report its invisible starting box, even with reduced motion.
+    await toast.evaluate(async (element) => {
+      const animations = element
+        .getAnimations()
+        .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
+      await Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
+    });
     const expectToastClear = async () => {
       const toastGeometry = await page.evaluate(() => {
         const toast = document.querySelector('.toasts .toast:last-child')?.getBoundingClientRect();
