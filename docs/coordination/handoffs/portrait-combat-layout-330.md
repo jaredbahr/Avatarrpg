@@ -11,8 +11,9 @@ logic, shared HUD rules, combat card rules, or existing tests/helpers changed.
   keep title/Pause/More on one line and let the menu overlay the board. The
   existing More handler retains focus hand-back and `[data-toast-clear]` behavior.
 - Compact the portrait initiative ribbon and keep the acting card at its own
-  content height. The dock has a bounded, scrollable 32dvh cap; confirmation
-  controls remain reachable by scrolling. Landscape controls remain inline.
+  content height. The dock has a bounded, scrollable 29dvh cap; confirmation
+  controls remain reachable by scrolling. Name and level readouts wrap inside
+  the compact card. Landscape controls remain inline.
 - Added `e2e/combat-portrait-layout.spec.ts`: iPad portrait normal/Largest
   confirmation geometry and tap targets, More focus/toast/resize behavior, and
   landscape iPad/Surface inline controls. Browser assertions are authored but
