@@ -41,6 +41,7 @@ import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
+import type { Camera } from '../../render/camera';
 import { renderFoot } from '../../render/renderFoot';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { cliffEdgesFor, placeFloaters, type TargetReticleCue } from '../../render/view';
@@ -95,6 +96,7 @@ import {
   livingPartyFocus,
   pauseVictoryBeat as pauseVictoryBeatClock,
   type VictoryBeatClock,
+  victoryActorBounds,
 } from './victoryBeat';
 
 const COMBAT_OPENING_HOLD_MS = 700;
@@ -472,7 +474,8 @@ export class CombatScene implements Scene {
     if (!camera) return;
     if (this.victoryBeat && this.victoryFocus) {
       camera.clamp();
-      this.victoryFocus = frameLivingParty(camera, this.battle()?.units ?? []) ?? this.victoryFocus;
+      const battle = this.battle();
+      if (battle) this.victoryFocus = this.frameVictoryParty(camera, battle) ?? this.victoryFocus;
       this.syncRecentre();
       return;
     }
@@ -647,12 +650,30 @@ export class CombatScene implements Scene {
     if (this.actorButton) this.actorButton.hidden = fitted;
   }
 
+  private frameVictoryParty(camera: Camera, battle: BattleState): Vec2 | null {
+    const now = performance.now();
+    return frameLivingParty(camera, battle.units, (unit) => {
+      const pose = this.poseFields(now, unit.id, 1, true, unit.sprite, false);
+      const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
+      return victoryActorBounds(
+        camera,
+        unit,
+        {
+          pos: this.app.animator.renderPos(now, unit.id) ?? unit.pos,
+          scale: pose.scale ?? partyScale(camera.projection),
+          frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
+          ...(pose.offset ? { offset: pose.offset } : {}),
+        },
+        battle.grid,
+      );
+    });
+  }
+
   private startVictoryBeat(battle: BattleState): void {
     this.victoryFocus = this.renderer
-      ? frameLivingParty(this.renderer.camera, battle.units)
+      ? this.frameVictoryParty(this.renderer.camera, battle)
       : livingPartyFocus(battle.units);
     if (this.victoryFocus && this.renderer) {
-      this.renderer.camera.centreOn(this.victoryFocus);
       this.manualCamera = true;
       this.followSuspended = true;
     }
@@ -663,6 +684,9 @@ export class CombatScene implements Scene {
       this.victoryFocus && !motionReduced()
         ? beginVictoryBeat(performance.now(), VICTORY_BEAT_HOLD_MS)
         : null;
+    // The first terminal sync still measures its cleared HUD and reframes the
+    // camera. Start the timed hold on the first stable rendered frame instead.
+    this.pauseVictoryBeat();
     this.setVictoryBeatMarker(this.victoryBeat !== null);
   }
 
