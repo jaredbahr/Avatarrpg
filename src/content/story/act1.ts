@@ -22,6 +22,132 @@ const RETURNING_PROFILES = Object.fromEntries(
   RETURNEE_IDS.map((id) => [id, 'returning']),
 ) as Readonly<Record<(typeof RETURNEE_IDS)[number], ResidentProfile>>;
 
+/** Forest's full-height x8 crossing: keep the leader at the approach and the rest behind it. */
+const forestApproachEntry = (
+  row: number,
+  seats: readonly (readonly [number, number])[],
+  returnRow: number,
+) => ({
+  at: { x: 8, y: row },
+  partySpawns: seats.map(([x, y]) => ({ x, y })),
+  // The upper apron and east-side road leave six clear explore-line seats.
+  returnPos: { x: returnRow <= 3 ? 8 : 9, y: returnRow },
+});
+
+const FOREST_APPROACH = {
+  mapId: 'forest_road',
+  entries: [
+    forestApproachEntry(
+      2,
+      [
+        [8, 2],
+        [8, 3],
+        [9, 3],
+        [4, 4],
+        [1, 3],
+        [2, 5],
+      ],
+      3,
+    ),
+    forestApproachEntry(
+      3,
+      [
+        [8, 3],
+        [9, 3],
+        [8, 4],
+        [4, 5],
+        [1, 3],
+        [2, 5],
+      ],
+      3,
+    ),
+    forestApproachEntry(
+      4,
+      [
+        [8, 4],
+        [8, 3],
+        [9, 5],
+        [5, 3],
+        [4, 4],
+        [3, 8],
+      ],
+      3,
+    ),
+    forestApproachEntry(
+      5,
+      [
+        [8, 5],
+        [9, 4],
+        [9, 6],
+        [4, 7],
+        [3, 3],
+        [2, 7],
+      ],
+      7,
+    ),
+    forestApproachEntry(
+      6,
+      [
+        [8, 6],
+        [9, 5],
+        [9, 7],
+        [4, 8],
+        [2, 4],
+        [2, 8],
+      ],
+      7,
+    ),
+    forestApproachEntry(
+      7,
+      [
+        [8, 7],
+        [9, 6],
+        [9, 8],
+        [4, 9],
+        [2, 5],
+        [2, 9],
+      ],
+      7,
+    ),
+    forestApproachEntry(
+      8,
+      [
+        [8, 8],
+        [9, 7],
+        [9, 9],
+        [3, 10],
+        [1, 6],
+        [1, 10],
+      ],
+      8,
+    ),
+    forestApproachEntry(
+      9,
+      [
+        [9, 9],
+        [9, 8],
+        [10, 9],
+        [4, 7],
+        [2, 7],
+        [1, 10],
+      ],
+      9,
+    ),
+    forestApproachEntry(
+      10,
+      [
+        [8, 10],
+        [9, 9],
+        [10, 10],
+        [3, 10],
+        [3, 8],
+        [1, 10],
+      ],
+      10,
+    ),
+  ],
+} as const;
+
 export const ACT1_NODES: readonly StoryNode[] = [
   /* ---------------------------------------------------------------- Opening */
   {
@@ -198,6 +324,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     encounterId: 'enc_forest_road',
     next: 'after_forest',
     onDefeat: 'defeat_forest',
+    approach: FOREST_APPROACH,
   },
   /*
    * Losing does not send you back to the start of the fight.

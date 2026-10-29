@@ -14,6 +14,7 @@ import { evaluate } from '../story/conditions';
 import { advancePhase } from '../story/clock';
 import { findSettleTile, settle } from '../story/settle';
 import { resolveResidents } from '../story/residents';
+import { approachEntry } from '../story/approach';
 import { activeTriggers, backgroundFigures, exitAt, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
@@ -326,14 +327,31 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
 
   const nextNodeId = node?.kind === 'battle' ? (victory ? node.next : node.onDefeat) : null;
 
+  // The battle retains the crossing tile while units move. A matching recorded
+  // approach chooses the clear road seat for the dialogue and subsequent map.
+  const remembered = state.world.returnPos[battle.mapId];
+  const entry =
+    node?.kind === 'battle' &&
+    node.encounterId === battle.encounterId &&
+    remembered &&
+    state.location.mapId === battle.mapId &&
+    samePos(state.location.pos, remembered)
+      ? approachEntry(node, battle.mapId, remembered)
+      : undefined;
+
   const staged: GameState = {
     ...state,
     party,
     battle: null,
     pendingChoices,
-    world: victory
-      ? { ...state.world, cleared: [...new Set([...state.world.cleared, battle.encounterId])] }
-      : state.world,
+    ...(entry ? { location: { ...state.location, pos: entry.returnPos } } : {}),
+    world: {
+      ...state.world,
+      ...(entry
+        ? { returnPos: { ...state.world.returnPos, [battle.mapId]: entry.returnPos } }
+        : {}),
+      ...(victory ? { cleared: [...new Set([...state.world.cleared, battle.encounterId])] } : {}),
+    },
   };
 
   if (!nextNodeId) {

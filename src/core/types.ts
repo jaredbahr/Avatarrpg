@@ -1163,6 +1163,15 @@ export type StoryNode =
       readonly encounterId: string;
       readonly next: string;
       readonly onDefeat: string;
+      /** Authored positions for a battle entered from a matching explore crossing. */
+      readonly approach?: {
+        readonly mapId: string;
+        readonly entries: readonly {
+          readonly at: Vec2;
+          readonly partySpawns: readonly Vec2[];
+          readonly returnPos: Vec2;
+        }[];
+      };
     }
   | {
       readonly id: string;

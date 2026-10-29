@@ -27,6 +27,7 @@ import { adjustStanding, evaluate, getStanding } from './conditions';
 import { buildGrid, tileAt } from '../rules/grid';
 import { encounterText } from './encounterText';
 import { advancePhase } from './clock';
+import { approachEntry } from './approach';
 
 const MAX_CHAIN = 32;
 
@@ -210,8 +211,14 @@ export function enterStoryNode(
 
       case 'battle': {
         const rng = new RngCursor(current.rng);
-        const battle = createBattle(content, current, node.encounterId, rng);
         const encounter = content.encounters.get(node.encounterId);
+        const entry =
+          state.screen === 'explore' && encounter?.mapId === current.location.mapId
+            ? approachEntry(node, current.location.mapId, current.location.pos)
+            : undefined;
+        const battle = createBattle(content, current, node.encounterId, rng, {
+          partySpawns: entry?.partySpawns,
+        });
         events.push({ type: 'battleStarted', encounterId: node.encounterId });
         if (encounter)
           events.push({ type: 'message', text: encounterText(encounter, battle.variantId).intro });

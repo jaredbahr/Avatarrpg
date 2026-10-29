@@ -892,7 +892,27 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     variants: z.array(dialogueVariant).optional(),
     footer: z.string().min(1).optional(),
   }),
-  z.object({ id, kind: z.literal('battle'), encounterId: id, next: id, onDefeat: id }),
+  z.object({
+    id,
+    kind: z.literal('battle'),
+    encounterId: id,
+    next: id,
+    onDefeat: id,
+    approach: z
+      .object({
+        mapId: id,
+        entries: z
+          .array(
+            z.object({
+              at: vec2,
+              partySpawns: z.array(vec2).length(6),
+              returnPos: vec2,
+            }),
+          )
+          .min(1),
+      })
+      .optional(),
+  }),
   z.object({
     id,
     kind: z.literal('explore'),
@@ -2282,6 +2302,84 @@ export function validateContent(
         links.push([node.id, node.next], [node.id, node.onDefeat]);
         if (!encounterIds.has(node.encounterId)) {
           problems.push(`story node "${node.id}" uses unknown encounter "${node.encounterId}"`);
+        }
+        if (node.approach) {
+          const { mapId, entries } = node.approach;
+          const map = bundle.maps.find((m) => m.id === mapId);
+          const encounter = bundle.encounters.find((e) => e.id === node.encounterId);
+          if (!map || !encounter || encounter.mapId !== mapId) {
+            problems.push(`story node "${node.id}" approach must use its encounter map`);
+            break;
+          }
+          const key = ({ x, y }: Vec2) => `${x},${y}`;
+          const clear = ({ x, y }: Vec2) => {
+            const tile = map.legend[map.rows[y]?.[x] ?? ''];
+            return isWalkable(map, x, y) && tile?.surface !== 'water' && tile?.surface !== 'rubble';
+          };
+          const occupied = new Set<string>([
+            ...map.props.map((p) => key(p.pos)),
+            ...encounter.variants.flatMap((v) => (v.extraProps ?? []).map((p) => key(p.pos))),
+            ...[
+              ...encounter.enemies,
+              ...encounter.allies,
+              ...encounter.reinforcements,
+              ...encounter.conditionalEnemies.flatMap((group) => group.placements),
+              ...encounter.variants.flatMap((v) => v.enemies ?? []),
+            ].flatMap((p) => {
+              const enemy = bundle.enemies.find((e) => e.id === p.enemyId);
+              return placementCells(p.pos, enemy?.size, squareFootprints).map(key);
+            }),
+          ]);
+          const crossing = new Set(
+            (map.triggers ?? [])
+              .filter((trigger) => trigger.node === node.id)
+              .flatMap((trigger) => trigger.area.map(key)),
+          );
+          const authored = new Set<string>();
+          for (const entry of entries) {
+            const at = key(entry.at);
+            if (authored.has(at)) problems.push(`story node "${node.id}" repeats approach (${at})`);
+            authored.add(at);
+            if (!crossing.has(at))
+              problems.push(`story node "${node.id}" approach (${at}) is not on its crossing`);
+            if (entry.partySpawns.length !== 6)
+              problems.push(`story node "${node.id}" approach (${at}) needs six spawns`);
+            const seats = new Set<string>();
+            for (const spawn of entry.partySpawns) {
+              const cell = key(spawn);
+              if (seats.has(cell) || !clear(spawn) || occupied.has(cell))
+                problems.push(
+                  `story node "${node.id}" approach (${at}) has unsafe spawn (${cell})`,
+                );
+              seats.add(cell);
+            }
+            const leader = entry.partySpawns[0];
+            if (
+              leader &&
+              Math.max(Math.abs(leader.x - entry.at.x), Math.abs(leader.y - entry.at.y)) > 1
+            )
+              problems.push(`story node "${node.id}" approach (${at}) moves its leader too far`);
+            // This authored eastbound return lane is the exact six-seat line
+            // ExploreScene's placeParty selects from the road after a story jump.
+            for (let offset = 0; offset < 6; offset++) {
+              const cell = { x: entry.returnPos.x + offset, y: entry.returnPos.y };
+              if (!clear(cell) || occupied.has(key(cell)))
+                problems.push(
+                  `story node "${node.id}" approach (${at}) has unsafe return seat (${key(cell)})`,
+                );
+            }
+            if (
+              Math.max(
+                Math.abs(entry.returnPos.x - entry.at.x),
+                Math.abs(entry.returnPos.y - entry.at.y),
+              ) > 2
+            )
+              problems.push(`story node "${node.id}" approach (${at}) returns too far away`);
+          }
+          for (const cell of crossing) {
+            if (!authored.has(cell))
+              problems.push(`story node "${node.id}" has no approach for crossing (${cell})`);
+          }
         }
         break;
       case 'choice':

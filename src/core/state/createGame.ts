@@ -414,6 +414,8 @@ function placeMapProps(
 }
 
 export interface BattleOptions {
+  /** Story crossing positions; omitted for direct and simulated battles. */
+  readonly partySpawns?: readonly Vec2[];
   /** Force a specific roster variant. The balance report pins one per run. */
   readonly variantId?: string;
   /**
@@ -468,9 +470,11 @@ export function createBattle(
   serial = placed.serial;
   for (const prop of props) taken.add(posKey(prop.pos));
 
-  // Party first: they get the authored spawn points.
+  // Party first: a matching story crossing may override the map's direct-entry spawns.
   state.party.forEach((member, index) => {
-    const preferred = map.partySpawns[index] ?? map.partySpawns[0] ?? { x: 1, y: 1 };
+    const preferred = options.partySpawns?.[index] ??
+      map.partySpawns[index] ??
+      map.partySpawns[0] ?? { x: 1, y: 1 };
     const pos = placeAt(content, grid, taken, preferred, member.size);
     for (const cell of occupiedCells({ pos, size: member.size })) taken.add(posKey(cell));
     units.push({
