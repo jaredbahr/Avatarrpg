@@ -3723,7 +3723,8 @@ html[data-contrast='high'] .hud-panel::after {
      the action stack. Both columns shrink before they wrap at Largest text. */
   .combat-scene .hud {
     align-items: flex-start;
-    max-height: 32dvh;
+    /* The Largest-text header and strip still leave at least 55% for the board. */
+    max-height: 29dvh;
     overflow-y: auto;
   }
 
@@ -3731,6 +3732,21 @@ html[data-contrast='high'] .hud-panel::after {
     align-self: flex-start;
     flex: 0 1 10rem;
     min-width: 10rem;
+  }
+
+  /* The name and level share only the space beside the portrait. Let the
+     level take another line before it crosses into the action card. */
+  .combat-scene .unit-panel-body .grow > .row {
+    flex-wrap: wrap;
+  }
+
+  .combat-scene .unit-panel-body .grow > .row > .stack {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .combat-scene .unit-panel-body .unit-name {
+    overflow-wrap: anywhere;
   }
 
   .combat-scene .action-bar {

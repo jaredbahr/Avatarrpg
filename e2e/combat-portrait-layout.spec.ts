@@ -140,8 +140,8 @@ for (const fixture of [
         expect(item.top).toBeGreaterThanOrEqual(header.bar.top);
         expect(item.bottom).toBeLessThanOrEqual(header.bar.bottom);
       }
-      expect(header.title.right).toBeLessThanOrEqual(header.pause.left + 1);
-      expect(header.pause.right).toBeLessThanOrEqual(header.toggle.left + 1);
+      expect(header.title.right).toBeLessThanOrEqual(header.toggle.left + 1);
+      expect(header.toggle.right).toBeLessThanOrEqual(header.pause.left + 1);
       expect(header.pause.width).toBeGreaterThanOrEqual(header.rootTap);
       expect(header.pause.height).toBeGreaterThanOrEqual(header.rootTap);
       expect(header.toggle.width).toBeGreaterThanOrEqual(header.rootTap);
@@ -151,12 +151,24 @@ for (const fixture of [
       const geometry = await page.evaluate(() => {
         const canvas = document.querySelector('.map-canvas')!.getBoundingClientRect();
         const hud = document.querySelector('.combat-scene .hud')!;
-        const unit = hud.querySelector<HTMLElement>('.unit-panel')!.getBoundingClientRect();
+        const unitPanel = hud.querySelector<HTMLElement>('.unit-panel')!;
+        const unit = unitPanel.getBoundingClientRect();
         const actions = hud.querySelector<HTMLElement>('.action-bar')!.getBoundingClientRect();
+        const readouts = [
+          ...unitPanel.querySelectorAll<HTMLElement>(
+            '.unit-panel-body .grow > .row .unit-name, .unit-panel-body .grow > .row .tiny',
+          ),
+        ].map((node) => {
+          const box = node.getBoundingClientRect();
+          return { text: node.textContent?.trim() ?? '', left: box.left, right: box.right };
+        });
         return {
           boardRatio: canvas.height / innerHeight,
           hudOverflowY: getComputedStyle(hud).overflowY,
           unitHeight: unit.height,
+          unitLeft: unit.left,
+          unitRight: unit.right,
+          readouts,
           actionsHeight: actions.height,
           hudScrollHeight: hud.scrollHeight,
           hudClientHeight: hud.clientHeight,
@@ -166,6 +178,12 @@ for (const fixture of [
       expect(geometry.hudOverflowY).toBe('auto');
       expect(geometry.unitHeight).toBeLessThan(geometry.actionsHeight);
       expect(geometry.hudScrollHeight).toBeGreaterThanOrEqual(geometry.hudClientHeight);
+      expect(geometry.readouts.some(({ text }) => text === 'Sura')).toBe(true);
+      expect(geometry.readouts.some(({ text }) => text.startsWith('Level '))).toBe(true);
+      for (const readout of geometry.readouts) {
+        expect(readout.left).toBeGreaterThanOrEqual(geometry.unitLeft - 1);
+        expect(readout.right).toBeLessThanOrEqual(geometry.unitRight + 1);
+      }
 
       const confirmationControls = page.locator('.confirm-dialog button');
       expect(await confirmationControls.count()).toBeGreaterThan(0);
