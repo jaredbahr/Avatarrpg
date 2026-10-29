@@ -58,6 +58,7 @@ import { ambientEmitters } from '../anim/ambience';
 import { burningPropEmitters } from '../anim/propFire';
 import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import { durationTokenMs } from '../ui/durationToken';
 import { portraitKeyFor } from '../ui/PartyRoster';
 import { UI_MARKS, markKindFor } from '../ui/marks';
 import { iconMarkup } from '../ui/icons';
@@ -88,9 +89,17 @@ import {
   shouldFollowAnimatedLargeActor,
   type CombatCameraFollowState,
 } from './combatCameraFollow';
+import { frameVictoryParty } from './combatVictoryFrame';
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
+/** Fallback for the CSS victory duration token when a stylesheet is unavailable. */
+export const COMBAT_VICTORY_BEAT_MS = 1000;
+
+type ResultPresentation =
+  | { readonly kind: 'waiting' }
+  | { readonly kind: 'holding'; readonly startedAt: number; readonly durationMs: number }
+  | { readonly kind: 'shown'; readonly partyFrame: boolean };
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -274,7 +283,8 @@ export class CombatScene implements Scene {
   /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
-  private resultShown = false;
+  /** Ephemeral: terminal saves show their card without replaying a victory. */
+  private resultPresentation: ResultPresentation | null = null;
   private logOpen = false;
   /** The phone header's More list, and the listeners that close it. */
   private moreOpen = false;
@@ -299,6 +309,9 @@ export class CombatScene implements Scene {
     this.host = host;
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     this.battleOpening = null;
+    const phase = this.battle()?.phase;
+    this.resultPresentation =
+      phase && phase !== 'active' ? { kind: 'shown', partyFrame: false } : null;
     this.layoutMeasuredAfterSync = false;
     this.flushedAt = null;
     clear(host);
@@ -326,6 +339,8 @@ export class CombatScene implements Scene {
     this.suspended = false;
     this.aiHeld = false;
     this.battleOpening = null;
+    this.resultPresentation = null;
+    this.setVictoryBeatMarker(false);
     this.freshBattleEntry = false;
     this.recentreButton = null;
     this.actorButton = null;
@@ -363,6 +378,9 @@ export class CombatScene implements Scene {
   resume(): void {
     if (!this.suspended) return;
     this.suspended = false;
+    // A retained scene returns to its result once; never leave a stale hold
+    // marker or replay a victory after a conversation covered the board.
+    if (this.resultPresentation?.kind === 'holding') this.showResultCard(true);
     this.loop();
     this.maybeRunAi();
   }
@@ -438,6 +456,23 @@ export class CombatScene implements Scene {
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    const result = this.resultPresentation;
+    if (
+      result?.kind === 'waiting' ||
+      result?.kind === 'holding' ||
+      (result?.kind === 'shown' && this.battle()?.phase === 'victory')
+    ) {
+      // The final choreography keeps its frame; the victory then owns the
+      // frame across dock/viewport changes instead of returning to the actor.
+      if (
+        (result.kind === 'holding' || (result.kind === 'shown' && result.partyFrame)) &&
+        !motionReduced()
+      )
+        this.frameStandingParty();
+      else camera.clamp();
+      this.syncRecentre();
+      return;
+    }
     if (this.battleOpening) {
       // A HUD reflow during the hold must not snap the formation back to the
       // actor. Keep the opening's frame intact and let the normal clamp absorb
@@ -522,6 +557,10 @@ export class CombatScene implements Scene {
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    if (this.resultPresentation?.kind === 'holding') {
+      this.frameStandingParty();
+      return;
+    }
     this.manualCamera = false;
     this.followSuspended = false;
     if (camera.projection === 'oblique') {
@@ -587,6 +626,7 @@ export class CombatScene implements Scene {
 
   /** Camera navigation never selects a target or spends an action. */
   private focusUnit(id: string): void {
+    if (this.resultPresentation?.kind === 'holding') return;
     if (this.battleOpening) this.skipBattleOpening();
     const unit = this.battle()?.units.find(
       (candidate) => candidate.id === id && isAlive(candidate),
@@ -710,7 +750,7 @@ export class CombatScene implements Scene {
 
   private isPlayerTurn(): boolean {
     const unit = this.active();
-    return !!unit && unit.faction === 'party' && isAlive(unit);
+    return this.battle()?.phase === 'active' && !!unit && unit.faction === 'party' && isAlive(unit);
   }
 
   private reachableCells() {
@@ -1042,7 +1082,9 @@ export class CombatScene implements Scene {
     const unit = this.active();
     const activeId = unit?.id ?? null;
 
-    if (activeId !== this.lastActiveId) {
+    // A terminal reducer update can also change the active id. Its final hit
+    // keeps the choreography's frame until the victory owns the camera.
+    if (battle.phase === 'active' && activeId !== this.lastActiveId) {
       if (this.battleOpening) this.skipBattleOpening();
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
@@ -1070,8 +1112,18 @@ export class CombatScene implements Scene {
       if (!followedStillMoving) this.centreOnActiveUnit(unit, camera);
     }
 
-    if (battle.phase !== 'active' && !this.resultShown) {
-      this.resultShown = true;
+    if (battle.phase === 'active') {
+      this.resultPresentation = null;
+      this.setVictoryBeatMarker(false);
+    } else if (!this.resultPresentation) {
+      this.resultPresentation =
+        battle.phase === 'victory' ? { kind: 'waiting' } : { kind: 'shown', partyFrame: false };
+      this.stopAiTimer();
+      this.freshBattleEntry = false;
+      if (this.battleOpening) {
+        this.battleOpening = null;
+        this.setBattleOpeningMarker(null);
+      }
     }
 
     this.renderTopBar();
@@ -1090,6 +1142,65 @@ export class CombatScene implements Scene {
     // unchanged scheduling path below. This keeps the first formation frame
     // visible instead of letting a 260 ms AI timer cut it short.
     this.maybeRunAi();
+  }
+
+  private setVictoryBeatMarker(active: boolean): void {
+    const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
+    if (!scene) return;
+    if (active) scene.dataset.victoryBeat = 'active';
+    else delete scene.dataset.victoryBeat;
+  }
+
+  private frameStandingParty(): void {
+    const camera = this.renderer?.camera;
+    const battle = this.battle();
+    if (!camera || !battle) return;
+    frameVictoryParty(
+      camera,
+      battle.units
+        .filter((unit) => unit.faction === 'party' && isAlive(unit))
+        .map((unit) => ({
+          pos: unit.pos,
+          size: unit.size,
+          scale: partyScale(camera.projection),
+          headroom: sheets.silhouetteHeadroom(unit.sprite),
+          lift: liftAlong(battle.grid, unit.pos, camera.projection),
+        })),
+    );
+  }
+
+  /** Only a rendered idle frame starts the hold, never an elapsed playback deadline. */
+  private updateResultPresentation(now: number): void {
+    const result = this.resultPresentation;
+    if (!this.host || this.battle()?.phase !== 'victory' || !result || result.kind === 'shown')
+      return;
+    if (result.kind === 'waiting') {
+      if (this.app.animator.busy(now) || now < this.app.animator.finishesAt || this.app.curtainBusy)
+        return;
+      if (motionReduced()) {
+        this.showResultCard(false);
+        return;
+      }
+      this.resultPresentation = {
+        kind: 'holding',
+        startedAt: now,
+        durationMs: durationTokenMs('--dur-combat-victory', COMBAT_VICTORY_BEAT_MS),
+      };
+      this.followSuspended = true;
+      this.cameraFollow = { kind: 'idle' };
+      this.frameStandingParty();
+      this.setVictoryBeatMarker(true);
+      this.renderHud();
+      return;
+    }
+    if (motionReduced() || now - result.startedAt >= result.durationMs) this.showResultCard(true);
+  }
+
+  private showResultCard(partyFrame: boolean): void {
+    if (!this.host || this.battle()?.phase !== 'victory') return;
+    this.resultPresentation = { kind: 'shown', partyFrame };
+    this.setVictoryBeatMarker(false);
+    this.renderHud();
   }
 
   /**
@@ -1382,7 +1493,24 @@ export class CombatScene implements Scene {
     clear(overlays);
 
     if (battle.phase !== 'active') {
-      overlays.appendChild(this.resultPanel(battle));
+      const presentation = this.resultPresentation;
+      if (battle.phase !== 'victory' || presentation?.kind === 'shown')
+        overlays.appendChild(this.resultPanel(battle));
+      else if (presentation?.kind === 'holding')
+        overlays.appendChild(
+          el(
+            'button',
+            {
+              class: 'victory-beat-skip',
+              attrs: { type: 'button', 'aria-label': 'Show victory result' },
+              onClick: (event) => {
+                event.stopPropagation();
+                if (this.resultPresentation === presentation) this.showResultCard(true);
+              },
+            },
+            el('span', { class: 'visually-hidden', text: 'Show victory result' }),
+          ),
+        );
       return;
     }
 
@@ -2146,6 +2274,7 @@ export class CombatScene implements Scene {
     this.app.animator.prune(now);
     this.updateBattleOpening(now);
     this.keepAnimatedLargeActorInView(now, battle);
+    this.updateResultPresentation(now);
 
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
@@ -2328,6 +2457,7 @@ export class CombatScene implements Scene {
     const renderer = this.renderer;
     if (!renderer) return;
     if (this.battleOpening) return;
+    if (this.resultPresentation?.kind === 'holding') return;
     const camera = renderer.camera;
     const projection = camera.projection;
 

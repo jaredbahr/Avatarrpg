@@ -8,6 +8,7 @@
  */
 
 import { el, motionReduced } from './dom';
+import { durationTokenMs } from './durationToken';
 import {
   TITLE_ART,
   pickTitleArt,
@@ -28,14 +29,6 @@ export interface TitleArtOptions {
   readonly holdMs?: number;
   /** Called as a fade to `next` begins, with the fade's length. */
   readonly onChange?: (next: TitleArtDef, previous: TitleArtDef, fadeMs: number) => void;
-}
-
-/** `--dur-title-fade` as milliseconds: the token in base.css is the one place the length lives. */
-function fadeMs(): number {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--dur-title-fade');
-  const value = parseFloat(raw);
-  if (!Number.isFinite(value)) return FADE_FALLBACK_MS;
-  return raw.trim().endsWith('ms') ? value : value * 1000;
 }
 
 function picture(file: TitleArtFile, portrait: TitleArtFile, base: string): HTMLElement {
@@ -149,7 +142,7 @@ export class TitleArtRotator {
     const previous = this.shown;
     this.shown = this.upcoming;
     saveLastTitleArt(this.shown.id);
-    const ms = fadeMs();
+    const ms = durationTokenMs('--dur-title-fade', FADE_FALLBACK_MS);
     this.options.onChange?.(this.shown, previous, ms);
     this.layers[this.front].dataset.active = 'false';
     this.layers[back].dataset.active = 'true';
