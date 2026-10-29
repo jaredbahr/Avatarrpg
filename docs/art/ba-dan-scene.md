@@ -317,6 +317,8 @@ feather.
 The accepted upper field of `edge-water.webp` is the single painted source for
 the connected row-6 canal. It is registered across `(0..12,6)`, with permanent
 water at `(0..8,6)` and `(10..12,6)` and the dry bridge crossing at `(9,6)`.
+The village blocks those permanent-water cells without blocking sight; `(13,6)`
+is the second dry paved crossing at the canal's eastern end.
 `canal-banks.webp` is retired and unregistered; the water packer does not rewrite
 it. `ba-dan-canal-banks.ts` remains only as the geometric metric/audit helper used
 to verify the registered edge-water source. The coping adds no collision wall.
@@ -548,8 +550,9 @@ Browser evidence is recorded in
 crossing and save/reload paths. It is technical local evidence only; it does
 not claim physical-device, listening, or final visual-quality acceptance.
 
-No new destination or map family was added. The source contract keeps the
-existing roads, NPCs, exits, save positions, and walkable water behaviour.
+No new destination or map family was added. The earlier proof kept the
+existing roads, NPCs, exits, save positions, and then-walkable canal water.
+In #335, loaded positions on newly blocked canal cells reconcile to walkable ground.
 
 ## Light and shadow (7 October 2026)
 

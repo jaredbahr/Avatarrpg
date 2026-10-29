@@ -31,7 +31,18 @@ export const BA_DAN_VILLAGE: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
-  legend: { ...LEGEND, l: { terrain: 'stone', blocked: true, blocksSight: false } },
+  legend: {
+    ...LEGEND,
+    l: { terrain: 'stone', blocked: true, blocksSight: false },
+    // The painted canal is a physical edge; only its authored paved crossings carry walkers.
+    '~': {
+      terrain: 'dirt',
+      surface: 'water',
+      surfaceDuration: -1,
+      blocked: true,
+      blocksSight: false,
+    },
+  },
   /*
    * The house bodies are solid, and so is everything the painted plinth, steps and yard stand on:
    * the house plinth runs the whole footprint, the yard fills its west tiles, and the east steps rise

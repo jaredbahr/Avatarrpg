@@ -54,6 +54,8 @@ const GROUND: readonly TileClassId[] = ['grass', 'dirt', 'stone'];
  */
 const KEY_CLASSES: Readonly<Partial<Record<string, TileClassId>>> = {
   G: 'gate',
+  // Closing the canal to walkers does not turn its painted water into masonry.
+  '~': 'water',
   // The Forest Road's roadside props close a cell to movement (`f` on grass, `b`
   // on the tier-1 bank) but are decoration: the painting brief still wants the
   // ground there, not a stand of trees or a wall.

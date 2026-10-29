@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ALL_MAPS } from '../../../src/content';
 import { FOREST_ROAD } from '../../../src/content/maps/combat';
+import { BA_DAN_VILLAGE } from '../../../src/content/maps/village';
 import { LEGEND } from '../../../src/content/maps/legend';
 import { defaultPixelsPerTile, fitPainting } from '../map';
 import { LAYOUT_PX, layoutPath, mapPack, packPath } from '../map-pack';
@@ -61,6 +62,13 @@ describe('tile classes', () => {
     expect(classify(G, 'G')).toBe('gate');
     expect(classify(B, 'B')).toBe('building');
     expect(classify(G)).toBe('building');
+  });
+
+  it('keeps the blocked Ba Dan canal as water in the painting brief', () => {
+    const canal = BA_DAN_VILLAGE.legend['~'];
+    if (!canal) throw new Error('missing canal legend');
+    expect(canal.blocked).toBe(true);
+    expect(classify(canal, '~')).toBe('water');
   });
 
   it('name a rubble heap on a bench apart from the bare ledge beside it', () => {

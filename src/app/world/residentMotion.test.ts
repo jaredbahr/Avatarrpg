@@ -6,6 +6,7 @@ import { apply } from '../../core/state/reducer';
 import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
 import {
+  FADE_MS,
   RESIDENT_AMBLE,
   RESIDENT_BOB_PX,
   RESIDENT_WALK_LEAN_RAD,
@@ -17,7 +18,8 @@ import {
 import type { ResidentMotion } from './residentMotion';
 import { previewWalk } from './walking';
 import { TIMING } from '../anim/choreography';
-import { STROLL_RAMP_MS } from '../anim/stroll';
+import { STROLL_RAMP_MS, strollTiming } from '../anim/stroll';
+import { smoothPath } from '../../render/geometry/curve';
 
 /**
  * The resident walk planner (ADR 0047 §7, W8): who walks where when the
@@ -229,6 +231,22 @@ describe('ResidentWalks', () => {
   const walks = (reduced = false) => new ResidentWalks(CONTENT, () => reduced);
   const figure = (w: ResidentWalks, id: string) => w.figures().find((f) => f.id === id);
 
+  /** Sample one frame beyond the longest planned walk, allowing the slowest resident pace and fades. */
+  const placementDeadline = (before: GameState, after: GameState): number => {
+    const motions = planResidentMotion({ content: CONTENT, map: VILLAGE, before, after, party });
+    const slowest = Math.max(
+      0,
+      ...motions.map((motion) =>
+        motion.kind === 'walk'
+          ? strollTiming(smoothPath(motion.from, motion.path).length, TIMING.strollStep).duration *
+              RESIDENT_AMBLE +
+            2 * FADE_MS
+          : 2 * FADE_MS,
+      ),
+    );
+    return Math.ceil(slowest / 50) * 50 + 50;
+  };
+
   it('places everyone on a new map, then walks them across it at the party pace', () => {
     const w = walks();
     const before = at('midday');
@@ -259,7 +277,8 @@ describe('ResidentWalks', () => {
     }
     // Mira walks off down the river path, at her amble (ADR 0095), and is gone
     // once she has faded there.
-    for (let t = 4050; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) w.tick(t, false);
+    const deadline = placementDeadline(before, after);
+    for (let t = 4050; t <= deadline; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
       drawPos: { x: 17, y: 6 },
@@ -305,7 +324,8 @@ describe('ResidentWalks', () => {
       w.update(VILLAGE, after, party, true);
       const trace: Vec2[] = [];
       let ended = -1;
-      for (let t = 50; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) {
+      const deadline = placementDeadline(before, after);
+      for (let t = 50; t <= deadline; t += 50) {
         if (interrupt && t === 1000) {
           // The party walks off; nobody's place changes.
           const walked = apply(CONTENT, after, { type: 'walkTo', pos: { x: 12, y: 7 } }).state;
@@ -359,7 +379,7 @@ describe('ResidentWalks', () => {
     const w = walks();
     // Mira's pre-intro hold keeps her at her table; opening mira_intro lifts
     // it on entry, and only the pin keeps her there (W5 amendment).
-    const before = at('afternoon', { x: 12, y: 6 }, []);
+    const before = at('afternoon', { x: 12, y: 5 }, []);
     w.tick(0, false);
     w.update(VILLAGE, before, party, true);
     const talk = apply(CONTENT, before, { type: 'walkTo', pos: { x: 11, y: 5 } }).state;
