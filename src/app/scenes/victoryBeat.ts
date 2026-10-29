@@ -2,7 +2,10 @@ import type { Grid, Unit, Vec2 } from '../../core/types';
 import { isAlive } from '../../core/rules/stats';
 import { SQUARE_FOOTPRINTS } from '../../core/rules/footprint';
 import type { Camera } from '../../render/camera';
-import { actorBodyBounds, actorSilhouetteGeometry } from '../../render/geometry/actorSilhouette';
+import {
+  actorBodyBounds,
+  combatActorSilhouetteGeometry,
+} from '../../render/geometry/actorSilhouette';
 import { liftAlong } from '../../render/geometry/elevation';
 
 export interface VictoryBeatClock {
@@ -88,7 +91,7 @@ export function victoryActorBounds(
   const headroom = presentation.frameHeadroom ?? 1.5;
   const actorBox = { ...box, width: footprintWidth };
   const body = actorBodyBounds(actorBox, heightTiles, headroom, scale);
-  const cues = actorSilhouetteGeometry(actorBox, heightTiles, headroom, scale);
+  const cues = combatActorSilhouetteGeometry(actorBox, heightTiles, headroom, scale, camera.scale);
   const radius = Math.max(4, box.size * 0.09);
   const stagger = 4 * Math.max(2, cues.bar.height * 0.8);
   const edge = Math.max(2, box.size * 0.04);

@@ -12,3 +12,5 @@
 - **Coordination:** This task shares `CombatScene.ts` with the unmerged #327 combat-camera glide branch; the changes here only add victory lifecycle behavior and preserve the branch's actor-follow/glide ownership. Do not edit #322, #324, #326, #327, #329, #330 or #331 work. Root owns release metadata, integration and the final full gate.
 - **Next actions:** Root reviews this commit, combines it with the assigned work and runs the final gate.
 - **Completion/transfer:** Local commit ready for root integration; no PR, push, merge or deployment made.
+
+Root integration now uses `combatActorSilhouetteGeometry(..., camera.scale)` from #336 for the actual drawn bar minima. The combined typecheck and eight focused state/save/pause/framing/geometry files passed (114 tests); the full final gate remains pending.
