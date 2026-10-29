@@ -139,21 +139,36 @@ describe('walking the village', () => {
       (dx) => tileAt(grid, { x: elder.pos.x + dx, y: elder.pos.y + 1 })?.surface,
     );
     expect(wetNeighbour).toBe(true);
-    const { state: after } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos });
+    const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos });
     expect(after.screen).toBe('dialogue');
     expect(tileAt(grid, after.location.pos)?.surface ?? null).toBeNull();
+    const [walk] = walks(events);
+    expect(walk).toBeDefined();
+    expect(walk?.path.some((step) => step.y === 6 && (step.x === 9 || step.x === 13))).toBe(true);
+    for (const step of walk?.path ?? []) {
+      const tile = tileAt(grid, step);
+      expect(tile?.blocked, `Mira approach ${step.x},${step.y}`).toBe(false);
+      expect(tile?.surface?.id, `Mira approach ${step.x},${step.y}`).not.toBe('water');
+    }
   });
 
   it('walks onto the gate and then leaves', () => {
     const state = inVillage();
-    const exit = CONTENT.maps.get('ba_dan_village')?.exit;
+    const map = CONTENT.maps.get('ba_dan_village');
+    const exit = map?.exit;
     expect(exit).toBeDefined();
-    if (!exit) return;
+    if (!exit || !map) return;
     const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: exit.pos });
     expect(after.story.nodeId).toBeNull();
     expect(after.location.mapId).toBe('forest_road');
     const [walk] = walks(events);
     expect(walk?.path[walk.path.length - 1]).toEqual(exit.pos);
+    const grid = buildGrid(map);
+    for (const step of walk?.path ?? []) {
+      const tile = tileAt(grid, step);
+      expect(tile?.blocked, `east-gate route ${step.x},${step.y}`).toBe(false);
+      expect(tile?.surface?.id, `east-gate route ${step.x},${step.y}`).not.toBe('water');
+    }
     expect(events.findIndex((e) => e.type === 'partyWalked')).toBeLessThan(
       events.findIndex((e) => e.type === 'screenChanged'),
     );

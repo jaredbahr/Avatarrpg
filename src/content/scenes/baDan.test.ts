@@ -376,9 +376,14 @@ it('registers the painted canal to every actual permanent-water cell', () => {
   expect(BA_DAN_VILLAGE.rows[BA_DAN_CANAL_BRIDGE.y]?.[BA_DAN_CANAL_BRIDGE.x]).toBe('=');
 });
 
-it('keeps the canal walkable and registers one low bridge at the dry crossing', () => {
+it('blocks canal water while keeping the bridge and east-end path open', () => {
   const grid = buildGrid(BA_DAN_VILLAGE);
-  for (const pos of BA_DAN_WATER_CELLS) expect(tileAt(grid, pos)?.blocked).not.toBe(true);
+  for (const pos of BA_DAN_WATER_CELLS) {
+    expect(tileAt(grid, pos)?.blocked, `canal water ${pos.x},${pos.y}`).toBe(true);
+    expect(tileAt(grid, pos)?.surface).toMatchObject({ id: 'water', duration: -1 });
+  }
+  expect(tileAt(grid, BA_DAN_CANAL_BRIDGE)).toMatchObject({ terrain: 'road', blocked: false });
+  expect(tileAt(grid, { x: 13, y: 6 })).toMatchObject({ terrain: 'road', blocked: false });
   const bridge = BA_DAN_VILLAGE.scene?.scenery.find((piece) => piece.id === 'canal-bridge');
   const bridgeFront = BA_DAN_VILLAGE.scene?.scenery.find(
     (piece) => piece.id === 'canal-bridge-front',
@@ -415,7 +420,6 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     { x: 11, y: 3 },
     { x: 23, y: 7 },
     { x: 19, y: 15 },
-    { x: 5, y: 6 },
     { x: 17, y: 6 },
   ])
     expect(paths.has(posKey(pos)), `Unreachable court destination ${posKey(pos)}`).toBe(true);
@@ -730,13 +734,19 @@ it('blocks the dressing, keeps the main ways open, and reaches every stand point
   // (9,3) is Gao's plinth and steps; the lane reaches his door at (10,3) from (10,4).
   for (const y of [4, 5]) for (const x of [9, 10]) expect(open(x, y), `lane ${x},${y}`).toBe(true);
   expect(open(10, 3), 'lane 10,3').toBe(true);
-  for (const x of [9, 13]) expect(open(x, 6), `bridge ${x},6`).toBe(true);
+  for (const x of [BA_DAN_CANAL_BRIDGE.x, 13]) expect(open(x, 6), `dry crossing ${x},6`).toBe(true);
   for (let x = 1; x < 17; x++) expect(open(x, 4), `north lane ${x},4`).toBe(true);
   // One connected walkable region: every walkable tile is reachable from the spawn, and every
   // resident's stand point, the doors' trail tiles, the exits and the recovery tiles are in it.
   const start = map.partySpawns[0];
   if (!start) throw new Error('Village has no spawn');
   const paths = reachable({ grid, blocked: new Set(), surfaces: new Map(), size: 1 }, start, 1000);
+  for (const pos of BA_DAN_WATER_CELLS) {
+    expect(open(pos.x, pos.y), `canal water ${pos.x},${pos.y}`).toBe(false);
+    expect(paths.has(posKey(pos)), `reachable canal water ${pos.x},${pos.y}`).toBe(false);
+  }
+  for (const x of [BA_DAN_CANAL_BRIDGE.x, 13])
+    expect(paths.has(posKey({ x, y: 6 })), `reachable dry crossing ${x},6`).toBe(true);
   const walkable: string[] = [];
   for (let y = 0; y < map.height; y++)
     for (let x = 0; x < map.width; x++) if (open(x, y)) walkable.push(posKey({ x, y }));

@@ -31,7 +31,20 @@ export const BA_DAN_VILLAGE: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
-  legend: { ...LEGEND, l: { terrain: 'stone', blocked: true, blocksSight: false } },
+  legend: {
+    ...LEGEND,
+    // The permanent canal is too deep to wade: keep its water surface, but
+    // make the painted bridge and dry path at its east end the only crossings.
+    // Other maps retain the shared legend's walkable shallow water.
+    '~': {
+      terrain: 'dirt',
+      surface: 'water',
+      surfaceDuration: -1,
+      blocked: true,
+      blocksSight: false,
+    },
+    l: { terrain: 'stone', blocked: true, blocksSight: false },
+  },
   /*
    * The house bodies are solid, and so is everything the painted plinth, steps and yard stand on:
    * the house plinth runs the whole footprint, the yard fills its west tiles, and the east steps rise

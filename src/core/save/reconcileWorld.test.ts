@@ -426,6 +426,21 @@ suite('reconcileWorld: the Ba Dan edge rebuild (A5)', () => {
     expect(reconcileWorld(CONTENT, reconciled).location).toEqual(reconciled.location);
   });
 
+  it('moves a party saved in the newly blocked permanent canal onto a dry bank', () => {
+    const oldCanalPos = { x: 5, y: 6 };
+    expect(tileAt(grid, oldCanalPos)?.surface).toMatchObject({ id: 'water', duration: -1 });
+    expect(tileAt(grid, oldCanalPos)?.blocked).toBe(true);
+
+    const reconciled = loadOldVillageSave(oldCanalPos);
+    const landed = tileAt(grid, reconciled.location.pos);
+
+    expect(reconciled.location.mapId).toBe('ba_dan_village');
+    expect(reconciled.location.pos).not.toEqual(oldCanalPos);
+    expect(landed?.blocked).toBe(false);
+    expect(landed?.surface?.id).not.toBe('water');
+    expect(reconcileWorld(CONTENT, reconciled).location).toEqual(reconciled.location);
+  });
+
   it('moves a party saved on a house floor out to open ground', () => {
     // (7,11) was the south-west dwelling's plank floor.
     const reconciled = loadOldVillageSave({ x: 7, y: 11 });
