@@ -1,0 +1,9 @@
+# Ba Dan canal crossings — #335
+
+- Outcome: village-local water blocking preserves the authored crossings at (9,6) and (13,6). Shared water rules, forest puddle, generated painting, frozen geometry, runtime motion and shared E2E fixtures are unchanged.
+- Location: branch `codex/335-canal-crossings`, based on `bc77ae2e`. Source is local only; no PR, push, merge or deployment.
+- Changes: `village.ts` collision legend; dedicated `villageCanal.test.ts` tests every active/parked routine leg, public anchors, NPC placements in all phases before/after victory, exits, rest spots, four-person follower plans across both crossings in both directions, and idempotent save-position repair from (5,6). Existing scene assertions now require blocked canal water and reachable crossings instead of a reachable water cell.
+- Validation: 164 tests across nine focused files passed with one Vitest worker and `--no-cache`, including content validation, edge contract, progression, resident schedules/routines, scene geometry/depth and world reconciliation. TypeScript and scoped ESLint passed. Prettier and `git diff --check` passed.
+- Remaining gates: full `npm run ci:local`; scoped Ba Dan graphical tests and requested branch workflow dispatch. Independent source review of `81d28592` found no blocking source or test issues. Heavy/runtime testing is queued by the orchestrator; no slot has been granted. Do not push before the full local gate passes; publish a draft only, never merge or deploy under this assignment.
+- Coordination: runtime/timing belongs to the existing resident-motion worker. No dependencies were installed and no lockfile changed.
+- Next owner: verify the branch/head and worktree state, allocate the serialized validation slot, run the full gate, then publish one draft PR when permitted.
