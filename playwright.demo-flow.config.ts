@@ -21,6 +21,9 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     serviceWorkers: 'block',
+    ...(process.env.FNT_CHROMIUM_EXECUTABLE
+      ? { launchOptions: { executablePath: process.env.FNT_CHROMIUM_EXECUTABLE } }
+      : {}),
     // A review step that cannot act should fail and say where, not hang the run.
     actionTimeout: 30_000,
   },
