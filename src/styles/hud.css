@@ -2937,7 +2937,14 @@ html[data-contrast='high'] .hud-panel::after {
   gap: var(--sp-3);
   padding: var(--sp-1) var(--sp-4);
   min-height: var(--tap);
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+}
+.explore-bar-main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-width: 0;
 }
 .explore-bar .title-plate-name {
   font-size: var(--fs-lg);
@@ -2966,29 +2973,65 @@ html[data-contrast='high'] .hud-panel::after {
   padding: var(--sp-1) var(--sp-2);
 }
 .explore-objective {
-  position: absolute;
-  left: var(--sp-4);
-  top: var(--sp-3);
-  z-index: var(--z-banner);
+  position: static;
+  align-self: flex-start;
   display: flex;
+  flex: 0 1 100%;
   flex-direction: column;
+  align-items: flex-start;
   gap: var(--sp-1);
-  max-width: min(27rem, 55%);
-  padding: var(--sp-2) var(--sp-3);
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--tap);
+  padding: var(--sp-1) var(--sp-3);
+  text-align: left;
   background: color-mix(in srgb, var(--c-panel-raised) 96%, transparent);
   border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
   box-shadow: var(--inset-edge);
-  pointer-events: none;
-}
-.explore-objective[hidden],
-.explore-map-corner[hidden] {
-  display: none;
 }
 .explore-objective .title-plate-objective {
+  display: block;
+  max-width: 100%;
   white-space: normal;
   font-size: var(--fs-md);
   color: var(--c-ink);
+}
+.explore-objective.is-collapsed {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-basis: 100%;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.explore-objective.is-collapsed .title-plate-objective {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+}
+.explore-objective-gate {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+.explore-objective.is-collapsed .explore-objective-gate {
+  overflow: hidden;
+  max-width: 42%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.explore-scene.riverside-scene .explore-objective,
+.explore-objective[hidden],
+.explore-map-corner[hidden] {
+  display: none;
 }
 .explore-map-corner {
   position: absolute;
@@ -3132,6 +3175,10 @@ html[data-contrast='high'] .hud-panel::after {
     padding-inline: var(--sp-2);
     flex-wrap: wrap;
   }
+  .explore-bar-main {
+    flex-wrap: wrap;
+    gap: var(--sp-1);
+  }
   .explore-title {
     flex: 1;
   }
@@ -3153,11 +3200,6 @@ html[data-contrast='high'] .hud-panel::after {
   .explore-scene:not(.riverside-scene) .action-button .mark {
     display: none;
   }
-  .explore-objective {
-    left: var(--sp-2);
-    max-width: calc(100% - 8rem);
-    padding: var(--sp-2);
-  }
   .explore-objective .title-plate-objective {
     font-size: var(--fs-sm);
   }
@@ -3175,6 +3217,13 @@ html[data-contrast='high'] .hud-panel::after {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0;
+  }
+  .explore-bar-main {
+    display: contents;
+  }
+  .explore-objective {
+    grid-column: 1 / -1;
+    width: 100%;
   }
   .explore-title {
     grid-column: 1 / -1;
@@ -3306,6 +3355,32 @@ html[data-contrast='high'] .hud-panel::after {
   .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
     width: 3rem;
     height: 3rem;
+  }
+}
+
+/* Leave room for the expanded objective at the narrowest Largest-text layout. */
+@media (max-width: 36rem) and (orientation: portrait) {
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row {
+    flex-basis: 7.5rem;
+    min-width: 7.5rem;
+    text-align: left;
+  }
+
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row .unit-panel-body {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+    max-width: 2.5rem;
+    max-height: 2.5rem;
+  }
+
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row .portrait-badge {
+    right: -0.2rem;
+    bottom: -0.2rem;
   }
 }
 
