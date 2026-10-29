@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { Camera } from '../../render/camera';
 import {
   actorKeepInViewDelta,
+  combatCameraGlidePoint,
   combatCameraFollowDecision,
   shouldFollowAnimatedLargeActor,
 } from './combatCameraFollow';
@@ -141,5 +143,45 @@ describe('animated large-actor camera follow', () => {
         },
       ),
     ).toEqual({ state: { kind: 'idle' }, owner: 'idle' });
+  });
+});
+
+describe('combat camera glide', () => {
+  const glide = {
+    from: { x: 10, y: -4 },
+    to: { x: 110, y: 46 },
+    startedAt: 1000,
+    duration: 420,
+  };
+
+  it('eases from the current frame and reaches the exact endpoint at or after 420 ms', () => {
+    expect(combatCameraGlidePoint(glide, 1000)).toEqual(glide.from);
+    expect(combatCameraGlidePoint(glide, 1210)).toEqual({ x: 60, y: 21 });
+    expect(combatCameraGlidePoint(glide, 1420)).toEqual(glide.to);
+    expect(combatCameraGlidePoint(glide, 2000)).toEqual(glide.to);
+  });
+
+  it('cuts immediately for a zero-duration motion setting', () => {
+    expect(combatCameraGlidePoint({ ...glide, duration: 0 }, 1000)).toEqual(glide.to);
+  });
+
+  it('lets the camera snap every sampled frame to a device-pixel offset', () => {
+    const camera = new Camera(
+      { width: 360, height: 260, dpr: 1.25 },
+      { width: 12, height: 12 },
+      'oblique',
+    );
+    camera.integerZoom = true;
+    for (const now of [1000, 1040, 1125, 1210, 1300, 1419, 1420]) {
+      const point = combatCameraGlidePoint(glide, now);
+      camera.offsetX = point.x;
+      camera.offsetY = point.y;
+      expect(camera.offsetX * camera.viewport.dpr).toBeCloseTo(
+        Math.round(camera.offsetX * camera.viewport.dpr),
+      );
+      expect(camera.offsetY * camera.viewport.dpr).toBeCloseTo(
+        Math.round(camera.offsetY * camera.viewport.dpr),
+      );
+    }
   });
 });
