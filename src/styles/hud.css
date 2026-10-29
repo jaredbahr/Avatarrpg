@@ -3377,6 +3377,11 @@ html[data-contrast='high'] .hud-panel::after {
     max-width: 2.5rem;
     max-height: 2.5rem;
   }
+
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster-row .portrait-badge {
+    right: -0.2rem;
+    bottom: -0.2rem;
+  }
 }
 
 /*

@@ -11,7 +11,8 @@
 - Correction: only narrow portrait at Largest text arranges each roster card's
   portrait beside its name and health, retaining its touch minimum and horizontal
   scrolling. Maximum portrait dimensions constrain the inline canvas size without
-  cropping. The full expanded objective, header actions and original tests remain.
+  cropping. A measured badge offset keeps the element badge inside the compact
+  card. The full expanded objective, header actions and original tests remain.
 - Original PR354 validation: 16/17 dock cases passed; all six new objective
   matrix cases and conversation/reset passed. Eight supplemental Chromium probes
   passed for actual map/chip taps, keyboard focus, real bark/gate clearance,
