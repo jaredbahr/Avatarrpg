@@ -65,6 +65,9 @@ const KEY_CLASSES: Readonly<Partial<Record<string, TileClassId>>> = {
 export function classify(tile: TileTemplate, key?: string): TileClassId {
   const named = key === undefined ? undefined : KEY_CLASSES[key];
   if (named) return named;
+  // A blocked tile can still show a live surface. Collision controls movement;
+  // the layout image describes what the painting must depict.
+  if (tile.surface === 'water') return 'water';
   if (tile.blocked) {
     if (tile.terrain === 'pit') return 'pit';
     if (tile.terrain === 'grass') return 'tree';
@@ -77,7 +80,6 @@ export function classify(tile: TileTemplate, key?: string): TileClassId {
   if (elevation >= 2) return 'ledge2';
   // A heap lifted onto a bench is cover a painting must place, not open ledge.
   if (elevation === 1) return tile.surface === 'rubble' ? 'ledgeRubble' : 'ledge';
-  if (tile.surface === 'water') return 'water';
   if (tile.surface === 'oil') return 'oil';
   if (tile.surface === 'mud') return 'mud';
   if (tile.surface === 'rubble') return 'rubble';
