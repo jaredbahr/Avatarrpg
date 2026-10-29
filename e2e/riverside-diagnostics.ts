@@ -75,7 +75,7 @@ export async function recordRiversideDiagnostics(page: Page) {
                 note: document.querySelector('.village-note')?.textContent,
                 buttons: [
                   ...document.querySelectorAll<HTMLButtonElement>(
-                    '.village-actions button, .village-secondary-action',
+                    '.village-actions button, .village-secondary-action, .village-utilities button',
                   ),
                 ].map((button) => ({ text: button.textContent, disabled: button.disabled })),
               }),
@@ -89,9 +89,13 @@ export async function recordRiversideDiagnostics(page: Page) {
         if (!button?.closest('.village-controls, .explore-conversation')) return null;
         return button.textContent?.trim() ?? 'button';
       };
+      const clickLabels = new WeakMap<Event, string>();
       document.addEventListener('click', (event) => {
-        const label = clickLabel(event);
-        if (label !== null) sample(`after click: ${label}`);
+        const label = clickLabels.get(event);
+        if (label !== undefined) {
+          sample(`after click: ${label}`);
+          clickLabels.delete(event);
+        }
       });
       // A microtask scheduled in capture can run before the target handler.
       // Observe the two event phases directly instead.
@@ -99,7 +103,11 @@ export async function recordRiversideDiagnostics(page: Page) {
         'click',
         (event) => {
           const label = clickLabel(event);
-          if (label !== null) sample(`before click: ${label}`);
+          if (label !== null) {
+            // The target handler can rebuild its panel before the bubble phase.
+            clickLabels.set(event, label);
+            sample(`before click: ${label}`);
+          }
         },
         true,
       );
