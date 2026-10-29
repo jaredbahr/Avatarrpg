@@ -54,7 +54,9 @@ export function resolvePixelMarkDraws(
 export function visibleBoardPixels(camera: Camera, nudge = { x: 0, y: 0 }): G1Bounds {
   // Raised tops can move a source above the viewport. Keep half a tile of
   // headroom plus the camera shake so neither path drops a visible mark.
-  const pad = TILE * 0.5;
+  // Supported terrain reaches elevation 3 (48 world px above its flat source).
+  // One tile also leaves room for the mark's own bounds at the viewport edge.
+  const pad = TILE;
   const shiftX = nudge.x * TILE;
   const shiftY = nudge.y * TILE;
   const left = Math.floor(camera.offsetX / camera.scale - shiftX - pad) - 1;

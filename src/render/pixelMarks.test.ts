@@ -205,6 +205,14 @@ describe('G1 pixel marks', () => {
             { x: 6, y: 6 },
             { x: -7, y: 6 },
           ],
+          holes: [
+            [
+              { x: -1, y: 0 },
+              { x: 3, y: 0 },
+              { x: 3, y: 4 },
+              { x: -1, y: 4 },
+            ],
+          ],
           outline: { color: 'ink', width: 1 },
         },
       ],
@@ -232,6 +240,38 @@ describe('G1 pixel marks', () => {
     expect(chunks.every(({ raster }) => raster.width <= 5 && raster.height <= 5)).toBe(true);
     expect([...coverage].every((times) => times === 1)).toBe(true);
     expect(combined).toEqual(reference.data);
+  });
+
+  it('cuts contour holes with hard alpha on the same G1 grid', () => {
+    const spec: PixelMarkSpec = {
+      bounds: { left: 0, top: 0, width: 12, height: 12 },
+      palette: { gold: COLORS.gold },
+      operations: [
+        {
+          kind: 'polygon',
+          color: 'gold',
+          points: [
+            { x: 0, y: 0 },
+            { x: 12, y: 0 },
+            { x: 12, y: 12 },
+            { x: 0, y: 12 },
+          ],
+          holes: [
+            [
+              { x: 4, y: 4 },
+              { x: 8, y: 4 },
+              { x: 8, y: 8 },
+              { x: 4, y: 8 },
+            ],
+          ],
+        },
+      ],
+    };
+    const raster = rasterizePixelMark(spec);
+    const at = (x: number, y: number) => raster.data[(y * raster.width + x) * 4 + 3];
+
+    expect(at(1, 1)).toBe(153);
+    expect(at(5, 5)).toBe(0);
   });
 
   it('keeps chunk origins and raster objects stable when the visible clip pans by one pixel', () => {
