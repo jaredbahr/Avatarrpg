@@ -35,8 +35,9 @@ Large marks use source-grid-aligned chunks no larger than 256 px on a side. Chun
 - `01eebd27` — idle drawable cache entry cap and regression.
 - `2c4bfb27` — Canvas overlay, actor and enemy spike adapter.
 - `fbae88e0` — Pixi overlay, actor and enemy spike adapter (reviewer's source commit `92b5b021`).
+- `6f2ed8c0` — isolated Pixi-only enemy spike normalization follow-up; the N2 snapped vertices now match Canvas.
 
-Root has already integrated the shared helper checkpoints through `0035a8a4` at `e3dc175e`; it should integrate `01eebd27`, `2c4bfb27`, `fbae88e0` and `a3279892` from this branch. Do not cherry-pick duplicate commits.
+Root has already integrated the shared helper checkpoints through `0035a8a4` at `e3dc175e`; it should integrate `01eebd27`, `2c4bfb27` and `fbae88e0` from this branch, then apply `6f2ed8c0` from Sol's Pixi branch and take the documentation/handoff commits. Do not cherry-pick duplicate commits.
 
 ## Focused checks and review captures
 
