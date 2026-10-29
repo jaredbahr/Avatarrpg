@@ -252,7 +252,8 @@ async function enterForest(page: Page, renderer: string, reduceMotion: boolean):
   await enterNode(page, 'battle_forest_road');
   expect(await takeTurn(page)).toBe(true);
   await waitForIdle(page);
-  await settleLayout(page);
+  // takeTurn already settles the initial handoff. Move mode settles again
+  // before projecting any target, so another four-frame probe adds no evidence.
 }
 
 for (const profile of [
@@ -357,7 +358,23 @@ for (const profile of [
           if (!actorId) throw new Error('Missing turn owner.');
           app.dispatch({ type: 'endTurn', unitId: actorId });
         });
-        expect(await takeTurn(page)).toBe(true);
+        // Observe the next party and finished opening together, then use the
+        // real handoff control. Settle once after playback below, rather than
+        // also paying takeTurn's four-frame settle before that playback ends.
+        await page.waitForFunction(
+          () => {
+            const battle = window.fnt!.app.state?.battle;
+            if (!battle || battle.phase !== 'active') return false;
+            const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
+            return (
+              actor?.faction === 'party' &&
+              !document.querySelector('.combat-scene[data-battle-opening]')
+            );
+          },
+          undefined,
+          { timeout: 25_000 },
+        );
+        await page.getByRole('button', { name: /I'm ready/i }).click();
         await waitForIdle(page);
         await settleLayout(page);
         const next = await readView(page);
