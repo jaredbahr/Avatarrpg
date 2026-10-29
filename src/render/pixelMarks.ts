@@ -636,33 +636,37 @@ function fillPolygon(
   data: Uint8ClampedArray,
   bounds: G1Bounds,
 ): void {
-  const minX = Math.max(bounds.left, Math.min(...points.map((point) => point.x)));
-  const maxX = Math.min(bounds.left + bounds.width, Math.max(...points.map((point) => point.x)));
-  const minY = Math.max(bounds.top, Math.min(...points.map((point) => point.y)));
-  const maxY = Math.min(bounds.top + bounds.height, Math.max(...points.map((point) => point.y)));
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const point of points) {
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  }
+  minY = Math.max(bounds.top, minY);
+  maxY = Math.min(bounds.top + bounds.height, maxY);
+  const loops = [points, ...(holes ?? [])];
+  const intersections: number[] = [];
   for (let y = minY; y < maxY; y++) {
-    for (let x = minX; x < maxX; x++) {
-      const px = x + 0.5;
-      const py = y + 0.5;
-      if (
-        insidePolygon(px, py, points) &&
-        !(holes ?? []).some((hole) => insidePolygon(px, py, hole))
-      ) {
-        writePixel(x, y, color, data, bounds);
+    intersections.length = 0;
+    const scanY = y + 0.5;
+    for (const loop of loops) {
+      for (let i = 0, j = loop.length - 1; i < loop.length; j = i++) {
+        const a = loop[i];
+        const b = loop[j];
+        if (!a || !b || a.y > scanY === b.y > scanY) continue;
+        intersections.push(a.x + ((scanY - a.y) * (b.x - a.x)) / (b.y - a.y));
       }
     }
+    intersections.sort((a, b) => a - b);
+    for (let i = 0; i + 1 < intersections.length; i += 2) {
+      const left = intersections[i];
+      const right = intersections[i + 1];
+      if (left === undefined || right === undefined) continue;
+      const from = Math.max(bounds.left, Math.floor(left - 0.5) + 1);
+      const to = Math.min(bounds.left + bounds.width, Math.ceil(right - 0.5));
+      for (let x = from; x < to; x++) writePixel(x, y, color, data, bounds);
+    }
   }
-}
-
-function insidePolygon(x: number, y: number, points: readonly G1Point[]): boolean {
-  let inside = false;
-  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const a = points[i];
-    const b = points[j];
-    if (!a || !b) continue;
-    if (a.y > y !== b.y > y && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
-  }
-  return inside;
 }
 
 function drawCircle(

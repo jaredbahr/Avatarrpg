@@ -43,7 +43,7 @@ describe('pixel mark placement', () => {
       x: 1,
       y: 0,
     });
-    const lifted = resolvePixelMarkDraws(camera, [talkPipMark({ x: 40, y: 125 }, 0.7)], cache);
+    const lifted = resolvePixelMarkDraws(camera, [talkPipMark({ x: 40, y: 145 }, 0.7)], cache);
 
     expect(shaken).toHaveLength(1);
     expect(lifted).toHaveLength(1);

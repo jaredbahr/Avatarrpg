@@ -1,5 +1,10 @@
 import { TILE, type Camera } from './camera';
-import type { OverlayKind } from './view';
+import { aimArcPoints, arcHeading, arrowheadPolygon } from './geometry/arc';
+import { contourLoops } from './geometry/contour';
+import type { Curve } from './geometry/curve';
+import { nearestDistanceAlong, sampleAt, smoothPath } from './geometry/curve';
+import { OVERLAY } from './palettes';
+import type { AimArc, MapView, OverlayKind, TargetReticleCue } from './view';
 import type { G1Bounds, G1Point, PixelMarkSpec, PixelOperation } from './pixelMarks';
 import { snapWorldPoints } from './pixelMarks';
 
@@ -13,6 +18,7 @@ export interface PixelOverlayCue {
 }
 
 export type OverlayPalette = (kind: OverlayKind) => [string, string | null];
+const MAX_MARK_OPERATIONS = 256;
 
 /** Screen point to its stable board-pixel coordinate, before camera scale. */
 export function screenToBoardPixel(camera: Camera, point: { x: number; y: number }): G1Point {
@@ -68,6 +74,382 @@ export function talkPipMark(anchor: G1Point, alpha: number): PixelOverlayCue {
     1,
     anchor,
   );
+}
+
+export function selectedRingMark(
+  anchor: G1Point,
+  radiusX: number,
+  radiusY: number,
+): PixelOverlayCue {
+  const points = snapWorldPoints(
+    Array.from({ length: 32 }, (_, index) => {
+      const angle = (index / 32) * Math.PI * 2;
+      return { x: Math.cos(angle) * radiusX, y: Math.sin(angle) * radiusY };
+    }),
+  );
+  return pixelMark(
+    'selected-ring',
+    [
+      {
+        kind: 'line',
+        color: 'ring',
+        points: [...points, points[0] as G1Point],
+        width: 2,
+      },
+    ],
+    { ring: 'rgba(255,255,255,0.6)' },
+    1,
+    2,
+    anchor,
+  );
+}
+
+export function koCrossMark(anchor: G1Point, width: number, alpha = 1): PixelOverlayCue {
+  const halfWidth = Math.max(1, Math.round(width * 0.2));
+  const halfHeight = Math.max(1, Math.round(TILE * 0.2));
+  return pixelMark(
+    'ko-cross',
+    [
+      {
+        kind: 'line',
+        color: 'ko',
+        points: [
+          { x: -halfWidth, y: -halfHeight },
+          { x: halfWidth, y: halfHeight },
+        ],
+        width: 2,
+      },
+      {
+        kind: 'line',
+        color: 'ko',
+        points: [
+          { x: halfWidth, y: -halfHeight },
+          { x: -halfWidth, y: halfHeight },
+        ],
+        width: 2,
+      },
+    ],
+    { ko: 'rgba(226,88,74,0.85)' },
+    alpha,
+    2,
+    anchor,
+  );
+}
+
+export function exitMark(anchor: G1Point, alpha: number): PixelOverlayCue {
+  return pixelMark(
+    'exit',
+    [
+      {
+        kind: 'circle',
+        color: 'gold',
+        centre: { x: 0, y: 0 },
+        radius: 18,
+        fill: false,
+      },
+      {
+        kind: 'polygon',
+        color: 'gold',
+        points: [
+          { x: -12, y: -16 },
+          { x: 10, y: 0 },
+          { x: -12, y: 16 },
+          { x: -5, y: 0 },
+        ],
+      },
+    ],
+    { gold: '#f0c674' },
+    alpha,
+    2,
+    anchor,
+  );
+}
+
+/** Decorative enemy faction spike, preserving the existing cap polygon points. */
+export function healthBarSpikeMark(
+  anchor: G1Point,
+  points: readonly G1Point[],
+  fill: string,
+  frame: string,
+): PixelOverlayCue {
+  return pixelMark(
+    'enemy-health-spike',
+    [{ kind: 'polygon', color: 'fill', points, outline: { color: 'frame', width: 1 } }],
+    { fill, frame },
+    1,
+    2,
+    anchor,
+  );
+}
+
+export function targetReticleMark(
+  anchor: G1Point,
+  cue: Pick<TargetReticleCue, 'elevation' | 'obscured'>,
+): PixelOverlayCue {
+  const operations: PixelOperation[] = [];
+  if (cue.elevation) {
+    const direction = cue.elevation === 'above' ? -1 : 1;
+    operations.push({
+      kind: 'polygon',
+      color: 'paper',
+      points: [
+        { x: -8, y: -direction * 5 },
+        { x: 0, y: direction * 8 },
+        { x: 8, y: -direction * 5 },
+      ],
+      outline: { color: 'ink', width: 2 },
+    });
+  }
+  if (cue.obscured) {
+    const cloudOffsetX = 17;
+    operations.push({
+      kind: 'polygon',
+      color: 'paper',
+      points: [
+        { x: cloudOffsetX + 8, y: -1 },
+        { x: cloudOffsetX + 9, y: 1 },
+        { x: cloudOffsetX + 8, y: 4 },
+        { x: cloudOffsetX - 8, y: 4 },
+        { x: cloudOffsetX - 9, y: 2 },
+        { x: cloudOffsetX - 8, y: -1 },
+        { x: cloudOffsetX - 5, y: -4 },
+        { x: cloudOffsetX - 2, y: -4 },
+        { x: cloudOffsetX + 1, y: -6 },
+        { x: cloudOffsetX + 5, y: -5 },
+      ],
+      outline: { color: 'ink', width: 2 },
+    });
+  }
+  if (operations.length === 0) throw new Error('A target reticle mark needs an active cue');
+  return pixelMark(
+    'target-reticle',
+    operations,
+    { paper: OVERLAY.reticleCue, ink: OVERLAY.pathUnder },
+    1,
+    2,
+    anchor,
+  );
+}
+
+export function hoverCalmMark(pos: { x: number; y: number }, camera: Camera): PixelOverlayCue {
+  const anchor = boardPixelFromTile(camera, pos);
+  const loop = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
+  const origin = camera.groundPoint(pos);
+  const points = snapWorldPoints(
+    loop.map((point) => {
+      const projected = camera.groundPoint({ x: pos.x + point.x, y: pos.y + point.y });
+      return { x: projected.x - origin.x, y: projected.y - origin.y };
+    }),
+  );
+  return pixelMark(
+    'hover-calm',
+    [
+      {
+        kind: 'line',
+        color: 'calm',
+        points: [...points, points[0] as G1Point],
+        width: 2,
+      },
+    ],
+    { calm: OVERLAY.calmPath },
+    0.45,
+    2,
+    anchor,
+  );
+}
+
+export function pathPixelMarks(
+  view: Pick<
+    MapView,
+    'path' | 'pathFrom' | 'pathOrigin' | 'pathStart' | 'calmPath' | 'crispOverlays'
+  >,
+  camera: Camera,
+  cachedCurve?: Curve,
+): PixelOverlayCue[] {
+  if (view.path.length === 0) return [];
+  if (!view.pathFrom || (view.crispOverlays && !view.calmPath)) {
+    return simplePathMarks(view.path, camera);
+  }
+
+  const curve = cachedCurve ?? smoothPath(view.pathFrom, view.path);
+  const start = view.pathOrigin
+    ? nearestDistanceAlong(curve, view.pathOrigin, view.pathStart, view.path.length)
+    : 0;
+  const first = sampleAt(curve, start).pos;
+  const route = [
+    first,
+    ...curve.points.filter((_, index) => (curve.cumulative[index] ?? 0) > start),
+  ];
+  const points = projectedPoints(camera, route);
+  if (points.length < 2) return simplePathMarks(view.path, camera);
+  const calm = Boolean(view.calmPath);
+  const marks = [
+    pixelMark(
+      'route-under',
+      [{ kind: 'line', color: 'under', points, width: 2 }],
+      { under: calm ? OVERLAY.calmPathUnder : OVERLAY.pathUnder },
+      1,
+      2,
+    ),
+    pixelMark(
+      'route-line',
+      [
+        {
+          kind: 'line',
+          color: 'line',
+          points,
+          width: 1,
+          ...(!calm ? { dash: { on: 14, off: 10, phase: 0 } } : {}),
+        },
+      ],
+      {
+        line:
+          calm && view.crispOverlays
+            ? OVERLAY.calmPathContrast
+            : calm
+              ? OVERLAY.calmPath
+              : OVERLAY.path,
+      },
+      1,
+      2,
+    ),
+  ];
+  const end = sampleAt(curve, curve.length);
+  const tip = boardPixelFromTile(camera, end.pos);
+  if (calm) {
+    marks.push(
+      pixelMark(
+        'route-end',
+        [
+          {
+            kind: 'circle',
+            color: 'line',
+            centre: { x: 0, y: 0 },
+            radius: Math.max(1, Math.round(TILE * OVERLAY.calmPathMarkerScale)),
+            fill: false,
+            width: 1,
+          },
+        ],
+        {
+          line: view.crispOverlays ? OVERLAY.calmPathContrast : OVERLAY.calmPath,
+        },
+        1,
+        2,
+        tip,
+      ),
+    );
+  } else {
+    const tangent = projectedTangent(end.tangent, camera);
+    const polygon = flatPolygonPoints(
+      arrowheadPolygon({ x: 0, y: 0 }, tangent, TILE * OVERLAY.pathArrowScale),
+    );
+    marks.push(
+      pixelMark(
+        'route-end',
+        [{ kind: 'polygon', color: 'arrow', points: polygon }],
+        { arrow: OVERLAY.path },
+        1,
+        2,
+        tip,
+      ),
+    );
+  }
+  return marks;
+}
+
+export function aimArcPixelMarks(arc: AimArc, camera: Camera): PixelOverlayCue[] {
+  const raw = aimArcPoints(arc.from, arc.to, arc.arc);
+  const points = projectedPoints(camera, raw);
+  if (points.length < 2) return [];
+  const operations: PixelOperation[] = [
+    { kind: 'line', color: 'under', points, width: 2 },
+    ...points
+      .filter((_, index) => index % 2 === 0 && index + 1 < points.length)
+      .map((centre) => ({
+        kind: 'circle' as const,
+        color: 'element',
+        centre,
+        radius: 2,
+        fill: true,
+      })),
+  ];
+  const tip = boardPixelFromTile(camera, raw[raw.length - 1] ?? arc.to);
+  const arrow = flatPolygonPoints(
+    arrowheadPolygon({ x: 0, y: 0 }, projectedTangent(arcHeading(raw), camera), TILE),
+  ).map(({ x, y }) => ({ x: x + tip.x, y: y + tip.y }));
+  operations.push({
+    kind: 'polygon',
+    color: 'element',
+    points: arrow,
+  });
+  return [pixelMark('aim-arc', operations, { under: OVERLAY.pathUnder, element: arc.color }, 1, 2)];
+}
+
+function simplePathMarks(
+  path: readonly { x: number; y: number }[],
+  camera: Camera,
+): PixelOverlayCue[] {
+  const centres = path.map((point) =>
+    boardPixelFromTile(camera, { x: point.x + 0.5, y: point.y + 0.5 }),
+  );
+  const marks: PixelOverlayCue[] = [];
+  const dots = centres.slice(0, -1);
+  for (let start = 0; start < dots.length; start += MAX_MARK_OPERATIONS) {
+    const operations: PixelOperation[] = dots
+      .slice(start, start + MAX_MARK_OPERATIONS)
+      .map((centre) => ({
+        kind: 'circle',
+        color: 'path',
+        centre,
+        radius: 5,
+        fill: true,
+      }));
+    if (operations.length)
+      marks.push(pixelMark(`route-dots:${start}`, operations, { path: OVERLAY.path }, 0.9, 6));
+  }
+  const tip = centres[centres.length - 1];
+  if (tip) {
+    marks.push(
+      pixelMark(
+        'route-arrow',
+        [
+          {
+            kind: 'polygon',
+            color: 'path',
+            points: [
+              { x: 0, y: -13 },
+              { x: 10, y: 8 },
+              { x: 0, y: 3 },
+              { x: -10, y: 8 },
+            ],
+          },
+        ],
+        { path: OVERLAY.path },
+        1,
+        2,
+        tip,
+      ),
+    );
+  }
+  return marks;
+}
+
+function flatPolygonPoints(flat: readonly number[]): G1Point[] {
+  const points: G1Point[] = [];
+  for (let index = 0; index + 1 < flat.length; index += 2) {
+    points.push({ x: flat[index] ?? 0, y: flat[index + 1] ?? 0 });
+  }
+  return snapWorldPoints(points);
+}
+
+function projectedTangent(
+  tangent: { x: number; y: number },
+  camera: Camera,
+): { x: number; y: number } {
+  const x = camera.projection === 'oblique' ? tangent.x - tangent.y : tangent.x;
+  const y = camera.projection === 'oblique' ? (tangent.x + tangent.y) / 2 : tangent.y;
+  const length = Math.hypot(x, y) || 1;
+  return { x: x / length, y: y / length };
 }
 
 /** One helper shared by route and aim geometry so both snap at the same G1 stops. */
