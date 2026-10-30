@@ -15,6 +15,7 @@ import type { MapView, RenderUnit } from '../src/render/view';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { groundPoint } from './projection';
+import { prepareRaisedHoverEvidence } from './raised-hover-evidence';
 
 const REVIEW_DIR = resolve(process.cwd(), '.shots/pixel-overlay-review');
 const VIEWPORT = { width: 1280, height: 800 };
@@ -218,6 +219,79 @@ async function captureGameplayMove(
   backend: 'canvas' | 'webgl',
   dpr: number,
 ): Promise<DrawTiming> {
+  const captureMoveFrame = async (
+    phase: 'preview' | 'confirmed',
+    expectedVisual?: { actorId: string; destination: { x: number; y: number } },
+  ): Promise<void> => {
+    const path = resolve(
+      REVIEW_DIR,
+      `gameplay-${backend}-dpr${dpr}-move-${phase}${dpr === 2 ? '-canvas' : ''}.png`,
+    );
+    if (dpr === 1) {
+      // Keep the full-page UI context at DPR1. The gameplay assertions below
+      // exercise the same real Move path at both device scales.
+      await page.screenshot({ path });
+      return;
+    }
+    // Chromium's full-page screenshot forces an expensive software-WebGL
+    // readback. Draw the actual MapView and save the canvas at its native
+    // backing resolution, rather than reducing or resampling the pixels.
+    if (phase === 'confirmed') {
+      // The scene loop publishes its final MapView on the next actual frame.
+      await page.evaluate(
+        () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+      );
+    }
+    const frame = await page.evaluate((expected) => {
+      const renderer = (
+        window.fnt!.app as unknown as {
+          scene: { renderer: { lastView: MapView | null; draw(view: MapView): void } };
+        }
+      ).scene.renderer;
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const view = renderer.lastView;
+      if (!canvas || !view) throw new Error('Missing real Move canvas or MapView');
+      const actor = expected ? view.units.find((unit) => unit.id === expected.actorId) : null;
+      if (expected && !actor) throw new Error('Missing confirmed Move actor in final MapView');
+      const visualPosition = actor ? (actor.renderPos ?? actor.pos) : null;
+      renderer.draw(view);
+      const rect = canvas.getBoundingClientRect();
+      return {
+        dataUrl: canvas.toDataURL('image/png'),
+        width: canvas.width,
+        height: canvas.height,
+        cssWidth: rect.width,
+        cssHeight: rect.height,
+        visualPosition,
+      };
+    }, expectedVisual ?? null);
+    const png = Buffer.from(frame.dataUrl.split(',')[1] ?? '', 'base64');
+    expect(png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))).toBe(true);
+    expect(png.readUInt32BE(16)).toBe(frame.width);
+    expect(png.readUInt32BE(20)).toBe(frame.height);
+    expect(Math.abs(frame.width - frame.cssWidth * dpr)).toBeLessThanOrEqual(1);
+    expect(Math.abs(frame.height - frame.cssHeight * dpr)).toBeLessThanOrEqual(1);
+    if (expectedVisual) expect(frame.visualPosition).toEqual(expectedVisual.destination);
+    writeFileSync(path, png);
+    writeFileSync(
+      `${path}.json`,
+      `${JSON.stringify(
+        {
+          capture: 'native-canvas-backing-after-renderer-draw',
+          phase,
+          backend,
+          dpr,
+          width: frame.width,
+          height: frame.height,
+          cssWidth: frame.cssWidth,
+          cssHeight: frame.cssHeight,
+          visualPosition: frame.visualPosition,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  };
   await resetStorage(page, `?renderer=${backend}`);
   await startGame(page, ['Kaya'], ['kaya'], 'pixel-review-move-parity');
   await enterNode(page, 'battle_forest_road');
@@ -297,22 +371,18 @@ async function captureGameplayMove(
       cues: `overlays=${view.overlays.length},path=${view.path.length},target=${view.targetReticle ? 1 : 0}`,
     };
   });
-  await page.screenshot({
-    path: resolve(REVIEW_DIR, `gameplay-${backend}-dpr${dpr}-move-preview.png`),
-  });
+  await captureMoveFrame('preview');
   await page.getByRole('button', { name: /^Confirm$/ }).click();
   await waitForIdle(page);
-  await expect
-    .poll(async () =>
-      page.evaluate((id) => {
-        const unit = window.fnt?.app.state?.battle?.units.find((candidate) => candidate.id === id);
-        return unit ? `${unit.pos.x},${unit.pos.y}` : null;
-      }, active.id),
-    )
-    .toBe(`${destination.cell.pos.x},${destination.cell.pos.y}`);
-  await page.screenshot({
-    path: resolve(REVIEW_DIR, `gameplay-${backend}-dpr${dpr}-move-confirmed.png`),
-  });
+  // Confirm synchronously commits the chosen Move; after the existing idle
+  // wait, assert its exact state once. An eventual poll can expire while a
+  // software-WebGL readback returns the correct position at its deadline.
+  const confirmedPosition = await page.evaluate((id) => {
+    const unit = window.fnt?.app.state?.battle?.units.find((candidate) => candidate.id === id);
+    return unit ? `${unit.pos.x},${unit.pos.y}` : null;
+  }, active.id);
+  expect(confirmedPosition).toBe(`${destination.cell.pos.x},${destination.cell.pos.y}`);
+  await captureMoveFrame('confirmed', { actorId: active.id, destination: destination.cell.pos });
   return drawTiming;
 }
 
@@ -369,6 +439,16 @@ async function captureStagedMarks(
   page: Page,
   zoom: 1 | 2 | 3,
 ): Promise<{
+  pairCapture: {
+    mode: 'original' | 'phase-safe-groups';
+    afterDraws: number;
+    beforeDraws: number;
+    warmupDraws: number;
+    totalDraws: number;
+    cropReadbacks: number;
+    pairMs: number;
+    groups: { anchor: MarkName; members: MarkName[]; offsetX: number; offsetY: number }[];
+  };
   crops: MarkCrops;
   cache: {
     warm: number;
@@ -402,6 +482,7 @@ async function captureStagedMarks(
       type RuntimeRenderer = {
         camera: {
           scale: number;
+          integerZoom: boolean;
           offsetX: number;
           offsetY: number;
           viewport: { dpr: number; width: number; height: number };
@@ -922,37 +1003,242 @@ async function captureStagedMarks(
       const methodName = renderer.backendName === 'canvas' ? 'drawPixelCues' : 'appendPixelMarks';
       const original = backendObject[methodName] as ((...args: unknown[]) => unknown) | undefined;
       if (!original) throw new Error(`Missing ${methodName} pixel-mark adapter seam.`);
+      const names = Object.keys(centres) as MarkName[];
+      const pairStart = performance.now();
+      let afterDraws = 0;
+      let beforeDraws = 0;
+      let warmupDraws = 0;
+      const usedGroups: {
+        anchor: MarkName;
+        members: MarkName[];
+        offsetX: number;
+        offsetY: number;
+      }[] = [];
       // Keep each pair at one camera position so the scene and lifted-ground
       // caches stay warm between its complete after and filtered before draws.
-      for (const name of Object.keys(centres) as MarkName[]) {
-        centreOnMark(name);
-        const probeView = comparisonView(name);
-        if (name === 'healthBar') drawComparisonView(probeView, name);
-        after[name] = drawComparisonView(probeView, name);
-        if (name === 'talk') {
-          const quietView: MapView = {
-            ...probeView,
-            npcs: probeView.npcs.map((npc) => ({ ...npc, quiet: true })),
+      if (renderer.backendName !== 'webgl' || camera.viewport.dpr !== 2) {
+        // Canvas and DPR1 retain the original per-cue draw order and camera positions.
+        for (const name of names) {
+          centreOnMark(name);
+          const probeView = comparisonView(name);
+          if (name === 'healthBar') {
+            drawComparisonView(probeView, name);
+            warmupDraws++;
+          }
+          after[name] = drawComparisonView(probeView, name);
+          afterDraws++;
+          if (name === 'talk') {
+            const quietView: MapView = {
+              ...probeView,
+              npcs: probeView.npcs.map((npc) => ({ ...npc, quiet: true })),
+            };
+            before[name] = drawComparisonView(quietView, name);
+            beforeDraws++;
+            continue;
+          }
+          const wrapped = (...args: unknown[]): unknown => {
+            const cuesIndex = methodName === 'drawPixelCues' ? 0 : 2;
+            const cues = args[cuesIndex] as readonly { id: string }[] | undefined;
+            if (!cues) throw new Error(`Missing pixel cue list in ${methodName}.`);
+            args[cuesIndex] = cues.filter(
+              (cue) => !prefixes[name].some((prefix) => cue.id.startsWith(prefix)),
+            );
+            return original.apply(backendObject, args);
           };
-          before[name] = drawComparisonView(quietView, name);
-          continue;
+          backendObject[methodName] = wrapped;
+          try {
+            before[name] = drawComparisonView(probeView, name);
+            beforeDraws++;
+          } finally {
+            backendObject[methodName] = original;
+          }
         }
-        const wrapped = (...args: unknown[]): unknown => {
-          const cuesIndex = methodName === 'drawPixelCues' ? 0 : 2;
-          const cues = args[cuesIndex] as readonly { id: string }[] | undefined;
-          if (!cues) throw new Error(`Missing pixel cue list in ${methodName}.`);
-          args[cuesIndex] = cues.filter(
-            (cue) => !prefixes[name].some((prefix) => cue.id.startsWith(prefix)),
-          );
-          return original.apply(backendObject, args);
+      } else {
+        type CameraOffset = { x: number; y: number };
+        const originalOffsets = {} as Record<MarkName, CameraOffset>;
+        for (const name of names) {
+          centreOnMark(name);
+          originalOffsets[name] = { x: camera.offsetX, y: camera.offsetY };
+        }
+        const plans: { anchor: MarkName; members: MarkName[] }[] =
+          requestedZoom === 1
+            ? [
+                {
+                  anchor: 'move',
+                  members: [
+                    'move',
+                    'target',
+                    'area',
+                    'rangeBonus',
+                    'hover',
+                    'path',
+                    'aim',
+                    'exit',
+                    'selected',
+                    'ko',
+                  ],
+                },
+                { anchor: 'targetReticle', members: ['targetReticle'] },
+                { anchor: 'talk', members: ['talk'] },
+                { anchor: 'healthBar', members: ['healthBar'] },
+              ]
+            : requestedZoom === 2
+              ? [
+                  {
+                    anchor: 'area',
+                    members: [
+                      'move',
+                      'target',
+                      'area',
+                      'rangeBonus',
+                      'hover',
+                      'path',
+                      'exit',
+                      'ko',
+                    ],
+                  },
+                  { anchor: 'selected', members: ['aim', 'selected'] },
+                  { anchor: 'targetReticle', members: ['targetReticle'] },
+                  { anchor: 'talk', members: ['talk'] },
+                  { anchor: 'healthBar', members: ['healthBar'] },
+                ]
+              : [
+                  { anchor: 'target', members: ['move', 'target', 'area', 'path', 'exit'] },
+                  { anchor: 'rangeBonus', members: ['rangeBonus', 'hover', 'ko'] },
+                  { anchor: 'aim', members: ['aim', 'selected'] },
+                  { anchor: 'targetReticle', members: ['targetReticle'] },
+                  { anchor: 'talk', members: ['talk'] },
+                  { anchor: 'healthBar', members: ['healthBar'] },
+                ];
+        const scheduled = plans.flatMap((plan) => plan.members);
+        if (scheduled.length !== names.length || new Set(scheduled).size !== names.length)
+          throw new Error('DPR2 camera plan must contain every mark exactly once');
+        const setCamera = (at: CameraOffset): void => {
+          camera.offsetX = at.x;
+          camera.offsetY = at.y;
+          if (camera.offsetX !== at.x || camera.offsetY !== at.y)
+            throw new Error('Camera did not retain its measured snapped offset');
         };
-        backendObject[methodName] = wrapped;
-        try {
-          before[name] = drawComparisonView(probeView, name);
-        } finally {
-          backendObject[methodName] = original;
+        const whole = (value: number): boolean => Math.abs(value - Math.round(value)) < 1e-6;
+        const canShare = (name: MarkName, at: CameraOffset): boolean => {
+          const geometry = cueGeometry[name];
+          if (!geometry || !camera.integerZoom) return false;
+          const old = originalOffsets[name];
+          const dx = at.x - old.x;
+          const dy = at.y - old.y;
+          if (
+            !whole(dx / requestedZoom) ||
+            !whole(dy / requestedZoom) ||
+            !whole(dx * camera.viewport.dpr) ||
+            !whole(dy * camera.viewport.dpr)
+          )
+            return false;
+          const cropAt = (offset: CameraOffset) => {
+            const left = (geometry.left - 4) * requestedZoom - offset.x;
+            const top = (geometry.top - 4) * requestedZoom - offset.y;
+            const cssWidth = (geometry.width + 8) * requestedZoom;
+            const cssHeight = (geometry.height + 8) * requestedZoom;
+            const sx = Math.round(left * backingScaleX);
+            const sy = Math.round(top * backingScaleY);
+            const width = Math.round(cssWidth * backingScaleX);
+            const height = Math.round(cssHeight * backingScaleY);
+            return {
+              left,
+              top,
+              cssWidth,
+              cssHeight,
+              sx,
+              sy,
+              width,
+              height,
+              fits:
+                left >= 0 &&
+                top >= 0 &&
+                left + cssWidth <= camera.viewport.width &&
+                top + cssHeight <= camera.viewport.height &&
+                sx >= 0 &&
+                sy >= 0 &&
+                sx + width <= canvas.width &&
+                sy + height <= canvas.height,
+            };
+          };
+          const baseline = cropAt(old);
+          const grouped = cropAt(at);
+          return (
+            baseline.fits &&
+            grouped.fits &&
+            baseline.sx - grouped.sx === Math.round(dx * camera.viewport.dpr) &&
+            baseline.sy - grouped.sy === Math.round(dy * camera.viewport.dpr)
+          );
+        };
+        const groups: { anchor: MarkName; members: MarkName[]; at: CameraOffset }[] = [];
+        const fallback: MarkName[] = [];
+        for (const plan of plans) {
+          const at = originalOffsets[plan.anchor];
+          const members = plan.members.filter((name) => {
+            if (plan.members.length === 1 && name === plan.anchor) return true;
+            const supported = canShare(name, at);
+            if (!supported) fallback.push(name);
+            return supported;
+          });
+          if (members.length) groups.push({ anchor: plan.anchor, members, at });
+        }
+        for (const name of fallback)
+          groups.push({ anchor: name, members: [name], at: originalOffsets[name] });
+        if (groups.reduce((sum, group) => sum + group.members.length, 0) !== names.length)
+          throw new Error('DPR2 camera fallback dropped a mark');
+        for (const group of groups) {
+          setCamera(group.at);
+          const first = group.members[0];
+          if (!first) throw new Error('DPR2 camera group has no marks');
+          const afterView = comparisonView(first);
+          if (first === 'healthBar') {
+            drawComparisonView(afterView, first);
+            warmupDraws++;
+          }
+          after[first] = drawComparisonView(afterView, first);
+          afterDraws++;
+          for (const name of group.members.slice(1)) after[name] = captureMark(name);
+          for (const name of group.members) {
+            setCamera(group.at);
+            const probeView = comparisonView(name);
+            if (name === 'talk') {
+              const quietView: MapView = {
+                ...probeView,
+                npcs: probeView.npcs.map((npc) => ({ ...npc, quiet: true })),
+              };
+              before[name] = drawComparisonView(quietView, name);
+              beforeDraws++;
+              continue;
+            }
+            const wrapped = (...args: unknown[]): unknown => {
+              const cuesIndex = methodName === 'drawPixelCues' ? 0 : 2;
+              const cues = args[cuesIndex] as readonly { id: string }[] | undefined;
+              if (!cues) throw new Error(`Missing pixel cue list in ${methodName}.`);
+              args[cuesIndex] = cues.filter(
+                (cue) => !prefixes[name].some((prefix) => cue.id.startsWith(prefix)),
+              );
+              return original.apply(backendObject, args);
+            };
+            backendObject[methodName] = wrapped;
+            try {
+              before[name] = drawComparisonView(probeView, name);
+              beforeDraws++;
+            } finally {
+              backendObject[methodName] = original;
+            }
+          }
+          usedGroups.push({
+            anchor: group.anchor,
+            members: group.members,
+            offsetX: group.at.x,
+            offsetY: group.at.y,
+          });
         }
       }
+      const pairMs = performance.now() - pairStart;
+      if (beforeDraws !== names.length || warmupDraws !== 1)
+        throw new Error('Pixel cue capture changed a filtered before or health warmup draw');
 
       const occlusionBase: MapView = {
         ...cueView,
@@ -1054,6 +1340,19 @@ async function captureStagedMarks(
       for (const name of Object.keys(centres) as MarkName[])
         crops[name] = { before: before[name], after: after[name] };
       return {
+        pairCapture: {
+          mode:
+            renderer.backendName === 'webgl' && camera.viewport.dpr === 2
+              ? 'phase-safe-groups'
+              : 'original',
+          afterDraws,
+          beforeDraws,
+          warmupDraws,
+          totalDraws: afterDraws + beforeDraws + warmupDraws,
+          cropReadbacks: names.length * 2 + warmupDraws,
+          pairMs,
+          groups: usedGroups,
+        },
         alphaProbes,
         ruleSignatures,
         contrastRules,
@@ -1124,7 +1423,13 @@ async function backendRun(
     const gameplayTiming = await captureGameplayMove(page, backend, dpr);
     const zooms = {} as Record<'1' | '2' | '3', Awaited<ReturnType<typeof captureStagedMarks>>>;
     for (const zoom of zoomsToCapture) {
-      zooms[String(zoom) as '1' | '2' | '3'] = await captureStagedMarks(page, zoom);
+      const captured = await captureStagedMarks(page, zoom);
+      zooms[String(zoom) as '1' | '2' | '3'] = captured;
+      if (dpr === 2)
+        writeFileSync(
+          resolve(REVIEW_DIR, `capture-plan-${backend}-dpr2-zoom${zoom}.json`),
+          `${JSON.stringify(captured.pairCapture, null, 2)}\n`,
+        );
     }
     return { zooms, gameplayTiming };
   } finally {
@@ -1421,7 +1726,9 @@ for (const backend of ['canvas', 'webgl'] as const) {
       hasTouch: true,
     });
     const page = await context.newPage();
+    let observation: Awaited<ReturnType<typeof prepareRaisedHoverEvidence>> | null = null;
     try {
+      if (backend === 'webgl') observation = await prepareRaisedHoverEvidence(page);
       await resetStorage(page, `?renderer=${backend}`);
       await startGame(page, ['Kaya'], ['kaya'], 'pixel-overlay-raised-pick');
       await enterNode(page, 'quarry_after_explore');
@@ -1459,6 +1766,11 @@ for (const backend of ['canvas', 'webgl'] as const) {
           (window as Window & { raisedTouchPick?: { x: number; y: number } }).raisedTouchPick = pos;
           original.call(scene, pos);
         };
+        if (window.raisedHoverObserver) {
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          if (!canvas) throw new Error('Missing raised hover canvas');
+          window.raisedHoverObserver.install(scene, canvas);
+        }
         return { ...drawn, scale: camera.scale };
       }, TIER_LIFT);
       const box = await page.locator('.map-canvas').boundingBox();
@@ -1467,22 +1779,29 @@ for (const backend of ['canvas', 'webgl'] as const) {
       expect(point.y).toBeGreaterThan(0);
       expect(point.x).toBeLessThan(box.width);
       expect(point.y).toBeLessThan(box.height);
+      observation?.intendPointer(box.x + point.x, box.y + point.y);
       await page.mouse.move(box.x + point.x, box.y + point.y);
-      await expect
-        .poll(() =>
-          page.evaluate(() => {
-            const scene = (
-              window.fnt!.app as unknown as {
-                scene: {
-                  hover: { x: number; y: number } | null;
-                  renderer: { lastView: MapView | null };
-                };
-              }
-            ).scene;
-            return { hover: scene.hover, drawn: scene.renderer.lastView?.hoverTile ?? null };
-          }),
-        )
-        .toEqual({ hover: { x: 5, y: 1 }, drawn: { x: 5, y: 1 } });
+      try {
+        await expect
+          .poll(() =>
+            observation
+              ? observation.readForPoll()
+              : page.evaluate(() => {
+                  const scene = (
+                    window.fnt!.app as unknown as {
+                      scene: {
+                        hover: { x: number; y: number } | null;
+                        renderer: { lastView: MapView | null };
+                      };
+                    }
+                  ).scene;
+                  return { hover: scene.hover, drawn: scene.renderer.lastView?.hoverTile ?? null };
+                }),
+          )
+          .toEqual({ hover: { x: 5, y: 1 }, drawn: { x: 5, y: 1 } });
+      } finally {
+        await observation?.close();
+      }
       const hovered = await page.evaluate(() => {
         const renderer = (
           window.fnt!.app as unknown as {
@@ -1543,6 +1862,7 @@ for (const backend of ['canvas', 'webgl'] as const) {
         path: resolve(REVIEW_DIR, `raised-quarry-${backend}-dpr2-hover-touch.png`),
       });
     } finally {
+      await observation?.close();
       await context.close();
     }
   });
