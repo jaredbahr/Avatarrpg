@@ -243,6 +243,12 @@ monotonic clock. Its failure summary adds per-operation counts/totals/maxima,
 five slowest completed operations, and any still-pending operation's
 already-known node/line/branch and elapsed time to the existing Playwright
 error. It adds no browser request, skips no authored control, and changes no
-product source, assertion, timeout, retry, or seed. It must pass the original
-full trade case and a new exact-head nine-step local gate before any push;
-the current isolated diagnostic has not been published or hosted-run.
+product source, assertion, timeout, retry, or seed. The original complete
+trade case passed 1/1 on isolated diagnostic source `64d65c6e` in production
+Chromium at 1194×834 DPR 2, one worker, zero retries, and the unchanged
+600-second case limit (3.6-minute case, 3.7-minute suite; exit 0 in
+`/workspace/avatarrpg-env/370-quarry-story-trade-64d.receipt`). This proves
+the original route still runs with the passive timing hooks; it does not prove
+hosted WebKit throughput or a fix. The diagnostic remains unpublished and
+requires an author-preserving integration merge followed by a new exact-head
+nine-step local gate before any push or hosted dispatch.
