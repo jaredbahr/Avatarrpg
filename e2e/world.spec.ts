@@ -138,7 +138,8 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
 
   await openActivities(page);
   await page.getByRole('button', { name: 'Walk to Ba Dan', exact: true }).click();
-  await waitForIdle(page);
+  // The return from the shrine is another authored long walk, about 22 seconds.
+  await completeAuthoredPlayback(page);
   await expect(page.locator('.title-plate-name')).toHaveText('Ba Dan Village');
   await expect(page.locator('.title-plate-objective')).toContainText('The workers are home');
   await expect
