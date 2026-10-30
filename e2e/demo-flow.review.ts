@@ -874,7 +874,7 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
     const cells = [...reachable(draft.moveContext(self), self.pos, self.move).values()].filter(
       (c) => !b.units.some((u) => u.hp > 0 && u.pos.x === c.pos.x && u.pos.y === c.pos.y),
     );
-    const move = page.getByRole('button', { name: /^Move/ });
+    const move = page.locator('.action-row').getByRole('button', { name: /^Move \d+ left$/ });
     if (!(await move.isEnabled({ timeout: 2_000 }))) return false;
     await tapButton(move);
     await settleLayout(page, slow ? 120_000 : 30_000);
