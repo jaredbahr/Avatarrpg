@@ -62,10 +62,53 @@ file hashes during that validation. Head remained `9223096c`; spec SHA256 is
 `705f54546c7a3f46c2006dfcdc0f713037baab126b1121f39ca0490bfdba5c12`,
 and helper SHA256 remains
 `f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05`.
-This handoff was then updated with those actual results. Browser, build,
-full nine-stage gate, integration, push and hosted dispatch remain unrun at this
-validation checkpoint. Root reviews the results before source commit or browser
-release.
+This handoff was then updated with those actual results before source commit
+`fafb5a786ce0bf56724187319d0794ac3cca4c74` and root's browser release.
+
+## Original-route validation at source `fafb5a78`
+
+One invocation passed both complete original campaigns, with one worker and
+one attempt per case, zero retries, unchanged 600-second case budgets and the
+repository 10-second expect budget. Installed system Chromium
+(`/usr/bin/chromium`) ran production Canvas at 1194×834, DPR 2, with touch.
+The published `72b0436` app dist was reused only after production inputs in
+both source and app worktrees matched published `72b04367`; no rebuild was
+needed.
+
+| Original case                     | Result | Case duration |
+| --------------------------------- | ------ | ------------: |
+| Trade, save/reload and walk home  | Passed |     169.370 s |
+| Escort, save/reload and walk home | Passed |     264.754 s |
+
+Actual process exit was 0; the JSON report has two expected passes and no
+errors, skips, flaky or unexpected results. Suite duration was 439.523 s;
+wrapper wall time was 440.174 s, including trace retention and teardown.
+The external config retained passed traces with `mode: 'on'`, preserving
+canonical `snapshots: true`, `screenshots: false` and `sources: true` recording.
+No extra query, screenshot, command or case was introduced. These results do
+not establish attributable timing improvement, actual candidate API counts
+or a hosted budget fix.
+
+The unique run prefix is
+`/workspace/avatarrpg-env/370-readiness-guard-fafb5a78-routes-run1`.
+Its atomic `.receipt.json` records actual exit 0 and stable initial/final source
+head `fafb5a78`, helper, app head `72b04367`, config and dist hashes. Spec and
+helper hashes remain the values above. Both passed traces, config, wrapper,
+receipt, JSON report, logs and manifest were archived before further parsing
+or reuse under
+`/workspace/avatarrpg-env/evidence/370-readiness-guard-fafb5a78-routes-run1`.
+The separately preserved initial list-only preflight did not launch a browser
+and is not browser validation. Final corrected config listing selected exactly
+the two original cases; the derived summary uses the run prefix plus
+`-case-summary.json`.
+
+Root read the actual terminal receipt and case JSON and accepted this bounded
+local route proof. This documentation checkpoint precedes integration and the
+final committed-head nine-stage check. Subsequent exact integrated head and
+gate results belong in the PR, same live claim and external receipts, without
+tracked edits after the final check. No integration, full nine-stage run, push
+or hosted dispatch is claimed here. Hosted matrices, consecutive-green and
+native acceptance requirements remain open.
 
 The new bounded DeepSeek negative-case matrix job was
 `avatar370-readiness-guard-negative-cases-20261030`; its receipt/output/SOL
