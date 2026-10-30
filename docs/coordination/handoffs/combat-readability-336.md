@@ -12,10 +12,10 @@ until that parent lands; retargeting to main is a separate integration gate.
 
 - Shared `combatActorSilhouetteGeometry` sizes combat bars from a 36×8 logical
   world-pixel floor at actor scale one. The width floor grows with actor scale
-  before whole-pixel snapping. Canvas passes the camera scale because its actor
-  geometry is in CSS coordinates; Pixi passes one world pixel. The one-pixel
-  frame and highlight leave a filled track at least four world pixels high at
-  zoom one.
+  before whole-pixel snapping. Both backends size and snap in world pixels;
+  Canvas then projects the result into CSS coordinates. The one-pixel frame
+  and highlight leave a filled track at least four world pixels high at zoom
+  one.
 - Both backends quantize damaged fill width to whole world pixels. A 7/13 HP
   enemy thus has the same sharp 18-pixel fill in a 36-pixel bar on Canvas and
   WebGL. Canvas now computes combat bars and related badge/reticle anchors in
@@ -44,11 +44,15 @@ and whole-pixel staggering of colliding 8-pixel bars. The focused test passes
 (34 cases); TypeScript and broader gates await combined integration.
 The browser spec checks 1280×800 desktop and 834×1194 iPad portrait on Canvas
 and WebGL, including Normal strip geometry, Largest names, reduced-motion and
-High Contrast captures, and an actual painted-pixel comparison at 7/13 HP.
+High Contrast captures, and an actual painted-pixel comparison at 7/13 HP and
+DPR 2 with half-CSS-pixel camera offsets. The pixel probe compares absolute
+bar anchors and active-cue bounds between the backends.
 Those browser assertions and before/after screenshot evidence are **pending**
 the dedicated browser gate; the previous mixed branch's landscape captures
 are not acceptance evidence for this standalone source.
 
-The exact committed head still needs its scoped static checks, all required
-pre-push gates, and one branch CI dispatch before a draft PR is published.
-No full-project gate or browser acceptance is claimed here.
+The exact final head needs all nine `ci:local` steps before any push. Publish a
+draft PR stacked on the #322 branch after that push, wait for its existing
+verify run, then request one manual branch CI dispatch for browser and gallery
+gates. Keep the PR in draft until those checks and visual acceptance are
+complete. No full-project gate or browser acceptance is claimed here yet.

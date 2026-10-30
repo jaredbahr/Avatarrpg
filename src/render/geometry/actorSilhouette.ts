@@ -81,8 +81,8 @@ export interface ActiveGroundCue {
  * Rasterize an angular, hollow outline into filled horizontal pixel runs.
  * Every edge is an axis-aligned world-pixel boundary, including the sloping
  * shoulders; neither backend needs an antialiased vector stroke. Coordinates
- * and pixelSize use the caller's units: Canvas passes screen CSS units; Pixi
- * passes world px.
+ * and pixelSize use the caller's units. Both backends pass world pixels;
+ * Canvas applies the camera transform after this raster step.
  */
 export function activeGroundCue(
   centreX: number,

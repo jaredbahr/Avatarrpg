@@ -1,9 +1,9 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
+import { PNG } from 'pngjs';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, setLargeText, startGame, takeTurn, waitForIdle } from './helpers';
-import { screenshotPixels } from './pixels';
 import type { MapView } from '../src/render/view';
 
 const REVIEW_DIR = resolve(process.cwd(), '.shots/combat-readability');
@@ -184,109 +184,202 @@ for (const backend of ['canvas', 'webgl'] as const) {
   });
 }
 
-test('Canvas and WebGL paint the same whole-pixel damaged health fill', async ({ page }) => {
-  test.setTimeout(360_000);
-  await page.setViewportSize({ width: 1280, height: 800 });
-  const rows: string[] = [];
-  for (const backend of ['canvas', 'webgl'] as const) {
-    await resetStorage(page, `?renderer=${backend}`);
-    await startGame(page, ['Kaya'], ['kaya'], 'bar-pixel-parity');
-    await enterNode(page, 'battle_forest_road');
-    await takeTurn(page);
-    await waitForIdle(page);
-    expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(backend);
-    await page.evaluate(() =>
-      window.fnt!.app.updateSettings({ highContrast: true, reduceMotion: true }),
-    );
-    await page.waitForFunction(() =>
-      Boolean(
-        (
-          window.fnt!.app as unknown as {
-            scene: { renderer: { lastView: MapView | null } };
-          }
-        ).scene.renderer.lastView?.units.some((unit) => unit.faction === 'enemy'),
-      ),
-    );
-    const bar = await page.evaluate(() => {
-      const renderer = (
-        window.fnt!.app as unknown as {
-          scene: {
-            renderer: {
-              backendName: 'canvas' | 'webgl';
-              backend: { barTops: Map<string, number> };
-              camera: {
-                scale: number;
-                offsetY: number;
-                centreOn(pos: { x: number; y: number }, size: 1 | 2): void;
-                spriteBox(
-                  pos: { x: number; y: number },
-                  size: 1 | 2,
-                ): {
-                  x: number;
-                  size: number;
-                };
-              };
-              lastView: MapView | null;
-              draw(view: MapView): void;
-            };
-          };
-        }
-      ).scene.renderer;
-      const draw = renderer.draw.bind(renderer);
-      renderer.draw = (view) => {
-        const enemy = view.units.find((unit) => unit.faction === 'enemy' && unit.hp > 0);
-        if (!enemy) return draw(view);
-        renderer.camera.centreOn(enemy.pos, enemy.size);
-        draw({
-          ...view,
-          units: [
-            { ...enemy, hp: 7, maxHp: 13, scale: 1, renderPos: undefined, offset: undefined },
-          ],
-          activeUnitId: enemy.id,
-          selectedUnitId: null,
-          crispOverlays: true,
-          reducedMotion: true,
-          time: 0,
-        });
-      };
-      if (!renderer.lastView) throw new Error('Missing combat view for bar pixel probe.');
-      renderer.draw(renderer.lastView);
-      const enemy = renderer.lastView.units.find((unit) => unit.faction === 'enemy');
-      if (!enemy) throw new Error('Missing enemy for bar pixel probe.');
-      const barTop = renderer.backend.barTops.get(enemy.id);
-      if (barTop === undefined) throw new Error('Enemy bar was not painted.');
-      const box = renderer.camera.spriteBox(enemy.pos, enemy.size);
-      return {
-        x: Math.round(box.x + (box.size * enemy.size) / 2),
-        y: Math.round(
-          renderer.backendName === 'webgl'
-            ? barTop * renderer.camera.scale - renderer.camera.offsetY
-            : barTop,
-        ),
-      };
-    });
-    const pixels = await screenshotPixels(page.locator('.map-canvas'));
-    const near = (x: number, y: number, color: readonly number[]) => {
-      const pixel = pixels.at(x, y);
-      return (
-        pixel !== null &&
-        Math.abs(pixel.r - (color[0] ?? 0)) <= 8 &&
-        Math.abs(pixel.g - (color[1] ?? 0)) <= 8 &&
-        Math.abs(pixel.b - (color[2] ?? 0)) <= 8
+test.describe('fractional-offset painted pixel parity', () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  test('Canvas and WebGL paint the same whole-pixel damaged health fill and active cue', async ({
+    page,
+  }) => {
+    test.setTimeout(360_000);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const rows: string[] = [];
+    const placements: {
+      frameX: number;
+      frameY: number;
+      offsetX: number;
+      offsetY: number;
+      cue: { minX: number; minY: number; maxX: number; maxY: number; count: number };
+    }[] = [];
+    for (const backend of ['canvas', 'webgl'] as const) {
+      await resetStorage(page, `?renderer=${backend}`);
+      await startGame(page, ['Kaya'], ['kaya'], 'bar-pixel-parity');
+      await enterNode(page, 'battle_forest_road');
+      await takeTurn(page);
+      await waitForIdle(page);
+      expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(backend);
+      await page.evaluate(() =>
+        window.fnt!.app.updateSettings({ highContrast: true, reduceMotion: true }),
       );
-    };
-    // The 36px outer bar has a 34px track; 7/13 HP rounds to 18 whole pixels.
-    // This reads the browser's painted pixels, including the Pixi raster path.
-    const row = Array.from({ length: 36 }, (_, offset) => {
-      const x = bar.x - 18 + offset;
-      if (near(x, bar.y + 3, [27, 20, 16])) return 'F';
-      if (near(x, bar.y + 3, [217, 74, 58])) return 'H';
-      return '.';
-    }).join('');
-    expect(row, `${backend} bar must have a painted frame and 18px fill`).toMatch(
-      /^FH{18}\.{16}F$/,
-    );
-    rows.push(row);
-  }
-  expect(rows[1], 'Canvas and WebGL bar pixels must agree').toBe(rows[0]);
+      await page.waitForFunction(() =>
+        Boolean(
+          (
+            window.fnt!.app as unknown as {
+              scene: { renderer: { lastView: MapView | null } };
+            }
+          ).scene.renderer.lastView?.units.some((unit) => unit.faction === 'enemy'),
+        ),
+      );
+      const bar = await page.evaluate(() => {
+        const win = window as Window & { barParityCueActive?: boolean };
+        win.barParityCueActive = true;
+        const renderer = (
+          window.fnt!.app as unknown as {
+            scene: {
+              renderer: {
+                backendName: 'canvas' | 'webgl';
+                backend: { barTops: Map<string, number> };
+                camera: {
+                  scale: number;
+                  offsetX: number;
+                  offsetY: number;
+                  centreOn(pos: { x: number; y: number }, size: 1 | 2): void;
+                  spriteBox(
+                    pos: { x: number; y: number },
+                    size: 1 | 2,
+                  ): {
+                    x: number;
+                    y: number;
+                    size: number;
+                  };
+                };
+                lastView: MapView | null;
+                draw(view: MapView): void;
+              };
+            };
+          }
+        ).scene.renderer;
+        const draw = renderer.draw.bind(renderer);
+        renderer.draw = (view) => {
+          const enemy = view.units.find((unit) => unit.faction === 'enemy' && unit.hp > 0);
+          if (!enemy) return draw(view);
+          renderer.camera.centreOn(enemy.pos, enemy.size);
+          // Both offsets sit on the DPR-2 device grid, half a CSS pixel away
+          // from the screen-origin lattice that used to misplace Canvas bars.
+          renderer.camera.offsetX = Math.floor(renderer.camera.offsetX) + 0.5;
+          renderer.camera.offsetY = Math.floor(renderer.camera.offsetY) + 0.5;
+          draw({
+            ...view,
+            units: [
+              { ...enemy, hp: 7, maxHp: 13, scale: 1, renderPos: undefined, offset: undefined },
+            ],
+            activeUnitId: win.barParityCueActive ? enemy.id : null,
+            selectedUnitId: null,
+            crispOverlays: true,
+            reducedMotion: true,
+            time: 0,
+          });
+        };
+        if (!renderer.lastView) throw new Error('Missing combat view for bar pixel probe.');
+        renderer.draw(renderer.lastView);
+        const enemy = renderer.lastView.units.find((unit) => unit.faction === 'enemy');
+        if (!enemy) throw new Error('Missing enemy for bar pixel probe.');
+        const barTop = renderer.backend.barTops.get(enemy.id);
+        if (barTop === undefined) throw new Error('Enemy bar was not painted.');
+        const box = renderer.camera.spriteBox(enemy.pos, enemy.size);
+        return {
+          centreX: box.x + (box.size * enemy.size) / 2,
+          boxY: box.y,
+          size: box.size,
+          scale: renderer.camera.scale,
+          offsetX: renderer.camera.offsetX,
+          offsetY: renderer.camera.offsetY,
+          topY:
+            renderer.backendName === 'webgl'
+              ? barTop * renderer.camera.scale - renderer.camera.offsetY
+              : barTop,
+        };
+      });
+      expect(bar.scale).toBe(1);
+      expect(bar.offsetX % 1).toBe(0.5);
+      expect(bar.offsetY % 1).toBe(0.5);
+      expect((bar.topY + bar.offsetY) / bar.scale).toBeCloseTo(
+        Math.round((bar.topY + bar.offsetY) / bar.scale),
+        8,
+      );
+      const board = page.locator('.map-canvas');
+      const active = PNG.sync.read(await board.screenshot({ scale: 'device' }));
+      await page.evaluate(() => {
+        const win = window as Window & { barParityCueActive?: boolean };
+        win.barParityCueActive = false;
+        const renderer = (
+          window.fnt!.app as unknown as {
+            scene: { renderer: { lastView: MapView | null; draw(view: MapView): void } };
+          }
+        ).scene.renderer;
+        if (renderer.lastView) renderer.draw(renderer.lastView);
+      });
+      const inactive = PNG.sync.read(await board.screenshot({ scale: 'device' }));
+      expect(inactive.width).toBe(active.width);
+      expect(inactive.height).toBe(active.height);
+      const channel = (png: PNG, x: number, y: number, index: number) =>
+        png.data[(y * png.width + x) * 4 + index] ?? 0;
+      const near = (x: number, y: number, color: readonly number[]) => {
+        return [0, 1, 2].every(
+          (index) => Math.abs(channel(active, x, y, index) - (color[index] ?? 0)) <= 8,
+        );
+      };
+      const centreWorld = (bar.centreX + bar.offsetX) / bar.scale;
+      const frameX = Math.round((Math.round(centreWorld) - 18) * bar.scale * 2 - bar.offsetX * 2);
+      const frameY = Math.round(bar.topY * 2);
+      expect(Math.abs(frameX % 2)).toBe(1);
+      expect(Math.abs(frameY % 2)).toBe(1);
+      // The 36px outer bar has a 34px track; 7/13 HP rounds to 18 whole pixels.
+      // Read device pixels at the absolute world-grid anchor, not a backend's
+      // own local bar crop: a half-CSS-pixel displacement must fail this row.
+      const row = Array.from({ length: 36 }, (_, offset) => {
+        const x = frameX + 1 + offset * 2;
+        const y = frameY + 7;
+        if (near(x, y, [27, 20, 16])) return 'F';
+        if (near(x, y, [217, 74, 58])) return 'H';
+        return '.';
+      }).join('');
+      expect(row, `${backend} bar must have a painted frame and 18px fill`).toMatch(
+        /^FH{18}\.{16}F$/,
+      );
+      rows.push(row);
+      const cuePoints: { x: number; y: number }[] = [];
+      const x0 = Math.max(0, Math.floor((bar.centreX - bar.size) * 2));
+      const x1 = Math.min(active.width, Math.ceil((bar.centreX + bar.size) * 2));
+      const y0 = Math.max(0, Math.floor((bar.boxY + bar.size * 0.4) * 2));
+      const y1 = Math.min(active.height, Math.ceil((bar.boxY + bar.size * 1.3) * 2));
+      for (let y = y0; y < y1; y++)
+        for (let x = x0; x < x1; x++) {
+          const delta = Math.max(
+            ...[0, 1, 2].map((index) =>
+              Math.abs(channel(active, x, y, index) - channel(inactive, x, y, index)),
+            ),
+          );
+          if (delta > 24) cuePoints.push({ x, y });
+        }
+      expect(cuePoints.length, `${backend} active cue must change painted pixels`).toBeGreaterThan(
+        30,
+      );
+      placements.push({
+        frameX,
+        frameY,
+        offsetX: bar.offsetX,
+        offsetY: bar.offsetY,
+        cue: {
+          minX: Math.min(...cuePoints.map((point) => point.x)),
+          minY: Math.min(...cuePoints.map((point) => point.y)),
+          maxX: Math.max(...cuePoints.map((point) => point.x)),
+          maxY: Math.max(...cuePoints.map((point) => point.y)),
+          count: cuePoints.length,
+        },
+      });
+    }
+    expect(rows[1], 'Canvas and WebGL bar pixels must agree').toBe(rows[0]);
+    const canvas = placements[0];
+    const webgl = placements[1];
+    expect(canvas).toBeDefined();
+    expect(webgl).toBeDefined();
+    expect(canvas?.offsetX).toBe(webgl?.offsetX);
+    expect(canvas?.offsetY).toBe(webgl?.offsetY);
+    expect(canvas?.frameX).toBe(webgl?.frameX);
+    expect(canvas?.frameY).toBe(webgl?.frameY);
+    for (const edge of ['minX', 'minY', 'maxX', 'maxY'] as const)
+      expect(canvas?.cue[edge], `cue ${edge} must share the exact device-pixel edge`).toBe(
+        webgl?.cue[edge],
+      );
+  });
 });
