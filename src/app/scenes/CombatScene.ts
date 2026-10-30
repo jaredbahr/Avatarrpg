@@ -93,7 +93,6 @@ import {
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
-const COMBAT_APPROACH_STEP_MS = 275;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -1015,7 +1014,6 @@ export class CombatScene implements Scene {
           alongside: true,
           silentSteps: true,
           walkPhase: partyWalkPhase(index),
-          strollStepMs: COMBAT_APPROACH_STEP_MS,
         },
       );
     }

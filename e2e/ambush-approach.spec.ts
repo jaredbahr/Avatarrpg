@@ -20,15 +20,32 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
 
   const observed = await page.evaluate(async () => {
     const app = window.fnt!.app;
+    const before = app.partyPositions();
+    const originalConsume = app.consumeCombatApproach.bind(app);
+    let consumed: readonly { x: number; y: number }[] | null = null;
+    app.consumeCombatApproach = (mapId) => {
+      const positions = originalConsume(mapId);
+      if (positions) consumed = positions;
+      return positions;
+    };
     app.dispatch({ type: 'walkTo', pos: { x: 8, y: 4 } });
     const from = app.partyPositions();
+    let lastExplore: { x: number; y: number }[] | null = null;
     const frames: { x: number; y: number }[][] = [];
     const deadline = performance.now() + 15_000;
     while (performance.now() < deadline) {
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const now = performance.now();
+      if (document.querySelector('.explore-scene')) {
+        const seats = app.partyPositions();
+        if (seats)
+          lastExplore = app.state!.party.map(
+            (member, index) =>
+              app.animator.renderPos(now, member.id) ?? seats[index] ?? app.state!.location.pos,
+          );
+      }
       const battle = app.state?.battle;
       if (!battle || !document.querySelector('.combat-scene') || app.curtainBusy) continue;
-      const now = performance.now();
       const party = battle.units.filter((unit) => unit.faction === 'party');
       const moving = party.map((unit) => app.animator.renderPos(now, unit.id));
       if (frames.length === 0 && moving.every((pos) => pos === undefined)) continue;
@@ -36,7 +53,11 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
       if (frames.length > 2 && moving.every((pos) => pos === undefined)) break;
     }
     return {
+      before,
       from,
+      lastExplore,
+      consumed,
+      consumedAgain: app.consumeCombatApproach('ambush_road'),
       frames,
       to: app.state?.battle?.units
         .filter((unit) => unit.faction === 'party')
@@ -44,8 +65,12 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
     };
   });
 
-  const { from, frames, to } = observed;
+  const { before, from, lastExplore, consumed, consumedAgain, frames, to } = observed;
+  expect(before).toHaveLength(3);
   expect(from).toHaveLength(3);
+  expect(lastExplore).toHaveLength(3);
+  expect(consumed).toEqual(from);
+  expect(consumedAgain).toBeNull();
   expect(to).toEqual([
     { x: 1, y: 3 },
     { x: 3, y: 4 },
@@ -54,15 +79,21 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
   expect(frames.length).toBeGreaterThan(3);
   const first = frames[0];
   const last = frames.at(-1);
-  if (!from || !first || !last || !to) throw new Error('Missing approach samples');
+  if (!before || !from || !lastExplore || !first || !last || !to)
+    throw new Error('Missing approach samples');
   const apart = (a: { x: number; y: number }, b: { x: number; y: number }) =>
     Math.hypot(a.x - b.x, a.y - b.y);
   for (let index = 0; index < to.length; index++) {
     const origin = from[index];
+    const oldSeat = before[index];
+    const exploreSeat = lastExplore[index];
     const destination = to[index];
     const initial = first[index];
     const final = last[index];
-    if (!origin || !destination || !initial || !final) throw new Error('Incomplete party samples');
+    if (!origin || !oldSeat || !exploreSeat || !destination || !initial || !final)
+      throw new Error('Incomplete party samples');
+    expect(apart(origin, oldSeat)).toBeLessThanOrEqual(2);
+    expect(apart(exploreSeat, origin)).toBeLessThan(0.35);
     expect(apart(initial, origin)).toBeLessThan(0.35);
     expect(apart(final, destination)).toBeLessThan(0.05);
     expect(
