@@ -827,15 +827,23 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
   const captureDrillerEnemyView = async () => {
     const showEnemies = page.getByRole('button', { name: 'Show enemies', exact: true });
     if (!(await showEnemies.count())) {
+      const { battle: current } = await battle();
+      const boss = current?.units.find((unit) => unit.enemyId === 'grumbler' && unit.hp > 0);
+      const actor = current?.units.find((unit) => unit.id === current.order[current.turnIndex]);
+      if (!boss || !actor) throw new Error('The live Driller or acting unit is missing.');
       recordInput('optional-control-unavailable', 'Show enemies', {
         sourceCommit,
         reason:
-          'The current main branch has no Show enemies control; the live first turn is captured through its normal camera.',
+          'The current main branch has no Show enemies control; the live boss is focused through its visible turn-strip chip.',
       });
+      await tapButton(page.getByRole('button', { name: `Focus ${boss.name}`, exact: true }));
+      await settleLayout(page, slow ? 120_000 : 30_000);
       await beat(
-        'driller-normal-boss-view',
-        'Live Driller opening before any staged HP; the optional Show enemies control is unavailable on this source.',
+        'driller-boss-focus',
+        'Live Driller focused with its turn-strip control before any staged HP; optional Show enemies is unavailable on this source.',
       );
+      await tapButton(page.getByRole('button', { name: `Focus ${actor.name}`, exact: true }));
+      await settleLayout(page, slow ? 120_000 : 30_000);
       return;
     }
     await ensureViewControlVisible(showEnemies);
