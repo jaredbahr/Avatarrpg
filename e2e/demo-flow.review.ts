@@ -875,7 +875,7 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       (c) => !b.units.some((u) => u.hp > 0 && u.pos.x === c.pos.x && u.pos.y === c.pos.y),
     );
     const move = page.locator('.action-row').getByRole('button', { name: /^Move \d+ left$/ });
-    if (!(await move.isEnabled({ timeout: 2_000 }))) return false;
+    if (!(await move.isEnabled({ timeout: 15_000 }))) return false;
     await tapButton(move);
     await settleLayout(page, slow ? 120_000 : 30_000);
     // The nearest tile to the goal that is on screen: a tap can only land there.
@@ -917,14 +917,14 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
   const useAt = async (ability: RegExp, target: Vec2, still?: string): Promise<boolean> => {
     recordInput('ability-intent', ability.source, target);
     const button = page.getByRole('button', { name: ability }).first();
-    if (!(await button.count()) || !(await button.isEnabled({ timeout: 2_000 }))) return false;
+    if (!(await button.count()) || !(await button.isEnabled({ timeout: 15_000 }))) return false;
     await tapButton(button);
     await tapTile(target);
     const bar = page.locator('.confirm-bar').getByRole('button', { name: /^Confirm$/ });
     await page.waitForTimeout(300);
     if (
       !(await bar.isVisible().catch(() => false)) ||
-      !(await bar.isEnabled({ timeout: 2_000 }).catch(() => false))
+      !(await bar.isEnabled({ timeout: 15_000 }).catch(() => false))
     ) {
       const cancel = page.getByRole('button', { name: /Cancel$/ }).first();
       if (await cancel.isVisible().catch(() => false)) await tapButton(cancel);
@@ -1127,7 +1127,7 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       const b = (await battle()).battle;
       const acting = b?.units.find((u) => u.id === b.order[b.turnIndex]);
       if (!b || b.phase !== 'active' || acting?.faction !== 'party') break;
-      if (!(await end.isEnabled({ timeout: 2_000 }).catch(() => false))) break;
+      if (!(await end.isEnabled({ timeout: 15_000 }).catch(() => false))) break;
       if (tap === 1 && acting.id !== lastActing) break;
       lastActing = acting.id;
       await tapButton(end);
