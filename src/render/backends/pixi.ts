@@ -3188,9 +3188,23 @@ export class PixiBackend implements RenderBackend {
     g.rect(innerX, innerY, innerWidth, pixel).fill({ color: HP_COLORS.highlight });
 
     // The side's cap, so the bar reads by shape as well as colour.
-    const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX, 1 / camera.scale);
+    const kind = HP_CAP[unit.faction];
+    // The enemy spike's one-pixel edge and headroom are authored in CSS units
+    // by Canvas. Compute that cap there, then place its G1 mask in world pixels.
+    const cap =
+      kind === 'spike'
+        ? healthBarCap(
+            {
+              x: barX * camera.scale,
+              y: barY * camera.scale,
+              height: barHeight * camera.scale,
+            },
+            kind,
+            actorX * camera.scale,
+          ).map((value) => value / camera.scale)
+        : healthBarCap(bar, kind, actorX, 1 / camera.scale);
     if (cap.length === 0) return;
-    if (HP_CAP[unit.faction] === 'spike') {
+    if (kind === 'spike') {
       const anchor = snapWorldPoints([{ x: cap[0] ?? 0, y: barY + barHeight / 2 }])[0];
       if (!anchor) return;
       const points: Vec2[] = [];
