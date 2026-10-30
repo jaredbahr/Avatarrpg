@@ -3480,6 +3480,15 @@ html[data-contrast='high'] .hud-panel::after {
   max-height: 40dvh;
   overflow-y: auto;
 }
+
+/* At Huge text on a short landscape display, the idle dock can be a few
+ * pixels shorter than its 40dvh scroll cap. Reserving that existing cap keeps
+ * the canvas fixed when the aim guidance joins the scrollable controls. */
+@media (min-width: 53rem) and (max-height: 54rem) and (orientation: landscape) {
+  html[data-large-text='huge'] .combat-scene .hud {
+    height: 40dvh;
+  }
+}
 .combat-scene .action-bar > .confirm-bar {
   margin: 0;
   flex-shrink: 0;
