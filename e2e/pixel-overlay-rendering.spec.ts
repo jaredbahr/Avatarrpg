@@ -1375,7 +1375,7 @@ for (const backend of ['canvas', 'webgl'] as const) {
           (window as Window & { raisedTouchPick?: { x: number; y: number } }).raisedTouchPick = pos;
           original.call(scene, pos);
         };
-        return drawn;
+        return { ...drawn, scale: camera.scale };
       }, TIER_LIFT);
       const box = await page.locator('.map-canvas').boundingBox();
       if (!box) throw new Error('Missing quarry canvas bounds');
@@ -1399,6 +1399,52 @@ for (const backend of ['canvas', 'webgl'] as const) {
           }),
         )
         .toEqual({ hover: { x: 5, y: 1 }, drawn: { x: 5, y: 1 } });
+      const hovered = await page.evaluate(() => {
+        const renderer = (
+          window.fnt!.app as unknown as {
+            scene: {
+              renderer: {
+                backendName: string;
+                backend: { marksKey?: string };
+                lastView: MapView | null;
+                draw(view: MapView): void;
+              };
+            };
+          }
+        ).scene.renderer;
+        const view = renderer.lastView;
+        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+        if (!view || !canvas) throw new Error('Missing drawn quarry hover view');
+        const draw = (hoverTile: MapView['hoverTile']): string => {
+          if (renderer.backendName === 'webgl') renderer.backend.marksKey = '';
+          renderer.draw({ ...view, hoverTile, time: 640_000, reducedMotion: true });
+          return canvas.toDataURL('image/png');
+        };
+        return { before: draw(null), after: draw({ x: 5, y: 1 }) };
+      });
+      const hoverMask = maskMetrics(hovered.before, hovered.after, 8);
+      const x = point.x * 2;
+      const y = point.y * 2;
+      const radius = 64 * point.scale * 2;
+      expect(
+        maskPixelsInBox(hoverMask, {
+          left: Math.floor(x - radius),
+          top: Math.floor(y - radius),
+          right: Math.ceil(x + radius),
+          bottom: Math.ceil(y + radius),
+        }),
+        `${backend} paints the hover highlight around the raised stair's visible top`,
+      ).toBeGreaterThan(0);
+      mkdirSync(REVIEW_DIR, { recursive: true });
+      for (const [phase, dataUrl] of [
+        ['before', hovered.before],
+        ['after', hovered.after],
+      ] as const) {
+        writeFileSync(
+          resolve(REVIEW_DIR, `raised-quarry-${backend}-dpr2-hover-${phase}.png`),
+          Buffer.from(dataUrl.split(',')[1] ?? '', 'base64'),
+        );
+      }
       await page.touchscreen.tap(box.x + point.x, box.y + point.y);
       await expect
         .poll(() =>
@@ -1409,7 +1455,6 @@ for (const backend of ['canvas', 'webgl'] as const) {
           ),
         )
         .toEqual({ x: 5, y: 1 });
-      mkdirSync(REVIEW_DIR, { recursive: true });
       await page.locator('.map-canvas').screenshot({
         path: resolve(REVIEW_DIR, `raised-quarry-${backend}-dpr2-hover-touch.png`),
       });
