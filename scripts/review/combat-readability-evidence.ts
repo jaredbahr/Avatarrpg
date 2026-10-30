@@ -28,7 +28,7 @@ interface CaptureMetadata {
   seed: string;
   viewport: { width: number; height: number; dpr: number };
   settings: { largeText: string; highContrast: boolean; reduceMotion: boolean };
-  node: string | undefined;
+  node: string | null | undefined;
   units: { id: string; x: number; y: number; faction: string }[] | undefined;
   stagedRenderer: {
     targetEnemyId: string | undefined;
