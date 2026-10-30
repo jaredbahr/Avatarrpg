@@ -6,7 +6,9 @@ import { CONTENT } from '../src/content';
 import { RngCursor } from '../src/core/rng';
 import { reachable } from '../src/core/rules/grid';
 import { BattleDraft } from '../src/core/state/battleDraft';
+import { TIER_LIFT } from '../src/render/geometry/elevation';
 import type { G1Bounds } from '../src/render/pixelMarks';
+import { talkPipMark, type PixelOverlayCue } from '../src/render/pixelOverlayGeometry';
 import type { MapView, RenderUnit } from '../src/render/view';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
@@ -45,6 +47,15 @@ type MarkCrops = Record<MarkName, { before: Crop; after: Crop }> & {
   plainReticle: Crop;
   noOpBase: Crop;
   occlusion: { before: Crop; after: Crop; actorless: Crop };
+};
+type AlphaProbe = {
+  width: number;
+  height: number;
+  nonzero: number;
+  unexpected: number;
+  partialBlocks: number;
+  allowed: number[];
+  observed: number[];
 };
 
 function maskMetrics(beforeUrl: string, afterUrl: string, threshold = 18): MarkMetric {
@@ -302,9 +313,58 @@ async function captureGameplayMove(
   return drawTiming;
 }
 
+async function captureVillageOverlays(page: Page, backend: 'canvas' | 'webgl'): Promise<void> {
+  await resetStorage(page, `?renderer=${backend}`);
+  await startGame(page, ['Kaya'], ['kaya'], 'pixel-review-ba-dan');
+  await enterNode(page, 'village_explore');
+  await waitForIdle(page);
+  const images = await page.evaluate(() => {
+    const renderer = (
+      window.fnt!.app as unknown as {
+        scene: {
+          renderer: {
+            camera: { centreOn(pos: { x: number; y: number }): void };
+            lastView: MapView | null;
+            draw(view: MapView): void;
+          };
+        };
+      }
+    ).scene.renderer;
+    const view = renderer.lastView;
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    const speakingNpc = view?.npcs.find((npc) => !npc.quiet);
+    if (!view || !canvas || !speakingNpc)
+      throw new Error('Ba Dan review needs a drawn NPC with a talk pip');
+    renderer.camera.centreOn(speakingNpc.pos);
+    const fixed: MapView = { ...view, time: 640_000, reducedMotion: true };
+    renderer.draw({
+      ...fixed,
+      npcs: fixed.npcs.map((npc) => ({ ...npc, quiet: true })),
+      exits: [],
+      exit: null,
+    });
+    const before = canvas.toDataURL('image/png');
+    renderer.draw(fixed);
+    return { before, after: canvas.toDataURL('image/png') };
+  });
+  for (const [phase, dataUrl] of [
+    ['before', images.before],
+    ['after', images.after],
+  ] as const) {
+    writeFileSync(
+      resolve(REVIEW_DIR, `ba-dan-${backend}-${phase}.png`),
+      Buffer.from(dataUrl.split(',')[1] ?? '', 'base64'),
+    );
+  }
+  expect(
+    maskMetrics(images.before, images.after).pixels,
+    `Ba Dan ${backend} talk and exit overlays change the rendered village frame`,
+  ).toBeGreaterThan(0);
+}
+
 async function captureStagedMarks(
   page: Page,
-  zoom: 1 | 2,
+  zoom: 1 | 2 | 3,
 ): Promise<{
   crops: MarkCrops;
   cache: {
@@ -330,9 +390,12 @@ async function captureStagedMarks(
     targetAnchor: { x: number; y: number };
     anchors: Partial<Record<MarkName, { x: number; y: number }>>;
   };
+  alphaProbes: Record<MarkName, AlphaProbe>;
+  ruleSignatures: Record<MarkName, string>;
+  contrastRules: Record<'move' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'path', string>;
 }> {
   return page.evaluate(
-    ({ requestedZoom, centres }) => {
+    ({ requestedZoom, centres, talkCue }) => {
       type RuntimeRenderer = {
         camera: {
           scale: number;
@@ -480,6 +543,7 @@ async function captureStagedMarks(
         healthBar: ['enemy-health-spike'],
       };
       const cueAnchors = {} as Partial<Record<MarkName, { x: number; y: number }>>;
+      const cueSamples = { talk: talkCue } as Partial<Record<MarkName, PixelOverlayCue>>;
       const captureMark = (name: MarkName): Crop => {
         const geometry = cueGeometry[name];
         if (geometry) {
@@ -565,6 +629,7 @@ async function captureStagedMarks(
         for (const cue of cues ?? []) {
           for (const name of Object.keys(prefixes) as MarkName[]) {
             if (prefixes[name].some((prefix) => cue.id.startsWith(prefix))) {
+              cueSamples[name] ??= cue as PixelOverlayCue;
               if (cue.anchor) cueAnchors[name] = cue.anchor;
               if (cue.spec?.bounds) {
                 const left = (cue.anchor?.x ?? 0) + cue.spec.bounds.left;
@@ -600,6 +665,168 @@ async function captureStagedMarks(
       camera.centreOn({ x: source.grid.width / 2, y: source.grid.height / 2 });
       renderer.draw(cueView);
       observedBackend[adapterName] = unwrapped;
+      const alphaProbes = {} as Record<MarkName, AlphaProbe>;
+      for (const name of Object.keys(prefixes) as MarkName[]) {
+        const cue = cueSamples[name];
+        if (!cue) throw new Error(`${name} did not emit a production pixel cue`);
+        const boardLeft = (cue.anchor?.x ?? 0) + cue.spec.bounds.left;
+        const boardTop = (cue.anchor?.y ?? 0) + cue.spec.bounds.top;
+        const cssWidth = (Math.min(80, cue.spec.bounds.width) + 4) * requestedZoom;
+        const cssHeight = (Math.min(80, cue.spec.bounds.height) + 4) * requestedZoom;
+        const dpr = camera.viewport.dpr;
+        const width = cssWidth * dpr;
+        const height = cssHeight * dpr;
+        const previousOffset = { x: camera.offsetX, y: camera.offsetY };
+        camera.offsetX = (boardLeft - 2) * requestedZoom;
+        camera.offsetY = (boardTop - 2) * requestedZoom;
+        const sourceAlphas = new Set<number>([0]);
+        const drawableCache =
+          observedBackend.pixelMarkDrawables as typeof observedBackend.pixelMarkDrawables & {
+            get: (...args: unknown[]) => { drawable: HTMLCanvasElement | null };
+          };
+        const originalGet = drawableCache.get;
+        drawableCache.get = (...args: unknown[]) => {
+          const entry = originalGet.apply(drawableCache, args);
+          const source = entry.drawable;
+          if (source) {
+            const data = source
+              .getContext('2d')
+              ?.getImageData(0, 0, source.width, source.height).data;
+            if (!data) throw new Error(`${name} pixel source has no 2D data`);
+            for (let i = 3; i < data.length; i += 4) sourceAlphas.add(data[i] ?? 0);
+          }
+          return entry;
+        };
+        let pixels: Uint8ClampedArray;
+        try {
+          if (renderer.backendName === 'canvas') {
+            const backend = observedBackend as typeof observedBackend & {
+              ctx: CanvasRenderingContext2D;
+              drawPixelCues: (
+                cues: readonly PixelOverlayCue[],
+                camera: typeof renderer.camera,
+                plane: 'ground' | 'screen',
+              ) => void;
+            };
+            const target = document.createElement('canvas');
+            target.width = width;
+            target.height = height;
+            const context = target.getContext('2d');
+            if (!context) throw new Error('Could not allocate transparent Canvas probe');
+            context.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const originalContext = backend.ctx;
+            backend.ctx = context;
+            try {
+              backend.drawPixelCues([cue], camera, 'screen');
+            } finally {
+              backend.ctx = originalContext;
+            }
+            pixels = context.getImageData(0, 0, width, height).data;
+          } else {
+            type ProbeLayer = {
+              scale: { set(value: number): void };
+              position: { set(x: number, y: number): void };
+              children: { removeFromParent(): void; destroy(): void }[];
+              destroy(): void;
+            };
+            type ProbeTexture = { destroy(): void };
+            const backend = observedBackend as typeof observedBackend & {
+              app: {
+                renderer: {
+                  render(options: {
+                    container: ProbeLayer;
+                    target: ProbeTexture;
+                    clear: boolean;
+                  }): void;
+                  extract: {
+                    pixels(target: ProbeTexture): {
+                      pixels: Uint8ClampedArray;
+                      width: number;
+                      height: number;
+                    };
+                  };
+                };
+              };
+              pixelOverlayLayer: { constructor: new () => ProbeLayer };
+              pixelSpritePools: Map<ProbeLayer, unknown>;
+              pixelSpriteUsed: Map<ProbeLayer, number>;
+              target(
+                texture: null,
+                rect: { x: number; y: number; w: number; h: number },
+              ): ProbeTexture;
+              appendPixelMarks(
+                layer: ProbeLayer,
+                camera: typeof renderer.camera,
+                cues: readonly PixelOverlayCue[],
+                nudge: { x: number; y: number },
+              ): void;
+            };
+            const Layer = backend.pixelOverlayLayer.constructor;
+            const layer = new Layer();
+            const target = backend.target(null, { x: 0, y: 0, w: cssWidth, h: cssHeight });
+            try {
+              layer.scale.set(requestedZoom);
+              layer.position.set(-camera.offsetX, -camera.offsetY);
+              backend.appendPixelMarks(layer, camera, [cue], { x: 0, y: 0 });
+              backend.app.renderer.render({ container: layer, target, clear: true });
+              const extracted = backend.app.renderer.extract.pixels(target);
+              if (extracted.width !== width || extracted.height !== height)
+                throw new Error(`${name} Pixi probe resolution disagrees with DPR`);
+              pixels = extracted.pixels;
+            } finally {
+              backend.pixelSpritePools.delete(layer);
+              backend.pixelSpriteUsed.delete(layer);
+              for (const child of [...layer.children]) {
+                child.removeFromParent();
+                child.destroy();
+              }
+              layer.destroy();
+              target.destroy();
+            }
+          }
+        } finally {
+          drawableCache.get = originalGet;
+          camera.offsetX = previousOffset.x;
+          camera.offsetY = previousOffset.y;
+        }
+        const allowed = [...sourceAlphas].map((alpha) => Math.round(alpha * (cue.alpha ?? 1)));
+        const observed = new Set<number>();
+        let nonzero = 0;
+        let unexpected = 0;
+        for (let i = 3; i < pixels.length; i += 4) {
+          const alpha = pixels[i] ?? 0;
+          observed.add(alpha);
+          if (alpha > 0) nonzero++;
+          if (!allowed.some((expected) => Math.abs(expected - alpha) <= 1)) unexpected++;
+        }
+        const block = requestedZoom * dpr;
+        let partialBlocks = 0;
+        for (let y = 0; y < height; y += block) {
+          for (let x = 0; x < width; x += block) {
+            const first = pixels[(y * width + x) * 4 + 3] ?? 0;
+            for (let dy = 0; dy < block; dy++) {
+              for (let dx = 0; dx < block; dx++) {
+                if (pixels[((y + dy) * width + x + dx) * 4 + 3] !== first) partialBlocks++;
+              }
+            }
+          }
+        }
+        alphaProbes[name] = {
+          width,
+          height,
+          nonzero,
+          unexpected,
+          partialBlocks,
+          allowed: [...new Set(allowed)].sort((a, b) => a - b),
+          observed: [...observed].sort((a, b) => a - b),
+        };
+      }
+      const ruleSignatures = {} as Record<MarkName, string>;
+      for (const name of Object.keys(prefixes) as MarkName[]) {
+        const cue = cueSamples[name];
+        if (!cue) throw new Error(`${name} has no shared rule signature`);
+        ruleSignatures[name] = JSON.stringify({ spec: cue.spec, alpha: cue.alpha ?? 1 });
+      }
       const emittedTargetAnchor = cueAnchors.targetReticle;
       if (!emittedTargetAnchor)
         throw new Error('The staged target reticle did not emit a pixel mark.');
@@ -726,10 +953,35 @@ async function captureStagedMarks(
       const smallPan = renderer.backend.pixelMarkDrawables.rasterizationCount;
       const panSpike = spikeToken();
 
+      const contrastRules = {} as Record<
+        'move' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'path',
+        string
+      >;
+      observedBackend[adapterName] = (...args: unknown[]): unknown => {
+        const cuesIndex = adapterName === 'drawPixelCues' ? 0 : 2;
+        const cues = args[cuesIndex] as readonly PixelOverlayCue[] | undefined;
+        for (const cue of cues ?? []) {
+          for (const name of ['move', 'target', 'area', 'rangeBonus', 'hover', 'path'] as const) {
+            if (contrastRules[name] || !prefixes[name].some((prefix) => cue.id.startsWith(prefix)))
+              continue;
+            contrastRules[name] = JSON.stringify({ spec: cue.spec, alpha: cue.alpha ?? 1 });
+          }
+        }
+        return unwrapped.apply(observedBackend, args);
+      };
+      try {
+        renderer.draw({ ...cueView, crispOverlays: true });
+      } finally {
+        observedBackend[adapterName] = unwrapped;
+      }
+
       const crops = {} as Record<MarkName, { before: Crop; after: Crop }>;
       for (const name of Object.keys(centres) as MarkName[])
         crops[name] = { before: before[name], after: after[name] };
       return {
+        alphaProbes,
+        ruleSignatures,
+        contrastRules,
         crops: {
           ...crops,
           plainReticle,
@@ -768,7 +1020,7 @@ async function captureStagedMarks(
         },
       };
     },
-    { requestedZoom: zoom, centres: MARK_CENTRES },
+    { requestedZoom: zoom, centres: MARK_CENTRES, talkCue: talkPipMark({ x: 100, y: 100 }, 0.7) },
   );
 }
 
@@ -776,7 +1028,7 @@ async function backendRun(
   browser: Browser,
   backend: 'canvas' | 'webgl',
   dpr: number,
-  zoomsToCapture: readonly (1 | 2)[] = [1, 2],
+  zoomsToCapture: readonly (1 | 2 | 3)[] = [1, 2, 3],
 ) {
   const context = await browser.newContext({
     baseURL: test.info().project.use.baseURL as string,
@@ -787,10 +1039,11 @@ async function backendRun(
   const page = await context.newPage();
   try {
     mkdirSync(REVIEW_DIR, { recursive: true });
+    if (dpr === 1) await captureVillageOverlays(page, backend);
     const gameplayTiming = await captureGameplayMove(page, backend, dpr);
-    const zooms = {} as Record<'1' | '2', Awaited<ReturnType<typeof captureStagedMarks>>>;
+    const zooms = {} as Record<'1' | '2' | '3', Awaited<ReturnType<typeof captureStagedMarks>>>;
     for (const zoom of zoomsToCapture) {
-      zooms[String(zoom) as '1' | '2'] = await captureStagedMarks(page, zoom);
+      zooms[String(zoom) as '1' | '2' | '3'] = await captureStagedMarks(page, zoom);
     }
     return { zooms, gameplayTiming };
   } finally {
@@ -799,7 +1052,7 @@ async function backendRun(
 }
 
 for (const dpr of [1, 2] as const) {
-  test(`pixel overlay marks render with backend parity at DPR ${dpr}, camera zoom 1 and 2`, async ({
+  test(`pixel overlay marks render with backend parity at DPR ${dpr}, camera zoom 1, 2 and 3`, async ({
     browser,
   }) => {
     test.setTimeout(600_000);
@@ -807,13 +1060,13 @@ for (const dpr of [1, 2] as const) {
     const canvas = await backendRun(browser, 'canvas', dpr);
     const webgl = await backendRun(browser, 'webgl', dpr);
     const masks = {
-      canvas: {} as Record<'1' | '2', Record<MarkName, MarkMetric>>,
-      webgl: {} as Record<'1' | '2', Record<MarkName, MarkMetric>>,
+      canvas: {} as Record<'1' | '2' | '3', Record<MarkName, MarkMetric>>,
+      webgl: {} as Record<'1' | '2' | '3', Record<MarkName, MarkMetric>>,
     };
 
-    for (const zoom of [1, 2] as const) {
-      const canvasRun = canvas.zooms[String(zoom) as '1' | '2'];
-      const webglRun = webgl.zooms[String(zoom) as '1' | '2'];
+    for (const zoom of [1, 2, 3] as const) {
+      const canvasRun = canvas.zooms[String(zoom) as '1' | '2' | '3'];
+      const webglRun = webgl.zooms[String(zoom) as '1' | '2' | '3'];
       expect(canvasRun.actual).toMatchObject({ dpr, scale: zoom, tilePx: 64 * zoom });
       expect(webglRun.actual).toMatchObject({ dpr, scale: zoom, tilePx: 64 * zoom });
       for (const name of ['targetReticle', 'selected', 'ko', 'healthBar', 'exit'] as const) {
@@ -831,6 +1084,28 @@ for (const dpr of [1, 2] as const) {
           `${name} anchor y agrees within one G1 pixel at zoom ${zoom}`,
         ).toBeLessThanOrEqual(1);
       }
+      for (const name of MARK_NAMES) {
+        expect(
+          canvasRun.ruleSignatures[name],
+          `${name} uses the same authored geometry, palette and opacity on both backends`,
+        ).toBe(webglRun.ruleSignatures[name]);
+      }
+      for (const name of ['move', 'target', 'area', 'rangeBonus', 'hover', 'path'] as const) {
+        expect(
+          canvasRun.contrastRules[name],
+          `${name} emits a High Contrast Canvas rule`,
+        ).toBeTruthy();
+        expect(
+          webglRun.contrastRules[name],
+          `${name} emits a High Contrast Pixi rule`,
+        ).toBeTruthy();
+        expect(
+          canvasRun.contrastRules[name],
+          `${name} keeps the same High Contrast geometry, palette and opacity across backends`,
+        ).toBe(webglRun.contrastRules[name]);
+      }
+      expect(canvasRun.contrastRules.move).not.toBe(canvasRun.ruleSignatures.move);
+      expect(webglRun.contrastRules.move).not.toBe(webglRun.ruleSignatures.move);
       expect(canvasRun.cache.repeated, 'a warm repeated frame must reuse mark sources').toBe(
         canvasRun.cache.warm,
       );
@@ -869,22 +1144,48 @@ for (const dpr of [1, 2] as const) {
         type: 'pixel-overlay-cache',
         description: `DPR${dpr} zoom${zoom} Canvas raster=${canvasRun.cache.warm}/${canvasRun.cache.repeated}/${canvasRun.cache.smallPan} spike=${canvasRun.cache.spike.repeatSameSource}/${canvasRun.cache.spike.panSameSource}; Pixi raster=${webglRun.cache.warm}/${webglRun.cache.repeated}/${webglRun.cache.smallPan} spike=${webglRun.cache.spike.repeatSameSource}/${webglRun.cache.spike.panSameSource}`,
       });
-      masks.canvas[String(zoom) as '1' | '2'] = {} as Record<MarkName, MarkMetric>;
-      masks.webgl[String(zoom) as '1' | '2'] = {} as Record<MarkName, MarkMetric>;
+      masks.canvas[String(zoom) as '1' | '2' | '3'] = {} as Record<MarkName, MarkMetric>;
+      masks.webgl[String(zoom) as '1' | '2' | '3'] = {} as Record<MarkName, MarkMetric>;
 
       for (const name of MARK_NAMES) {
         const canvasCrop = canvasRun.crops[name];
         const webglCrop = webglRun.crops[name];
+        for (const [backend, probe] of [
+          ['Canvas', canvasRun.alphaProbes[name]],
+          ['Pixi', webglRun.alphaProbes[name]],
+        ] as const) {
+          expect(
+            probe.nonzero,
+            `${backend} ${name} rendered onto a transparent target`,
+          ).toBeGreaterThan(0);
+          expect(
+            probe.unexpected,
+            `${backend} ${name} has only transparent or authored alpha at zoom ${zoom}, DPR ${dpr}; observed ${probe.observed}, allowed ${probe.allowed}`,
+          ).toBe(0);
+          expect(
+            probe.partialBlocks,
+            `${backend} ${name} has whole G1 pixel blocks at zoom ${zoom}, DPR ${dpr}`,
+          ).toBe(0);
+        }
         const canvasMask = maskMetrics(canvasCrop.before.dataUrl, canvasCrop.after.dataUrl);
         const webglMask = maskMetrics(webglCrop.before.dataUrl, webglCrop.after.dataUrl);
-        masks.canvas[String(zoom) as '1' | '2'][name] = canvasMask;
-        masks.webgl[String(zoom) as '1' | '2'][name] = webglMask;
+        masks.canvas[String(zoom) as '1' | '2' | '3'][name] = canvasMask;
+        masks.webgl[String(zoom) as '1' | '2' | '3'][name] = webglMask;
         for (const [backend, crop] of [
           ['canvas', canvasCrop.after],
           ['webgl', webglCrop.after],
         ] as const) {
           writeFileSync(
             resolve(REVIEW_DIR, `mark-${backend}-dpr${dpr}-zoom${zoom}-${name}.png`),
+            Buffer.from(crop.dataUrl.split(',')[1] ?? '', 'base64'),
+          );
+        }
+        for (const [backend, crop] of [
+          ['canvas', canvasCrop.before],
+          ['webgl', webglCrop.before],
+        ] as const) {
+          writeFileSync(
+            resolve(REVIEW_DIR, `mark-${backend}-dpr${dpr}-zoom${zoom}-${name}-before.png`),
             Buffer.from(crop.dataUrl.split(',')[1] ?? '', 'base64'),
           );
         }
@@ -992,10 +1293,13 @@ for (const dpr of [1, 2] as const) {
       for (const name of ['selected', 'ko'] as const) {
         const atN1 = masks[backend]['1'][name].bounds;
         const atN2 = masks[backend]['2'][name].bounds;
+        const atN3 = masks[backend]['3'][name].bounds;
         expect(atN1.width).toBeGreaterThan(0);
         expect(atN1.height).toBeGreaterThan(0);
         expect(atN2.width).toBeGreaterThan(0);
         expect(atN2.height).toBeGreaterThan(0);
+        expect(atN3.width).toBeGreaterThan(0);
+        expect(atN3.height).toBeGreaterThan(0);
         expect(
           Math.abs(atN2.width - 2 * atN1.width),
           `${backend} ${name} width preserves its world size at camera zoom 2`,
@@ -1004,11 +1308,113 @@ for (const dpr of [1, 2] as const) {
           Math.abs(atN2.height - 2 * atN1.height),
           `${backend} ${name} height preserves its world size at camera zoom 2`,
         ).toBeLessThanOrEqual(6 * dpr);
+        expect(
+          Math.abs(atN3.width - 3 * atN1.width),
+          `${backend} ${name} width preserves its world size at camera zoom 3`,
+        ).toBeLessThanOrEqual(9 * dpr);
+        expect(
+          Math.abs(atN3.height - 3 * atN1.height),
+          `${backend} ${name} height preserves its world size at camera zoom 3`,
+        ).toBeLessThanOrEqual(9 * dpr);
       }
     }
     test.info().annotations.push({
       type: 'real-gameplay-draw-timing',
       description: `DPR${dpr} preview Canvas first=${canvas.gameplayTiming.firstDrawMs.toFixed(2)}ms repeat=${canvas.gameplayTiming.repeatedDrawMs.toFixed(2)}ms (${canvas.gameplayTiming.cues}); Pixi first=${webgl.gameplayTiming.firstDrawMs.toFixed(2)}ms repeat=${webgl.gameplayTiming.repeatedDrawMs.toFixed(2)}ms (${webgl.gameplayTiming.cues})`,
     });
+  });
+}
+
+for (const backend of ['canvas', 'webgl'] as const) {
+  test(`raised quarry top receives real mouse hover and touch pick on ${backend}`, async ({
+    browser,
+  }) => {
+    allowSoftwareWebgl(test, backend);
+    const context = await browser.newContext({
+      baseURL: test.info().project.use.baseURL as string,
+      viewport: VIEWPORT,
+      deviceScaleFactor: 2,
+      hasTouch: true,
+    });
+    const page = await context.newPage();
+    try {
+      await resetStorage(page, `?renderer=${backend}`);
+      await startGame(page, ['Kaya'], ['kaya'], 'pixel-overlay-raised-pick');
+      await enterNode(page, 'quarry_after_explore');
+      await waitForIdle(page);
+      const point = await page.evaluate((lift) => {
+        type PickScene = {
+          renderer: {
+            camera: {
+              scale: number;
+              projection: string;
+              centreOn(pos: { x: number; y: number }): void;
+              project(pos: { x: number; y: number }): { x: number; y: number };
+              pickTile(x: number, y: number, grid: MapView['grid']): { x: number; y: number };
+            };
+            lastView: MapView | null;
+          };
+          requestWalk(pos: { x: number; y: number }): void;
+          hover: { x: number; y: number } | null;
+        };
+        const scene = (window.fnt!.app as unknown as { scene: PickScene }).scene;
+        const camera = scene.renderer.camera;
+        const grid = scene.renderer.lastView?.grid;
+        if (!grid || camera.projection !== 'oblique')
+          throw new Error('Missing oblique quarry view');
+        camera.centreOn({ x: 5.5, y: 1.5 });
+        const flat = camera.project({ x: 5.5, y: 1.5 });
+        const drawn = { x: flat.x, y: flat.y - lift * 64 * camera.scale };
+        const picked = camera.pickTile(drawn.x, drawn.y, grid);
+        if (picked.x !== 5 || picked.y !== 1)
+          throw new Error(`Raised top pick missed quarry stair: ${picked.x},${picked.y}`);
+        const original = scene.requestWalk;
+        (window as Window & { raisedTouchPick?: { x: number; y: number } }).raisedTouchPick =
+          undefined;
+        scene.requestWalk = function (pos) {
+          (window as Window & { raisedTouchPick?: { x: number; y: number } }).raisedTouchPick = pos;
+          original.call(scene, pos);
+        };
+        return drawn;
+      }, TIER_LIFT);
+      const box = await page.locator('.map-canvas').boundingBox();
+      if (!box) throw new Error('Missing quarry canvas bounds');
+      expect(point.x).toBeGreaterThan(0);
+      expect(point.y).toBeGreaterThan(0);
+      expect(point.x).toBeLessThan(box.width);
+      expect(point.y).toBeLessThan(box.height);
+      await page.mouse.move(box.x + point.x, box.y + point.y);
+      await expect
+        .poll(() =>
+          page.evaluate(() => {
+            const scene = (
+              window.fnt!.app as unknown as {
+                scene: {
+                  hover: { x: number; y: number } | null;
+                  renderer: { lastView: MapView | null };
+                };
+              }
+            ).scene;
+            return { hover: scene.hover, drawn: scene.renderer.lastView?.hoverTile ?? null };
+          }),
+        )
+        .toEqual({ hover: { x: 5, y: 1 }, drawn: { x: 5, y: 1 } });
+      await page.touchscreen.tap(box.x + point.x, box.y + point.y);
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              (window as Window & { raisedTouchPick?: { x: number; y: number } }).raisedTouchPick ??
+              null,
+          ),
+        )
+        .toEqual({ x: 5, y: 1 });
+      mkdirSync(REVIEW_DIR, { recursive: true });
+      await page.locator('.map-canvas').screenshot({
+        path: resolve(REVIEW_DIR, `raised-quarry-${backend}-dpr2-hover-touch.png`),
+      });
+    } finally {
+      await context.close();
+    }
   });
 }
