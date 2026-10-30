@@ -23,7 +23,7 @@ import {
   activeGroundCue,
   actorReticleX,
   actorSilhouetteGeometry,
-  combatActorSilhouetteGeometry,
+  combatActorSilhouetteScreenGeometry,
   fallbackBarTop,
   floaterOwner,
   floaterStartY,
@@ -2200,12 +2200,14 @@ export class Canvas2DBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const silhouette = combatActorSilhouetteGeometry(
+      const silhouette = combatActorSilhouetteScreenGeometry(
         { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
         camera.scale,
+        camera.offsetX,
+        camera.offsetY,
       );
       this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {

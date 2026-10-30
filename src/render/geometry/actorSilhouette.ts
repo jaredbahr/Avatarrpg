@@ -193,7 +193,10 @@ export class HealthBarStagger {
     const result = new Map<string, T['bar']>();
     const next = new Map<string, number>();
     for (const candidate of bars) {
-      const step = Math.max(2, candidate.bar.height * 0.8);
+      // A fractional step would move an otherwise snapped bar off the world
+      // pixel grid. Subtracting whole pixels preserves its camera-offset phase.
+      const pixel = candidate.bar.pixelSize;
+      const step = Math.max(2, Math.round((candidate.bar.height * 0.8) / pixel)) * pixel;
       const at = (level: number): T['bar'] => ({
         ...candidate.bar,
         y: candidate.bar.y - step * level,
@@ -371,6 +374,42 @@ export function combatActorSilhouetteGeometry(
     COMBAT_HEALTH_BAR_MIN_HEIGHT * pixelSize,
     pixelSize,
   );
+}
+
+/** Canvas-space combat geometry snapped before the camera offset is applied. */
+export function combatActorSilhouetteScreenGeometry(
+  box: ActorSpriteBox,
+  heightTiles: 1 | 2,
+  frameHeadroom: number | null,
+  actorScale: number,
+  cameraScale: number,
+  offsetX: number,
+  offsetY: number,
+): ActorSilhouetteGeometry {
+  const world = combatActorSilhouetteGeometry(
+    {
+      x: (box.x + offsetX) / cameraScale,
+      y: (box.y + offsetY) / cameraScale,
+      size: box.size / cameraScale,
+      width: (box.width ?? box.size) / cameraScale,
+    },
+    heightTiles,
+    frameHeadroom,
+    actorScale,
+  );
+  return {
+    bar: {
+      ...world.bar,
+      x: world.bar.x * cameraScale - offsetX,
+      y: world.bar.y * cameraScale - offsetY,
+      width: world.bar.width * cameraScale,
+      height: world.bar.height * cameraScale,
+      silhouetteTop: world.bar.silhouetteTop * cameraScale - offsetY,
+      pixelSize: cameraScale,
+    },
+    badgeY: world.badgeY * cameraScale - offsetY,
+    reticleY: world.reticleY * cameraScale - offsetY,
+  };
 }
 
 /**

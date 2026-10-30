@@ -18,7 +18,11 @@ until that parent lands; retargeting to main is a separate integration gate.
   zoom one.
 - Both backends quantize damaged fill width to whole world pixels. A 7/13 HP
   enemy thus has the same sharp 18-pixel fill in a 36-pixel bar on Canvas and
-  WebGL. The faction cap and fill length still distinguish side and damage.
+  WebGL. Canvas now computes combat bars and related badge/reticle anchors in
+  world space, then applies the camera transform, so an offset of half a CSS
+  pixel at DPR 2 keeps the same device-pixel phase as Pixi. The faction cap
+  and fill length still distinguish side and damage. Colliding bars rise by
+  whole world pixels; their camera phase and placement hysteresis survive.
 - The acting unit keeps a static, under-foot angular cue. Shared geometry emits
   filled, integer world-pixel runs for the ink and gold outlines; Canvas and
   Pixi fill rectangles, so neither draws antialiased diagonal strokes. High
@@ -34,9 +38,10 @@ until that parent lands; retargeting to main is a separate integration gate.
 
 The scoped geometry test covers actor-scale width, world-pixel height, filled
 cue runs, Canvas/Pixi coordinate-scale and camera-offset parity, a hollow
-centre, and the stronger High Contrast outline. The focused test (31 cases),
-scoped ESLint, and Prettier pass on the camera-offset follow-up. TypeScript
-passed on the preceding cue revision; it awaits the combined integration run.
+centre, and the stronger High Contrast outline. The bar contract tests cover
+fractional-offset placement at 1× and 0.5×, including badge/reticle anchors,
+and whole-pixel staggering of colliding 8-pixel bars. The focused test passes
+(34 cases); TypeScript and broader gates await combined integration.
 The browser spec checks 1280×800 desktop and 834×1194 iPad portrait on Canvas
 and WebGL, including Normal strip geometry, Largest names, reduced-motion and
 High Contrast captures, and an actual painted-pixel comparison at 7/13 HP.

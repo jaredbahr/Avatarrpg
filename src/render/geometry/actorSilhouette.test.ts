@@ -10,6 +10,7 @@ import {
   actorShadowDensity,
   activeGroundCue,
   combatActorSilhouetteGeometry,
+  combatActorSilhouetteScreenGeometry,
   COMBAT_HEALTH_BAR_MIN_HEIGHT,
   COMBAT_HEALTH_BAR_MIN_WIDTH,
   healthBarCap,
@@ -166,6 +167,45 @@ describe('upright actor health bar', () => {
     expect(large.height - large.pixelSize * 3).toBeGreaterThanOrEqual(4);
   });
 
+  it.each([1, 0.5])('projects combat bars on the world pixel phase at zoom %s', (cameraScale) => {
+    const offset = { x: 0.5, y: 1.5 }; // whole device pixels at DPR 2
+    const worldBox = { x: 32, y: 80, size: 64, width: 128 };
+    const screenBox = {
+      x: worldBox.x * cameraScale - offset.x,
+      y: worldBox.y * cameraScale - offset.y,
+      size: worldBox.size * cameraScale,
+      width: worldBox.width * cameraScale,
+    };
+    const world = combatActorSilhouetteGeometry(worldBox, 2, 0.5, 1.25);
+    const screen = combatActorSilhouetteScreenGeometry(
+      screenBox,
+      2,
+      0.5,
+      1.25,
+      cameraScale,
+      offset.x,
+      offset.y,
+    );
+    expect(screen.bar).toEqual({
+      x: world.bar.x * cameraScale - offset.x,
+      y: world.bar.y * cameraScale - offset.y,
+      width: world.bar.width * cameraScale,
+      height: world.bar.height * cameraScale,
+      silhouetteTop: world.bar.silhouetteTop * cameraScale - offset.y,
+      pixelSize: cameraScale,
+    });
+    expect(screen.badgeY).toBe(world.badgeY * cameraScale - offset.y);
+    expect(screen.reticleY).toBe(world.reticleY * cameraScale - offset.y);
+    expect((screen.bar.x + offset.x) / cameraScale).toBe(world.bar.x);
+    expect((screen.bar.y + offset.y) / cameraScale).toBe(world.bar.y);
+    expect([screen.bar.x, screen.bar.y].every((edge) => Number.isInteger(edge * 2))).toBe(true);
+    // The former screen-origin path displaced the bar at 1x. At 0.5x its
+    // fixed CSS gap instead moved the bar an entire world-pixel pair higher.
+    const oldScreen = combatActorSilhouetteGeometry(screenBox, 2, 0.5, 1.25, cameraScale);
+    if (cameraScale === 1) expect(oldScreen.bar.x).not.toBe(screen.bar.x);
+    else expect(oldScreen.bar.y).not.toBe(screen.bar.y);
+  });
+
   it('provides only filled, world-pixel-aligned runs for both cue colors', () => {
     const world = activeGroundCue(64, 55, 64, 64, 1, 1);
     const canvas = activeGroundCue(128, 110, 128, 128, 1, 2);
@@ -251,6 +291,21 @@ describe('upright actor health bar', () => {
     expect(near?.y).toBeGreaterThanOrEqual(overlapping.y - overlapping.height * 0.8 * 4);
     expect(far).toEqual(distant);
     expect(near && near.x + near.width / 2).toBe(overlapping.x + overlapping.width / 2);
+  });
+
+  it('raises colliding eight-world-pixel bars only by whole pixel steps', () => {
+    const bar = { ...combatActorSilhouetteGeometry({ x: 0, y: 80, size: 64 }, 1, null, 1).bar };
+    expect(bar.height).toBe(8);
+    const phaseBar = { ...bar, y: bar.y - 0.5, pixelSize: 1 };
+    const placed = staggerHealthBars([
+      { id: 'a', bar: phaseBar },
+      { id: 'b', bar: phaseBar },
+    ]);
+    const raised = placed.get('b');
+    expect(raised).toBeDefined();
+    expect(raised?.y).toBeLessThan(phaseBar.y);
+    expect((phaseBar.y - (raised?.y ?? 0)) % phaseBar.pixelSize).toBe(0);
+    expect(((raised?.y ?? 0) + 0.5) % phaseBar.pixelSize).toBe(0);
   });
 
   it('does not flip a bar by a step while a pose moves a neighbour across the boundary', () => {
