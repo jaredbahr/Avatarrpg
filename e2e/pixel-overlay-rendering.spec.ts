@@ -917,24 +917,22 @@ async function captureStagedMarks(
           showHealth: name === 'healthBar' && unit.id === hostile.id,
         })),
       });
-      for (const name of Object.keys(centres) as MarkName[]) {
-        centreOnMark(name);
-        const probeView = comparisonView(name);
-        if (name === 'healthBar') drawComparisonView(probeView, name);
-        after[name] = drawComparisonView(probeView, name);
-      }
       const before = {} as Record<MarkName, Crop>;
       const backendObject = renderer.backend;
       const methodName = renderer.backendName === 'canvas' ? 'drawPixelCues' : 'appendPixelMarks';
       const original = backendObject[methodName] as ((...args: unknown[]) => unknown) | undefined;
       if (!original) throw new Error(`Missing ${methodName} pixel-mark adapter seam.`);
+      // Keep each pair at one camera position so the scene and lifted-ground
+      // caches stay warm between its complete after and filtered before draws.
       for (const name of Object.keys(centres) as MarkName[]) {
+        centreOnMark(name);
+        const probeView = comparisonView(name);
+        if (name === 'healthBar') drawComparisonView(probeView, name);
+        after[name] = drawComparisonView(probeView, name);
         if (name === 'talk') {
-          centreOnMark(name);
-          const talkView = comparisonView(name);
           const quietView: MapView = {
-            ...talkView,
-            npcs: talkView.npcs.map((npc) => ({ ...npc, quiet: true })),
+            ...probeView,
+            npcs: probeView.npcs.map((npc) => ({ ...npc, quiet: true })),
           };
           before[name] = drawComparisonView(quietView, name);
           continue;
@@ -950,8 +948,6 @@ async function captureStagedMarks(
         };
         backendObject[methodName] = wrapped;
         try {
-          centreOnMark(name);
-          const probeView = comparisonView(name);
           before[name] = drawComparisonView(probeView, name);
         } finally {
           backendObject[methodName] = original;
