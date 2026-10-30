@@ -438,6 +438,16 @@ async function captureStagedMarks(
   page: Page,
   zoom: 1 | 2 | 3,
 ): Promise<{
+  pairCapture: {
+    mode: 'original' | 'phase-safe-groups';
+    afterDraws: number;
+    beforeDraws: number;
+    warmupDraws: number;
+    totalDraws: number;
+    cropReadbacks: number;
+    pairMs: number;
+    groups: { anchor: MarkName; members: MarkName[]; offsetX: number; offsetY: number }[];
+  };
   crops: MarkCrops;
   cache: {
     warm: number;
@@ -1409,7 +1419,13 @@ async function backendRun(
     const gameplayTiming = await captureGameplayMove(page, backend, dpr);
     const zooms = {} as Record<'1' | '2' | '3', Awaited<ReturnType<typeof captureStagedMarks>>>;
     for (const zoom of zoomsToCapture) {
-      zooms[String(zoom) as '1' | '2' | '3'] = await captureStagedMarks(page, zoom);
+      const captured = await captureStagedMarks(page, zoom);
+      zooms[String(zoom) as '1' | '2' | '3'] = captured;
+      if (dpr === 2)
+        writeFileSync(
+          resolve(REVIEW_DIR, `capture-plan-${backend}-dpr2-zoom${zoom}.json`),
+          `${JSON.stringify(captured.pairCapture, null, 2)}\n`,
+        );
     }
     return { zooms, gameplayTiming };
   } finally {
