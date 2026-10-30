@@ -1015,8 +1015,8 @@ async function captureStagedMarks(
       }[] = [];
       // Keep each pair at one camera position so the scene and lifted-ground
       // caches stay warm between its complete after and filtered before draws.
-      if (camera.viewport.dpr !== 2) {
-        // DPR1 retains the original per-cue draw order and camera positions.
+      if (renderer.backendName !== 'webgl' || camera.viewport.dpr !== 2) {
+        // Canvas and DPR1 retain the original per-cue draw order and camera positions.
         for (const name of names) {
           centreOnMark(name);
           const probeView = comparisonView(name);
@@ -1340,7 +1340,10 @@ async function captureStagedMarks(
         crops[name] = { before: before[name], after: after[name] };
       return {
         pairCapture: {
-          mode: camera.viewport.dpr === 2 ? 'phase-safe-groups' : 'original',
+          mode:
+            renderer.backendName === 'webgl' && camera.viewport.dpr === 2
+              ? 'phase-safe-groups'
+              : 'original',
           afterDraws,
           beforeDraws,
           warmupDraws,
