@@ -1,6 +1,6 @@
 # Victory beat — issue #333
 
-- **Updated:** 2026-10-30; source owner `/root/sol_review_delivery`; integration owner `/root`.
+- **Updated:** 2026-10-30 UTC; source owner `/root/sol_review_delivery`; integration owner `/root`.
 - **Location:** `/workspace/avatarrpg-333-draft`, branch `codex/333-victory-beat-draft`, based directly on `origin/main` at `bc77ae2e`. The two #333 feature commits were cherry-picked from the preserved mixed branch `/workspace/avatarrpg-333`; that branch was not changed or published.
 - **Behavior:** On victory, the final knockout and floaters finish before the camera frames every living party member at the closest fitting public zoom stop. The unobscured board holds for 1000 ms, or a tap on its explicit overlay reveals the existing result card early. Reduced motion leaves the camera still and reveals the card once the animator idles. Defeat remains immediate. The existing result wording, Continue action, battle resolution, story, and save state are unchanged.
 - **Lifecycle:** Terminal controls are locked while final playback and the party hold run. Pause remains available. The beat clock pauses with the pause menu or scene suspension, and cancellation clears it on phase change or unmount. The AI-only hold does not pause presentation.
