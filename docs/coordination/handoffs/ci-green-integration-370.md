@@ -54,6 +54,18 @@ merge, deployment or auto-merge is authorized in the current session.
   `/workspace/avatarrpg-env/370-obscurement-diagnostics-browser.log`. These
   browser runs reused a production build from `339188e9`;
   `src/` is byte-identical from that build head through `0789c83f`.
+- On frozen integration source head `f12748ee`, the entire read-only
+  `e2e/bending-cels.spec.ts` file passed three consecutive local runs, 4/4
+  cases each. The exact Gao queued-talk case in
+  `e2e/resident-motion.spec.ts` also passed three consecutive runs, 1/1 each.
+  Each run used one worker, zero retries, activated Node 22.23.4, system
+  Chromium, a fresh preview port and the production build from `339188e9`;
+  `src/` remained byte-identical. Receipts and logs are
+  `/workspace/avatarrpg-env/370-bending-run{1,2,3}.{receipt,log}` and
+  `/workspace/avatarrpg-env/370-gao-run{1,2,3}.{receipt,log}`. All six
+  receipts record exit 0 and the same head before and after. These local
+  streaks fulfill the specific #322 and #323 repetition gates; hosted browser
+  acceptance remains pending.
 - The current final head still requires all nine `npm run ci:local` steps before
   any push. Open one draft PR into main after that gate, leave auto-merge off,
   wait for PR verification, then dispatch CI once on the branch with
