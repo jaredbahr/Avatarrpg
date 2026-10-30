@@ -471,6 +471,7 @@ async function captureStagedMarks(
       type RuntimeRenderer = {
         camera: {
           scale: number;
+          integerZoom: boolean;
           offsetX: number;
           offsetY: number;
           viewport: { dpr: number; width: number; height: number };
@@ -991,37 +992,233 @@ async function captureStagedMarks(
       const methodName = renderer.backendName === 'canvas' ? 'drawPixelCues' : 'appendPixelMarks';
       const original = backendObject[methodName] as ((...args: unknown[]) => unknown) | undefined;
       if (!original) throw new Error(`Missing ${methodName} pixel-mark adapter seam.`);
+      const names = Object.keys(centres) as MarkName[];
+      const pairStart = performance.now();
+      let afterDraws = 0;
+      let beforeDraws = 0;
+      const usedGroups: {
+        anchor: MarkName;
+        members: MarkName[];
+        offsetX: number;
+        offsetY: number;
+      }[] = [];
       // Keep each pair at one camera position so the scene and lifted-ground
       // caches stay warm between its complete after and filtered before draws.
-      for (const name of Object.keys(centres) as MarkName[]) {
-        centreOnMark(name);
-        const probeView = comparisonView(name);
-        if (name === 'healthBar') drawComparisonView(probeView, name);
-        after[name] = drawComparisonView(probeView, name);
-        if (name === 'talk') {
-          const quietView: MapView = {
-            ...probeView,
-            npcs: probeView.npcs.map((npc) => ({ ...npc, quiet: true })),
+      if (camera.viewport.dpr !== 2) {
+        // DPR1 retains the original per-cue draw order and camera positions.
+        for (const name of names) {
+          centreOnMark(name);
+          const probeView = comparisonView(name);
+          if (name === 'healthBar') drawComparisonView(probeView, name);
+          after[name] = drawComparisonView(probeView, name);
+          afterDraws++;
+          if (name === 'talk') {
+            const quietView: MapView = {
+              ...probeView,
+              npcs: probeView.npcs.map((npc) => ({ ...npc, quiet: true })),
+            };
+            before[name] = drawComparisonView(quietView, name);
+            beforeDraws++;
+            continue;
+          }
+          const wrapped = (...args: unknown[]): unknown => {
+            const cuesIndex = methodName === 'drawPixelCues' ? 0 : 2;
+            const cues = args[cuesIndex] as readonly { id: string }[] | undefined;
+            if (!cues) throw new Error(`Missing pixel cue list in ${methodName}.`);
+            args[cuesIndex] = cues.filter(
+              (cue) => !prefixes[name].some((prefix) => cue.id.startsWith(prefix)),
+            );
+            return original.apply(backendObject, args);
           };
-          before[name] = drawComparisonView(quietView, name);
-          continue;
+          backendObject[methodName] = wrapped;
+          try {
+            before[name] = drawComparisonView(probeView, name);
+            beforeDraws++;
+          } finally {
+            backendObject[methodName] = original;
+          }
         }
-        const wrapped = (...args: unknown[]): unknown => {
-          const cuesIndex = methodName === 'drawPixelCues' ? 0 : 2;
-          const cues = args[cuesIndex] as readonly { id: string }[] | undefined;
-          if (!cues) throw new Error(`Missing pixel cue list in ${methodName}.`);
-          args[cuesIndex] = cues.filter(
-            (cue) => !prefixes[name].some((prefix) => cue.id.startsWith(prefix)),
-          );
-          return original.apply(backendObject, args);
+      } else {
+        type CameraOffset = { x: number; y: number };
+        const originalOffsets = {} as Record<MarkName, CameraOffset>;
+        for (const name of names) {
+          centreOnMark(name);
+          originalOffsets[name] = { x: camera.offsetX, y: camera.offsetY };
+        }
+        const plans: { anchor: MarkName; members: MarkName[] }[] =
+          requestedZoom === 1
+            ? [
+                {
+                  anchor: 'move',
+                  members: [
+                    'move',
+                    'target',
+                    'area',
+                    'rangeBonus',
+                    'hover',
+                    'path',
+                    'aim',
+                    'exit',
+                    'selected',
+                    'ko',
+                  ],
+                },
+                { anchor: 'targetReticle', members: ['targetReticle'] },
+                { anchor: 'healthBar', members: ['healthBar'] },
+                { anchor: 'talk', members: ['talk'] },
+              ]
+            : requestedZoom === 2
+              ? [
+                  {
+                    anchor: 'area',
+                    members: [
+                      'move',
+                      'target',
+                      'area',
+                      'rangeBonus',
+                      'hover',
+                      'path',
+                      'exit',
+                      'ko',
+                    ],
+                  },
+                  { anchor: 'selected', members: ['aim', 'selected'] },
+                  { anchor: 'targetReticle', members: ['targetReticle'] },
+                  { anchor: 'healthBar', members: ['healthBar'] },
+                  { anchor: 'talk', members: ['talk'] },
+                ]
+              : [
+                  { anchor: 'target', members: ['move', 'target', 'area', 'path', 'exit'] },
+                  { anchor: 'rangeBonus', members: ['rangeBonus', 'hover', 'ko'] },
+                  { anchor: 'aim', members: ['aim', 'selected'] },
+                  { anchor: 'targetReticle', members: ['targetReticle'] },
+                  { anchor: 'healthBar', members: ['healthBar'] },
+                  { anchor: 'talk', members: ['talk'] },
+                ];
+        const scheduled = plans.flatMap((plan) => plan.members);
+        if (scheduled.length !== names.length || new Set(scheduled).size !== names.length)
+          throw new Error('DPR2 camera plan must contain every mark exactly once');
+        const setCamera = (at: CameraOffset): void => {
+          camera.offsetX = at.x;
+          camera.offsetY = at.y;
+          if (camera.offsetX !== at.x || camera.offsetY !== at.y)
+            throw new Error('Camera did not retain its measured snapped offset');
         };
-        backendObject[methodName] = wrapped;
-        try {
-          before[name] = drawComparisonView(probeView, name);
-        } finally {
-          backendObject[methodName] = original;
+        const whole = (value: number): boolean => Math.abs(value - Math.round(value)) < 1e-6;
+        const canShare = (name: MarkName, at: CameraOffset): boolean => {
+          const geometry = cueGeometry[name];
+          if (!geometry || !camera.integerZoom) return false;
+          const old = originalOffsets[name];
+          const dx = at.x - old.x;
+          const dy = at.y - old.y;
+          if (
+            !whole(dx / requestedZoom) ||
+            !whole(dy / requestedZoom) ||
+            !whole(dx * camera.viewport.dpr) ||
+            !whole(dy * camera.viewport.dpr)
+          )
+            return false;
+          const cropAt = (offset: CameraOffset) => {
+            const left = (geometry.left - 4) * requestedZoom - offset.x;
+            const top = (geometry.top - 4) * requestedZoom - offset.y;
+            const cssWidth = (geometry.width + 8) * requestedZoom;
+            const cssHeight = (geometry.height + 8) * requestedZoom;
+            const sx = Math.round(left * backingScaleX);
+            const sy = Math.round(top * backingScaleY);
+            const width = Math.round(cssWidth * backingScaleX);
+            const height = Math.round(cssHeight * backingScaleY);
+            return {
+              left,
+              top,
+              cssWidth,
+              cssHeight,
+              sx,
+              sy,
+              width,
+              height,
+              fits:
+                left >= 0 &&
+                top >= 0 &&
+                left + cssWidth <= camera.viewport.width &&
+                top + cssHeight <= camera.viewport.height &&
+                sx >= 0 &&
+                sy >= 0 &&
+                sx + width <= canvas.width &&
+                sy + height <= canvas.height,
+            };
+          };
+          const baseline = cropAt(old);
+          const grouped = cropAt(at);
+          return (
+            baseline.fits &&
+            grouped.fits &&
+            baseline.sx - grouped.sx === Math.round(dx * camera.viewport.dpr) &&
+            baseline.sy - grouped.sy === Math.round(dy * camera.viewport.dpr)
+          );
+        };
+        const groups: { anchor: MarkName; members: MarkName[]; at: CameraOffset }[] = [];
+        const fallback: MarkName[] = [];
+        for (const plan of plans) {
+          const at = originalOffsets[plan.anchor];
+          const members = plan.members.filter((name) => {
+            if (plan.members.length === 1 && name === plan.anchor) return true;
+            const supported = canShare(name, at);
+            if (!supported) fallback.push(name);
+            return supported;
+          });
+          if (members.length) groups.push({ anchor: plan.anchor, members, at });
+        }
+        for (const name of fallback)
+          groups.push({ anchor: name, members: [name], at: originalOffsets[name] });
+        if (groups.reduce((sum, group) => sum + group.members.length, 0) !== names.length)
+          throw new Error('DPR2 camera fallback dropped a mark');
+        for (const group of groups) {
+          setCamera(group.at);
+          const first = group.members[0];
+          if (!first) throw new Error('DPR2 camera group has no marks');
+          const afterView = comparisonView(first);
+          if (first === 'healthBar') drawComparisonView(afterView, first);
+          after[first] = drawComparisonView(afterView, first);
+          afterDraws++;
+          for (const name of group.members.slice(1)) after[name] = captureMark(name);
+          for (const name of group.members) {
+            setCamera(group.at);
+            const probeView = comparisonView(name);
+            if (name === 'talk') {
+              const quietView: MapView = {
+                ...probeView,
+                npcs: probeView.npcs.map((npc) => ({ ...npc, quiet: true })),
+              };
+              before[name] = drawComparisonView(quietView, name);
+              beforeDraws++;
+              continue;
+            }
+            const wrapped = (...args: unknown[]): unknown => {
+              const cuesIndex = methodName === 'drawPixelCues' ? 0 : 2;
+              const cues = args[cuesIndex] as readonly { id: string }[] | undefined;
+              if (!cues) throw new Error(`Missing pixel cue list in ${methodName}.`);
+              args[cuesIndex] = cues.filter(
+                (cue) => !prefixes[name].some((prefix) => cue.id.startsWith(prefix)),
+              );
+              return original.apply(backendObject, args);
+            };
+            backendObject[methodName] = wrapped;
+            try {
+              before[name] = drawComparisonView(probeView, name);
+              beforeDraws++;
+            } finally {
+              backendObject[methodName] = original;
+            }
+          }
+          usedGroups.push({
+            anchor: group.anchor,
+            members: group.members,
+            offsetX: group.at.x,
+            offsetY: group.at.y,
+          });
         }
       }
+      const pairMs = performance.now() - pairStart;
 
       const occlusionBase: MapView = {
         ...cueView,
@@ -1123,6 +1320,14 @@ async function captureStagedMarks(
       for (const name of Object.keys(centres) as MarkName[])
         crops[name] = { before: before[name], after: after[name] };
       return {
+        pairCapture: {
+          mode: camera.viewport.dpr === 2 ? 'phase-safe-groups' : 'original',
+          afterDraws,
+          beforeDraws,
+          cropReadbacks: names.length * 2 + 1,
+          pairMs,
+          groups: usedGroups,
+        },
         alphaProbes,
         ruleSignatures,
         contrastRules,
