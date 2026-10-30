@@ -1692,41 +1692,107 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 /*
- * What the player is doing, above the buttons: one line that never wraps,
- * so the HUD keeps its height whichever mode the turn is in.
+ * What the player is doing, above the buttons. The description may use two
+ * lines, but the header always reserves exactly two so changing modes never
+ * moves the board underneath a target.
  */
 .ability-header {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 1.75rem;
+  height: 1.875rem;
+  min-height: 1.875rem;
+  max-height: 1.875rem;
   padding: 0 var(--sp-1);
   color: var(--c-ink-dim);
   font-size: var(--fs-sm);
-  white-space: nowrap;
+  line-height: 1.1;
   overflow: hidden;
 }
 
 .ability-header .mark {
+  flex-shrink: 0;
   width: 1.25rem;
   height: 1.25rem;
   color: var(--el, var(--c-ink-dim));
 }
 
 .ability-header strong {
+  flex: 0 0 auto;
   color: var(--c-ink);
   font-size: var(--fs-md);
+  white-space: nowrap;
 }
 
 .header-cost {
+  flex-shrink: 0;
   color: var(--c-gold-deep);
   font-weight: 700;
 }
 
 .header-desc {
+  display: -webkit-box;
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* On the two landscape review sizes, the aim instruction and Cancel occupy
+ * the spare right-hand column beside the action buttons. Keep that column in
+ * idle mode too, so selecting an ability does not add a third dock row and
+ * move the board under a target. The confirmation preview keeps its own flow. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    grid-template-rows: 1.875rem auto;
+    column-gap: var(--sp-2);
+  }
+
+  html[data-large-text='off']
+    .combat-scene
+    .action-bar:not(:has(.confirm-dialog))
+    > .ability-header {
+    grid-column: 1 / -1;
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .action-row {
+    grid-column: 1;
+    grid-row: 2;
+    gap: var(--sp-1);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) .action-button {
+    min-width: 5rem;
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .aim-hint {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: stretch;
+    padding: var(--sp-2);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar > .aim-hint .muted {
+    font-size: var(--fs-sm);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar > .aim-hint .row {
+    gap: var(--sp-1);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar > .aim-hint .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding-inline: var(--sp-2);
+  }
 }
 
 /* Mark above, name, cost under: the mockup's large action buttons. */
@@ -3413,6 +3479,15 @@ html[data-contrast='high'] .hud-panel::after {
   flex-wrap: wrap;
   max-height: 40dvh;
   overflow-y: auto;
+}
+
+/* At Huge text on a short landscape display, the idle dock can be a few
+ * pixels shorter than its 40dvh scroll cap. Reserving that existing cap keeps
+ * the canvas fixed when the aim guidance joins the scrollable controls. */
+@media (min-width: 53rem) and (max-height: 54rem) and (orientation: landscape) {
+  html[data-large-text='huge'] .combat-scene .hud {
+    height: 40dvh;
+  }
 }
 .combat-scene .action-bar > .confirm-bar {
   margin: 0;
