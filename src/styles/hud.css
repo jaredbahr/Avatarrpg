@@ -2561,6 +2561,17 @@ html[data-contrast='high'] .hud-panel::after {
   }
 }
 
+/* At Largest text on an upright tablet, keep every name whole and let the
+ * initiative strip scroll sideways when its chips no longer fit. */
+@media (min-width: 37rem) and (orientation: portrait) {
+  html[data-large-text='huge'] .combat-scene .turn-chip span {
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+}
+
 /* Narrow and upright layouts put the portrait above the dock. */
 @media (max-width: 55rem), (max-height: 34rem) {
   .stage {

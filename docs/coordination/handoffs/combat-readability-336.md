@@ -1,48 +1,41 @@
 # Combat readability — issue #336
 
-## Scope
+## Scope and review base
 
-On `codex/fix-336-combat-readability`, based on `7d6a5515`, improve zoom-1
-combat health bars and the acting-unit cue while keeping Canvas and Pixi aligned.
-Compact only the default-text initiative strip in desktop/landscape layouts;
-portrait layout rules remain separate.
+`codex/fix-336-combat-readability-standalone` is a review branch stacked on the
+#322 draft source `3c305155` (`codex/322-bending-lifetime-draft`). Its source
+diff against that parent contains only #336 health bars, acting cues, initiative
+styles, scoped tests, and this handoff. The draft PR must target the #322 branch
+until that parent lands; retargeting to main is a separate integration gate.
 
-## Implementation
+## Behavior
 
-- Shared `combatActorSilhouetteGeometry` in `src/render/geometry/actorSilhouette.ts`
-  supplies both renderers and camera-framing callers with 36×8 logical
-  world-pixel minimum combat bars and a shared pixel size. Canvas passes the
-  camera scale because its actor geometry is in screen CSS coordinates; Pixi
-  passes one in logical world pixels.
-- Both backends draw the bar as a snapped one-world-pixel ink frame, inset
-  track/fill and one-pixel upper highlight. Health fraction, faction fill and
-  faction cap remain the health/side indicators.
-- The acting unit keeps its under-foot cue location. A shared snapped polygon
-  pair replaces the thin ellipse with a 3-world-pixel angular ink keyline and
-  a 1-world-pixel gold inner stroke; terrain remains visible inside the frame.
-  It is static, so reduced motion needs no special path; a cleared
-  `activeUnitId` draws no acting cue.
-- `src/styles/hud.css` adds only a landscape-wide, default-text rule for
-  `.turn-strip` and `.turn-chip`. Chips stay touch height, labels keep their
-  accessible names and crowded orders scroll horizontally.
-- The ignored E2E review capture stages full party bars and a damaged active
-  enemy, then records 1280×800 and 1180×820 views on both backends under
-  `.shots/combat-readability/`, including full-page desktop views with the
-  compact initiative strip.
+- Shared `combatActorSilhouetteGeometry` sizes combat bars from a 36×8 logical
+  world-pixel floor at actor scale one. The width floor grows with actor scale
+  before whole-pixel snapping. Canvas passes the camera scale because its actor
+  geometry is in CSS coordinates; Pixi passes one world pixel. The one-pixel
+  frame and highlight leave a filled track at least four world pixels high at
+  zoom one.
+- Both backends quantize damaged fill width to whole world pixels. A 7/13 HP
+  enemy thus has the same sharp 18-pixel fill in a 36-pixel bar on Canvas and
+  WebGL. The faction cap and fill length still distinguish side and damage.
+- The acting unit keeps a static, under-foot angular cue with an ink outline
+  and gold inner stroke. High Contrast widens the outline from three to four
+  world pixels. Reduced Motion has no moving cue path.
+- At Normal text, the six-chip desktop initiative strip is one row no taller
+  than 3.75rem, with each chip at least `var(--tap)` tall. On an upright iPad at
+  Largest text, names may wrap within their chips instead of being ellipsized.
 
-## Validation
+## Verification state
 
-- `npm run typecheck` — passed.
-- Focused ESLint over changed TypeScript and E2E files — passed.
-- Prettier check over changed source, CSS, E2E, and handoff files — passed.
-- `npm exec vitest -- run src/render/geometry/actorSilhouette.test.ts` — 29
-  tests passed.
-- Focused `combat-readability.spec.ts` — both Canvas and software-WebGL cases
-  passed at desktop and landscape-tablet sizes, including zoom-1 camera and
-  strip geometry assertions (2 tests, about 2.6 minutes).
-- Production build passed before the final hollow-cue adjustment; final
-  typecheck and focused tests passed after it.
+The scoped geometry test covers the actor-scale width and world-pixel height.
+The browser spec checks 1280×800 desktop and 834×1194 iPad portrait on Canvas
+and WebGL, including Normal strip geometry, Largest names, reduced-motion and
+High Contrast captures, and an actual painted-pixel comparison at 7/13 HP.
+Those browser assertions and before/after screenshot evidence are **pending**
+the dedicated browser gate; the previous mixed branch's landscape captures
+are not acceptance evidence for this standalone source.
 
-The ignored captures are visual evidence for root review, not acceptance by
-the implementation owner. The full project gate and combined review remain
-with the integration owner.
+The exact committed head still needs its scoped static checks, all required
+pre-push gates, and one branch CI dispatch before a draft PR is published.
+No full-project gate or browser acceptance is claimed here.

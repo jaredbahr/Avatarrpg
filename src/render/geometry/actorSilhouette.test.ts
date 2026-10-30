@@ -148,9 +148,22 @@ describe('upright actor health bar', () => {
       1.25,
       0.75,
     );
-    expect(geometry.bar.width).toBe(COMBAT_HEALTH_BAR_MIN_WIDTH * 0.75);
+    expect(geometry.bar.width).toBe(COMBAT_HEALTH_BAR_MIN_WIDTH * 1.25 * 0.75);
     expect(geometry.bar.height).toBe(COMBAT_HEALTH_BAR_MIN_HEIGHT * 0.75);
     expect(geometry.bar.pixelSize).toBe(0.75);
+  });
+
+  it('widens the combat bar with the figure before world-pixel quantization', () => {
+    const box = { x: 10, y: 80, size: 64, width: 64 };
+    const normal = combatActorSilhouetteGeometry(box, 1, 0.5, 1, 1).bar;
+    const large = combatActorSilhouetteGeometry(box, 1, 0.5, 1.25, 1).bar;
+    expect(normal.width).toBe(36);
+    expect(large.width).toBe(45);
+    expect(normal.pixelSize).toBe(1);
+    expect(large.pixelSize).toBe(1);
+    // The opaque frame leaves six world-pixel rows inside; even after its
+    // one-pixel upper highlight, a hit retains five rows of coloured fill.
+    expect(large.height - large.pixelSize * 3).toBeGreaterThanOrEqual(4);
   });
 
   it('draws an angular active ground frame with a one-pixel inset', () => {

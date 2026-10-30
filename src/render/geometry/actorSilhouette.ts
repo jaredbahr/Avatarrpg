@@ -345,7 +345,9 @@ export function combatActorSilhouetteGeometry(
     heightTiles,
     frameHeadroom,
     scale,
-    COMBAT_HEALTH_BAR_MIN_WIDTH * pixelSize,
+    // Keep the readability floor proportional to the figure before snapping
+    // it to world pixels; a larger actor must not inherit the same 36px bar.
+    COMBAT_HEALTH_BAR_MIN_WIDTH * scale * pixelSize,
     COMBAT_HEALTH_BAR_MIN_HEIGHT * pixelSize,
     pixelSize,
   );

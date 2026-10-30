@@ -3033,7 +3033,9 @@ export class PixiBackend implements RenderBackend {
           heightTiles,
           1,
         );
-        rings.poly([...cue.outer], true).stroke({ width: 3, color: HP_COLORS.frame });
+        rings
+          .poly([...cue.outer], true)
+          .stroke({ width: view.crispOverlays ? 4 : 3, color: HP_COLORS.frame });
         rings.poly([...cue.inner], true).stroke({ width: 1, color: OVERLAY.active });
       } else if (unit.id === view.selectedUnitId) {
         rings
@@ -3133,11 +3135,15 @@ export class PixiBackend implements RenderBackend {
     const innerY = barY + pixel;
     const innerWidth = Math.max(pixel, barWidth - pixel * 2);
     const innerHeight = Math.max(pixel, barHeight - pixel * 2);
+    const fillWidth =
+      fraction > 0
+        ? Math.min(innerWidth, Math.max(pixel, Math.round((innerWidth * fraction) / pixel) * pixel))
+        : 0;
 
     // The frame and one-pixel upper edge stay sharp at the camera's pixel scale.
     g.rect(barX, barY, barWidth, barHeight).fill({ color: HP_COLORS.frame });
     g.rect(innerX, innerY, innerWidth, innerHeight).fill({ color: HP_COLORS.back });
-    g.rect(innerX, innerY, innerWidth * fraction, innerHeight).fill({
+    g.rect(innerX, innerY, fillWidth, innerHeight).fill({
       color: hpFill(unit.faction, fraction, hatch),
     });
     g.rect(innerX, innerY, innerWidth, pixel).fill({ color: HP_COLORS.highlight });

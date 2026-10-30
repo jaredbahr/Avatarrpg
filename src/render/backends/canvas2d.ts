@@ -2095,7 +2095,12 @@ export class Canvas2DBackend implements RenderBackend {
         );
         ctx.save();
         ctx.globalAlpha = view.crispOverlays ? 1 : 0.96;
-        strokeCuePolygon(ctx, cue.outer, HP_COLORS.frame, camera.scale * 3);
+        strokeCuePolygon(
+          ctx,
+          cue.outer,
+          HP_COLORS.frame,
+          camera.scale * (view.crispOverlays ? 4 : 3),
+        );
         strokeCuePolygon(ctx, cue.inner, OVERLAY.active, camera.scale);
         ctx.restore();
       } else if (unit.id === view.selectedUnitId) {
@@ -2302,6 +2307,10 @@ export class Canvas2DBackend implements RenderBackend {
     const innerY = barY + pixel;
     const innerWidth = Math.max(pixel, barWidth - pixel * 2);
     const innerHeight = Math.max(pixel, barHeight - pixel * 2);
+    const fillWidth =
+      fraction > 0
+        ? Math.min(innerWidth, Math.max(pixel, Math.round((innerWidth * fraction) / pixel) * pixel))
+        : 0;
 
     // The frame and one-pixel upper edge stay sharp at the camera's pixel scale.
     ctx.fillStyle = HP_COLORS.frame;
@@ -2309,7 +2318,7 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.fillStyle = HP_COLORS.back;
     ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
     ctx.fillStyle = fill;
-    ctx.fillRect(innerX, innerY, innerWidth * fraction, innerHeight);
+    ctx.fillRect(innerX, innerY, fillWidth, innerHeight);
     ctx.fillStyle = HP_COLORS.highlight;
     ctx.fillRect(innerX, innerY, innerWidth, pixel);
 
