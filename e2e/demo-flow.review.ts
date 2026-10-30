@@ -1370,10 +1370,14 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
   }
 
   await page.waitForTimeout(1200);
+  const forestPhase = (await battle()).battle?.phase;
+  if (forestPhase !== 'victory' && forestPhase !== 'defeat') {
+    throw new Error(`Forest encounter did not reach a terminal phase: ${forestPhase}`);
+  }
   await beat(
-    'forest-battle-victory',
+    `forest-battle-${forestPhase}`,
     shortcut
-      ? 'The shortcut is recorded in beats.json; victory still used legal party attacks.'
+      ? 'The shortcut is recorded in beats.json; the terminal phase still came from the real reducer.'
       : undefined,
   );
   await tapButton(page.getByRole('button', { name: 'Continue', exact: true }));
