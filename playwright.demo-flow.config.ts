@@ -21,6 +21,9 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     serviceWorkers: 'block',
+    ...(process.env.FNT_CHROMIUM_EXECUTABLE
+      ? { launchOptions: { executablePath: process.env.FNT_CHROMIUM_EXECUTABLE } }
+      : {}),
     // A review step that cannot act should fail and say where, not hang the run.
     actionTimeout: 30_000,
   },
@@ -59,7 +62,7 @@ export default defineConfig({
   webServer: {
     command: `npm run dev -- --host 127.0.0.1 --port ${port} --strictPort`,
     url: `http://127.0.0.1:${port}`,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });

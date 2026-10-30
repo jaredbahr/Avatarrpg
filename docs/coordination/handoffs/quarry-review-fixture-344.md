@@ -1,0 +1,8 @@
+# Quarry review fixture — issue #344
+
+- **Updated:** 2026-10-29, America/Chicago; owner `/root/sol_quarry_review_draft`; integration owner `/root`.
+- **Goal:** review-only title-to-home recordings for trade on desktop Canvas and escort on portrait Canvas, plus a severity-graded audit. Scope is `e2e/demo-flow.review.ts`, `playwright.demo-flow.config.ts`, this handoff, the audit and small source review artifacts. No product source changes.
+- **Branch and base:** `codex/quarry-review-draft` in `/workspace/avatarrpg-quarry-review-draft`, from current main `bc77ae2eceb6740dd4c143cae61595a1f4884bc2`. Earlier fixture commits `4304e988` and `3c4138c` and combined recordings remain historical evidence; they included other product work and are not this branch's acceptance captures.
+- **Fixture:** legal browser walking and controls, planner commands, and any staged enemy HP after recorded party activations are carried from the prior #344 fixture. This branch waits for the actual destination scene, stopped walk and clear curtain before arrival stills. When main lacks the optional #328 Show enemies control, the fixture logs that fact and captures the normal live boss opening instead.
+- **Checks:** typecheck and lint passed locally before the first fixture commit. Full main-based route recordings and `npm run ci:local` are pending. Each authoritative capture must show a clean committed source SHA in the visible title label and its beat manifest.
+- **Limits:** route shortcuts prove progression and presentation, not unstaged balance. Automated Chromium portrait is not physical iPad or Safari; Playwright video does not prove audible quality. No merge, deployment or auto-merge is authorized for this draft.
