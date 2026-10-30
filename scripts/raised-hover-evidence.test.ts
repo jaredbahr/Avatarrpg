@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runInNewContext } from 'node:vm';
-import { initializeRaisedHoverObserver, RaisedHoverEvidence } from '../e2e/raised-hover-evidence';
+import type { Page } from '@playwright/test';
+import {
+  initializeRaisedHoverObserver,
+  prepareRaisedHoverEvidence,
+  RaisedHoverEvidence,
+} from '../e2e/raised-hover-evidence';
 
 type Sample = Parameters<RaisedHoverEvidence['receive']>[0];
 type Ack = ReturnType<RaisedHoverEvidence['receive']>;
@@ -20,7 +25,6 @@ function sample(overrides: Partial<Sample> = {}): Sample {
       trusted: true,
       targetMatches: true,
       pointerType: 'mouse',
-      unixMs: 0,
     },
     identity: true,
     actual: structuredClone(expected),
@@ -33,10 +37,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('raised hover Node evidence gate (no browser acceptance)', () => {
   it('rejects pre-input, queued pre-poll, obsolete and non-successor samples', () => {
-    const gate = new RaisedHoverEvidence(
-      () => 0,
-      () => 0,
-    );
+    const gate = new RaisedHoverEvidence(() => 0);
     gate.intendPointer(640, 286.5);
     gate.receive(sample({ generation: 0 }));
     expect(gate.readForPoll()).toBeNull();
@@ -50,43 +51,49 @@ describe('raised hover Node evidence gate (no browser acceptance)', () => {
     expect(gate.readForPoll()).toEqual(expected);
   });
 
-  it.each([
-    'coords',
-    'pre-command',
-    'untrusted',
-    'touch',
-    'target',
-    'identity',
-    'source',
-    'error',
-    'order',
-  ])('invalidates previous matching evidence on bad %s; does not latch success', (kind) => {
-    const gate = new RaisedHoverEvidence(
-      () => 0,
-      () => 0,
-    );
+  it.each(['coords', 'untrusted', 'touch', 'target', 'identity', 'source', 'order'])(
+    'invalidates previous matching evidence on bad %s; does not latch success',
+    (kind) => {
+      const gate = new RaisedHoverEvidence(() => 0);
+      gate.intendPointer(640, 286.5);
+      gate.readForPoll();
+      gate.receive(sample());
+      expect(gate.readForPoll()).toEqual(expected);
+      const invalid = sample({ sequence: 2, draw: 3 });
+      if (kind === 'coords') invalid.input!.clientX++;
+      if (kind === 'untrusted') invalid.input!.trusted = false;
+      if (kind === 'touch') invalid.input!.pointerType = 'touch';
+      if (kind === 'target') invalid.input!.targetMatches = false;
+      if (kind === 'identity') invalid.identity = false;
+      if (kind === 'order') invalid.sequence = 1;
+      gate.receive(invalid, kind !== 'source');
+      expect(gate.readForPoll()).toBeNull();
+    },
+  );
+
+  it('keeps the first observer error across later good evidence and later errors', () => {
+    const gate = new RaisedHoverEvidence(() => 0);
     gate.intendPointer(640, 286.5);
     gate.readForPoll();
-    gate.receive(sample());
-    expect(gate.readForPoll()).toEqual(expected);
-    const invalid = sample({ sequence: 2, draw: 3 });
-    if (kind === 'coords') invalid.input!.clientX++;
-    if (kind === 'pre-command') invalid.input!.unixMs = -1;
-    if (kind === 'untrusted') invalid.input!.trusted = false;
-    if (kind === 'touch') invalid.input!.pointerType = 'touch';
-    if (kind === 'target') invalid.input!.targetMatches = false;
-    if (kind === 'identity') invalid.identity = false;
-    if (kind === 'error') invalid.error = 'original draw failed';
-    if (kind === 'order') invalid.sequence = 1;
-    gate.receive(invalid, kind !== 'source');
-    expect(gate.readForPoll()).toBeNull();
+    gate.receive(sample({ error: 'first observer failure' }));
+    const readError = () => {
+      try {
+        return gate.readForPoll();
+      } catch (error) {
+        return error;
+      }
+    };
+    const first = readError();
+    expect(first).toBeInstanceOf(Error);
+    expect(String(first)).toContain('first observer failure');
+    gate.receive(sample({ sequence: 2, draw: 3 }));
+    expect(readError()).toBe(first);
+    gate.receive(sample({ sequence: 3, draw: 4, error: 'later observer failure' }));
+    expect(readError()).toBe(first);
   });
 
   it('preserves complete actual fields and publishes wrong states to the exact matcher', () => {
-    const gate = new RaisedHoverEvidence(
-      () => 0,
-      () => 0,
-    );
+    const gate = new RaisedHoverEvidence(() => 0);
     gate.intendPointer(640, 286.5);
     gate.readForPoll();
     const extra = sample({ actual: { hover: { x: 5, y: 1, extra: true }, drawn: { x: 5, y: 1 } } });
@@ -101,10 +108,7 @@ describe('raised hover Node evidence gate (no browser acceptance)', () => {
 
   it('expires evidence at the unchanged 10s boundary and rejects after close', () => {
     let now = 0;
-    const gate = new RaisedHoverEvidence(
-      () => now,
-      () => 0,
-    );
+    const gate = new RaisedHoverEvidence(() => now);
     gate.intendPointer(640, 286.5);
     gate.readForPoll();
     gate.receive(sample());
@@ -120,10 +124,7 @@ describe('raised hover Node evidence gate (no browser acceptance)', () => {
 
 /** Synthetic host exercises the observer protocol and delegation, never UI behavior. */
 function host() {
-  const gate = new RaisedHoverEvidence(
-    () => 0,
-    () => 0,
-  );
+  const gate = new RaisedHoverEvidence(() => 0);
   gate.intendPointer(640, 286.5);
   const listeners = new Set<(event: PointerEvent) => void>();
   const canvas = {
@@ -146,12 +147,15 @@ function host() {
   });
   const renderer = { draw: original, lastView: view };
   const scene = { hover: { x: 5, y: 1 }, renderer };
-  const deliveries: { sample: Sample; resolve(ack: Ack): void }[] = [];
+  const deliveries: { sample: Sample; resolve(ack: Ack): void; reject(error: unknown): void }[] =
+    [];
   const runtime = {
     fnt: { app: { scene } },
     raisedHoverEvidenceBinding: vi.fn(
       (evidence: Sample) =>
-        new Promise<Ack>((resolve) => deliveries.push({ sample: evidence, resolve })),
+        new Promise<Ack>((resolve, reject) =>
+          deliveries.push({ sample: evidence, resolve, reject }),
+        ),
     ),
   } as unknown as Window;
   vi.stubGlobal('window', runtime);
@@ -173,6 +177,9 @@ function host() {
     throwNext: () => {
       shouldThrow = true;
     },
+    recover: () => {
+      shouldThrow = false;
+    },
     pointer: (overrides: Partial<PointerEvent> = {}) => {
       for (const listener of listeners)
         listener({
@@ -180,7 +187,6 @@ function host() {
           clientY: 286.5,
           isTrusted: true,
           pointerType: 'mouse',
-          timeStamp: 0,
           target: canvas,
           ...overrides,
         } as unknown as PointerEvent);
@@ -204,7 +210,6 @@ describe('actual-draw bridge protocol in a synthetic host', () => {
       window: h.runtime,
       document: { querySelector: () => h.canvas },
       structuredClone,
-      performance,
     });
     h.runtime.raisedHoverObserver!.install(h.scene, h.canvas as unknown as HTMLCanvasElement);
     h.pointer();
@@ -250,13 +255,70 @@ describe('actual-draw bridge protocol in a synthetic host', () => {
       thrown = error;
     }
     expect(thrown).toBe(h.failure);
+    h.recover();
+    h.renderer.draw(h.view); // A later successful draw must not wash out the pending error.
+    h.original.mockImplementationOnce(() => {
+      throw new Error('later observer failure');
+    });
+    expect(() => h.renderer.draw(h.view)).toThrow('later observer failure');
     expect(h.deliveries).toHaveLength(1);
     await h.deliver();
     expect(h.deliveries).toHaveLength(1); // Pending error is delivered even if no later draw runs.
     const error = await h.deliver();
     expect(error.actual).toBeNull();
     expect(error.error).toContain('original draw failure');
+    expect(() => h.gate.readForPoll()).toThrow('original draw failure');
+    h.renderer.draw(h.view);
+    expect(h.deliveries).toHaveLength(0); // One sticky error report, never a resend loop.
+    expect(() => h.gate.readForPoll()).toThrow('original draw failure');
+  });
+
+  it('does not retry a rejected binding or publish later apparently good evidence', async () => {
+    const h = host();
+    h.pointer();
+    h.gate.readForPoll();
+    h.renderer.draw(h.view);
+    const delivery = h.deliveries.shift()!;
+    delivery.reject(new Error('uncertain binding loss'));
+    await Promise.resolve();
+    h.renderer.draw(h.view);
+    h.renderer.draw(h.view);
+    expect(h.runtime.raisedHoverEvidenceBinding).toHaveBeenCalledTimes(1);
+    expect(h.deliveries).toHaveLength(0);
+    // The lost channel cannot report its own loss; no fresh evidence reaches Node.
     expect(h.gate.readForPoll()).toBeNull();
+  });
+
+  it('preserves production returns when the binding throws and never retries it', () => {
+    const h = host();
+    h.pointer();
+    h.gate.readForPoll();
+    h.runtime.raisedHoverEvidenceBinding = vi.fn(() => {
+      throw new Error('binding unavailable');
+    });
+    expect(h.renderer.draw(h.view)).toBe(h.result);
+    expect(h.renderer.draw(h.view)).toBe(h.result);
+    expect(h.runtime.raisedHoverEvidenceBinding).toHaveBeenCalledTimes(1);
+    expect(h.gate.readForPoll()).toBeNull();
+  });
+
+  it('cannot revoke an already delivered Node match through a subsequently lost binding', async () => {
+    const h = host();
+    h.pointer();
+    h.gate.readForPoll();
+    h.renderer.draw(h.view);
+    await h.deliver(); // Generation acknowledgment; no accepted post-poll state yet.
+    h.renderer.draw(h.view);
+    const delivery = h.deliveries.shift()!;
+    h.gate.receive(delivery.sample); // Node received fresh evidence before its reply was lost.
+    expect(h.gate.readForPoll()).toEqual(expected);
+    delivery.reject(new Error('reply lost after Node accepted evidence'));
+    await Promise.resolve();
+    h.renderer.draw(h.view);
+    expect(h.deliveries).toHaveLength(0);
+    expect(h.runtime.raisedHoverEvidenceBinding).toHaveBeenCalledTimes(2);
+    // Explicit negative control: transport loss alone cannot revoke this valid match.
+    expect(h.gate.readForPoll()).toEqual(expected);
   });
 
   it('rejects pre-input and changed scene identities, and clones complete source values', async () => {
@@ -274,7 +336,7 @@ describe('actual-draw bridge protocol in a synthetic host', () => {
     (h.runtime.fnt!.app as unknown as { scene: unknown }).scene = {};
     h.renderer.draw(h.view);
     expect((await h.deliver()).identity).toBe(false);
-    expect(h.gate.readForPoll()).toBeNull();
+    expect(() => h.gate.readForPoll()).toThrow('identity changed');
   });
 
   it('stops late deliveries, restores only its own wrapper and removes its listener', async () => {
@@ -301,19 +363,60 @@ describe('actual-draw bridge protocol in a synthetic host', () => {
     expect(h.listeners.size).toBe(0);
   });
 
-  it('invalidates evidence when the draw did not install its own view or canvas', async () => {
-    const h = host();
-    h.pointer();
-    h.gate.readForPoll();
-    h.renderer.draw(h.view);
-    await h.deliver();
-    h.original.mockImplementationOnce(() => h.result);
-    h.renderer.draw({ hoverTile: { x: 4, y: 1 } });
-    expect((await h.deliver()).identity).toBe(false);
-    expect(h.gate.readForPoll()).toBeNull();
-    h.canvas.isConnected = false;
-    h.renderer.draw(h.view);
-    expect((await h.deliver()).identity).toBe(false);
-    expect(h.gate.readForPoll()).toBeNull();
+  it.each(['view', 'canvas'])(
+    'makes a changed %s identity a sticky observer error',
+    async (kind) => {
+      const h = host();
+      h.pointer();
+      h.gate.readForPoll();
+      h.renderer.draw(h.view);
+      await h.deliver();
+      if (kind === 'view') {
+        h.original.mockImplementationOnce(() => h.result);
+        h.renderer.draw({ hoverTile: { x: 4, y: 1 } });
+      } else {
+        h.canvas.isConnected = false;
+        h.renderer.draw(h.view);
+      }
+      expect((await h.deliver()).identity).toBe(false);
+      expect(() => h.gate.readForPoll()).toThrow('identity changed');
+    },
+  );
+});
+
+describe('raised observer cleanup before native captures', () => {
+  it('closes Node first, performs browser cleanup once, and preserves a poll failure', async () => {
+    const frame = {};
+    let receive!: (source: { page: Page; frame: unknown }, sample: Sample) => Ack;
+    let rejectCleanup!: (error: unknown) => void;
+    const pendingCleanup = new Promise<void>((_resolve, reject) => {
+      rejectCleanup = reject;
+    });
+    const evaluate = vi.fn(() => pendingCleanup);
+    const page = {
+      exposeBinding: vi.fn(async (_name: string, callback: typeof receive) => {
+        receive = callback;
+      }),
+      addInitScript: vi.fn(async () => {}),
+      evaluate,
+      mainFrame: () => frame,
+    } as unknown as Page;
+    const observation = await prepareRaisedHoverEvidence(page);
+    const original = new Error('original hover poll failure');
+    const execution = (async () => {
+      try {
+        throw original;
+      } finally {
+        await observation.close();
+      }
+    })();
+    const fallback = observation.close();
+    expect(receive({ page, frame }, sample()).closed).toBe(true);
+    expect(evaluate).toHaveBeenCalledTimes(1);
+    rejectCleanup(new Error('browser cleanup unavailable'));
+    await expect(execution).rejects.toBe(original);
+    await fallback;
+    expect(observation.readForPoll()).toBeNull();
+    expect(evaluate).toHaveBeenCalledTimes(1);
   });
 });

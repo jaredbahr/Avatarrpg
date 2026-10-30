@@ -8,7 +8,6 @@ type Input = {
   trusted: boolean;
   targetMatches: boolean;
   pointerType: string;
-  unixMs: number;
 };
 type Evidence = {
   sequence: number;
@@ -39,20 +38,19 @@ export class RaisedHoverEvidence {
   private closed = false;
   private lastSequence = 0;
   private lastDraw = 0;
-  private pointer: { clientX: number; clientY: number; notBeforeUnixMs: number } | null = null;
+  private pointer: { clientX: number; clientY: number } | null = null;
   private actual: unknown = null;
+  private firstError: Error | null = null;
 
-  constructor(
-    private readonly now = () => performance.now(),
-    private readonly epochNow = () => Date.now(),
-  ) {}
+  constructor(private readonly now = () => performance.now()) {}
 
   intendPointer(clientX: number, clientY: number): void {
-    this.pointer = { clientX, clientY, notBeforeUnixMs: this.epochNow() };
+    this.pointer = { clientX, clientY };
     this.actual = null;
   }
 
   readForPoll(): unknown {
+    if (this.firstError) throw this.firstError;
     if (!this.generation && !this.closed) {
       this.generation = 1;
       // Evidence expires too; the unchanged expect.poll owns the actual timeout.
@@ -66,6 +64,8 @@ export class RaisedHoverEvidence {
   receive(sample: Evidence, sourceMatches = true): Ack {
     // Invalid messages invalidate earlier success, including out-of-order delivery.
     this.actual = null;
+    if (!this.closed && sourceMatches && sample.error !== null)
+      this.firstError ??= new Error(`Raised hover observer failed: ${sample.error}`);
     const ordered =
       Number.isSafeInteger(sample.sequence) &&
       sample.sequence > this.lastSequence &&
@@ -96,8 +96,7 @@ export class RaisedHoverEvidence {
       this.pointer &&
       input.clientX === this.pointer.clientX &&
       input.clientY === this.pointer.clientY &&
-      Number.isFinite(input.unixMs) &&
-      input.unixMs >= this.pointer.notBeforeUnixMs &&
+      !this.firstError &&
       sample.identity === true &&
       !sample.error &&
       sample.actual
@@ -131,7 +130,11 @@ export function initializeRaisedHoverObserver(): void {
       let acknowledgedAfterDraw = 0;
       let input: Input | null = null;
       let inputSequence = 0;
-      let pendingError: string | null = null;
+      let firstError: string | null = null;
+      let errorSent = false;
+      // A lost channel cannot report its own loss or revoke an already delivered
+      // matching Node value. It only prevents future deliveries.
+      let deliveryLost = false;
       const onPointerMove = (event: PointerEvent) => {
         input = {
           sequence: ++inputSequence,
@@ -141,30 +144,40 @@ export function initializeRaisedHoverObserver(): void {
           trusted: event.isTrusted,
           targetMatches: event.target === canvas,
           pointerType: event.pointerType,
-          // Correlate input with the original Node mouse command, not its timeout.
-          unixMs: performance.timeOrigin + event.timeStamp,
         };
       };
       canvas.addEventListener('pointermove', onPointerMove, { passive: true });
       const publish = (actual: Evidence['actual'], identity: boolean, error: string | null) => {
-        if (closed) return;
-        if (error) pendingError = error;
+        if (closed || deliveryLost) return;
+        if (error !== null) firstError ??= error;
         if (inFlight) return; // Drop this draw; never queue or retag a captured state.
+        if (firstError !== null && errorSent) return;
         const binding = window.raisedHoverEvidenceBinding;
-        if (!binding) return;
+        if (!binding) {
+          deliveryLost = true;
+          return;
+        }
         const sample: Evidence = {
           sequence: ++sequence,
           generation,
           acknowledgedAfterDraw,
           draw,
           input: input ? { ...input } : null,
-          identity,
-          actual,
-          error: pendingError,
+          identity: firstError === null && identity,
+          actual: firstError === null ? actual : null,
+          error: firstError,
         };
-        pendingError = null;
+        if (firstError !== null) errorSent = true;
         inFlight = true;
-        void binding(sample).then(
+        let delivery: Promise<Ack>;
+        try {
+          delivery = binding(sample);
+        } catch {
+          inFlight = false;
+          deliveryLost = true;
+          return;
+        }
+        void delivery.then(
           (ack) => {
             inFlight = false;
             if (closed) return;
@@ -176,12 +189,14 @@ export function initializeRaisedHoverObserver(): void {
               generation = ack.generation;
               acknowledgedAfterDraw = draw;
             }
-            if (pendingError) publish(null, false, pendingError);
+            if (firstError !== null && !errorSent) publish(null, false, firstError);
             // Only a subsequent original draw may publish under the new generation.
           },
-          (error: unknown) => {
+          () => {
             inFlight = false;
-            pendingError = String(error);
+            // Never retry an uncertain binding. Without already accepted post-poll
+            // evidence the unchanged Node poll times out; an earlier match remains.
+            deliveryLost = true;
           },
         );
       };
@@ -241,12 +256,14 @@ export async function prepareRaisedHoverEvidence(page: Page) {
     evidence.receive(sample, source.page === page && source.frame === page.mainFrame()),
   );
   await page.addInitScript(initializeRaisedHoverObserver);
+  let closing: Promise<void> | null = null;
   return {
     intendPointer: (clientX: number, clientY: number) => evidence.intendPointer(clientX, clientY),
     readForPoll: () => evidence.readForPoll(),
-    async close() {
+    close() {
       evidence.close(); // Reject already queued deliveries before awaiting browser cleanup.
-      await page.evaluate(() => window.raisedHoverObserver?.dispose()).catch(() => {});
+      closing ??= page.evaluate(() => window.raisedHoverObserver?.dispose()).catch(() => {});
+      return closing;
     },
   };
 }

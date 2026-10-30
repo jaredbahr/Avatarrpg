@@ -1781,23 +1781,27 @@ for (const backend of ['canvas', 'webgl'] as const) {
       expect(point.y).toBeLessThan(box.height);
       observation?.intendPointer(box.x + point.x, box.y + point.y);
       await page.mouse.move(box.x + point.x, box.y + point.y);
-      await expect
-        .poll(() =>
-          observation
-            ? observation.readForPoll()
-            : page.evaluate(() => {
-                const scene = (
-                  window.fnt!.app as unknown as {
-                    scene: {
-                      hover: { x: number; y: number } | null;
-                      renderer: { lastView: MapView | null };
-                    };
-                  }
-                ).scene;
-                return { hover: scene.hover, drawn: scene.renderer.lastView?.hoverTile ?? null };
-              }),
-        )
-        .toEqual({ hover: { x: 5, y: 1 }, drawn: { x: 5, y: 1 } });
+      try {
+        await expect
+          .poll(() =>
+            observation
+              ? observation.readForPoll()
+              : page.evaluate(() => {
+                  const scene = (
+                    window.fnt!.app as unknown as {
+                      scene: {
+                        hover: { x: number; y: number } | null;
+                        renderer: { lastView: MapView | null };
+                      };
+                    }
+                  ).scene;
+                  return { hover: scene.hover, drawn: scene.renderer.lastView?.hoverTile ?? null };
+                }),
+          )
+          .toEqual({ hover: { x: 5, y: 1 }, drawn: { x: 5, y: 1 } });
+      } finally {
+        await observation?.close();
+      }
       const hovered = await page.evaluate(() => {
         const renderer = (
           window.fnt!.app as unknown as {
