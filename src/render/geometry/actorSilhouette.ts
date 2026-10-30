@@ -23,6 +23,8 @@ export function actorHealthBar(
   scale: number,
   headroom = 0,
   minimumWidth = 0,
+  minimumHeight = 0,
+  pixelSize = 1,
 ) {
   // Headroom is measured relative to an unscaled tile top. Scale the entire
   // foot-to-head distance, not just the portion above that tile.
@@ -32,16 +34,106 @@ export function actorHealthBar(
   // Keep a near-head width, but let small phone viewports request a readable
   // floor. Both are in the same (world) units as the geometry.
   const headWidth = tileSize * scale * 0.32;
-  const barWidth = Math.min(width * scale, Math.max(headWidth, minimumWidth));
-  const barHeight = Math.max(3, tileSize * 0.06);
+  const actorWidth = width * scale;
+  const requestedWidth = Math.min(actorWidth, Math.max(headWidth, minimumWidth));
+  // Snap the width without growing beyond the actor, then move the snapped
+  // centre by half a pixel for odd widths so both edges land on pixel bounds.
+  const maxWidthPixels = Math.floor(actorWidth / pixelSize);
+  const widthPixels = Math.max(1, Math.min(maxWidthPixels, Math.round(requestedWidth / pixelSize)));
+  const barWidth = widthPixels * pixelSize;
+  const centreParity = (widthPixels % 2) / 2;
+  const centreInPixels = (x + width / 2) / pixelSize;
+  const centreX = (Math.round(centreInPixels - centreParity) + centreParity) * pixelSize;
+  const barHeight = snapPixel(Math.max(3, tileSize * 0.06, minimumHeight), pixelSize);
   const gap = Math.max(1.8, tileSize * 0.028);
+  const barX = centreX - barWidth / 2;
+  const barY = snapPixel(silhouetteTop - gap - barHeight, pixelSize);
   return {
-    x: x + (width - barWidth) / 2,
-    // The extra pixel is the bar's ink frame.
-    y: silhouetteTop - gap - barHeight - 1,
+    x: barX,
+    y: barY,
     width: barWidth,
     height: barHeight,
     silhouetteTop,
+    /** One logical world pixel, expressed in the caller's coordinate space. */
+    pixelSize,
+  };
+}
+
+function snapPixel(value: number, pixelSize: number): number {
+  return Math.round(value / pixelSize) * pixelSize;
+}
+
+export interface CuePixelRun {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface ActiveGroundCue {
+  /** Filled, world-pixel-aligned runs forming the dark outline. */
+  readonly outer: readonly CuePixelRun[];
+  /** One-pixel gold outline inside it; the terrain in the centre stays visible. */
+  readonly inner: readonly CuePixelRun[];
+}
+
+/**
+ * Rasterize an angular, hollow outline into filled horizontal pixel runs.
+ * Every edge is an axis-aligned world-pixel boundary, including the sloping
+ * shoulders; neither backend needs an antialiased vector stroke. Coordinates
+ * and pixelSize use the caller's units. Both backends pass world pixels;
+ * Canvas applies the camera transform after this raster step.
+ */
+export function activeGroundCue(
+  centreX: number,
+  centreY: number,
+  footprintWidth: number,
+  tileHeight: number,
+  heightTiles: 1 | 2,
+  pixelSize: number,
+  outlinePixels = 3,
+): ActiveGroundCue {
+  const cx = Math.round(centreX / pixelSize);
+  const cy = Math.round(centreY / pixelSize);
+  const outerRx = Math.max(2, Math.round((footprintWidth * 0.44) / pixelSize));
+  const outerRy = Math.max(2, Math.round((tileHeight * heightTiles * 0.16) / pixelSize));
+  const innerRx = Math.max(1, Math.round((footprintWidth * 0.37) / pixelSize));
+  const innerRy = Math.max(1, outerRy - 3);
+
+  // An octagon sampled at row centres: the changing width makes stepped
+  // shoulders, while each row remains a filled rectangle with exact edges.
+  const extent = (y: number, rx: number, ry: number): number => {
+    const distance = Math.abs(y - cy);
+    if (distance > ry) return -1;
+    const shoulderY = ry * 0.42;
+    if (distance <= shoulderY) return rx;
+    return Math.round(rx * (0.62 + (0.38 * (ry - distance)) / (ry - shoulderY)));
+  };
+  const ring = (rx: number, ry: number, thickness: number): CuePixelRun[] => {
+    const runs: CuePixelRun[] = [];
+    for (let y = cy - ry; y <= cy + ry; y++) {
+      const outside = extent(y, rx, ry);
+      const inside = extent(y, Math.max(0, rx - thickness), Math.max(0, ry - thickness));
+      const add = (left: number, right: number): void => {
+        if (left < right)
+          runs.push({
+            x: left * pixelSize,
+            y: y * pixelSize,
+            width: (right - left) * pixelSize,
+            height: pixelSize,
+          });
+      };
+      if (inside < 0) add(cx - outside, cx + outside + 1);
+      else {
+        add(cx - outside, cx - inside);
+        add(cx + inside + 1, cx + outside + 1);
+      }
+    }
+    return runs;
+  };
+  return {
+    outer: ring(outerRx, outerRy, outlinePixels),
+    inner: ring(innerRx, innerRy, 1),
   };
 }
 
@@ -57,6 +149,10 @@ export interface ActorSilhouetteGeometry {
   readonly badgeY: number;
   readonly reticleY: number;
 }
+
+/** Minimum combat health-bar dimensions in logical world pixels. */
+export const COMBAT_HEALTH_BAR_MIN_WIDTH = 36;
+export const COMBAT_HEALTH_BAR_MIN_HEIGHT = 8;
 
 export interface HealthBarPlacement {
   readonly id: string;
@@ -97,7 +193,10 @@ export class HealthBarStagger {
     const result = new Map<string, T['bar']>();
     const next = new Map<string, number>();
     for (const candidate of bars) {
-      const step = Math.max(2, candidate.bar.height * 0.8);
+      // A fractional step would move an otherwise snapped bar off the world
+      // pixel grid. Subtracting whole pixels preserves its camera-offset phase.
+      const pixel = candidate.bar.pixelSize;
+      const step = Math.max(2, Math.round((candidate.bar.height * 0.8) / pixel)) * pixel;
       const at = (level: number): T['bar'] => ({
         ...candidate.bar,
         y: candidate.bar.y - step * level,
@@ -229,6 +328,8 @@ export function actorSilhouetteGeometry(
   frameHeadroom: number | null,
   scale: number,
   minimumBarWidth = 0,
+  minimumBarHeight = 0,
+  pixelSize = 1,
 ): ActorSilhouetteGeometry {
   const bar = actorHealthBar(
     box.x,
@@ -238,6 +339,8 @@ export function actorSilhouetteGeometry(
     scale,
     actorHeadroom(frameHeadroom, heightTiles),
     minimumBarWidth,
+    minimumBarHeight,
+    pixelSize,
   );
   const radius = Math.max(4, box.size * 0.09);
   return {
@@ -249,6 +352,63 @@ export function actorSilhouetteGeometry(
       heightTiles > 1 || frameHeadroom !== null
         ? bar.silhouetteTop - box.size * 0.04
         : box.y - box.size * 0.04,
+  };
+}
+
+/** Shared combat bar sizing for both renderers and camera-framing callers. */
+export function combatActorSilhouetteGeometry(
+  box: ActorSpriteBox,
+  heightTiles: 1 | 2,
+  frameHeadroom: number | null,
+  scale: number,
+  pixelSize = 1,
+): ActorSilhouetteGeometry {
+  return actorSilhouetteGeometry(
+    box,
+    heightTiles,
+    frameHeadroom,
+    scale,
+    // Keep the readability floor proportional to the figure before snapping
+    // it to world pixels; a larger actor must not inherit the same 36px bar.
+    COMBAT_HEALTH_BAR_MIN_WIDTH * scale * pixelSize,
+    COMBAT_HEALTH_BAR_MIN_HEIGHT * pixelSize,
+    pixelSize,
+  );
+}
+
+/** Canvas-space combat geometry snapped before the camera offset is applied. */
+export function combatActorSilhouetteScreenGeometry(
+  box: ActorSpriteBox,
+  heightTiles: 1 | 2,
+  frameHeadroom: number | null,
+  actorScale: number,
+  cameraScale: number,
+  offsetX: number,
+  offsetY: number,
+): ActorSilhouetteGeometry {
+  const world = combatActorSilhouetteGeometry(
+    {
+      x: (box.x + offsetX) / cameraScale,
+      y: (box.y + offsetY) / cameraScale,
+      size: box.size / cameraScale,
+      width: (box.width ?? box.size) / cameraScale,
+    },
+    heightTiles,
+    frameHeadroom,
+    actorScale,
+  );
+  return {
+    bar: {
+      ...world.bar,
+      x: world.bar.x * cameraScale - offsetX,
+      y: world.bar.y * cameraScale - offsetY,
+      width: world.bar.width * cameraScale,
+      height: world.bar.height * cameraScale,
+      silhouetteTop: world.bar.silhouetteTop * cameraScale - offsetY,
+      pixelSize: cameraScale,
+    },
+    badgeY: world.badgeY * cameraScale - offsetY,
+    reticleY: world.reticleY * cameraScale - offsetY,
   };
 }
 
