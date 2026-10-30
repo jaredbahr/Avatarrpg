@@ -224,6 +224,9 @@ for (const renderer of ['canvas', 'webgl']) {
     await expect(page.locator('.village-note')).toContainText('Pebble leans', { timeout });
     await openActivities(page);
     await page.getByRole('button', { name: 'Tea break', exact: true }).click();
+    // Finish this nine-second walk through the real animator before checking
+    // the note; the drill's forms still play on the normal clock.
+    await completeAuthoredPlayback(page);
     await expect(page.locator('.village-note')).toContainText('jasmine tea', { timeout });
     // Dorin's drill is his midday relief (D3); the preview's afternoon has
     // him on the gate post, so wait for it here at the porch (D8).
@@ -253,6 +256,8 @@ for (const renderer of ['canvas', 'webgl']) {
     await expect(page.locator('.village-caption')).toContainText('3/3');
     await openActivities(page);
     await page.getByRole('button', { name: "Dorin's drill", exact: true }).click();
+    // The walk to Dorin's post is another six seconds of authored travel.
+    await completeAuthoredPlayback(page);
     await expect(page.locator('.village-note')).toContainText('sets a rhythm', { timeout });
     for (const name of ['Water form', 'Fire form', 'Water form']) {
       await page.getByRole('button', { name, exact: true }).click();
