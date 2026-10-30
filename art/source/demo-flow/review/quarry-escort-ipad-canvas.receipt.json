@@ -1,0 +1,75 @@
+{
+  "custody": "escort",
+  "project": "ipad-canvas",
+  "fixtureCommit": "e63013adcdb436d300afd1387777cc7274230b18",
+  "visibleBuild": "v0.2.11 \u00b7 build e63013a",
+  "beatCount": 87,
+  "shortcuts": [
+    {
+      "encounterId": "enc_forest_road",
+      "afterPartyActivations": 12,
+      "atMs": 733065,
+      "clockUtc": "2026-10-30T01:42:55.108Z",
+      "method": "stage-living-enemies-to-1-hp",
+      "reason": "Twelve party activations passed without reaching the oil-flask beat; staged the remaining enemies to keep the route moving."
+    },
+    {
+      "encounterId": "enc_ambush",
+      "afterPartyActivations": 3,
+      "atMs": 919322,
+      "clockUtc": "2026-10-30T01:46:01.365Z",
+      "method": "stage-living-enemies-to-1-hp",
+      "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+    },
+    {
+      "encounterId": "enc_grumbler",
+      "afterPartyActivations": 3,
+      "atMs": 1045627,
+      "clockUtc": "2026-10-30T01:48:07.670Z",
+      "method": "stage-living-enemies-to-1-hp",
+      "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+    }
+  ],
+  "optionalControls": [
+    {
+      "atMs": 1012023,
+      "clockUtc": "2026-10-30T01:47:34.066Z",
+      "kind": "optional-control-unavailable",
+      "target": "Show enemies",
+      "detail": {
+        "sourceCommit": "e63013adcdb436d300afd1387777cc7274230b18",
+        "reason": "The current main branch has no Show enemies control; the live boss is focused through its visible turn-strip chip."
+      }
+    }
+  ],
+  "video": "quarry-escort-ipad-canvas.mp4",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 614,
+        "height": 884,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "1244.208333",
+      "size": "30800352"
+    }
+  },
+  "rawVideoSha256": "a3c1b471e9335e5ad1b6abc5d6a17ee7ca4124d88b82dcc6a7485d9b41895f9e",
+  "rawBeatManifestSha256": "46e0574090088811f619bc653cc1421d4c20f5eee7bb65a318097b92cc86d821",
+  "packageSha256": {
+    "video": "08fc936323412ac7ebc5084e1ec38fd2347ad76d5b817812dacf5ab74b3c54fc",
+    "beatManifest": "06af9cbd32621cc7b058dee53d27e1e3429eec0bc371c315ab98e4f6dd3d5fc4",
+    "stillIndex": "b7382118445a3720a48f0d631cd8b1fac94bece829efdd0273b22e5f9b7ac26b"
+  },
+  "runner": {
+    "status": "passed",
+    "failedTests": [],
+    "exitCode": 0,
+    "summary": "1 passed (20.8m)"
+  }
+}
