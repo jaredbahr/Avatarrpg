@@ -26,6 +26,7 @@ import {
 } from '../../core/rules/abilities';
 import {
   distance,
+  findPath,
   climbSurcharge,
   occupiedCells,
   pathCost,
@@ -78,6 +79,7 @@ import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
 import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
+import { partyWalkPhase } from '../animator';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
 import { liftAlong } from '../../render/geometry/elevation';
@@ -91,6 +93,7 @@ import {
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
+const COMBAT_APPROACH_STEP_MS = 275;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -227,6 +230,8 @@ export class CombatScene implements Scene {
   private freshBattleEntry = false;
   /** One presentation-only formation frame before the first hand-off. */
   private battleOpening: BattleOpeningState | null = null;
+  private approachPositions: readonly Vec2[] | null = null;
+  private approachEndsAt = 0;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
   /**
@@ -298,6 +303,10 @@ export class CombatScene implements Scene {
     this.aiHeld = false;
     this.host = host;
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
+    this.approachPositions = this.freshBattleEntry
+      ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
+      : null;
+    this.approachEndsAt = 0;
     this.battleOpening = null;
     this.layoutMeasuredAfterSync = false;
     this.flushedAt = null;
@@ -327,6 +336,8 @@ export class CombatScene implements Scene {
     this.aiHeld = false;
     this.battleOpening = null;
     this.freshBattleEntry = false;
+    this.approachPositions = null;
+    this.approachEndsAt = 0;
     this.recentreButton = null;
     this.actorButton = null;
     this.moreDismiss?.();
@@ -944,7 +955,7 @@ export class CombatScene implements Scene {
     this.freshBattleEntry = false;
     const camera = this.renderer!.camera;
     // A board already wholly in view has nothing to establish.
-    if (motionReduced() || camera.fitted) return;
+    if (motionReduced() || (camera.fitted && !this.approachPositions)) return;
 
     // `centreOn` is the same focus path used by turn changes and the Acting
     // unit button. Capture its result as the eased destination, then restore
@@ -969,6 +980,48 @@ export class CombatScene implements Scene {
     this.setBattleOpeningMarker('hold');
   }
 
+  /** Play the explore trail into the unchanged authored combat seats. */
+  private startApproach(now: number): void {
+    const positions = this.approachPositions;
+    const battle = this.battle();
+    this.approachPositions = null;
+    if (!positions || !battle) return;
+    const party = battle.units.filter((unit) => unit.faction === 'party');
+    for (const [index, unit] of party.entries()) {
+      const from = positions[index];
+      if (!from || samePos(from, unit.pos)) continue;
+      const route = findPath(
+        {
+          grid: battle.grid,
+          blocked: new Set(
+            battle.units
+              .filter((other) => other.faction !== 'party')
+              .map((other) => posKey(other.pos)),
+          ),
+          surfaces: this.app.content.surfaces,
+          size: 1,
+          climbCost: this.app.content.tuning.climbCost,
+        },
+        from,
+        unit.pos,
+        battle.grid.width * battle.grid.height * 4,
+      );
+      const path = route?.path ?? [unit.pos];
+      this.app.animator.push(
+        now,
+        [{ type: 'partyWalked', unitId: unit.id, from, path }],
+        battle.units,
+        {
+          alongside: true,
+          silentSteps: true,
+          walkPhase: partyWalkPhase(index),
+          strollStepMs: COMBAT_APPROACH_STEP_MS,
+        },
+      );
+    }
+    this.approachEndsAt = this.app.animator.finishesAt;
+  }
+
   private skipBattleOpening(): boolean {
     if (!this.battleOpening) return false;
     this.battleOpening = null;
@@ -988,10 +1041,11 @@ export class CombatScene implements Scene {
     if (opening.kind === 'hold') {
       if (opening.startedAt === null) {
         if (this.app.curtainBusy) return;
+        this.startApproach(now);
         this.battleOpening = { ...opening, startedAt: now };
         return;
       }
-      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS) return;
+      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS || now < this.approachEndsAt) return;
       this.battleOpening = {
         kind: 'focus',
         startedAt: now,

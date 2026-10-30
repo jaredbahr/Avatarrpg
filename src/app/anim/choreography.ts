@@ -81,6 +81,8 @@ export interface ChoreographyInput {
   readonly pushIndex: number;
   /** Followers share the leader's footfalls rather than multiplying the sound. */
   readonly silentSteps?: boolean;
+  /** Pace override for a scene-only party walk; normal exploration keeps the authored cadence. */
+  readonly strollStepMs?: number;
   /**
    * A sprite's clips as its loaded sheet draws them, fetched ones among them
    * (ADR 0059); undefined before the sheet is in. Without it every knockout
@@ -415,7 +417,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // followers are the scene's, pushed onto the same timeline.
         if (event.path.length === 0) break;
         const curve = smoothPath(event.from, event.path);
-        const timing = strollTiming(curve.length, TIMING.strollStep);
+        const timing = strollTiming(curve.length, input.strollStepMs ?? TIMING.strollStep);
         // Reduced motion retains the same abbreviated, pace-independent action
         // lock as combat movement. A long village route must not become slow
         // again merely because the full-motion walking cadence was retuned.

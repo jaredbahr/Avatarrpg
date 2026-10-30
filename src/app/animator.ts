@@ -255,6 +255,8 @@ export class Animator {
       delayMs?: number;
       /** Stable fraction of the authored walk loop; presentation only. */
       walkPhase?: number;
+      /** Optional pace for a scene-only party walk, in milliseconds per tile. */
+      strollStepMs?: number;
       /** Open water a water bend in this push draws from, by unit id (see `choreograph`). */
       waterSources?: Readonly<Record<string, Vec2>>;
     } = {},
@@ -280,6 +282,7 @@ export class Animator {
       ...(bends ? { bends } : {}),
       ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
       ...(options.waterSources ? { waterSources: options.waterSources } : {}),
+      ...(options.strollStepMs !== undefined ? { strollStepMs: options.strollStepMs } : {}),
     });
     for (const event of events) {
       if (event.type === 'partyWalked')
