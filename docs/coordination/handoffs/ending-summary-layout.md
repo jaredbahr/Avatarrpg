@@ -1,0 +1,10 @@
+# Ending summary layout handoff
+
+- **Updated:** 2026-10-29 UTC; owner `/root/sol_delivery_continue`.
+- **Outcome:** The speakerless ending summary uses a centered, readable stage width and remains usable on desktop, portrait tablet and phone with Huge text.
+- **Scope:** `src/styles/hud.css`, `e2e/ending-summary-layout.spec.ts`, and this handoff. The fix is independent of the active #328 and #335 source PRs and the #344 route-review fixture. No narrative, game-state, or other dialogue layout changes.
+- **Location:** `/workspace/avatarrpg-ending-summary-draft`, branch `codex/ending-summary-draft`, based on current `main` `bc77ae2eceb6740dd4c143cae61595a1f4884bc2`. Cherry-picked the original scoped fix `d540deff9ad4a980fa137467253cbcfabceedcac` as `78aac358745bf9a58b0d7601ee056983ad7065b1`. This is an unshipped source fix; package version remains `0.2.11` on this branch.
+- **Behavior:** The end stage now uses one grid column and centers its panel at up to `58rem`. The portrait rule gives the ending one full-height grid row. A browser check enters the real `act1_epilogue` node, checks panel width and overflow, verifies all actions have reachable 48 px tap targets, and follows Continue exploring to `quarry_after_explore` at desktop, portrait-tablet and Huge-text phone sizes.
+- **Evidence before extraction:** The original worker's focused Chromium test passed on the combined v0.2.12 candidate at `d540deff`; full integrated-head CI later passed at `b7400642`. These are prior-head receipts, not validation of this standalone branch.
+- **Current branch verification:** The exact-head focused Chromium and `npm run ci:local` results belong in the draft PR and an external local receipt. Do not infer them from the combined-candidate checks above. No physical-device or WebKit check is claimed.
+- **Publication:** Open one draft PR from this branch when exact-head checks pass. Keep the existing combined candidate `codex/ci-health-and-prop-labels` intact. Do not merge or deploy; user request for this session is draft PRs only.
