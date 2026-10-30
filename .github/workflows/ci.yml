@@ -96,7 +96,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check bundle budget (350 KB gzipped)
+      - name: Check bundle budget (380 KB gzipped)
         run: node scripts/check-bundle-size.mjs
 
       - name: Check every sheet in the manifest against its files

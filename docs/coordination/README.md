@@ -122,7 +122,7 @@ acceptance-test PR. Do not publish the same source changes in several competing
 integration PRs. When consolidation is necessary, explicitly transfer ownership
 and supersede the old PRs before starting another full run.
 
-CI gallery and browser-report artifacts expire after seven days. Record the
+CI gallery and browser-report artifacts expire after one day. Record the
 tested revision and review findings in the durable handoff; download evidence
 needed beyond that window. Normal Pages deployments build only the game. See
 [the gallery guide](../gallery.md) for optional manual gallery publication.
