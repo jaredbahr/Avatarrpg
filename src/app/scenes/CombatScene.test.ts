@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PropInstance, Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
 import { Camera } from '../../render/camera';
@@ -12,6 +12,7 @@ import {
   occupiedUnitAt,
   overlayMemoHoverKey,
 } from './CombatScene';
+import { beginVictoryBeat } from './victoryBeat';
 
 function prop(id: string, pos: Vec2): PropInstance {
   return {
@@ -296,5 +297,266 @@ describe('battle opening input hand-off', () => {
     scene.onTap(10, 10);
 
     expect(scene.skipBattleOpening).toHaveBeenCalledOnce();
+  });
+});
+
+describe('victory result lifecycle', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  class FakeElement {
+    className = '';
+    textContent = '';
+    type = '';
+    disabled = false;
+    readonly children: FakeElement[] = [];
+    readonly listeners = new Map<string, () => void>();
+
+    get firstChild(): FakeElement | null {
+      return this.children[0] ?? null;
+    }
+
+    appendChild(child: FakeElement): FakeElement {
+      this.children.push(child);
+      return child;
+    }
+
+    removeChild(child: FakeElement): FakeElement {
+      this.children.splice(this.children.indexOf(child), 1);
+      return child;
+    }
+
+    addEventListener(name: string, listener: () => void): void {
+      this.listeners.set(name, listener);
+    }
+  }
+
+  class FakeButton extends FakeElement {}
+
+  function resultHarness(reducedMotion = false) {
+    vi.stubGlobal('HTMLInputElement', class {});
+    vi.stubGlobal('HTMLButtonElement', FakeButton);
+    vi.stubGlobal('document', {
+      documentElement: { dataset: { reduceMotion: reducedMotion ? 'on' : 'off' } },
+      createElement: (tag: string) => (tag === 'button' ? new FakeButton() : new FakeElement()),
+    });
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
+
+    const hud = new FakeElement();
+    const overlays = new FakeElement();
+    const battle = { phase: 'victory', units: [unit('survivor', { x: 2, y: 3 })] };
+    const result = new FakeElement();
+    result.className = 'result-panel';
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      host: {
+        querySelector: (selector: string) =>
+          selector === '.hud' ? hud : selector === '.combat-overlays' ? overlays : null,
+      },
+      battle: () => battle,
+      active: () => null,
+      app: { animator: { busy: vi.fn(() => false) } },
+      renderer: null,
+      inspector: null,
+      moreOpen: false,
+      victoryPending: false,
+      victoryBeat: null,
+      victoryFocus: null,
+      lastActiveId: null,
+      resultShown: false,
+      suspended: false,
+      presentationHeld: false,
+      paintingStill: false,
+      setVictoryBeatMarker: vi.fn(),
+      renderTopBar: vi.fn(),
+      renderTurnStrip: vi.fn(),
+      resizeAfterHud: vi.fn(),
+      maybeStartBattleOpening: vi.fn(),
+      maybeRunAi: vi.fn(),
+      setMoreOpen: vi.fn(),
+      resultPanel: vi.fn(() => result),
+    }) as unknown as {
+      victoryPending: boolean;
+      victoryBeat: ReturnType<typeof beginVictoryBeat> | null;
+      app: { animator: { busy: ReturnType<typeof vi.fn> } };
+      sync: () => void;
+      renderHud: () => void;
+      refit: () => void;
+      updateVictoryBeat: (now: number) => void;
+      startVictoryBeat: (battle: object, now: number) => void;
+      resultPanel: ReturnType<typeof vi.fn>;
+    };
+    return { scene, battle, hud, overlays, result };
+  }
+
+  it('keeps the actual result overlay hidden through final playback and the timed beat', () => {
+    const { scene, overlays, result } = resultHarness();
+    scene.app.animator.busy.mockReturnValue(true);
+
+    scene.sync();
+    expect(scene.victoryPending).toBe(true);
+    scene.updateVictoryBeat(100);
+    expect(overlays.children).toEqual([]);
+    expect(scene.resultPanel).not.toHaveBeenCalled();
+
+    scene.app.animator.busy.mockReturnValue(false);
+    scene.updateVictoryBeat(200);
+    expect(overlays.children[0]?.className).toBe('victory-beat-overlay');
+    expect(scene.resultPanel).not.toHaveBeenCalled();
+
+    scene.updateVictoryBeat(1200);
+    expect(overlays.children).toEqual([result]);
+    expect(scene.resultPanel).toHaveBeenCalledOnce();
+  });
+
+  it('lets a tap on the beat overlay reveal the result immediately', () => {
+    const { scene, overlays, result } = resultHarness();
+    scene.victoryBeat = beginVictoryBeat(100, 1000);
+    scene.renderHud();
+    expect(overlays.children[0]?.className).toBe('victory-beat-overlay');
+
+    overlays.children[0]?.listeners.get('click')?.();
+
+    expect(scene.victoryBeat).toBeNull();
+    expect(overlays.children).toEqual([result]);
+  });
+
+  for (const [label, reducedMotion, pending] of [
+    ['final-hit playback', false, true],
+    ['reduced-motion result', true, false],
+  ] as const) {
+    it(`preserves camera scale and offsets through HUD growth during ${label}`, () => {
+      const { scene } = resultHarness(reducedMotion);
+      const camera = new Camera({ width: 900, height: 500, dpr: 1 }, { width: 20, height: 12 });
+      camera.fit();
+      camera.centre();
+      const before = { scale: camera.scale, x: camera.offsetX, y: camera.offsetY };
+      const recentre = vi.fn();
+      Object.assign(scene, {
+        victoryPending: pending,
+        renderer: { camera },
+        recentre,
+        syncRecentre: vi.fn(),
+      });
+      camera.viewport = { width: 1200, height: 700, dpr: 1 };
+
+      scene.refit();
+
+      expect(camera.scale).toBe(before.scale);
+      expect(camera.offsetX).toBe(before.x);
+      expect(camera.offsetY).toBe(before.y);
+      expect(recentre).not.toHaveBeenCalled();
+    });
+  }
+
+  it('keeps the camera still under reduced motion, then reveals the card after playback', () => {
+    const { scene, overlays, result, battle } = resultHarness(true);
+    scene.victoryPending = true;
+    const frame = vi.spyOn(scene, 'startVictoryBeat');
+    const frameParty = vi.fn();
+    Object.assign(scene, { renderer: { camera: {} }, frameVictoryParty: frameParty });
+    scene.app.animator.busy.mockReturnValue(true);
+    scene.updateVictoryBeat(100);
+    expect(frame).not.toHaveBeenCalled();
+
+    scene.app.animator.busy.mockReturnValue(false);
+    scene.updateVictoryBeat(200);
+    expect(frame).toHaveBeenCalledWith(battle, 200);
+    expect(frameParty).not.toHaveBeenCalled();
+    expect(scene.victoryBeat).toBeNull();
+    expect(overlays.children).toEqual([result]);
+  });
+
+  it('cancels the presentation beat if the battle leaves victory', () => {
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      victoryBeat: beginVictoryBeat(100, 700),
+      victoryFocus: { x: 3, y: 4 },
+      battle: () => ({ phase: 'active' }),
+      setVictoryBeatMarker: vi.fn(),
+      renderTopBar: vi.fn(),
+      renderHud: vi.fn(),
+    }) as unknown as {
+      victoryBeat: ReturnType<typeof beginVictoryBeat> | null;
+      victoryFocus: Vec2 | null;
+      updateVictoryBeat: (now: number) => void;
+      setVictoryBeatMarker: ReturnType<typeof vi.fn>;
+      renderTopBar: ReturnType<typeof vi.fn>;
+      renderHud: ReturnType<typeof vi.fn>;
+    };
+
+    scene.updateVictoryBeat(150);
+
+    expect(scene.victoryBeat).toBeNull();
+    expect(scene.victoryFocus).toBeNull();
+    expect(scene.setVictoryBeatMarker).toHaveBeenCalledWith(false);
+    expect(scene.renderHud).toHaveBeenCalledOnce();
+  });
+
+  it('clears the pending beat when the combat scene unmounts', () => {
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      aiTimer: null,
+      frame: 0,
+      suspended: false,
+      aiHeld: false,
+      battleOpening: null,
+      victoryBeat: beginVictoryBeat(100, 700),
+      victoryFocus: { x: 3, y: 4 },
+      freshBattleEntry: false,
+      recentreButton: null,
+      actorButton: null,
+      moreDismiss: null,
+      moreOpen: false,
+      topBarKey: '',
+      detach: null,
+      inspector: null,
+      renderer: null,
+      canvas: null,
+      host: null,
+      setVictoryBeatMarker: vi.fn(),
+    }) as unknown as {
+      victoryBeat: ReturnType<typeof beginVictoryBeat> | null;
+      victoryFocus: Vec2 | null;
+      unmount: () => void;
+      setVictoryBeatMarker: ReturnType<typeof vi.fn>;
+    };
+
+    scene.unmount();
+
+    expect(scene.victoryBeat).toBeNull();
+    expect(scene.victoryFocus).toBeNull();
+    expect(scene.setVictoryBeatMarker).toHaveBeenCalledWith(false);
+  });
+
+  it('pauses presentation separately from the AI dispatch hold', () => {
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      aiTimer: null,
+      aiScheduled: false,
+      aiHeld: false,
+      presentationHeld: false,
+      victoryBeat: beginVictoryBeat(100, 700),
+      maybeRunAi: vi.fn(),
+    }) as unknown as {
+      aiHeld: boolean;
+      presentationHeld: boolean;
+      victoryBeat: ReturnType<typeof beginVictoryBeat>;
+      holdAi: () => void;
+      releaseAi: () => void;
+      pausePresentation: () => void;
+      resumePresentation: () => void;
+      maybeRunAi: ReturnType<typeof vi.fn>;
+    };
+
+    scene.holdAi();
+    expect(scene.aiHeld).toBe(true);
+    expect(scene.presentationHeld).toBe(false);
+    expect(scene.victoryBeat.lastAt).toBe(100);
+
+    scene.pausePresentation();
+    expect(scene.presentationHeld).toBe(true);
+    expect(scene.victoryBeat.lastAt).toBeNull();
+    scene.resumePresentation();
+    expect(scene.presentationHeld).toBe(false);
+    expect(scene.victoryBeat.lastAt).toBeNull();
+
+    scene.releaseAi();
+    expect(scene.maybeRunAi).toHaveBeenCalledOnce();
   });
 });
