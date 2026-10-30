@@ -1,0 +1,116 @@
+[
+  {
+    "beat": "title",
+    "atMs": 6204,
+    "rawStill": "01-title.png",
+    "reviewStill": "quarry-trade-desktop-canvas-01-title.webp"
+  },
+  {
+    "beat": "setup-party",
+    "atMs": 12332,
+    "rawStill": "06-setup-party.png",
+    "reviewStill": "quarry-trade-desktop-canvas-06-setup-party.webp"
+  },
+  {
+    "beat": "practice-bending",
+    "atMs": 36653,
+    "rawStill": "13-practice-bending.png",
+    "reviewStill": "quarry-trade-desktop-canvas-13-practice-bending.webp"
+  },
+  {
+    "beat": "mira-conversation",
+    "atMs": 48867,
+    "rawStill": "16-mira-conversation.png",
+    "reviewStill": "quarry-trade-desktop-canvas-16-mira-conversation.webp"
+  },
+  {
+    "beat": "forest-transition",
+    "atMs": 94210,
+    "rawStill": "19-forest-transition.png",
+    "reviewStill": "quarry-trade-desktop-canvas-19-forest-transition.webp"
+  },
+  {
+    "beat": "combat-first-turn",
+    "atMs": 122925,
+    "rawStill": "25-combat-first-turn.png",
+    "reviewStill": "quarry-trade-desktop-canvas-25-combat-first-turn.webp"
+  },
+  {
+    "beat": "quarry-gate-arrival",
+    "atMs": 602168,
+    "rawStill": "31-quarry-gate-arrival.png",
+    "reviewStill": "quarry-trade-desktop-canvas-31-quarry-gate-arrival.webp"
+  },
+  {
+    "beat": "ruon-custody-choice",
+    "atMs": 633100,
+    "rawStill": "41-ruon-custody-choice.png",
+    "reviewStill": "quarry-trade-desktop-canvas-41-ruon-custody-choice.webp"
+  },
+  {
+    "beat": "cutting-arrival",
+    "atMs": 659844,
+    "rawStill": "47-cutting-arrival.png",
+    "reviewStill": "quarry-trade-desktop-canvas-47-cutting-arrival.webp"
+  },
+  {
+    "beat": "quarry-floor-arrival",
+    "atMs": 678607,
+    "rawStill": "49-quarry-floor-arrival.png",
+    "reviewStill": "quarry-trade-desktop-canvas-49-quarry-floor-arrival.webp"
+  },
+  {
+    "beat": "driller-boss-focus",
+    "atMs": 718199,
+    "rawStill": "58-driller-boss-focus.png",
+    "reviewStill": "quarry-trade-desktop-canvas-58-driller-boss-focus.webp"
+  },
+  {
+    "beat": "driller-victory",
+    "atMs": 762799,
+    "rawStill": "60-driller-victory.png",
+    "reviewStill": "quarry-trade-desktop-canvas-60-driller-victory.webp"
+  },
+  {
+    "beat": "driller-outcome",
+    "atMs": 766207,
+    "rawStill": "61-driller-outcome.png",
+    "reviewStill": "quarry-trade-desktop-canvas-61-driller-outcome.webp"
+  },
+  {
+    "beat": "driller-ending-summary",
+    "atMs": 774810,
+    "rawStill": "66-driller-ending-summary.png",
+    "reviewStill": "quarry-trade-desktop-canvas-66-driller-ending-summary.webp"
+  },
+  {
+    "beat": "ba-dan-return",
+    "atMs": 838913,
+    "rawStill": "73-ba-dan-return.png",
+    "reviewStill": "quarry-trade-desktop-canvas-73-ba-dan-return.webp"
+  },
+  {
+    "beat": "dorin-homecoming",
+    "atMs": 853000,
+    "rawStill": "74-dorin-homecoming.png",
+    "reviewStill": "quarry-trade-desktop-canvas-74-dorin-homecoming.webp"
+  },
+  {
+    "beat": "mira-homecoming",
+    "atMs": 895920,
+    "rawStill": "77-mira-homecoming.png",
+    "reviewStill": "quarry-trade-desktop-canvas-77-mira-homecoming.webp"
+  },
+  {
+    "beat": "gao-trade-consequence",
+    "atMs": 918295,
+    "rawStill": "80-gao-trade-consequence.png",
+    "reviewStill": "quarry-trade-desktop-canvas-80-gao-trade-consequence.webp"
+  },
+  {
+    "beat": "ba-dan-custody-response",
+    "atMs": 925797,
+    "rawStill": "83-ba-dan-custody-response.png",
+    "reviewStill": "quarry-trade-desktop-canvas-83-ba-dan-custody-response.webp"
+  }
+]

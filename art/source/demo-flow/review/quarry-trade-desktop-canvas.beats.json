@@ -1,0 +1,7250 @@
+{
+  "schemaVersion": 2,
+  "label": "main-8071f734",
+  "custody": "trade",
+  "seed": "quarry-return-trade-route",
+  "project": "desktop-canvas",
+  "renderer": "canvas",
+  "startedAtUtc": "2026-10-30T00:18:34.162Z",
+  "source": {
+    "commit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+    "branch": "codex/quarry-review-draft",
+    "dirtyPaths": [],
+    "titleBuildLabel": "Game version 0.2.11, build 8071f73",
+    "titleBuildText": "v0.2.11 \u00b7 build 8071f73"
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "dpr": 1,
+  "beats": [
+    {
+      "index": 1,
+      "name": "title",
+      "atMs": 6204,
+      "clockUtc": "2026-10-30T00:18:40.366Z",
+      "still": "01-title.png",
+      "tilePx": null,
+      "mapId": null,
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 2,
+      "name": "setup-players",
+      "atMs": 7757,
+      "clockUtc": "2026-10-30T00:18:41.919Z",
+      "still": "02-setup-players.png",
+      "tilePx": null,
+      "mapId": null,
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 3,
+      "name": "setup-handoff",
+      "atMs": 8347,
+      "clockUtc": "2026-10-30T00:18:42.509Z",
+      "still": "03-setup-handoff.png",
+      "tilePx": null,
+      "mapId": null,
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 4,
+      "name": "setup-element",
+      "atMs": 8947,
+      "clockUtc": "2026-10-30T00:18:43.109Z",
+      "still": "04-setup-element.png",
+      "tilePx": null,
+      "mapId": null,
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 5,
+      "name": "setup-character",
+      "atMs": 9462,
+      "clockUtc": "2026-10-30T00:18:43.624Z",
+      "still": "05-setup-character.png",
+      "tilePx": null,
+      "mapId": null,
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 6,
+      "name": "setup-party",
+      "atMs": 12332,
+      "clockUtc": "2026-10-30T00:18:46.494Z",
+      "still": "06-setup-party.png",
+      "tilePx": null,
+      "mapId": null,
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 7,
+      "name": "opening",
+      "atMs": 14587,
+      "clockUtc": "2026-10-30T00:18:48.749Z",
+      "still": "07-opening.png",
+      "tilePx": null,
+      "mapId": "",
+      "storyNodeId": "act1_open",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 8,
+      "name": "act1_open-frame-1",
+      "atMs": 16704,
+      "clockUtc": "2026-10-30T00:18:50.866Z",
+      "still": "08-act1_open-frame-1.png",
+      "tilePx": null,
+      "mapId": "",
+      "storyNodeId": "act1_open",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 9,
+      "name": "act1_open-frame-2",
+      "atMs": 18623,
+      "clockUtc": "2026-10-30T00:18:52.785Z",
+      "still": "09-act1_open-frame-2.png",
+      "tilePx": null,
+      "mapId": "",
+      "storyNodeId": "act1_open",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 10,
+      "name": "ba-dan-arrival",
+      "atMs": 23160,
+      "clockUtc": "2026-10-30T00:18:57.322Z",
+      "still": "10-ba-dan-arrival.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 11,
+      "name": "ba-dan-road",
+      "atMs": 29993,
+      "clockUtc": "2026-10-30T00:19:04.155Z",
+      "still": "11-ba-dan-road.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 12,
+      "name": "practice-ready",
+      "atMs": 34655,
+      "clockUtc": "2026-10-30T00:19:08.817Z",
+      "still": "12-practice-ready.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 13,
+      "name": "practice-bending",
+      "atMs": 36653,
+      "clockUtc": "2026-10-30T00:19:10.815Z",
+      "still": "13-practice-bending.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 14,
+      "name": "practice-done",
+      "atMs": 40454,
+      "clockUtc": "2026-10-30T00:19:14.616Z",
+      "still": "14-practice-done.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 15,
+      "name": "mira-talk-cue",
+      "atMs": 44347,
+      "clockUtc": "2026-10-30T00:19:18.509Z",
+      "still": "15-mira-talk-cue.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 16,
+      "name": "mira-conversation",
+      "atMs": 48867,
+      "clockUtc": "2026-10-30T00:19:23.029Z",
+      "still": "16-mira-conversation.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "mira_intro",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 17,
+      "name": "after-mira",
+      "atMs": 56179,
+      "clockUtc": "2026-10-30T00:19:30.341Z",
+      "still": "17-after-mira.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 18,
+      "name": "east-gate",
+      "atMs": 92371,
+      "clockUtc": "2026-10-30T00:20:06.533Z",
+      "still": "18-east-gate.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 19,
+      "name": "forest-transition",
+      "atMs": 94210,
+      "clockUtc": "2026-10-30T00:20:08.372Z",
+      "still": "19-forest-transition.png",
+      "tilePx": 128,
+      "mapId": "forest_road",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 20,
+      "name": "road-depart",
+      "atMs": 103531,
+      "clockUtc": "2026-10-30T00:20:17.693Z",
+      "still": "20-road-depart.png",
+      "tilePx": null,
+      "mapId": "forest_road",
+      "storyNodeId": "road_depart",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 21,
+      "name": "road_depart-frame-1",
+      "atMs": 105615,
+      "clockUtc": "2026-10-30T00:20:19.777Z",
+      "still": "21-road_depart-frame-1.png",
+      "tilePx": null,
+      "mapId": "forest_road",
+      "storyNodeId": "road_depart",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 22,
+      "name": "forest-road",
+      "atMs": 106734,
+      "clockUtc": "2026-10-30T00:20:20.896Z",
+      "still": "22-forest-road.png",
+      "tilePx": 128,
+      "mapId": "forest_road",
+      "storyNodeId": "forest_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 23,
+      "name": "ambush-opening",
+      "atMs": 118809,
+      "clockUtc": "2026-10-30T00:20:32.971Z",
+      "still": "23-ambush-opening.png",
+      "tilePx": 64,
+      "mapId": "forest_road",
+      "storyNodeId": "battle_forest_road",
+      "encounterId": "enc_forest_road",
+      "encounterPhase": "active",
+      "round": 1,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 24,
+      "name": "combat-handoff",
+      "atMs": 120707,
+      "clockUtc": "2026-10-30T00:20:34.869Z",
+      "still": "24-combat-handoff.png",
+      "tilePx": 64,
+      "mapId": "forest_road",
+      "storyNodeId": "battle_forest_road",
+      "encounterId": "enc_forest_road",
+      "encounterPhase": "active",
+      "round": 1,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 25,
+      "name": "combat-first-turn",
+      "atMs": 122925,
+      "clockUtc": "2026-10-30T00:20:37.087Z",
+      "still": "25-combat-first-turn.png",
+      "tilePx": 64,
+      "mapId": "forest_road",
+      "storyNodeId": "battle_forest_road",
+      "encounterId": "enc_forest_road",
+      "encounterPhase": "active",
+      "round": 1,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 26,
+      "name": "combat-midfight",
+      "atMs": 199507,
+      "clockUtc": "2026-10-30T00:21:53.669Z",
+      "still": "26-combat-midfight.png",
+      "tilePx": 37.8125,
+      "mapId": "forest_road",
+      "storyNodeId": "battle_forest_road",
+      "encounterId": "enc_forest_road",
+      "encounterPhase": "active",
+      "round": 1,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 27,
+      "name": "attack-aim",
+      "atMs": 342200,
+      "clockUtc": "2026-10-30T00:24:16.362Z",
+      "still": "27-attack-aim.png",
+      "tilePx": 25.3125,
+      "mapId": "forest_road",
+      "storyNodeId": "battle_forest_road",
+      "encounterId": "enc_forest_road",
+      "encounterPhase": "active",
+      "round": 2,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 28,
+      "name": "attack-bend",
+      "atMs": 347137,
+      "clockUtc": "2026-10-30T00:24:21.299Z",
+      "still": "28-attack-bend.png",
+      "tilePx": 30.1875,
+      "mapId": "forest_road",
+      "storyNodeId": "battle_forest_road",
+      "encounterId": "enc_forest_road",
+      "encounterPhase": "active",
+      "round": 2,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 29,
+      "name": "forest-battle-victory",
+      "atMs": 574593,
+      "clockUtc": "2026-10-30T00:28:08.755Z",
+      "still": "29-forest-battle-victory.png",
+      "tilePx": 37.8125,
+      "mapId": "forest_road",
+      "storyNodeId": "battle_forest_road",
+      "encounterId": "enc_forest_road",
+      "encounterPhase": "defeat",
+      "round": 7,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 30,
+      "name": "after-the-road",
+      "atMs": 590001,
+      "clockUtc": "2026-10-30T00:28:24.163Z",
+      "still": "30-after-the-road.png",
+      "tilePx": 128,
+      "mapId": "forest_road",
+      "storyNodeId": "forest_after_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 31,
+      "name": "quarry-gate-arrival",
+      "atMs": 602168,
+      "clockUtc": "2026-10-30T00:28:36.330Z",
+      "still": "31-quarry-gate-arrival.png",
+      "tilePx": 128,
+      "mapId": "quarry_gate",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 32,
+      "name": "quarry-gate-approach",
+      "atMs": 602668,
+      "clockUtc": "2026-10-30T00:28:36.830Z",
+      "still": "32-quarry-gate-approach.png",
+      "tilePx": 128,
+      "mapId": "quarry_gate",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 33,
+      "name": "quarry-gate-parley",
+      "atMs": 615917,
+      "clockUtc": "2026-10-30T00:28:50.079Z",
+      "still": "33-quarry-gate-parley.png",
+      "tilePx": 128,
+      "mapId": "quarry_gate",
+      "storyNodeId": "gate_parley",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 34,
+      "name": "ruon-opens-the-gate",
+      "atMs": 618689,
+      "clockUtc": "2026-10-30T00:28:52.851Z",
+      "still": "34-ruon-opens-the-gate.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "gate_kinship",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 35,
+      "name": "level-up-choice",
+      "atMs": 622568,
+      "clockUtc": "2026-10-30T00:28:56.730Z",
+      "still": "35-level-up-choice.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "ruon_surrender",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 36,
+      "name": "ruon-surrenders",
+      "atMs": 624752,
+      "clockUtc": "2026-10-30T00:28:58.914Z",
+      "still": "36-ruon-surrenders.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "ruon_surrender",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 37,
+      "name": "ruon-surrenders-line-2",
+      "atMs": 626679,
+      "clockUtc": "2026-10-30T00:29:00.841Z",
+      "still": "37-ruon-surrenders-line-2.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "ruon_surrender",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 38,
+      "name": "ruon-surrenders-line-3",
+      "atMs": 628609,
+      "clockUtc": "2026-10-30T00:29:02.771Z",
+      "still": "38-ruon-surrenders-line-3.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "ruon_surrender",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 39,
+      "name": "ruon-surrenders-line-4",
+      "atMs": 630555,
+      "clockUtc": "2026-10-30T00:29:04.717Z",
+      "still": "39-ruon-surrenders-line-4.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "ruon_surrender",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 40,
+      "name": "ruon-surrenders-line-5",
+      "atMs": 632428,
+      "clockUtc": "2026-10-30T00:29:06.590Z",
+      "still": "40-ruon-surrenders-line-5.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "ruon_surrender",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 41,
+      "name": "ruon-custody-choice",
+      "atMs": 633100,
+      "clockUtc": "2026-10-30T00:29:07.262Z",
+      "still": "41-ruon-custody-choice.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "ruon_choice",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "Recorded route: trade."
+    },
+    {
+      "index": 42,
+      "name": "trade-branch",
+      "atMs": 634839,
+      "clockUtc": "2026-10-30T00:29:09.001Z",
+      "still": "42-trade-branch.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "trade_chosen",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 43,
+      "name": "trade-branch-line-2",
+      "atMs": 636918,
+      "clockUtc": "2026-10-30T00:29:11.080Z",
+      "still": "43-trade-branch-line-2.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "trade_chosen",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 44,
+      "name": "trade-branch-line-3",
+      "atMs": 639551,
+      "clockUtc": "2026-10-30T00:29:13.713Z",
+      "still": "44-trade-branch-line-3.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "trade_chosen",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 45,
+      "name": "trade-branch-line-4",
+      "atMs": 641597,
+      "clockUtc": "2026-10-30T00:29:15.759Z",
+      "still": "45-trade-branch-line-4.png",
+      "tilePx": null,
+      "mapId": "quarry_gate",
+      "storyNodeId": "trade_chosen",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 46,
+      "name": "quarry-gate-open",
+      "atMs": 645089,
+      "clockUtc": "2026-10-30T00:29:19.251Z",
+      "still": "46-quarry-gate-open.png",
+      "tilePx": 128,
+      "mapId": "quarry_gate",
+      "storyNodeId": "gate_trade_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "Ruon opens the gate; custody outcome is trade."
+    },
+    {
+      "index": 47,
+      "name": "cutting-arrival",
+      "atMs": 659844,
+      "clockUtc": "2026-10-30T00:29:34.006Z",
+      "still": "47-cutting-arrival.png",
+      "tilePx": 128,
+      "mapId": "ambush_road",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 48,
+      "name": "cutting-trade-passage",
+      "atMs": 660927,
+      "clockUtc": "2026-10-30T00:29:35.089Z",
+      "still": "48-cutting-trade-passage.png",
+      "tilePx": 128,
+      "mapId": "ambush_road",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "Trading Ruon avoids the authored escort ambush on this leg."
+    },
+    {
+      "index": 49,
+      "name": "quarry-floor-arrival",
+      "atMs": 678607,
+      "clockUtc": "2026-10-30T00:29:52.769Z",
+      "still": "49-quarry-floor-arrival.png",
+      "tilePx": 128,
+      "mapId": "quarry_floor",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 50,
+      "name": "driller-approach",
+      "atMs": 679302,
+      "clockUtc": "2026-10-30T00:29:53.464Z",
+      "still": "50-driller-approach.png",
+      "tilePx": 128,
+      "mapId": "quarry_floor",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 51,
+      "name": "driller-descent",
+      "atMs": 703537,
+      "clockUtc": "2026-10-30T00:30:17.699Z",
+      "still": "51-driller-descent.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "quarry_descent",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 52,
+      "name": "quarry_descent-frame-1",
+      "atMs": 705491,
+      "clockUtc": "2026-10-30T00:30:19.653Z",
+      "still": "52-quarry_descent-frame-1.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "quarry_descent",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 53,
+      "name": "quarry_descent-frame-2",
+      "atMs": 707428,
+      "clockUtc": "2026-10-30T00:30:21.590Z",
+      "still": "53-quarry_descent-frame-2.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "quarry_descent",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 54,
+      "name": "driller-threat",
+      "atMs": 709937,
+      "clockUtc": "2026-10-30T00:30:24.099Z",
+      "still": "54-driller-threat.png",
+      "tilePx": 128,
+      "mapId": "quarry_floor",
+      "storyNodeId": "quarry_assessment",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 55,
+      "name": "driller-threat-line-2",
+      "atMs": 712566,
+      "clockUtc": "2026-10-30T00:30:26.728Z",
+      "still": "55-driller-threat-line-2.png",
+      "tilePx": 128,
+      "mapId": "quarry_floor",
+      "storyNodeId": "quarry_assessment",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 56,
+      "name": "driller-opening",
+      "atMs": 714298,
+      "clockUtc": "2026-10-30T00:30:28.460Z",
+      "still": "56-driller-opening.png",
+      "tilePx": 64,
+      "mapId": "quarry_floor",
+      "storyNodeId": "battle_grumbler",
+      "encounterId": "enc_grumbler",
+      "encounterPhase": "active",
+      "round": 1,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 57,
+      "name": "driller-first-turn",
+      "atMs": 716735,
+      "clockUtc": "2026-10-30T00:30:30.897Z",
+      "still": "57-driller-first-turn.png",
+      "tilePx": 64,
+      "mapId": "quarry_floor",
+      "storyNodeId": "battle_grumbler",
+      "encounterId": "enc_grumbler",
+      "encounterPhase": "active",
+      "round": 1,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 58,
+      "name": "driller-boss-focus",
+      "atMs": 718199,
+      "clockUtc": "2026-10-30T00:30:32.361Z",
+      "still": "58-driller-boss-focus.png",
+      "tilePx": 64,
+      "mapId": "quarry_floor",
+      "storyNodeId": "battle_grumbler",
+      "encounterId": "enc_grumbler",
+      "encounterPhase": "active",
+      "round": 1,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "Live Driller focused with its turn-strip control before any staged HP; optional Show enemies is unavailable on this source."
+    },
+    {
+      "index": 59,
+      "name": "driller-shortcut",
+      "atMs": 754408,
+      "clockUtc": "2026-10-30T00:31:08.570Z",
+      "still": "59-driller-shortcut.png",
+      "tilePx": 64,
+      "mapId": "quarry_floor",
+      "storyNodeId": "battle_grumbler",
+      "encounterId": "enc_grumbler",
+      "encounterPhase": "active",
+      "round": 2,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+    },
+    {
+      "index": 60,
+      "name": "driller-victory",
+      "atMs": 762799,
+      "clockUtc": "2026-10-30T00:31:16.961Z",
+      "still": "60-driller-victory.png",
+      "tilePx": 64,
+      "mapId": "quarry_floor",
+      "storyNodeId": "battle_grumbler",
+      "encounterId": "enc_grumbler",
+      "encounterPhase": "victory",
+      "round": 2,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "The route fixture staged enemy HP after three party activations."
+    },
+    {
+      "index": 61,
+      "name": "driller-outcome",
+      "atMs": 766207,
+      "clockUtc": "2026-10-30T00:31:20.369Z",
+      "still": "61-driller-outcome.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "act1_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 62,
+      "name": "act1_epilogue-frame-1",
+      "atMs": 768188,
+      "clockUtc": "2026-10-30T00:31:22.350Z",
+      "still": "62-act1_epilogue-frame-1.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "act1_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 63,
+      "name": "act1_epilogue-frame-2",
+      "atMs": 770118,
+      "clockUtc": "2026-10-30T00:31:24.280Z",
+      "still": "63-act1_epilogue-frame-2.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "act1_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 64,
+      "name": "act1_epilogue-frame-3",
+      "atMs": 772130,
+      "clockUtc": "2026-10-30T00:31:26.292Z",
+      "still": "64-act1_epilogue-frame-3.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "act1_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 65,
+      "name": "act1_epilogue-frame-4",
+      "atMs": 774046,
+      "clockUtc": "2026-10-30T00:31:28.208Z",
+      "still": "65-act1_epilogue-frame-4.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "act1_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 66,
+      "name": "driller-ending-summary",
+      "atMs": 774810,
+      "clockUtc": "2026-10-30T00:31:28.972Z",
+      "still": "66-driller-ending-summary.png",
+      "tilePx": null,
+      "mapId": "quarry_floor",
+      "storyNodeId": "act1_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 67,
+      "name": "westward-homecoming-objective",
+      "atMs": 776003,
+      "clockUtc": "2026-10-30T00:31:30.165Z",
+      "still": "67-westward-homecoming-objective.png",
+      "tilePx": 128,
+      "mapId": "quarry_floor",
+      "storyNodeId": "quarry_after_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 68,
+      "name": "cutting-return",
+      "atMs": 784639,
+      "clockUtc": "2026-10-30T00:31:38.801Z",
+      "still": "68-cutting-return.png",
+      "tilePx": 128,
+      "mapId": "ambush_road",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 69,
+      "name": "quarry-gate-return",
+      "atMs": 800141,
+      "clockUtc": "2026-10-30T00:31:54.303Z",
+      "still": "69-quarry-gate-return.png",
+      "tilePx": 128,
+      "mapId": "quarry_gate",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 70,
+      "name": "forest-road-return",
+      "atMs": 818107,
+      "clockUtc": "2026-10-30T00:32:12.269Z",
+      "still": "70-forest-road-return.png",
+      "tilePx": 128,
+      "mapId": "forest_road",
+      "storyNodeId": null,
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 71,
+      "name": "west-road-return",
+      "atMs": 833535,
+      "clockUtc": "2026-10-30T00:32:27.697Z",
+      "still": "71-west-road-return.png",
+      "tilePx": 128,
+      "mapId": "forest_road",
+      "storyNodeId": "forest_return_arrival",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 72,
+      "name": "west-road-return-line-2",
+      "atMs": 836073,
+      "clockUtc": "2026-10-30T00:32:30.235Z",
+      "still": "72-west-road-return-line-2.png",
+      "tilePx": 128,
+      "mapId": "forest_road",
+      "storyNodeId": "forest_return_arrival",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 73,
+      "name": "ba-dan-return",
+      "atMs": 838913,
+      "clockUtc": "2026-10-30T00:32:33.075Z",
+      "still": "73-ba-dan-return.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_return_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "The group reaches Ba Dan; returnee profiles are now resting."
+    },
+    {
+      "index": 74,
+      "name": "dorin-homecoming",
+      "atMs": 853000,
+      "clockUtc": "2026-10-30T00:32:47.162Z",
+      "still": "74-dorin-homecoming.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "dorin_home",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 75,
+      "name": "dorin-homecoming-line-2",
+      "atMs": 855908,
+      "clockUtc": "2026-10-30T00:32:50.070Z",
+      "still": "75-dorin-homecoming-line-2.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "dorin_home",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 76,
+      "name": "dorin-homecoming-line-3",
+      "atMs": 873305,
+      "clockUtc": "2026-10-30T00:33:07.467Z",
+      "still": "76-dorin-homecoming-line-3.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "dorin_home",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 77,
+      "name": "mira-homecoming",
+      "atMs": 895920,
+      "clockUtc": "2026-10-30T00:33:30.082Z",
+      "still": "77-mira-homecoming.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "mira_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 78,
+      "name": "mira-homecoming-line-2",
+      "atMs": 898587,
+      "clockUtc": "2026-10-30T00:33:32.749Z",
+      "still": "78-mira-homecoming-line-2.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "mira_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 79,
+      "name": "mira-homecoming-line-3",
+      "atMs": 901336,
+      "clockUtc": "2026-10-30T00:33:35.498Z",
+      "still": "79-mira-homecoming-line-3.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "mira_epilogue",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 80,
+      "name": "gao-trade-consequence",
+      "atMs": 918295,
+      "clockUtc": "2026-10-30T00:33:52.457Z",
+      "still": "80-gao-trade-consequence.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "gao_home_cold",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 81,
+      "name": "gao-trade-consequence-line-2",
+      "atMs": 921378,
+      "clockUtc": "2026-10-30T00:33:55.540Z",
+      "still": "81-gao-trade-consequence-line-2.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "gao_home_cold",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 82,
+      "name": "gao-trade-consequence-line-3",
+      "atMs": 924139,
+      "clockUtc": "2026-10-30T00:33:58.301Z",
+      "still": "82-gao-trade-consequence-line-3.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "gao_home_cold",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73"
+    },
+    {
+      "index": 83,
+      "name": "ba-dan-custody-response",
+      "atMs": 925797,
+      "clockUtc": "2026-10-30T00:33:59.959Z",
+      "still": "83-ba-dan-custody-response.png",
+      "tilePx": 128,
+      "mapId": "ba_dan_village",
+      "storyNodeId": "village_return_explore",
+      "encounterId": null,
+      "encounterPhase": null,
+      "round": null,
+      "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+      "buildLabel": "Game version 0.2.11, build 8071f73",
+      "note": "Completed trade return with the Driller cleared."
+    }
+  ],
+  "trace": [
+    {
+      "atMs": 4606,
+      "clockUtc": "2026-10-30T00:18:38.768Z",
+      "kind": "seed-injection",
+      "target": "app.newGame",
+      "detail": "quarry-return-trade-route"
+    },
+    {
+      "atMs": 6842,
+      "clockUtc": "2026-10-30T00:18:41.004Z",
+      "kind": "mouse-click",
+      "target": "New game",
+      "detail": {
+        "x": 276.796875,
+        "y": 379.890625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "New game"
+        }
+      }
+    },
+    {
+      "atMs": 7741,
+      "clockUtc": "2026-10-30T00:18:41.903Z",
+      "kind": "mouse-click",
+      "target": "3 players",
+      "detail": {
+        "x": 245,
+        "y": 399.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "3 players"
+        }
+      }
+    },
+    {
+      "atMs": 8322,
+      "clockUtc": "2026-10-30T00:18:42.484Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1132.09375,
+        "y": 524.03125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 8752,
+      "clockUtc": "2026-10-30T00:18:42.914Z",
+      "kind": "mouse-click",
+      "target": "I've got it",
+      "detail": {
+        "x": 639.9921875,
+        "y": 485.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I've got it"
+        }
+      }
+    },
+    {
+      "atMs": 8795,
+      "clockUtc": "2026-10-30T00:18:42.957Z",
+      "kind": "fill-player-name",
+      "target": "player-name-input",
+      "detail": "Kaya"
+    },
+    {
+      "atMs": 8836,
+      "clockUtc": "2026-10-30T00:18:42.998Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1151.9609375,
+        "y": 524.03125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 8916,
+      "clockUtc": "2026-10-30T00:18:43.078Z",
+      "kind": "mouse-click",
+      "target": "Firebending\n\nHit hardest. Stand somewhere safe.\n\nStay at range when you can, set up fire, and leave your own flames clear.\n\n28 HP\n4 AP\nPower 7\nSpeed 6",
+      "detail": {
+        "x": 194.3984375,
+        "y": 421.1796875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "P",
+          "hitLabel": "Stay at range when you can, set up fire, and leave your own flames clear."
+        }
+      }
+    },
+    {
+      "atMs": 9302,
+      "clockUtc": "2026-10-30T00:18:43.464Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1151.9609375,
+        "y": 636.5625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 9428,
+      "clockUtc": "2026-10-30T00:18:43.590Z",
+      "kind": "mouse-click",
+      "target": "Kaya\n\nQuick to jump into a fight.\n\nKaya grew up in a former Fire Nation colony, answering questions about where she was really from. She left to see the places people kept naming. Usually volunteers before hearing the whole job.",
+      "detail": {
+        "x": 361.5,
+        "y": 421.1875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "P",
+          "hitLabel": "Kaya grew up in a former Fire Nation colony, answering questions about where she"
+        }
+      }
+    },
+    {
+      "atMs": 9943,
+      "clockUtc": "2026-10-30T00:18:44.105Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1136.8359375,
+        "y": 576.1875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 10081,
+      "clockUtc": "2026-10-30T00:18:44.243Z",
+      "kind": "mouse-click",
+      "target": "I've got it",
+      "detail": {
+        "x": 639.9921875,
+        "y": 485.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I've got it"
+        }
+      }
+    },
+    {
+      "atMs": 10259,
+      "clockUtc": "2026-10-30T00:18:44.421Z",
+      "kind": "fill-player-name",
+      "target": "player-name-input",
+      "detail": "Nilak"
+    },
+    {
+      "atMs": 10427,
+      "clockUtc": "2026-10-30T00:18:44.589Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1151.9609375,
+        "y": 524.03125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 10552,
+      "clockUtc": "2026-10-30T00:18:44.714Z",
+      "kind": "mouse-click",
+      "target": "Waterbending\n\nHeal the party. Set up everyone else.\n\nWet a dangerous target, then pair it with lightning or cold when the opening is there.\n\n26 HP\n4 AP\nPower 5\nSpeed 5",
+      "detail": {
+        "x": 417.1953125,
+        "y": 421.1796875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "P",
+          "hitLabel": "Wet a dangerous target, then pair it with lightning or cold when the opening is "
+        }
+      }
+    },
+    {
+      "atMs": 10886,
+      "clockUtc": "2026-10-30T00:18:45.048Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1151.9609375,
+        "y": 648.15625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 11136,
+      "clockUtc": "2026-10-30T00:18:45.298Z",
+      "kind": "mouse-click",
+      "target": "Nilak\n\nKeeps watch over the wounded.\n\nNilak trained at a Northern healing house that promised to treat anyone. When it turned away people without papers or a sponsor, he took his medicine bag to them. He has worked the road since.",
+      "detail": {
+        "x": 361.5,
+        "y": 421.1875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "P",
+          "hitLabel": "Nilak trained at a Northern healing house that promised to treat anyone. When it"
+        }
+      }
+    },
+    {
+      "atMs": 11224,
+      "clockUtc": "2026-10-30T00:18:45.386Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1136.8359375,
+        "y": 576.1875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 11374,
+      "clockUtc": "2026-10-30T00:18:45.536Z",
+      "kind": "mouse-click",
+      "target": "I've got it",
+      "detail": {
+        "x": 639.9921875,
+        "y": 485.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I've got it"
+        }
+      }
+    },
+    {
+      "atMs": 11423,
+      "clockUtc": "2026-10-30T00:18:45.585Z",
+      "kind": "fill-player-name",
+      "target": "player-name-input",
+      "detail": "Bo"
+    },
+    {
+      "atMs": 11563,
+      "clockUtc": "2026-10-30T00:18:45.725Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1151.9609375,
+        "y": 524.03125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 11715,
+      "clockUtc": "2026-10-30T00:18:45.877Z",
+      "kind": "mouse-click",
+      "target": "Earthbending\n\nStand in front. Rebuild the battlefield.\n\nBlock the gap, slow a route, then change the shape of the fight.\n\n34 HP\n4 AP\nPower 6\nSpeed 3",
+      "detail": {
+        "x": 639.9921875,
+        "y": 421.1796875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "P",
+          "hitLabel": "Block the gap, slow a route, then change the shape of the fight."
+        }
+      }
+    },
+    {
+      "atMs": 11971,
+      "clockUtc": "2026-10-30T00:18:46.133Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1151.9609375,
+        "y": 648.15625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 12219,
+      "clockUtc": "2026-10-30T00:18:46.381Z",
+      "kind": "mouse-click",
+      "target": "Bo\n\nThe foreman who holds the line.\n\nBo ran a quarry crew three towns over until the wages stopped. He took road work to keep them fed and asks after their letters in every town. Counts heads whenever the party sets off.",
+      "detail": {
+        "x": 361.5,
+        "y": 421.1875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "P",
+          "hitLabel": "Bo ran a quarry crew three towns over until the wages stopped. He took road work"
+        }
+      }
+    },
+    {
+      "atMs": 12297,
+      "clockUtc": "2026-10-30T00:18:46.459Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1136.8359375,
+        "y": 576.1875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 12767,
+      "clockUtc": "2026-10-30T00:18:46.929Z",
+      "kind": "mouse-click",
+      "target": "Begin",
+      "detail": {
+        "x": 1147.71875,
+        "y": 554.1875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Begin"
+        }
+      }
+    },
+    {
+      "atMs": 15160,
+      "clockUtc": "2026-10-30T00:18:49.322Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 17089,
+      "clockUtc": "2026-10-30T00:18:51.251Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 19007,
+      "clockUtc": "2026-10-30T00:18:53.169Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 868.09375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 24075,
+      "clockUtc": "2026-10-30T00:18:58.237Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 3,
+          "y": 7
+        },
+        "destination": {
+          "x": 7,
+          "y": 8
+        },
+        "visibleTarget": {
+          "x": 6,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 4,
+            "y": 7
+          },
+          {
+            "x": 5,
+            "y": 7
+          },
+          {
+            "x": 6,
+            "y": 7
+          },
+          {
+            "x": 7,
+            "y": 8
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 24740,
+      "clockUtc": "2026-10-30T00:18:58.902Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 6,
+          "y": 7
+        },
+        "point": {
+          "x": 1024,
+          "y": 550.1788453565506
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 27834,
+      "clockUtc": "2026-10-30T00:19:01.996Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 6,
+          "y": 7
+        },
+        "destination": {
+          "x": 7,
+          "y": 8
+        },
+        "visibleTarget": {
+          "x": 7,
+          "y": 8
+        },
+        "path": [
+          {
+            "x": 7,
+            "y": 8
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 28495,
+      "clockUtc": "2026-10-30T00:19:02.657Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 7,
+          "y": 8
+        },
+        "point": {
+          "x": 641,
+          "y": 487.15599087893867
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 30909,
+      "clockUtc": "2026-10-30T00:19:05.071Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 7,
+          "y": 8
+        },
+        "destination": {
+          "x": 10,
+          "y": 8
+        },
+        "visibleTarget": {
+          "x": 10,
+          "y": 8
+        },
+        "path": [
+          {
+            "x": 8,
+            "y": 8
+          },
+          {
+            "x": 9,
+            "y": 8
+          },
+          {
+            "x": 10,
+            "y": 8
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 31972,
+      "clockUtc": "2026-10-30T00:19:06.134Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 10,
+          "y": 8
+        },
+        "point": {
+          "x": 1024,
+          "y": 551.1792081260364
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 35682,
+      "clockUtc": "2026-10-30T00:19:09.844Z",
+      "kind": "mouse-click",
+      "target": "Practice\nCanal bank",
+      "detail": {
+        "x": 1139.6875,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "PracticeCanal bank"
+        }
+      }
+    },
+    {
+      "atMs": 41663,
+      "clockUtc": "2026-10-30T00:19:15.825Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 10,
+          "y": 8
+        },
+        "destination": {
+          "x": 11,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 11,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 11,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 42789,
+      "clockUtc": "2026-10-30T00:19:16.951Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 11,
+          "y": 7
+        },
+        "point": {
+          "x": 896,
+          "y": 358.109193615257
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 45079,
+      "clockUtc": "2026-10-30T00:19:19.241Z",
+      "kind": "mouse-click",
+      "target": "Talk\nElder Mira",
+      "detail": {
+        "x": 963.375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "TalkElder Mira"
+        }
+      }
+    },
+    {
+      "atMs": 49659,
+      "clockUtc": "2026-10-30T00:19:23.821Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 51572,
+      "clockUtc": "2026-10-30T00:19:25.734Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 53583,
+      "clockUtc": "2026-10-30T00:19:27.745Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 55607,
+      "clockUtc": "2026-10-30T00:19:29.769Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1028.09375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 58433,
+      "clockUtc": "2026-10-30T00:19:32.595Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 10,
+          "y": 5
+        },
+        "destination": {
+          "x": 15,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 12,
+          "y": 6
+        },
+        "path": [
+          {
+            "x": 11,
+            "y": 5
+          },
+          {
+            "x": 12,
+            "y": 6
+          },
+          {
+            "x": 13,
+            "y": 7
+          },
+          {
+            "x": 14,
+            "y": 7
+          },
+          {
+            "x": 15,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 59516,
+      "clockUtc": "2026-10-30T00:19:33.678Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 12,
+          "y": 6
+        },
+        "point": {
+          "x": 768,
+          "y": 550.1788453565506
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 62563,
+      "clockUtc": "2026-10-30T00:19:36.725Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 12,
+          "y": 6
+        },
+        "destination": {
+          "x": 15,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 14,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 13,
+            "y": 7
+          },
+          {
+            "x": 14,
+            "y": 7
+          },
+          {
+            "x": 15,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 63917,
+      "clockUtc": "2026-10-30T00:19:38.079Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 14,
+          "y": 7
+        },
+        "point": {
+          "x": 768,
+          "y": 551.1792081260364
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 67408,
+      "clockUtc": "2026-10-30T00:19:41.570Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 14,
+          "y": 7
+        },
+        "destination": {
+          "x": 15,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 15,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 15,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 68581,
+      "clockUtc": "2026-10-30T00:19:42.743Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 15,
+          "y": 7
+        },
+        "point": {
+          "x": 768,
+          "y": 423.1327736318408
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 70704,
+      "clockUtc": "2026-10-30T00:19:44.866Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 15,
+          "y": 7
+        },
+        "destination": {
+          "x": 19,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 18,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 16,
+            "y": 7
+          },
+          {
+            "x": 17,
+            "y": 7
+          },
+          {
+            "x": 18,
+            "y": 7
+          },
+          {
+            "x": 19,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 71976,
+      "clockUtc": "2026-10-30T00:19:46.138Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 18,
+          "y": 7
+        },
+        "point": {
+          "x": 1025,
+          "y": 551.1792081260364
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 79807,
+      "clockUtc": "2026-10-30T00:19:53.969Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 18,
+          "y": 7
+        },
+        "destination": {
+          "x": 19,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 19,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 19,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 81694,
+      "clockUtc": "2026-10-30T00:19:55.856Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 19,
+          "y": 7
+        },
+        "point": {
+          "x": 962,
+          "y": 520.1679622719735
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 86563,
+      "clockUtc": "2026-10-30T00:20:00.725Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 19,
+          "y": 7
+        },
+        "destination": {
+          "x": 22,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 21,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 20,
+            "y": 7
+          },
+          {
+            "x": 21,
+            "y": 7
+          },
+          {
+            "x": 22,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 88294,
+      "clockUtc": "2026-10-30T00:20:02.456Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 21,
+          "y": 7
+        },
+        "point": {
+          "x": 1023,
+          "y": 550.1788453565506
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 90569,
+      "clockUtc": "2026-10-30T00:20:04.731Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 21,
+          "y": 7
+        },
+        "destination": {
+          "x": 22,
+          "y": 7
+        },
+        "visibleTarget": {
+          "x": 22,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 22,
+            "y": 7
+          }
+        ],
+        "label": "the path"
+      }
+    },
+    {
+      "atMs": 91284,
+      "clockUtc": "2026-10-30T00:20:05.446Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 22,
+          "y": 7
+        },
+        "point": {
+          "x": 768,
+          "y": 423.1327736318408
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 93694,
+      "clockUtc": "2026-10-30T00:20:07.856Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 23,
+          "y": 7
+        },
+        "point": {
+          "x": 772,
+          "y": 424.1331364013267
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 96909,
+      "clockUtc": "2026-10-30T00:20:11.071Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 3,
+          "y": 5
+        },
+        "point": {
+          "x": 768,
+          "y": 550.1788453565506
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 100805,
+      "clockUtc": "2026-10-30T00:20:14.967Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 5,
+          "y": 4
+        },
+        "point": {
+          "x": 1024,
+          "y": 423.1327736318408
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 104073,
+      "clockUtc": "2026-10-30T00:20:18.235Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 106151,
+      "clockUtc": "2026-10-30T00:20:20.313Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 868.09375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 108750,
+      "clockUtc": "2026-10-30T00:20:22.912Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 4,
+          "y": 5
+        },
+        "destination": {
+          "x": 8,
+          "y": 4
+        },
+        "visibleTarget": {
+          "x": 7,
+          "y": 4
+        },
+        "path": [
+          {
+            "x": 5,
+            "y": 4
+          },
+          {
+            "x": 6,
+            "y": 4
+          },
+          {
+            "x": 7,
+            "y": 4
+          },
+          {
+            "x": 8,
+            "y": 4
+          }
+        ],
+        "label": "Quarry workers blocking the road"
+      }
+    },
+    {
+      "atMs": 110008,
+      "clockUtc": "2026-10-30T00:20:24.170Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 7,
+          "y": 4
+        },
+        "point": {
+          "x": 1152,
+          "y": 486.1556281094527
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 114646,
+      "clockUtc": "2026-10-30T00:20:28.808Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 7,
+          "y": 4
+        },
+        "destination": {
+          "x": 8,
+          "y": 4
+        },
+        "visibleTarget": {
+          "x": 8,
+          "y": 4
+        },
+        "path": [
+          {
+            "x": 8,
+            "y": 4
+          }
+        ],
+        "label": "Quarry workers blocking the road"
+      }
+    },
+    {
+      "atMs": 116239,
+      "clockUtc": "2026-10-30T00:20:30.401Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 8,
+          "y": 4
+        },
+        "point": {
+          "x": 768,
+          "y": 423.1327736318408
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 122468,
+      "clockUtc": "2026-10-30T00:20:36.630Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 123803,
+      "clockUtc": "2026-10-30T00:20:37.965Z",
+      "kind": "party-turn",
+      "target": "kaya",
+      "detail": {
+        "turn": 0,
+        "pos": {
+          "x": 1,
+          "y": 3
+        }
+      }
+    },
+    {
+      "atMs": 123807,
+      "clockUtc": "2026-10-30T00:20:37.969Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 124700,
+      "clockUtc": "2026-10-30T00:20:38.862Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 125386,
+      "clockUtc": "2026-10-30T00:20:39.548Z",
+      "kind": "mouse-wheel-zoom-out",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "at": {
+          "x": 640,
+          "y": 345.8125
+        },
+        "deltaY": 160
+      }
+    },
+    {
+      "atMs": 126190,
+      "clockUtc": "2026-10-30T00:20:40.352Z",
+      "kind": "mouse-wheel-zoom-out",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "at": {
+          "x": 640,
+          "y": 345.8125
+        },
+        "deltaY": 160
+      }
+    },
+    {
+      "atMs": 132461,
+      "clockUtc": "2026-10-30T00:20:46.623Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 707.3125,
+          "y": 390.7350991351175
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 137776,
+      "clockUtc": "2026-10-30T00:20:51.938Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 140892,
+      "clockUtc": "2026-10-30T00:20:55.054Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 623.40625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 146483,
+      "clockUtc": "2026-10-30T00:21:00.645Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 4,
+          "y": 5
+        },
+        "point": {
+          "x": 489.0625,
+          "y": 317.0820254715237
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 149650,
+      "clockUtc": "2026-10-30T00:21:03.812Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 739.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 153084,
+      "clockUtc": "2026-10-30T00:21:07.246Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 155473,
+      "clockUtc": "2026-10-30T00:21:09.635Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 159845,
+      "clockUtc": "2026-10-30T00:21:14.007Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 730.5625,
+          "y": 456.3045753100522
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 162603,
+      "clockUtc": "2026-10-30T00:21:16.765Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 163471,
+      "clockUtc": "2026-10-30T00:21:17.633Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 165592,
+      "clockUtc": "2026-10-30T00:21:19.754Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 623.40625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 168174,
+      "clockUtc": "2026-10-30T00:21:22.336Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 623.40625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 177454,
+      "clockUtc": "2026-10-30T00:21:31.616Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 179708,
+      "clockUtc": "2026-10-30T00:21:33.870Z",
+      "kind": "party-turn",
+      "target": "nilak",
+      "detail": {
+        "turn": 1,
+        "pos": {
+          "x": 3,
+          "y": 4
+        }
+      }
+    },
+    {
+      "atMs": 181939,
+      "clockUtc": "2026-10-30T00:21:36.101Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 187218,
+      "clockUtc": "2026-10-30T00:21:41.380Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 7,
+          "y": 4
+        },
+        "point": {
+          "x": 602.1875,
+          "y": 381.03331869452666
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 189087,
+      "clockUtc": "2026-10-30T00:21:43.249Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 730.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 192246,
+      "clockUtc": "2026-10-30T00:21:46.408Z",
+      "kind": "ability-intent",
+      "target": "^Water Whip",
+      "detail": {
+        "x": 15,
+        "y": 4
+      }
+    },
+    {
+      "atMs": 193992,
+      "clockUtc": "2026-10-30T00:21:48.154Z",
+      "kind": "mouse-click",
+      "target": "Water Whip\n1 AP",
+      "detail": {
+        "x": 547.421875,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Water Whip1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 197400,
+      "clockUtc": "2026-10-30T00:21:51.562Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 15,
+          "y": 4
+        },
+        "point": {
+          "x": 904.6875,
+          "y": 532.3307792467949
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 199379,
+      "clockUtc": "2026-10-30T00:21:53.541Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 200455,
+      "clockUtc": "2026-10-30T00:21:54.617Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 201895,
+      "clockUtc": "2026-10-30T00:21:56.057Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 203818,
+      "clockUtc": "2026-10-30T00:21:57.980Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 211640,
+      "clockUtc": "2026-10-30T00:22:05.802Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 213661,
+      "clockUtc": "2026-10-30T00:22:07.823Z",
+      "kind": "party-turn",
+      "target": "bo",
+      "detail": {
+        "turn": 2,
+        "pos": {
+          "x": 1,
+          "y": 5
+        }
+      }
+    },
+    {
+      "atMs": 215683,
+      "clockUtc": "2026-10-30T00:22:09.845Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 220834,
+      "clockUtc": "2026-10-30T00:22:14.996Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 5,
+          "y": 8
+        },
+        "point": {
+          "x": 375.3125,
+          "y": 418.8539759769477
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 223109,
+      "clockUtc": "2026-10-30T00:22:17.271Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 739.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 227090,
+      "clockUtc": "2026-10-30T00:22:21.252Z",
+      "kind": "ability-intent",
+      "target": "^Rock Throw",
+      "detail": {
+        "x": 13,
+        "y": 8
+      }
+    },
+    {
+      "atMs": 229023,
+      "clockUtc": "2026-10-30T00:22:23.185Z",
+      "kind": "mouse-click",
+      "target": "Rock Throw\n1 AP",
+      "detail": {
+        "x": 547.015625,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Rock Throw1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 231557,
+      "clockUtc": "2026-10-30T00:22:25.719Z",
+      "kind": "mouse-wheel-zoom-out",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 8
+        },
+        "at": {
+          "x": 640,
+          "y": 345.8125
+        },
+        "deltaY": 160
+      }
+    },
+    {
+      "atMs": 236929,
+      "clockUtc": "2026-10-30T00:22:31.091Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 8
+        },
+        "point": {
+          "x": 662.4375,
+          "y": 413.1963987026762
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 240113,
+      "clockUtc": "2026-10-30T00:22:34.275Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 240965,
+      "clockUtc": "2026-10-30T00:22:35.127Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 243008,
+      "clockUtc": "2026-10-30T00:22:37.170Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 623.40625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 245415,
+      "clockUtc": "2026-10-30T00:22:39.577Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 623.40625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 249030,
+      "clockUtc": "2026-10-30T00:22:43.192Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 250012,
+      "clockUtc": "2026-10-30T00:22:44.174Z",
+      "kind": "party-turn",
+      "target": "kaya",
+      "detail": {
+        "turn": 3,
+        "pos": {
+          "x": 4,
+          "y": 5
+        }
+      }
+    },
+    {
+      "atMs": 250014,
+      "clockUtc": "2026-10-30T00:22:44.176Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 251641,
+      "clockUtc": "2026-10-30T00:22:45.803Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 254211,
+      "clockUtc": "2026-10-30T00:22:48.373Z",
+      "kind": "mouse-wheel-zoom-out",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "at": {
+          "x": 640,
+          "y": 345.8125
+        },
+        "deltaY": 160
+      }
+    },
+    {
+      "atMs": 259832,
+      "clockUtc": "2026-10-30T00:22:53.994Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 707.3125,
+          "y": 390.7350991351175
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 262988,
+      "clockUtc": "2026-10-30T00:22:57.150Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 265912,
+      "clockUtc": "2026-10-30T00:23:00.074Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 623.40625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 272261,
+      "clockUtc": "2026-10-30T00:23:06.423Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 8,
+          "y": 2
+        },
+        "point": {
+          "x": 700.375,
+          "y": 332.17903164293637
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 274804,
+      "clockUtc": "2026-10-30T00:23:08.966Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 730.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 279287,
+      "clockUtc": "2026-10-30T00:23:13.449Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 281402,
+      "clockUtc": "2026-10-30T00:23:15.564Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 285903,
+      "clockUtc": "2026-10-30T00:23:20.065Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 730.5625,
+          "y": 456.06133905157344
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 288639,
+      "clockUtc": "2026-10-30T00:23:22.801Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 289404,
+      "clockUtc": "2026-10-30T00:23:23.566Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 291653,
+      "clockUtc": "2026-10-30T00:23:25.815Z",
+      "kind": "mouse-click",
+      "target": "End turn\n5 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn5 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 294565,
+      "clockUtc": "2026-10-30T00:23:28.727Z",
+      "kind": "mouse-click",
+      "target": "End turn\n5 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn5 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 313849,
+      "clockUtc": "2026-10-30T00:23:48.011Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 315120,
+      "clockUtc": "2026-10-30T00:23:49.282Z",
+      "kind": "party-turn",
+      "target": "nilak",
+      "detail": {
+        "turn": 4,
+        "pos": {
+          "x": 7,
+          "y": 4
+        }
+      }
+    },
+    {
+      "atMs": 317822,
+      "clockUtc": "2026-10-30T00:23:51.984Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 323327,
+      "clockUtc": "2026-10-30T00:23:57.489Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 11,
+          "y": 6
+        },
+        "point": {
+          "x": 677.8125,
+          "y": 494.4952905417899
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 325483,
+      "clockUtc": "2026-10-30T00:23:59.645Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 730.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 329206,
+      "clockUtc": "2026-10-30T00:24:03.368Z",
+      "kind": "ability-intent",
+      "target": "^Water Whip",
+      "detail": {
+        "x": 13,
+        "y": 8
+      }
+    },
+    {
+      "atMs": 331441,
+      "clockUtc": "2026-10-30T00:24:05.603Z",
+      "kind": "mouse-click",
+      "target": "Water Whip\n1 AP",
+      "detail": {
+        "x": 547.421875,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Water Whip1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 335080,
+      "clockUtc": "2026-10-30T00:24:09.242Z",
+      "kind": "mouse-wheel-zoom-out",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 8
+        },
+        "at": {
+          "x": 640,
+          "y": 368.6640625
+        },
+        "deltaY": 160
+      }
+    },
+    {
+      "atMs": 341495,
+      "clockUtc": "2026-10-30T00:24:15.657Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 8
+        },
+        "point": {
+          "x": 665.3125,
+          "y": 444.6209230222902
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 346256,
+      "clockUtc": "2026-10-30T00:24:20.418Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 348907,
+      "clockUtc": "2026-10-30T00:24:23.069Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 350939,
+      "clockUtc": "2026-10-30T00:24:25.101Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 353548,
+      "clockUtc": "2026-10-30T00:24:27.710Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 360746,
+      "clockUtc": "2026-10-30T00:24:34.908Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 362496,
+      "clockUtc": "2026-10-30T00:24:36.658Z",
+      "kind": "party-turn",
+      "target": "bo",
+      "detail": {
+        "turn": 5,
+        "pos": {
+          "x": 5,
+          "y": 8
+        }
+      }
+    },
+    {
+      "atMs": 364404,
+      "clockUtc": "2026-10-30T00:24:38.566Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 381511,
+      "clockUtc": "2026-10-30T00:24:55.673Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 9,
+          "y": 8
+        },
+        "point": {
+          "x": 526.5625,
+          "y": 494.4952905417899
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 383359,
+      "clockUtc": "2026-10-30T00:24:57.521Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 730.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 386530,
+      "clockUtc": "2026-10-30T00:25:00.692Z",
+      "kind": "ability-intent",
+      "target": "^Rock Throw",
+      "detail": {
+        "x": 11,
+        "y": 7
+      }
+    },
+    {
+      "atMs": 388181,
+      "clockUtc": "2026-10-30T00:25:02.343Z",
+      "kind": "mouse-click",
+      "target": "Rock Throw\n1 AP",
+      "detail": {
+        "x": 547.015625,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Rock Throw1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 391413,
+      "clockUtc": "2026-10-30T00:25:05.575Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 11,
+          "y": 7
+        },
+        "point": {
+          "x": 640,
+          "y": 513.4197090344551
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 393422,
+      "clockUtc": "2026-10-30T00:25:07.584Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 395789,
+      "clockUtc": "2026-10-30T00:25:09.951Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 397367,
+      "clockUtc": "2026-10-30T00:25:11.529Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 399319,
+      "clockUtc": "2026-10-30T00:25:13.481Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 402612,
+      "clockUtc": "2026-10-30T00:25:16.774Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 403491,
+      "clockUtc": "2026-10-30T00:25:17.653Z",
+      "kind": "party-turn",
+      "target": "kaya",
+      "detail": {
+        "turn": 6,
+        "pos": {
+          "x": 8,
+          "y": 2
+        }
+      }
+    },
+    {
+      "atMs": 403493,
+      "clockUtc": "2026-10-30T00:25:17.655Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 405031,
+      "clockUtc": "2026-10-30T00:25:19.193Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 408209,
+      "clockUtc": "2026-10-30T00:25:22.371Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 753.4375,
+          "y": 532.3307792467949
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 410249,
+      "clockUtc": "2026-10-30T00:25:24.411Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 411895,
+      "clockUtc": "2026-10-30T00:25:26.057Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 416640,
+      "clockUtc": "2026-10-30T00:25:30.802Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 11,
+          "y": 4
+        },
+        "point": {
+          "x": 753.4375,
+          "y": 456.6746332593688
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 418446,
+      "clockUtc": "2026-10-30T00:25:32.608Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 730.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 421466,
+      "clockUtc": "2026-10-30T00:25:35.628Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 423017,
+      "clockUtc": "2026-10-30T00:25:37.179Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 426135,
+      "clockUtc": "2026-10-30T00:25:40.297Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 753.4375,
+          "y": 532.3307792467949
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 427973,
+      "clockUtc": "2026-10-30T00:25:42.135Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 429608,
+      "clockUtc": "2026-10-30T00:25:43.770Z",
+      "kind": "mouse-click",
+      "target": "Move\n1 left",
+      "detail": {
+        "x": 437,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move1 left"
+        }
+      }
+    },
+    {
+      "atMs": 431328,
+      "clockUtc": "2026-10-30T00:25:45.490Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 432960,
+      "clockUtc": "2026-10-30T00:25:47.122Z",
+      "kind": "mouse-click",
+      "target": "End turn\n5 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn5 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 434526,
+      "clockUtc": "2026-10-30T00:25:48.688Z",
+      "kind": "mouse-click",
+      "target": "End turn\n5 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn5 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 448199,
+      "clockUtc": "2026-10-30T00:26:02.361Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 449925,
+      "clockUtc": "2026-10-30T00:26:04.087Z",
+      "kind": "party-turn",
+      "target": "bo",
+      "detail": {
+        "turn": 7,
+        "pos": {
+          "x": 9,
+          "y": 8
+        }
+      }
+    },
+    {
+      "atMs": 450028,
+      "clockUtc": "2026-10-30T00:26:04.190Z",
+      "kind": "ability-intent",
+      "target": "^Rock Throw",
+      "detail": {
+        "x": 10,
+        "y": 8
+      }
+    },
+    {
+      "atMs": 451839,
+      "clockUtc": "2026-10-30T00:26:06.001Z",
+      "kind": "mouse-click",
+      "target": "Rock Throw\n1 AP",
+      "detail": {
+        "x": 547.015625,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Rock Throw1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 455264,
+      "clockUtc": "2026-10-30T00:26:09.426Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 10,
+          "y": 8
+        },
+        "point": {
+          "x": 564.375,
+          "y": 513.4197090344551
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 457245,
+      "clockUtc": "2026-10-30T00:26:11.407Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 459483,
+      "clockUtc": "2026-10-30T00:26:13.645Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 461215,
+      "clockUtc": "2026-10-30T00:26:15.377Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 463160,
+      "clockUtc": "2026-10-30T00:26:17.322Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 466555,
+      "clockUtc": "2026-10-30T00:26:20.717Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 467653,
+      "clockUtc": "2026-10-30T00:26:21.815Z",
+      "kind": "party-turn",
+      "target": "kaya",
+      "detail": {
+        "turn": 8,
+        "pos": {
+          "x": 11,
+          "y": 4
+        }
+      }
+    },
+    {
+      "atMs": 467655,
+      "clockUtc": "2026-10-30T00:26:21.817Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 469420,
+      "clockUtc": "2026-10-30T00:26:23.582Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 472968,
+      "clockUtc": "2026-10-30T00:26:27.130Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 753.4375,
+          "y": 532.3307792467949
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 474933,
+      "clockUtc": "2026-10-30T00:26:29.095Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 476747,
+      "clockUtc": "2026-10-30T00:26:30.909Z",
+      "kind": "mouse-click",
+      "target": "Move\n4 left",
+      "detail": {
+        "x": 437,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Move4 left"
+        }
+      }
+    },
+    {
+      "atMs": 483286,
+      "clockUtc": "2026-10-30T00:26:37.448Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 753.4375,
+          "y": 532.315947824211
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 485893,
+      "clockUtc": "2026-10-30T00:26:40.055Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 730.453125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 488973,
+      "clockUtc": "2026-10-30T00:26:43.135Z",
+      "kind": "ability-intent",
+      "target": "^Fire Jab",
+      "detail": {
+        "x": 13,
+        "y": 6
+      }
+    },
+    {
+      "atMs": 490591,
+      "clockUtc": "2026-10-30T00:26:44.753Z",
+      "kind": "mouse-click",
+      "target": "Fire Jab\n1 AP",
+      "detail": {
+        "x": 541,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Fire Jab1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 494061,
+      "clockUtc": "2026-10-30T00:26:48.223Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 753.4375,
+          "y": 532.3307792467949
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 496304,
+      "clockUtc": "2026-10-30T00:26:50.466Z",
+      "kind": "mouse-click",
+      "target": "Cancel",
+      "detail": {
+        "x": 1043.375,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Cancel"
+        }
+      }
+    },
+    {
+      "atMs": 496735,
+      "clockUtc": "2026-10-30T00:26:50.897Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 498663,
+      "clockUtc": "2026-10-30T00:26:52.825Z",
+      "kind": "mouse-click",
+      "target": "End turn\n5 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn5 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 500640,
+      "clockUtc": "2026-10-30T00:26:54.802Z",
+      "kind": "mouse-click",
+      "target": "End turn\n5 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 669.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn5 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 514883,
+      "clockUtc": "2026-10-30T00:27:09.045Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 516101,
+      "clockUtc": "2026-10-30T00:27:10.263Z",
+      "kind": "party-turn",
+      "target": "bo",
+      "detail": {
+        "turn": 9,
+        "pos": {
+          "x": 9,
+          "y": 8
+        }
+      }
+    },
+    {
+      "atMs": 516305,
+      "clockUtc": "2026-10-30T00:27:10.467Z",
+      "kind": "ability-intent",
+      "target": "^Rock Throw",
+      "detail": {
+        "x": 10,
+        "y": 7
+      }
+    },
+    {
+      "atMs": 518682,
+      "clockUtc": "2026-10-30T00:27:12.844Z",
+      "kind": "mouse-click",
+      "target": "Rock Throw\n1 AP",
+      "detail": {
+        "x": 547.015625,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Rock Throw1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 522739,
+      "clockUtc": "2026-10-30T00:27:16.901Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 10,
+          "y": 7
+        },
+        "point": {
+          "x": 602.1875,
+          "y": 494.50863882211536
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 525347,
+      "clockUtc": "2026-10-30T00:27:19.509Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 527692,
+      "clockUtc": "2026-10-30T00:27:21.854Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 529811,
+      "clockUtc": "2026-10-30T00:27:23.973Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 532656,
+      "clockUtc": "2026-10-30T00:27:26.818Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 544748,
+      "clockUtc": "2026-10-30T00:27:38.910Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 545975,
+      "clockUtc": "2026-10-30T00:27:40.137Z",
+      "kind": "party-turn",
+      "target": "bo",
+      "detail": {
+        "turn": 10,
+        "pos": {
+          "x": 9,
+          "y": 8
+        }
+      }
+    },
+    {
+      "atMs": 546108,
+      "clockUtc": "2026-10-30T00:27:40.270Z",
+      "kind": "ability-intent",
+      "target": "^Rock Throw",
+      "detail": {
+        "x": 10,
+        "y": 7
+      }
+    },
+    {
+      "atMs": 547988,
+      "clockUtc": "2026-10-30T00:27:42.150Z",
+      "kind": "mouse-click",
+      "target": "Rock Throw\n1 AP",
+      "detail": {
+        "x": 547.015625,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Rock Throw1 AP"
+        }
+      }
+    },
+    {
+      "atMs": 552487,
+      "clockUtc": "2026-10-30T00:27:46.649Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 10,
+          "y": 7
+        },
+        "point": {
+          "x": 602.1875,
+          "y": 494.50863882211536
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 554939,
+      "clockUtc": "2026-10-30T00:27:49.101Z",
+      "kind": "mouse-click",
+      "target": "Confirm",
+      "detail": {
+        "x": 1185.0390625,
+        "y": 746,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Confirm"
+        }
+      }
+    },
+    {
+      "atMs": 561660,
+      "clockUtc": "2026-10-30T00:27:55.822Z",
+      "kind": "end-turn-intent",
+      "target": "End turn"
+    },
+    {
+      "atMs": 564470,
+      "clockUtc": "2026-10-30T00:27:58.632Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 566934,
+      "clockUtc": "2026-10-30T00:28:01.096Z",
+      "kind": "mouse-click",
+      "target": "End turn\n4 AP left",
+      "detail": {
+        "x": 1211,
+        "y": 747.109375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "End turn4 AP left"
+        }
+      }
+    },
+    {
+      "atMs": 578023,
+      "clockUtc": "2026-10-30T00:28:12.185Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 639.984375,
+        "y": 532.9375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 579544,
+      "clockUtc": "2026-10-30T00:28:13.706Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 691.5625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 581128,
+      "clockUtc": "2026-10-30T00:28:15.290Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 582735,
+      "clockUtc": "2026-10-30T00:28:16.897Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 585870,
+      "clockUtc": "2026-10-30T00:28:20.032Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 588543,
+      "clockUtc": "2026-10-30T00:28:22.705Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1028.09375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 590947,
+      "clockUtc": "2026-10-30T00:28:25.109Z",
+      "kind": "mouse-click",
+      "target": "Map",
+      "detail": {
+        "x": 1018.984375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "svg",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 591433,
+      "clockUtc": "2026-10-30T00:28:25.595Z",
+      "kind": "mouse-click",
+      "target": "East \u2192 Quarry Gate",
+      "detail": {
+        "x": 639.9999847412109,
+        "y": 593.9229125976562,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "East \u2192 Quarry Gate"
+        }
+      }
+    },
+    {
+      "atMs": 604888,
+      "clockUtc": "2026-10-30T00:28:39.050Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 1,
+          "y": 5
+        },
+        "destination": {
+          "x": 8,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 4,
+          "y": 5
+        },
+        "path": [
+          {
+            "x": 2,
+            "y": 5
+          },
+          {
+            "x": 3,
+            "y": 5
+          },
+          {
+            "x": 4,
+            "y": 5
+          },
+          {
+            "x": 5,
+            "y": 5
+          },
+          {
+            "x": 6,
+            "y": 5
+          },
+          {
+            "x": 7,
+            "y": 5
+          },
+          {
+            "x": 8,
+            "y": 5
+          }
+        ],
+        "label": "The quarry watch"
+      }
+    },
+    {
+      "atMs": 605557,
+      "clockUtc": "2026-10-30T00:28:39.719Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 4,
+          "y": 5
+        },
+        "point": {
+          "x": 1024,
+          "y": 550.1788453565506
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 609837,
+      "clockUtc": "2026-10-30T00:28:43.999Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 4,
+          "y": 5
+        },
+        "destination": {
+          "x": 8,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 7,
+          "y": 5
+        },
+        "path": [
+          {
+            "x": 5,
+            "y": 5
+          },
+          {
+            "x": 6,
+            "y": 5
+          },
+          {
+            "x": 7,
+            "y": 5
+          },
+          {
+            "x": 8,
+            "y": 5
+          }
+        ],
+        "label": "The quarry watch"
+      }
+    },
+    {
+      "atMs": 610606,
+      "clockUtc": "2026-10-30T00:28:44.768Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 7,
+          "y": 5
+        },
+        "point": {
+          "x": 1025,
+          "y": 551.1792081260364
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 613743,
+      "clockUtc": "2026-10-30T00:28:47.905Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 7,
+          "y": 5
+        },
+        "destination": {
+          "x": 8,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 8,
+          "y": 5
+        },
+        "path": [
+          {
+            "x": 8,
+            "y": 5
+          }
+        ],
+        "label": "The quarry watch"
+      }
+    },
+    {
+      "atMs": 614701,
+      "clockUtc": "2026-10-30T00:28:48.863Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 8,
+          "y": 5
+        },
+        "point": {
+          "x": 768,
+          "y": 423.1327736318408
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 617222,
+      "clockUtc": "2026-10-30T00:28:51.384Z",
+      "kind": "mouse-click",
+      "target": "BO \u00b7 EARTHBENDING\nLet the earthbender speak \u2014 these are quarry workers\nAsk about the unsafe galleries. An earthbender may get Ruon to open the gate without a fight.",
+      "detail": {
+        "x": 720,
+        "y": 717.1953125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "STRONG",
+          "hitLabel": "Let the earthbender speak \u2014 these are quarry workers"
+        }
+      }
+    },
+    {
+      "atMs": 618986,
+      "clockUtc": "2026-10-30T00:28:53.148Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 620606,
+      "clockUtc": "2026-10-30T00:28:54.768Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 691.5625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 622186,
+      "clockUtc": "2026-10-30T00:28:56.348Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 623064,
+      "clockUtc": "2026-10-30T00:28:57.226Z",
+      "kind": "mouse-click",
+      "target": "Learn Fire Blast",
+      "detail": {
+        "x": 461.5,
+        "y": 594.015625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Learn Fire Blast"
+        }
+      }
+    },
+    {
+      "atMs": 623187,
+      "clockUtc": "2026-10-30T00:28:57.349Z",
+      "kind": "mouse-click",
+      "target": "Learn Water Pull",
+      "detail": {
+        "x": 463.9977569580078,
+        "y": 598.6235046386719,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Learn Water Pull"
+        }
+      }
+    },
+    {
+      "atMs": 623372,
+      "clockUtc": "2026-10-30T00:28:57.534Z",
+      "kind": "mouse-click",
+      "target": "Learn Earth Wall",
+      "detail": {
+        "x": 465.0699920654297,
+        "y": 553.2850036621094,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Learn Earth Wall"
+        }
+      }
+    },
+    {
+      "atMs": 625088,
+      "clockUtc": "2026-10-30T00:28:59.250Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 627050,
+      "clockUtc": "2026-10-30T00:29:01.212Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 691.5625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 628929,
+      "clockUtc": "2026-10-30T00:29:03.091Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 691.5625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 630867,
+      "clockUtc": "2026-10-30T00:29:05.029Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 632761,
+      "clockUtc": "2026-10-30T00:29:06.923Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 691.5625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 633469,
+      "clockUtc": "2026-10-30T00:29:07.631Z",
+      "kind": "mouse-click",
+      "target": "Trade him to Jin for the quarry key\nAccept Jin\u2019s payment and the inner gate key. Her crew will let you pass the cutting, but Gao will hear about the trade.",
+      "detail": {
+        "x": 780,
+        "y": 663.765625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "SPAN",
+          "hitLabel": "Accept Jin\u2019s payment and the inner gate key. Her crew will let you pass the cutt"
+        }
+      }
+    },
+    {
+      "atMs": 635351,
+      "clockUtc": "2026-10-30T00:29:09.513Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 637900,
+      "clockUtc": "2026-10-30T00:29:12.062Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 640056,
+      "clockUtc": "2026-10-30T00:29:14.218Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 706.28125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 642174,
+      "clockUtc": "2026-10-30T00:29:16.336Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 780,
+        "y": 691.5625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "DIV",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 648295,
+      "clockUtc": "2026-10-30T00:29:22.457Z",
+      "kind": "mouse-click",
+      "target": "Map",
+      "detail": {
+        "x": 1018.984375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "svg",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 649111,
+      "clockUtc": "2026-10-30T00:29:23.273Z",
+      "kind": "mouse-click",
+      "target": "East \u2192 The Cutting",
+      "detail": {
+        "x": 640,
+        "y": 591.0049438476562,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "East \u2192 The Cutting"
+        }
+      }
+    },
+    {
+      "atMs": 662202,
+      "clockUtc": "2026-10-30T00:29:36.364Z",
+      "kind": "mouse-click",
+      "target": "Map",
+      "detail": {
+        "x": 1018.984375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "svg",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 662782,
+      "clockUtc": "2026-10-30T00:29:36.944Z",
+      "kind": "mouse-click",
+      "target": "East \u2192 Quarry Floor",
+      "detail": {
+        "x": 639.9999694824219,
+        "y": 592.1400451660156,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "East \u2192 Quarry Floor"
+        }
+      }
+    },
+    {
+      "atMs": 681948,
+      "clockUtc": "2026-10-30T00:29:56.110Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 1,
+          "y": 5
+        },
+        "destination": {
+          "x": 17,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 4,
+          "y": 5
+        },
+        "path": [
+          {
+            "x": 2,
+            "y": 5
+          },
+          {
+            "x": 3,
+            "y": 5
+          },
+          {
+            "x": 4,
+            "y": 5
+          },
+          {
+            "x": 5,
+            "y": 5
+          },
+          {
+            "x": 6,
+            "y": 5
+          },
+          {
+            "x": 7,
+            "y": 5
+          },
+          {
+            "x": 8,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 5
+          }
+        ],
+        "label": "The mecha-driller"
+      }
+    },
+    {
+      "atMs": 690395,
+      "clockUtc": "2026-10-30T00:30:04.557Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 4,
+          "y": 5
+        },
+        "point": {
+          "x": 1024,
+          "y": 550.1788453565506
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 695841,
+      "clockUtc": "2026-10-30T00:30:10.003Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 4,
+          "y": 5
+        },
+        "destination": {
+          "x": 17,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 7,
+          "y": 5
+        },
+        "path": [
+          {
+            "x": 5,
+            "y": 5
+          },
+          {
+            "x": 6,
+            "y": 5
+          },
+          {
+            "x": 7,
+            "y": 5
+          },
+          {
+            "x": 8,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 5
+          }
+        ],
+        "label": "The mecha-driller"
+      }
+    },
+    {
+      "atMs": 696431,
+      "clockUtc": "2026-10-30T00:30:10.593Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 7,
+          "y": 5
+        },
+        "point": {
+          "x": 1025,
+          "y": 551.1792081260364
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 699342,
+      "clockUtc": "2026-10-30T00:30:13.504Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 7,
+          "y": 5
+        },
+        "destination": {
+          "x": 17,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 9,
+          "y": 5
+        },
+        "path": [
+          {
+            "x": 8,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 5
+          }
+        ],
+        "label": "The mecha-driller"
+      }
+    },
+    {
+      "atMs": 700067,
+      "clockUtc": "2026-10-30T00:30:14.229Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 9,
+          "y": 5
+        },
+        "point": {
+          "x": 896,
+          "y": 487.15599087893867
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 703942,
+      "clockUtc": "2026-10-30T00:30:18.104Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 705897,
+      "clockUtc": "2026-10-30T00:30:20.059Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 707835,
+      "clockUtc": "2026-10-30T00:30:21.997Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 868.09375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 710942,
+      "clockUtc": "2026-10-30T00:30:25.104Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 713485,
+      "clockUtc": "2026-10-30T00:30:27.647Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1028.09375,
+        "y": 652.515625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 716407,
+      "clockUtc": "2026-10-30T00:30:30.569Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 717400,
+      "clockUtc": "2026-10-30T00:30:31.562Z",
+      "kind": "optional-control-unavailable",
+      "target": "Show enemies",
+      "detail": {
+        "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+        "reason": "The current main branch has no Show enemies control; the live boss is focused through its visible turn-strip chip."
+      }
+    },
+    {
+      "atMs": 717944,
+      "clockUtc": "2026-10-30T00:30:32.106Z",
+      "kind": "mouse-click",
+      "target": "Focus Grumbler",
+      "detail": {
+        "x": 259.078125,
+        "y": 109.265625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 719427,
+      "clockUtc": "2026-10-30T00:30:33.589Z",
+      "kind": "mouse-click",
+      "target": "Focus Kaya",
+      "detail": {
+        "x": 40,
+        "y": 109.265625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 719851,
+      "clockUtc": "2026-10-30T00:30:34.013Z",
+      "kind": "planner-command",
+      "target": "move",
+      "detail": {
+        "unitId": "p0",
+        "path": [
+          {
+            "x": 2,
+            "y": 3
+          },
+          {
+            "x": 3,
+            "y": 3
+          },
+          {
+            "x": 4,
+            "y": 3
+          },
+          {
+            "x": 5,
+            "y": 3
+          }
+        ],
+        "destination": {
+          "x": 5,
+          "y": 3
+        }
+      }
+    },
+    {
+      "atMs": 723021,
+      "clockUtc": "2026-10-30T00:30:37.183Z",
+      "kind": "planner-command",
+      "target": "endTurn",
+      "detail": {
+        "unitId": "p0"
+      }
+    },
+    {
+      "atMs": 724677,
+      "clockUtc": "2026-10-30T00:30:38.839Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 728575,
+      "clockUtc": "2026-10-30T00:30:42.737Z",
+      "kind": "planner-command",
+      "target": "useAbility",
+      "detail": {
+        "unitId": "p1",
+        "abilityId": "healing_stream",
+        "target": {
+          "x": 5,
+          "y": 3
+        }
+      }
+    },
+    {
+      "atMs": 730818,
+      "clockUtc": "2026-10-30T00:30:44.980Z",
+      "kind": "planner-command",
+      "target": "move",
+      "detail": {
+        "unitId": "p1",
+        "path": [
+          {
+            "x": 4,
+            "y": 4
+          },
+          {
+            "x": 5,
+            "y": 4
+          },
+          {
+            "x": 6,
+            "y": 4
+          },
+          {
+            "x": 7,
+            "y": 4
+          }
+        ],
+        "destination": {
+          "x": 7,
+          "y": 4
+        }
+      }
+    },
+    {
+      "atMs": 734006,
+      "clockUtc": "2026-10-30T00:30:48.168Z",
+      "kind": "planner-command",
+      "target": "useAbility",
+      "detail": {
+        "unitId": "p1",
+        "abilityId": "water_whip",
+        "target": {
+          "x": 12,
+          "y": 1
+        }
+      }
+    },
+    {
+      "atMs": 736858,
+      "clockUtc": "2026-10-30T00:30:51.020Z",
+      "kind": "planner-command",
+      "target": "useAbility",
+      "detail": {
+        "unitId": "p1",
+        "abilityId": "water_whip",
+        "target": {
+          "x": 12,
+          "y": 1
+        }
+      }
+    },
+    {
+      "atMs": 739800,
+      "clockUtc": "2026-10-30T00:30:53.962Z",
+      "kind": "planner-command",
+      "target": "endTurn",
+      "detail": {
+        "unitId": "p1"
+      }
+    },
+    {
+      "atMs": 741927,
+      "clockUtc": "2026-10-30T00:30:56.089Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 747670,
+      "clockUtc": "2026-10-30T00:31:01.832Z",
+      "kind": "planner-command",
+      "target": "move",
+      "detail": {
+        "unitId": "p2",
+        "path": [
+          {
+            "x": 2,
+            "y": 5
+          },
+          {
+            "x": 3,
+            "y": 5
+          },
+          {
+            "x": 4,
+            "y": 5
+          },
+          {
+            "x": 5,
+            "y": 5
+          }
+        ],
+        "destination": {
+          "x": 5,
+          "y": 5
+        }
+      }
+    },
+    {
+      "atMs": 750987,
+      "clockUtc": "2026-10-30T00:31:05.149Z",
+      "kind": "planner-command",
+      "target": "endTurn",
+      "detail": {
+        "unitId": "p2"
+      }
+    },
+    {
+      "atMs": 753136,
+      "clockUtc": "2026-10-30T00:31:07.298Z",
+      "kind": "mouse-click",
+      "target": "I'm ready",
+      "detail": {
+        "x": 640,
+        "y": 556.53125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "I'm ready"
+        }
+      }
+    },
+    {
+      "atMs": 753880,
+      "clockUtc": "2026-10-30T00:31:08.042Z",
+      "kind": "review-shortcut",
+      "target": "enc_grumbler",
+      "detail": {
+        "afterPartyActivations": 3,
+        "method": "stage-living-enemies-to-1-hp",
+        "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+      }
+    },
+    {
+      "atMs": 755352,
+      "clockUtc": "2026-10-30T00:31:09.514Z",
+      "kind": "planner-command",
+      "target": "useAbility",
+      "detail": {
+        "unitId": "p0",
+        "abilityId": "fire_blast",
+        "target": {
+          "x": 11,
+          "y": 6
+        }
+      }
+    },
+    {
+      "atMs": 758561,
+      "clockUtc": "2026-10-30T00:31:12.723Z",
+      "kind": "planner-command",
+      "target": "useAbility",
+      "detail": {
+        "unitId": "p0",
+        "abilityId": "fire_blast",
+        "target": {
+          "x": 11,
+          "y": 1
+        }
+      }
+    },
+    {
+      "atMs": 761545,
+      "clockUtc": "2026-10-30T00:31:15.707Z",
+      "kind": "planner-command",
+      "target": "endTurn",
+      "detail": {
+        "unitId": "p0"
+      }
+    },
+    {
+      "atMs": 764384,
+      "clockUtc": "2026-10-30T00:31:18.546Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 639.984375,
+        "y": 532.9375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 766645,
+      "clockUtc": "2026-10-30T00:31:20.807Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 768581,
+      "clockUtc": "2026-10-30T00:31:22.743Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 770568,
+      "clockUtc": "2026-10-30T00:31:24.730Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 772515,
+      "clockUtc": "2026-10-30T00:31:26.677Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 887.9609375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 774484,
+      "clockUtc": "2026-10-30T00:31:28.646Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 868.09375,
+        "y": 739,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 775348,
+      "clockUtc": "2026-10-30T00:31:29.510Z",
+      "kind": "mouse-click",
+      "target": "Continue exploring",
+      "detail": {
+        "x": 160,
+        "y": 723.75,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue exploring"
+        }
+      }
+    },
+    {
+      "atMs": 776788,
+      "clockUtc": "2026-10-30T00:31:30.950Z",
+      "kind": "mouse-click",
+      "target": "Map",
+      "detail": {
+        "x": 1018.984375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "svg",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 777237,
+      "clockUtc": "2026-10-30T00:31:31.399Z",
+      "kind": "mouse-click",
+      "target": "West \u2192 The Cutting",
+      "detail": {
+        "x": 640,
+        "y": 575.567138671875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "West \u2192 The Cutting"
+        }
+      }
+    },
+    {
+      "atMs": 785231,
+      "clockUtc": "2026-10-30T00:31:39.393Z",
+      "kind": "mouse-click",
+      "target": "Map",
+      "detail": {
+        "x": 1018.984375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "svg",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 785492,
+      "clockUtc": "2026-10-30T00:31:39.654Z",
+      "kind": "mouse-click",
+      "target": "West \u2192 Quarry Gate",
+      "detail": {
+        "x": 639.9999847412109,
+        "y": 536.3800048828125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "West \u2192 Quarry Gate"
+        }
+      }
+    },
+    {
+      "atMs": 801472,
+      "clockUtc": "2026-10-30T00:31:55.634Z",
+      "kind": "mouse-click",
+      "target": "Map",
+      "detail": {
+        "x": 1018.984375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "svg",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 801801,
+      "clockUtc": "2026-10-30T00:31:55.963Z",
+      "kind": "mouse-click",
+      "target": "West \u2192 Forest Road",
+      "detail": {
+        "x": 640.0000305175781,
+        "y": 533.3649444580078,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "West \u2192 Forest Road"
+        }
+      }
+    },
+    {
+      "atMs": 818771,
+      "clockUtc": "2026-10-30T00:32:12.933Z",
+      "kind": "mouse-click",
+      "target": "Map",
+      "detail": {
+        "x": 1018.984375,
+        "y": 730.609375,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "svg",
+          "hitLabel": ""
+        }
+      }
+    },
+    {
+      "atMs": 819103,
+      "clockUtc": "2026-10-30T00:32:13.265Z",
+      "kind": "mouse-click",
+      "target": "West \u2192 Ba Dan Village",
+      "detail": {
+        "x": 640,
+        "y": 534.7580108642578,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "West \u2192 Ba Dan Village"
+        }
+      }
+    },
+    {
+      "atMs": 834369,
+      "clockUtc": "2026-10-30T00:32:28.531Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 837267,
+      "clockUtc": "2026-10-30T00:32:31.429Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1028.09375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 840163,
+      "clockUtc": "2026-10-30T00:32:34.325Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 23,
+          "y": 7
+        },
+        "destination": {
+          "x": 16,
+          "y": 6
+        },
+        "visibleTarget": {
+          "x": 20,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 22,
+            "y": 7
+          },
+          {
+            "x": 21,
+            "y": 7
+          },
+          {
+            "x": 20,
+            "y": 7
+          },
+          {
+            "x": 19,
+            "y": 7
+          },
+          {
+            "x": 18,
+            "y": 7
+          },
+          {
+            "x": 17,
+            "y": 7
+          }
+        ],
+        "label": "Gate Guard Dorin"
+      }
+    },
+    {
+      "atMs": 841236,
+      "clockUtc": "2026-10-30T00:32:35.398Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 20,
+          "y": 7
+        },
+        "point": {
+          "x": 270,
+          "y": 174.04244402985074
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 845474,
+      "clockUtc": "2026-10-30T00:32:39.636Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 20,
+          "y": 7
+        },
+        "destination": {
+          "x": 16,
+          "y": 6
+        },
+        "visibleTarget": {
+          "x": 17,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 19,
+            "y": 7
+          },
+          {
+            "x": 18,
+            "y": 7
+          },
+          {
+            "x": 17,
+            "y": 7
+          }
+        ],
+        "label": "Gate Guard Dorin"
+      }
+    },
+    {
+      "atMs": 846383,
+      "clockUtc": "2026-10-30T00:32:40.545Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 17,
+          "y": 7
+        },
+        "point": {
+          "x": 256,
+          "y": 166.03954187396351
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 849597,
+      "clockUtc": "2026-10-30T00:32:43.759Z",
+      "kind": "visible-npc-tile",
+      "target": "guard_dorin",
+      "detail": {
+        "name": "Gate Guard Dorin",
+        "tile": {
+          "x": 16,
+          "y": 6
+        }
+      }
+    },
+    {
+      "atMs": 851049,
+      "clockUtc": "2026-10-30T00:32:45.211Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 16,
+          "y": 6
+        },
+        "point": {
+          "x": 640,
+          "y": 230.06275912106136
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 854057,
+      "clockUtc": "2026-10-30T00:32:48.219Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 608.171875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 871180,
+      "clockUtc": "2026-10-30T00:33:05.342Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 608.171875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 875169,
+      "clockUtc": "2026-10-30T00:33:09.331Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1028.09375,
+        "y": 608.171875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 877758,
+      "clockUtc": "2026-10-30T00:33:11.920Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 17,
+          "y": 7
+        },
+        "destination": {
+          "x": 11,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 14,
+          "y": 7
+        },
+        "path": [
+          {
+            "x": 16,
+            "y": 7
+          },
+          {
+            "x": 15,
+            "y": 7
+          },
+          {
+            "x": 14,
+            "y": 7
+          },
+          {
+            "x": 13,
+            "y": 7
+          },
+          {
+            "x": 13,
+            "y": 6
+          },
+          {
+            "x": 12,
+            "y": 5
+          }
+        ],
+        "label": "Elder Mira"
+      }
+    },
+    {
+      "atMs": 879747,
+      "clockUtc": "2026-10-30T00:33:13.909Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 14,
+          "y": 7
+        },
+        "point": {
+          "x": 256,
+          "y": 166.03954187396351
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 883502,
+      "clockUtc": "2026-10-30T00:33:17.664Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 14,
+          "y": 7
+        },
+        "destination": {
+          "x": 11,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 13,
+          "y": 6
+        },
+        "path": [
+          {
+            "x": 13,
+            "y": 7
+          },
+          {
+            "x": 13,
+            "y": 6
+          },
+          {
+            "x": 12,
+            "y": 5
+          }
+        ],
+        "label": "Elder Mira"
+      }
+    },
+    {
+      "atMs": 886080,
+      "clockUtc": "2026-10-30T00:33:20.242Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 13,
+          "y": 6
+        },
+        "point": {
+          "x": 639,
+          "y": 230.06275912106136
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 888947,
+      "clockUtc": "2026-10-30T00:33:23.109Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 13,
+          "y": 6
+        },
+        "destination": {
+          "x": 11,
+          "y": 5
+        },
+        "visibleTarget": {
+          "x": 12,
+          "y": 5
+        },
+        "path": [
+          {
+            "x": 12,
+            "y": 5
+          }
+        ],
+        "label": "Elder Mira"
+      }
+    },
+    {
+      "atMs": 889794,
+      "clockUtc": "2026-10-30T00:33:23.956Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 12,
+          "y": 5
+        },
+        "point": {
+          "x": 641,
+          "y": 230.06275912106136
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 893065,
+      "clockUtc": "2026-10-30T00:33:27.227Z",
+      "kind": "visible-npc-tile",
+      "target": "elder_mira",
+      "detail": {
+        "name": "Elder Mira",
+        "tile": {
+          "x": 11,
+          "y": 5
+        }
+      }
+    },
+    {
+      "atMs": 894050,
+      "clockUtc": "2026-10-30T00:33:28.212Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 11,
+          "y": 5
+        },
+        "point": {
+          "x": 512,
+          "y": 294.0859763681592
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 896867,
+      "clockUtc": "2026-10-30T00:33:31.029Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 629.328125,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 899608,
+      "clockUtc": "2026-10-30T00:33:33.770Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 652.515625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 903545,
+      "clockUtc": "2026-10-30T00:33:37.707Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1028.09375,
+        "y": 652.515625,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    },
+    {
+      "atMs": 905002,
+      "clockUtc": "2026-10-30T00:33:39.164Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 12,
+          "y": 5
+        },
+        "destination": {
+          "x": 9,
+          "y": 4
+        },
+        "visibleTarget": {
+          "x": 11,
+          "y": 4
+        },
+        "path": [
+          {
+            "x": 11,
+            "y": 4
+          },
+          {
+            "x": 10,
+            "y": 3
+          }
+        ],
+        "label": "Gao the Shopkeeper"
+      }
+    },
+    {
+      "atMs": 905982,
+      "clockUtc": "2026-10-30T00:33:40.144Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 11,
+          "y": 4
+        },
+        "point": {
+          "x": 640,
+          "y": 230.06275912106136
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 911948,
+      "clockUtc": "2026-10-30T00:33:46.110Z",
+      "kind": "walk-plan",
+      "target": "walkTo",
+      "detail": {
+        "from": {
+          "x": 11,
+          "y": 4
+        },
+        "destination": {
+          "x": 9,
+          "y": 4
+        },
+        "visibleTarget": {
+          "x": 10,
+          "y": 3
+        },
+        "path": [
+          {
+            "x": 10,
+            "y": 3
+          }
+        ],
+        "label": "Gao the Shopkeeper"
+      }
+    },
+    {
+      "atMs": 912964,
+      "clockUtc": "2026-10-30T00:33:47.126Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 10,
+          "y": 3
+        },
+        "point": {
+          "x": 640,
+          "y": 230.06275912106136
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 914724,
+      "clockUtc": "2026-10-30T00:33:48.886Z",
+      "kind": "visible-npc-tile",
+      "target": "shopkeeper_gao",
+      "detail": {
+        "name": "Gao the Shopkeeper",
+        "tile": {
+          "x": 9,
+          "y": 4
+        }
+      }
+    },
+    {
+      "atMs": 915990,
+      "clockUtc": "2026-10-30T00:33:50.152Z",
+      "kind": "mouse-tile",
+      "target": "map-canvas",
+      "detail": {
+        "tile": {
+          "x": 9,
+          "y": 4
+        },
+        "point": {
+          "x": 384,
+          "y": 354.1077425373134
+        },
+        "hitTest": {
+          "inCanvas": true,
+          "inViewport": true,
+          "receivesTap": true,
+          "hitTag": "CANVAS",
+          "hitClass": "map-canvas"
+        }
+      }
+    },
+    {
+      "atMs": 919694,
+      "clockUtc": "2026-10-30T00:33:53.856Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 608.171875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 922473,
+      "clockUtc": "2026-10-30T00:33:56.635Z",
+      "kind": "mouse-click",
+      "target": "Next",
+      "detail": {
+        "x": 1047.9609375,
+        "y": 608.171875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Next"
+        }
+      }
+    },
+    {
+      "atMs": 925091,
+      "clockUtc": "2026-10-30T00:33:59.253Z",
+      "kind": "mouse-click",
+      "target": "Continue",
+      "detail": {
+        "x": 1028.09375,
+        "y": 608.171875,
+        "hitTest": {
+          "inViewport": true,
+          "visible": true,
+          "receivesTap": true,
+          "hitTag": "BUTTON",
+          "hitLabel": "Continue"
+        }
+      }
+    }
+  ],
+  "shortcuts": [
+    {
+      "encounterId": "enc_grumbler",
+      "afterPartyActivations": 3,
+      "atMs": 753879,
+      "clockUtc": "2026-10-30T00:31:08.041Z",
+      "method": "stage-living-enemies-to-1-hp",
+      "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+    }
+  ],
+  "errors": []
+}

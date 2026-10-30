@@ -1,0 +1,48 @@
+{
+  "custody": "trade",
+  "project": "desktop-canvas",
+  "fixtureCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+  "visibleBuild": "v0.2.11 \u00b7 build 8071f73",
+  "beatCount": 83,
+  "shortcuts": [
+    {
+      "encounterId": "enc_grumbler",
+      "afterPartyActivations": 3,
+      "atMs": 753879,
+      "clockUtc": "2026-10-30T00:31:08.041Z",
+      "method": "stage-living-enemies-to-1-hp",
+      "reason": "Three party activations completed; remaining enemy HP is staged to 1 for route continuity, then the real reducer resolves the fight."
+    }
+  ],
+  "optionalControls": [
+    {
+      "atMs": 717400,
+      "clockUtc": "2026-10-30T00:30:31.562Z",
+      "kind": "optional-control-unavailable",
+      "target": "Show enemies",
+      "detail": {
+        "sourceCommit": "8071f7343b649da8844ae705e8f8d55eb4be8051",
+        "reason": "The current main branch has no Show enemies control; the live boss is focused through its visible turn-strip chip."
+      }
+    }
+  ],
+  "video": "quarry-trade-desktop-canvas.mp4",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 960,
+        "height": 600,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "927.250000",
+      "size": "31289610"
+    }
+  },
+  "rawVideoSha256": "a5cf84f1a58cefbf2c5951d1842cf5919021cd794155366656a1abdcd84438c9",
+  "rawBeatManifestSha256": "8b9d605842ef790918ef1047b2a78adda7c59dfe4adaad3aac16da1b6ca84168"
+}
