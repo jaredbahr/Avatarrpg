@@ -48,6 +48,8 @@ export interface PixelLine extends PixelOperationBase {
 export interface PixelPolygon extends PixelOperationBase {
   readonly kind: 'polygon';
   readonly points: readonly G1Point[];
+  /** Optional cut-outs; fill pixels inside these loops stay transparent. */
+  readonly holes?: readonly (readonly G1Point[])[];
   readonly outline?: {
     readonly color: string;
     readonly width: 1 | 2;
@@ -105,6 +107,15 @@ export interface PixelMarkChunk {
   readonly clip: G1Bounds;
 }
 
+export interface PixelMarkChunkPlan {
+  /** Exact source-relative bounds used for a stable raster key. */
+  readonly bounds: G1Bounds;
+  /** The disjoint part of this chunk inside the visible clip. */
+  readonly clip: G1Bounds;
+  /** Stable key computed before any CPU mask is requested. */
+  readonly key: string;
+}
+
 interface ParsedColor {
   readonly r: number;
   readonly g: number;
@@ -149,6 +160,23 @@ export function* pixelMarkChunks(
   maxSide = PIXEL_MARK_MAX_SIDE,
   cache?: PixelMarkRasterCache,
 ): Generator<PixelMarkChunk> {
+  for (const plan of pixelMarkChunkPlans(spec, visible, maxSide)) {
+    yield {
+      raster: cache
+        ? cache.getChunk(spec, plan.bounds)
+        : rasterizeValidated(spec, plan.bounds, plan.key),
+      clip: plan.clip,
+    };
+  }
+}
+
+/** Plan stable visible chunks so a renderer can reuse a retained source by key. */
+export function* pixelMarkChunkPlans(
+  spec: PixelMarkSpec,
+  /** Visible clip in the same anchor-relative G1 coordinates as `spec.bounds`. */
+  visible: G1Bounds,
+  maxSide = PIXEL_MARK_MAX_SIDE,
+): Generator<PixelMarkChunkPlan> {
   validateSpec(spec, true);
   validateLargeBounds(visible, 'visible');
   integer(maxSide, 'chunk side');
@@ -187,14 +215,9 @@ export function* pixelMarkChunks(
           Math.min(bounds.top + bounds.height, visibleBottom) - Math.max(bounds.top, visible.top),
       };
       if (clip.width <= 0 || clip.height <= 0) continue;
-      yield { raster: cache ? cache.getChunk(spec, bounds) : rasterizeChunk(spec, bounds), clip };
+      yield { bounds, clip, key: canonicalKey({ ...spec, bounds }) };
     }
   }
-}
-
-function rasterizeChunk(spec: PixelMarkSpec, bounds: G1Bounds): PixelMarkRaster {
-  const chunkSpec = { ...spec, bounds };
-  return rasterizeValidated(spec, bounds, canonicalKey(chunkSpec));
 }
 
 /** Stable identity for a raster source, available before its CPU/GPU upload. */
@@ -224,7 +247,7 @@ function rasterizeValidated(spec: PixelMarkSpec, bounds: G1Bounds, key: string):
       const path = linePixels(operation.points, operation.dash, bounds, operation.width);
       for (const point of path) stamp(point.x, point.y, operation.width, color, data, bounds);
     } else if (operation.kind === 'polygon') {
-      fillPolygon(operation.points, color, data, bounds);
+      fillPolygon(operation.points, operation.holes, color, data, bounds);
       if (operation.outline) {
         const outline = colors.get(operation.outline.color);
         if (!outline) throw new Error(`Unknown pixel-mark colour: ${operation.outline.color}`);
@@ -375,12 +398,26 @@ function validateSpec(spec: PixelMarkSpec, allowLargeBounds = false): void {
           throw new Error('Pixel-mark dash values must be positive, with a non-negative phase');
         }
       }
-    } else if (operation.kind === 'polygon' && operation.outline) {
-      if (!Object.hasOwn(spec.palette, operation.outline.color)) {
-        throw new Error(`Unknown pixel-mark colour: ${operation.outline.color}`);
+    } else if (operation.kind === 'polygon') {
+      for (const hole of operation.holes ?? []) {
+        if (hole.length < 3) throw new Error('A pixel-mark polygon hole needs three points');
+        if (hole.length > MAX_POINTS_PER_COMMAND)
+          throw new Error('Too many points in a pixel-mark polygon hole');
+        for (const point of hole) {
+          integer(point.x, 'hole point.x');
+          integer(point.y, 'hole point.y');
+          if (point.x < left || point.x > right || point.y < top || point.y > bottom) {
+            throw new Error('Pixel-mark hole geometry falls outside its integer bounds');
+          }
+        }
       }
-      validateWidth(operation.outline.width);
-      validateStrokeFits(operation.points, operation.outline.width, spec.bounds);
+      if (operation.outline) {
+        if (!Object.hasOwn(spec.palette, operation.outline.color)) {
+          throw new Error(`Unknown pixel-mark colour: ${operation.outline.color}`);
+        }
+        validateWidth(operation.outline.width);
+        validateStrokeFits(operation.points, operation.outline.width, spec.bounds);
+      }
     } else if (operation.kind === 'circle') {
       integer(operation.radius, 'circle.radius');
       if (operation.radius < 1) throw new Error('Pixel-mark circle radius must be positive');
@@ -488,6 +525,7 @@ function canonicalKey(spec: PixelMarkSpec): string {
         'polygon',
         operation.color,
         operation.points.map(({ x, y }) => [x, y]),
+        operation.holes?.map((hole) => hole.map(({ x, y }) => [x, y])) ?? null,
         operation.outline ? [operation.outline.color, operation.outline.width] : null,
       ];
     }
@@ -593,6 +631,7 @@ function linePixels(
 
 function fillPolygon(
   points: readonly G1Point[],
+  holes: readonly (readonly G1Point[])[] | undefined,
   color: ParsedColor,
   data: Uint8ClampedArray,
   bounds: G1Bounds,
@@ -603,7 +642,14 @@ function fillPolygon(
   const maxY = Math.min(bounds.top + bounds.height, Math.max(...points.map((point) => point.y)));
   for (let y = minY; y < maxY; y++) {
     for (let x = minX; x < maxX; x++) {
-      if (insidePolygon(x + 0.5, y + 0.5, points)) writePixel(x, y, color, data, bounds);
+      const px = x + 0.5;
+      const py = y + 0.5;
+      if (
+        insidePolygon(px, py, points) &&
+        !(holes ?? []).some((hole) => insidePolygon(px, py, hole))
+      ) {
+        writePixel(x, y, color, data, bounds);
+      }
     }
   }
 }

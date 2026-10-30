@@ -52,6 +52,9 @@ import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { drawArt } from '../pixelSampling';
+import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
+import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRendering';
+import { screenToBoardPixel, talkPipMark } from '../pixelOverlayGeometry';
 import { RevealLayer, revealBox, revealsUnit } from '../reveal';
 import type { RevealFigure } from '../reveal';
 import type { GroundingCanvas } from '../groundingLayer';
@@ -142,6 +145,7 @@ export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
 
   private ctx: CanvasRenderingContext2D;
+  private pixelMarkDrawables = new PixelMarkDrawableCache(pixelMarkCanvas);
   private healthBarStagger = new HealthBarStagger();
   /** Top edge of each unit's bar this frame (as drawn, staggered): floating numbers start above it. */
   private barTops = new Map<string, number>();
@@ -212,6 +216,7 @@ export class Canvas2DBackend implements RenderBackend {
   destroy(): void {
     sprites.clear();
     sheets.clear();
+    this.pixelMarkDrawables.clear();
     this.dropLiftLayer();
     this.sceneryShadow = null;
   }
@@ -221,6 +226,7 @@ export class Canvas2DBackend implements RenderBackend {
     this.pendingHealthBars = [];
     this.barTops.clear();
     const dpr = camera.viewport.dpr;
+    this.pixelMarkDrawables.beginFrame();
     view = {
       ...view,
       scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
@@ -496,6 +502,7 @@ export class Canvas2DBackend implements RenderBackend {
     this.drawFloaters(view, camera);
 
     ctx.restore();
+    this.pixelMarkDrawables.endFrame();
   }
 
   /* ---------------------------------------------------------------- */
@@ -1376,19 +1383,20 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
       if (npc.quiet) continue;
       // A small "talk" pip so a child can tell an NPC from scenery.
-      ctx.save();
-      ctx.globalAlpha = alpha * (0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2));
-      ctx.fillStyle = '#f0c674';
-      ctx.beginPath();
-      ctx.arc(
-        box.x + box.size * width * 0.5,
-        footY + lift - box.size * npcPipLift(npc.sprite, scale),
-        box.size * 0.07,
-        0,
-        Math.PI * 2,
-      );
-      ctx.fill();
-      ctx.restore();
+      const pulse = (Math.sin(view.time / 500) + 1) / 2;
+      const anchor = screenToBoardPixel(camera, {
+        x: box.x + box.size * width * 0.5,
+        y: footY + lift - box.size * npcPipLift(npc.sprite, scale),
+      });
+      const cue = talkPipMark(anchor, alpha * (0.55 + 0.35 * pulse));
+      for (const draw of resolvePixelMarkDraws(
+        camera,
+        [cue],
+        this.pixelMarkDrawables,
+        view.cameraNudge,
+      )) {
+        drawCanvasPixelMark(ctx, camera, draw, view.cameraNudge, 'screen');
+      }
     }
   }
   private drawProps(view: MapView, camera: Camera): void {
