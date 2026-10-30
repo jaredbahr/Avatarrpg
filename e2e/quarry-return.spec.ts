@@ -6,6 +6,7 @@ import { distance, reachable } from '../src/core/rules/grid';
 import { contactEffects } from '../src/core/rules/surfaces';
 import { RngCursor } from '../src/core/rng';
 import { BattleDraft } from '../src/core/state/battleDraft';
+import { appendDiagnosticToExistingError } from './diagnostic-error';
 import {
   completeAuthoredPlayback,
   resetStorage,
@@ -14,8 +15,60 @@ import {
   waitForIdle,
 } from './helpers';
 
+interface PhaseRecord {
+  readonly startedAt: number;
+  current: { name: string; startedAt: number } | null;
+  readonly completed: { name: string; elapsedMs: number }[];
+}
+
+const phases = new WeakMap<Page, PhaseRecord>();
+test.beforeEach(({ page }) => {
+  phases.set(page, { startedAt: Date.now(), current: null, completed: [] });
+});
+test.afterEach(({ page }, testInfo) => {
+  const record = phases.get(page);
+  phases.delete(page);
+  if (!record || testInfo.status === testInfo.expectedStatus || !testInfo.errors.length) return;
+  const totals: Record<string, { count: number; elapsedMs: number }> = {};
+  for (const phase of record.completed) {
+    const category = phase.name.split(' ')[0] ?? phase.name;
+    const total = (totals[category] ??= { count: 0, elapsedMs: 0 });
+    total.count++;
+    total.elapsedMs += phase.elapsedMs;
+  }
+  appendDiagnosticToExistingError(
+    testInfo,
+    'Quarry campaign timing',
+    JSON.stringify({
+      elapsedMs: Date.now() - record.startedAt,
+      current: record.current && {
+        name: record.current.name,
+        elapsedMs: Date.now() - record.current.startedAt,
+      },
+      totals,
+      last: record.completed.slice(-10),
+    }),
+  );
+});
+
+function beginPhase(page: Page, name: string): void {
+  const record = phases.get(page);
+  if (record) record.current = { name, startedAt: Date.now() };
+}
+
+function endPhase(page: Page): void {
+  const record = phases.get(page);
+  if (!record?.current) return;
+  record.completed.push({
+    name: record.current.name,
+    elapsedMs: Date.now() - record.current.startedAt,
+  });
+  record.current = null;
+}
+
 /** Drive real player commands while leaving the campaign state and outcome untouched. */
 async function finishBattle(page: Page, encounterId: string): Promise<void> {
+  beginPhase(page, `battle ${encounterId}`);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.battle?.encounterId))
     .toBe(encounterId);
@@ -126,10 +179,12 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
     'victory',
   );
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  endPhase(page);
 }
 
 /** Use the visible story controls, including authored interludes and choices. */
 async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'): Promise<void> {
+  beginPhase(page, 'story');
   for (let step = 0; step < 60; step++) {
     const state = await page.evaluate(() => window.fnt?.app.state);
     if (state?.pendingChoices.length) {
@@ -139,7 +194,10 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
         .click();
       continue;
     }
-    if (state?.screen !== 'dialogue') return;
+    if (state?.screen !== 'dialogue') {
+      endPhase(page);
+      return;
+    }
     if (await page.locator('.interlude-stage').count()) {
       await page.getByRole('button', { name: 'Skip scene' }).click();
       continue;
@@ -171,21 +229,27 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
 }
 
 async function walkTo(page: Page, x: number, y: number): Promise<void> {
+  beginPhase(page, `walk ${x},${y}`);
   await page.evaluate((pos) => window.fnt!.app.dispatch({ type: 'walkTo', pos }), { x, y });
   await completeAuthoredPlayback(page);
+  endPhase(page);
 }
 
 async function takeRoute(page: Page, label: string, mapId: string): Promise<void> {
+  beginPhase(page, `route ${mapId}`);
   await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
   await completeAuthoredPlayback(page);
+  endPhase(page);
 }
 
 async function expectJournalObjective(page: Page, text: string): Promise<void> {
+  beginPhase(page, `journal ${text}`);
   await page.getByRole('button', { name: 'Travel journal', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Travel journal' })).toContainText(text);
   await page.getByRole('button', { name: 'Return to the path', exact: true }).click();
+  endPhase(page);
 }
 
 async function checkpoint(page: Page) {
@@ -208,6 +272,7 @@ async function checkpoint(page: Page) {
 }
 
 async function saveAndReload(page: Page): Promise<void> {
+  beginPhase(page, 'save');
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   await page.getByRole('button', { name: 'Save game', exact: true }).click();
   await page
@@ -224,6 +289,7 @@ async function saveAndReload(page: Page): Promise<void> {
     .getByRole('button', { name: /^Load$/ })
     .click();
   expect(await checkpoint(page)).toEqual(saved);
+  endPhase(page);
 }
 
 for (const custody of ['trade', 'escort'] as const) {
