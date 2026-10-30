@@ -82,6 +82,23 @@ merge, deployment or auto-merge is authorized in the current session.
   assertion and a timed-out test retain exit 1 and emit the added context in
   `::error`. The collectors' activated TypeScript, scoped ESLint, Prettier and
   diff checks passed. No product or test timing code changed in this revision.
+- The first dispatch finished with Chromium shards 1/3 and 2/3 clean (86 and
+  85 passed) and 3/3 successful with 83 passed plus one flaky WebGL tea-cel
+  assertion at `riverside-tea.spec.ts:343`: its first image crops stayed equal
+  after the fake-clock advance, then its configured retry passed. That initial
+  cause is unproved. WebKit 2/2 failed the normal-text combat framing tile-size
+  assertion at `gestures.spec.ts:229` (112 passed, one skipped, 15 unrun);
+  WebKit 1/2's Riverside failure left 136 unrun. The gallery matrix was skipped
+  after the E2E aggregate failed. Merge `9c39e6ff` retains the isolated
+  `b095dcd9` and `b4d3a33d` gesture correction and handoff. Four production
+  Canvas profiles measured tile sizes 64/64 at DPR 1 and 64/96 at DPR 2 for
+  the two existing viewports; the strict test now asserts that same table.
+  The original focused gesture case passed at both DPRs (2/2), retaining its
+  other camera, canvas and actor checks. The correction is test-only, with no
+  camera/product change. Its exact receipts are in
+  `docs/coordination/handoffs/ci-gesture-dpr-370.md`. The intermediate
+  diagnostic head `764d36b3` passed all nine pinned local checks (259 files,
+  3,008 tests); this later integration head still needs its own exact-head run.
 - The current final head still requires all nine `npm run ci:local` steps before
   any push. Open one draft PR into main after that gate, leave auto-merge off,
   wait for PR verification, then dispatch CI once on the branch with
