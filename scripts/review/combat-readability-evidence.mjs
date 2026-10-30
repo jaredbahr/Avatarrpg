@@ -1,14 +1,13 @@
 /**
- * Capture the same forest-road fight from two built revisions for #336 review.
- * Run this driver from the #336 worktree against each revision's own preview
- * server; it uses only app and Playwright helper APIs present on #322 3c305155.
- * The active enemy and its displayed 7/13 HP are staged in the render view to
- * expose the cue and damaged bar; the actual battle turn and HP stay unchanged.
+ * Capture the same forest-road fight on #322 and #336 production previews.
+ * The enemy's displayed active cue and 7/13 HP are staged in the render view;
+ * the actual battle turn and HP remain untouched. Node's native TypeScript
+ * stripping loads the shared E2E helpers without adding callback wrappers.
  *
- * Usage: node --import tsx scripts/review/combat-readability-evidence.ts
- *   <base-url> <out-dir> <source-sha> [before-dir]
+ * Usage: node --experimental-strip-types scripts/review/combat-readability-evidence.mjs
+ *   <base-url> <out-dir> <served-source-sha> [before-dir]
  */
-
+/* global window, document */
 import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -21,57 +20,37 @@ import {
   startGame,
   takeTurn,
   waitForIdle,
-} from '../../e2e/helpers';
-import type { MapView } from '../../src/render/view';
+} from '../../e2e/helpers.ts';
 
-interface CaptureMetadata {
-  sourceSha: string;
-  seed: string;
-  viewport: { width: number; height: number; dpr: number };
-  settings: { largeText: string; highContrast: boolean; reduceMotion: boolean };
-  node: string | null | undefined;
-  units: { id: string; x: number; y: number; faction: string }[] | undefined;
-  stagedRenderer: {
-    targetEnemyId: string | undefined;
-    displayedHp: number;
-    displayedMaxHp: number;
-    stateHp: number | undefined;
-    stateMaxHp: number | undefined;
-    actualTurnId: string | undefined;
-  };
-  backend: 'canvas' | 'webgl' | null;
-  camera: {
-    tilePx: number | undefined;
-    offsetX: number | undefined;
-    offsetY: number | undefined;
-    fitted: boolean | undefined;
-  };
-  canvasRect: { x: number; y: number; width: number; height: number } | undefined;
-  stripHeight: number | undefined;
-  chipCount: number;
-  chipY: number[];
-  clippedNames: number;
-}
-
-const baseURL = process.argv[2];
-const output = process.argv[3];
-const sourceSha = process.argv[4];
-const expectedDir = process.argv[5];
-if (!baseURL || !output || !sourceSha || !/^[a-f0-9]{40}$/.test(sourceSha))
+const [baseURL, output, sourceSha, expectedDir] = process.argv.slice(2);
+if (!baseURL || !output || !/^[a-f0-9]{40}$/.test(sourceSha ?? ''))
   throw new Error(
-    'Usage: combat-readability-evidence.ts <base-url> <out-dir> <source-sha> [before-dir]',
+    'Usage: combat-readability-evidence.mjs <base-url> <out-dir> <source-sha> [before-dir]',
   );
-
 const outDir = resolve(output);
 mkdirSync(outDir, { recursive: true });
+
+async function frameSignature(page) {
+  return page.evaluate(() => {
+    const camera = window.fnt.app.rendererCamera();
+    const box = document.querySelector('.map-canvas')?.getBoundingClientRect();
+    return {
+      x: camera?.offsetX,
+      y: camera?.offsetY,
+      tile: camera?.tilePx,
+      w: box?.width,
+      h: box?.height,
+    };
+  });
+}
+
 const executablePath = ['/opt/pw-browsers/chromium', '/usr/bin/chromium'].find(existsSync);
 const browser = await chromium.launch(executablePath ? { executablePath } : {});
-
 try {
   for (const viewport of [
     { name: 'desktop', width: 1280, height: 800, dpr: 1, largeText: 'off' },
     { name: 'portrait-ipad', width: 834, height: 1194, dpr: 2, largeText: 'huge' },
-  ] as const) {
+  ]) {
     const context = await browser.newContext({
       baseURL,
       viewport: { width: viewport.width, height: viewport.height },
@@ -84,39 +63,25 @@ try {
       await resetStorage(page, '?renderer=canvas');
       await startGame(page, ['Kaya', 'Sura', 'Bo'], ['kaya', 'sura', 'bo'], 'combat-readability');
       await enterNode(page, 'battle_forest_road');
-      if (!(await takeTurn(page))) throw new Error('Battle ended before the capture.');
+      if (!(await takeTurn(page))) throw new Error('Battle ended before capture.');
       await waitForIdle(page);
       await page.waitForLoadState('networkidle');
       await page.waitForFunction(() =>
         Boolean(
-          (
-            window.fnt?.app as unknown as {
-              scene?: { renderer?: { lastView?: MapView | null } };
-            }
-          )?.scene?.renderer?.lastView?.units.some((unit) => unit.faction === 'enemy'),
+          window.fnt?.app.scene?.renderer?.lastView?.units.some((unit) => unit.faction === 'enemy'),
         ),
       );
-      if ((await page.evaluate(() => window.fnt?.app.rendererBackend())) !== 'canvas')
-        throw new Error('Canvas backend was not selected.');
+      assert.equal(await page.evaluate(() => window.fnt.app.rendererBackend()), 'canvas');
 
       await setLargeText(page, viewport.largeText);
-      await page.evaluate((highContrast) => {
-        window.fnt!.app.updateSettings({ highContrast, reduceMotion: true });
-      }, viewport.name === 'portrait-ipad');
+      await page.evaluate(
+        (highContrast) => window.fnt.app.updateSettings({ highContrast, reduceMotion: true }),
+        viewport.name === 'portrait-ipad',
+      );
       await settleLayout(page);
       await page.evaluate(() => {
-        const app = window.fnt!.app;
-        const renderer = (
-          app as unknown as {
-            scene: {
-              renderer: {
-                camera: { centreOn(pos: { x: number; y: number }, size: 1 | 2): void };
-                lastView: MapView | null;
-                draw(view: MapView): void;
-              };
-            };
-          }
-        ).scene.renderer;
+        const app = window.fnt.app;
+        const renderer = app.scene.renderer;
         const originalDraw = renderer.draw.bind(renderer);
         renderer.draw = (view) => {
           const enemy = view.units.find((unit) => unit.faction === 'enemy' && unit.hp > 0);
@@ -140,58 +105,28 @@ try {
         if (!renderer.lastView) throw new Error('Missing combat view.');
         renderer.draw(renderer.lastView);
       });
-      await page.evaluate(
-        () =>
-          new Promise<void>((done) =>
-            requestAnimationFrame(() => requestAnimationFrame(() => done())),
-          ),
-      );
       await settleLayout(page);
       const image = resolve(outDir, `${viewport.name}.png`);
-      let stableCapture = false;
+      let stable = false;
       for (let attempt = 0; attempt < 4; attempt++) {
-        const before = await page.evaluate(() => {
-          const camera = window.fnt!.app.rendererCamera();
-          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-          const box = canvas?.getBoundingClientRect();
-          return {
-            x: camera?.offsetX,
-            y: camera?.offsetY,
-            tilePx: camera?.tilePx,
-            width: box?.width,
-            height: box?.height,
-          };
-        });
+        const before = await frameSignature(page);
         await page.screenshot({ path: image });
-        const after = await page.evaluate(() => {
-          const camera = window.fnt!.app.rendererCamera();
-          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-          const box = canvas?.getBoundingClientRect();
-          return {
-            x: camera?.offsetX,
-            y: camera?.offsetY,
-            tilePx: camera?.tilePx,
-            width: box?.width,
-            height: box?.height,
-          };
-        });
+        const after = await frameSignature(page);
         if (JSON.stringify(before) === JSON.stringify(after)) {
-          stableCapture = true;
+          stable = true;
           break;
         }
       }
-      assert.ok(stableCapture, 'camera/canvas changed during every screenshot attempt');
-      const metadata: CaptureMetadata = await page.evaluate(
+      assert.ok(stable, 'camera/canvas changed during every screenshot attempt');
+      const metadata = await page.evaluate(
         ({ sourceSha, seed }) => {
-          const app = window.fnt!.app;
+          const app = window.fnt.app;
           const battle = app.state?.battle;
           const enemy = battle?.units.find((unit) => unit.faction === 'enemy' && unit.hp > 0);
-          const strip = document.querySelector<HTMLElement>('.turn-strip');
-          const chips = [...(strip?.querySelectorAll<HTMLElement>('.turn-chip') ?? [])];
-          const rect = strip?.getBoundingClientRect();
-          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-          const canvasRect = canvas?.getBoundingClientRect();
+          const strip = document.querySelector('.turn-strip');
+          const chips = [...(strip?.querySelectorAll('.turn-chip') ?? [])];
           const camera = app.rendererCamera();
+          const canvasRect = document.querySelector('.map-canvas')?.getBoundingClientRect();
           return {
             sourceSha,
             seed,
@@ -233,11 +168,11 @@ try {
               width: canvasRect.width,
               height: canvasRect.height,
             },
-            stripHeight: rect?.height,
+            stripHeight: strip?.getBoundingClientRect().height,
             chipCount: chips.length,
             chipY: chips.map((chip) => chip.getBoundingClientRect().y),
             clippedNames: chips.filter((chip) => {
-              const name = chip.querySelector<HTMLElement>('span');
+              const name = chip.querySelector('span');
               return (
                 name &&
                 (name.scrollWidth > name.clientWidth + 1 ||
@@ -251,7 +186,7 @@ try {
       assert.equal(metadata.backend, 'canvas');
       assert.equal(metadata.camera.tilePx, 64);
       assert.equal(metadata.units?.filter((unit) => unit.faction === 'party').length, 3);
-      assert.ok((metadata.chipCount ?? 0) >= 6);
+      assert.ok(metadata.chipCount >= 6);
       assert.ok(metadata.stagedRenderer.targetEnemyId);
       assert.deepEqual(metadata.viewport, {
         width: viewport.width,
@@ -261,12 +196,12 @@ try {
       if (expectedDir) {
         const before = JSON.parse(
           readFileSync(resolve(expectedDir, `${viewport.name}.json`), 'utf8'),
-        ) as Pick<CaptureMetadata, 'units' | 'stagedRenderer' | 'chipCount' | 'camera'>;
+        );
         assert.deepEqual(metadata.units, before.units, 'the seeded fight changed between builds');
         assert.deepEqual(
           metadata.stagedRenderer,
           before.stagedRenderer,
-          'the staged enemy or actual state changed between builds',
+          'staged enemy or actual state changed',
         );
         assert.equal(metadata.chipCount, before.chipCount, 'initiative roster changed');
         assert.equal(metadata.camera.tilePx, before.camera.tilePx, 'camera zoom changed');
