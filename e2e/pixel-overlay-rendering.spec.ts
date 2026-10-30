@@ -7,8 +7,10 @@ import { RngCursor } from '../src/core/rng';
 import { reachable } from '../src/core/rules/grid';
 import { BattleDraft } from '../src/core/state/battleDraft';
 import { TIER_LIFT } from '../src/render/geometry/elevation';
+import { npcPipLift } from '../src/render/npcPip';
 import type { G1Bounds } from '../src/render/pixelMarks';
 import { talkPipMark, type PixelOverlayCue } from '../src/render/pixelOverlayGeometry';
+import { FOOT_LINE } from '../src/render/sheets/bake';
 import type { MapView, RenderUnit } from '../src/render/view';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
@@ -28,7 +30,7 @@ const MARK_CENTRES = {
   targetReticle: { x: 8.5, y: 5.5 },
   selected: { x: 8.5, y: 4.86 },
   ko: { x: 10.5, y: 4.55 },
-  talk: { x: 6.5, y: 6.5 },
+  talk: { x: 10.5, y: 8.5 },
   healthBar: { x: 8.5, y: 6.5 },
 } as const;
 const MARK_NAMES = Object.keys(MARK_CENTRES) as (keyof typeof MARK_CENTRES)[];
@@ -396,7 +398,7 @@ async function captureStagedMarks(
   contrastRules: Record<'move' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'path', string>;
 }> {
   return page.evaluate(
-    ({ requestedZoom, centres, talkCue }) => {
+    ({ requestedZoom, centres, talkCue, talkPipLift, footLine }) => {
       type RuntimeRenderer = {
         camera: {
           scale: number;
@@ -406,6 +408,11 @@ async function captureStagedMarks(
           centreOn(pos: { x: number; y: number }, size?: 1 | 2): void;
           panBy(dx: number, dy: number): void;
           project(pos: { x: number; y: number }): { x: number; y: number };
+          spriteBox(
+            pos: { x: number; y: number },
+            footprint?: 1 | 2,
+            square?: boolean,
+          ): { x: number; y: number; size: number };
         };
         lastView: MapView | null;
         draw(view: MapView): void;
@@ -460,7 +467,7 @@ async function captureStagedMarks(
         npcs: [
           {
             id: 'pixel-review-talk',
-            pos: { x: 6, y: 6 },
+            pos: { x: 10, y: 8 },
             sprite: party.sprite,
             name: 'Talk pip probe',
             quiet: false,
@@ -547,6 +554,32 @@ async function captureStagedMarks(
       const cueAnchors = {} as Partial<Record<MarkName, { x: number; y: number }>>;
       const cueSamples = { talk: talkCue } as Partial<Record<MarkName, PixelOverlayCue>>;
       const captureMark = (name: MarkName): Crop => {
+        if (name === 'talk') {
+          const npc = cueView.npcs[0];
+          if (!npc || npc.sprite !== 'unit.fire.kaya')
+            throw new Error('Talk crop needs the staged Kaya figure');
+          // Measure the exact production NPC foot and pip lift. The camera's
+          // oblique projection and pan clamp make a fixed ground-point offset
+          // drift away from the pip at zoom 3.
+          const box = camera.spriteBox(npc.pos, 1, false);
+          const centre = {
+            x: box.x + box.size / 2,
+            y: box.y + box.size * (footLine - talkPipLift),
+          };
+          const halfPip = (9 * camera.scale) / 2;
+          const margin = 2 * camera.scale;
+          if (
+            centre.x - halfPip - margin < 0 ||
+            centre.y - halfPip - margin < 0 ||
+            centre.x + halfPip + margin > camera.viewport.width ||
+            centre.y + halfPip + margin > camera.viewport.height
+          ) {
+            throw new Error(
+              `The full talk pip is outside the visible board at zoom ${camera.scale}`,
+            );
+          }
+          return captureScreen(centre, 40, 40);
+        }
         const geometry = cueGeometry[name];
         if (geometry) {
           const scale = camera.scale;
@@ -574,13 +607,6 @@ async function captureStagedMarks(
           }
           return captureScreen({ x, y }, cssWidth, cssHeight);
         }
-        if (name === 'talk') {
-          // Talk pips are emitted by the NPC draw path rather than the shared
-          // cue adapter. Centre on the measured 8-way adult pip lift above its
-          // known ground anchor, then keep a full marker-sized crop around it.
-          const ground = camera.project(centres[name]);
-          return captureScreen({ x: ground.x, y: ground.y - 64 * camera.scale * 1.02 }, 40, 40);
-        }
         const anchor = cueAnchors[name];
         return anchor
           ? captureScreen({
@@ -590,6 +616,11 @@ async function captureStagedMarks(
           : capture(centres[name]);
       };
       const centreOnMark = (name: MarkName): void => {
+        if (name === 'talk') {
+          // centreOn takes a tile position and adds its own half-cell.
+          camera.centreOn({ x: 10, y: 8 });
+          return;
+        }
         const geometry = cueGeometry[name];
         if (!geometry) {
           camera.centreOn(centres[name]);
@@ -1068,7 +1099,13 @@ async function captureStagedMarks(
         },
       };
     },
-    { requestedZoom: zoom, centres: MARK_CENTRES, talkCue: talkPipMark({ x: 100, y: 100 }, 0.7) },
+    {
+      requestedZoom: zoom,
+      centres: MARK_CENTRES,
+      talkCue: talkPipMark({ x: 100, y: 100 }, 0.7),
+      talkPipLift: npcPipLift('unit.fire.kaya', 1),
+      footLine: FOOT_LINE,
+    },
   );
 }
 
