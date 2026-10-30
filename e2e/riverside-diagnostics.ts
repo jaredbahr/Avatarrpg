@@ -1,11 +1,82 @@
 import type { ConsoleMessage, Page, TestInfo } from '@playwright/test';
 import { FORM_DURATION, WAVE_DURATION } from '../src/render/living/poses';
 
+interface DiagnosticSample {
+  bodyElapsedMs: number;
+  reason: string;
+  now?: number;
+  lastFrame?: number | null;
+  activity?: { kind: string; started: number } | null;
+  remainingMs?: number | null;
+  animatorBusy?: boolean;
+  animatorFinishesAt?: number;
+  drill?: number | null;
+  hidden?: boolean;
+  dialogs?: number;
+  note?: string | null;
+  buttons?: { text: string | null; disabled: boolean }[];
+}
+
+/** GitHub exposes check annotations even when its short-lived artifact URL cannot be fetched. */
+function emitFailureSummary(
+  testInfo: TestInfo,
+  samples: readonly DiagnosticSample[],
+  elapsed: number,
+) {
+  if (process.env.GITHUB_ACTIONS !== 'true' || testInfo.status === testInfo.expectedStatus) return;
+  try {
+    const compact = (sample: DiagnosticSample) => ({
+      elapsedMs: sample.bodyElapsedMs,
+      reason: sample.reason,
+      now: sample.now,
+      lastFrame: sample.lastFrame,
+      activity: sample.activity,
+      remainingMs: sample.remainingMs,
+      animatorBusy: sample.animatorBusy,
+      animatorFinishesAt: sample.animatorFinishesAt,
+      drill: sample.drill,
+      hidden: sample.hidden,
+      dialogs: sample.dialogs,
+      note: sample.note?.slice(0, 160),
+      buttons: sample.buttons
+        ?.filter((button) =>
+          ['Wave', 'Water form', 'Fire form', "Dorin's drill"].includes(button.text ?? ''),
+        )
+        .map((button) => ({ text: button.text, disabled: button.disabled })),
+    });
+    const clicks = samples
+      .filter((sample) =>
+        /^(before|after) click: (Wave|Water form|Fire form|Dorin's drill|Leave preview)$/.test(
+          sample.reason,
+        ),
+      )
+      .slice(-2)
+      .map(compact);
+    const heartbeats = samples
+      .filter((sample) => sample.reason === 'heartbeat')
+      .slice(-3)
+      .map(compact);
+    const payload = JSON.stringify({
+      test: testInfo.title,
+      project: testInfo.project.name,
+      status: testInfo.status,
+      bodyElapsedMs: elapsed,
+      clicks,
+      heartbeats,
+    }).slice(0, 3500);
+    console.log(
+      `::warning title=Riverside form failure diagnostics::${payload.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')}`,
+    );
+  } catch {
+    // Reporting must never replace the application's assertion failure.
+  }
+}
+
 /** Keep failure evidence in Node, so a whole-test timeout cannot cancel its collection. */
 export async function recordRiversideDiagnostics(page: Page) {
   const prefix = '__FNT_RIVERSIDE_DIAGNOSTIC__';
   const started = Date.now();
-  const samples: unknown[] = [];
+  const samples: DiagnosticSample[] = [];
   const receive = (message: ConsoleMessage) => {
     const text = message.text();
     if (!text.startsWith(prefix)) return;
@@ -13,7 +84,7 @@ export async function recordRiversideDiagnostics(page: Page) {
       samples.push({
         bodyElapsedMs: Date.now() - started,
         ...JSON.parse(text.slice(prefix.length)),
-      });
+      } as DiagnosticSample);
       if (samples.length > 128) samples.shift();
     } catch {
       // Diagnostics must never change the assertion's outcome.
@@ -118,6 +189,7 @@ export async function recordRiversideDiagnostics(page: Page) {
   return {
     async attach(testInfo: TestInfo) {
       page.off('console', receive);
+      emitFailureSummary(testInfo, samples, Date.now() - started);
       try {
         await testInfo.attach('riverside-activity-diagnostics', {
           body: JSON.stringify(
