@@ -47,6 +47,7 @@ test.afterEach(({ page }, testInfo) => {
       },
       totals,
       last: record.completed.slice(-10),
+      slowest: [...record.completed].sort((a, b) => b.elapsedMs - a.elapsedMs).slice(0, 5),
     }),
   );
 });
