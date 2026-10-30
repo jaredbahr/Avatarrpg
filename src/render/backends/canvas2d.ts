@@ -2092,16 +2092,13 @@ export class Canvas2DBackend implements RenderBackend {
           box.size,
           footprint,
           camera.scale,
+          view.crispOverlays ? 4 : 3,
         );
         ctx.save();
-        ctx.globalAlpha = view.crispOverlays ? 1 : 0.96;
-        strokeCuePolygon(
-          ctx,
-          cue.outer,
-          HP_COLORS.frame,
-          camera.scale * (view.crispOverlays ? 4 : 3),
-        );
-        strokeCuePolygon(ctx, cue.inner, OVERLAY.active, camera.scale);
+        ctx.fillStyle = HP_COLORS.frame;
+        for (const run of cue.outer) ctx.fillRect(run.x, run.y, run.width, run.height);
+        ctx.fillStyle = OVERLAY.active;
+        for (const run of cue.inner) ctx.fillRect(run.x, run.y, run.width, run.height);
         ctx.restore();
       } else if (unit.id === view.selectedUnitId) {
         ctx.save();
@@ -2495,26 +2492,6 @@ function traceInto(ctx: CanvasRenderingContext2D, poly: readonly Pt[], begin = t
   if (begin) ctx.beginPath();
   poly.forEach((p, index) => (index ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
   ctx.closePath();
-}
-
-/** Stroke a world-pixel-snapped active-unit cue polygon. */
-function strokeCuePolygon(
-  ctx: CanvasRenderingContext2D,
-  points: readonly number[],
-  color: string,
-  width: number,
-): void {
-  if (points.length < 6) return;
-  ctx.beginPath();
-  ctx.moveTo(points[0] ?? 0, points[1] ?? 0);
-  for (let index = 2; index < points.length; index += 2)
-    ctx.lineTo(points[index] ?? 0, points[index + 1] ?? 0);
-  ctx.closePath();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = width;
-  ctx.lineJoin = 'miter';
-  ctx.lineCap = 'square';
-  ctx.stroke();
 }
 
 /**

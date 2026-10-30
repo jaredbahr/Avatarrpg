@@ -166,22 +166,41 @@ describe('upright actor health bar', () => {
     expect(large.height - large.pixelSize * 3).toBeGreaterThanOrEqual(4);
   });
 
-  it('draws an angular active ground frame with a one-pixel inset', () => {
-    const cue = activeGroundCue(64, 55, 64, 64, 1, 1);
-    expect(cue.outer).toHaveLength(16);
-    expect(cue.inner).toHaveLength(16);
-    const coordinatesAreSnapped = [...cue.outer, ...cue.inner].every((coordinate) =>
-      Number.isInteger(coordinate),
-    );
-    expect(coordinatesAreSnapped).toBe(true);
-    const minX = (points: readonly number[]) => Math.min(...points.filter((_, i) => i % 2 === 0));
-    const maxX = (points: readonly number[]) => Math.max(...points.filter((_, i) => i % 2 === 0));
-    const minY = (points: readonly number[]) => Math.min(...points.filter((_, i) => i % 2 === 1));
-    const maxY = (points: readonly number[]) => Math.max(...points.filter((_, i) => i % 2 === 1));
-    expect(minX(cue.inner)).toBeGreaterThan(minX(cue.outer));
-    expect(maxX(cue.inner)).toBeLessThan(maxX(cue.outer));
-    expect(minY(cue.inner)).toBeGreaterThan(minY(cue.outer));
-    expect(maxY(cue.inner)).toBeLessThan(maxY(cue.outer));
+  it('provides only filled, world-pixel-aligned runs for both cue colors', () => {
+    const world = activeGroundCue(64, 55, 64, 64, 1, 1);
+    const canvas = activeGroundCue(128, 110, 128, 128, 1, 2);
+    expect(world.outer.length).toBeGreaterThan(16);
+    expect(world.inner.length).toBeGreaterThan(16);
+    for (const color of ['outer', 'inner'] as const) {
+      expect(canvas[color]).toEqual(
+        world[color].map((run) => ({
+          x: run.x * 2,
+          y: run.y * 2,
+          width: run.width * 2,
+          height: run.height * 2,
+        })),
+      );
+      for (const run of world[color]) {
+        expect([run.x, run.y, run.width, run.height].every(Number.isInteger)).toBe(true);
+        expect(run.width).toBeGreaterThan(0);
+        expect(run.height).toBe(1);
+      }
+    }
+    const painted = (runs: typeof world.outer): Set<string> => {
+      const cells = new Set<string>();
+      for (const run of runs)
+        for (let x = run.x; x < run.x + run.width; x++) cells.add(`${x},${run.y}`);
+      return cells;
+    };
+    const dark = painted(world.outer);
+    const gold = painted(world.inner);
+    expect(dark.has('64,55')).toBe(false);
+    expect(gold.has('64,55')).toBe(false);
+    expect(dark.has('64,45')).toBe(true);
+    expect(gold.has('64,48')).toBe(true);
+    const contrast = painted(activeGroundCue(64, 55, 64, 64, 1, 1, 4).outer);
+    expect(contrast.size).toBeGreaterThan(dark.size);
+    for (const cell of dark) expect(contrast.has(cell)).toBe(true);
   });
 
   it('stagger overlapping bars upward in place and leaves clear bars untouched', () => {

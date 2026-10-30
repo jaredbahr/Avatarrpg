@@ -63,18 +63,26 @@ function snapPixel(value: number, pixelSize: number): number {
   return Math.round(value / pixelSize) * pixelSize;
 }
 
+export interface CuePixelRun {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
 export interface ActiveGroundCue {
-  /** Eight-point angular outer keyline, centred under the actor's feet. */
-  readonly outer: readonly number[];
-  /** Inset active-color stroke; the terrain inside it stays visible. */
-  readonly inner: readonly number[];
+  /** Filled, world-pixel-aligned runs forming the dark outline. */
+  readonly outer: readonly CuePixelRun[];
+  /** One-pixel gold outline inside it; the terrain in the centre stays visible. */
+  readonly inner: readonly CuePixelRun[];
 }
 
 /**
- * Pixel-aligned ground marker for the acting unit. Its two nested stepped
- * outlines replace the thin, smooth ellipse while retaining the under-feet
- * location and approximate footprint. Coordinates and pixelSize use the
- * caller's units: Canvas passes screen CSS units; Pixi passes world px.
+ * Rasterize an angular, hollow outline into filled horizontal pixel runs.
+ * Every edge is an axis-aligned world-pixel boundary, including the sloping
+ * shoulders; neither backend needs an antialiased vector stroke. Coordinates
+ * and pixelSize use the caller's units: Canvas passes screen CSS units; Pixi
+ * passes world px.
  */
 export function activeGroundCue(
   centreX: number,
@@ -83,37 +91,49 @@ export function activeGroundCue(
   tileHeight: number,
   heightTiles: 1 | 2,
   pixelSize: number,
+  outlinePixels = 3,
 ): ActiveGroundCue {
-  const halfHeight = tileHeight * heightTiles * 0.16;
-  const outerRx = footprintWidth * 0.44;
-  const innerRx = footprintWidth * 0.37;
-  const innerRy = Math.max(pixelSize, halfHeight - pixelSize * 3);
-  const points = (rx: number, ry: number): number[] => {
-    const snap = (value: number) => snapPixel(value, pixelSize);
-    const shoulderX = rx * 0.62;
+  const cx = Math.round(centreX / pixelSize);
+  const cy = Math.round(centreY / pixelSize);
+  const outerRx = Math.max(2, Math.round((footprintWidth * 0.44) / pixelSize));
+  const outerRy = Math.max(2, Math.round((tileHeight * heightTiles * 0.16) / pixelSize));
+  const innerRx = Math.max(1, Math.round((footprintWidth * 0.37) / pixelSize));
+  const innerRy = Math.max(1, outerRy - 3);
+
+  // An octagon sampled at row centres: the changing width makes stepped
+  // shoulders, while each row remains a filled rectangle with exact edges.
+  const extent = (y: number, rx: number, ry: number): number => {
+    const distance = Math.abs(y - cy);
+    if (distance > ry) return -1;
     const shoulderY = ry * 0.42;
-    return [
-      snap(centreX - shoulderX),
-      snap(centreY - ry),
-      snap(centreX + shoulderX),
-      snap(centreY - ry),
-      snap(centreX + rx),
-      snap(centreY - shoulderY),
-      snap(centreX + rx),
-      snap(centreY + shoulderY),
-      snap(centreX + shoulderX),
-      snap(centreY + ry),
-      snap(centreX - shoulderX),
-      snap(centreY + ry),
-      snap(centreX - rx),
-      snap(centreY + shoulderY),
-      snap(centreX - rx),
-      snap(centreY - shoulderY),
-    ];
+    if (distance <= shoulderY) return rx;
+    return Math.round(rx * (0.62 + (0.38 * (ry - distance)) / (ry - shoulderY)));
+  };
+  const ring = (rx: number, ry: number, thickness: number): CuePixelRun[] => {
+    const runs: CuePixelRun[] = [];
+    for (let y = cy - ry; y <= cy + ry; y++) {
+      const outside = extent(y, rx, ry);
+      const inside = extent(y, Math.max(0, rx - thickness), Math.max(0, ry - thickness));
+      const add = (left: number, right: number): void => {
+        if (left < right)
+          runs.push({
+            x: left * pixelSize,
+            y: y * pixelSize,
+            width: (right - left) * pixelSize,
+            height: pixelSize,
+          });
+      };
+      if (inside < 0) add(cx - outside, cx + outside + 1);
+      else {
+        add(cx - outside, cx - inside);
+        add(cx + inside + 1, cx + outside + 1);
+      }
+    }
+    return runs;
   };
   return {
-    outer: points(outerRx, halfHeight),
-    inner: points(innerRx, innerRy),
+    outer: ring(outerRx, outerRy, outlinePixels),
+    inner: ring(innerRx, innerRy, 1),
   };
 }
 

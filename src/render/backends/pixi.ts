@@ -3032,11 +3032,12 @@ export class PixiBackend implements RenderBackend {
           TILE,
           heightTiles,
           1,
+          view.crispOverlays ? 4 : 3,
         );
-        rings
-          .poly([...cue.outer], true)
-          .stroke({ width: view.crispOverlays ? 4 : 3, color: HP_COLORS.frame });
-        rings.poly([...cue.inner], true).stroke({ width: 1, color: OVERLAY.active });
+        for (const run of cue.outer)
+          rings.rect(run.x, run.y, run.width, run.height).fill({ color: HP_COLORS.frame });
+        for (const run of cue.inner)
+          rings.rect(run.x, run.y, run.width, run.height).fill({ color: OVERLAY.active });
       } else if (unit.id === view.selectedUnitId) {
         rings
           .ellipse(
