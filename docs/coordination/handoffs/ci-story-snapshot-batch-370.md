@@ -73,10 +73,48 @@ iteration and zero locator-count calls; source outside the function matches
 the baseline exactly. This proves driver decisions under the stated inputs,
 not browser selector-engine behavior, actionability or timing improvement.
 
-Pinned typecheck, scoped ESLint, scoped Prettier and `git diff --check` pass.
-No browser, build, full nine-stage suite, push or hosted dispatch was run for
-this candidate. The integration owner must independently review source and
-validate both complete original routes before considering integration. The
+Pinned typecheck, scoped ESLint, scoped Prettier and `git diff --check` passed
+before source commit `33f4c2b5a21eeebe9d2e0aa66425d0047f79c7c1`.
+The integration owner independently reviewed that source, the selector/caller
+contract and the 436-comparison proof before releasing local route validation.
+
+One invocation of both complete original quarry campaigns passed on exact
+source `33f4c2b5`, with one worker and one attempt per case, zero retries,
+unchanged 600 s case budgets and repository 10 s expect budget. Installed
+system Chromium ran Canvas at 1194×834, DPR 2, with touch. The published
+`72b0436` app dist was reused only after both worktrees' production inputs
+matched published `72b04367`; no app rebuild or product change was needed.
+
+| Original case                     | Result | Reported case duration |
+| --------------------------------- | ------ | ---------------------: |
+| Trade, save/reload and walk home  | Passed |              276.326 s |
+| Escort, save/reload and walk home | Passed |              329.218 s |
+
+Actual process exit was 0; the JSON report has two expected passes, no errors,
+skips, flaky results or unexpected results. Suite duration was 613.330 s;
+wrapper wall time was 615.268 s, including trace retention and teardown.
+The external run config changed canonical trace **retention** to `mode: 'on'`
+to preserve passed traces, keeping `snapshots: true`, `screenshots: false` and
+`sources: true`. Existing trace recording remained in place; no extra page
+queries, commands, screenshots or native case were added. These durations do
+not establish a before/after gain, comparable wall-time baseline or hosted fix.
+
+Unique run prefix is
+`/workspace/avatarrpg-env/370-story-snapshot-33f4c2b5-routes-run1`.
+Its `.receipt.json` atomically records initial/final source head, app head,
+source-file SHA, config SHA and dist SHA; all remained identical, with
+`actual_exit: 0` and `stable_inputs: true`. Exact two-case listing, external
+config, wrapper, logs, JSON report, app-dist manifest and both passed traces
+were archived before further parsing or reuse under
+`/workspace/avatarrpg-env/evidence/370-story-snapshot-33f4c2b5-routes-run1`;
+`archive-manifest.json` records artifact hashes. Escort trace is in the
+`results/quarry-return-a-new-campai-79f38--walks-home-after-reloading-ipad-landscape-chromium`
+subdirectory; trade uses `c90d5` in the corresponding directory name. The
+derived per-case summary uses the `-case-summary.json` suffix on that prefix.
+
+The integration owner read the terminal receipt and both original-route
+results and accepted this bounded local proof. No full nine-stage suite,
+integration merge, push or hosted dispatch was run for this candidate. The
 exact final integrated committed head still needs all nine local stages
 before any push, followed by actual required hosted matrices. Hosted WebKit,
 gallery, consecutive-green, physical-device and native acceptance gates
