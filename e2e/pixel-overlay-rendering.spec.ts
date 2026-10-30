@@ -490,6 +490,7 @@ async function captureStagedMarks(
         selectedUnitId: chosen.id,
         activeUnitId: null,
         cameraNudge: { x: 0, y: 0 },
+        reducedMotion: true,
       };
       const canvasRect = canvas.getBoundingClientRect();
       const backingScaleX = canvas.width / canvasRect.width;
@@ -1090,6 +1091,8 @@ for (const dpr of [1, 2] as const) {
           `${name} uses the same authored geometry, palette and opacity on both backends`,
         ).toBe(webglRun.ruleSignatures[name]);
       }
+      expect(JSON.parse(canvasRun.ruleSignatures.exit).alpha).toBeCloseTo(0.9, 9);
+      expect(JSON.parse(webglRun.ruleSignatures.exit).alpha).toBeCloseTo(0.9, 9);
       for (const name of ['move', 'target', 'area', 'rangeBonus', 'hover', 'path'] as const) {
         expect(
           canvasRun.contrastRules[name],
