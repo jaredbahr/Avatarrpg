@@ -230,6 +230,9 @@ export class App {
   private resolving = false;
   /** Presentation-only provenance for the next newly mounted combat scene. */
   private freshCombatEntry = false;
+  /** Drawn explore seats for a fresh crossing; never enters GameState or a save. */
+  private combatApproach: { readonly mapId: string; readonly positions: readonly Vec2[] } | null =
+    null;
   private resizeQueued = false;
   private routeTimer: number | null = null;
   private bendFx: BendFxIndex | undefined;
@@ -244,6 +247,12 @@ export class App {
     const fresh = this.freshCombatEntry;
     this.freshCombatEntry = false;
     return fresh;
+  }
+
+  consumeCombatApproach(mapId: string): readonly Vec2[] | null {
+    const approach = this.combatApproach;
+    this.combatApproach = null;
+    return approach?.mapId === mapId ? approach.positions : null;
   }
 
   get curtainBusy(): boolean {
@@ -642,6 +651,7 @@ export class App {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
+    this.combatApproach = null;
     const state = createGame(this.content, {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
@@ -666,6 +676,7 @@ export class App {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
+    this.combatApproach = null;
     // A reward dialog belongs to the state being replaced. Drop it before the
     // swap so its close callback cannot offer a pick against the new save.
     this.dismissRewardDialog();
@@ -710,12 +721,25 @@ export class App {
     const choiceConsumed =
       (command.type === 'chooseLevelUp' || command.type === 'chooseDiscipline') &&
       result.state.pendingChoices !== state.pendingChoices;
-    if (result.events.some((event) => event.type === 'battleStarted')) this.freshCombatEntry = true;
+    if (result.events.some((event) => event.type === 'battleStarted')) {
+      this.freshCombatEntry = true;
+      this.combatApproach = null;
+    }
 
     const now = performance.now();
     if (result.events.length > 0) {
       if (this.scene?.onEvents?.(result.events, now) !== true)
         this.animator.push(now, result.events, unitsBefore);
+    }
+
+    if (
+      state.screen === 'explore' &&
+      result.state.screen === 'combat' &&
+      result.state.battle &&
+      result.events.some((event) => event.type === 'partyWalked')
+    ) {
+      const positions = this.partyPositions();
+      if (positions) this.combatApproach = { mapId: result.state.battle.mapId, positions };
     }
 
     this.announceImportant(result.events);
@@ -922,9 +946,8 @@ export class App {
   }
 
   /**
-   * Where the village draws each party member, leader first, as tiles.
-   * Exposed so the e2e suite can check the drawing against the rules after
-   * a walk. Null outside the village.
+   * Where the current map scene draws each party member, leader first, as tiles.
+   * Exposed so the e2e suite can compare the last explore and first combat frames.
    */
   partyPositions(): readonly Vec2[] | null {
     const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };
