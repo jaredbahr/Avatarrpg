@@ -341,7 +341,7 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
     remembered &&
     state.location.mapId === battle.mapId &&
     samePos(remembered, state.location.pos)
-      ? battleReturnTile(map, remembered)
+      ? battleReturnTile(content, map, remembered)
       : null;
   const worldAfterVictory = victory
     ? { ...state.world, cleared: [...new Set([...state.world.cleared, battle.encounterId])] }
