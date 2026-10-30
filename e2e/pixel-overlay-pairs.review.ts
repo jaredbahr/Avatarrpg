@@ -36,6 +36,35 @@ async function village(
   await startGame(page, ['Kaya'], ['kaya'], 'pixel-overlay-pairs');
   await enterNode(page, 'village_explore');
   await waitForIdle(page);
+  // The first unbound marker is a route sign. Choose Gao's profiled resident
+  // figure and wait for the sheet resources used by the production renderer.
+  // Reduced motion bypasses the scene curtain's normal sheet readiness wait.
+  await page.waitForFunction(() => {
+    const app = window.fnt?.app as unknown as {
+      scene?: { renderer?: { lastView?: MapView | null } };
+    };
+    const gao = app.scene?.renderer?.lastView?.npcs.find(
+      (candidate) =>
+        candidate.id === 'lw.npc.gao' &&
+        candidate.sprite === 'npc.shopkeeper' &&
+        !candidate.quiet &&
+        (candidate.alpha ?? 1) > 0,
+    );
+    const resources = performance.getEntriesByType('resource');
+    return (
+      Boolean(gao) &&
+      resources.some((entry) => new URL(entry.name).pathname.endsWith('/art/units/gao-g.json')) &&
+      resources.some((entry) => new URL(entry.name).pathname.endsWith('/art/units/gao-g.webp'))
+    );
+  });
+  // The atlas image load resolves before the sheet store replaces its baked
+  // placeholder. Let the next scene frames consume the authored atlas.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
   return page.evaluate(() => {
     const renderer = (
       window.fnt!.app as unknown as {
@@ -54,8 +83,11 @@ async function village(
     ).scene.renderer;
     const view = renderer.lastView;
     const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-    const npc = view?.npcs.find((candidate) => !candidate.quiet);
-    if (!view || !canvas || !npc) throw new Error('Ba Dan talk cue is unavailable');
+    const npc = view?.npcs.find(
+      (candidate) =>
+        candidate.id === 'lw.npc.gao' && candidate.sprite === 'npc.shopkeeper' && !candidate.quiet,
+    );
+    if (!view || !canvas || !npc) throw new Error('Gao talk cue is unavailable');
     renderer.camera.scale = 2;
     renderer.camera.centreOn(npc.pos);
     renderer.draw({
