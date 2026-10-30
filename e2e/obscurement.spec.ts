@@ -122,8 +122,6 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await canvas.tap({ position: { x: point.x - box.x, y: point.y - box.y } });
     record.setStep('click Confirm');
     await page.getByRole('button', { name: /^Confirm/ }).click();
-    record.setStep('waitForIdle after Confirm');
-    await waitForIdle(page);
     record.setStep('click Log and check miss text');
     await page.getByRole('button', { name: /^Log$/ }).click();
     await expect(page.locator('.log-lines')).toContainText('The sand takes it.');
