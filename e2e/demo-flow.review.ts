@@ -770,6 +770,35 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       rng: window.fnt?.app.state?.rng ?? 0,
     })) as Promise<{ battle: BattleState | null; rng: number }>;
 
+  /** The state may hand off a turn before its action row finishes rebuilding. */
+  const waitForCombatHud = async (expectedActorId?: string): Promise<boolean> => {
+    const result = await page.waitForFunction(
+      (expectedId) => {
+        const app = window.fnt?.app;
+        const current = app?.state?.battle;
+        const actor = current?.units.find((unit) => unit.id === current.order[current.turnIndex]);
+        if (expectedId && (current?.phase !== 'active' || actor?.id !== expectedId)) {
+          return 'actor-changed';
+        }
+        const scene = document.querySelector('.combat-scene');
+        const shownName = scene?.querySelector('.unit-panel .unit-name')?.textContent?.trim();
+        return app?.state?.screen === 'combat' &&
+          current?.phase === 'active' &&
+          actor?.faction === 'party' &&
+          shownName === actor.name &&
+          scene?.querySelector('.action-row button.action-button') !== null &&
+          scene?.querySelector('.handoff-banner') === null &&
+          !scene?.hasAttribute('data-battle-opening') &&
+          !app?.curtainBusy
+          ? 'ready'
+          : false;
+      },
+      expectedActorId,
+      { timeout: slow ? 60_000 : 30_000, polling: 'raf' },
+    );
+    return (await result.jsonValue()) === 'ready';
+  };
+
   /** Waits for a party turn, clears its hand-off; false once the fight is over. */
   const partyTurn = async (): Promise<Unit | null> => {
     const result = await page.waitForFunction(
@@ -800,6 +829,7 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       await expect(ready).toBeHidden({ timeout: slow ? 30_000 : 10_000 });
     }
     await waitForIdle(page, slow ? 300_000 : 30_000);
+    if (!(await waitForCombatHud())) return null;
     const { battle: b } = await battle();
     return b?.units.find((u) => u.id === b.order[b.turnIndex]) ?? null;
   };
@@ -875,7 +905,8 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       (c) => !b.units.some((u) => u.hp > 0 && u.pos.x === c.pos.x && u.pos.y === c.pos.y),
     );
     const move = page.locator('.action-row').getByRole('button', { name: /^Move \d+ left$/ });
-    if (!(await move.isEnabled({ timeout: 15_000 }))) return false;
+    if (!(await waitForCombatHud(unit.id))) return false;
+    if (!(await move.isEnabled({ timeout: 2_000 }))) return false;
     await tapButton(move);
     await settleLayout(page, slow ? 120_000 : 30_000);
     // The nearest tile to the goal that is on screen: a tap can only land there.
@@ -914,17 +945,27 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
   };
 
   /** Aims the named ability at a tile and confirms, if the button is live. */
-  const useAt = async (ability: RegExp, target: Vec2, still?: string): Promise<boolean> => {
+  const useAt = async (
+    actorId: string,
+    ability: RegExp,
+    target: Vec2,
+    still?: string,
+  ): Promise<boolean> => {
     recordInput('ability-intent', ability.source, target);
-    const button = page.getByRole('button', { name: ability }).first();
-    if (!(await button.count()) || !(await button.isEnabled({ timeout: 15_000 }))) return false;
+    const current = (await battle()).battle;
+    if (current?.order[current.turnIndex] !== actorId) return false;
+    if (!(await waitForCombatHud(actorId))) return false;
+    const button = page.locator('.action-row').getByRole('button', { name: ability }).first();
+    if (!(await button.count())) return false;
+    await expect(button).toBeVisible({ timeout: slow ? 60_000 : 30_000 });
+    if (!(await button.isEnabled({ timeout: 2_000 }))) return false;
     await tapButton(button);
     await tapTile(target);
     const bar = page.locator('.confirm-bar').getByRole('button', { name: /^Confirm$/ });
     await page.waitForTimeout(300);
     if (
       !(await bar.isVisible().catch(() => false)) ||
-      !(await bar.isEnabled({ timeout: 15_000 }).catch(() => false))
+      !(await bar.isEnabled({ timeout: 2_000 }).catch(() => false))
     ) {
       const cancel = page.getByRole('button', { name: /Cancel$/ }).first();
       if (await cancel.isVisible().catch(() => false)) await tapButton(cancel);
@@ -1127,7 +1168,8 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       const b = (await battle()).battle;
       const acting = b?.units.find((u) => u.id === b.order[b.turnIndex]);
       if (!b || b.phase !== 'active' || acting?.faction !== 'party') break;
-      if (!(await end.isEnabled({ timeout: 15_000 }).catch(() => false))) break;
+      if (!(await waitForCombatHud(acting.id))) break;
+      if (!(await end.isEnabled({ timeout: 2_000 }).catch(() => false))) break;
       if (tap === 1 && acting.id !== lastActing) break;
       lastActing = acting.id;
       await tapButton(end);
@@ -1193,12 +1235,12 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       }
     }
     if (isKaya && !flaskBroken) {
-      flaskBroken = await useAt(/^Fire Jab/, FLASK, 'flask-aim');
+      flaskBroken = await useAt(unit.id, /^Fire Jab/, FLASK, 'flask-aim');
       if (!flaskBroken) {
         for (let m = 0; m < 2 && !flaskBroken; m++) {
           const self = (await battle()).battle?.units.find((u) => u.id === unit.id);
           if (!self || !(await moveToward(self, FLASK))) break;
-          flaskBroken = await useAt(/^Fire Jab/, FLASK, 'flask-aim');
+          flaskBroken = await useAt(unit.id, /^Fire Jab/, FLASK, 'flask-aim');
         }
       }
       if (flaskBroken) {
@@ -1215,7 +1257,7 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       const name = new RegExp(`^${first.name}`);
       const still = beats.some((b) => b.name === 'attack-aim') ? undefined : 'attack-aim';
       if (dist(unit.pos, target.pos) > first.range) await moveToward(unit, target.pos);
-      const hit = await useAt(name, target.pos, still);
+      const hit = await useAt(unit.id, name, target.pos, still);
       if (!hit && !beats.some((b) => b.name === 'combat-midfight')) await beat('combat-midfight');
     }
     if ((await battle()).battle?.phase === 'active') await endTurn();
