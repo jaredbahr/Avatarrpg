@@ -1,4 +1,5 @@
 import type { ConsoleMessage, Page, TestInfo } from '@playwright/test';
+import { appendDiagnosticToExistingError } from './diagnostic-error';
 
 interface ObscurementSample {
   bodyElapsedMs: number;
@@ -113,6 +114,15 @@ export async function recordObscurementDiagnostics(page: Page) {
         configuredTimeoutMs: testInfo.timeout,
         latestSamples: samples.slice(-3),
       };
+      try {
+        appendDiagnosticToExistingError(
+          testInfo,
+          'Obscurement activity diagnostics',
+          JSON.stringify(summary).slice(0, 3500),
+        );
+      } catch {
+        // Reporting must never replace the original assertion or timeout.
+      }
       if (process.env.GITHUB_ACTIONS === 'true') {
         try {
           const payload = JSON.stringify(summary).slice(0, 3500);
