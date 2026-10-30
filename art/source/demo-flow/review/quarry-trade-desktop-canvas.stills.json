@@ -84,6 +84,18 @@
     "reviewStill": "quarry-trade-desktop-canvas-66-driller-ending-summary.webp"
   },
   {
+    "beat": "cutting-return",
+    "atMs": 784639,
+    "rawStill": "68-cutting-return.png",
+    "reviewStill": "quarry-trade-desktop-canvas-68-cutting-return.webp"
+  },
+  {
+    "beat": "forest-road-return",
+    "atMs": 818107,
+    "rawStill": "70-forest-road-return.png",
+    "reviewStill": "quarry-trade-desktop-canvas-70-forest-road-return.webp"
+  },
+  {
     "beat": "ba-dan-return",
     "atMs": 838913,
     "rawStill": "73-ba-dan-return.png",
