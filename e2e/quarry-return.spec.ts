@@ -201,27 +201,40 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
 async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'): Promise<void> {
   beginPhase(page, 'story');
   const report = phases.get(page)?.story ?? null;
-  let context: StoryOperationContext = { nodeId: null, lineIndex: null, branch: 'state' };
+  let context: StoryOperationContext = { nodeId: null, lineIndex: null, branch: 'snapshot' };
   const timed = <T>(branch: string, operation: string, action: () => Promise<T>) =>
     timeStoryOperation(report, operation, { ...context, branch }, action);
   for (let step = 0; step < 60; step++) {
-    const state = await timeStoryOperation(
+    const snapshot = await timeStoryOperation(
       report,
       'read',
-      { ...context, branch: 'state' },
-      () => page.evaluate(() => window.fnt?.app.state),
+      { ...context, branch: 'snapshot' },
+      () =>
+        page.evaluate(() => {
+          const state = window.fnt?.app.state;
+          // These controls use light DOM. Count every class match, including
+          // hidden or locked controls, just like the original locator counts.
+          return {
+            pendingChoiceCount: state?.pendingChoices.length ?? 0,
+            screen: state?.screen,
+            nodeId: state?.story.nodeId ?? null,
+            lineIndex: state?.story.lineIndex ?? null,
+            interludeCount: document.querySelectorAll('.interlude-stage').length,
+            choiceCount: document.querySelectorAll('.choice-option').length,
+          };
+        }),
       (result) => ({
-        nodeId: result?.story.nodeId ?? null,
-        lineIndex: result?.story.lineIndex ?? null,
-        branch: 'state',
+        nodeId: result.nodeId,
+        lineIndex: result.lineIndex,
+        branch: 'snapshot',
       }),
     );
     context = {
-      nodeId: state?.story.nodeId ?? null,
-      lineIndex: state?.story.lineIndex ?? null,
-      branch: 'state',
+      nodeId: snapshot.nodeId,
+      lineIndex: snapshot.lineIndex,
+      branch: 'snapshot',
     };
-    if (state?.pendingChoices.length) {
+    if (snapshot.pendingChoiceCount) {
       await timed('learn', 'click', () =>
         page
           .getByRole('button', { name: /^Learn / })
@@ -230,25 +243,25 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
       );
       continue;
     }
-    if (state?.screen !== 'dialogue') {
+    if (snapshot.screen !== 'dialogue') {
       endPhase(page);
       return;
     }
-    if (await timed('interlude', 'count', () => page.locator('.interlude-stage').count())) {
+    if (snapshot.interludeCount) {
       await timed('skip', 'click', () => page.getByRole('button', { name: 'Skip scene' }).click());
       continue;
     }
-    if (state.story.nodeId === 'gate_parley') {
+    if (snapshot.nodeId === 'gate_parley') {
       // Bo speaks to the earthbender.
       await timed('gateParley', 'click', () => page.locator('.choice-option').nth(2).click());
       continue;
     }
-    if (state.story.nodeId === 'gate_kinship') {
+    if (snapshot.nodeId === 'gate_kinship') {
       await timed('gateKinship', 'assert', () =>
         expect(page.locator('.stage[data-kind="dialogue"]')).toHaveCount(1),
       );
     }
-    if (state.story.nodeId === 'ruon_choice') {
+    if (snapshot.nodeId === 'ruon_choice') {
       await timed('ruonChoice', 'assert', () =>
         expect(
           page.locator('.stage[data-kind="dialogue"], .stage[data-kind="choice"]'),
@@ -262,7 +275,7 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
       );
       continue;
     }
-    if (await timed('choice', 'count', () => page.locator('.choice-option').count())) {
+    if (snapshot.choiceCount) {
       await timed('choice', 'click', () =>
         page.locator('.choice-option:not(.is-locked)').first().click(),
       );
