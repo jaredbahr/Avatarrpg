@@ -15,6 +15,7 @@ import type { MapView, RenderUnit } from '../src/render/view';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { groundPoint } from './projection';
+import { prepareRaisedHoverEvidence } from './raised-hover-evidence';
 
 const REVIEW_DIR = resolve(process.cwd(), '.shots/pixel-overlay-review');
 const VIEWPORT = { width: 1280, height: 800 };
@@ -1725,7 +1726,9 @@ for (const backend of ['canvas', 'webgl'] as const) {
       hasTouch: true,
     });
     const page = await context.newPage();
+    let observation: Awaited<ReturnType<typeof prepareRaisedHoverEvidence>> | null = null;
     try {
+      if (backend === 'webgl') observation = await prepareRaisedHoverEvidence(page);
       await resetStorage(page, `?renderer=${backend}`);
       await startGame(page, ['Kaya'], ['kaya'], 'pixel-overlay-raised-pick');
       await enterNode(page, 'quarry_after_explore');
@@ -1763,6 +1766,11 @@ for (const backend of ['canvas', 'webgl'] as const) {
           (window as Window & { raisedTouchPick?: { x: number; y: number } }).raisedTouchPick = pos;
           original.call(scene, pos);
         };
+        if (window.raisedHoverObserver) {
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          if (!canvas) throw new Error('Missing raised hover canvas');
+          window.raisedHoverObserver.install(scene, canvas);
+        }
         return { ...drawn, scale: camera.scale };
       }, TIER_LIFT);
       const box = await page.locator('.map-canvas').boundingBox();
@@ -1771,20 +1779,23 @@ for (const backend of ['canvas', 'webgl'] as const) {
       expect(point.y).toBeGreaterThan(0);
       expect(point.x).toBeLessThan(box.width);
       expect(point.y).toBeLessThan(box.height);
+      observation?.intendPointer(box.x + point.x, box.y + point.y);
       await page.mouse.move(box.x + point.x, box.y + point.y);
       await expect
         .poll(() =>
-          page.evaluate(() => {
-            const scene = (
-              window.fnt!.app as unknown as {
-                scene: {
-                  hover: { x: number; y: number } | null;
-                  renderer: { lastView: MapView | null };
-                };
-              }
-            ).scene;
-            return { hover: scene.hover, drawn: scene.renderer.lastView?.hoverTile ?? null };
-          }),
+          observation
+            ? observation.readForPoll()
+            : page.evaluate(() => {
+                const scene = (
+                  window.fnt!.app as unknown as {
+                    scene: {
+                      hover: { x: number; y: number } | null;
+                      renderer: { lastView: MapView | null };
+                    };
+                  }
+                ).scene;
+                return { hover: scene.hover, drawn: scene.renderer.lastView?.hoverTile ?? null };
+              }),
         )
         .toEqual({ hover: { x: 5, y: 1 }, drawn: { x: 5, y: 1 } });
       const hovered = await page.evaluate(() => {
@@ -1847,6 +1858,7 @@ for (const backend of ['canvas', 'webgl'] as const) {
         path: resolve(REVIEW_DIR, `raised-quarry-${backend}-dpr2-hover-touch.png`),
       });
     } finally {
+      await observation?.close();
       await context.close();
     }
   });
