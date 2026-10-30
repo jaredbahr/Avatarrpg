@@ -8,6 +8,8 @@ const port = Number(process.env.FNT_PIXEL_CAPTURE_PORT ?? 4381);
 if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Invalid capture port');
 const origin = `http://127.0.0.1:${port}`;
 const chromium = '/opt/pw-browsers/chromium';
+// Use only after an exact-head production build has a recorded exit-0 receipt.
+const built = process.env.FNT_PIXEL_CAPTURE_SKIP_BUILD === '1';
 
 export default defineConfig({
   testDir: './e2e',
@@ -25,7 +27,7 @@ export default defineConfig({
     launchOptions: existsSync(chromium) ? { executablePath: chromium } : {},
   },
   webServer: {
-    command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${port}`,
+    command: `${built ? '' : 'npm run build && '}npm run preview -- --host 127.0.0.1 --port ${port}`,
     cwd: appRoot,
     url: origin,
     reuseExistingServer: false,
