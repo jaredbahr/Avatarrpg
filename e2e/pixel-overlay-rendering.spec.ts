@@ -670,10 +670,24 @@ async function captureStagedMarks(
       for (const name of Object.keys(prefixes) as MarkName[]) {
         const cue = cueSamples[name];
         if (!cue) throw new Error(`${name} did not emit a production pixel cue`);
-        const boardLeft = (cue.anchor?.x ?? 0) + cue.spec.bounds.left;
-        const boardTop = (cue.anchor?.y ?? 0) + cue.spec.bounds.top;
-        const cssWidth = (Math.min(80, cue.spec.bounds.width) + 4) * requestedZoom;
-        const cssHeight = (Math.min(80, cue.spec.bounds.height) + 4) * requestedZoom;
+        const bounds = cue.spec.bounds;
+        const first = cue.spec.operations[0];
+        const occupied = first?.kind === 'circle' ? first.centre : first?.points[0];
+        if (!occupied) throw new Error(`${name} has no mark pixel near an authored point`);
+        const sampledWidth = Math.min(80, bounds.width);
+        const sampledHeight = Math.min(80, bounds.height);
+        const localLeft = Math.min(
+          Math.max(occupied.x - Math.floor(sampledWidth / 2), bounds.left),
+          bounds.left + bounds.width - sampledWidth,
+        );
+        const localTop = Math.min(
+          Math.max(occupied.y - Math.floor(sampledHeight / 2), bounds.top),
+          bounds.top + bounds.height - sampledHeight,
+        );
+        const boardLeft = (cue.anchor?.x ?? 0) + localLeft;
+        const boardTop = (cue.anchor?.y ?? 0) + localTop;
+        const cssWidth = (sampledWidth + 4) * requestedZoom;
+        const cssHeight = (sampledHeight + 4) * requestedZoom;
         const dpr = camera.viewport.dpr;
         const width = cssWidth * dpr;
         const height = cssHeight * dpr;
