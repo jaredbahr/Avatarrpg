@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import {
+  completeAuthoredPlayback,
   enterNode,
   resetStorage,
   setLargeText,
@@ -177,6 +178,8 @@ for (const renderer of ['canvas', 'webgl']) {
     // takes two minutes there and five seconds on Canvas.
     test.setTimeout(90_000);
     allowSoftwareWebgl(test, renderer);
+    // Own the shrine route timer from boot before advancing its long walk.
+    await page.clock.install();
     diagnostics.set(page, await recordRiversideDiagnostics(page));
     // Scenic-route assertions scale with the current stroll pace; crossing
     // the whole area can exceed the default timeout even at a smooth frame rate.
@@ -234,6 +237,9 @@ for (const renderer of ['canvas', 'webgl']) {
     await expect(page.locator('.explore-phase')).toHaveText('Midday');
     await openActivities(page);
     await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
+    // The tea porch to shrine route is ~23 seconds at its authored pace.
+    // Publish its real completion frames while preserving the route assertions.
+    await completeAuthoredPlayback(page);
     await expect(page.locator('.explore-conversation, .dialogue-scene').first()).toBeVisible({
       timeout,
     });
