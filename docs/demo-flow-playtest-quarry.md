@@ -14,18 +14,18 @@ Portrait is a Chromium touch viewport, not Safari or a physical iPad. The driver
 
 Times below are seconds from each fixture's start, approximately the corresponding video position. The beat manifests hold exact millisecond and UTC clock values. All selected stills are scaled WebP from unaltered Playwright PNG frames; each contact sheet covers every recorded beat. The enemy-turn frame is a labeled extraction at video 170.0 seconds, not a repainted image.
 
-| Beat | Desktop trade (s) | Portrait escort (s) |
-| --- | ---: | ---: |
-| Title / party ready | 6.2 / 12.3 | Pending |
-| Practice / Mira | 36.7 / 48.9 | Pending |
-| Forest first turn / defeat | 122.9 / 574.6 | Pending |
-| Quarry gate / custody choice | 602.2 / 633.1 | Pending |
-| Cutting / quarry floor | 659.8 / 678.6 | Pending |
-| Driller first turn / boss focus | 716.7 / 718.2 | Pending |
-| Driller victory / outcome / summary | 762.8 / 766.2 / 774.8 | Pending |
-| Ba Dan return | 838.9 | Pending |
-| Dorin / Mira / Gao | 853.0 / 895.9 / 918.3 | Pending |
-| Completed custody response | 925.8 | Pending |
+| Beat                                |     Desktop trade (s) | Portrait escort (s) |
+| ----------------------------------- | --------------------: | ------------------: |
+| Title / party ready                 |            6.2 / 12.3 |             Pending |
+| Practice / Mira                     |           36.7 / 48.9 |             Pending |
+| Forest first turn / defeat          |         122.9 / 574.6 |             Pending |
+| Quarry gate / custody choice        |         602.2 / 633.1 |             Pending |
+| Cutting / quarry floor              |         659.8 / 678.6 |             Pending |
+| Driller first turn / boss focus     |         716.7 / 718.2 |             Pending |
+| Driller victory / outcome / summary | 762.8 / 766.2 / 774.8 |             Pending |
+| Ba Dan return                       |                 838.9 |             Pending |
+| Dorin / Mira / Gao                  | 853.0 / 895.9 / 918.3 |             Pending |
+| Completed custody response          |                 925.8 |             Pending |
 
 [Desktop recording](../art/source/demo-flow/review/quarry-trade-desktop-canvas.mp4), [complete beat manifest](../art/source/demo-flow/review/quarry-trade-desktop-canvas.beats.json), [selected-still index](../art/source/demo-flow/review/quarry-trade-desktop-canvas.stills.json) and [capture receipt](../art/source/demo-flow/review/quarry-trade-desktop-canvas.receipt.json). Desktop contact sheets: [1](../art/source/demo-flow/review/quarry-trade-desktop-canvas-beats-1.webp), [2](../art/source/demo-flow/review/quarry-trade-desktop-canvas-beats-2.webp), [3](../art/source/demo-flow/review/quarry-trade-desktop-canvas-beats-3.webp), [4](../art/source/demo-flow/review/quarry-trade-desktop-canvas-beats-4.webp).
 
