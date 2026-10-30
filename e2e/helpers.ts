@@ -130,10 +130,12 @@ export async function enterNode(page: Page, nodeId: string): Promise<void> {
  *
  * Returns false if the fight ended while waiting, so a spec that drives
  * several rounds can stop rather than time out on a turn that will never come.
+ * State-only drivers may skip the final camera sample; tests that pick tiles
+ * keep it by default.
  */
 export async function takeTurn(
   page: Page,
-  options: { settleTimeout?: number } = {},
+  options: { settleTimeout?: number; settleCamera?: boolean } = {},
 ): Promise<boolean> {
   const result = await page.waitForFunction(
     () => {
@@ -161,7 +163,7 @@ export async function takeTurn(
     { timeout: 25_000 },
   );
   if (await ready.count()) await ready.click();
-  await settleLayout(page, options.settleTimeout);
+  if (options.settleCamera !== false) await settleLayout(page, options.settleTimeout);
   return true;
 }
 
