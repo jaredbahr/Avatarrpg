@@ -203,6 +203,38 @@ describe('upright actor health bar', () => {
     for (const cell of dark) expect(contrast.has(cell)).toBe(true);
   });
 
+  it('keeps the Canvas cue on the Pixi pixel phase through a fractional camera offset', () => {
+    const scale = 1;
+    const offset = { x: 0.5, y: 1.5 }; // whole device pixels at DPR 2
+    const worldCentre = { x: 64, y: 55 };
+    const screenCentre = {
+      x: worldCentre.x * scale - offset.x,
+      y: worldCentre.y * scale - offset.y,
+    };
+    const canvas = activeGroundCue(
+      (screenCentre.x + offset.x) / scale,
+      (screenCentre.y + offset.y) / scale,
+      64,
+      64,
+      1,
+      1,
+    );
+    const pixi = activeGroundCue(worldCentre.x, worldCentre.y, 64, 64, 1, 1);
+    expect(canvas).toEqual(pixi);
+    for (const run of [...canvas.outer, ...canvas.inner]) {
+      const deviceEdges = [
+        (run.x * scale - offset.x) * 2,
+        (run.y * scale - offset.y) * 2,
+        ((run.x + run.width) * scale - offset.x) * 2,
+        ((run.y + run.height) * scale - offset.y) * 2,
+      ];
+      expect(deviceEdges.every(Number.isInteger)).toBe(true);
+      expect(deviceEdges.every((edge) => Math.abs(edge % 2) === 1)).toBe(true);
+    }
+    // Screen-origin snapping would paint even device columns instead.
+    expect(activeGroundCue(screenCentre.x, screenCentre.y, 64, 64, 1, scale)).not.toEqual(canvas);
+  });
+
   it('stagger overlapping bars upward in place and leaves clear bars untouched', () => {
     const first = actorHealthBar(0, 100, 96, 96, 1);
     const overlapping = actorHealthBar(30, 100, 96, 96, 1);

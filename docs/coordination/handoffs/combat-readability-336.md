@@ -23,7 +23,9 @@ until that parent lands; retargeting to main is a separate integration gate.
   filled, integer world-pixel runs for the ink and gold outlines; Canvas and
   Pixi fill rectangles, so neither draws antialiased diagonal strokes. High
   Contrast widens the ink outline from three to four world pixels. Reduced
-  Motion has no moving cue path.
+  Motion has no moving cue path. Canvas computes the cue in world coordinates
+  and applies the camera transform after snapping, matching Pixi's pixel-grid
+  phase even when the camera offset is a half CSS pixel at DPR 2.
 - At Normal text, the six-chip desktop initiative strip is one row no taller
   than 3.75rem, with each chip at least `var(--tap)` tall. On an upright iPad at
   Largest text, names may wrap within their chips instead of being ellipsized.
@@ -31,9 +33,10 @@ until that parent lands; retargeting to main is a separate integration gate.
 ## Verification state
 
 The scoped geometry test covers actor-scale width, world-pixel height, filled
-cue runs, Canvas/Pixi coordinate-scale parity, a hollow centre, and the stronger
-High Contrast outline. The focused test, TypeScript, scoped ESLint, Prettier,
-and `git diff --check` passed on the acting-cue amendment before its commit.
+cue runs, Canvas/Pixi coordinate-scale and camera-offset parity, a hollow
+centre, and the stronger High Contrast outline. The focused test (31 cases),
+scoped ESLint, and Prettier pass on the camera-offset follow-up. TypeScript
+passed on the preceding cue revision; it awaits the combined integration run.
 The browser spec checks 1280×800 desktop and 834×1194 iPad portrait on Canvas
 and WebGL, including Normal strip geometry, Largest names, reduced-motion and
 High Contrast captures, and an actual painted-pixel comparison at 7/13 HP.

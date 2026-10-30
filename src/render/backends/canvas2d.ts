@@ -2085,16 +2085,22 @@ export class Canvas2DBackend implements RenderBackend {
       const centreLift = (footprint - 1) * box.size * 0.5;
       // A stepped active-unit frame, drawn under the sprite like the former ring.
       if (unit.id === view.activeUnitId) {
+        // Snap in world space, then apply the camera transform. Snapping the
+        // screen point to a zero-based grid loses the offset's device-pixel
+        // phase (for example, half a CSS pixel at DPR 2) and separates this
+        // cue from the Pixi cue and the actor's feet.
         const cue = activeGroundCue(
-          marker.x + width / 2,
-          marker.y + box.size * 0.86 - centreLift,
-          width,
-          box.size,
+          (marker.x + width / 2 + camera.offsetX) / camera.scale,
+          (marker.y + box.size * 0.86 - centreLift + camera.offsetY) / camera.scale,
+          width / camera.scale,
+          box.size / camera.scale,
           footprint,
-          camera.scale,
+          1,
           view.crispOverlays ? 4 : 3,
         );
         ctx.save();
+        ctx.translate(-camera.offsetX, -camera.offsetY);
+        ctx.scale(camera.scale, camera.scale);
         ctx.fillStyle = HP_COLORS.frame;
         for (const run of cue.outer) ctx.fillRect(run.x, run.y, run.width, run.height);
         ctx.fillStyle = OVERLAY.active;
