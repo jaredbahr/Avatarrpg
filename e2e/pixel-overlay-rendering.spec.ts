@@ -218,7 +218,10 @@ async function captureGameplayMove(
   backend: 'canvas' | 'webgl',
   dpr: number,
 ): Promise<DrawTiming> {
-  const captureMoveFrame = async (phase: 'preview' | 'confirmed'): Promise<void> => {
+  const captureMoveFrame = async (
+    phase: 'preview' | 'confirmed',
+    expectedVisual?: { actorId: string; destination: { x: number; y: number } },
+  ): Promise<void> => {
     const path = resolve(
       REVIEW_DIR,
       `gameplay-${backend}-dpr${dpr}-move-${phase}${dpr === 2 ? '-canvas' : ''}.png`,
@@ -232,7 +235,13 @@ async function captureGameplayMove(
     // Chromium's full-page screenshot forces an expensive software-WebGL
     // readback. Draw the actual MapView and save the canvas at its native
     // backing resolution, rather than reducing or resampling the pixels.
-    const frame = await page.evaluate(() => {
+    if (phase === 'confirmed') {
+      // The scene loop publishes its final MapView on the next actual frame.
+      await page.evaluate(
+        () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+      );
+    }
+    const frame = await page.evaluate((expected) => {
       const renderer = (
         window.fnt!.app as unknown as {
           scene: { renderer: { lastView: MapView | null; draw(view: MapView): void } };
@@ -241,6 +250,9 @@ async function captureGameplayMove(
       const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
       const view = renderer.lastView;
       if (!canvas || !view) throw new Error('Missing real Move canvas or MapView');
+      const actor = expected ? view.units.find((unit) => unit.id === expected.actorId) : null;
+      if (expected && !actor) throw new Error('Missing confirmed Move actor in final MapView');
+      const visualPosition = actor ? (actor.renderPos ?? actor.pos) : null;
       renderer.draw(view);
       const rect = canvas.getBoundingClientRect();
       return {
@@ -249,14 +261,16 @@ async function captureGameplayMove(
         height: canvas.height,
         cssWidth: rect.width,
         cssHeight: rect.height,
+        visualPosition,
       };
-    });
+    }, expectedVisual ?? null);
     const png = Buffer.from(frame.dataUrl.split(',')[1] ?? '', 'base64');
     expect(png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))).toBe(true);
     expect(png.readUInt32BE(16)).toBe(frame.width);
     expect(png.readUInt32BE(20)).toBe(frame.height);
     expect(Math.abs(frame.width - frame.cssWidth * dpr)).toBeLessThanOrEqual(1);
     expect(Math.abs(frame.height - frame.cssHeight * dpr)).toBeLessThanOrEqual(1);
+    if (expectedVisual) expect(frame.visualPosition).toEqual(expectedVisual.destination);
     writeFileSync(path, png);
     writeFileSync(
       `${path}.json`,
@@ -270,6 +284,7 @@ async function captureGameplayMove(
           height: frame.height,
           cssWidth: frame.cssWidth,
           cssHeight: frame.cssHeight,
+          visualPosition: frame.visualPosition,
         },
         null,
         2,
@@ -366,7 +381,7 @@ async function captureGameplayMove(
     return unit ? `${unit.pos.x},${unit.pos.y}` : null;
   }, active.id);
   expect(confirmedPosition).toBe(`${destination.cell.pos.x},${destination.cell.pos.y}`);
-  await captureMoveFrame('confirmed');
+  await captureMoveFrame('confirmed', { actorId: active.id, destination: destination.cell.pos });
   return drawTiming;
 }
 
