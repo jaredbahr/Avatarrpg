@@ -3205,12 +3205,12 @@ export class PixiBackend implements RenderBackend {
         : healthBarCap(bar, kind, actorX, 1 / camera.scale);
     if (cap.length === 0) return;
     if (kind === 'spike') {
-      const anchor = snapWorldPoints([{ x: cap[0] ?? 0, y: barY + barHeight / 2 }])[0];
+      const midpoint = { x: cap[0] ?? 0, y: barY + barHeight / 2 };
+      const anchor = snapWorldPoints([midpoint])[0];
       if (!anchor) return;
       const points: Vec2[] = [];
       for (let i = 0; i + 1 < cap.length; i += 2) {
-        const point = snapWorldPoints([{ x: cap[i] ?? 0, y: cap[i + 1] ?? 0 }])[0];
-        if (point) points.push({ x: point.x - anchor.x, y: point.y - anchor.y });
+        points.push({ x: (cap[i] ?? 0) - midpoint.x, y: (cap[i + 1] ?? 0) - midpoint.y });
       }
       this.appendPixelMarks(
         this.pixelForegroundLayer,
