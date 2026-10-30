@@ -99,6 +99,25 @@ merge, deployment or auto-merge is authorized in the current session.
   `docs/coordination/handoffs/ci-gesture-dpr-370.md`. The intermediate
   diagnostic head `764d36b3` passed all nine pinned local checks (259 files,
   3,008 tests); this later integration head still needs its own exact-head run.
+- The second branch dispatch, `41022073661` on `c77cd6d9`, passed verification
+  and all three Chromium shards cleanly (86 + 85 + 84 cases). WebKit 1/2 still
+  failed Riverside with three passed and 136 unrun: the reporter now shows the
+  final real Water form started at about 88 s into the fixed 90 s case, with
+  3.8 s of normal activity remaining and active scene frames. WebKit 2/2 passed
+  the corrected gesture assertion, then timed out at the real obscurement Log
+  click near its fixed 30 s limit (five passed, 123 unrun). The gallery matrix
+  was skipped after E2E failed. Merge `b700c1d0` retains the Riverside worker's
+  `c8d967b0` source and evidence commits: only the long tea-porch-to-shrine
+  route advances through its authored animator finish, keeping the other walks,
+  full dialogue, three real-time forms, Wave locks and save/leave assertions.
+  The original Canvas case passed at DPR 1 and 2 in 51.6 and 58.7 s under its
+  unchanged 90 s limit; forced WebGL passed in 1.8 min under its existing
+  software-renderer budget. Merge `f0b9f96d` retains the obscurement worker's
+  `3a4bda9c` source and evidence commits: the test reads the synchronously
+  recorded miss through real Log interaction immediately after Confirm,
+  without waiting for unrelated animator playback. Its original Canvas case
+  passed at DPR 2 in 13.9 s under the unchanged 30 s limit. Both changes are
+  test-only; detailed focused receipts are in their respective handoffs.
 - The current final head still requires all nine `npm run ci:local` steps before
   any push. Open one draft PR into main after that gate, leave auto-merge off,
   wait for PR verification, then dispatch CI once on the branch with
