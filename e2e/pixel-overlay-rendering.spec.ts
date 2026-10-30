@@ -1064,8 +1064,8 @@ async function captureStagedMarks(
                   ],
                 },
                 { anchor: 'targetReticle', members: ['targetReticle'] },
-                { anchor: 'healthBar', members: ['healthBar'] },
                 { anchor: 'talk', members: ['talk'] },
+                { anchor: 'healthBar', members: ['healthBar'] },
               ]
             : requestedZoom === 2
               ? [
@@ -1084,16 +1084,16 @@ async function captureStagedMarks(
                   },
                   { anchor: 'selected', members: ['aim', 'selected'] },
                   { anchor: 'targetReticle', members: ['targetReticle'] },
-                  { anchor: 'healthBar', members: ['healthBar'] },
                   { anchor: 'talk', members: ['talk'] },
+                  { anchor: 'healthBar', members: ['healthBar'] },
                 ]
               : [
                   { anchor: 'target', members: ['move', 'target', 'area', 'path', 'exit'] },
                   { anchor: 'rangeBonus', members: ['rangeBonus', 'hover', 'ko'] },
                   { anchor: 'aim', members: ['aim', 'selected'] },
                   { anchor: 'targetReticle', members: ['targetReticle'] },
-                  { anchor: 'healthBar', members: ['healthBar'] },
                   { anchor: 'talk', members: ['talk'] },
+                  { anchor: 'healthBar', members: ['healthBar'] },
                 ];
         const scheduled = plans.flatMap((plan) => plan.members);
         if (scheduled.length !== names.length || new Set(scheduled).size !== names.length)
