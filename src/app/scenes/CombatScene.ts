@@ -478,12 +478,12 @@ export class CombatScene implements Scene {
     if (this.victoryPending) {
       // Clearing the decision dock may resize the canvas while the last hit
       // is still playing. Keep its camera frame until playback has finished.
-      camera.clamp();
       this.syncRecentre();
       return;
     }
     if (this.battle()?.phase === 'victory' && motionReduced()) {
-      camera.clamp();
+      // Reduced motion keeps the exact frame even when the terminal HUD gives
+      // the canvas more room; clamping would recenter a fitted board here.
       this.syncRecentre();
       return;
     }

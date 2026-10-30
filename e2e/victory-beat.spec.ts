@@ -63,7 +63,7 @@ test('a tap on the clear-board victory overlay skips to the unchanged result car
   await page.clock.resume();
 });
 
-test('reduced motion keeps camera zoom still and shows the card without a hold', async ({
+test('reduced motion keeps the camera still and shows the card without a hold', async ({
   page,
 }) => {
   await openReadyFight(page, true);
@@ -77,6 +77,8 @@ test('reduced motion keeps camera zoom still and shows the card without a hold',
   await expect(page.locator('.combat-scene[data-victory-beat="active"]')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Show result' })).toHaveCount(0);
   const after = await page.evaluate(() => window.fnt!.app.rendererCamera());
-  expect(after?.scale).toBe(before.scale);
+  expect(after?.tilePx).toBe(before.tilePx);
+  expect(after?.offsetX).toBe(before.offsetX);
+  expect(after?.offsetY).toBe(before.offsetY);
   await page.clock.resume();
 });

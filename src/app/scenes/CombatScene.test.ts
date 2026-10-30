@@ -419,22 +419,33 @@ describe('victory result lifecycle', () => {
     expect(overlays.children).toEqual([result]);
   });
 
-  it('preserves the last-hit camera frame when terminal HUD reflow resizes the board', () => {
-    const { scene } = resultHarness();
-    const clamp = vi.fn();
-    const recentre = vi.fn();
-    Object.assign(scene, {
-      victoryPending: true,
-      renderer: { camera: { clamp } },
-      recentre,
-      syncRecentre: vi.fn(),
+  for (const [label, reducedMotion, pending] of [
+    ['final-hit playback', false, true],
+    ['reduced-motion result', true, false],
+  ] as const) {
+    it(`preserves camera scale and offsets through HUD growth during ${label}`, () => {
+      const { scene } = resultHarness(reducedMotion);
+      const camera = new Camera({ width: 900, height: 500, dpr: 1 }, { width: 20, height: 12 });
+      camera.fit();
+      camera.centre();
+      const before = { scale: camera.scale, x: camera.offsetX, y: camera.offsetY };
+      const recentre = vi.fn();
+      Object.assign(scene, {
+        victoryPending: pending,
+        renderer: { camera },
+        recentre,
+        syncRecentre: vi.fn(),
+      });
+      camera.viewport = { width: 1200, height: 700, dpr: 1 };
+
+      scene.refit();
+
+      expect(camera.scale).toBe(before.scale);
+      expect(camera.offsetX).toBe(before.x);
+      expect(camera.offsetY).toBe(before.y);
+      expect(recentre).not.toHaveBeenCalled();
     });
-
-    scene.refit();
-
-    expect(clamp).toHaveBeenCalledOnce();
-    expect(recentre).not.toHaveBeenCalled();
-  });
+  }
 
   it('keeps the camera still under reduced motion, then reveals the card after playback', () => {
     const { scene, overlays, result, battle } = resultHarness(true);
