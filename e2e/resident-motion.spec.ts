@@ -8,7 +8,12 @@ import {
 } from './resident-completion';
 import type { ResidentPlanSnapshot, PlannedResidentTrack } from './resident-completion';
 import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
+import { TIMING } from '../src/app/anim/choreography';
+import { strollTiming } from '../src/app/anim/stroll';
+import { previewWalk } from '../src/app/world/walking';
+import { CONTENT } from '../src/content';
 import type { GameState } from '../src/core/types';
+import { smoothPath } from '../src/render/geometry/curve';
 import type { NpcMarker } from '../src/render/view';
 
 /**
@@ -424,6 +429,16 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
   );
   await page.clock.runFor(50);
   const point = await bodyPoint(page, { x: 8, y: 5 });
+  const { routeState, routeStart } = await page.evaluate(() => ({
+    routeState: window.fnt!.app.state!,
+    routeStart: performance.now(),
+  }));
+  const route = previewWalk(CONTENT, routeState, home.pos);
+  expect(route.path.length).toBeGreaterThan(0);
+  const routeDurationMs = strollTiming(
+    smoothPath(route.from, route.path).length,
+    TIMING.strollStep,
+  ).duration;
   await page.mouse.click(point.x, point.y);
   await page.clock.runFor(50);
   // The talk waits for him: the party sets off, and nothing opens yet.
@@ -448,20 +463,24 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
   expect(await page.evaluate(() => window.fnt!.app.state!.screen)).toBe('explore');
   // Advance only page time for the longer party stroll so Gao's home hold
   // cannot start another errand mid-skip. The party route is much longer than
-  // a fixed ten-second guess at the current 750 ms/tile pace, so use the
-  // active animation's own end time and render the queued-talk handoff after it.
+  // a fixed ten-second guess at the current stroll pace. Budget from the
+  // planned route and exported pace, while the animator covers any extra
+  // formation time before the queued-talk handoff renders.
   const partyWalk = await page.evaluate(() => {
     const app = window.fnt!.app;
     const now = performance.now();
     return {
       busy: app.animator.busy(now),
       remainingMs: Math.max(0, app.animator.finishesAt - now),
+      now,
     };
   });
   expect(partyWalk.busy).toBe(true);
   expect(partyWalk.remainingMs).toBeGreaterThan(0);
-  expect(partyWalk.remainingMs).toBeLessThan(FAKE_CLOCK_WALK_BUDGET_MS);
-  await page.clock.fastForward(partyWalk.remainingMs + CLOCK_STEP_MS * 2);
+  const remainingFromRouteMs = Math.max(0, routeStart + routeDurationMs - partyWalk.now);
+  const remainingWalkMs = Math.max(remainingFromRouteMs, partyWalk.remainingMs);
+  expect(remainingWalkMs).toBeLessThan(FAKE_CLOCK_WALK_BUDGET_MS);
+  await page.clock.fastForward(remainingWalkMs + CLOCK_STEP_MS * 2);
   let opened = false;
   for (let step = 0; step < 10 && !opened; step++) {
     await page.clock.runFor(100);
