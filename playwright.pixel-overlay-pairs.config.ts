@@ -7,7 +7,9 @@ const appRoot = resolve(process.env.FNT_PIXEL_CAPTURE_APP_ROOT ?? process.cwd())
 const port = Number(process.env.FNT_PIXEL_CAPTURE_PORT ?? 4381);
 if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Invalid capture port');
 const origin = `http://127.0.0.1:${port}`;
-const chromium = '/opt/pw-browsers/chromium';
+const chromium = ['/opt/pw-browsers/chromium', '/usr/bin/chromium'].find((path) =>
+  existsSync(path),
+);
 // Use only after an exact-head production build has a recorded exit-0 receipt.
 const built = process.env.FNT_PIXEL_CAPTURE_SKIP_BUILD === '1';
 
@@ -24,7 +26,7 @@ export default defineConfig({
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
     hasTouch: true,
-    launchOptions: existsSync(chromium) ? { executablePath: chromium } : {},
+    launchOptions: chromium ? { executablePath: chromium } : {},
   },
   webServer: {
     command: `${built ? '' : 'npm run build && '}npm run preview -- --host 127.0.0.1 --port ${port}`,
