@@ -11,14 +11,34 @@ export interface StoryOperationSample extends StoryOperationContext {
   readonly failed: boolean;
 }
 
+export interface ActiveStoryOperation extends StoryOperationContext {
+  readonly operation: string;
+  /** Node monotonic time, set before the original browser operation starts. */
+  readonly startedAt: number;
+}
+
 export interface StoryOperationReport {
   totals: Record<string, { count: number; totalMs: number; maxMs: number }>;
   slowest: StoryOperationSample[];
   latest: StoryOperationSample | null;
+  active: ActiveStoryOperation | null;
 }
 
 export function newStoryOperationReport(): StoryOperationReport {
-  return { totals: {}, slowest: [], latest: null };
+  return { totals: {}, slowest: [], latest: null, active: null };
+}
+
+/** Snapshot a still-pending operation for the existing failure annotation. */
+export function storyOperationSnapshot(report: StoryOperationReport) {
+  return {
+    totals: report.totals,
+    slowest: report.slowest,
+    latest: report.latest,
+    active: report.active && {
+      ...report.active,
+      elapsedMs: Math.round(performance.now() - report.active.startedAt),
+    },
+  };
 }
 
 /** The original promise value or rejection is returned without substitution. */
@@ -30,6 +50,12 @@ export async function timeStoryOperation<T>(
   contextFromResult?: (result: T) => StoryOperationContext,
 ): Promise<T> {
   const started = performance.now();
+  const active: ActiveStoryOperation = { ...context, operation, startedAt: started };
+  try {
+    if (report) report.active = active;
+  } catch {
+    // Even a broken diagnostic report cannot prevent the original operation.
+  }
   let observedContext = context;
   let failed = false;
   try {
@@ -48,6 +74,7 @@ export async function timeStoryOperation<T>(
   } finally {
     try {
       if (report) {
+        if (report.active === active) report.active = null;
         const sample: StoryOperationSample = {
           ...observedContext,
           operation,

@@ -9,6 +9,7 @@ import { BattleDraft } from '../src/core/state/battleDraft';
 import { appendDiagnosticToExistingError } from './diagnostic-error';
 import {
   newStoryOperationReport,
+  storyOperationSnapshot,
   timeStoryOperation,
   type StoryOperationContext,
   type StoryOperationReport,
@@ -60,7 +61,7 @@ test.afterEach(({ page }, testInfo) => {
       totals,
       last: record.completed.slice(-10),
       slowest: [...record.completed].sort((a, b) => b.elapsedMs - a.elapsedMs).slice(0, 5),
-      storyOperations: record.story,
+      storyOperations: storyOperationSnapshot(record.story),
     }),
   );
 });
