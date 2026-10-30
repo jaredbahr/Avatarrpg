@@ -10,18 +10,36 @@ function signed(value: number): string {
 
 /** Plain words for the deterministic prop result in the confirm step. */
 export function formatPropConsequence(prop: PropForecast): string {
-  if (prop.destroyed) return prop.breakLabel ?? `${prop.name} breaks`;
-  if (prop.catchesFire) return `${prop.name} catches fire`;
-  if (prop.doused) return `${prop.name} is put out`;
+  if (prop.destroyed) return prop.breakLabel ?? 'breaks';
+  if (prop.catchesFire) return 'catches fire';
+  if (prop.doused) return 'is put out';
   if (prop.moved) {
-    return prop.to
-      ? `${prop.name} to (${prop.to.x + 1},${prop.to.y + 1})`
-      : `${prop.name} breaks here`;
+    if (!prop.to) return 'breaks here';
+    const tiles = Math.max(Math.abs(prop.to.x - prop.from.x), Math.abs(prop.to.y - prop.from.y));
+    return `moves ${tiles} ${tiles === 1 ? 'tile' : 'tiles'}`;
   }
   if (prop.hpAfter !== null && prop.hpAfter < prop.hpBefore) {
-    return `${prop.name} takes ${prop.hpBefore - prop.hpAfter} damage (${prop.hpAfter} hp left)`;
+    return `takes ${prop.hpBefore - prop.hpAfter} damage (${prop.hpAfter} HP left)`;
   }
-  return `${prop.name} holds here`;
+  return 'holds here';
+}
+
+/** Identify same-named props by their order on the visible battlefield. */
+export function formatPropPreviewLabel(
+  prop: Pick<PropForecast, 'id' | 'name' | 'from'>,
+  props: readonly Pick<PropForecast, 'id' | 'name' | 'from'>[],
+): string {
+  const peers = props.filter((candidate) => candidate.name === prop.name);
+  if (peers.length < 2) return prop.name;
+  const byNorth = peers.some((candidate) => candidate.from.y !== peers[0]?.from.y);
+  const ordered = [...peers].sort((a, b) =>
+    byNorth ? a.from.y - b.from.y || a.from.x - b.from.x : a.from.x - b.from.x,
+  );
+  const index = ordered.findIndex((candidate) => candidate.id === prop.id);
+  const direction = byNorth ? 'north' : 'west';
+  if (index === 0) return `${prop.name} (${byNorth ? 'northern' : 'western'})`;
+  if (index === peers.length - 1) return `${prop.name} (${byNorth ? 'southern' : 'eastern'})`;
+  return `${prop.name} (${index + 1} from ${direction})`;
 }
 
 /**

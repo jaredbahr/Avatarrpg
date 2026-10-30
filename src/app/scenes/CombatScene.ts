@@ -67,6 +67,7 @@ import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import {
   formatPropConsequence,
+  formatPropPreviewLabel,
   formatHitBreakdownRows,
   formatLedgeDrop,
   formatShoveMovement,
@@ -1837,8 +1838,12 @@ export class CombatScene implements Scene {
       chips.appendChild(el('span', { class: 'chip chip-terrain', text: note }));
     }
 
+    const battlefieldProps = battle.props.map((prop) => ({
+      id: prop.id,
+      name: this.app.content.props.get(prop.propId)?.name ?? prop.propId,
+      from: prop.pos,
+    }));
     for (const prop of preview.props) {
-      const from = `(${prop.from.x + 1},${prop.from.y + 1})`;
       const affected = [...prop.affectedAllies, ...prop.affectedEnemies]
         .map((unit) => unit.name)
         .join(', ');
@@ -1848,7 +1853,7 @@ export class CombatScene implements Scene {
       chips.appendChild(
         el('span', {
           class: 'chip chip-terrain',
-          text: `${prop.name} at ${from}: ${consequence}${suffix}`,
+          text: `${formatPropPreviewLabel(prop, battlefieldProps)}: ${consequence}${suffix}`,
         }),
       );
     }
