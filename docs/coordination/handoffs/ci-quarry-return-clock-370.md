@@ -24,6 +24,10 @@ in production-preview system Chromium at iPad-like 1194×834 DPR 2, in 8.0 and
 4.0 minutes respectively, one worker and zero retries; receipts are
 `/workspace/avatarrpg-env/370-quarry-clock-{escort,trade}.{log,receipt}`.
 The final state-only turn optimization passed pinned TypeScript, scoped ESLint,
-Prettier and diff checks. Its focused browser verification and hosted WebKit
-acceptance are pending at this source checkpoint; this isolated branch has
-not been pushed or merged into the integration branch.
+Prettier and diff checks. On exact source `5f6f3d5b`, the original full escort
+case passed in 6.3 minutes and the full trade case passed in 3.9 minutes in
+the same iPad-like Chromium profile. Both used one worker, zero retries and
+the unchanged 600-second limit. Exit receipts and logs are
+`/workspace/avatarrpg-env/370-quarry-clock-final-5f6-{escort,trade}.{log,receipt}`.
+Hosted WebKit and the remaining shard cases are still unverified; this isolated
+branch has not been pushed or merged into the integration branch.
