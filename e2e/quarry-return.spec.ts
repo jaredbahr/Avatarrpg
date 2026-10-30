@@ -105,8 +105,6 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
   });
 
   for (let turn = 0; turn < 160; turn++) {
-    const phase = await page.evaluate(() => window.fnt?.app.state?.battle?.phase);
-    if (phase !== 'active') break;
     // This route proof dispatches legal actions from state; it never converts
     // camera pixels to targets, so it does not need a four-frame camera sample.
     if (!(await takeTurn(page, { settleCamera: false }))) break;
