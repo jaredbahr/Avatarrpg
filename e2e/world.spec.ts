@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  completeAuthoredPlayback,
+  enterNode,
+  resetStorage,
+  settleLayout,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 async function openActivities(page: Page): Promise<void> {
   const toggle = page.getByRole('button', { name: 'Activities', exact: true });
@@ -63,6 +70,9 @@ test('Riverside preview can close while the party is walking', async ({ page }) 
 });
 
 test('rescued riverside return keeps the shrine discovery and party health', async ({ page }) => {
+  // Own the app's route timer from boot; installing the clock after the click
+  // would leave its already-scheduled native timeout outside virtual time.
+  await page.clock.install();
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Sura', 'Riko'], ['sura', 'riko'], 'rescued-riverside-return', {
     reduceMotion: false,
@@ -99,7 +109,10 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
   await expect(page.getByRole('button', { name: 'Visit the shrine', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
-  await waitForIdle(page);
+  // The route to the shrine is about 21 seconds at its authored 750 ms/tile
+  // pace. Observe its actual animator completion without racing a 20-second
+  // wall-clock wait against a correct long walk.
+  await completeAuthoredPlayback(page);
   await expect(page.locator('.explore-conversation')).toBeVisible();
   const next = page.locator('[data-conversation-control="next"]');
   for (let line = 1; line <= 3; line++) {
@@ -125,7 +138,8 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
 
   await openActivities(page);
   await page.getByRole('button', { name: 'Walk to Ba Dan', exact: true }).click();
-  await waitForIdle(page);
+  // The return from the shrine is another authored long walk, about 22 seconds.
+  await completeAuthoredPlayback(page);
   await expect(page.locator('.title-plate-name')).toHaveText('Ba Dan Village');
   await expect(page.locator('.title-plate-objective')).toContainText('The workers are home');
   await expect

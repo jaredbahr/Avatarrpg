@@ -351,6 +351,31 @@ export async function waitForIdle(page: Page, timeout = 20_000): Promise<void> {
 }
 
 /**
+ * Advance a long authored playback to its actual animator finish, then observe
+ * the last frame and the normal idle state. This is for route assertions that
+ * check the completed scene rather than every intermediate walking frame.
+ * The ordinary waitForIdle deadline remains unchanged.
+ */
+export async function completeAuthoredPlayback(page: Page): Promise<void> {
+  await pauseClock(page);
+  try {
+    const remaining = await page.evaluate(() => {
+      const animator = window.fnt?.app.animator;
+      if (!animator) throw new Error('The game animator is unavailable');
+      return Math.ceil(Math.max(0, animator.finishesAt - performance.now()));
+    });
+    if (!Number.isFinite(remaining)) throw new Error('The playback finish is not finite');
+    // Fast-forward the interior, but publish frames at the end so the route
+    // timer and scene transition run through their real completion path.
+    if (remaining > 17) await page.clock.fastForward(remaining - 17);
+    await page.clock.runFor(34);
+  } finally {
+    await page.clock.resume();
+  }
+  await waitForIdle(page);
+}
+
+/**
  * Freezes the page clock at a moment still ahead of it.
  *
  * `clock.pauseAt` refuses a target that is not ahead of the fake clock, and
