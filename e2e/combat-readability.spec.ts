@@ -3,7 +3,15 @@ import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { PNG } from 'pngjs';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, setLargeText, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { activeGroundCue } from '../src/render/geometry/actorSilhouette';
 import { liftAlong } from '../src/render/geometry/elevation';
 import type { MapView } from '../src/render/view';
@@ -210,10 +218,12 @@ test.describe('fractional-offset painted pixel parity', () => {
       await enterNode(page, 'battle_forest_road');
       await takeTurn(page);
       await waitForIdle(page);
+      await page.waitForLoadState('networkidle');
       expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(backend);
       await page.evaluate(() =>
         window.fnt!.app.updateSettings({ highContrast: true, reduceMotion: true }),
       );
+      await settleLayout(page);
       await page.waitForFunction(() =>
         Boolean(
           (
@@ -223,7 +233,7 @@ test.describe('fractional-offset painted pixel parity', () => {
           ).scene.renderer.lastView?.units.some((unit) => unit.faction === 'enemy'),
         ),
       );
-      const bar = await page.evaluate(() => {
+      await page.evaluate(() => {
         const win = window as Window & { barParityCueActive?: boolean };
         win.barParityCueActive = true;
         const renderer = (
@@ -271,32 +281,82 @@ test.describe('fractional-offset painted pixel parity', () => {
             selectedUnitId: null,
             crispOverlays: true,
             reducedMotion: true,
+            cameraNudge: { x: 0, y: 0 },
             time: 0,
           });
         };
         if (!renderer.lastView) throw new Error('Missing combat view for bar pixel probe.');
         renderer.draw(renderer.lastView);
-        const enemy = renderer.lastView.units.find((unit) => unit.faction === 'enemy');
-        if (!enemy) throw new Error('Missing enemy for bar pixel probe.');
-        const barTop = renderer.backend.barTops.get(enemy.id);
-        if (barTop === undefined) throw new Error('Enemy bar was not painted.');
-        const box = renderer.camera.spriteBox(enemy.pos, enemy.size);
-        return {
-          centreX: box.x + (box.size * enemy.size) / 2,
-          boxY: box.y,
-          size: box.size,
-          scale: renderer.camera.scale,
-          offsetX: renderer.camera.offsetX,
-          offsetY: renderer.camera.offsetY,
-          projection: renderer.camera.projection,
-          grid: renderer.lastView.grid,
-          enemyPos: enemy.pos,
-          topY:
-            renderer.backendName === 'webgl'
-              ? barTop * renderer.camera.scale - renderer.camera.offsetY
-              : barTop,
-        };
       });
+      const readBar = () =>
+        page.evaluate(() => {
+          const renderer = (
+            window.fnt!.app as unknown as {
+              scene: {
+                renderer: {
+                  backendName: 'canvas' | 'webgl';
+                  backend: { barTops: Map<string, number> };
+                  camera: {
+                    scale: number;
+                    projection: 'orthographic' | 'oblique';
+                    offsetX: number;
+                    offsetY: number;
+                    spriteBox(
+                      pos: { x: number; y: number },
+                      size: 1 | 2,
+                    ): {
+                      x: number;
+                      y: number;
+                      size: number;
+                    };
+                  };
+                  lastView: MapView | null;
+                };
+              };
+            }
+          ).scene.renderer;
+          if (!renderer.lastView) throw new Error('Missing combat view for bar pixel probe.');
+          const enemy = renderer.lastView.units.find((unit) => unit.faction === 'enemy');
+          if (!enemy) throw new Error('Missing enemy for bar pixel probe.');
+          const barTop = renderer.backend.barTops.get(enemy.id);
+          if (barTop === undefined) throw new Error('Enemy bar was not painted.');
+          const box = renderer.camera.spriteBox(enemy.pos, enemy.size);
+          return {
+            centreX: box.x + (box.size * enemy.size) / 2,
+            boxY: box.y,
+            size: box.size,
+            scale: renderer.camera.scale,
+            offsetX: renderer.camera.offsetX,
+            offsetY: renderer.camera.offsetY,
+            projection: renderer.camera.projection,
+            grid: renderer.lastView.grid,
+            enemyPos: enemy.pos,
+            topY:
+              renderer.backendName === 'webgl'
+                ? barTop * renderer.camera.scale - renderer.camera.offsetY
+                : barTop,
+          };
+        });
+      const board = page.locator('.map-canvas');
+      let active: PNG | undefined;
+      let bar: Awaited<ReturnType<typeof readBar>> | undefined;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const before = await readBar();
+        const image = PNG.sync.read(await board.screenshot({ scale: 'device' }));
+        const after = await readBar();
+        if (
+          before.topY === after.topY &&
+          before.centreX === after.centreX &&
+          before.boxY === after.boxY &&
+          before.offsetX === after.offsetX &&
+          before.offsetY === after.offsetY
+        ) {
+          active = image;
+          bar = after;
+          break;
+        }
+      }
+      if (!active || !bar) throw new Error('Combat camera/bar did not settle for pixel capture.');
       expect(bar.scale).toBe(1);
       expect(bar.offsetX % 1).toBe(0.5);
       expect(bar.offsetY % 1).toBe(0.5);
@@ -304,8 +364,6 @@ test.describe('fractional-offset painted pixel parity', () => {
         Math.round((bar.topY + bar.offsetY) / bar.scale),
         8,
       );
-      const board = page.locator('.map-canvas');
-      const active = PNG.sync.read(await board.screenshot({ scale: 'device' }));
       await page.evaluate(() => {
         const win = window as Window & { barParityCueActive?: boolean };
         win.barParityCueActive = false;
@@ -350,8 +408,10 @@ test.describe('fractional-offset painted pixel parity', () => {
       const row = Array.from({ length: 36 }, (_, offset) => {
         const x = frameX + 1 + offset * 2;
         const y = frameY + 7;
-        if (near(x, y, [27, 20, 16])) return 'F';
         if (near(x, y, [217, 74, 58])) return 'H';
+        // The empty track is translucent over painted ground, which may be
+        // close to frame ink; classify only the two opaque edge columns.
+        if ((offset === 0 || offset === 35) && near(x, y, [27, 20, 16])) return 'F';
         return '.';
       }).join('');
       expect(row, `${backend} bar must have a painted frame and 18px fill`).toMatch(

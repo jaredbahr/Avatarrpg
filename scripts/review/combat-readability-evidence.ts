@@ -17,6 +17,7 @@ import {
   enterNode,
   resetStorage,
   setLargeText,
+  settleLayout,
   startGame,
   takeTurn,
   waitForIdle,
@@ -85,6 +86,7 @@ try {
       await enterNode(page, 'battle_forest_road');
       if (!(await takeTurn(page))) throw new Error('Battle ended before the capture.');
       await waitForIdle(page);
+      await page.waitForLoadState('networkidle');
       await page.waitForFunction(() =>
         Boolean(
           (
@@ -101,6 +103,7 @@ try {
       await page.evaluate((highContrast) => {
         window.fnt!.app.updateSettings({ highContrast, reduceMotion: true });
       }, viewport.name === 'portrait-ipad');
+      await settleLayout(page);
       await page.evaluate(() => {
         const app = window.fnt!.app;
         const renderer = (
@@ -130,6 +133,7 @@ try {
             selectedUnitId: null,
             crispOverlays: app.settings.highContrast,
             reducedMotion: true,
+            cameraNudge: { x: 0, y: 0 },
             time: 0,
           });
         };
@@ -142,6 +146,41 @@ try {
             requestAnimationFrame(() => requestAnimationFrame(() => done())),
           ),
       );
+      await settleLayout(page);
+      const image = resolve(outDir, `${viewport.name}.png`);
+      let stableCapture = false;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const before = await page.evaluate(() => {
+          const camera = window.fnt!.app.rendererCamera();
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          const box = canvas?.getBoundingClientRect();
+          return {
+            x: camera?.offsetX,
+            y: camera?.offsetY,
+            tilePx: camera?.tilePx,
+            width: box?.width,
+            height: box?.height,
+          };
+        });
+        await page.screenshot({ path: image });
+        const after = await page.evaluate(() => {
+          const camera = window.fnt!.app.rendererCamera();
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          const box = canvas?.getBoundingClientRect();
+          return {
+            x: camera?.offsetX,
+            y: camera?.offsetY,
+            tilePx: camera?.tilePx,
+            width: box?.width,
+            height: box?.height,
+          };
+        });
+        if (JSON.stringify(before) === JSON.stringify(after)) {
+          stableCapture = true;
+          break;
+        }
+      }
+      assert.ok(stableCapture, 'camera/canvas changed during every screenshot attempt');
       const metadata: CaptureMetadata = await page.evaluate(
         ({ sourceSha, seed }) => {
           const app = window.fnt!.app;
@@ -232,8 +271,6 @@ try {
         assert.equal(metadata.chipCount, before.chipCount, 'initiative roster changed');
         assert.equal(metadata.camera.tilePx, before.camera.tilePx, 'camera zoom changed');
       }
-      const image = resolve(outDir, `${viewport.name}.png`);
-      await page.screenshot({ path: image });
       writeFileSync(resolve(outDir, `${viewport.name}.json`), JSON.stringify(metadata, null, 2));
       console.log(`${viewport.name}: ${image}`);
     } finally {
