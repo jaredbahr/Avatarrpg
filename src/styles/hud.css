@@ -1298,7 +1298,7 @@ html[data-contrast='high'] .map-wrap {
 .explore-conversation .conversation-panel {
   position: relative;
   display: grid;
-  grid-template-columns: var(--conversation-portrait) minmax(0, 1fr);
+  grid-template-columns: max(var(--conversation-portrait), 8rem) minmax(0, 1fr);
   grid-auto-flow: row;
   column-gap: var(--sp-4);
   width: min(var(--conversation-panel-max), 100%);
@@ -1367,8 +1367,8 @@ html[data-contrast='high'] .map-wrap {
   text-align: center;
 }
 
-/* Under the portrait the column is narrow: the name wraps rather than
-   ellipsing "Elder Mira" to "Elder M…" on an iPad in portrait. */
+/* The wider speaker column keeps Shopkeeper whole in portrait; long names can
+   still wrap here instead of spilling into the dialogue. */
 .conversation-compact-speaker strong {
   overflow-wrap: break-word;
   text-wrap: balance;
