@@ -1448,8 +1448,7 @@ export class PixiBackend implements RenderBackend {
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
     if (camera.projection === 'oblique') this.syncSceneryShadows(view, camera);
-    for (const [key, sprite] of this.castSprites)
-      if (!this.castLive.has(key)) sprite.visible = false;
+    this.retireInactiveSprites(this.castSprites, this.castLive);
     const visible = [...this.castSprites.values()].filter((sprite) => sprite.visible);
     this.castLive.clear();
     if (visible.length === 0 && !hasStructure) {
@@ -2690,6 +2689,15 @@ export class PixiBackend implements RenderBackend {
     );
   }
 
+  /** Retired actors and shadows must release their texture references before cache pruning. */
+  private retireInactiveSprites(sprites: Map<string, Sprite>, live: Set<string>): void {
+    for (const [key, sprite] of sprites) {
+      if (live.has(key)) continue;
+      sprite.destroy();
+      sprites.delete(key);
+    }
+  }
+
   private dropTextures(): void {
     for (const texture of this.frameTextures.values()) texture.destroy(false);
     this.frameTextures.clear();
@@ -3056,9 +3064,7 @@ export class PixiBackend implements RenderBackend {
       badgeIndex = this.drawStatusBadges(g, unit, x, width, badgeIndex, silhouette.badgeY);
     }
 
-    for (const [key, sprite] of this.unitSprites) {
-      if (!live.has(key)) sprite.visible = false;
-    }
+    this.retireInactiveSprites(this.unitSprites, live);
     this.syncReveal(view, camera, revealFigures);
     for (let i = badgeIndex; i < this.badgeText.length; i++) {
       const text = this.badgeText[i];
