@@ -4,6 +4,8 @@ import { expect, test } from '@playwright/test';
 import { PNG } from 'pngjs';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, setLargeText, startGame, takeTurn, waitForIdle } from './helpers';
+import { activeGroundCue } from '../src/render/geometry/actorSilhouette';
+import { liftAlong } from '../src/render/geometry/elevation';
 import type { MapView } from '../src/render/view';
 
 const REVIEW_DIR = resolve(process.cwd(), '.shots/combat-readability');
@@ -196,6 +198,8 @@ test.describe('fractional-offset painted pixel parity', () => {
     const placements: {
       frameX: number;
       frameY: number;
+      paintedTop: number;
+      paintedBottom: number;
       offsetX: number;
       offsetY: number;
       cue: { minX: number; minY: number; maxX: number; maxY: number; count: number };
@@ -230,6 +234,7 @@ test.describe('fractional-offset painted pixel parity', () => {
                 backend: { barTops: Map<string, number> };
                 camera: {
                   scale: number;
+                  projection: 'orthographic' | 'oblique';
                   offsetX: number;
                   offsetY: number;
                   centreOn(pos: { x: number; y: number }, size: 1 | 2): void;
@@ -283,6 +288,9 @@ test.describe('fractional-offset painted pixel parity', () => {
           scale: renderer.camera.scale,
           offsetX: renderer.camera.offsetX,
           offsetY: renderer.camera.offsetY,
+          projection: renderer.camera.projection,
+          grid: renderer.lastView.grid,
+          enemyPos: enemy.pos,
           topY:
             renderer.backendName === 'webgl'
               ? barTop * renderer.camera.scale - renderer.camera.offsetY
@@ -323,6 +331,19 @@ test.describe('fractional-offset painted pixel parity', () => {
       const frameY = Math.round(bar.topY * 2);
       expect(Math.abs(frameX % 2)).toBe(1);
       expect(Math.abs(frameY % 2)).toBe(1);
+      // Find the actual painted highlight rather than trusting barTops for
+      // the vertical edge. It spans the whole interior one world pixel below
+      // the opaque frame and is two device pixels high at this zoom.
+      const highlightYs: number[] = [];
+      for (let y = frameY - 8; y <= frameY + 12; y++)
+        if ([5, 35, 65].every((dx) => near(frameX + dx, y, [255, 246, 224]))) highlightYs.push(y);
+      expect(highlightYs, `${backend} painted upper highlight`).toHaveLength(2);
+      const paintedTop = (highlightYs[0] ?? 0) - 2;
+      const paintedBottom = paintedTop + 8 * 2 - 1;
+      expect(near(frameX, paintedTop, [27, 20, 16])).toBe(true);
+      expect(near(frameX, paintedBottom, [27, 20, 16])).toBe(true);
+      expect(Math.abs(paintedTop % 2)).toBe(1);
+      expect(paintedTop).toBe(frameY);
       // The 36px outer bar has a 34px track; 7/13 HP rounds to 18 whole pixels.
       // Read device pixels at the absolute world-grid anchor, not a backend's
       // own local bar crop: a half-CSS-pixel displacement must fail this row.
@@ -354,9 +375,31 @@ test.describe('fractional-offset painted pixel parity', () => {
       expect(cuePoints.length, `${backend} active cue must change painted pixels`).toBeGreaterThan(
         30,
       );
+      const lift = liftAlong(bar.grid, bar.enemyPos, bar.projection);
+      const expectedCue = activeGroundCue(
+        (bar.centreX + bar.offsetX) / bar.scale,
+        (bar.boxY - lift * bar.size + bar.size * 0.86 + bar.offsetY) / bar.scale,
+        bar.size / bar.scale,
+        bar.size / bar.scale,
+        1,
+        1,
+        4,
+      );
+      const expectedMinX = Math.min(
+        ...expectedCue.outer.map((run) => Math.round((run.x * bar.scale - bar.offsetX) * 2)),
+      );
+      const expectedMaxX = Math.max(
+        ...expectedCue.outer.map(
+          (run) => Math.round(((run.x + run.width) * bar.scale - bar.offsetX) * 2) - 1,
+        ),
+      );
+      expect(Math.min(...cuePoints.map((point) => point.x))).toBe(expectedMinX);
+      expect(Math.max(...cuePoints.map((point) => point.x))).toBe(expectedMaxX);
       placements.push({
         frameX,
         frameY,
+        paintedTop,
+        paintedBottom,
         offsetX: bar.offsetX,
         offsetY: bar.offsetY,
         cue: {
@@ -377,6 +420,8 @@ test.describe('fractional-offset painted pixel parity', () => {
     expect(canvas?.offsetY).toBe(webgl?.offsetY);
     expect(canvas?.frameX).toBe(webgl?.frameX);
     expect(canvas?.frameY).toBe(webgl?.frameY);
+    expect(canvas?.paintedTop).toBe(webgl?.paintedTop);
+    expect(canvas?.paintedBottom).toBe(webgl?.paintedBottom);
     for (const edge of ['minX', 'minY', 'maxX', 'maxY'] as const)
       expect(canvas?.cue[edge], `cue ${edge} must share the exact device-pixel edge`).toBe(
         webgl?.cue[edge],
