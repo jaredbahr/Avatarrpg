@@ -21,8 +21,11 @@ merge, deployment or auto-merge is authorized in the current session.
   and `1cdd52ed` lineage. It corrects the Riverside directional-walk spec's
   expected brisk cel rate without relaxing its 40 ms bound, and advances the
   real long shrine route to its observed animator finish before the unchanged
-  idle/scene assertions. Other intermittent cases in #325 remain subject to
-  hosted evidence; this work does not claim their closure.
+  idle/scene assertions. Merge `0789c83f` retains the worker's diagnostic
+  commits `d3a56376` and `832f8229`: a failure-only obscurement attachment
+  and bounded GitHub warning with canonical screen, frame/animator and control
+  state. Other intermittent cases in #325 remain subject to hosted evidence;
+  this work does not claim their closure.
 
 ## Verification and remaining gates
 
@@ -38,6 +41,19 @@ merge, deployment or auto-merge is authorized in the current session.
   records the exact receipts. The later `1cdd52ed` commit records only that
   evidence. Combined-head TypeScript, scoped ESLint, Prettier and diff checks
   passed after integration, before the `fbeae22e` commit.
+- On frozen integration head `0e2fbf95`, all nine selected #325 production
+  Chromium cases passed with zero retries: combat formation, compact Normal
+  and Huge reflow, motion transitions on both backends, obscurement on both
+  backends and resident phase changes on both backends. Receipt and log are
+  `/workspace/avatarrpg-env/370-325-bounded-0e-browser.receipt` and
+  `/workspace/avatarrpg-env/370-325-bounded-0e-browser.log`.
+  On diagnostic merge head `0789c83f`, the two affected obscurement cases
+  passed on Canvas and forced WebGL with zero retries and unchanged 30/90 s
+  limits; receipt and log are
+  `/workspace/avatarrpg-env/370-obscurement-diagnostics-browser.receipt` and
+  `/workspace/avatarrpg-env/370-obscurement-diagnostics-browser.log`. These
+  browser runs reused a production build from `339188e9`;
+  `src/` is byte-identical from that build head through `0789c83f`.
 - The current final head still requires all nine `npm run ci:local` steps before
   any push. Open one draft PR into main after that gate, leave auto-merge off,
   wait for PR verification, then dispatch CI once on the branch with
