@@ -206,3 +206,49 @@ rejected local timing experiments are in `ci-quarry-phase-diag-370.md`.
 The new combined head still needs its exact-head nine-step local gate before
 publication, then automatic PR verification and one new `run_gallery=true`
 dispatch. No main merge, auto-merge or source-PR closure is authorized.
+
+### Sixth hosted dispatch and bounded story diagnostic
+
+Published draft PR #373 is now at `ced2958c`. Its exact-head pinned local
+`ci:local` passed all nine steps (259 files, 3,008 tests; receipt
+`/workspace/avatarrpg-env/370-ci-final-ced2958c.receipt`). Automatic PR
+verification 41063964522 succeeded with browser/gallery matrices skipped.
+The single `run_gallery=true` branch dispatch 41065218670 is terminal:
+Chromium C1/C2/C3 passed cleanly (86/85/84), WebKit 1/2 passed 139 with one
+skip, and WebKit 2/2 passed 34 before the original complete trade campaign
+timed out twice at its unchanged 600 s whole-case limit (1 failed, 94 unrun).
+The failure-only annotation shows cumulative work through late village return:
+about 184 s in two battles, 174–194 s in twelve story phases, 78 s in seven
+routes, 47 s in six journal checks, and 35–40 s in ten walks. It does not
+identify which operation inside a story phase costs time. E2E failed and the
+gallery was skipped; hosted WebKit/gallery and two consecutive passing branch
+dispatches remain open.
+
+Three isolated hypotheses were measured and kept out of the published PR.
+The AP round-trip consolidation passed both original routes but showed no
+reliable throughput gain. A Canvas shadow ROI proof passed 43 scoped pixel
+tests and 28 native DPR 1/2 baseline comparisons with zero RGBA differences;
+the original trade and escort cases passed in 3.7 and 6.3 minutes, within
+prior route-time variation and insufficient to establish a hosted fix. A
+test-only all-aggressive **throwaway-draft** planning comparison passed the
+original trade case under both policies (4.1 and 3.4 minutes) but accepted
+identical ability, move, party end-turn, and enemy AI counts in both battles;
+it did not reduce real actions. Their external receipts and honest conclusions
+are under `/workspace/avatarrpg-env/370-shadow-roi-326-evaluation.md` and
+`370-quarry-policy-872-evaluation.md`. None was pushed.
+
+The next isolated test-only diagnostic times the **existing** story state
+reads, locator counts/assertions, and visible click promises with Node's
+monotonic clock. Its failure summary adds per-operation counts/totals/maxima,
+five slowest completed operations, and any still-pending operation's
+already-known node/line/branch and elapsed time to the existing Playwright
+error. It adds no browser request, skips no authored control, and changes no
+product source, assertion, timeout, retry, or seed. The original complete
+trade case passed 1/1 on isolated diagnostic source `64d65c6e` in production
+Chromium at 1194×834 DPR 2, one worker, zero retries, and the unchanged
+600-second case limit (3.6-minute case, 3.7-minute suite; exit 0 in
+`/workspace/avatarrpg-env/370-quarry-story-trade-64d.receipt`). This proves
+the original route still runs with the passive timing hooks; it does not prove
+hosted WebKit throughput or a fix. The diagnostic remains unpublished and
+requires an author-preserving integration merge followed by a new exact-head
+nine-step local gate before any push or hosted dispatch.
