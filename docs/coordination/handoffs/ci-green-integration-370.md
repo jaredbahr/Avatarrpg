@@ -118,11 +118,34 @@ merge, deployment or auto-merge is authorized in the current session.
   without waiting for unrelated animator playback. Its original Canvas case
   passed at DPR 2 in 13.9 s under the unchanged 30 s limit. Both changes are
   test-only; detailed focused receipts are in their respective handoffs.
-- The current final head still requires all nine `npm run ci:local` steps before
-  any push. Open one draft PR into main after that gate, leave auto-merge off,
-  wait for PR verification, then dispatch CI once on the branch with
-  `run_gallery=true`. The actual Chromium/WebKit shards and screenshot gallery
-  must pass on the final head.
+- The third branch dispatch, `41030049734` on published `b528c257`, passed
+  verification. WebKit 1/2 still exhausted the unchanged 90 s Riverside case:
+  its retry completed the third Water form and re-enabled Wave by body 89.7 s,
+  then timed out at Leave preview. WebKit 2/2 still exhausted the unchanged
+  30 s obscurement case at the real Log interaction; the Log control was
+  visible and enabled. The reporter retained the original timeout and included
+  bounded scene, animator and control state in the check annotations. Chromium
+  shards were still running when this handoff was prepared; their terminal
+  counts must be read from the live run, not inferred from earlier dispatches.
+  Merge `bca4640c` retains the Riverside worker's `2bc3981c` source and
+  `3956b087` evidence commits. It advances only the unasserted tea and Dorin
+  walks through the existing animator completion, retaining their destination
+  notes, all three real-time forms, Wave lock, campaign and save assertions.
+  The original full case passed on that source in production Chromium Canvas
+  at iPad-like DPR 2 (46.3 s) and Surface DPR 1 (38.0 s), and forced WebGL
+  Surface (2.4 min), each with one worker, zero retries and unchanged budgets.
+  Merge `6323b3f9` retains the obscurement worker's `c3c47b46` source and
+  `eeb2d0b1` evidence commits. Three camera-settle waits around text-only
+  weather/viewport checks are removed; the real Confirm/Log and target-picking
+  interactions, their assertions and timeout remain. The original Canvas case
+  passed on that source at iPad-like DPR 2 in 13.6 s with zero retries and
+  the unchanged 30 s limit. Their individual handoffs identify exact receipts.
+  Both merges are test-only; product files are byte-identical to `b528c257`.
+- The current combined head still requires all nine pinned `npm run ci:local`
+  steps before any push. Keep the existing draft PR #373 against main with
+  auto-merge off; after its automatic verification, dispatch CI once on the
+  updated branch with `run_gallery=true`. The actual Chromium/WebKit shards
+  and screenshot gallery must pass on the final published head.
   A skipped PR browser/gallery matrix is not browser acceptance. Report every
   failed or unrun case; use the Riverside warning to diagnose WebKit before
   claiming #324 fixed. Physical iPad review remains separate.
