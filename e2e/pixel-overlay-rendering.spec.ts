@@ -358,14 +358,14 @@ async function captureGameplayMove(
   await captureMoveFrame('preview');
   await page.getByRole('button', { name: /^Confirm$/ }).click();
   await waitForIdle(page);
-  await expect
-    .poll(async () =>
-      page.evaluate((id) => {
-        const unit = window.fnt?.app.state?.battle?.units.find((candidate) => candidate.id === id);
-        return unit ? `${unit.pos.x},${unit.pos.y}` : null;
-      }, active.id),
-    )
-    .toBe(`${destination.cell.pos.x},${destination.cell.pos.y}`);
+  // Confirm synchronously commits the chosen Move; after the existing idle
+  // wait, assert its exact state once. An eventual poll can expire while a
+  // software-WebGL readback returns the correct position at its deadline.
+  const confirmedPosition = await page.evaluate((id) => {
+    const unit = window.fnt?.app.state?.battle?.units.find((candidate) => candidate.id === id);
+    return unit ? `${unit.pos.x},${unit.pos.y}` : null;
+  }, active.id);
+  expect(confirmedPosition).toBe(`${destination.cell.pos.x},${destination.cell.pos.y}`);
   await captureMoveFrame('confirmed');
   return drawTiming;
 }
