@@ -57,7 +57,17 @@ async function village(
     if (!view || !canvas || !npc) throw new Error('Ba Dan talk cue is unavailable');
     renderer.camera.scale = 2;
     renderer.camera.centreOn(npc.pos);
-    renderer.draw({ ...view, time: 640_000, reducedMotion: true });
+    renderer.draw({
+      ...view,
+      time: 640_000,
+      reducedMotion: true,
+      cameraNudge: { x: 0, y: 0 },
+      units: view.units.map((unit) => ({ ...unit, renderPos: unit.pos, clipTime: 0 })),
+      npcs: view.npcs.map((resident) => ({ ...resident, renderPos: resident.pos, clipTime: 0 })),
+      emitters: [],
+      bendFx: [],
+      floaters: [],
+    });
     return {
       png: canvas.toDataURL('image/png'),
       scale: renderer.camera.scale,
@@ -132,6 +142,9 @@ async function forestAndKo(
       time: 640_000,
       reducedMotion: true,
       cameraNudge: { x: 0, y: 0 },
+      emitters: [],
+      bendFx: [],
+      floaters: [],
       units: [chosen, hostile],
       npcs: [],
       overlays: [
