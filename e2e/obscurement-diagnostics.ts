@@ -4,6 +4,7 @@ interface ObscurementSample {
   bodyElapsedMs: number;
   now: number;
   visibility: string;
+  screen: string | null;
   scene: string | null;
   battlePhase: string | null;
   currentUnitId: string | null;
@@ -74,6 +75,7 @@ export async function recordObscurementDiagnostics(page: Page) {
             JSON.stringify({
               now,
               visibility: document.visibilityState,
+              screen: app?.state?.screen ?? null,
               scene: scene?.constructor.name ?? null,
               battlePhase: battle?.phase ?? null,
               currentUnitId,
