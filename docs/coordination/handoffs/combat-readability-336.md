@@ -5,7 +5,8 @@
 `codex/fix-336-combat-readability-standalone` is a review branch stacked on the
 #322 draft source `3c305155` (`codex/322-bending-lifetime-draft`). Its source
 diff against that parent contains only #336 health bars, acting cues, initiative
-styles, scoped tests, and this handoff. The draft PR must target the #322 branch
+styles, scoped tests, the review driver, and [matched screenshots](../evidence/combat-readability-336/README.md).
+The draft PR must target the #322 branch
 until that parent lands; retargeting to main is a separate integration gate.
 
 ## Behavior
@@ -41,18 +42,19 @@ cue runs, Canvas/Pixi coordinate-scale and camera-offset parity, a hollow
 centre, and the stronger High Contrast outline. The bar contract tests cover
 fractional-offset placement at 1× and 0.5×, including badge/reticle anchors,
 and whole-pixel staggering of colliding 8-pixel bars. The focused test passes
-(34 cases); TypeScript and broader gates await combined integration.
+(34 cases); TypeScript passed before the evidence-only commits. The exact final
+head still requires the full gate.
 The browser spec checks 1280×800 desktop and 834×1194 iPad portrait on Canvas
 and WebGL, including Normal strip geometry, Largest names, reduced-motion and
 High Contrast captures, and an actual painted-pixel comparison at 7/13 HP and
-DPR 2 with half-CSS-pixel camera offsets. The pixel probe compares absolute
-bar anchors and active-cue bounds between the backends.
-Those browser assertions and before/after screenshot evidence are **pending**
-the dedicated browser gate; the previous mixed branch's landscape captures
-are not acceptance evidence for this standalone source.
+DPR 2 with half-CSS-pixel camera offsets. The pixel probe compares painted
+bar edges and active-cue bounds between the backends. Both backend layout
+cases passed in one production-preview run, and the corrected pixel-parity
+case passed separately against the same unchanged `a732f986` production
+bundle. The exact #322/#336 desktop and portrait captures are committed above.
 
 The exact final head needs all nine `ci:local` steps before any push. Publish a
 draft PR stacked on the #322 branch after that push, wait for its existing
 verify run, then request one manual branch CI dispatch for browser and gallery
 gates. Keep the PR in draft until those checks and visual acceptance are
-complete. No full-project gate or browser acceptance is claimed here yet.
+complete. No full-project gate is claimed for the final evidence head yet.
