@@ -1,0 +1,8 @@
+# CI description alignment — issue #366
+
+- **Updated:** 2026-10-30 UTC. Source owner `/root/sol_next_delivery_inventory`; integration owner `/root`.
+- **Outcome:** Source commit `8de0afe3758666c9bbb2cd8f8f71a0197fd61647` changes only two descriptions: the coordination guide says CI gallery/browser artifacts expire after one day, and the bundle-check step label says 380 KB gzipped. The workflow's three upload paths already use `retention-days: 1`; `scripts/check-bundle-size.mjs` and ADR 0094 already specify 380 KB. No workflow behavior, bundle limit, tests, or product files changed.
+- **Location:** `/workspace/avatarrpg-366-ci-docs`, branch `codex/366-ci-descriptions`, based on current `main` `bc77ae2eceb6740dd4c143cae61595a1f4884bc2`. This worktree alone owns #366. PR not opened; no push yet.
+- **Verification:** Both edited files passed Prettier and `git diff --check`; the source diff is exactly two one-line text replacements. No test was added for wording. Exact final-head `npm run ci:local` is held for the shared CPU release and must pass before push. Browser/gallery manual dispatch is not required for this description-only issue.
+- **Coordination:** Issue [#366](https://github.com/jaredbahr/Avatarrpg/issues/366) is claimed by root. No duplicate open PR was found; PR #275 concerns separate AGENTS.md cost guidance. Preserve all other worktrees and current CI jobs.
+- **Next:** On root's CPU release, run `/workspace/avatarrpg-env/run-ci-local.sh` in this worktree with the pinned environment, record the final exact SHA and all nine results, then open one draft PR into `main` with auto-merge unset. Do not merge or deploy from this task.
