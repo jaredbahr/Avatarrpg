@@ -147,9 +147,22 @@ for (const choice of levelThreeChoices) {
           };
         }, oilHint);
 
+      const readFrame = () =>
+        page.evaluate(() => {
+          const header = document.querySelector<HTMLElement>('.ability-header');
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          if (!header || !canvas) throw new Error('Combat frame is incomplete.');
+          return {
+            headerHeight: header.getBoundingClientRect().height,
+            canvasTop: canvas.getBoundingClientRect().top,
+            canvasHeight: canvas.getBoundingClientRect().height,
+          };
+        });
+
       for (const largeText of ['off', 'huge'] as const) {
         await setLargeText(page, largeText);
         await settleMapCanvas(page);
+        const idle = await readFrame();
 
         const selectAndPick = async (description: string) => {
           await setDescription(description);
@@ -190,6 +203,14 @@ for (const choice of levelThreeChoices) {
         expect(long.headerHeight, label).toBeCloseTo(short.headerHeight, 1);
         expect(long.canvasTop, label).toBeCloseTo(short.canvasTop, 1);
         expect(long.canvasHeight, label).toBeCloseTo(short.canvasHeight, 1);
+        for (const selected of [short, long]) {
+          expect(selected.headerHeight, `${label}: idle header`).toBeCloseTo(idle.headerHeight, 1);
+          expect(selected.canvasTop, `${label}: idle canvas top`).toBeCloseTo(idle.canvasTop, 1);
+          expect(selected.canvasHeight, `${label}: idle canvas height`).toBeCloseTo(
+            idle.canvasHeight,
+            1,
+          );
+        }
         expect(long.buttonHeight).toBeGreaterThanOrEqual(48);
         if (largeText === 'off') {
           expect(long.descriptionScrollHeight, label).toBeLessThanOrEqual(
@@ -208,6 +229,18 @@ for (const choice of levelThreeChoices) {
           expect(selected.headerHeight, `${label}/${ability.id}`).toBeCloseTo(long.headerHeight, 1);
           expect(selected.canvasTop, `${label}/${ability.id}`).toBeCloseTo(long.canvasTop, 1);
           expect(selected.canvasHeight, `${label}/${ability.id}`).toBeCloseTo(long.canvasHeight, 1);
+          expect(selected.headerHeight, `${label}/${ability.id}: idle header`).toBeCloseTo(
+            idle.headerHeight,
+            1,
+          );
+          expect(selected.canvasTop, `${label}/${ability.id}: idle canvas top`).toBeCloseTo(
+            idle.canvasTop,
+            1,
+          );
+          expect(selected.canvasHeight, `${label}/${ability.id}: idle canvas height`).toBeCloseTo(
+            idle.canvasHeight,
+            1,
+          );
           await page.getByRole('button', { name: 'Cancel', exact: true }).click();
         }
       }
