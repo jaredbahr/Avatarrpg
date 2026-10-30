@@ -204,7 +204,7 @@ test('touching a prop target names its break consequence before confirmation', a
 
   const flaskChip = page.locator('.preview-chips .chip-terrain').filter({ hasText: /^Oil Flask/ });
   await expect(flaskChip).toHaveText(
-    'Oil Flask: The flask shatters and oil spreads across the ground.',
+    'Oil Flask: The flask shatters and oil spreads across the ground. — affects Kaya',
   );
   await expect(flaskChip).not.toContainText(/\(\d+,\s*\d+\)/);
 
