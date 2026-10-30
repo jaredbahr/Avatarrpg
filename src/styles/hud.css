@@ -1741,6 +1741,60 @@ html[data-contrast='high'] .hud-panel::after {
   line-clamp: 2;
 }
 
+/* On the two landscape review sizes, the aim instruction and Cancel occupy
+ * the spare right-hand column beside the action buttons. Keep that column in
+ * idle mode too, so selecting an ability does not add a third dock row and
+ * move the board under a target. The confirmation preview keeps its own flow. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    grid-template-rows: 1.875rem auto;
+    column-gap: var(--sp-2);
+  }
+
+  html[data-large-text='off']
+    .combat-scene
+    .action-bar:not(:has(.confirm-dialog))
+    > .ability-header {
+    grid-column: 1 / -1;
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .action-row {
+    grid-column: 1;
+    grid-row: 2;
+    gap: var(--sp-1);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) .action-button {
+    min-width: 5rem;
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .aim-hint {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: stretch;
+    padding: var(--sp-2);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar > .aim-hint .muted {
+    font-size: var(--fs-sm);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar > .aim-hint .row {
+    gap: var(--sp-1);
+  }
+
+  html[data-large-text='off'] .combat-scene .action-bar > .aim-hint .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding-inline: var(--sp-2);
+  }
+}
+
 /* Mark above, name, cost under: the mockup's large action buttons. */
 .action-button {
   position: relative;
