@@ -2645,7 +2645,7 @@ export class PixiBackend implements RenderBackend {
     g.clear();
 
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
-      const pulse = (Math.sin(view.time / 420) + 1) / 2;
+      const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 420) + 1) / 2;
       const cx = exit.pos.x * TILE + TILE / 2;
       const cy = exit.pos.y * TILE + TILE / 2;
       g.circle(cx, cy, TILE * (0.24 + 0.06 * pulse)).stroke({
@@ -2859,7 +2859,7 @@ export class PixiBackend implements RenderBackend {
 
       // A small G1 talk pip stays in the labels layer, above depth-sorted art.
       if (!npc.quiet) {
-        const pulse = (Math.sin(view.time / 500) + 1) / 2;
+        const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 500) + 1) / 2;
         this.drawTalkPip(
           camera,
           {

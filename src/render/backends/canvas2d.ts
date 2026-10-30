@@ -1308,7 +1308,7 @@ export class Canvas2DBackend implements RenderBackend {
   private drawExit(view: MapView, camera: Camera): void {
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
       const box = camera.toScreen(exit.pos);
-      const pulse = (Math.sin(view.time / 420) + 1) / 2;
+      const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 420) + 1) / 2;
       paintExitMarker(this.ctx, box, '#f0c674', pulse);
     }
   }
@@ -1383,7 +1383,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
       if (npc.quiet) continue;
       // A small "talk" pip so a child can tell an NPC from scenery.
-      const pulse = (Math.sin(view.time / 500) + 1) / 2;
+      const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 500) + 1) / 2;
       const anchor = screenToBoardPixel(camera, {
         x: box.x + box.size * width * 0.5,
         y: footY + lift - box.size * npcPipLift(npc.sprite, scale),
