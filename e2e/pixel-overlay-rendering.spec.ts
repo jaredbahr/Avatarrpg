@@ -51,6 +51,7 @@ type MarkCrops = Record<MarkName, { before: Crop; after: Crop }> & {
 type AlphaProbe = {
   width: number;
   height: number;
+  offsetCss: number;
   nonzero: number;
   unexpected: number;
   partialBlocks: number;
@@ -692,8 +693,11 @@ async function captureStagedMarks(
         const width = cssWidth * dpr;
         const height = cssHeight * dpr;
         const previousOffset = { x: camera.offsetX, y: camera.offsetY };
-        camera.offsetX = (boardLeft - 2) * requestedZoom;
-        camera.offsetY = (boardTop - 2) * requestedZoom;
+        // Half a CSS pixel at DPR2 is one whole device pixel. This catches
+        // camera-phase mismatches without asking the sampler to smooth.
+        const offsetCss = dpr === 2 ? 0.5 : 0;
+        camera.offsetX = (boardLeft - 2) * requestedZoom + offsetCss;
+        camera.offsetY = (boardTop - 2) * requestedZoom + offsetCss;
         const sourceAlphas = new Set<number>([0]);
         const drawableCache =
           observedBackend.pixelMarkDrawables as typeof observedBackend.pixelMarkDrawables & {
@@ -842,9 +846,10 @@ async function captureStagedMarks(
           if (!allowed.some((expected) => Math.abs(expected - alpha) <= 1)) unexpected++;
         }
         const block = requestedZoom * dpr;
+        const blockOrigin = offsetCss ? block - 1 : 0;
         let partialBlocks = 0;
-        for (let y = 0; y < height; y += block) {
-          for (let x = 0; x < width; x += block) {
+        for (let y = blockOrigin; y + block <= height; y += block) {
+          for (let x = blockOrigin; x + block <= width; x += block) {
             const first = pixels[(y * width + x) * 4 + 3] ?? 0;
             for (let dy = 0; dy < block; dy++) {
               for (let dx = 0; dx < block; dx++) {
@@ -856,6 +861,7 @@ async function captureStagedMarks(
         alphaProbes[name] = {
           width,
           height,
+          offsetCss,
           nonzero,
           unexpected,
           partialBlocks,
@@ -1198,6 +1204,7 @@ for (const dpr of [1, 2] as const) {
           ['Canvas', canvasRun.alphaProbes[name]],
           ['Pixi', webglRun.alphaProbes[name]],
         ] as const) {
+          expect(probe.offsetCss).toBe(dpr === 2 ? 0.5 : 0);
           expect(
             probe.nonzero,
             `${backend} ${name} rendered onto a transparent target`,
