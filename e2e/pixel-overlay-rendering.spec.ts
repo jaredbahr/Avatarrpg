@@ -218,6 +218,64 @@ async function captureGameplayMove(
   backend: 'canvas' | 'webgl',
   dpr: number,
 ): Promise<DrawTiming> {
+  const captureMoveFrame = async (phase: 'preview' | 'confirmed'): Promise<void> => {
+    const path = resolve(
+      REVIEW_DIR,
+      `gameplay-${backend}-dpr${dpr}-move-${phase}${dpr === 2 ? '-canvas' : ''}.png`,
+    );
+    if (dpr === 1) {
+      // Keep the full-page UI context at DPR1. The gameplay assertions below
+      // exercise the same real Move path at both device scales.
+      await page.screenshot({ path });
+      return;
+    }
+    // Chromium's full-page screenshot forces an expensive software-WebGL
+    // readback. Draw the actual MapView and save the canvas at its native
+    // backing resolution, rather than reducing or resampling the pixels.
+    const frame = await page.evaluate(() => {
+      const renderer = (
+        window.fnt!.app as unknown as {
+          scene: { renderer: { lastView: MapView | null; draw(view: MapView): void } };
+        }
+      ).scene.renderer;
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const view = renderer.lastView;
+      if (!canvas || !view) throw new Error('Missing real Move canvas or MapView');
+      renderer.draw(view);
+      const rect = canvas.getBoundingClientRect();
+      return {
+        dataUrl: canvas.toDataURL('image/png'),
+        width: canvas.width,
+        height: canvas.height,
+        cssWidth: rect.width,
+        cssHeight: rect.height,
+      };
+    });
+    const png = Buffer.from(frame.dataUrl.split(',')[1] ?? '', 'base64');
+    expect(png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))).toBe(true);
+    expect(png.readUInt32BE(16)).toBe(frame.width);
+    expect(png.readUInt32BE(20)).toBe(frame.height);
+    expect(Math.abs(frame.width - frame.cssWidth * dpr)).toBeLessThanOrEqual(1);
+    expect(Math.abs(frame.height - frame.cssHeight * dpr)).toBeLessThanOrEqual(1);
+    writeFileSync(path, png);
+    writeFileSync(
+      `${path}.json`,
+      `${JSON.stringify(
+        {
+          capture: 'native-canvas-backing-after-renderer-draw',
+          phase,
+          backend,
+          dpr,
+          width: frame.width,
+          height: frame.height,
+          cssWidth: frame.cssWidth,
+          cssHeight: frame.cssHeight,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  };
   await resetStorage(page, `?renderer=${backend}`);
   await startGame(page, ['Kaya'], ['kaya'], 'pixel-review-move-parity');
   await enterNode(page, 'battle_forest_road');
@@ -297,9 +355,7 @@ async function captureGameplayMove(
       cues: `overlays=${view.overlays.length},path=${view.path.length},target=${view.targetReticle ? 1 : 0}`,
     };
   });
-  await page.screenshot({
-    path: resolve(REVIEW_DIR, `gameplay-${backend}-dpr${dpr}-move-preview.png`),
-  });
+  await captureMoveFrame('preview');
   await page.getByRole('button', { name: /^Confirm$/ }).click();
   await waitForIdle(page);
   await expect
@@ -310,9 +366,7 @@ async function captureGameplayMove(
       }, active.id),
     )
     .toBe(`${destination.cell.pos.x},${destination.cell.pos.y}`);
-  await page.screenshot({
-    path: resolve(REVIEW_DIR, `gameplay-${backend}-dpr${dpr}-move-confirmed.png`),
-  });
+  await captureMoveFrame('confirmed');
   return drawTiming;
 }
 
