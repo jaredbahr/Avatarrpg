@@ -6,7 +6,13 @@ import { distance, reachable } from '../src/core/rules/grid';
 import { contactEffects } from '../src/core/rules/surfaces';
 import { RngCursor } from '../src/core/rng';
 import { BattleDraft } from '../src/core/state/battleDraft';
-import { resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  completeAuthoredPlayback,
+  resetStorage,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 
 /** Drive real player commands while leaving the campaign state and outcome untouched. */
 async function finishBattle(page: Page, encounterId: string): Promise<void> {
@@ -33,7 +39,9 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
   for (let turn = 0; turn < 160; turn++) {
     const phase = await page.evaluate(() => window.fnt?.app.state?.battle?.phase);
     if (phase !== 'active') break;
-    if (!(await takeTurn(page))) break;
+    // This route proof dispatches legal actions from state; it never converts
+    // camera pixels to targets, so it does not need a four-frame camera sample.
+    if (!(await takeTurn(page, { settleCamera: false }))) break;
 
     for (let action = 0; action < 8; action++) {
       const state = await page.evaluate(() => window.fnt?.app.state);
@@ -164,14 +172,14 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
 
 async function walkTo(page: Page, x: number, y: number): Promise<void> {
   await page.evaluate((pos) => window.fnt!.app.dispatch({ type: 'walkTo', pos }), { x, y });
-  await waitForIdle(page);
+  await completeAuthoredPlayback(page);
 }
 
 async function takeRoute(page: Page, label: string, mapId: string): Promise<void> {
   await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
-  await waitForIdle(page);
+  await completeAuthoredPlayback(page);
 }
 
 async function expectJournalObjective(page: Page, text: string): Promise<void> {
@@ -223,6 +231,9 @@ for (const custody of ['trade', 'escort'] as const) {
     page,
   }) => {
     test.setTimeout(600_000);
+    // The route assertions inspect completed destinations, not intermediate
+    // walking frames; install before boot so the real route timers can finish.
+    await page.clock.install();
     await resetStorage(page, '?renderer=canvas');
     const names =
       custody === 'trade'
