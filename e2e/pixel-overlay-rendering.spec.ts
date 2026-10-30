@@ -996,6 +996,7 @@ async function captureStagedMarks(
       const pairStart = performance.now();
       let afterDraws = 0;
       let beforeDraws = 0;
+      let warmupDraws = 0;
       const usedGroups: {
         anchor: MarkName;
         members: MarkName[];
@@ -1009,7 +1010,10 @@ async function captureStagedMarks(
         for (const name of names) {
           centreOnMark(name);
           const probeView = comparisonView(name);
-          if (name === 'healthBar') drawComparisonView(probeView, name);
+          if (name === 'healthBar') {
+            drawComparisonView(probeView, name);
+            warmupDraws++;
+          }
           after[name] = drawComparisonView(probeView, name);
           afterDraws++;
           if (name === 'talk') {
@@ -1177,7 +1181,10 @@ async function captureStagedMarks(
           const first = group.members[0];
           if (!first) throw new Error('DPR2 camera group has no marks');
           const afterView = comparisonView(first);
-          if (first === 'healthBar') drawComparisonView(afterView, first);
+          if (first === 'healthBar') {
+            drawComparisonView(afterView, first);
+            warmupDraws++;
+          }
           after[first] = drawComparisonView(afterView, first);
           afterDraws++;
           for (const name of group.members.slice(1)) after[name] = captureMark(name);
@@ -1219,6 +1226,8 @@ async function captureStagedMarks(
         }
       }
       const pairMs = performance.now() - pairStart;
+      if (beforeDraws !== names.length || warmupDraws !== 1)
+        throw new Error('Pixel cue capture changed a filtered before or health warmup draw');
 
       const occlusionBase: MapView = {
         ...cueView,
@@ -1324,7 +1333,9 @@ async function captureStagedMarks(
           mode: camera.viewport.dpr === 2 ? 'phase-safe-groups' : 'original',
           afterDraws,
           beforeDraws,
-          cropReadbacks: names.length * 2 + 1,
+          warmupDraws,
+          totalDraws: afterDraws + beforeDraws + warmupDraws,
+          cropReadbacks: names.length * 2 + warmupDraws,
           pairMs,
           groups: usedGroups,
         },
