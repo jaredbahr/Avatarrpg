@@ -125,8 +125,8 @@ merge, deployment or auto-merge is authorized in the current session.
   30 s obscurement case at the real Log interaction; the Log control was
   visible and enabled. The reporter retained the original timeout and included
   bounded scene, animator and control state in the check annotations. Chromium
-  shards were still running when this handoff was prepared; their terminal
-  counts must be read from the live run, not inferred from earlier dispatches.
+  shards finished cleanly (86 + 85 + 84 cases); E2E failed and the gallery
+  matrix was skipped.
   Merge `bca4640c` retains the Riverside worker's `2bc3981c` source and
   `3956b087` evidence commits. It advances only the unasserted tea and Dorin
   walks through the existing animator completion, retaining their destination
@@ -141,6 +141,33 @@ merge, deployment or auto-merge is authorized in the current session.
   passed on that source at iPad-like DPR 2 in 13.6 s with zero retries and
   the unchanged 30 s limit. Their individual handoffs identify exact receipts.
   Both merges are test-only; product files are byte-identical to `b528c257`.
+- The fourth branch dispatch, `41037590127` on published `567e6dbd`, passed
+  verification and all Chromium shards cleanly (86 + 85 + 84 cases). WebKit
+  1/2 passed 29 cases, then both attempts exhausted the original 40 s
+  `combat-focus.spec.ts` opening-formation test while its paused clock was
+  rendering intermediate frames; 110 cases did not run. WebKit 2/2 passed 35
+  cases, then both attempts exhausted the original 600 s escort
+  `quarry-return.spec.ts` campaign test during a real Map click near the final
+  return routes; 93 cases did not run. The earlier Riverside and obscurement
+  stops did not recur before these later failures. The E2E aggregate failed
+  and the gallery matrix was skipped. Merge `39a006e8` retains the isolated
+  `0b43bf07` combat-clock correction: its 300 ms inside-hold and
+  100 ms completion advances use Playwright `fastForward`, which fires due
+  timers once instead of rendering every intermediate frame. The real hold,
+  formation camera, opening completion and actor camera assertions remain;
+  the original case passed in production Chromium at iPad-like DPR 2 in 7.5 s
+  under its unchanged 40 s limit, with zero retries. The exact receipt is in
+  `ci-combat-focus-clock-370.md`.
+  Merge `1fbd9494` retains the isolated `5f6f3d5b` quarry
+  source and its documentation-only `a4f94a06` evidence commit. The campaign
+  test completes unasserted walks through the existing real animator helper,
+  and its state-driven battle path skips camera-frame sampling that it never
+  uses for tile picking; all other turn-helper callers keep that default.
+  Original full escort and trade cases passed in production Chromium at
+  iPad-like DPR 2 in 6.3 and 3.9 min, with zero retries and the unchanged
+  600 s limit. Their exact receipts are in `ci-quarry-return-clock-370.md`.
+  Both corrections are test-only and preserve product files, assertions,
+  timeouts and retries. Hosted WebKit on this new combined head remains open.
 - The current combined head still requires all nine pinned `npm run ci:local`
   steps before any push. Keep the existing draft PR #373 against main with
   auto-merge off; after its automatic verification, dispatch CI once on the
