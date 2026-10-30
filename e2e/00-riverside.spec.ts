@@ -10,6 +10,14 @@ import {
   waitForIdle,
 } from './helpers';
 import { TIMING } from '../src/app/anim/choreography';
+import { recordRiversideDiagnostics } from './riverside-diagnostics';
+
+const diagnostics = new WeakMap<Page, Awaited<ReturnType<typeof recordRiversideDiagnostics>>>();
+test.afterEach(async ({ page }, testInfo) => {
+  const record = diagnostics.get(page);
+  if (record) await record.attach(testInfo);
+  diagnostics.delete(page);
+});
 
 const LEGACY_WALK_MS_PER_TILE = 280;
 const walkTimeout = (legacyMs: number): number =>
@@ -169,6 +177,7 @@ for (const renderer of ['canvas', 'webgl']) {
     // takes two minutes there and five seconds on Canvas.
     test.setTimeout(90_000);
     allowSoftwareWebgl(test, renderer);
+    diagnostics.set(page, await recordRiversideDiagnostics(page));
     // Scenic-route assertions scale with the current stroll pace; crossing
     // the whole area can exceed the default timeout even at a smooth frame rate.
     const timeout = walkTimeout(renderer === 'webgl' ? 30_000 : 20_000);
