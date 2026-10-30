@@ -250,6 +250,9 @@ export const ELEVATION = {
 /* ------------------------------------------------------------------ */
 
 export const OVERLAY = {
+  markerGold: '#f0c674',
+  selectedRing: 'rgba(255,255,255,0.6)',
+  koCross: 'rgba(226,88,74,0.85)',
   move: 'rgba(126, 200, 227, 0.30)',
   moveEdge: 'rgba(200, 240, 255, 0.85)',
   target: 'rgba(226, 88, 74, 0.32)',
