@@ -1,42 +1,57 @@
 import type { ConsoleMessage, Page, TestInfo } from '@playwright/test';
 import { FORM_DURATION, WAVE_DURATION } from '../src/render/living/poses';
+import { appendDiagnosticToExistingError } from './diagnostic-error';
 
 interface DiagnosticSample {
   bodyElapsedMs: number;
   reason: string;
   now?: number;
+  screen?: string | null;
+  hasLife?: boolean;
   lastFrame?: number | null;
   activity?: { kind: string; started: number } | null;
   remainingMs?: number | null;
+  busy?: boolean | null;
   animatorBusy?: boolean;
   animatorFinishesAt?: number;
   drill?: number | null;
+  pending?: string | null;
   hidden?: boolean;
+  visibility?: string;
   dialogs?: number;
+  suspended?: boolean | null;
+  conversation?: boolean | null;
   note?: string | null;
   buttons?: { text: string | null; disabled: boolean }[];
 }
 
-/** GitHub exposes check annotations even when its short-lived artifact URL cannot be fetched. */
+/** Put bounded state in the existing failure so Playwright's GitHub reporter annotates it. */
 function emitFailureSummary(
   testInfo: TestInfo,
   samples: readonly DiagnosticSample[],
   elapsed: number,
 ) {
-  if (process.env.GITHUB_ACTIONS !== 'true' || testInfo.status === testInfo.expectedStatus) return;
+  if (testInfo.status === testInfo.expectedStatus) return;
   try {
     const compact = (sample: DiagnosticSample) => ({
       elapsedMs: sample.bodyElapsedMs,
       reason: sample.reason,
       now: sample.now,
+      screen: sample.screen,
+      hasLife: sample.hasLife,
       lastFrame: sample.lastFrame,
       activity: sample.activity,
       remainingMs: sample.remainingMs,
+      busy: sample.busy,
       animatorBusy: sample.animatorBusy,
       animatorFinishesAt: sample.animatorFinishesAt,
       drill: sample.drill,
+      pending: sample.pending,
       hidden: sample.hidden,
+      visibility: sample.visibility,
       dialogs: sample.dialogs,
+      suspended: sample.suspended,
+      conversation: sample.conversation,
       note: sample.note?.slice(0, 160),
       buttons: sample.buttons
         ?.filter((button) =>
@@ -61,12 +76,16 @@ function emitFailureSummary(
       project: testInfo.project.name,
       status: testInfo.status,
       bodyElapsedMs: elapsed,
+      sampleCount: samples.length,
       clicks,
       heartbeats,
     }).slice(0, 3500);
-    console.log(
-      `::warning title=Riverside form failure diagnostics::${payload.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')}`,
-    );
+    appendDiagnosticToExistingError(testInfo, 'Riverside activity diagnostics', payload);
+    if (process.env.GITHUB_ACTIONS === 'true') {
+      console.log(
+        `::warning title=Riverside form failure diagnostics::${payload.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')}`,
+      );
+    }
   } catch {
     // Reporting must never replace the application's assertion failure.
   }
@@ -120,6 +139,7 @@ export async function recordRiversideDiagnostics(page: Page) {
               JSON.stringify({
                 reason,
                 now,
+                screen: app.state?.screen ?? null,
                 timeOrigin: performance.timeOrigin,
                 hasLife: Boolean(life),
                 hidden: document.hidden,
