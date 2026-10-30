@@ -11,7 +11,7 @@ This branch adds no `GameState` field, art asset, new enemy-intent model, or #33
 ## Location and coordination
 
 - Worktree: `/workspace/avatarrpg-341-standalone`; branch: `codex/341-pixel-overlays-draft`.
-- Current review stack: #322 source `3c305155` → temporary #336 source `6f44f9e7` → #341 local commits through `baef8398`, plus this handoff. Only the ignored `node_modules` symlink is untracked. Rebase unpublished #341 commits onto the corrected #336 source head before final validation. The final #341 PR must target the #336 branch so its diff contains only #341 overlays.
+- Current review stack: #322 source `3c305155` → corrected #336 source `f51b0261` → #341 local commits through `627a70df`, plus this handoff. Only the local `node_modules` symlink is untracked. The unpublished #341 commits rebased cleanly onto corrected #336. The final #341 PR must target the #336 branch so its diff contains only #341 overlays.
 - Preserve `/workspace/avatarrpg-341`, `/workspace/avatarrpg-341-pixi` and `/workspace/avatarrpg-341-review` as source/evidence references. They include unrelated old batch changes and are not valid PR bases.
 - #336 owns actor silhouette, health-bar fill and acting-cue geometry. #322 draft PR #360 owns general Pixi texture lifetime. No merge or deployment is authorized in this assignment.
 
@@ -21,11 +21,13 @@ The shared helpers are `pixelMarks.ts`, `pixelMarkDrawables.ts`, `pixelMarkRende
 
 Focused `src/render/pixelOverlayGeometry.test.ts` passed 6 tests on the temporary stack, including reduced-motion opacity. Pre-existing focused raster/cache/backend checks were green before these new test changes; they must be rerun at final head. An earlier typecheck and targeted lint passed on the temporary stack before the latest small edits; the final exact-head checks are **not run**. A redundant typecheck was stopped under concurrent CI load; it is not a pass.
 
-`e2e/pixel-overlay-rendering.spec.ts` now requests actual N1/N2/N3 camera zoom at DPR1/DPR2. Its staged scene captures before/after overlays, checks cross-backend rule signatures (including High Contrast), and renders each emitted cue through the production Canvas/Pixi adapter into an isolated transparent target. The final pixels must use authored alpha values and occupy whole G1-scaled device-pixel blocks. It also captures Ba Dan before/after talk/exit overlays, real forest movement before/after, KO crops, and a lifted quarry stair's DOM mouse hover and touch pick. **This expanded browser test has not run yet**, so visual/alpha/picking claims remain open until its recorded result and artifact review.
+`e2e/pixel-overlay-rendering.spec.ts` now requests actual N1/N2/N3 camera zoom at DPR1/DPR2. Its staged scene captures overlay-on/off diagnostics, checks cross-backend rule signatures (including High Contrast), and renders each emitted cue through the production Canvas/Pixi adapter into an isolated transparent target. The final pixels must use authored alpha values and occupy whole G1-scaled device-pixel blocks. It also captures Ba Dan diagnostics, forest movement and KO crops, and a lifted quarry stair's DOM mouse hover, drawn highlight and touch pick. **This expanded browser test has not run yet**, so visual/alpha/picking claims remain open until its recorded result and artifact review.
+
+`e2e/pixel-overlay-pairs.review.ts` with `playwright.pixel-overlay-pairs.config.ts` drives the same production-browser capture code against two `FNT_PIXEL_CAPTURE_APP_ROOT` builds. The `before` root is corrected #336 without #341 and the `after` root is the final #341 head. Each captures Ba Dan, forest preview and KO at 1280 × 800, DPR1, zoom2, fixed seed and view time, on Canvas and WebGL. The local PNGs and per-backend provenance include the app root's exact source SHA. This true old-vector/new-pixel comparison is separate from the overlay-on/off diagnostics. **Neither baseline nor final pair capture has run yet.**
 
 ## Next actions
 
-1. Receive the corrected #336 source head; rebase unpublished #341 commits and resolve only #341 overlay integration. Verify the final diff excludes #322/#336-owned features.
-2. When the shared browser slot opens, run the focused Playwright spec and inspect its actual transparent-pixel/High Contrast/raised-pick results and captures. Fix concrete failures without relaxing assertions.
-3. Review Ba Dan, forest and KO before/after PNGs; update this handoff with exact command, SHA, result, artifacts and limitations. Run all nine `npm run ci:local` checks on the exact final head before any push.
+1. When the shared browser slot opens, run the focused Playwright spec and inspect its actual transparent-pixel/High Contrast/raised-pick results and captures. Fix concrete failures without relaxing assertions.
+2. Run the pair-capture review spec against `f51b0261` and then the exact final #341 head; compare matched Ba Dan, forest and KO PNGs. Update this handoff with exact commands, SHAs, results, artifacts and limitations.
+3. Run all nine `npm run ci:local` checks on the exact final head before any push. Verify the final diff excludes #322/#336-owned features.
 4. Open a draft #341 PR with base #336, no auto-merge. Obtain one actual branch CI run and record its target result. Do not call blocked acceptance complete.
