@@ -66,6 +66,22 @@ merge, deployment or auto-merge is authorized in the current session.
   receipts record exit 0 and the same head before and after. These local
   streaks fulfill the specific #322 and #323 repetition gates; hosted browser
   acceptance remains pending.
+- The first hosted branch dispatch, `41013097327` on earlier head `2f38a828`,
+  passed verification but exposed the still-unproved Riverside WebKit failure:
+  iPad shard 1/2 saw Wave remain disabled at `00-riverside.spec.ts:254` on both
+  attempts, with the unchanged 90 s timeout. Its check annotations reported
+  three passed and 136 unrun cases in that shard, but no Node-held state:
+  Playwright's GitHub reporter did not turn the worker's `console.log` warning
+  into a check annotation. The other shards were still running when this
+  diagnostic revision was committed; their results belong in the live PR.
+  Merge `b5437906` preserves the isolated `2e0cd417` correction: both
+  collectors now append bounded raw state to the existing Playwright failure
+  message/stack, leaving the original assertion, timeout, status and full
+  attachments intact. A no-browser GitHub-reporter proof in
+  `/workspace/avatarrpg-env/pw-reporter-proof/` confirmed that both an
+  assertion and a timed-out test retain exit 1 and emit the added context in
+  `::error`. The collectors' activated TypeScript, scoped ESLint, Prettier and
+  diff checks passed. No product or test timing code changed in this revision.
 - The current final head still requires all nine `npm run ci:local` steps before
   any push. Open one draft PR into main after that gate, leave auto-merge off,
   wait for PR verification, then dispatch CI once on the branch with
