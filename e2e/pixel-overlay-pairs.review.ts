@@ -4,7 +4,7 @@
  * then the final #341 head. The source SHA in each provenance file comes from
  * the app root whose production build the browser actually opened.
  *
- * FNT_PIXEL_CAPTURE_LABEL=before FNT_PIXEL_CAPTURE_APP_ROOT=/workspace/avatarrpg-336-standalone \
+ * FNT_PIXEL_CAPTURE_LABEL=before FNT_PIXEL_CAPTURE_APP_ROOT=/workspace/avatarrpg-341-baseline-336 \
  *   npx playwright test -c playwright.pixel-overlay-pairs.config.ts
  * FNT_PIXEL_CAPTURE_LABEL=after FNT_PIXEL_CAPTURE_APP_ROOT=/workspace/avatarrpg-341-standalone \
  *   npx playwright test -c playwright.pixel-overlay-pairs.config.ts
