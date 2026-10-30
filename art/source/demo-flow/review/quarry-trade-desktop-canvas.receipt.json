@@ -44,5 +44,14 @@
     }
   },
   "rawVideoSha256": "a5cf84f1a58cefbf2c5951d1842cf5919021cd794155366656a1abdcd84438c9",
-  "rawBeatManifestSha256": "8b9d605842ef790918ef1047b2a78adda7c59dfe4adaad3aac16da1b6ca84168"
+  "rawBeatManifestSha256": "8b9d605842ef790918ef1047b2a78adda7c59dfe4adaad3aac16da1b6ca84168",
+  "packageSha256": {
+    "video": "345e4cabb9a0bbfd5fb3f9327af0a5c5ac3b3fdbd52d38aa88a21e7eeb214c6a",
+    "beatManifest": "8e5da6be361273efb7afccf660ba2a9cb9165b73944b2d624bf02684c848ced3",
+    "stillIndex": "fb86587ab923f28975c3da7071366a28530ba9469a20870332e23c508966407c"
+  },
+  "runner": {
+    "status": "passed",
+    "failedTests": []
+  }
 }
