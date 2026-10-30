@@ -56,6 +56,7 @@ import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRenderin
 import {
   aimArcPixelMarks,
   boardPixelFromTile,
+  cueOpacity,
   exitMark,
   healthBarSpikeMark,
   hoverCalmMark,
@@ -1136,9 +1137,13 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawExit(view: MapView, camera: Camera, nudge: Vec2): void {
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
-      const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 420) + 1) / 2;
       const anchor = boardPixelFromTile(camera, { x: exit.pos.x + 0.5, y: exit.pos.y + 0.5 });
-      this.drawPixelCues([exitMark(anchor, 0.55 + 0.35 * pulse)], camera, 'ground', nudge);
+      this.drawPixelCues(
+        [exitMark(anchor, cueOpacity(view.time, 420, view.reducedMotion))],
+        camera,
+        'ground',
+        nudge,
+      );
     }
   }
 
@@ -1212,12 +1217,11 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
       if (npc.quiet) continue;
       // A small "talk" pip so a child can tell an NPC from scenery.
-      const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 500) + 1) / 2;
       const anchor = screenToBoardPixel(camera, {
         x: box.x + box.size * width * 0.5,
         y: footY + lift - box.size * npcPipLift(npc.sprite, scale),
       });
-      const cue = talkPipMark(anchor, alpha * (0.55 + 0.35 * pulse));
+      const cue = talkPipMark(anchor, cueOpacity(view.time, 500, view.reducedMotion, alpha));
       for (const draw of resolvePixelMarkDraws(
         camera,
         [cue],

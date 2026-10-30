@@ -4,12 +4,24 @@ import { rasterizePixelMark } from './pixelMarks';
 import {
   aimArcPixelMarks,
   boardPixelFromTile,
+  cueOpacity,
   healthBarSpikeMark,
   pathPixelMarks,
   targetReticleMark,
 } from './pixelOverlayGeometry';
 
 describe('pixel overlay geometry', () => {
+  it('holds talk and exit opacity steady under reduced motion while preserving the normal rhythm', () => {
+    for (const period of [420, 500]) {
+      for (const time of [0, period, period * 2]) {
+        expect(cueOpacity(time, period, true)).toBeCloseTo(0.9, 9);
+        expect(cueOpacity(time, period, true, 0.5)).toBeCloseTo(0.45, 9);
+      }
+      expect(cueOpacity(0, period, false)).toBeCloseTo(0.725, 9);
+      expect(cueOpacity(period, period, false)).toBeGreaterThan(cueOpacity(0, period, false));
+    }
+  });
+
   it('snaps enemy cap vertices relative to a movable anchor', () => {
     const points = [
       { x: 0, y: -4.5 },

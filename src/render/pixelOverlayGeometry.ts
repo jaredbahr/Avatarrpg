@@ -20,6 +20,17 @@ export interface PixelOverlayCue {
 export type OverlayPalette = (kind: OverlayKind) => [string, string | null];
 const MAX_MARK_OPERATIONS = 256;
 
+/** Keep the existing opacity rhythm, while holding cues steady for reduced motion. */
+export function cueOpacity(
+  time: number,
+  period: number,
+  reducedMotion: boolean | undefined,
+  base = 1,
+): number {
+  const pulse = reducedMotion ? 1 : (Math.sin(time / period) + 1) / 2;
+  return base * (0.55 + 0.35 * pulse);
+}
+
 /** Screen point to its stable board-pixel coordinate, before camera scale. */
 export function screenToBoardPixel(camera: Camera, point: { x: number; y: number }): G1Point {
   return snapWorldPoints([

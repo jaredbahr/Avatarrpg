@@ -143,6 +143,7 @@ import { resolvePixelMarkDraws } from '../pixelMarkRendering';
 import { snapWorldPoints } from '../pixelMarks';
 import {
   aimArcPixelMarks,
+  cueOpacity,
   exitMark,
   healthBarSpikeMark,
   hoverCalmMark,
@@ -2537,7 +2538,6 @@ export class PixiBackend implements RenderBackend {
   private drawDecor(view: MapView, camera: Camera): void {
     this.decorGfx.clear();
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
-      const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 420) + 1) / 2;
       const anchor = snapWorldPoints([
         camera.groundPoint({ x: exit.pos.x + 0.5, y: exit.pos.y + 0.5 }),
       ])[0];
@@ -2545,7 +2545,7 @@ export class PixiBackend implements RenderBackend {
         this.appendPixelMarks(
           this.pixelExitLayer,
           camera,
-          [exitMark(anchor, 0.55 + 0.35 * pulse)],
+          [exitMark(anchor, cueOpacity(view.time, 420, view.reducedMotion))],
           view.cameraNudge,
         );
       }
@@ -2752,14 +2752,13 @@ export class PixiBackend implements RenderBackend {
 
       // A small G1 talk pip stays in the labels layer, above depth-sorted art.
       if (!npc.quiet) {
-        const pulse = view.reducedMotion ? 1 : (Math.sin(view.time / 500) + 1) / 2;
         this.drawTalkPip(
           camera,
           {
             x: x + TILE * width * 0.5,
             y: y + TILE * (FOOT_LINE - npcPipLift(npc.sprite, scale)),
           },
-          alpha * (0.55 + 0.35 * pulse),
+          cueOpacity(view.time, 500, view.reducedMotion, alpha),
           view.cameraNudge,
         );
       }
