@@ -729,10 +729,37 @@ async function captureStagedMarks(
             const context = target.getContext('2d');
             if (!context) throw new Error('Could not allocate transparent Canvas probe');
             context.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const plane: 'ground' | 'screen' = [
+              'move',
+              'target',
+              'area',
+              'rangeBonus',
+              'hover',
+              'path',
+              'aim',
+              'exit',
+            ].includes(name)
+              ? 'ground'
+              : 'screen';
+            if (plane === 'ground') {
+              const matrix = (
+                camera as typeof camera & {
+                  groundMatrix(): {
+                    a: number;
+                    b: number;
+                    c: number;
+                    d: number;
+                    tx: number;
+                    ty: number;
+                  };
+                }
+              ).groundMatrix();
+              context.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+            }
             const originalContext = backend.ctx;
             backend.ctx = context;
             try {
-              backend.drawPixelCues([cue], camera, 'screen');
+              backend.drawPixelCues([cue], camera, plane);
             } finally {
               backend.ctx = originalContext;
             }
