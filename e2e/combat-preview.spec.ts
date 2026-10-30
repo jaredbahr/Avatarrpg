@@ -203,7 +203,9 @@ test('touching a prop target names its break consequence before confirmation', a
   await canvas.tap({ position: { x: point.x - box.x, y: point.y - box.y } });
 
   const flaskChip = page.locator('.preview-chips .chip-terrain').filter({ hasText: /^Oil Flask/ });
-  await expect(flaskChip).toContainText('flask shatters and oil spreads');
+  await expect(flaskChip).toHaveText(
+    'Oil Flask: The flask shatters and oil spreads across the ground.',
+  );
   await expect(flaskChip).not.toContainText(/\(\d+,\s*\d+\)/);
 
   const confirm = page.locator('.confirm-bar').filter({ hasText: 'Confirm' });
