@@ -8,6 +8,12 @@ import { RngCursor } from '../src/core/rng';
 import { BattleDraft } from '../src/core/state/battleDraft';
 import { appendDiagnosticToExistingError } from './diagnostic-error';
 import {
+  newStoryOperationReport,
+  timeStoryOperation,
+  type StoryOperationContext,
+  type StoryOperationReport,
+} from './story-operation-timing';
+import {
   completeAuthoredPlayback,
   resetStorage,
   startGame,
@@ -17,13 +23,19 @@ import {
 
 interface PhaseRecord {
   readonly startedAt: number;
+  readonly story: StoryOperationReport;
   current: { name: string; startedAt: number } | null;
   readonly completed: { name: string; elapsedMs: number }[];
 }
 
 const phases = new WeakMap<Page, PhaseRecord>();
 test.beforeEach(({ page }) => {
-  phases.set(page, { startedAt: Date.now(), current: null, completed: [] });
+  phases.set(page, {
+    startedAt: Date.now(),
+    story: newStoryOperationReport(),
+    current: null,
+    completed: [],
+  });
 });
 test.afterEach(({ page }, testInfo) => {
   const record = phases.get(page);
@@ -48,6 +60,7 @@ test.afterEach(({ page }, testInfo) => {
       totals,
       last: record.completed.slice(-10),
       slowest: [...record.completed].sort((a, b) => b.elapsedMs - a.elapsedMs).slice(0, 5),
+      storyOperations: record.story,
     }),
   );
 });
@@ -186,45 +199,75 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
 /** Use the visible story controls, including authored interludes and choices. */
 async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'): Promise<void> {
   beginPhase(page, 'story');
+  const report = phases.get(page)?.story ?? null;
+  let context: StoryOperationContext = { nodeId: null, lineIndex: null, branch: 'state' };
+  const timed = <T>(branch: string, operation: string, action: () => Promise<T>) =>
+    timeStoryOperation(report, operation, { ...context, branch }, action);
   for (let step = 0; step < 60; step++) {
-    const state = await page.evaluate(() => window.fnt?.app.state);
+    const state = await timeStoryOperation(
+      report,
+      'read',
+      { ...context, branch: 'state' },
+      () => page.evaluate(() => window.fnt?.app.state),
+      (result) => ({
+        nodeId: result?.story.nodeId ?? null,
+        lineIndex: result?.story.lineIndex ?? null,
+        branch: 'state',
+      }),
+    );
+    context = {
+      nodeId: state?.story.nodeId ?? null,
+      lineIndex: state?.story.lineIndex ?? null,
+      branch: 'state',
+    };
     if (state?.pendingChoices.length) {
-      await page
-        .getByRole('button', { name: /^Learn / })
-        .first()
-        .click();
+      await timed('learn', 'click', () =>
+        page
+          .getByRole('button', { name: /^Learn / })
+          .first()
+          .click(),
+      );
       continue;
     }
     if (state?.screen !== 'dialogue') {
       endPhase(page);
       return;
     }
-    if (await page.locator('.interlude-stage').count()) {
-      await page.getByRole('button', { name: 'Skip scene' }).click();
+    if (await timed('interlude', 'count', () => page.locator('.interlude-stage').count())) {
+      await timed('skip', 'click', () => page.getByRole('button', { name: 'Skip scene' }).click());
       continue;
     }
     if (state.story.nodeId === 'gate_parley') {
-      await page.locator('.choice-option').nth(2).click(); // Bo speaks to the earthbender.
+      // Bo speaks to the earthbender.
+      await timed('gateParley', 'click', () => page.locator('.choice-option').nth(2).click());
       continue;
     }
     if (state.story.nodeId === 'gate_kinship') {
-      await expect(page.locator('.stage[data-kind="dialogue"]')).toHaveCount(1);
+      await timed('gateKinship', 'assert', () =>
+        expect(page.locator('.stage[data-kind="dialogue"]')).toHaveCount(1),
+      );
     }
     if (state.story.nodeId === 'ruon_choice') {
-      await expect(
-        page.locator('.stage[data-kind="dialogue"], .stage[data-kind="choice"]'),
-      ).toHaveCount(1);
-      await page
-        .locator('.choice-option')
-        .nth(custody === 'trade' ? 1 : 0)
-        .click();
+      await timed('ruonChoice', 'assert', () =>
+        expect(
+          page.locator('.stage[data-kind="dialogue"], .stage[data-kind="choice"]'),
+        ).toHaveCount(1),
+      );
+      await timed('ruonChoice', 'click', () =>
+        page
+          .locator('.choice-option')
+          .nth(custody === 'trade' ? 1 : 0)
+          .click(),
+      );
       continue;
     }
-    if (await page.locator('.choice-option').count()) {
-      await page.locator('.choice-option:not(.is-locked)').first().click();
+    if (await timed('choice', 'count', () => page.locator('.choice-option').count())) {
+      await timed('choice', 'click', () =>
+        page.locator('.choice-option:not(.is-locked)').first().click(),
+      );
       continue;
     }
-    await page.locator('.dialogue-panel button.btn-primary').click();
+    await timed('next', 'click', () => page.locator('.dialogue-panel button.btn-primary').click());
   }
   throw new Error('Story did not return to exploration');
 }
