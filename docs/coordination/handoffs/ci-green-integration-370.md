@@ -178,3 +178,31 @@ merge, deployment or auto-merge is authorized in the current session.
   claiming #324 fixed. Physical iPad review remains separate.
 
 No package version bump is needed for this unshipped source checkpoint.
+
+### Fifth hosted dispatch and bounded quarry diagnosis
+
+Published `ed5589e8` passed pinned local `ci:local` all nine steps (259 files,
+3,008 tests; exact receipt `/workspace/avatarrpg-env/370-ci-final-ed5589e8.receipt`).
+Automatic PR verify 41049061236 succeeded with browser/gallery matrices skipped.
+One branch `run_gallery=true` dispatch, 41050456855, is terminal: Chromium
+C1/C2/C3 passed cleanly (86/85/84), and WebKit iPad 1/2 succeeded. WebKit
+2/2 passed 35 cases before the original quarry-return escort campaign exhausted
+its unchanged 600 s whole-case budget at early dialogue/journal controls on
+the two attempts (1 failed, 93 unrun). The buttons resolved visible/enabled;
+this does not prove a handler bug. E2E failed and the gallery skipped. Full
+WebKit/gallery and consecutive passing branch-dispatch acceptance remain open.
+
+Merge `2689639c` preserves the authored isolated quarry timing commits
+`28d0f5ef` and `bcc1c45c`. They record bounded Node-side phase timings and,
+only on an unexpected failure, append aggregate durations, current phase,
+last ten and slowest five phases to the existing Playwright error for GitHub's
+reporter. Product files, interactions, assertions, timeouts, retries and test
+order are unchanged. The complete original escort case passed locally on
+`28d0f5ef` in production Chromium iPad-like DPR 2, 1/1, zero retries, 7.4 min
+under the unchanged 600 s limit; receipt
+`/workspace/avatarrpg-env/370-quarry-phase-diag-escort.receipt`. The only
+following source edit adds the slowest-five failure field. Details and
+rejected local timing experiments are in `ci-quarry-phase-diag-370.md`.
+The new combined head still needs its exact-head nine-step local gate before
+publication, then automatic PR verification and one new `run_gallery=true`
+dispatch. No main merge, auto-merge or source-PR closure is authorized.
