@@ -137,6 +137,7 @@ import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } fro
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
+import { trimPixiTextureCaches } from './pixiTextureCache';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
@@ -2679,32 +2680,14 @@ export class PixiBackend implements RenderBackend {
 
   /** Release idle textures after all of this frame's sprites have been bound and rendered. */
   private trimTextures(): void {
-    if (this.textureCache.size <= MAX_TEXTURES && this.frameTextures.size <= MAX_FRAME_TEXTURES)
-      return;
-    const live = new Set<Texture>();
-    const sources = new Set<Texture['source']>();
-    const visit = (node: Container): void => {
-      if (node instanceof Sprite) {
-        live.add(node.texture);
-        sources.add(node.texture.source);
-      }
-      for (const child of node.children) visit(child);
-    };
-    if (this.app) visit(this.app.stage);
-    // This offstage container is rendered separately into the cast-shadow mask.
-    visit(this.shadowMaskSources);
-    for (const [key, texture] of this.frameTextures) {
-      if (this.frameTextures.size <= MAX_FRAME_TEXTURES) break;
-      if (live.has(texture)) continue;
-      this.frameTextures.delete(key);
-      texture.destroy(false);
-    }
-    for (const [canvas, texture] of this.textureCache) {
-      if (this.textureCache.size <= MAX_TEXTURES) break;
-      if (sources.has(texture.source)) continue;
-      this.textureCache.delete(canvas);
-      texture.destroy(true);
-    }
+    trimPixiTextureCaches(
+      this.textureCache,
+      this.frameTextures,
+      this.app?.stage ?? null,
+      this.shadowMaskSources,
+      MAX_TEXTURES,
+      MAX_FRAME_TEXTURES,
+    );
   }
 
   private dropTextures(): void {
