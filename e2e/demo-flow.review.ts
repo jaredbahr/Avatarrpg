@@ -818,12 +818,35 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       { timeout: slow ? 300_000 : 60_000 },
     );
     const ready = page.getByRole('button', { name: /I'm ready/i });
-    const requiresHandoff = await page.evaluate(() => window.fnt?.app.session.solo === false);
-    if (requiresHandoff) {
-      // The opening marker clears one frame before the hand-off banner is
-      // rebuilt. Wait for the real control instead of racing a synchronous
-      // count against the next HUD render.
-      await expect(ready).toBeVisible({ timeout: slow ? 120_000 : 30_000 });
+    // A multiplayer session does not imply a new handoff on every call: the
+    // same actor can still be active after a failed End turn confirmation.
+    // Observe either the actual banner or a synchronized action row.
+    const handoff = await page.waitForFunction(
+      () => {
+        const app = window.fnt?.app;
+        const current = app?.state?.battle;
+        const actor = current?.units.find((unit) => unit.id === current.order[current.turnIndex]);
+        const scene = document.querySelector('.combat-scene');
+        if (
+          app?.state?.screen !== 'combat' ||
+          current?.phase !== 'active' ||
+          actor?.faction !== 'party' ||
+          !scene ||
+          app.curtainBusy
+        )
+          return false;
+        if (scene.querySelector('.handoff-banner button')) return 'handoff';
+        if (
+          scene.querySelector('.unit-panel .unit-name')?.textContent?.trim() === actor.name &&
+          scene.querySelector('.action-row button.action-button')
+        )
+          return 'actions';
+        return false;
+      },
+      undefined,
+      { timeout: slow ? 60_000 : 30_000, polling: 'raf' },
+    );
+    if ((await handoff.jsonValue()) === 'handoff') {
       if (!beats.some((b) => b.name === 'combat-handoff')) await beat('combat-handoff');
       await tapButton(ready);
       await expect(ready).toBeHidden({ timeout: slow ? 30_000 : 10_000 });
@@ -1163,6 +1186,10 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
   const endTurn = async () => {
     recordInput('end-turn-intent', 'End turn');
     const end = page.getByRole('button', { name: /^End turn/ }).first();
+    const before = (await battle()).battle;
+    const startActor = before?.units.find((unit) => unit.id === before.order[before.turnIndex]);
+    if (!before || !startActor || startActor.faction !== 'party') return;
+    let taps = 0;
     // With AP left the first tap only warns; a second tap ends the turn.
     for (let tap = 0; tap < 2; tap++) {
       const b = (await battle()).battle;
@@ -1173,8 +1200,87 @@ test(`the demo, played through (${CUSTODY})`, async ({ page }, info) => {
       if (tap === 1 && acting.id !== lastActing) break;
       lastActing = acting.id;
       await tapButton(end);
+      taps++;
       await page.waitForTimeout(300);
     }
+    await waitForIdle(page, slow ? 300_000 : 30_000);
+    const after = (await battle()).battle;
+    if (!after) throw new Error('The encounter disappeared after End turn taps.');
+    const unchanged =
+      after.phase === 'active' &&
+      after.round === before.round &&
+      after.turnIndex === before.turnIndex &&
+      after.order[after.turnIndex] === startActor.id;
+    if (!unchanged) return;
+    if (taps !== 2) {
+      throw new Error(`End turn did not advance after ${taps} visible tap(s).`);
+    }
+    // Under video load, the four-second warning window can expire between
+    // two genuine taps. Record that fact, then use the same legal reducer
+    // command the planner uses elsewhere in this route review.
+    const completion = await page.evaluate(
+      ({ unitId, encounterId, round, turnIndex }) => {
+        const app = window.fnt!.app;
+        const current = app.state?.battle;
+        const actor = current?.units.find((unit) => unit.id === current.order[current.turnIndex]);
+        if (
+          !current ||
+          current.phase !== 'active' ||
+          current.encounterId !== encounterId ||
+          current.round !== round ||
+          current.turnIndex !== turnIndex ||
+          actor?.id !== unitId ||
+          actor.faction !== 'party'
+        ) {
+          return { status: 'stale' as const };
+        }
+        app.dispatch({ type: 'endTurn', unitId });
+        const next = app.state?.battle;
+        return {
+          status: 'dispatched' as const,
+          phase: next?.phase ?? null,
+          round: next?.round ?? null,
+          turnIndex: next?.turnIndex ?? null,
+          actorId: next?.order[next.turnIndex] ?? null,
+        };
+      },
+      {
+        unitId: startActor.id,
+        encounterId: before.encounterId,
+        round: before.round,
+        turnIndex: before.turnIndex,
+      },
+    );
+    if (completion.status === 'stale') {
+      const latest = (await battle()).battle;
+      if (
+        latest &&
+        (latest.phase !== 'active' ||
+          latest.round !== before.round ||
+          latest.turnIndex !== before.turnIndex ||
+          latest.order[latest.turnIndex] !== startActor.id)
+      ) {
+        recordInput('review-end-turn-ui-advanced-late', startActor.id);
+        return;
+      }
+      throw new Error('End turn state changed before the legal planner fallback could run.');
+    }
+    if (
+      completion.phase === null ||
+      (completion.phase === 'active' &&
+        completion.round === before.round &&
+        completion.turnIndex === before.turnIndex &&
+        completion.actorId === startActor.id)
+    ) {
+      throw new Error('The legal planner End turn command did not advance the encounter.');
+    }
+    recordInput('review-end-turn-confirmation-expired', startActor.id, {
+      round: before.round,
+      turnIndex: before.turnIndex,
+      visibleTaps: taps,
+      reason: 'The second visible End turn tap did not advance before the UI warning expired.',
+    });
+    recordInput('planner-command', 'endTurn', { unitId: startActor.id });
     await waitForIdle(page, slow ? 300_000 : 30_000);
   };
   let lastActing = '';
