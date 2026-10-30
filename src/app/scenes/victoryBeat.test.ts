@@ -105,6 +105,29 @@ describe('victory beat', () => {
     }
   });
 
+  it('tightens a fitted board around nearby survivors', () => {
+    const camera = new Camera({ width: 1024, height: 480, dpr: 1 }, { width: 20, height: 12 });
+    camera.fit();
+    const fittedScale = camera.scale;
+    const survivors = [
+      unit('left', 'party', { x: 8, y: 5 }),
+      unit('right', 'party', { x: 10, y: 5 }),
+    ];
+    const boundsFor = (survivor: Unit) =>
+      victoryActorBounds(camera, survivor, { pos: survivor.pos, scale: 1, frameHeadroom: 1.5 });
+
+    frameLivingParty(camera, survivors, boundsFor);
+
+    expect(camera.scale).toBeGreaterThan(fittedScale);
+    for (const survivor of survivors) {
+      const bounds = boundsFor(survivor);
+      expect(bounds.left).toBeGreaterThanOrEqual(0);
+      expect(bounds.right).toBeLessThanOrEqual(camera.viewport.width);
+      expect(bounds.top).toBeGreaterThanOrEqual(0);
+      expect(bounds.bottom).toBeLessThanOrEqual(camera.viewport.height);
+    }
+  });
+
   it('keeps pixel-art integer zoom stops while framing a spread party', () => {
     const camera = new Camera(
       { width: 1000, height: 600, dpr: 2 },
@@ -130,8 +153,9 @@ describe('victory beat', () => {
     frameLivingParty(camera, survivors, boundsFor);
 
     expect(camera.scale).toBeLessThan(2);
-    expect(scalesAfterZoom[0]).toBe(2);
-    expect(scalesAfterZoom.length).toBeGreaterThan(2);
+    expect(scalesAfterZoom[0]).toBeGreaterThan(2);
+    expect(scalesAfterZoom[1]).toBe(scalesAfterZoom[0]);
+    expect(scalesAfterZoom.length).toBeGreaterThan(3);
     expect(camera.onWholeDevicePixels).toBe(true);
     for (const survivor of survivors) {
       const bounds = boundsFor(survivor);

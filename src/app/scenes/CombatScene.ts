@@ -101,7 +101,7 @@ import {
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
-const VICTORY_BEAT_HOLD_MS = 700;
+const VICTORY_BEAT_HOLD_MS = 1000;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -286,6 +286,7 @@ export class CombatScene implements Scene {
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
   private resultShown = false;
+  private victoryPending = false;
   private victoryBeat: VictoryBeatClock | null = null;
   private victoryFocus: Vec2 | null = null;
   private presentationHeld = false;
@@ -315,6 +316,7 @@ export class CombatScene implements Scene {
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     this.battleOpening = null;
     this.resultShown = false;
+    this.victoryPending = false;
     this.victoryBeat = null;
     this.victoryFocus = null;
     this.layoutMeasuredAfterSync = false;
@@ -345,6 +347,7 @@ export class CombatScene implements Scene {
     this.aiHeld = false;
     this.presentationHeld = false;
     this.battleOpening = null;
+    this.victoryPending = false;
     this.victoryBeat = null;
     this.victoryFocus = null;
     this.setVictoryBeatMarker(false);
@@ -472,6 +475,18 @@ export class CombatScene implements Scene {
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    if (this.victoryPending) {
+      // Clearing the decision dock may resize the canvas while the last hit
+      // is still playing. Keep its camera frame until playback has finished.
+      camera.clamp();
+      this.syncRecentre();
+      return;
+    }
+    if (this.battle()?.phase === 'victory' && motionReduced()) {
+      camera.clamp();
+      this.syncRecentre();
+      return;
+    }
     if (this.victoryBeat && this.victoryFocus) {
       camera.clamp();
       const battle = this.battle();
@@ -603,7 +618,7 @@ export class CombatScene implements Scene {
 
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
-    if (!camera || this.victoryBeat) return;
+    if (!camera || this.victoryPending || this.victoryBeat) return;
     if (this.battleOpening) this.skipBattleOpening();
     const before = camera.scale;
     camera.zoomAt(at, factor);
@@ -616,7 +631,7 @@ export class CombatScene implements Scene {
 
   private pan(dx: number, dy: number): void {
     const camera = this.renderer?.camera;
-    if (!camera || this.victoryBeat) return;
+    if (!camera || this.victoryPending || this.victoryBeat) return;
     if (this.battleOpening) this.skipBattleOpening();
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
@@ -628,7 +643,7 @@ export class CombatScene implements Scene {
 
   /** Camera navigation never selects a target or spends an action. */
   private focusUnit(id: string): void {
-    if (this.victoryBeat) return;
+    if (this.victoryPending || this.victoryBeat) return;
     if (this.battleOpening) this.skipBattleOpening();
     const unit = this.battle()?.units.find(
       (candidate) => candidate.id === id && isAlive(candidate),
@@ -669,7 +684,18 @@ export class CombatScene implements Scene {
     });
   }
 
-  private startVictoryBeat(battle: BattleState): void {
+  private startVictoryBeat(battle: BattleState, now: number): void {
+    this.victoryPending = false;
+    this.inspector?.close();
+    this.inspector = null;
+    this.setMoreOpen(false, false);
+    // Reduced motion keeps the last camera frame and reveals the existing
+    // card only after the final knockout has finished playing.
+    if (motionReduced()) {
+      this.renderTopBar();
+      this.renderHud();
+      return;
+    }
     this.victoryFocus = this.renderer
       ? this.frameVictoryParty(this.renderer.camera, battle)
       : livingPartyFocus(battle.units);
@@ -677,17 +703,13 @@ export class CombatScene implements Scene {
       this.manualCamera = true;
       this.followSuspended = true;
     }
-    this.inspector?.close();
-    this.inspector = null;
-    this.setMoreOpen(false, false);
-    this.victoryBeat =
-      this.victoryFocus && !motionReduced()
-        ? beginVictoryBeat(performance.now(), VICTORY_BEAT_HOLD_MS)
-        : null;
-    // The first terminal sync still measures its cleared HUD and reframes the
-    // camera. Start the timed hold on the first stable rendered frame instead.
+    this.victoryBeat = this.victoryFocus ? beginVictoryBeat(now, VICTORY_BEAT_HOLD_MS) : null;
+    // The first framed render begins the hold; fitting the camera never eats
+    // into the visible beat.
     this.pauseVictoryBeat();
     this.setVictoryBeatMarker(this.victoryBeat !== null);
+    this.renderTopBar();
+    this.renderHud();
   }
 
   private pauseVictoryBeat(): void {
@@ -695,9 +717,10 @@ export class CombatScene implements Scene {
   }
 
   private updateVictoryBeat(now: number): void {
-    const beat = this.victoryBeat;
-    if (!beat) return;
-    if (this.battle()?.phase !== 'victory') {
+    const battle = this.battle();
+    if (battle?.phase !== 'victory') {
+      if (!this.victoryPending && !this.victoryBeat) return;
+      this.victoryPending = false;
       this.victoryBeat = null;
       this.victoryFocus = null;
       this.setVictoryBeatMarker(false);
@@ -705,6 +728,18 @@ export class CombatScene implements Scene {
       this.renderHud();
       return;
     }
+    if (this.victoryPending) {
+      if (
+        this.app.animator.busy(now) ||
+        this.suspended ||
+        this.presentationHeld ||
+        this.paintingStill
+      )
+        return;
+      this.startVictoryBeat(battle, now);
+    }
+    const beat = this.victoryBeat;
+    if (!beat) return;
 
     const step = advanceVictoryBeat(
       beat,
@@ -718,6 +753,14 @@ export class CombatScene implements Scene {
       this.renderTopBar();
       this.renderHud();
     }
+  }
+
+  private skipVictoryBeat(): void {
+    if (!this.victoryBeat || this.battle()?.phase !== 'victory') return;
+    this.victoryBeat = null;
+    this.setVictoryBeatMarker(false);
+    this.renderTopBar();
+    this.renderHud();
   }
 
   private setVictoryBeatMarker(active: boolean): void {
@@ -1188,14 +1231,15 @@ export class CombatScene implements Scene {
       const followedStillMoving =
         this.cameraFollow.kind === 'following' &&
         this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
-      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera);
+      if (battle.phase === 'active' && !followedStillMoving) this.centreOnActiveUnit(unit, camera);
     }
 
     if (battle.phase === 'active') this.resultShown = false;
     if (battle.phase !== 'active' && !this.resultShown) {
       this.resultShown = true;
-      if (battle.phase === 'victory') this.startVictoryBeat(battle);
-    } else if (battle.phase !== 'victory' && this.victoryBeat) {
+      if (battle.phase === 'victory') this.victoryPending = true;
+    } else if (battle.phase !== 'victory' && (this.victoryPending || this.victoryBeat)) {
+      this.victoryPending = false;
       this.victoryBeat = null;
       this.victoryFocus = null;
       this.setVictoryBeatMarker(false);
@@ -1260,7 +1304,7 @@ export class CombatScene implements Scene {
     const weather = weatherAt(this.app.content, battle.encounterId, battle.round);
     const weatherText = weatherChipText(this.app.content.tuning, weather);
     const weatherShortText = weatherChipShortText(this.app.content.tuning, weather);
-    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}|${battle.phase}|${Boolean(this.victoryBeat)}`;
+    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}|${battle.phase}|${this.victoryPending}|${Boolean(this.victoryBeat)}`;
     if (key === this.topBarKey && bar.childElementCount > 0) return;
     this.topBarKey = key;
     // On a rebuild, the button that had focus is found again by its key, so a
@@ -1308,7 +1352,7 @@ export class CombatScene implements Scene {
     // lay the same buttons inline and never show the toggle (`.combat-more`).
     // The toggle is its mark alone, named for a screen reader: the plate
     // needs the width.
-    const victoryBeat = this.victoryBeat !== null;
+    const victoryBeat = this.victoryPending || this.victoryBeat !== null;
     const toggle = button('', () => this.setMoreOpen(!this.moreOpen, true), {
       class: 'btn-ghost combat-more-toggle',
       title: 'View and help',
@@ -1494,7 +1538,7 @@ export class CombatScene implements Scene {
           attrs: {
             type: 'button',
             'aria-label': `Focus ${unit.name}`,
-            ...(this.victoryBeat ? { disabled: '' } : {}),
+            ...(this.victoryPending || this.victoryBeat ? { disabled: '' } : {}),
           },
           onClick: () => this.focusUnit(unit.id),
         },
@@ -1523,7 +1567,17 @@ export class CombatScene implements Scene {
     clear(overlays);
 
     if (battle.phase !== 'active') {
-      if (battle.phase === 'victory' && this.victoryBeat) return;
+      if (battle.phase === 'victory' && this.victoryPending) return;
+      if (battle.phase === 'victory' && this.victoryBeat) {
+        overlays.appendChild(
+          el(
+            'div',
+            { class: 'victory-beat-overlay', onClick: () => this.skipVictoryBeat() },
+            button('Show result', () => this.skipVictoryBeat(), { class: 'btn-ghost' }),
+          ),
+        );
+        return;
+      }
       overlays.appendChild(this.resultPanel(battle));
       return;
     }

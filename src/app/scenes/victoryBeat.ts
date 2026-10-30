@@ -102,7 +102,7 @@ export function victoryActorBounds(
   };
 }
 
-/** Center the surviving party and zoom out only until its rendered bounds fit. */
+/** Center the surviving party at the tightest camera stop that fits them. */
 export function frameLivingParty(
   camera: Camera,
   units: readonly Unit[],
@@ -124,6 +124,10 @@ export function frameLivingParty(
     });
 
   const centre = { x: camera.viewport.width / 2, y: camera.viewport.height / 2 };
+  // Start from the camera's public maximum zoom, then step back until every
+  // actor and cue fits. Starting from the player's prior scale leaves a close
+  // party tiny whenever the board happened to be fitted before victory.
+  camera.zoomAt(centre, 100);
   camera.centreOn(focus);
   let unchangedRequests = 0;
   for (let attempt = 0; attempt < 32 && !fits(); attempt += 1) {

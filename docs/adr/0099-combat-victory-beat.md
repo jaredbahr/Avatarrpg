@@ -12,12 +12,16 @@ existing result and Continue action.
 
 ## Decision
 
-- On victory, frame all living party members and hold the undimmed battlefield
-  for 700 ms before showing the existing result card. Defeat remains immediate.
-- Keep the party together using the camera's `centreOn` and `zoomAt` APIs. Zoom
-  out only as far as needed for party bounds and a small cue margin; integer
+- On victory, finish the last hit and floaters before framing all living party
+  members. Hold the undimmed battlefield for 1000 ms before showing the existing
+  result card. Defeat remains immediate.
+- Keep the party together using the camera's `centreOn` and `zoomAt` APIs. Start
+  at the camera's closest public stop and zoom out only until the party bounds
+  and a small cue margin fit; integer
   oblique zoom continues through the camera's existing scale stops.
-- Reduced motion still frames the party but skips the hold. Scene suspension
+- A tap on the clear-board overlay or its visible Show result button skips the
+  hold immediately. Reduced motion keeps the current camera frame and shows
+  the card once playback idles. Scene suspension
   and the pause menu pause the beat clock; the separate AI-dispatch hold does
   not. Unmount or a phase change cancels the pending beat.
 - During the beat, terminal gameplay and focus controls are locked while the
@@ -30,6 +34,7 @@ existing result and Continue action.
   pure bounds and clock helpers. App's pause lifecycle has a separate optional
   scene hook for timed presentation, independent of `holdAi`.
 - Unit coverage protects spread-party framing, orthographic and integer camera
-  scales, pause/resume, cancellation and reduced-motion behavior. The victory
+  scales, the playback boundary, result-overlay timing and skip, pause/resume,
+  cancellation and reduced-motion behavior. The victory
   gallery captures the clear beat and unchanged result card and exercises
   Continue after resuming the scene.

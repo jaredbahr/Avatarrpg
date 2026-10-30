@@ -772,22 +772,26 @@ export const BEATS: readonly Beat[] = [
         [0],
         async () => {
           await endTurn(ctx.page, active.id);
+          // The scene now waits for the final playback boundary and the next
+          // rendered frame before it begins the party hold.
+          await ctx.page.clock.runFor(32);
           const beat = await ctx.page.evaluate(() => {
             const app = window.fnt?.app;
-            const scene = (app as unknown as {
-              scene: {
-                renderer: { camera: { scale: number } };
-                suspend: () => void;
-              };
-            }).scene;
+            const scene = (
+              app as unknown as {
+                scene: {
+                  renderer: { camera: { scale: number } };
+                  suspend: () => void;
+                };
+              }
+            ).scene;
             const phase = app?.state?.battle?.phase;
             const scale = scene.renderer.camera.scale;
             const cardVisible = Boolean(document.querySelector('.result-panel'));
             const activeBeat = Boolean(
               document.querySelector('.combat-scene[data-victory-beat="active"]'),
             );
-            const controlsEnabled =
-              document.querySelector('.turn-chip:not(:disabled)') !== null;
+            const controlsEnabled = document.querySelector('.turn-chip:not(:disabled)') !== null;
             // Paint once with the normal render path, then hold the scene for
             // a stable review capture while the fake clock is paused.
             scene.suspend();
@@ -811,7 +815,7 @@ export const BEATS: readonly Beat[] = [
         scene.resume();
       });
       // Resume and advance the presentation to the established result card.
-      await ctx.page.clock.runFor(750);
+      await ctx.page.clock.runFor(1050);
       await ctx.page.locator('.result-panel').waitFor();
       await waitForIdle(ctx.page, ctx.idleTimeout);
       await ctx.shoot(this.note);
