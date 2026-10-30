@@ -946,9 +946,8 @@ export class App {
   }
 
   /**
-   * Where the village draws each party member, leader first, as tiles.
-   * Exposed so the e2e suite can check the drawing against the rules after
-   * a walk. Null outside the village.
+   * Where the current map scene draws each party member, leader first, as tiles.
+   * Exposed so the e2e suite can compare the last explore and first combat frames.
    */
   partyPositions(): readonly Vec2[] | null {
     const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };

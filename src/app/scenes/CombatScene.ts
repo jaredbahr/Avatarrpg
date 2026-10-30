@@ -229,7 +229,8 @@ export class CombatScene implements Scene {
   private freshBattleEntry = false;
   /** One presentation-only formation frame before the first hand-off. */
   private battleOpening: BattleOpeningState | null = null;
-  private approachPositions: readonly Vec2[] | null = null;
+  /** Keeps the first combat frame on the last explore seats until the curtain lifts. */
+  private approachPositions: ReadonlyMap<string, Vec2> | null = null;
   private approachEndsAt = 0;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
@@ -302,9 +303,18 @@ export class CombatScene implements Scene {
     this.aiHeld = false;
     this.host = host;
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
-    this.approachPositions = this.freshBattleEntry
+    const approach = this.freshBattleEntry
       ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
       : null;
+    const party = this.app.state?.battle?.units.filter((unit) => unit.faction === 'party') ?? [];
+    const positions = new Map<string, Vec2>();
+    if (approach && !motionReduced()) {
+      for (const [index, unit] of party.entries()) {
+        const from = approach[index];
+        if (from) positions.set(unit.id, from);
+      }
+    }
+    this.approachPositions = positions.size > 0 ? positions : null;
     this.approachEndsAt = 0;
     this.battleOpening = null;
     this.layoutMeasuredAfterSync = false;
@@ -688,6 +698,20 @@ export class CombatScene implements Scene {
     };
   }
 
+  /** The same positions supplied to the renderer, including the curtain reveal. */
+  partyPositions(): readonly Vec2[] | null {
+    const battle = this.battle();
+    if (!battle) return null;
+    const now = performance.now();
+    return battle.units
+      .filter((unit) => unit.faction === 'party')
+      .map((unit) => this.renderPosition(unit, now) ?? unit.pos);
+  }
+
+  private renderPosition(unit: Unit, now: number): Vec2 | undefined {
+    return this.approachPositions?.get(unit.id) ?? this.app.animator.renderPos(now, unit.id);
+  }
+
   /* ---------------------------------------------------------------- */
   /* State helpers                                                     */
   /* ---------------------------------------------------------------- */
@@ -987,7 +1011,7 @@ export class CombatScene implements Scene {
     if (!positions || !battle) return;
     const party = battle.units.filter((unit) => unit.faction === 'party');
     for (const [index, unit] of party.entries()) {
-      const from = positions[index];
+      const from = positions.get(unit.id);
       if (!from || samePos(from, unit.pos)) continue;
       const route = findPath(
         {
@@ -2279,7 +2303,7 @@ export class CombatScene implements Scene {
         maxHp: u.base.maxHp,
         statuses: u.statuses.map((s) => s.id),
         fallen: health.fallen,
-        renderPos: this.app.animator.renderPos(now, u.id),
+        renderPos: this.renderPosition(u, now),
         ...this.poseFields(
           now,
           u.id,

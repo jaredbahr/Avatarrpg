@@ -32,6 +32,8 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
     const from = app.partyPositions();
     let lastExplore: { x: number; y: number }[] | null = null;
     const frames: { x: number; y: number }[][] = [];
+    const fadeFrames: { x: number; y: number }[][] = [];
+    let sawWalk = false;
     const deadline = performance.now() + 15_000;
     while (performance.now() < deadline) {
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -45,12 +47,17 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
           );
       }
       const battle = app.state?.battle;
-      if (!battle || !document.querySelector('.combat-scene') || app.curtainBusy) continue;
+      if (!battle || !document.querySelector('.combat-scene')) continue;
+      const curtain = document.querySelector<HTMLElement>('.curtain');
+      if (curtain && Number(getComputedStyle(curtain).opacity) >= 1) continue;
       const party = battle.units.filter((unit) => unit.faction === 'party');
       const moving = party.map((unit) => app.animator.renderPos(now, unit.id));
-      if (frames.length === 0 && moving.every((pos) => pos === undefined)) continue;
-      frames.push(party.map((unit, index) => moving[index] ?? unit.pos));
-      if (frames.length > 2 && moving.every((pos) => pos === undefined)) break;
+      const drawn = app.partyPositions();
+      if (!drawn) continue;
+      frames.push([...drawn]);
+      if (app.curtainBusy) fadeFrames.push([...drawn]);
+      if (moving.some((pos) => pos !== undefined)) sawWalk = true;
+      if (sawWalk && !app.curtainBusy && moving.every((pos) => pos === undefined)) break;
     }
     return {
       before,
@@ -59,18 +66,23 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
       consumed,
       consumedAgain: app.consumeCombatApproach('ambush_road'),
       frames,
+      fadeFrames,
+      sawWalk,
       to: app.state?.battle?.units
         .filter((unit) => unit.faction === 'party')
         .map((unit) => unit.pos),
     };
   });
 
-  const { before, from, lastExplore, consumed, consumedAgain, frames, to } = observed;
+  const { before, from, lastExplore, consumed, consumedAgain, frames, fadeFrames, sawWalk, to } =
+    observed;
   expect(before).toHaveLength(3);
   expect(from).toHaveLength(3);
   expect(lastExplore).toHaveLength(3);
   expect(consumed).toEqual(from);
   expect(consumedAgain).toBeNull();
+  expect(fadeFrames.length).toBeGreaterThan(0);
+  expect(sawWalk).toBe(true);
   expect(to).toEqual([
     { x: 1, y: 3 },
     { x: 3, y: 4 },
@@ -95,6 +107,17 @@ test('the Cutting ambush walks each drawn follower into unchanged combat spawns'
     expect(apart(origin, oldSeat)).toBeLessThanOrEqual(2);
     expect(apart(exploreSeat, origin)).toBeLessThan(0.35);
     expect(apart(initial, origin)).toBeLessThan(0.35);
+    for (const fade of fadeFrames) {
+      const fadingPos = fade[index];
+      if (!fadingPos) throw new Error('Incomplete fade sample');
+      expect(apart(fadingPos, origin)).toBeLessThan(0.35);
+    }
+    for (let frameIndex = 1; frameIndex < frames.length; frameIndex++) {
+      const previous = frames[frameIndex - 1]?.[index];
+      const current = frames[frameIndex]?.[index];
+      if (!previous || !current) throw new Error('Incomplete frame sample');
+      expect(apart(previous, current)).toBeLessThan(1.5);
+    }
     expect(apart(final, destination)).toBeLessThan(0.05);
     expect(
       frames.some((frame) => {
