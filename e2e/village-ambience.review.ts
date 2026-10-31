@@ -178,12 +178,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     let revision = '';
     let trackedChanges = '';
     let build = '';
+    let frozen: Frame | null = null;
     const errors: string[] = [];
     const sequences: Record<string, unknown[]> = {};
     const phases: Record<string, string> = {
       'midday and west live sequence': 'not-run',
       'evening and lantern live sequence': 'not-run',
-      'reduced-motion stability and both sequences': 'not-run',
+      'reduced-motion fields and lantern sequence': 'not-run',
+      'reduced-motion west sequence and stability': 'not-run',
       'night and morning gating': 'not-run',
     };
 
@@ -320,11 +322,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(errors).toEqual([]);
     });
 
-    test('reduced-motion stability and both sequences', async () => {
+    test('reduced-motion fields and lantern sequence', async () => {
       const info = test.info();
       await page.evaluate(() => window.fnt!.app.updateSettings({ reduceMotion: true }));
       await expect.poll(async () => (await read(page)).latest?.reduced).toBe(true);
-      const frozen = (await read(page)).latest;
+      frozen = (await read(page)).latest;
       expect(ofKind(frozen, 'steam')).toHaveLength(2);
       expect(ofKind(frozen, 'lantern')).toHaveLength(3);
       expect(ofKind(frozen, 'flow')).toEqual([]);
@@ -332,6 +334,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(frozen!.marks.every((mark) => mark.still)).toBe(true);
       await frameAt(page, { x: 18, y: 7 });
       sequences['lanterns-reduced'] = await sequence(page, info, 'lanterns-reduced');
+      expect((await read(page)).violations).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+
+    test('reduced-motion west sequence and stability', async () => {
+      const info = test.info();
       await frameAt(page, { x: 5, y: 7 });
       sequences['west-reduced'] = await sequence(page, info, 'west-reduced');
       const held = (await read(page)).latest;
