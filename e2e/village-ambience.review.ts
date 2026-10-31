@@ -7,7 +7,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import type { Page, TestInfo } from '@playwright/test';
+import type { BrowserContext, Page, TestInfo } from '@playwright/test';
 import type { DayPhase, Vec2 } from '../src/core/types';
 import type { Renderer } from '../src/render/renderer';
 import type { EmitterInstance, MapView } from '../src/render/view';
@@ -170,35 +170,127 @@ async function sequence(page: Page, info: TestInfo, name: string): Promise<unkno
 }
 
 for (const renderer of ['canvas', 'webgl'] as const) {
-  test(`${renderer}: village life, phase gating and reduced motion at zoom 1`, async ({
-    page,
-    browser,
-  }, info) => {
+  test.describe.serial(`${renderer}: village life at zoom 1`, () => {
+    let context: BrowserContext | undefined;
+    let page: Page;
+    let browserVersion = '';
+    let setupStatus = 'not-run';
+    let revision = '';
+    let trackedChanges = '';
+    let build = '';
     const errors: string[] = [];
     const sequences: Record<string, unknown[]> = {};
-    page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
-    page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(`console: ${message.text()}`);
-    });
-    const revision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-    const trackedChanges = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], {
-      encoding: 'utf8',
-    }).trim();
-    const build = revision.slice(0, 7) + (trackedChanges ? '-modified' : '');
-    try {
-      await resetStorage(page, `?renderer=${renderer}`);
-      await expect(page.locator('[aria-label^="Game version"]')).toHaveText(
-        new RegExp(`build ${build}$`),
+    const phases: Record<string, string> = {
+      'midday and west live sequence': 'not-run',
+      'evening and lantern live sequence': 'not-run',
+      'reduced-motion stability and both sequences': 'not-run',
+      'night and morning gating': 'not-run',
+    };
+
+    async function provenance(info: TestInfo, milestone: string): Promise<void> {
+      const path = info.outputPath(`${milestone}-provenance.json`);
+      mkdirSync(info.outputDir, { recursive: true });
+      writeFileSync(
+        path,
+        JSON.stringify(
+          {
+            issue: 368,
+            revision,
+            build,
+            trackedChanges,
+            renderer,
+            browser: browserVersion,
+            node: process.version,
+            viewport: page?.viewportSize() ?? null,
+            errors,
+            sequences,
+            setupStatus,
+            phases,
+            complete:
+              setupStatus === 'passed' &&
+              Object.values(phases).every((status) => status === 'passed'),
+            probe: page ? await read(page).catch(() => null) : null,
+            setup:
+              'One native Chromium context per backend, 1368x912, DPR1, touch. Seeded startup/enterNode skip unrelated setup; real Look around/table walk/Wait UI. Camera-only fixture centres at integer zoom 1. Probe forwards the real MapView unchanged. PNGs capture the running game.',
+            open: 'Physical iPad/Surface checks, WebKit coverage and owner aesthetic acceptance remain open.',
+          },
+          null,
+          2,
+        ) + '\n',
       );
-      await startGame(page, ['Review'], ['kaya'], 'village-ambience-368', { reduceMotion: false });
-      await enterNode(page, 'village_explore');
-      await waitForIdle(page);
-      await settleLayout(page);
-      expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(renderer);
-      await installProbe(page);
+      await info.attach(`${milestone}-runtime-provenance`, {
+        path,
+        contentType: 'application/json',
+      });
+    }
+
+    test.beforeAll(async ({ browser }, info) => {
+      setupStatus = 'running';
+      browserVersion = browser.version();
+      revision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+      trackedChanges = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], {
+        encoding: 'utf8',
+      }).trim();
+      build = revision.slice(0, 7) + (trackedChanges ? '-modified' : '');
+      try {
+        context = await browser.newContext({
+          baseURL: info.project.use.baseURL,
+          viewport: { width: 1368, height: 912 },
+          deviceScaleFactor: 1,
+          hasTouch: true,
+          isMobile: false,
+        });
+        await context.tracing.start({ screenshots: false, snapshots: true, sources: true });
+        page = await context.newPage();
+        page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
+        page.on('console', (message) => {
+          if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+        });
+        await resetStorage(page, `?renderer=${renderer}`);
+        await expect(page.locator('[aria-label^="Game version"]')).toHaveText(
+          new RegExp(`build ${build}$`),
+        );
+        await startGame(page, ['Review'], ['kaya'], 'village-ambience-368', {
+          reduceMotion: false,
+        });
+        await enterNode(page, 'village_explore');
+        await waitForIdle(page);
+        await settleLayout(page);
+        expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(renderer);
+        await installProbe(page);
+        setupStatus = 'passed';
+      } catch (error) {
+        setupStatus = 'failed';
+        throw error;
+      } finally {
+        await provenance(info, 'setup');
+      }
+    });
+
+    test.afterEach(async () => {
+      const info = test.info();
+      phases[info.title] = info.status ?? 'unknown';
+      await provenance(info, 'phase');
+    });
+
+    test.afterAll(async () => {
+      const info = test.info();
+      try {
+        await provenance(info, 'final');
+        if (context) {
+          const path = info.outputPath(`${renderer}-shared-context-trace.zip`);
+          await context.tracing.stop({ path });
+          await info.attach('shared-context-trace', { path, contentType: 'application/zip' });
+        }
+      } finally {
+        await context?.close();
+      }
+    });
+
+    test('midday and west live sequence', async () => {
+      const info = test.info();
       await expect(page.locator('.explore-phase')).toHaveText('Midday');
       expect(ofKind((await read(page)).latest, 'lantern')).toEqual([]);
-
       await page.getByRole('button', { name: /^Look around/ }).click();
       await page.getByRole('button', { name: "Mira's table · Sit and wait", exact: true }).click();
       await waitForIdle(page);
@@ -206,21 +298,30 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         x: 10,
         y: 5,
       });
-      // All four additions must actually reach a backend; the flow has a sparse
-      // twelve-second cycle, so observe its stream rather than forcing its clock.
+      // Observe the sparse twelve-second flow cycle without forcing its clock.
       await expect.poll(async () => (await read(page)).seen.flow, { timeout: 15_000 }).toBe(true);
       for (const kind of ['waterLeaf', 'steam'] as const)
         expect((await read(page)).seen[kind], `${kind} reached ${renderer}`).toBe(true);
       await frameAt(page, { x: 5, y: 7 });
       sequences['west-live'] = await sequence(page, info, 'west-live');
+      expect((await read(page)).violations).toEqual([]);
+      expect(errors).toEqual([]);
+    });
 
+    test('evening and lantern live sequence', async () => {
+      const info = test.info();
       await waitUntil(page, 'Evening');
       await expect.poll(async () => ofKind((await read(page)).latest, 'lantern').length).toBe(3);
       await frameAt(page, { x: 18, y: 7 });
       sequences['lanterns-live'] = await sequence(page, info, 'lanterns-live');
       for (const kind of ['flow', 'steam', 'waterLeaf', 'lantern'] as const)
         expect((await read(page)).changed[kind], `${kind} changes with the live clock`).toBe(true);
+      expect((await read(page)).violations).toEqual([]);
+      expect(errors).toEqual([]);
+    });
 
+    test('reduced-motion stability and both sequences', async () => {
+      const info = test.info();
       await page.evaluate(() => window.fnt!.app.updateSettings({ reduceMotion: true }));
       await expect.poll(async () => (await read(page)).latest?.reduced).toBe(true);
       const frozen = (await read(page)).latest;
@@ -236,7 +337,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const held = (await read(page)).latest;
       expect(held!.time - frozen!.time).toBeGreaterThan(1000);
       expect(held!.marks).toEqual(frozen!.marks);
+      expect((await read(page)).violations).toEqual([]);
+      expect(errors).toEqual([]);
+    });
 
+    test('night and morning gating', async () => {
+      const info = test.info();
       await waitUntil(page, 'Night');
       expect(ofKind((await read(page)).latest, 'lantern')).toHaveLength(3);
       await frameAt(page, { x: 18, y: 7 });
@@ -246,34 +352,6 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await page.screenshot({ path: info.outputPath('morning-reduced.png') });
       expect((await read(page)).violations).toEqual([]);
       expect(errors).toEqual([]);
-    } finally {
-      writeFileSync(
-        info.outputPath('provenance.json'),
-        JSON.stringify(
-          {
-            issue: 368,
-            revision,
-            build,
-            trackedChanges,
-            renderer,
-            browser: browser.version(),
-            node: process.version,
-            viewport: page.viewportSize(),
-            errors,
-            sequences,
-            probe: await read(page).catch(() => null),
-            setup:
-              'Seeded startup/enterNode skip unrelated setup; real Look around/table walk/Wait UI. Camera-only fixture centres at integer zoom 1. Probe forwards the real MapView unchanged. PNGs capture the running game.',
-            open: 'Physical iPad/Surface checks, WebKit coverage and owner aesthetic acceptance remain open.',
-          },
-          null,
-          2,
-        ) + '\n',
-      );
-      await info.attach('runtime-provenance', {
-        path: info.outputPath('provenance.json'),
-        contentType: 'application/json',
-      });
-    }
+    });
   });
 }
