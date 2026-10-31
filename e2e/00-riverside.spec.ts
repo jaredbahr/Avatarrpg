@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import {
+  completeAuthoredPlayback,
   enterNode,
   resetStorage,
   setLargeText,
@@ -10,6 +11,14 @@ import {
   waitForIdle,
 } from './helpers';
 import { TIMING } from '../src/app/anim/choreography';
+import { recordRiversideDiagnostics } from './riverside-diagnostics';
+
+const diagnostics = new WeakMap<Page, Awaited<ReturnType<typeof recordRiversideDiagnostics>>>();
+test.afterEach(async ({ page }, testInfo) => {
+  const record = diagnostics.get(page);
+  if (record) await record.attach(testInfo);
+  diagnostics.delete(page);
+});
 
 const LEGACY_WALK_MS_PER_TILE = 280;
 const walkTimeout = (legacyMs: number): number =>
@@ -169,6 +178,9 @@ for (const renderer of ['canvas', 'webgl']) {
     // takes two minutes there and five seconds on Canvas.
     test.setTimeout(90_000);
     allowSoftwareWebgl(test, renderer);
+    // Own the shrine route timer from boot before advancing its long walk.
+    await page.clock.install();
+    diagnostics.set(page, await recordRiversideDiagnostics(page));
     // Scenic-route assertions scale with the current stroll pace; crossing
     // the whole area can exceed the default timeout even at a smooth frame rate.
     const timeout = walkTimeout(renderer === 'webgl' ? 30_000 : 20_000);
@@ -212,6 +224,9 @@ for (const renderer of ['canvas', 'webgl']) {
     await expect(page.locator('.village-note')).toContainText('Pebble leans', { timeout });
     await openActivities(page);
     await page.getByRole('button', { name: 'Tea break', exact: true }).click();
+    // Finish this nine-second walk through the real animator before checking
+    // the note; the drill's forms still play on the normal clock.
+    await completeAuthoredPlayback(page);
     await expect(page.locator('.village-note')).toContainText('jasmine tea', { timeout });
     // Dorin's drill is his midday relief (D3); the preview's afternoon has
     // him on the gate post, so wait for it here at the porch (D8).
@@ -225,6 +240,9 @@ for (const renderer of ['canvas', 'webgl']) {
     await expect(page.locator('.explore-phase')).toHaveText('Midday');
     await openActivities(page);
     await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
+    // The tea porch to shrine route is ~23 seconds at its authored pace.
+    // Publish its real completion frames while preserving the route assertions.
+    await completeAuthoredPlayback(page);
     await expect(page.locator('.explore-conversation, .dialogue-scene').first()).toBeVisible({
       timeout,
     });
@@ -238,6 +256,8 @@ for (const renderer of ['canvas', 'webgl']) {
     await expect(page.locator('.village-caption')).toContainText('3/3');
     await openActivities(page);
     await page.getByRole('button', { name: "Dorin's drill", exact: true }).click();
+    // The walk to Dorin's post is another six seconds of authored travel.
+    await completeAuthoredPlayback(page);
     await expect(page.locator('.village-note')).toContainText('sets a rhythm', { timeout });
     for (const name of ['Water form', 'Fire form', 'Water form']) {
       await page.getByRole('button', { name, exact: true }).click();

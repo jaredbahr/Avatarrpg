@@ -1,15 +1,90 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { CONTENT, RETURNEE_IDS } from '../src/content';
+import { generateQuarryCheckpoints, quarryRouteBoundary } from '../scripts/e2e/quarry-checkpoints';
 import { previewAiPlan } from '../src/core/rules/ai';
 import { distance, reachable } from '../src/core/rules/grid';
 import { contactEffects } from '../src/core/rules/surfaces';
 import { RngCursor } from '../src/core/rng';
 import { BattleDraft } from '../src/core/state/battleDraft';
-import { resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import { appendDiagnosticToExistingError } from './diagnostic-error';
+import {
+  newStoryOperationReport,
+  storyOperationSnapshot,
+  timeStoryOperation,
+  type StoryOperationContext,
+  type StoryOperationReport,
+} from './story-operation-timing';
+import {
+  completeAuthoredPlayback,
+  resetStorage,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
+
+interface PhaseRecord {
+  readonly startedAt: number;
+  readonly story: StoryOperationReport;
+  current: { name: string; startedAt: number } | null;
+  readonly completed: { name: string; elapsedMs: number }[];
+}
+
+const phases = new WeakMap<Page, PhaseRecord>();
+test.beforeEach(({ page }) => {
+  phases.set(page, {
+    startedAt: Date.now(),
+    story: newStoryOperationReport(),
+    current: null,
+    completed: [],
+  });
+});
+test.afterEach(({ page }, testInfo) => {
+  const record = phases.get(page);
+  phases.delete(page);
+  if (!record || testInfo.status === testInfo.expectedStatus || !testInfo.errors.length) return;
+  const totals: Record<string, { count: number; elapsedMs: number }> = {};
+  for (const phase of record.completed) {
+    const category = phase.name.split(' ')[0] ?? phase.name;
+    const total = (totals[category] ??= { count: 0, elapsedMs: 0 });
+    total.count++;
+    total.elapsedMs += phase.elapsedMs;
+  }
+  appendDiagnosticToExistingError(
+    testInfo,
+    'Quarry campaign timing',
+    JSON.stringify({
+      elapsedMs: Date.now() - record.startedAt,
+      current: record.current && {
+        name: record.current.name,
+        elapsedMs: Date.now() - record.current.startedAt,
+      },
+      totals,
+      last: record.completed.slice(-10),
+      slowest: [...record.completed].sort((a, b) => b.elapsedMs - a.elapsedMs).slice(0, 5),
+      storyOperations: storyOperationSnapshot(record.story),
+    }),
+  );
+});
+
+function beginPhase(page: Page, name: string): void {
+  const record = phases.get(page);
+  if (record) record.current = { name, startedAt: Date.now() };
+}
+
+function endPhase(page: Page): void {
+  const record = phases.get(page);
+  if (!record?.current) return;
+  record.completed.push({
+    name: record.current.name,
+    elapsedMs: Date.now() - record.current.startedAt,
+  });
+  record.current = null;
+}
 
 /** Drive real player commands while leaving the campaign state and outcome untouched. */
 async function finishBattle(page: Page, encounterId: string): Promise<void> {
+  beginPhase(page, `battle ${encounterId}`);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.battle?.encounterId))
     .toBe(encounterId);
@@ -31,9 +106,9 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
   });
 
   for (let turn = 0; turn < 160; turn++) {
-    const phase = await page.evaluate(() => window.fnt?.app.state?.battle?.phase);
-    if (phase !== 'active') break;
-    if (!(await takeTurn(page))) break;
+    // This route proof dispatches legal actions from state; it never converts
+    // camera pixels to targets, so it does not need a four-frame camera sample.
+    if (!(await takeTurn(page, { settleCamera: false }))) break;
 
     for (let action = 0; action < 8; action++) {
       const state = await page.evaluate(() => window.fnt?.app.state);
@@ -118,66 +193,120 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
     'victory',
   );
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  endPhase(page);
 }
 
 /** Use the visible story controls, including authored interludes and choices. */
 async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'): Promise<void> {
+  beginPhase(page, 'story');
+  const report = phases.get(page)?.story ?? null;
+  let context: StoryOperationContext = { nodeId: null, lineIndex: null, branch: 'snapshot' };
+  const timed = <T>(branch: string, operation: string, action: () => Promise<T>) =>
+    timeStoryOperation(report, operation, { ...context, branch }, action);
   for (let step = 0; step < 60; step++) {
-    const state = await page.evaluate(() => window.fnt?.app.state);
-    if (state?.pendingChoices.length) {
-      await page
-        .getByRole('button', { name: /^Learn / })
-        .first()
-        .click();
+    const snapshot = await timeStoryOperation(
+      report,
+      'read',
+      { ...context, branch: 'snapshot' },
+      () =>
+        page.evaluate(() => {
+          const state = window.fnt?.app.state;
+          // These controls use light DOM. Count every class match, including
+          // hidden or locked controls, just like the original locator counts.
+          return {
+            pendingChoiceCount: state?.pendingChoices.length ?? 0,
+            screen: state?.screen,
+            nodeId: state?.story.nodeId ?? null,
+            lineIndex: state?.story.lineIndex ?? null,
+            interludeCount: document.querySelectorAll('.interlude-stage').length,
+            choiceCount: document.querySelectorAll('.choice-option').length,
+          };
+        }),
+      (result) => ({
+        nodeId: result.nodeId,
+        lineIndex: result.lineIndex,
+        branch: 'snapshot',
+      }),
+    );
+    context = {
+      nodeId: snapshot.nodeId,
+      lineIndex: snapshot.lineIndex,
+      branch: 'snapshot',
+    };
+    if (snapshot.pendingChoiceCount) {
+      await timed('learn', 'click', () =>
+        page
+          .getByRole('button', { name: /^Learn / })
+          .first()
+          .click(),
+      );
       continue;
     }
-    if (state?.screen !== 'dialogue') return;
-    if (await page.locator('.interlude-stage').count()) {
-      await page.getByRole('button', { name: 'Skip scene' }).click();
+    if (snapshot.screen !== 'dialogue') {
+      endPhase(page);
+      return;
+    }
+    if (snapshot.interludeCount) {
+      await timed('skip', 'click', () => page.getByRole('button', { name: 'Skip scene' }).click());
       continue;
     }
-    if (state.story.nodeId === 'gate_parley') {
-      await page.locator('.choice-option').nth(2).click(); // Bo speaks to the earthbender.
+    if (snapshot.nodeId === 'gate_parley') {
+      // Bo speaks to the earthbender.
+      await timed('gateParley', 'click', () => page.locator('.choice-option').nth(2).click());
       continue;
     }
-    if (state.story.nodeId === 'gate_kinship') {
-      await expect(page.locator('.stage[data-kind="dialogue"]')).toHaveCount(1);
+    if (snapshot.nodeId === 'gate_kinship') {
+      await timed('gateKinship', 'assert', () =>
+        expect(page.locator('.stage[data-kind="dialogue"]')).toHaveCount(1),
+      );
     }
-    if (state.story.nodeId === 'ruon_choice') {
-      await expect(
-        page.locator('.stage[data-kind="dialogue"], .stage[data-kind="choice"]'),
-      ).toHaveCount(1);
-      await page
-        .locator('.choice-option')
-        .nth(custody === 'trade' ? 1 : 0)
-        .click();
+    if (snapshot.nodeId === 'ruon_choice') {
+      await timed('ruonChoice', 'assert', () =>
+        expect(
+          page.locator('.stage[data-kind="dialogue"], .stage[data-kind="choice"]'),
+        ).toHaveCount(1),
+      );
+      await timed('ruonChoice', 'click', () =>
+        page
+          .locator('.choice-option')
+          .nth(custody === 'trade' ? 1 : 0)
+          .click(),
+      );
       continue;
     }
-    if (await page.locator('.choice-option').count()) {
-      await page.locator('.choice-option:not(.is-locked)').first().click();
+    if (snapshot.choiceCount) {
+      await timed('choice', 'click', () =>
+        page.locator('.choice-option:not(.is-locked)').first().click(),
+      );
       continue;
     }
-    await page.locator('.dialogue-panel button.btn-primary').click();
+    await timed('next', 'click', () => page.locator('.dialogue-panel button.btn-primary').click());
   }
   throw new Error('Story did not return to exploration');
 }
 
 async function walkTo(page: Page, x: number, y: number): Promise<void> {
+  beginPhase(page, `walk ${x},${y}`);
   await page.evaluate((pos) => window.fnt!.app.dispatch({ type: 'walkTo', pos }), { x, y });
-  await waitForIdle(page);
+  await completeAuthoredPlayback(page);
+  endPhase(page);
 }
 
 async function takeRoute(page: Page, label: string, mapId: string): Promise<void> {
+  beginPhase(page, `route ${mapId}`);
   await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
-  await waitForIdle(page);
+  await completeAuthoredPlayback(page);
+  endPhase(page);
 }
 
 async function expectJournalObjective(page: Page, text: string): Promise<void> {
+  beginPhase(page, `journal ${text}`);
   await page.getByRole('button', { name: 'Travel journal', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Travel journal' })).toContainText(text);
   await page.getByRole('button', { name: 'Return to the path', exact: true }).click();
+  endPhase(page);
 }
 
 async function checkpoint(page: Page) {
@@ -200,6 +329,7 @@ async function checkpoint(page: Page) {
 }
 
 async function saveAndReload(page: Page): Promise<void> {
+  beginPhase(page, 'save');
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   await page.getByRole('button', { name: 'Save game', exact: true }).click();
   await page
@@ -216,13 +346,43 @@ async function saveAndReload(page: Page): Promise<void> {
     .getByRole('button', { name: /^Load$/ })
     .click();
   expect(await checkpoint(page)).toEqual(saved);
+  endPhase(page);
+}
+
+/** Start independently through the same real Load UI as the original reloads. */
+async function loadCheckpoint(
+  page: Page,
+  fixture: ReturnType<typeof generateQuarryCheckpoints>['gate'],
+): Promise<void> {
+  await page.clock.install();
+  await resetStorage(page, '?renderer=canvas');
+  await page.evaluate((json) => {
+    const app = window.fnt?.app;
+    if (!app) throw new Error('The game has not finished booting.');
+    app.updateSettings({ reduceMotion: true });
+    localStorage.setItem('fnt.save.slot1', json);
+  }, fixture.json);
+  await page.reload();
+  await page.getByRole('button', { name: /load a save/i }).click();
+  await page
+    .locator('.slot')
+    .filter({ hasText: 'Slot 1' })
+    .getByRole('button', { name: /^Load$/ })
+    .click();
+  // Check every loaded state field (including RNG/HP), not only the milestone.
+  expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
+  expect(await page.evaluate(() => window.fnt!.app.session.toMeta())).toEqual(fixture.session);
+  expect(quarryRouteBoundary(await page.evaluate(() => window.fnt!.app.state!))).toEqual(
+    fixture.projection,
+  );
 }
 
 for (const custody of ['trade', 'escort'] as const) {
-  test(`a new campaign takes the ${custody} route and walks home after reloading`, async ({
-    page,
-  }) => {
+  test(`${custody} 1/3: a new campaign reaches the gate custody choice`, async ({ page }) => {
     test.setTimeout(600_000);
+    // The route assertions inspect completed destinations, not intermediate
+    // walking frames; install before boot so the real route timers can finish.
+    await page.clock.install();
     await resetStorage(page, '?renderer=canvas');
     const names =
       custody === 'trade'
@@ -267,6 +427,22 @@ for (const custody of ['trade', 'escort'] as const) {
         custody === 'trade' ? 'ruon_traded' : 'ruon_spared',
       ),
     ).toBe(true);
+    // Legal checkpoints have their own complete-state drift pins. The legacy
+    // browser driver sets enemy HP to 1, so compare the shared route milestone
+    // here rather than pretending the two combat histories/RNG are identical.
+    const fixture = generateQuarryCheckpoints(custody).gate;
+    const liveBoundary = await page.evaluate(() => window.fnt!.app.state!);
+    await test.info().attach(`${custody}-gate-boundary`, {
+      body: JSON.stringify(liveBoundary),
+      contentType: 'application/json',
+    });
+    expect(quarryRouteBoundary(liveBoundary)).toEqual(fixture.projection);
+  });
+
+  test(`${custody} 2/3: the gate route resolves the Driller and summary`, async ({ page }) => {
+    test.setTimeout(600_000);
+    const fixture = generateQuarryCheckpoints(custody).gate;
+    await loadCheckpoint(page, fixture);
     await takeRoute(page, 'East → The Cutting', 'ambush_road');
     if (custody === 'escort') {
       await walkTo(page, 19, 4);
@@ -289,6 +465,19 @@ for (const custody of ['trade', 'escort'] as const) {
     await expect(page.locator('.title-plate-objective')).toContainText('west');
     await expectJournalObjective(page, 'Take the west path');
 
+    const completed = generateQuarryCheckpoints(custody).afterDriller;
+    const liveBoundary = await page.evaluate(() => window.fnt!.app.state!);
+    await test.info().attach(`${custody}-afterDriller-boundary`, {
+      body: JSON.stringify(liveBoundary),
+      contentType: 'application/json',
+    });
+    expect(quarryRouteBoundary(liveBoundary)).toEqual(completed.projection);
+  });
+
+  test(`${custody} 3/3: reloads, walks home and revisits the resolved quarry`, async ({ page }) => {
+    test.setTimeout(600_000);
+    const fixture = generateQuarryCheckpoints(custody).afterDriller;
+    await loadCheckpoint(page, fixture);
     await saveAndReload(page);
     expect(await page.evaluate(() => window.fnt?.app.state?.flags.act1_complete)).toBe(true);
     expect(await page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe('quarry_floor');

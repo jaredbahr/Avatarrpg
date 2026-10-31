@@ -17,10 +17,12 @@ export const DIRECTIONAL_BEATS: readonly Beat[] = (
       window.fnt!.app.updateSettings({ reduceMotion: false });
       window.fnt!.app.startVillagePreview();
     });
+    // Sura, Kaya and the two residents placed by the preview, each drawn from its
+    // sheet; the same count `00-riverside.spec.ts` asserts.
     await ctx.page.waitForFunction(
       () =>
         document.querySelector('.village-life-canvas')?.getAttribute('data-illustrated-actors') ===
-        '2',
+        '4',
     );
     await ctx.filmstrip(
       `Walking ${direction}, then standing in the same direction.`,

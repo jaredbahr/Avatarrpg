@@ -170,6 +170,9 @@ export class VillageLife {
       activities,
       utilities,
     );
+    // A HUD rebuild can land between two frames while a walk or form is still
+    // playing. New buttons must carry the same lock as the ones update() held.
+    this.refreshControls(this.app.animator.busy(performance.now()));
     host.appendChild(panel);
   }
   handleTap(point: Vec2, now: number): boolean {
@@ -234,6 +237,22 @@ export class VillageLife {
         : `${unit.name}: settle your feet, gather, release, breathe.`,
     );
   }
+  private refreshControls(walkBusy: boolean): boolean {
+    // Keep an elapsed activity locked until update() consumes it and advances
+    // Dorin's drill. A click in that gap could otherwise replace the activity.
+    const locked = walkBusy || this.activity !== null;
+    for (const b of this.controls) {
+      const element =
+        b.textContent === 'Water form' ? 'water' : b.textContent === 'Fire form' ? 'fire' : null;
+      b.disabled =
+        locked || Boolean(element && !this.app.state?.party.some((p) => p.element === element));
+      if (b.textContent === "Dorin's drill")
+        b.disabled ||= !['water', 'fire'].every((e) =>
+          this.app.state?.party.some((p) => p.element === e),
+        );
+    }
+    return locked;
+  }
   /** Returns true if the update changed scenes, so the old scene stops drawing. */
   update(now: number, camera: Camera): boolean {
     const paused = document.hidden || Boolean(document.querySelector('[role="dialog"]'));
@@ -269,17 +288,7 @@ export class VillageLife {
         distance(this.app.state.location.pos, RIVERSIDE_SPOTS.tea) > 0)
     )
       this.leaveTea();
-    const locked = walkBusy || this.busy(now);
-    for (const b of this.controls) {
-      const element =
-        b.textContent === 'Water form' ? 'water' : b.textContent === 'Fire form' ? 'fire' : null;
-      b.disabled =
-        locked || Boolean(element && !this.app.state?.party.some((p) => p.element === element));
-      if (b.textContent === "Dorin's drill")
-        b.disabled ||= !['water', 'fire'].every((e) =>
-          this.app.state?.party.some((p) => p.element === e),
-        );
-    }
+    const locked = this.refreshControls(walkBusy);
     if (this.pending && !locked) {
       const visit = this.pending;
       this.pending = null;
