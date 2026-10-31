@@ -17,6 +17,9 @@
   schema/types and Ba Dan anchors, local deterministic placement in
   `src/app/anim/ambience.ts`, one coordinated call-site argument in ExploreScene,
   dedicated `src/app/anim/baDanAmbience.test.ts`, and ADR 0101.
+  Parent review caught presentation anchors incorrectly using the grid-cell
+  schema; a follow-up uses strict finite fractional world points, permits
+  off-board sources and adds direct schema acceptance/rejection coverage.
 - **Decisions:** Existing emitters draw all four effects on both backends.
   New particle centres snap through the oblique world-pixel projection, with
   fixed 2/4/6-pixel existing cells. No shared simulator/backend change. Reduce

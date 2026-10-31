@@ -6,6 +6,7 @@ import { FX_AMBIENCE } from '../../content/fx';
 import { BA_DAN_VILLAGE } from '../../content/maps/village';
 import { BA_DAN_AMBIENCE_SOURCES, BA_DAN_SCENE } from '../../content/scenes/baDan';
 import { BA_DAN_PAINTING, BA_DAN_UPRIGHTS } from '../../content/scenes/baDan.art';
+import { mapSchema } from '../../content/schemas';
 import { buildGrid } from '../../core/rules/grid';
 import { DAY_PHASES, type DayPhase, type Vec2 } from '../../core/types';
 import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from '../../render/fx/simulate';
@@ -35,6 +36,44 @@ function particle(instance: EmitterInstance): Float32Array {
 const projected = (at: Vec2) => ({ x: 1024 + (at.x - at.y) * 64, y: (at.x + at.y) * 32 });
 
 describe('Ba Dan additional ambience', () => {
+  it('validates fractional and off-board presentation sources without relaxing grid coordinates', () => {
+    const shipped = mapSchema.safeParse(BA_DAN_VILLAGE);
+    expect(shipped.success, 'the shipped fractional sources validate').toBe(true);
+    const sources = {
+      steam: [{ x: -0.25, y: -1.5 }],
+      lanterns: [{ x: 3.25, y: -0.75 }],
+    };
+    const map = { ...BA_DAN_VILLAGE, scene: { ...BA_DAN_SCENE, ambienceSources: sources } };
+    const parsed = mapSchema.safeParse(map);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.scene?.ambienceSources).toEqual(sources);
+    expect(mapSchema.safeParse({ ...map, partySpawns: [{ x: 0.5, y: 2 }] }).success).toBe(false);
+    expect(mapSchema.safeParse({ ...map, partySpawns: [{ x: -1, y: 2 }] }).success).toBe(false);
+  });
+
+  it('rejects nonfinite sources and excessive emitter counts at the content boundary', () => {
+    for (const value of [NaN, Infinity, -Infinity])
+      for (const axis of ['x', 'y'] as const) {
+        const sources = { steam: [{ x: 1, y: 2, [axis]: value }], lanterns: [] };
+        expect(
+          mapSchema.safeParse({
+            ...BA_DAN_VILLAGE,
+            scene: { ...BA_DAN_SCENE, ambienceSources: sources },
+          }).success,
+        ).toBe(false);
+      }
+    for (const sources of [
+      { steam: Array.from({ length: 3 }, () => ({ x: 1, y: 2 })), lanterns: [] },
+      { steam: [], lanterns: Array.from({ length: 5 }, () => ({ x: 1, y: 2 })) },
+    ])
+      expect(
+        mapSchema.safeParse({
+          ...BA_DAN_VILLAGE,
+          scene: { ...BA_DAN_SCENE, ambienceSources: sources },
+        }).success,
+      ).toBe(false);
+  });
+
   it('registers its sources on the tracked vessel lid and amber lantern glass', async () => {
     const require = createRequire(import.meta.url);
     const wasm = readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm'));

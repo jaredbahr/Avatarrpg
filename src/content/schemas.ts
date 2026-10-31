@@ -111,6 +111,8 @@ const terrainId = z.enum([
 ]);
 
 const vec2 = z.object({ x: z.number().int().min(0), y: z.number().int().min(0) });
+/** Presentation anchors may lie between tiles or above the board's edge. */
+const worldPoint = z.object({ x: z.number().finite(), y: z.number().finite() }).strict();
 const sceneFootprintVec2 = z.object({ x: z.number().int(), y: z.number().int() });
 const id = z.string().min(1).max(64);
 
@@ -610,7 +612,7 @@ export const mapSchema = z
         paintedWaterCells: z.array(vec2).optional(),
         paintedRubble: z.array(vec2).optional(),
         ambienceSources: z
-          .object({ steam: z.array(vec2).max(2), lanterns: z.array(vec2).max(4) })
+          .object({ steam: z.array(worldPoint).max(2), lanterns: z.array(worldPoint).max(4) })
           .strict()
           .optional(),
         actorGrounding: z
