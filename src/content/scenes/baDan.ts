@@ -147,6 +147,26 @@ export const BA_DAN_CANOPIES: readonly Vec2[] = [
   { x: 21, y: 15 },
 ];
 
+/** A point inside a registered upright, converted from its local painting pixels to ground tiles. */
+function paintedSource(id: string, x: number, y: number): Vec2 {
+  const piece = BA_DAN_UPRIGHTS[id];
+  if (!piece) throw new Error(`Missing Ba Dan ambience source: ${id}`);
+  const px = origin.x + (piece[3] + x) / PIXELS_PER_WORLD;
+  const py = origin.y + (piece[4] + y) / PIXELS_PER_WORLD;
+  // The village's registered oblique origin is scene pixel (1024, 0).
+  return { x: py / 64 + (px - 1024) / 128, y: py / 64 - (px - 1024) / 128 };
+}
+
+/**
+ * Existing painted sources, not new props: the market's lidded vessel at page 1 (550,773),
+ * and the amber glass at page 0 (1536,391), (1573,391), (1536,498).
+ * Local points are measured on the tracked upright pages; frozen geometry/art stays untouched.
+ */
+export const BA_DAN_AMBIENCE_SOURCES = {
+  steam: [paintedSource('south-market-display', 39, 21)],
+  lanterns: [paintedSource('d5', 20, 30), paintedSource('d6', 20, 30), paintedSource('d7', 20, 30)],
+} as const;
+
 /**
  * What stands in the village, in draw order, and how it sorts: the id (which names its sprite in
  * `baDan.art.ts`), the cells it occupies and its depth key (both backends sort by projected x + y;
@@ -399,6 +419,7 @@ export const BA_DAN_SCENE: MapScene = {
   marginTone: 'verdant',
   chimneys: BA_DAN_CHIMNEYS,
   canopies: BA_DAN_CANOPIES,
+  ambienceSources: BA_DAN_AMBIENCE_SOURCES,
   paintedWater: true,
   // The painting's own casts run ~0.40 darkening with ~0.60 at the contact line; figures answer in kind.
   actorGrounding: BA_DAN_ACTOR_GROUNDING,
