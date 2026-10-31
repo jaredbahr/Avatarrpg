@@ -1602,7 +1602,44 @@ export interface AmbienceRecipe {
   readonly glint?: StrokeEmitterDef;
   /** Leaves let go by each of the scene's `canopies`, if it has any. */
   readonly canopy?: readonly ParticleEmitterDef[];
+  /** A few directional marks and floating leaves, contained within permanent water. */
+  readonly flow?: StrokeEmitterDef;
+  readonly waterLeaf?: ParticleEmitterDef;
+  /** Fixed-size pixel cells positioned by the ambience clock at authored sources. */
+  readonly steam?: ParticleEmitterDef;
+  readonly lantern?: ParticleEmitterDef;
 }
+
+/** A pixel stamp: its centre is placed locally, so the sampler adds no free drift. */
+const ambientStamp = (
+  cell: 'leaf' | 'puff' | 'disc',
+  color: FxColor,
+  size: number,
+  life: number,
+  opacity: number,
+  fade: ParticleEmitterDef['fade'],
+): ParticleEmitterDef =>
+  particles({
+    shape: 'projectile',
+    cell,
+    count: 1,
+    duration: life,
+    life: [life, life],
+    delay: [0, 0],
+    speed: [0, 0],
+    spread: 0,
+    gravity: 0,
+    drag: 0,
+    size: [size, size],
+    grow: 1,
+    spin: 0,
+    color,
+    fade,
+    opacity,
+    upright: true,
+    blend: 'normal',
+    layer: 'over',
+  });
 
 /**
  * A cooking fire under a painted roof: a few soft grey-brown wisps, faint and
@@ -1707,6 +1744,20 @@ export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
     chimney: chimneySmoke,
     glint: waterRipple,
     canopy: [canopyLeaf('moss'), canopyLeaf('straw')],
+    flow: strokes({
+      shape: 'glint',
+      count: 1,
+      duration: 5000,
+      width: 1 / 64,
+      reach: 0.18,
+      color: 'shallows',
+      ink: false,
+      blend: 'normal',
+      layer: 'under',
+    }),
+    waterLeaf: ambientStamp('leaf', 'straw', 4 / 64, 9000, 0.8, 'in-out'),
+    steam: ambientStamp('puff', 'base', 6 / 64, 4000, 0.35, 'in-out'),
+    lantern: ambientStamp('disc', 'accent', 2 / 64, 1000, 0.35, 'out'),
   },
   quarry: {
     palette: 'neutral',

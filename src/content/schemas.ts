@@ -609,6 +609,10 @@ export const mapSchema = z
         groundMode: z.literal('partial').optional(),
         paintedWaterCells: z.array(vec2).optional(),
         paintedRubble: z.array(vec2).optional(),
+        ambienceSources: z
+          .object({ steam: z.array(vec2).max(2), lanterns: z.array(vec2).max(4) })
+          .strict()
+          .optional(),
         actorGrounding: z
           .object({
             cast: z.number().min(0).max(1).optional(),
