@@ -242,7 +242,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           hasTouch: true,
           isMobile: false,
         });
-        await context.tracing.start({ screenshots: false, snapshots: true, sources: true });
+        // Playwright starts tracing for this context using the repository's
+        // existing trace policy; starting a second trace would fail setup.
         page = await context.newPage();
         page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
         page.on('console', (message) => {
@@ -279,11 +280,6 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const info = test.info();
       try {
         await provenance(info, 'final');
-        if (context) {
-          const path = info.outputPath(`${renderer}-shared-context-trace.zip`);
-          await context.tracing.stop({ path });
-          await info.attach('shared-context-trace', { path, contentType: 'application/zip' });
-        }
       } finally {
         await context?.close();
       }
