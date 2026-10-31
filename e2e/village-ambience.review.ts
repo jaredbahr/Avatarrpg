@@ -12,6 +12,7 @@ import type { DayPhase, Vec2 } from '../src/core/types';
 import type { Renderer } from '../src/render/renderer';
 import type { EmitterInstance, MapView } from '../src/render/view';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import { allowSoftwareWebgl } from './budget';
 
 type Kind = 'flow' | 'waterLeaf' | 'steam' | 'lantern';
 type Mark = Pick<EmitterInstance, 'from' | 'to' | 'elapsed' | 'seed' | 'still'> & { kind: Kind };
@@ -171,6 +172,9 @@ async function sequence(page: Page, info: TestInfo, name: string): Promise<unkno
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   test.describe.serial(`${renderer}: village life at zoom 1`, () => {
+    // This new capture review pays the same software-rasteriser cost as the
+    // existing renderer suite. Keep its established budget policy unchanged.
+    test.beforeEach(() => allowSoftwareWebgl(test, renderer));
     let context: BrowserContext | undefined;
     let page: Page;
     let browserVersion = '';
