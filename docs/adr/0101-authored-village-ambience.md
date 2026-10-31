@@ -1,7 +1,7 @@
 # ADR 0101: Authored village ambience sources
 
 **Status:** Proposed; draft implementation awaiting checks and visual review  
-**Date:** 2026-10-31
+**Date:** 2026-10-30 (America/Chicago)
 
 ## Context
 
