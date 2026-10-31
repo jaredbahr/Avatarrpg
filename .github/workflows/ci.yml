@@ -1,9 +1,10 @@
 # CI cost rule (Jared, 2026-09-21) — read before editing the triggers below.
 #
-# One full run of this workflow fans out to about 14 ubuntu jobs (verify, five
-# Playwright e2e shards, seven gallery shards), bills roughly 255 runner-minutes
-# (about $2; the second WebKit shard added on 2026-10-04 repeats about five
-# minutes of checkout, install and build), and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
+# One full run of this workflow fans out to about 15 ubuntu jobs (verify, six
+# Playwright e2e shards, seven gallery shards), bills roughly 260 runner-minutes
+# (about $2; the second and third WebKit shards, added on 2026-10-04 and
+# 2026-10-31, each repeat about five minutes of checkout, install and build),
+# and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
 # day to $67 a day. That cannot be sustained, so:
 #
 #   - `pull_request` runs ONLY the `verify` job (typecheck, lint, format, unit
@@ -149,14 +150,22 @@ jobs:
           # 37145320243 and was cancelled at the 60-minute limit on run
           # 37177952609 with about 230 cases done, so two shards keep each
           # runner well inside the limit while covering each case exactly once.
-          - label: WebKit iPad 1/2
+          # Run 41171594503 (2026-10-31) then cancelled WebKit 2/2 at the
+          # 60-minute limit once the staged quarry campaigns (#376) joined it,
+          # so WebKit now takes three shards like Chromium. The job limit and
+          # every case budget are unchanged.
+          - label: WebKit iPad 1/3
             browser: webkit
             artifact: webkit-1
-            projects: --project=ipad-landscape --project=ipad-portrait --shard=1/2
-          - label: WebKit iPad 2/2
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=1/3
+          - label: WebKit iPad 2/3
             browser: webkit
             artifact: webkit-2
-            projects: --project=ipad-landscape --project=ipad-portrait --shard=2/2
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=2/3
+          - label: WebKit iPad 3/3
+            browser: webkit
+            artifact: webkit-3
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=3/3
     # Each runner executes one shard on a machine of its own.
     timeout-minutes: 60
     steps:
