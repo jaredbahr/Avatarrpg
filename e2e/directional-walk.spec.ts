@@ -3,6 +3,7 @@ import { allowSoftwareWebgl } from './budget';
 import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
 import { ASSETS } from '../src/content/assets/manifest';
 import { TIMING } from '../src/app/anim/choreography';
+import { BRISK_WALK_CEL_MS } from '../src/app/animator';
 import { strollTiming } from '../src/app/anim/stroll';
 import type { MapView, RenderUnit } from '../src/render/view';
 
@@ -138,7 +139,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           const sprite = await page.evaluate(() => window.fnt!.app.state!.party[0]!.sprite);
           const sheet = ASSETS[sprite];
           if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`G leader ${sprite}`);
-          const msPerTile = sheet.locomotion.walkMsPerTile[dy < 0 ? 'north' : 'south'];
+          const fittedMsPerTile = sheet.locomotion.walkMsPerTile[dy < 0 ? 'north' : 'south'];
+          // The orthographic Riverside figure has scale 1. At the authored
+          // stroll pace, native-G1 walks use the brisk cel cap when their
+          // fitted stride would advance the clip more slowly.
+          const briskMsPerTile = sheet.locomotion.walkCelMs
+            ? (sheet.locomotion.walkCelMs * TIMING.strollStep) / BRISK_WALK_CEL_MS
+            : Infinity;
+          const msPerTile = Math.min(fittedMsPerTile, briskMsPerTile);
           const paces = await page.evaluate(
             ({ clip, startY }) =>
               (
