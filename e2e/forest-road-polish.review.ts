@@ -226,6 +226,9 @@ test('Forest Road native audit from Ba Dan to quarry gate', async ({ page }, inf
   };
 
   try {
+    expect(receipt.exitCode, 'Production build must have exited successfully').toBe(0);
+    expect(receipt.stable, 'Build inputs must have stayed unchanged during compilation').toBe(true);
+    expect(initial.dirty, 'Native capture requires a clean committed source tree').toBe('');
     expect(initial.revision).toBe(receipt.revision);
     expect(initial.headTree).toBe(receipt.headTree);
     expect(initial.sourceSha256, 'Review build must match current source bytes').toBe(
