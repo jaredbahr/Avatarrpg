@@ -598,10 +598,14 @@ it('lets leaves go from trees on the board, a handful of them', () => {
   for (const tree of BA_DAN_COURT_TREES) expect(canopies).toContainEqual(tree);
 });
 
-it('raises chimney smoke from the mouth of a dwelling chimney', () => {
+it('keeps the two dwelling smoke anchors at their painted chimney tops', () => {
   const chimneys = BA_DAN_SCENE.chimneys ?? [];
-  expect(chimneys).toHaveLength(2);
-  for (const at of chimneys) {
+  expect(chimneys).toHaveLength(3);
+  expect(chimneys.slice(0, 2)).toEqual([
+    { x: 11.25, y: -1.55 },
+    { x: 5.375, y: 7.575 },
+  ]);
+  for (const at of chimneys.slice(0, 2)) {
     // The oblique camera's scene pixel for the ground point.
     const px = 1024 + (at.x - at.y) * 64;
     const py = (at.x + at.y) * 32;
@@ -629,6 +633,29 @@ it('raises chimney smoke from the mouth of a dwelling chimney', () => {
     while (top > 0 && alpha(u, top - 1) > 128) top--;
     expect(v - top, `${house.id} the mouth is at the chimney's top`).toBeLessThanOrEqual(18);
   }
+});
+
+it('raises the third chimney smoke anchor from the southeast wing mouth', () => {
+  const at = BA_DAN_SCENE.chimneys?.[2];
+  if (!at) throw new Error('no southeast chimney smoke anchor');
+  const px = 1024 + (at.x - at.y) * 64;
+  const py = (at.x + at.y) * 32;
+  expect({ x: px, y: py }).toEqual({ x: 1238, y: 730 });
+
+  const house = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'southeast-house');
+  if (!house?.sourceRect) throw new Error('no southeast house sprite');
+  const rect = house.sourceRect;
+  const u = ((px - house.x) / house.width) * rect.width;
+  const v = ((py - house.y) / house.height) * rect.height;
+  // This mouth stands on the lower wing, below the main roof's top band.
+  expect({ x: u, y: v }).toEqual({ x: 279, y: 92 });
+  expect({ x: rect.x + u, y: rect.y + v }).toEqual({ x: 1341, y: 94 });
+  expect(house.url).toMatch(/uprights-0\.webp$/);
+  const page = pages[0];
+  if (!page) throw new Error('no southeast house page');
+  const pixel = ((rect.y + v) * page.width + rect.x + u) * 4;
+  // The tracked mouth's opaque dark interior, rather than a transparent hole or pale masonry rim.
+  expect(Array.from(page.data.slice(pixel, pixel + 4))).toEqual([45, 26, 16, 255]);
 });
 
 it('sorts each house against the figures beside it: in front east and south, behind north and west', () => {

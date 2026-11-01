@@ -14,7 +14,7 @@
  * smoke is one fixed frame: a wisp that stays where it is.
  */
 
-import type { Grid, Vec2 } from '../../core/types';
+import type { DayPhase, Grid, MapScene, Vec2 } from '../../core/types';
 import type { AmbienceRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { glintExtent, particleSpan } from '../../render/fx/simulate';
@@ -134,6 +134,117 @@ function crowded(
   return false;
 }
 
+/** Snap a ground point plus a screen-space offset to the oblique world-pixel grid. */
+function pixelPoint(at: Vec2, dx = 0, dy = 0): Vec2 {
+  const x = Math.round((at.x - at.y) * 64 + dx) / 128;
+  const y = Math.round((at.x + at.y) * 32 + dy) / 64;
+  return { x: x + y, y: y - x };
+}
+
+export interface AmbientDetails {
+  readonly sources: MapScene['ambienceSources'];
+  readonly phase: DayPhase;
+}
+
+/** Additional village life, using the same bounded emitter list as the original ambience. */
+function authoredAmbience(
+  out: EmitterInstance[],
+  recipe: AmbienceRecipe,
+  time: number,
+  still: boolean,
+  water: readonly WaterCell[],
+  details: AmbientDetails,
+): void {
+  const sources = details.sources;
+  if (!sources) return;
+  const stamp = (
+    def: NonNullable<AmbienceRecipe['steam']>,
+    at: Vec2,
+    elapsed: number,
+    seed: number,
+    palette: string,
+  ) => {
+    out.push({
+      def,
+      from: at,
+      to: at,
+      elapsed,
+      seed,
+      palette,
+      arc: 0,
+      ...(still ? { still: true } : {}),
+    });
+  };
+
+  if (!still && recipe.flow) {
+    const flow = recipe.flow;
+    const drift = { x: 0.2, y: 0 };
+    const extent = glintExtent(flow, drift);
+    // The complete mark and its whole journey stay within one water tile, even beside the bridge.
+    if (extent.left + extent.right < 0.9 && extent.top + extent.bottom < 0.9)
+      water.forEach((cell, index) => {
+        if (index % 5 !== 0) return;
+        const elapsed = (time + index * 2300) % 12000;
+        if (elapsed >= flow.duration) return;
+        const from = pixelPoint({
+          x: cell.x + (1 + extent.left - extent.right) / 2,
+          y: cell.y + (1 + extent.top - extent.bottom) / 2,
+        });
+        out.push({
+          def: flow,
+          from,
+          to: pixelPoint({ x: from.x + drift.x, y: from.y }),
+          elapsed,
+          seed: hashSeed(410, index),
+          palette: recipe.palette,
+          arc: 0,
+        });
+      });
+  }
+
+  if (!still && recipe.waterLeaf && water.length)
+    for (let slot = 0; slot < 2; slot++) {
+      const clock = time + slot * 7000;
+      const cycle = Math.floor(clock / 14000);
+      const elapsed = clock % 14000;
+      if (elapsed >= recipe.waterLeaf.life[1]) continue;
+      const seed = hashSeed(420, slot, cycle);
+      const cell = water[seed % water.length];
+      if (!cell) continue;
+      // A four-pixel leaf has < 0.05 tile of extent on either ground axis. The
+      // generous inner corridor includes its raster and the rounding of its centre.
+      const at = pixelPoint({
+        x: cell.x + 0.25 + (0.5 * elapsed) / recipe.waterLeaf.life[1],
+        y: cell.y + 0.5,
+      });
+      stamp(recipe.waterLeaf, at, elapsed, seed, recipe.palette);
+    }
+
+  const steam = recipe.steam;
+  if (steam)
+    sources.steam.forEach((at, index) => {
+      for (let slot = 0; slot < 2; slot++) {
+        const elapsed = ((still ? 1300 : time) + slot * 2000) % 4000;
+        const t = elapsed / 4000;
+        stamp(
+          steam,
+          pixelPoint(at, Math.sin(t * Math.PI) * 2, -24 * t),
+          elapsed,
+          hashSeed(430, index, slot),
+          'air',
+        );
+      }
+    });
+
+  const lantern = recipe.lantern;
+  if (lantern && (details.phase === 'evening' || details.phase === 'night'))
+    sources.lanterns.forEach((at, index) => {
+      // Two warm pixels inside the painted glass, changing only in four held steps.
+      const level = still ? 1 : Math.floor((time + index * 137) / 180) % 4;
+      stamp(lantern, pixelPoint(at), 100 + level * 120, hashSeed(440, index), 'fire');
+    });
+}
+
 export function ambientEmitters(
   recipe: AmbienceRecipe | null,
   grid: Grid,
@@ -142,6 +253,7 @@ export function ambientEmitters(
   still = false,
   water: readonly WaterCell[] = [],
   canopies: readonly Vec2[] = [],
+  details?: AmbientDetails,
 ): EmitterInstance[] {
   if (!recipe) return [];
   const out: EmitterInstance[] = [];
@@ -213,5 +325,6 @@ export function ambientEmitters(
           arc: 0,
         });
       }
+  if (details) authoredAmbience(out, recipe, time, still, water, details);
   return out;
 }
