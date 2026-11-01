@@ -125,14 +125,15 @@ export const BA_DAN_SOUTHEAST_PLANTER = [
 ] as const;
 
 /**
- * Smoke leaves each dwelling's brick chimney (Mira's house, and Pella's household's) at the middle of its
- * mouth, local (2.5, 0.7) of the footprint at z 208 and 200 (the guides' chimney tops, `houses.py`). Each is
- * the ground point the oblique camera draws under that mouth: `(rx + ry) * 32 - z` as
- * `y / 64 +- (screen x) / 128`, so x - y is the mouth's own and x + y is `rx + ry - z / 32`.
+ * Smoke leaves the three open painted roof-chimney mouths. The two dwelling anchors retain their
+ * registration inside the current north/southwest mouths (upright pixels 308.2,10.4 and 372.2,10.4).
+ * The southeast merchant's wing chimney is measured at upright pixel (279,92), page 0 (1341,94).
+ * Each anchor is the ground point the oblique camera draws under its painted mouth.
  */
 export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
   { x: 11.25, y: -1.55 },
   { x: 5.375, y: 7.575 },
+  paintedSource('southeast-house', 279, 92),
 ];
 
 /** The trunks that let their leaves go: the court trees and the rim's nearest, one emitter each. */

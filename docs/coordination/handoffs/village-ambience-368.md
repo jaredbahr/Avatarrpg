@@ -115,3 +115,43 @@ Canvas60fps, pinned WebKit, physical Surface/iPad and Safari/PWA remain open.
 Publish corrections on this same draft only after exact-head ci:local 9/9, verify
 remote full-tree identity and inspect actual latest-head jobs including skips.
 No manual CI fan-out, readiness or merge is requested by this partial draft.
+
+## Third-chimney correction, 2026-11-01
+
+Read-only inspection of the current shipped atlas established a concrete smoke
+coverage omission: the southeast merchant house has an open wing chimney, in
+addition to the two dwelling chimneys already emitting. Both existing anchors
+still land within dark opaque mouths and retain their exact values and order.
+The roofed ridge vent on Gao's house is not counted as an open flue.
+
+Append `paintedSource('southeast-house', 279, 92)`, measured at atlas page 0
+`(1341, 94)`, scene world pixels `(1238, 730)`, ground tiles
+`(13.078125, 9.734375)`. The original recipe and its reduced-motion freeze are
+reused. The original dwelling assertions remain; a separate regression binds
+the added source to the actual opaque dark mouth, not a transparent gap or pale
+rim. Existing particle-cap assertions remain unchanged.
+
+This correction starts directly on published `f0741894`, which already contains
+main `0d4c2b93`, in isolated worktree
+`/workspace/avatarrpg-env/resume-368-chimneys/source`, local branch
+`codex/village-ambience-368-chimneys`. Root retains issue/PR ownership under the
+same claim. Scope is the chimney list/comment, its source-asset regression, the
+dedicated `e2e/village-chimneys.review.ts`, and #368 ADR/evidence/handoff. No
+public/generated art, frozen geometry, renderer/backend, shared helper,
+gameplay rule, schema, workflow or security change is included.
+
+Capture the real production game at integer zoom 1, observe the real renderer
+input without changing it, and preserve actual exits, source/build/harness
+identities and live/frozen continuous video. Rerun the original unchanged ten
+ambience phase cases alongside the dedicated chimney review. The final exact
+clean committed head needs the full nine-stage gate before publishing to the
+same draft PR; consult its factual revision comment for those final identities
+and actual hosted jobs, including skipped matrices.
+
+Earlier clips and failed performance acceptance keep their original producers
+and limits. This correction does not claim a fourth ambience category,
+uninterrupted owner motion acceptance, sustained 60fps or device acceptance.
+The cloth assessment found its static silhouettes retained in the ground
+plates; a top-layer shimmer would not establish genuine flutter. No cloth or
+bird workaround, shared-renderer takeover, new art, paid generation or repeated
+Forest Road portrait run was started.

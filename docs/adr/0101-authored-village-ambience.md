@@ -61,3 +61,25 @@ raised. Parent review must run the focused tests, renderer E2E and `ci:local`,
 then inspect zoom-1 motion and reduced-motion evidence on both backends.
 Nearest sampling and integer centres are implementation properties, not a claim
 that visual integration or Canvas 60fps has already been accepted.
+
+## Third painted chimney, 2026-11-01
+
+The current upright atlas has three open chimney mouths. The southeast merchant
+house's lower wing was missing from the original two-dwelling smoke list. Add
+its measured mouth at upright pixel `(279, 92)`, atlas page 0 `(1341, 94)`,
+through the existing registered-painting conversion. Its scene world-pixel
+position is `(1238, 730)`, ground tiles `(13.078125, 9.734375)`.
+
+Keep the original two coordinates and their order: both still land inside their
+painted mouths, and their emitter indices determine their presentation seeds.
+The new source reuses the existing chimney recipe, two loop instances and
+fixed-sample reduced-motion path on both backends. It adds no texture, new
+sampling contract, painted geometry, world state or save field. Gao's roofed
+ridge vent is not an open chimney.
+
+The original dwelling-mouth pixel checks remain, alongside a separate regression
+against the third mouth's registered dark, opaque atlas pixel. Existing complete
+population sweeps must still pass the unchanged 96-particle cap. Dedicated
+native evidence must show all three mouths at zoom 1 live and under reduced
+motion; source registration alone does not establish motion, performance or
+owner aesthetic acceptance.
