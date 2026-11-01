@@ -155,3 +155,27 @@ The cloth assessment found its static silhouettes retained in the ground
 plates; a top-layer shimmer would not establish genuine flutter. No cloth or
 bird workaround, shared-renderer takeover, new art, paid generation or repeated
 Forest Road portrait run was started.
+
+### Captured correction evidence
+
+Clean producer `38b212456e01fe0560cd5ff33a02bbed55984100`, complete tree
+`c3f3a9b259cc3aca410fa251d90ade6d2e027128`, passed its guarded production build
+(actual exit 0 / 25.89 s) and the combined native run (actual exit 0 / 360.20 s,
+12/12 first-attempt passes). The original ten ambience cases are unchanged; the
+new two backend cases preserve the complete GameState and show six loop inputs
+at all three real painted sources, changing live and fixed when reduced. The
+55 focused source cases and unchanged particle-cap assertions also passed.
+
+[Three-chimney media and provenance](../evidence/368/chimneys/README.md) retain
+four unmodified native PNGs and the two full, untrimmed context videos, including
+startup/live/reduced phases. Both MP4s preserve decoded frame count/cadence,
+pass complete error-strict decode and remain below 4 MB each. Root inspected all
+four native stills and sampled decoded video frames; grey wisps remain subtle.
+No sustained-FPS, uninterrupted owner motion, style or device acceptance follows.
+
+The first scoped fixture lint failed `no-unsafe-finally`; the cleanup correction
+and full-state comparison strengthening happened before the first capture. Both
+lint outcomes remain recorded. Final evidence/handoff changes are documentation
+only after this producer; consult the same PR/claim for exact final clean-head
+ci:local and unchanged renderer-suite results, published complete-tree matching
+and actual hosted jobs/skips. This remains the same partial draft PR #380.
