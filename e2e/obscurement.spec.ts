@@ -1,18 +1,32 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl, SOFTWARE_WEBGL_BUDGET_MS } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { tileCentre } from './gallery/stage';
+import { recordObscurementDiagnostics } from './obscurement-diagnostics';
+
+const diagnostics = new WeakMap<Page, Awaited<ReturnType<typeof recordObscurementDiagnostics>>>();
+test.afterEach(async ({ page }, testInfo) => {
+  const record = diagnostics.get(page);
+  if (record) await record.attachOnFailure(testInfo);
+  diagnostics.delete(page);
+});
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`presents cloud veil and scheduled weather on ${renderer}`, async ({ page }) => {
     test.setTimeout(renderer === 'webgl' ? 90_000 : 30_000);
     allowSoftwareWebgl(test, renderer);
+    const record = await recordObscurementDiagnostics(page);
+    diagnostics.set(page, record);
     await resetStorage(page, `?renderer=${renderer}`);
+    record.setStep('startGame and enterNode');
     await startGame(page, ['Cloud reader'], ['kaya'], `obscurement-${renderer}`);
     await enterNode(page, 'battle_forest_road');
+    record.setStep('takeTurn and initial waitForIdle');
     await takeTurn(page);
     await waitForIdle(page);
 
+    record.setStep('stage weather and steam fixture');
     await page.evaluate(() => {
       const app = window.fnt?.app;
       const state = app?.state;
@@ -33,7 +47,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       };
       app.resync();
     });
-    await settleLayout(page);
+    record.setStep('weather and viewport assertions');
 
     await expect(page.locator('.weather-chip-full')).toHaveText('Sandstorm · long shots −10/tile');
     await expect(page.locator('.weather-chip-full')).toBeVisible();
@@ -41,13 +55,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     const original = page.viewportSize();
     await page.setViewportSize({ width: 390, height: 844 });
-    await settleLayout(page);
     await expect(page.locator('.weather-chip-short')).toHaveText('Sand: long shots −10/tile');
     await expect(page.locator('.weather-chip-short')).toBeVisible();
     await expect(page.locator('.weather-chip-full')).toBeHidden();
     // Back to the project viewport: on a phone Log lives in the More drawer.
     if (original) await page.setViewportSize(original);
-    await settleLayout(page);
     const read = () =>
       page.evaluate(() => {
         const scene = (
@@ -65,6 +77,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       .poll(read, { timeout: renderer === 'webgl' ? SOFTWARE_WEBGL_BUDGET_MS : 30_000 })
       .toMatchObject({ obscuringTiles: [{ x: 1, y: 1 }], weatherIntensity: 2 });
 
+    record.setStep('stage guaranteed miss');
     // Keep the real action path but pin the tuning band to zero, so this is a
     // guaranteed miss without replacing the reducer's seeded RNG or formatter.
     await page.evaluate(() => {
@@ -95,6 +108,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     // first HUD reflow does: the aim hint resizes the canvas and the camera pans
     // to the moved hero. Map the tile only after that pan, or the tap lands a
     // tile off and Confirm never enables.
+    record.setStep('select Fire Jab and target enemy');
     await settleLayout(page);
     await page.getByRole('button', { name: /^Fire Jab/ }).click();
     await settleLayout(page);
@@ -103,8 +117,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const box = await canvas.boundingBox();
     if (!box) throw new Error('No combat canvas.');
     await canvas.tap({ position: { x: point.x - box.x, y: point.y - box.y } });
+    record.setStep('click Confirm');
     await page.getByRole('button', { name: /^Confirm/ }).click();
-    await waitForIdle(page);
+    record.setStep('click Log and check miss text');
     await page.getByRole('button', { name: /^Log$/ }).click();
     await expect(page.locator('.log-lines')).toContainText('The sand takes it.');
   });
