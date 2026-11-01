@@ -1,6 +1,6 @@
 # Village ambience #368: partial draft handoff
 
-Updated 2026-10-30 (America/Chicago). Root retains integration/verification and
+Updated 2026-11-01 UTC. Root retains integration/verification and
 PR-correction ownership. SOL High workers implemented and independently reviewed
 source and native proof. Claim:
 <https://github.com/jaredbahr/Avatarrpg/issues/368#issuecomment-6536742481>.
@@ -67,12 +67,45 @@ revision. Final evidence-revision verification is recorded separately in the PR
 and claim, with receipt `/workspace/avatarrpg-env/review-368-motion/ci-final.receipt.json`.
 An earlier receipt never covers later tracked edits.
 
+## Current main integration
+
+PR #373 merged after full run 41220601354 passed verification, all six actual
+browser shards and all seven actual gallery shards. Current integration base is
+`0d4c2b938f56bd5f8853323b0ea85d13b9a61ff2`. This milestone merges that main into
+the existing published #368 history without conflicts or rewritten authorship;
+the only additional task-owned edit is this handoff. Main's texture lifetime,
+village control and browser-driver corrections remain intact. No new ambience
+category or shared renderer correction is included.
+
+The isolated delivery checkout is
+`/workspace/avatarrpg-env/resume-368-main/source`, local branch
+`codex/village-ambience-368-main-update`, based on published `3fbed108`.
+Fresh exact-head full validation and affected native checks are required before
+publication. Consult the PR and same ownership claim for final source/tree IDs,
+actual exits and hosted jobs, including skipped matrices; earlier receipts do
+not cover this merged tree. External receipts stay under
+`/workspace/avatarrpg-env/resume-368-main/`. No release version is bumped for
+this unshipped integration checkpoint.
+
+The separate unrecorded Canvas audit observed 35.25 / 33.54 / 35.70 draws/s on
+the preceding PR tree and 35.00 / 33.11 / 36.50 on unchanged old main, under a
+matched three-party, zoom1/DPR1 protocol with no media or traces. Both missed
+60fps on that runner. One fixed-order pass proves neither a causal regression
+nor equivalence or physical-device behavior. A ten-second attribution diagnostic
+identified the shared shadow pipeline as a profiling lead; nested timings
+overlap, and no fix is proven. See the
+[exact audit and retained failed acceptance](https://github.com/jaredbahr/Avatarrpg/pull/380#issuecomment-6545138354)
+and the
+[renderer ownership request](https://github.com/jaredbahr/Avatarrpg/issues/341#issuecomment-6545265094).
+The request has no scoped handoff as of this integration; do not edit its backend
+scope or claim the merged tree passes performance from earlier measurements.
+
 ## Next actions and open gates
 
-Follow live #348 direction: #376/#373 retains first priority. Further Ba Dan
-feature work waits for that sequencing; the existing integration root owns
-quarry staging/publication/dispatch. Do not duplicate its source or assume old
-ownership expired. A read-only bird feasibility note is retained at
+Follow live #348 direction: #373 has landed, and the feature hold is lifted.
+PR #380 still follows #354 and #374 because of the shared ExploreScene call.
+Other renderer/feature ownership remains authoritative; do not assume it expired.
+A read-only bird feasibility note is retained at
 `/workspace/avatarrpg-env/368-bird-followup-handoff.md`: a future fourth category
 needs scale review and a coordinated Pixi flock-sampling hunk before backend
 edits. No bird implementation, new asset request or ownership transfer occurred.
