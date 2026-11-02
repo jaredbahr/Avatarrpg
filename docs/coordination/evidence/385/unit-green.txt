@@ -1,0 +1,14 @@
+
+> four-nations-tactics@0.2.11 test
+> vitest run --run src/app/input/gestures.test.ts --minWorkers=2 --maxWorkers=2
+
+
+ RUN  v2.1.9 /workspace/avatarrpg-env/gesture-385/source
+
+ ✓ src/app/input/gestures.test.ts (16 tests) 7ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  01:23:20
+   Duration  267ms (transform 50ms, setup 0ms, collect 57ms, tests 7ms, environment 0ms, prepare 44ms)
+

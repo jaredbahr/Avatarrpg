@@ -71,6 +71,48 @@ describe('GestureRecognizer', () => {
     expect(recognizer.state).toBe('idle');
   });
 
+  it.each([
+    { name: 'no move samples', last: null, release: { x: 50, y: 10 } },
+    { name: 'a last sample near the start', last: { x: 15, y: 10 }, release: { x: 50, y: 10 } },
+    { name: 'diagonal travel beyond the radius', last: null, release: { x: 18, y: 18 } },
+  ])('rejects a distant release with $name', ({ last, release }) => {
+    const { recognizer, events, clock } = setup();
+    recognizer.down(1, { x: 10, y: 10 });
+    if (last) recognizer.move(1, last);
+    recognizer.up(1, release);
+    clock.advance(1000);
+    expect(events).toEqual([]);
+    expect(recognizer.state).toBe('idle');
+
+    // A rejected release must still leave the next ordinary tap usable.
+    recognizer.down(2, { x: 20, y: 20 });
+    recognizer.up(2, { x: 20, y: 20 });
+    expect(events).toEqual(['tap 20,20']);
+  });
+
+  it.each([
+    { name: 'inside the radius', release: { x: 16, y: 17 } },
+    { name: 'exactly at the axis boundary', release: { x: 20, y: 10 } },
+    { name: 'exactly at the diagonal boundary', release: { x: 16, y: 18 } },
+  ])('accepts a release $name without move samples', ({ release }) => {
+    const { recognizer, events, clock } = setup();
+    recognizer.down(1, { x: 10, y: 10 });
+    recognizer.up(1, release);
+    clock.advance(1000);
+    expect(events).toEqual([`tap ${release.x},${release.y}`]);
+    expect(recognizer.state).toBe('idle');
+  });
+
+  it('does not revive a cancelled press when its distant release arrives', () => {
+    const { recognizer, events, clock } = setup();
+    recognizer.down(1, { x: 10, y: 10 });
+    recognizer.cancel(1);
+    recognizer.up(1, { x: 50, y: 10 });
+    clock.advance(1000);
+    expect(events).toEqual([]);
+    expect(recognizer.state).toBe('idle');
+  });
+
   it('turns travel beyond the threshold into a drag with no tap', () => {
     const { recognizer, events } = setup();
     recognizer.down(1, { x: 10, y: 10 });
