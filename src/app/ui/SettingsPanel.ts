@@ -121,6 +121,13 @@ export class SettingsPanel extends Dialog {
     );
   }
 
+  private refreshSettings(): void {
+    this.refresh();
+    // Applying a setting syncs the scene, which may focus its conversation.
+    // Keep this modal's usual refresh focus on its heading instead.
+    this.overlay?.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+  }
+
   private toggleRow(
     label: string,
     hint: string,
@@ -131,7 +138,7 @@ export class SettingsPanel extends Dialog {
       value ? 'On' : 'Off',
       () => {
         onChange(!value);
-        this.refresh();
+        this.refreshSettings();
       },
       { class: value ? 'btn-primary' : '' },
     );
@@ -169,7 +176,7 @@ export class SettingsPanel extends Dialog {
         choice.label,
         () => {
           onChange(choice.value);
-          this.refresh();
+          this.refreshSettings();
         },
         { class: active ? 'btn-primary' : '' },
       );
