@@ -1,0 +1,7 @@
+{
+  "status": "failed fixture",
+  "error": "Combat scene missing",
+  "cause": "probe used nonexistent story node road_ambush; real node battle_ambush",
+  "stage": "after Settings/Save UI checks; no combat hold acceptance from this attempt",
+  "product_source_unchanged": true
+}

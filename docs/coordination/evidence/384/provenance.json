@@ -1,0 +1,49 @@
+{
+  "producer": "6e043545372e277bd1c7db879da2daca05ce648d",
+  "producer_tree": "44ec5aa3f910382c94cd8db56bcf624847b97e20",
+  "baseline_runtime": "main0d4c2b938f56bd5f8853323b0ea85d13b9a61ff2; built harness-only781c9278",
+  "browser": "installed Chromium154,1368x912touch,DPR1,Canvas",
+  "native_scope": "actualproductionUI,keyboardfocustrap/Escape and unchangedAIreleaseobserver; no physicaldevice or WebKitclaim",
+  "files": [
+    {
+      "file": "baseline-after-escape.png",
+      "bytes": 640659,
+      "sha256": "36266ad247770edbce957d4190846249a6d40fdacfebea699b08b0266fc3a829"
+    },
+    {
+      "file": "baseline-regressions.json",
+      "bytes": 416,
+      "sha256": "f8b7f3344ed1f33f318a809ef4ab1b38ad1e4f2853e4847bca72398e07f9acf1"
+    },
+    {
+      "file": "baseline-repro.json",
+      "bytes": 206,
+      "sha256": "78a0570341e3c5854c2cd7a22dda1963d842a99394153ee1bd16033dc5d0ef06"
+    },
+    {
+      "file": "candidate-regressions.json",
+      "bytes": 1654,
+      "sha256": "3cd8b654d67e49df0aa96418d262d7fa7dd2a98bfaf1c02f2e8587ce3c9b1f5d"
+    },
+    {
+      "file": "candidate-save-after-escape.png",
+      "bytes": 751499,
+      "sha256": "61aad85ea37ca9feba60f933aecd800cf46ac4faa89e2f4cf33de7b05807316c"
+    },
+    {
+      "file": "candidate-settings-after-escape.png",
+      "bytes": 751746,
+      "sha256": "629d28672ab0a583aaac8e87a77800a7e5a7368502120587767ad38b1b9512ae"
+    },
+    {
+      "file": "candidate-ui-probe.json",
+      "bytes": 593,
+      "sha256": "9141392216a564e79f793a02d306a81f9dc4274ffe32793c81df178d1def1a88"
+    },
+    {
+      "file": "probe-fixture-failure.json",
+      "bytes": 278,
+      "sha256": "4f3181cdf3d83e857cde05f883ad4e8e2d80af4581e98cbab97d9fe0f9ae731e"
+    }
+  ]
+}
