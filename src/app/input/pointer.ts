@@ -71,9 +71,10 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   };
 
   const onPointerDown = (event: PointerEvent) => {
-    // Right and middle mouse buttons are not presses; right-click has its own
-    // path through `contextmenu` below.
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    // Only the main mouse button and pen tip are presses. Secondary buttons
+    // use `contextmenu` below; the pen eraser must not act as a tap.
+    if ((event.pointerType === 'mouse' || event.pointerType === 'pen') && event.button !== 0)
+      return;
     capture(event);
     recognizer.down(event.pointerId, local(event), kindOf(event));
   };
