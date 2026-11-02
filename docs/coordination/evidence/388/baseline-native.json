@@ -1,0 +1,16 @@
+{
+  "status": "expected regression failures; not green",
+  "served_game": "main0d4 src/public; baseline781c9278 production build",
+  "test_source": "0f161fca new regression fixture against old SaveMenu",
+  "actual_exit": 1,
+  "stats": {
+    "startTime": "2026-11-02T01:55:24.697Z",
+    "duration": 17588.705,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  "failures": "closed valid completion replacesstate/session; olderA adopts before newerB; closed invalid warns",
+  "assertions_deadlines": "unchanged"
+}

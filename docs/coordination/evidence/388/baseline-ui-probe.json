@@ -1,0 +1,9 @@
+{
+  "source": "main0d4 src/public, production781c9278",
+  "beforeSeed": 2500703268,
+  "afterSeed": 72779210,
+  "closedDialogs": 0,
+  "stateChanged": true,
+  "errors": [],
+  "repro": "actual UI filechooser with valid App-written save; only FileReader I/O deferred, then Close/Resume before release"
+}

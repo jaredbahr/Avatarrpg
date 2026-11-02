@@ -1,6 +1,145 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { JSHandle, Page } from '@playwright/test';
 import { enterNode, resetStorage, setLargeText, settleDialog, startGame } from './helpers';
+
+async function currentGame(page: Page) {
+  return page.evaluate(() => {
+    const app = window.fnt?.app;
+    if (!app?.state) throw new Error('No game is running');
+    return { state: app.state, session: app.session.toMeta() };
+  });
+}
+
+async function prepareImport(page: Page, player: string, character: string, seed: string) {
+  await startGame(page, [player], [character], seed);
+  await enterNode(page, 'village_explore');
+  const json = await page.evaluate(() => {
+    if (!window.fnt?.app.saveTo('slot1')) throw new Error('Could not prepare the import');
+    const saved = localStorage.getItem('fnt.save.slot1');
+    if (!saved) throw new Error('The prepared import is missing');
+    return saved;
+  });
+  return { json, game: await currentGame(page) };
+}
+
+/** Delay only I/O: selecting files still creates real FileReaders and parses their real results. */
+async function deferImportReads(page: Page): Promise<JSHandle<Array<() => Promise<void>>>> {
+  return page.evaluateHandle(() => {
+    const reads: Array<() => Promise<void>> = [];
+    const readAsText = FileReader.prototype.readAsText;
+    FileReader.prototype.readAsText = function (file, encoding) {
+      reads.push(
+        () =>
+          new Promise<void>((resolve) => {
+            this.addEventListener('loadend', () => resolve(), { once: true });
+            readAsText.call(this, file, encoding);
+          }),
+      );
+    };
+    return reads;
+  });
+}
+
+async function releaseImportRead(reads: JSHandle<Array<() => Promise<void>>>, index: number) {
+  await reads.evaluate(async (pending, index) => {
+    const read = pending[index];
+    if (!read) throw new Error(`Missing deferred import ${index}`);
+    await read();
+  }, index);
+}
+
+async function openImportMenu(page: Page) {
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page
+    .getByRole('dialog', { name: 'Paused', exact: true })
+    .getByRole('button', { name: 'Load game', exact: true })
+    .click();
+  return page.getByRole('dialog', { name: 'Load game', exact: true });
+}
+
+async function chooseImport(page: Page, json: string, name: string) {
+  const chooser = page.waitForEvent('filechooser');
+  await page
+    .getByRole('dialog', { name: 'Load game', exact: true })
+    .getByRole('button', { name: 'Import from file', exact: true })
+    .click();
+  await (await chooser).setFiles({ name, mimeType: 'application/json', buffer: Buffer.from(json) });
+}
+
+test.describe('save import lifecycle', () => {
+  test('a dismissed import cannot replace the resumed game', async ({ page }) => {
+    await resetStorage(page, '?renderer=canvas');
+    const older = await prepareImport(page, 'Older', 'kaya', 'dismissed-import-older');
+    await startGame(page, ['Current'], ['bo'], 'dismissed-import-current');
+    await enterNode(page, 'village_explore');
+    const reads = await deferImportReads(page);
+    const menu = await openImportMenu(page);
+    await chooseImport(page, older.json, 'older.json');
+    await expect.poll(() => reads.evaluate((pending) => pending.length)).toBe(1);
+
+    await menu.getByRole('button', { name: 'Close', exact: true }).click();
+    await page
+      .getByRole('dialog', { name: 'Paused', exact: true })
+      .getByRole('button', { name: 'Resume', exact: true })
+      .click();
+    const before = await currentGame(page);
+    expect(before.state.seed).not.toBe(older.game.state.seed);
+    await releaseImportRead(reads, 0);
+
+    expect(await currentGame(page)).toEqual(before);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    expect(await page.locator('.toast').count()).toBe(0);
+  });
+
+  test('the newest requested import wins while both file reads are pending', async ({ page }) => {
+    await resetStorage(page, '?renderer=canvas');
+    const older = await prepareImport(page, 'Older', 'kaya', 'overlapping-import-older');
+    const newer = await prepareImport(page, 'Newer', 'nilak', 'overlapping-import-newer');
+    await startGame(page, ['Current'], ['bo'], 'overlapping-import-current');
+    await enterNode(page, 'village_explore');
+    const before = await currentGame(page);
+    const reads = await deferImportReads(page);
+    const menu = await openImportMenu(page);
+    await chooseImport(page, older.json, 'older.json');
+    await chooseImport(page, newer.json, 'newer.json');
+    await expect.poll(() => reads.evaluate((pending) => pending.length)).toBe(2);
+
+    // A finishes first, after B was requested: an isOpen-only guard would load A.
+    await releaseImportRead(reads, 0);
+    expect(await currentGame(page)).toEqual(before);
+    await expect(menu).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(2);
+    expect(await page.locator('.toast').count()).toBe(0);
+
+    // Positive control: B uses the original reader and the real import/adoption path.
+    await releaseImportRead(reads, 1);
+    expect(await currentGame(page)).toEqual(newer.game);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.locator('.toast')).toHaveText('Game loaded.');
+  });
+
+  test('a dismissed invalid import cannot warn after the game resumes', async ({ page }) => {
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Current'], ['bo'], 'dismissed-invalid-import');
+    await enterNode(page, 'village_explore');
+    const reads = await deferImportReads(page);
+    const menu = await openImportMenu(page);
+    await chooseImport(page, '{invalid-json', 'invalid.json');
+    await expect.poll(() => reads.evaluate((pending) => pending.length)).toBe(1);
+
+    await menu.getByRole('button', { name: 'Close', exact: true }).click();
+    await page
+      .getByRole('dialog', { name: 'Paused', exact: true })
+      .getByRole('button', { name: 'Resume', exact: true })
+      .click();
+    const before = await currentGame(page);
+    await releaseImportRead(reads, 0);
+
+    expect(await currentGame(page)).toEqual(before);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    expect(await page.locator('.toast').count()).toBe(0);
+  });
+});
 
 /**
  * A toast raised from inside a sheet is the sheet's answer, so it must be
