@@ -15,6 +15,7 @@ import { button, el } from './dom';
 import { assetCanvas } from './assetCanvas';
 import { portraitKeyFor } from './PartyRoster';
 import { abilityCard } from './AbilityCard';
+import { knownAbilities } from '../../core/rules/abilities';
 import { effectiveStats } from '../../core/rules/stats';
 import { describeIncoming } from '../../core/rules/status';
 import { describeFooting } from '../../core/rules/reactions';
@@ -170,9 +171,7 @@ export class UnitInspector extends Dialog {
       body.appendChild(list);
     }
 
-    const abilities = unit.abilities
-      .map((id) => this.app.content.abilities.get(id))
-      .filter((a): a is NonNullable<typeof a> => a !== undefined);
+    const abilities = knownAbilities(this.app.content, unit);
 
     const discipline = unit.disciplineId
       ? this.app.content.disciplines.get(unit.disciplineId)
