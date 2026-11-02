@@ -212,6 +212,65 @@ async function expectActorOnScreen(page: Page): Promise<void> {
   expect(Math.max(...corners.map((p) => p.y))).toBeLessThanOrEqual(box.height + 0.5);
 }
 
+test('a distant release without its final move sample does not walk the party', async ({
+  page,
+}) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['One'], ['kaya'], 'gesture-release-385', { reduceMotion: false });
+  await enterNode(page, 'village_explore');
+  await page.locator('.explore-scene .map-canvas').waitFor();
+  await waitForIdle(page);
+  await settleLayout(page);
+  const before = await page.evaluate(() => window.fnt!.app.state!.location.pos);
+  const target = { x: before.x + 4, y: before.y };
+  const point = await paintedTileCentre(page, target);
+  if (!point) throw new Error('The native canvas did not project the road tile');
+  const originalCamera = await camera(page);
+  const canvasBox = await page.locator('.map-canvas').boundingBox();
+  if (!canvasBox) throw new Error('The native map canvas is missing');
+  expect(point.x - 40).toBeGreaterThan(canvasBox.x);
+  expect(point.x).toBeLessThan(canvasBox.x + canvasBox.width);
+
+  for (const lastMoveNearStart of [false, true]) {
+    await page.evaluate(
+      ({ point, lastMoveNearStart }) => {
+        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+        if (!canvas) throw new Error('The native map canvas is missing');
+        const fire = (type: string, x: number) =>
+          canvas.dispatchEvent(
+            new PointerEvent(type, {
+              pointerId: 1,
+              pointerType: 'touch',
+              isPrimary: true,
+              clientX: x,
+              clientY: point.y,
+              button: 0,
+              buttons: type === 'pointerup' ? 0 : 1,
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+        fire('pointerdown', point.x - 40);
+        if (lastMoveNearStart) fire('pointermove', point.x - 35);
+        fire('pointerup', point.x);
+      },
+      { point, lastMoveNearStart },
+    );
+    await waitForIdle(page);
+    expect(await page.evaluate(() => window.fnt!.app.state!.location.pos)).toEqual(before);
+    const after = await camera(page);
+    expect(after.tilePx).toBeCloseTo(originalCamera.tilePx, 3);
+    expect(after.offsetX).toBeCloseTo(originalCamera.offsetX, 3);
+    expect(after.offsetY).toBeCloseTo(originalCamera.offsetY, 3);
+  }
+
+  // Positive control: an ordinary real mouse tap still reaches that same road tile.
+  await page.mouse.click(point.x, point.y);
+  await waitForIdle(page);
+  expect(await page.evaluate(() => window.fnt!.app.state!.location.pos)).toEqual(target);
+  expect(await page.evaluate(() => window.fnt!.app.partyPositions()?.[0])).toEqual(target);
+});
+
 test.describe('zoom and pan', () => {
   test('normal-text combat framing reserves room for the decision dock', async ({ page }) => {
     // Integer zoom (ADR 0088): the compact frame stays at 64 CSS px at both

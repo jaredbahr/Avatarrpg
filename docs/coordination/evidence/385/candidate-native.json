@@ -1,0 +1,38 @@
+{
+  "stage": "native",
+  "before": {
+    "sha": "6a0ff5b10296a5f571e6591cb03ca2451f4127fe",
+    "tree": "f0ffa6887c9804116dcc00e9c31404bcc4f12973",
+    "status": ""
+  },
+  "harness_before": {
+    "native.config.ts": "180d5888864af1e868b4cf759bc777782a7f9b3f1beb3ce1382b800355b03225",
+    "run.py": "3616c5fdd128adeceb36a9d7a6114069f00f1ef52f3e44db2247a2942c8ad63a",
+    "source/e2e/gestures.spec.ts": "d1e179ad115dfa2eb6ad4788c3e4e2e1a6e2c9a3b2f46469f36bed1b67707fec",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "command": [
+    "node_modules/.bin/playwright",
+    "test",
+    "-c",
+    "/workspace/avatarrpg-env/gesture-385/native.config.ts"
+  ],
+  "started_utc": "2026-11-02T01:25:35.043287+00:00",
+  "exit_code": 0,
+  "after": {
+    "sha": "6a0ff5b10296a5f571e6591cb03ca2451f4127fe",
+    "tree": "f0ffa6887c9804116dcc00e9c31404bcc4f12973",
+    "status": ""
+  },
+  "harness_after": {
+    "native.config.ts": "180d5888864af1e868b4cf759bc777782a7f9b3f1beb3ce1382b800355b03225",
+    "run.py": "3616c5fdd128adeceb36a9d7a6114069f00f1ef52f3e44db2247a2942c8ad63a",
+    "source/e2e/gestures.spec.ts": "d1e179ad115dfa2eb6ad4788c3e4e2e1a6e2c9a3b2f46469f36bed1b67707fec",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "duration_seconds": 75.75155262499902,
+  "finished_utc": "2026-11-02T01:26:50.794855+00:00",
+  "stable": true
+}

@@ -1,0 +1,105 @@
+{
+  "producer": "6a0ff5b1",
+  "before": {
+    "pos": {
+      "x": 3,
+      "y": 7
+    },
+    "camera": {
+      "projection": "oblique",
+      "groundTransform": {
+        "a": 2,
+        "b": 1,
+        "c": -2,
+        "d": 1,
+        "tx": 1196,
+        "ty": -347
+      },
+      "tilePx": 128,
+      "offsetX": 852,
+      "offsetY": 347,
+      "fitted": false
+    }
+  },
+  "target": {
+    "x": 7,
+    "y": 7
+  },
+  "end": {
+    "x": 1132,
+    "y": 670
+  },
+  "holds": [
+    {
+      "pos": {
+        "x": 3,
+        "y": 7
+      },
+      "camera": {
+        "projection": "oblique",
+        "groundTransform": {
+          "a": 2,
+          "b": 1,
+          "c": -2,
+          "d": 1,
+          "tx": 1196,
+          "ty": -347
+        },
+        "tilePx": 128,
+        "offsetX": 852,
+        "offsetY": 347,
+        "fitted": false
+      }
+    },
+    {
+      "pos": {
+        "x": 3,
+        "y": 7
+      },
+      "camera": {
+        "projection": "oblique",
+        "groundTransform": {
+          "a": 2,
+          "b": 1,
+          "c": -2,
+          "d": 1,
+          "tx": 1196,
+          "ty": -347
+        },
+        "tilePx": 128,
+        "offsetX": 852,
+        "offsetY": 347,
+        "fitted": false
+      }
+    }
+  ],
+  "after": {
+    "pos": {
+      "x": 7,
+      "y": 7
+    },
+    "drawn": [
+      {
+        "x": 7,
+        "y": 7
+      }
+    ],
+    "camera": {
+      "projection": "oblique",
+      "groundTransform": {
+        "a": 2,
+        "b": 1,
+        "c": -2,
+        "d": 1,
+        "tx": 684,
+        "ty": -602
+      },
+      "tilePx": 128,
+      "offsetX": 1364,
+      "offsetY": 602,
+      "fitted": false
+    }
+  },
+  "errors": [],
+  "pointers": "synthetic touch through actual canvas adapter; positive control real mouse input; no state/clock/camera overrides"
+}

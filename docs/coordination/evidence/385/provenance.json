@@ -1,0 +1,57 @@
+{
+  "native_producer": "6a0ff5b10296a5f571e6591cb03ca2451f4127fe",
+  "native_tree": "f0ffa6887c9804116dcc00e9c31404bcc4f12973",
+  "baseline": "main0d4 runtime/public; source fixture6a0ff5b1 served old781c9278 build",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2368,
+      "sha256": "60d6cc5f19b33785d3f35e1541a98cfa43290174a999d86c666868c0c2e243b1"
+    },
+    {
+      "file": "baseline-native.json",
+      "bytes": 544,
+      "sha256": "732c5dd8190420b5588c177dfbffc236c7824080e7ff4393087a5e044b04c868"
+    },
+    {
+      "file": "baseline-unintended-walk.png",
+      "bytes": 652038,
+      "sha256": "b1f1e4c773e986fa942a1be72ebfca4d646d29cdf6f42fb87420327b7af131a4"
+    },
+    {
+      "file": "candidate-held.png",
+      "bytes": 615082,
+      "sha256": "08eaa67570b91b681a21df3814b007f9e0b5fc447aa7809d37357e63517f415a"
+    },
+    {
+      "file": "candidate-native.json",
+      "bytes": 1644,
+      "sha256": "52f36080dad3cf45a90ba51c37a523108b3004156ea514ed35a66087d83f2179"
+    },
+    {
+      "file": "candidate-positive-tap.png",
+      "bytes": 651858,
+      "sha256": "9a130fb6608da104a96522bba362706e96ce5207099c689c343eac3b2ce170f5"
+    },
+    {
+      "file": "native-ui-probe.json",
+      "bytes": 1795,
+      "sha256": "829ca8988b9c1351d63b000b727ef0e99fb205fb804f7beeefeb6fdcfea05715"
+    },
+    {
+      "file": "unit-green.txt",
+      "bytes": 408,
+      "sha256": "937eba634318fabbe98e2991368fbc70476eb01b1277ff3ee04d7ac7746653b3"
+    },
+    {
+      "file": "unit-red.txt",
+      "bytes": 2195,
+      "sha256": "9edcdf18637fd784d65aa6b8c7154f109bc3717d8d48e2bd379840eda9abb18b"
+    },
+    {
+      "file": "worker-config-error.txt",
+      "bytes": 1640,
+      "sha256": "bcda6dc9f17d91d565dc7e2437f7c0006b54fdc5dd63d32184b473b81add918e"
+    }
+  ]
+}
