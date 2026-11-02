@@ -93,6 +93,11 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
     recognizer.cancel(event.pointerId);
   };
 
+  const onLostPointerCapture = (event: PointerEvent) => {
+    // A release outside the canvas may no longer reach us once capture is lost.
+    recognizer.cancel(event.pointerId);
+  };
+
   const onPointerLeave = (event: PointerEvent) => {
     recognizer.leave(kindOf(event));
   };
@@ -116,6 +121,7 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   target.addEventListener('pointermove', onPointerMove);
   target.addEventListener('pointerup', onPointerUp);
   target.addEventListener('pointercancel', onPointerCancel);
+  target.addEventListener('lostpointercapture', onLostPointerCapture);
   target.addEventListener('pointerleave', onPointerLeave);
   target.addEventListener('contextmenu', onContextMenu);
   target.addEventListener('wheel', onWheel, { passive: false });
@@ -126,6 +132,7 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
     target.removeEventListener('pointermove', onPointerMove);
     target.removeEventListener('pointerup', onPointerUp);
     target.removeEventListener('pointercancel', onPointerCancel);
+    target.removeEventListener('lostpointercapture', onLostPointerCapture);
     target.removeEventListener('pointerleave', onPointerLeave);
     target.removeEventListener('contextmenu', onContextMenu);
     target.removeEventListener('wheel', onWheel);
