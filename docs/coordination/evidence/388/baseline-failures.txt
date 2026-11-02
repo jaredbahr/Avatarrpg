@@ -1,0 +1,264 @@
+
+Running 3 tests using 1 worker
+
+(node:33983) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [installed-chromium-touch] › e2e/saves.spec.ts:73:3 › save import lifecycle › a dismissed import cannot replace the resumed game (4.6s)
+(node:34132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [installed-chromium-touch] › e2e/saves.spec.ts:97:3 › save import lifecycle › the newest requested import wins while both file reads are pending (4.6s)
+(node:34277) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [installed-chromium-touch] › e2e/saves.spec.ts:124:3 › save import lifecycle › a dismissed invalid import cannot warn after the game resumes (3.6s)
+
+
+  1) [installed-chromium-touch] › e2e/saves.spec.ts:73:3 › save import lifecycle › a dismissed import cannot replace the resumed game 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 14
+    + Received  + 14
+
+    @@ -1,10 +1,10 @@
+      Object {
+        "session": Object {
+          "players": Array [
+            Object {
+    -         "name": "Current",
+    +         "name": "Older",
+              "unitId": "p0",
+            },
+          ],
+          "soloPlay": true,
+        },
+    @@ -20,51 +20,51 @@
+          },
+          "log": Array [],
+          "party": Array [
+            Object {
+              "abilities": Array [
+    -           "rock_throw",
+    +           "fire_jab",
+              ],
+              "ai": "none",
+              "ap": 4,
+              "bankedAp": 0,
+              "base": Object {
+    -           "defense": 5,
+    -           "focus": 5,
+    +           "defense": 2,
+    +           "focus": 10,
+                "maxAp": 4,
+    -           "maxHp": 38,
+    +           "maxHp": 26,
+                "maxMove": 4,
+    -           "power": 6,
+    -           "speed": 2,
+    +           "power": 8,
+    +           "speed": 7,
+              },
+    -         "characterId": "bo",
+    +         "characterId": "kaya",
+              "cooldowns": Object {},
+              "disciplineId": null,
+    -         "element": "earth",
+    +         "element": "fire",
+              "enemyId": null,
+              "faction": "party",
+    -         "hp": 38,
+    +         "hp": 26,
+              "id": "p0",
+              "level": 1,
+              "move": 4,
+    -         "name": "Bo",
+    +         "name": "Kaya",
+              "pendingAp": 0,
+              "pos": Object {
+                "x": 0,
+                "y": 0,
+              },
+              "size": 1,
+    -         "sprite": "unit.earth.bo",
+    +         "sprite": "unit.fire.kaya",
+              "statuses": Array [],
+              "temporary": false,
+              "xp": 0,
+            },
+          ],
+          "pendingChoices": Array [],
+    -     "rng": 2671555292,
+    +     "rng": 2761341811,
+          "screen": "explore",
+    -     "seed": 2671555292,
+    +     "seed": 2761341811,
+          "story": Object {
+            "deciderIndex": 0,
+            "lineIndex": 0,
+            "nodeId": "village_explore",
+            "visited": Array [
+
+      90 |     await releaseImportRead(reads, 0);
+      91 |
+    > 92 |     expect(await currentGame(page)).toEqual(before);
+         |                                     ^
+      93 |     await expect(page.getByRole('dialog')).toHaveCount(0);
+      94 |     expect(await page.locator('.toast').count()).toBe(0);
+      95 |   });
+        at /workspace/avatarrpg-env/import-388/source/e2e/saves.spec.ts:92:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../artifacts/baseline-native/saves-save-import-lifecycl-86d1c-ot-replace-the-resumed-game-installed-chromium-touch/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../artifacts/baseline-native/saves-save-import-lifecycl-86d1c-ot-replace-the-resumed-game-installed-chromium-touch/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../artifacts/baseline-native/saves-save-import-lifecycl-86d1c-ot-replace-the-resumed-game-installed-chromium-touch/trace.zip
+    Usage:
+
+        npx playwright show-trace ../artifacts/baseline-native/saves-save-import-lifecycl-86d1c-ot-replace-the-resumed-game-installed-chromium-touch/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [installed-chromium-touch] › e2e/saves.spec.ts:97:3 › save import lifecycle › the newest requested import wins while both file reads are pending 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 14
+    + Received  + 14
+
+    @@ -1,10 +1,10 @@
+      Object {
+        "session": Object {
+          "players": Array [
+            Object {
+    -         "name": "Current",
+    +         "name": "Older",
+              "unitId": "p0",
+            },
+          ],
+          "soloPlay": true,
+        },
+    @@ -20,51 +20,51 @@
+          },
+          "log": Array [],
+          "party": Array [
+            Object {
+              "abilities": Array [
+    -           "rock_throw",
+    +           "fire_jab",
+              ],
+              "ai": "none",
+              "ap": 4,
+              "bankedAp": 0,
+              "base": Object {
+    -           "defense": 5,
+    -           "focus": 5,
+    +           "defense": 2,
+    +           "focus": 10,
+                "maxAp": 4,
+    -           "maxHp": 38,
+    +           "maxHp": 26,
+                "maxMove": 4,
+    -           "power": 6,
+    -           "speed": 2,
+    +           "power": 8,
+    +           "speed": 7,
+              },
+    -         "characterId": "bo",
+    +         "characterId": "kaya",
+              "cooldowns": Object {},
+              "disciplineId": null,
+    -         "element": "earth",
+    +         "element": "fire",
+              "enemyId": null,
+              "faction": "party",
+    -         "hp": 38,
+    +         "hp": 26,
+              "id": "p0",
+              "level": 1,
+              "move": 4,
+    -         "name": "Bo",
+    +         "name": "Kaya",
+              "pendingAp": 0,
+              "pos": Object {
+                "x": 0,
+                "y": 0,
+              },
+              "size": 1,
+    -         "sprite": "unit.earth.bo",
+    +         "sprite": "unit.fire.kaya",
+              "statuses": Array [],
+              "temporary": false,
+              "xp": 0,
+            },
+          ],
+          "pendingChoices": Array [],
+    -     "rng": 1409351102,
+    +     "rng": 2968295317,
+          "screen": "explore",
+    -     "seed": 1409351102,
+    +     "seed": 2968295317,
+          "story": Object {
+            "deciderIndex": 0,
+            "lineIndex": 0,
+            "nodeId": "village_explore",
+            "visited": Array [
+
+      110 |     // A finishes first, after B was requested: an isOpen-only guard would load A.
+      111 |     await releaseImportRead(reads, 0);
+    > 112 |     expect(await currentGame(page)).toEqual(before);
+          |                                     ^
+      113 |     await expect(menu).toBeVisible();
+      114 |     await expect(page.getByRole('dialog')).toHaveCount(2);
+      115 |     expect(await page.locator('.toast').count()).toBe(0);
+        at /workspace/avatarrpg-env/import-388/source/e2e/saves.spec.ts:112:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../artifacts/baseline-native/saves-save-import-lifecycl-2ede7-both-file-reads-are-pending-installed-chromium-touch/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../artifacts/baseline-native/saves-save-import-lifecycl-2ede7-both-file-reads-are-pending-installed-chromium-touch/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../artifacts/baseline-native/saves-save-import-lifecycl-2ede7-both-file-reads-are-pending-installed-chromium-touch/trace.zip
+    Usage:
+
+        npx playwright show-trace ../artifacts/baseline-native/saves-save-import-lifecycl-2ede7-both-file-reads-are-pending-installed-chromium-touch/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [installed-chromium-touch] › e2e/saves.spec.ts:124:3 › save import lifecycle › a dismissed invalid import cannot warn after the game resumes 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      141 |     expect(await currentGame(page)).toEqual(before);
+      142 |     await expect(page.getByRole('dialog')).toHaveCount(0);
+    > 143 |     expect(await page.locator('.toast').count()).toBe(0);
+          |                                                  ^
+      144 |   });
+      145 | });
+      146 |
+        at /workspace/avatarrpg-env/import-388/source/e2e/saves.spec.ts:143:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../artifacts/baseline-native/saves-save-import-lifecycl-50851-warn-after-the-game-resumes-installed-chromium-touch/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../artifacts/baseline-native/saves-save-import-lifecycl-50851-warn-after-the-game-resumes-installed-chromium-touch/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../artifacts/baseline-native/saves-save-import-lifecycl-50851-warn-after-the-game-resumes-installed-chromium-touch/trace.zip
+    Usage:
+
+        npx playwright show-trace ../artifacts/baseline-native/saves-save-import-lifecycl-50851-warn-after-the-game-resumes-installed-chromium-touch/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [installed-chromium-touch] › e2e/saves.spec.ts:73:3 › save import lifecycle › a dismissed import cannot replace the resumed game 
+    [installed-chromium-touch] › e2e/saves.spec.ts:97:3 › save import lifecycle › the newest requested import wins while both file reads are pending 
+    [installed-chromium-touch] › e2e/saves.spec.ts:124:3 › save import lifecycle › a dismissed invalid import cannot warn after the game resumes 

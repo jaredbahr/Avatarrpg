@@ -1,0 +1,9 @@
+{
+  "source": "candidate0f161fca productionbuild",
+  "beforeSeed": 2500703268,
+  "afterSeed": 2500703268,
+  "closedDialogs": 0,
+  "stateChanged": false,
+  "errors": [],
+  "repro": "actual UI filechooser with valid App-written save; only FileReader I/O deferred, then Close/Resume before release"
+}

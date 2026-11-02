@@ -29,6 +29,7 @@ export interface SaveMenuOptions {
 
 export class SaveMenu extends Dialog {
   protected options: DialogOptions;
+  private importVersion = 0;
 
   constructor(
     private app: App,
@@ -43,6 +44,10 @@ export class SaveMenu extends Dialog {
           : 'Pick a slot, or import a save file.',
       wide: true,
     };
+  }
+
+  protected override onClose(): void {
+    this.importVersion += 1;
   }
 
   protected build(body: HTMLElement): void {
@@ -158,7 +163,10 @@ export class SaveMenu extends Dialog {
   }
 
   private async importSave(): Promise<void> {
+    const version = ++this.importVersion;
     const result = await importFromFile();
+    // A file read can finish after Close or after another import was chosen.
+    if (!this.isOpen || version !== this.importVersion) return;
     if (!result.ok) {
       this.app.toasts.show(result.error, 'warn');
       return;
