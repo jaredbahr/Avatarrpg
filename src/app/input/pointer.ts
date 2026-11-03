@@ -71,9 +71,10 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   };
 
   const onPointerDown = (event: PointerEvent) => {
-    // Right and middle mouse buttons are not presses; right-click has its own
-    // path through `contextmenu` below.
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    // Only the main mouse button and pen tip are presses. Secondary buttons
+    // use `contextmenu` below; the pen eraser must not act as a tap.
+    if ((event.pointerType === 'mouse' || event.pointerType === 'pen') && event.button !== 0)
+      return;
     capture(event);
     recognizer.down(event.pointerId, local(event), kindOf(event));
   };
@@ -89,6 +90,11 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
 
   const onPointerCancel = (event: PointerEvent) => {
     release(event);
+    recognizer.cancel(event.pointerId);
+  };
+
+  const onLostPointerCapture = (event: PointerEvent) => {
+    // A release outside the canvas may no longer reach us once capture is lost.
     recognizer.cancel(event.pointerId);
   };
 
@@ -115,6 +121,7 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   target.addEventListener('pointermove', onPointerMove);
   target.addEventListener('pointerup', onPointerUp);
   target.addEventListener('pointercancel', onPointerCancel);
+  target.addEventListener('lostpointercapture', onLostPointerCapture);
   target.addEventListener('pointerleave', onPointerLeave);
   target.addEventListener('contextmenu', onContextMenu);
   target.addEventListener('wheel', onWheel, { passive: false });
@@ -125,6 +132,7 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
     target.removeEventListener('pointermove', onPointerMove);
     target.removeEventListener('pointerup', onPointerUp);
     target.removeEventListener('pointercancel', onPointerCancel);
+    target.removeEventListener('lostpointercapture', onLostPointerCapture);
     target.removeEventListener('pointerleave', onPointerLeave);
     target.removeEventListener('contextmenu', onContextMenu);
     target.removeEventListener('wheel', onWheel);
