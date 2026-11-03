@@ -1,0 +1,742 @@
+{
+  "baseline_producer": "d4e3bcdaa77133135dd9d1540e5a8cf6903c67c2",
+  "baseline_tree": "02ddf475b4eba397e9ed81642e5f9bfd102807d8",
+  "baseline_dist_files": 312,
+  "baseline_frozen_verified": true,
+  "candidate_producer": "64d8415adceff5c9bd3fa33a6d61c3f3627ce13e",
+  "candidate_tree": "50df387457728607eae6448c8f33ee780718f907",
+  "harness_sha256": "4e31b248132a9e3013326b0520bb5313501c67c30ec3aba33c46c17066f8600f",
+  "initial_600cap_results": [
+    {
+      "title": "approaching Mira keeps people clear (canvas, 1 people)",
+      "status": "passed",
+      "errors": [],
+      "frames": 153,
+      "min_party": null,
+      "min_npc": 1
+    },
+    {
+      "title": "approaching Mira keeps people clear (canvas, 3 people)",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m0.78\u001b[39m\nReceived:    \u001b[31m0.0023385971982108344\u001b[39m\n\n  167 |       // Same native spacing floor as party-spacing.spec.ts; validate every\n  168 |       // follower through waits, walks and the final gathering, not ju"
+      ],
+      "frames": 160,
+      "min_party": 0.0023385971982108344,
+      "min_npc": 1
+    },
+    {
+      "title": "approaching Mira keeps people clear (webgl, 1 people)",
+      "status": "passed",
+      "errors": [],
+      "frames": 31,
+      "min_party": null,
+      "min_npc": 1
+    },
+    {
+      "title": "approaching Mira keeps people clear (webgl, 3 people)",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m0.78\u001b[39m\nReceived:    \u001b[31m0.02887193053949133\u001b[39m\n\n  167 |       // Same native spacing floor as party-spacing.spec.ts; validate every\n  168 |       // follower through waits, walks and the final gathering, not just"
+      ],
+      "frames": 30,
+      "min_party": 0.02887193053949133,
+      "min_npc": 1
+    }
+  ],
+  "corrected_baseline": {
+    "stats": {
+      "startTime": "2026-11-03T11:35:57.833Z",
+      "duration": 193944.904,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 4,
+      "flaky": 0
+    },
+    "records": [
+      {
+        "title": "approaching Mira keeps people clear (canvas, 3 people)",
+        "status": "failed",
+        "duration": 14670,
+        "errors": [
+          "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m0.78\u001b[39m\nReceived:    \u001b[31m0.0028614028097369015\u001b[39m\n\n  172 |       // Same native spa"
+        ],
+        "reports": [
+          {
+            "name": "actual-input-route-and-rendered-motion",
+            "frames": 162,
+            "truncated": false,
+            "minimumParty": 0.0028614028097369015,
+            "minimumNPC": 1,
+            "remaining_ms": 0
+          }
+        ]
+      },
+      {
+        "title": "approaching Mira keeps people clear (canvas, 6 people)",
+        "status": "failed",
+        "duration": 55222,
+        "errors": [
+          "TimeoutError: page.waitForFunction: Timeout 20000ms exceeded.\n\n  182 | async function waitForSettledParty(page: Page, testInfo: TestInfo): Promise<void> {\n  183 |   try {\n> 184 |     await page.waitForFunction(\n      |  "
+        ],
+        "reports": [
+          {
+            "name": "unchanged-settlement-deadline",
+            "frames": 1201,
+            "truncated": false,
+            "minimumParty": 0.0037947361271761793,
+            "minimumNPC": null,
+            "remaining_ms": 3687.3031495868345
+          }
+        ]
+      },
+      {
+        "title": "approaching Mira keeps people clear (webgl, 3 people)",
+        "status": "failed",
+        "duration": 41065,
+        "errors": [
+          "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m0.78\u001b[39m\nReceived:    \u001b[31m0.039938597182315405\u001b[39m\n\n  172 |       // Same native spac"
+        ],
+        "reports": [
+          {
+            "name": "actual-input-route-and-rendered-motion",
+            "frames": 30,
+            "truncated": false,
+            "minimumParty": 0.039938597182315405,
+            "minimumNPC": 1,
+            "remaining_ms": 0
+          }
+        ]
+      },
+      {
+        "title": "approaching Mira keeps people clear (webgl, 6 people)",
+        "status": "failed",
+        "duration": 75825,
+        "errors": [
+          "TimeoutError: page.waitForFunction: Timeout 20000ms exceeded.\n\n  182 | async function waitForSettledParty(page: Page, testInfo: TestInfo): Promise<void> {\n  183 |   try {\n> 184 |     await page.waitForFunction(\n      |  "
+        ],
+        "reports": [
+          {
+            "name": "unchanged-settlement-deadline",
+            "frames": 85,
+            "truncated": false,
+            "minimumParty": 0.1615385972061567,
+            "minimumNPC": null,
+            "remaining_ms": 1859.2031495629926
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_stats": {
+    "startTime": "2026-11-03T11:41:03.600Z",
+    "duration": 271484.066,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "candidate_cases": [
+    {
+      "title": "approaching Mira keeps people clear (canvas, 1 people)",
+      "status": "passed",
+      "duration_ms": 12751,
+      "backend": "canvas",
+      "party": 1,
+      "frames": 160,
+      "truncated": false,
+      "min_party": null,
+      "min_npc": 1,
+      "min_leader_gao": 1.0000000043607422,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "node": "mira_intro",
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "errors": []
+    },
+    {
+      "title": "approaching Mira keeps people clear (canvas, 3 people)",
+      "status": "passed",
+      "duration_ms": 15978,
+      "backend": "canvas",
+      "party": 3,
+      "frames": 305,
+      "truncated": false,
+      "min_party": 0.8391021656773657,
+      "min_npc": 1,
+      "min_leader_gao": 1,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "node": "mira_intro",
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "errors": []
+    },
+    {
+      "title": "approaching Mira keeps people clear (canvas, 6 people)",
+      "status": "passed",
+      "duration_ms": 38699,
+      "backend": "canvas",
+      "party": 6,
+      "frames": 290,
+      "truncated": false,
+      "min_party": 0.833070930129291,
+      "min_npc": 1,
+      "min_leader_gao": 1,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "node": "mira_intro",
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "errors": []
+    },
+    {
+      "title": "approaching Mira keeps people clear (webgl, 1 people)",
+      "status": "passed",
+      "duration_ms": 39134,
+      "backend": "webgl",
+      "party": 1,
+      "frames": 31,
+      "truncated": false,
+      "min_party": null,
+      "min_npc": 1,
+      "min_leader_gao": 1.000000000948543,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "node": "mira_intro",
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "errors": []
+    },
+    {
+      "title": "approaching Mira keeps people clear (webgl, 3 people)",
+      "status": "passed",
+      "duration_ms": 42032,
+      "backend": "webgl",
+      "party": 3,
+      "frames": 39,
+      "truncated": false,
+      "min_party": 0.8671879662933341,
+      "min_npc": 1,
+      "min_leader_gao": 1,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "node": "mira_intro",
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "errors": []
+    },
+    {
+      "title": "approaching Mira keeps people clear (webgl, 6 people)",
+      "status": "passed",
+      "duration_ms": 62443,
+      "backend": "webgl",
+      "party": 6,
+      "frames": 38,
+      "truncated": false,
+      "min_party": 0.8476724394943733,
+      "min_npc": 1,
+      "min_leader_gao": 1,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "node": "mira_intro",
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "errors": []
+    },
+    {
+      "title": "five people keep their spacing through courtyard turns and arrive on dry ground",
+      "status": "passed",
+      "duration_ms": 32487,
+      "legs": [
+        {
+          "destination": {
+            "x": 10,
+            "y": 7
+          },
+          "elapsed": 8038.199999988079,
+          "minimum": 0.8391895561260945,
+          "samples": 431,
+          "seats": [
+            {
+              "x": 10,
+              "y": 7
+            },
+            {
+              "x": 9,
+              "y": 7
+            },
+            {
+              "x": 8,
+              "y": 7
+            },
+            {
+              "x": 8,
+              "y": 8
+            },
+            {
+              "x": 8,
+              "y": 9
+            }
+          ]
+        },
+        {
+          "destination": {
+            "x": 10,
+            "y": 3
+          },
+          "elapsed": 11145.199999988079,
+          "minimum": 0.8296771307851886,
+          "samples": 623,
+          "seats": [
+            {
+              "x": 10,
+              "y": 3
+            },
+            {
+              "x": 10,
+              "y": 4
+            },
+            {
+              "x": 10,
+              "y": 5
+            },
+            {
+              "x": 9,
+              "y": 5
+            },
+            {
+              "x": 12,
+              "y": 5
+            }
+          ]
+        },
+        {
+          "destination": {
+            "x": 11,
+            "y": 3
+          },
+          "elapsed": 910.9000000059605,
+          "minimum": 1,
+          "samples": 51,
+          "seats": [
+            {
+              "x": 11,
+              "y": 3
+            },
+            {
+              "x": 10,
+              "y": 4
+            },
+            {
+              "x": 10,
+              "y": 5
+            },
+            {
+              "x": 9,
+              "y": 5
+            },
+            {
+              "x": 12,
+              "y": 5
+            }
+          ]
+        },
+        {
+          "destination": {
+            "x": 10,
+            "y": 5
+          },
+          "elapsed": 5408.4000000059605,
+          "minimum": 0.8391026105973557,
+          "samples": 321,
+          "seats": [
+            {
+              "x": 10,
+              "y": 5
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 12,
+              "y": 4
+            },
+            {
+              "x": 9,
+              "y": 5
+            },
+            {
+              "x": 12,
+              "y": 5
+            }
+          ]
+        },
+        {
+          "destination": {
+            "x": 10,
+            "y": 7
+          },
+          "elapsed": 3764.800000011921,
+          "minimum": 1,
+          "samples": 218,
+          "seats": [
+            {
+              "x": 10,
+              "y": 7
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 10,
+              "y": 5
+            },
+            {
+              "x": 8,
+              "y": 5
+            },
+            {
+              "x": 12,
+              "y": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "raw_artifacts": {
+    "initial-600cap-native.log": {
+      "sha256": "9a4ec189e1f859f6fc1bcce4fa17e0d5ad5d6dcc480158a29f4fd3aaebdd233b",
+      "bytes": 12197
+    },
+    "focused-after-initial.log": {
+      "sha256": "47389c9e03a0849cf6993ea4f8851d51426d2fdbb171cabd6c46983d41fdb35c",
+      "bytes": 720
+    },
+    "baseline-results.json": {
+      "sha256": "27a775a5b65946b67bbf20e5cd33df44b9f82cd0d74848afe9e3bb5878959870",
+      "bytes": 3334944
+    },
+    "initial-600cap-summary.json": {
+      "sha256": "a8cd971b311a8c810e3614e3a29c68d4cdd45743c3a9b091f29dd496bfcd485f",
+      "bytes": 1655
+    },
+    "eslint-after.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "baseline-source-scope.txt": {
+      "sha256": "fe5ab11a126f895fd261eda89c95379a1c4217e0be41335c5ca418903b647752",
+      "bytes": 91
+    },
+    "candidate-canvas-1.json": {
+      "sha256": "fc2de1a76191b6ea68742e287027d0569ccd3e9a07f097062a5b93e9e20b9a81",
+      "bytes": 160972
+    },
+    "baseline-dist-sha256.json": {
+      "sha256": "61361b152bd82e37092419820e0fd8ae18512ca4a464c86f6252d88294a23902",
+      "bytes": 31712
+    },
+    "candidate-webgl-1.json": {
+      "sha256": "bbc05ce5896cd57a1495cb954ec1a1974f474331b513f941fa4ebf21fea3c906",
+      "bytes": 31437
+    },
+    "baseline-preserved.config.ts": {
+      "sha256": "4a96c142f58193fe531aad08183836a16211dcba318d25c6d08096a37e331457",
+      "bytes": 1105
+    },
+    "baseline-canvas-3-actual-input-route-and-rendered-motion.json": {
+      "sha256": "d8a1a99b6db70d51b2eaa966d7db130c392ca296036e752720aad9977230cfea",
+      "bytes": 199564
+    },
+    "candidate-webgl-3.json": {
+      "sha256": "e65395a8d51834df03d41c6ad770edd6c5ba9ac15281e44c53978dfbeef131a0",
+      "bytes": 48180
+    },
+    "harness-initial-600cap.ts": {
+      "sha256": "8668c1b9336cf8ae67a345c447e1307a9dda925b555256ff4c0e125504511b00",
+      "bytes": 8176
+    },
+    "candidate-webgl-6.json": {
+      "sha256": "34fcef7396b06ad3f3189a984a3ae11c603d3da262b128a1f6bb0bce840c6794",
+      "bytes": 60172
+    },
+    "typecheck-candidate.log": {
+      "sha256": "a3a318732df191403d86db09f2e35581eddb0a924eca19a08c051c82040bc999",
+      "bytes": 57
+    },
+    "baseline.config.ts": {
+      "sha256": "94ed4d4a3589201a7a46faf6468fe331d33c9562b38502974bd1347f4d1a703a",
+      "bytes": 1043
+    },
+    "candidate.config.ts": {
+      "sha256": "1812fd0f934f86991614ce8a4c4429b5863946d6cbdf4fd3baade9a8a7861c1e",
+      "bytes": 983
+    },
+    "baseline-webgl-6-unchanged-settlement-deadline.json": {
+      "sha256": "3baa3fd7882be6d04d46651a0354efae33740e48eb913fe1768d98c2e28d1813",
+      "bytes": 149331
+    },
+    "candidate-five-party-control.json": {
+      "sha256": "75cb49adc99cb5ca9e2fd8193b70877de24201fa8a300abdf4c47621fd9ec009",
+      "bytes": 2056
+    },
+    "prettier-after.log": {
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66
+    },
+    "native-after.log": {
+      "sha256": "7ec14792366170539287bcfd3b81b7f72edb5fbc270a87b3f5d3c2e3204a3301",
+      "bytes": 1961
+    },
+    "candidate-canvas-3.json": {
+      "sha256": "95fe5096134f5e5bf8972f2d7526601c778ac47b9980ef330af5868e37a8235b",
+      "bytes": 373739
+    },
+    "core-before-named.log": {
+      "sha256": "1023969e9506ed6ffdc4099da781ba3f61b4a537d2ecf9b46638b19563b14a05",
+      "bytes": 1620
+    },
+    "clearance-recovery.patch": {
+      "sha256": "0bc45b0ffda4770e7cbde8a576a3eb11b794af8024c4b1e3543ef26ac0d19ee9",
+      "bytes": 3152
+    },
+    "baseline-canvas-6-unchanged-settlement-deadline.json": {
+      "sha256": "1f2e66353cbcce93191d6c58014588c8c1a3c4ab7f7a3dde9943c393702c111e",
+      "bytes": 2098483
+    },
+    "initial-600cap-results.json": {
+      "sha256": "f7add22f559fd4b5badc7018607c8f80c24f10bfa3b572453705ecaeed8929ea",
+      "bytes": 583873
+    },
+    "core-before.log": {
+      "sha256": "41dd4e7b5e0b99e30c4cbd91837ab727b2ddc7fb24f7235bb04f1a14250f54e3",
+      "bytes": 1652
+    },
+    "baseline-summary.json": {
+      "sha256": "ac03c961224466de16f1bf815e34d70acaf640a4c8f19dd6a08e762eca7f8a81",
+      "bytes": 3025
+    },
+    "native-before.log": {
+      "sha256": "16473e832c32f2f52ec8d43077a517dbe43ecc9aff0db47b5ec1b41af9d9e554",
+      "bytes": 12105
+    },
+    "prepared-untested.patch": {
+      "sha256": "7b7110f9e360620c632cffb228d1246c4d52c88377a00f0d89668b06b629f590",
+      "bytes": 3063
+    },
+    "candidate-results.json": {
+      "sha256": "e246d2484aa7db72a49af50a9d3498e1adc7a390a2602f34e3e79613712b836f",
+      "bytes": 1525089
+    },
+    "baseline-webgl-3-actual-input-route-and-rendered-motion.json": {
+      "sha256": "02f1a9bb5b337e3bd9fb4de9a78e5cee694dd815446b29c76547555bef969870",
+      "bytes": 37259
+    },
+    "candidate-canvas-6.json": {
+      "sha256": "3f3fd70c306f8805bf9c4fb5fe841d4e2bd446f5b61bc39020533fabe203c648",
+      "bytes": 458473
+    },
+    "runs/baseline/artifacts/.last-run.json": {
+      "sha256": "f087964d423d298f5acfeec06010deb5818bfdf81e781a232182081ddae72bd7",
+      "bytes": 243
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-9a179-eople-clear-webgl-3-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "16711d18eea417bc8598a2b05e86a58988d38197fbb93048ea5c4ec7dd963ab4",
+      "bytes": 809518
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-9a179-eople-clear-webgl-3-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "568d31b261372c04611dc63369b7b7f0cad5e8e941402ee986effb18486b7549",
+      "bytes": 809146
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-9a179-eople-clear-webgl-3-people--installed-chromium-touch/trace.zip": {
+      "sha256": "9c9267bdac6d60d59f2a35ae07a1f8185aa421c188d444f8687e8a0a6841705f",
+      "bytes": 19940075
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-d5534-eople-clear-webgl-6-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "c6c5e83208bb66eea6006c6ff5253493a6181a14d7d0784b8788f40bfe888676",
+      "bytes": 712176
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-d5534-eople-clear-webgl-6-people--installed-chromium-touch/trace.zip": {
+      "sha256": "26c40241dcdda23f4b5bae5686d7aeddbda658f38dce7643159656d1304a2bca",
+      "bytes": 19841837
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-c7c58-eople-clear-webgl-1-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "f5318b96893b637946efe8bb467394890b5750a6a7f22b3b44e76a0288449883",
+      "bytes": 799860
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-93feb-ople-clear-canvas-3-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "dea0806c0dea3cab3816febd3ea4340256117dbd3acb91b010ffb04efaa74ad0",
+      "bytes": 809417
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-93feb-ople-clear-canvas-3-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "dd8a88f2f76ef5b1c7671132388bb20a2f6735ee86c2c9c133133f74d439c6aa",
+      "bytes": 809355
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-93feb-ople-clear-canvas-3-people--installed-chromium-touch/trace.zip": {
+      "sha256": "1e989ad18e61134ca84b74df4fb47128bba5e6e166839e5a27424eb7a7e311f6",
+      "bytes": 19949511
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-d594b-ople-clear-canvas-6-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "cb35f0da7f8008ba1317abe16d96b50716a272d2c4673595e8e4e45c2709b6f8",
+      "bytes": 711874
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-d594b-ople-clear-canvas-6-people--installed-chromium-touch/trace.zip": {
+      "sha256": "f82229c4d2defd9595d75c6c4dd4425e57b07d0aef092e6ee51e574ed2cc18f8",
+      "bytes": 19841874
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-09281-ople-clear-canvas-1-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "7454f9d737c33c25981561a8d55c07e5620c7bef07635c778efc021dca53dab3",
+      "bytes": 800191
+    },
+    "runs/baseline-complete-recorder/artifacts/.last-run.json": {
+      "sha256": "f087964d423d298f5acfeec06010deb5818bfdf81e781a232182081ddae72bd7",
+      "bytes": 243
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-9a179-eople-clear-webgl-3-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "69463a32a9c4a240557265f6343f610e19b9236963b32fe4c3d58f6802b66ad4",
+      "bytes": 809622
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-9a179-eople-clear-webgl-3-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "568d31b261372c04611dc63369b7b7f0cad5e8e941402ee986effb18486b7549",
+      "bytes": 809146
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-9a179-eople-clear-webgl-3-people--installed-chromium-touch/trace.zip": {
+      "sha256": "abfcc8615ac9e63d55c0d023dd78f7943b77269454c6c5e6ab4f9194432aa34c",
+      "bytes": 19940642
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-d5534-eople-clear-webgl-6-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "405e49669f4bbdffe8a9862a2f8faa887c6672c03ab3d5e395d451d8fda6f2f5",
+      "bytes": 716905
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-d5534-eople-clear-webgl-6-people--installed-chromium-touch/trace.zip": {
+      "sha256": "e68f76dbda06428820c570ace8d503b913dbdbc814e1b8373841eeaa4c64c0e9",
+      "bytes": 19860850
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-93feb-ople-clear-canvas-3-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "213c812caace5b8be8a83f3a1e8e46140f3f8f0d2ace8b1ca1c3dd5150542614",
+      "bytes": 809416
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-93feb-ople-clear-canvas-3-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "b104e75381cba30c9788e206a268af96cf3c529751a305ece08d3e14152e77b2",
+      "bytes": 809690
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-93feb-ople-clear-canvas-3-people--installed-chromium-touch/trace.zip": {
+      "sha256": "a54a91ede9020cff1dd24569937bd9e0d14bdbd02a0397bb0c8628e3795d2ff5",
+      "bytes": 19951970
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-d594b-ople-clear-canvas-6-people--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "0302983cf299062a516184148fd1aa54dd80c245a0292170aacd2f41da22c0af",
+      "bytes": 710795
+    },
+    "runs/baseline-complete-recorder/artifacts/npc-walking-approaching-Mi-d594b-ople-clear-canvas-6-people--installed-chromium-touch/trace.zip": {
+      "sha256": "1e516cee8fca1ceb24c2d4be431ac03f697c3dcb88f0f52f34dae1b7f5e46163",
+      "bytes": 19945941
+    },
+    "runs/candidate/artifacts/.last-run.json": {
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-9a179-eople-clear-webgl-3-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "b76ad6fab2669bb552886e3c7f56a9a762ffd9f401811b0979a2d1d27783e847",
+      "bytes": 810348
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-d5534-eople-clear-webgl-6-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "8accfcf1627e0bcfcb81fc6ea343824330c6b733af2f5e8033f3b268f80037b1",
+      "bytes": 833604
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-c7c58-eople-clear-webgl-1-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "874a66a225bd2d390a6333e178042d077a13f98ced8c4bfc2e241ac0efab908b",
+      "bytes": 800032
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-93feb-ople-clear-canvas-3-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "9e570f7807db88fada51103e53098d398b1941807ea008ec5765e8f5a1f1eb06",
+      "bytes": 810727
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-d594b-ople-clear-canvas-6-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "a149d010bc7829031ed1dbbf57323454426ee643fa1c4f640882796202d6eb45",
+      "bytes": 833931
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-09281-ople-clear-canvas-1-people--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "75f0172ccc112c150df3762bc3b9361f6287efb3f0b8576243e61259fab9c899",
+      "bytes": 800310
+    }
+  },
+  "limitations": "Read-only normalmotion actualmouse Canvas/WebGL1368x912DPR1; no physical/WebKit/PWA/GPUFPS/owneracceptance claim. Six expandedMira recordercases complete/nontruncated andNPCmin>=1;4multiMira casespartymin>=.833070. Separateunchanged5partycontrolperlegpairmin.829677/samples/timing/seats only, noNPC/truncation data. Case6failedbaseline20sdeadline isfinitebusyplayback, notruntimehang. Original600framecap partiallatecoverage retained."
+}
