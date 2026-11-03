@@ -3,6 +3,7 @@ import {
   formatHitBreakdownRows,
   formatLedgeDrop,
   formatPropConsequence,
+  formatPropPreviewLabel,
   formatShoveMovement,
 } from './combatPreviewText';
 import type { PropForecast } from '../../core/rules/reactions';
@@ -27,9 +28,9 @@ describe('combat preview text', () => {
       affectedEnemies: [],
     };
 
-    expect(formatPropConsequence(prop)).toBe('Hay Bale catches fire');
+    expect(formatPropConsequence(prop)).toBe('catches fire');
     expect(formatPropConsequence({ ...prop, catchesFire: false, doused: true, hpAfter: 1 })).toBe(
-      'Hay Bale is put out',
+      'is put out',
     );
     expect(
       formatPropConsequence({
@@ -41,6 +42,59 @@ describe('combat preview text', () => {
         breakLabel: 'The hay goes up in a rush of flame.',
       }),
     ).toBe('The hay goes up in a rush of flame.');
+  });
+
+  it('names repeated quarry props by their battlefield positions', () => {
+    const barrel: PropForecast = {
+      id: 'barrel-north',
+      propId: 'water_barrel',
+      name: 'Water Barrel',
+      from: { x: 14, y: 3 },
+      to: null,
+      destroyed: true,
+      catchesFire: false,
+      doused: false,
+      moved: false,
+      coverRemoved: true,
+      hpBefore: 6,
+      hpAfter: null,
+      breakLabel: 'The barrel bursts — water everywhere!',
+      affectedAllies: [],
+      affectedEnemies: [],
+    };
+    const south = { ...barrel, id: 'barrel-south', from: { x: 14, y: 8 } };
+    const peers = [barrel, south];
+    expect(formatPropPreviewLabel(barrel, peers)).toBe('Water Barrel (northern)');
+    expect(formatPropPreviewLabel(south, peers)).toBe('Water Barrel (southern)');
+    expect(formatPropPreviewLabel(barrel, [barrel])).toBe('Water Barrel');
+
+    const east = { ...south, from: { x: 16, y: 3 } };
+    expect(formatPropPreviewLabel(barrel, [barrel, east])).toBe('Water Barrel (western)');
+    expect(formatPropPreviewLabel(east, [barrel, east])).toBe('Water Barrel (eastern)');
+  });
+
+  it('describes a moved prop without showing its destination coordinates', () => {
+    const prop: PropForecast = {
+      id: 'barrel',
+      propId: 'water_barrel',
+      name: 'Water Barrel',
+      from: { x: 14, y: 3 },
+      to: { x: 14, y: 5 },
+      destroyed: false,
+      catchesFire: false,
+      doused: false,
+      moved: true,
+      coverRemoved: true,
+      hpBefore: 6,
+      hpAfter: 6,
+      breakLabel: null,
+      affectedAllies: [],
+      affectedEnemies: [],
+    };
+    expect(`${formatPropPreviewLabel(prop, [prop])}: ${formatPropConsequence(prop)}`).toBe(
+      'Water Barrel: moves 2 tiles',
+    );
+    expect(formatPropConsequence({ ...prop, to: { x: 14, y: 4 } })).toBe('moves 1 tile');
   });
 
   it('describes shove movement without raw grid coordinates', () => {
