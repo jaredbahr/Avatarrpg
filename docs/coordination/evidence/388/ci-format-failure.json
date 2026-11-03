@@ -1,0 +1,33 @@
+{
+  "stage": "ci",
+  "before": {
+    "sha": "ac614a5c3b0b264a97a85d8c7d7d7ec338f65f36",
+    "tree": "2b013362fc6002d8655e8ddf0606f6215192d0a9",
+    "status": ""
+  },
+  "harness_before": {
+    "native.config.ts": "fdf122c2b2ee72c3154cef27bfdbcc4c739e1aaed28d60ef3a231865ae3ffb1e",
+    "run.py": "447390e24c1064ae6b0499db79772e0afee6da8c7c66ea42836756518dc3c279",
+    "source/e2e/saves.spec.ts": "c10e694bc69ae23ed472c0f4ea7047671b753cbe047e5a10ef38e045c5775f0a",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "command": ["npm", "run", "ci:local"],
+  "started_utc": "2026-11-02T02:01:53.561937+00:00",
+  "exit_code": 1,
+  "after": {
+    "sha": "ac614a5c3b0b264a97a85d8c7d7d7ec338f65f36",
+    "tree": "2b013362fc6002d8655e8ddf0606f6215192d0a9",
+    "status": ""
+  },
+  "harness_after": {
+    "native.config.ts": "fdf122c2b2ee72c3154cef27bfdbcc4c739e1aaed28d60ef3a231865ae3ffb1e",
+    "run.py": "447390e24c1064ae6b0499db79772e0afee6da8c7c66ea42836756518dc3c279",
+    "source/e2e/saves.spec.ts": "c10e694bc69ae23ed472c0f4ea7047671b753cbe047e5a10ef38e045c5775f0a",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "duration_seconds": 74.45310801600135,
+  "finished_utc": "2026-11-02T02:03:08.015059+00:00",
+  "stable": true
+}
