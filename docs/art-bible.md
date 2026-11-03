@@ -87,7 +87,10 @@ then scaled to the regions' 1.5 painting px per world px. Walkable ground is cal
 sparse 1–2 px marks), not filtered. Figure-scale objects (tables, baskets, benches, fences, stock) come from the same
 generator at the measured sizes of `docs/art/object-style-diagnosis.md` section 2 and ADR 0085's scale table, and are set into the
 picture at their footprints with a flat pixel cast shadow and contact line; their frozen silhouettes are the objects'
-own. The silhouette and footprint edges of an upright are forced by the geometry.
+own. The silhouette and footprint edges of an upright are forced by the geometry. **A house has one crisp edge all the
+way round** (owner, 2026-11-03, #369): where its silhouette meets something the painting draws differently, the 1 px
+inside the edge is the painting's contact tone, never a fade into the grass; where the silhouette runs through plain
+ground (a yard's frozen boundary across grass) no line is drawn. `ba-dan-route-a/tools/shadows.py` lays it in the master.
 
 The picture already holds the upper-left light, the cast shadow, the contact under every foot, the worn ground, the
 joins between materials and the canal. So Ba Dan is a complete scene: the runtime draws no contact ring, no projected
