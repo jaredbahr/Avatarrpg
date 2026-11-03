@@ -19,7 +19,7 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
-import { choreograph, TIMING } from './anim/choreography';
+import { choreograph, STROLL_REFERENCE_MS, TIMING } from './anim/choreography';
 import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
@@ -59,12 +59,11 @@ export const WALK_MS_PER_TILE = 475;
 
 /**
  * Wall ms each walk cel holds at the brisk stroll on a native-G1 sheet (ADR
- * 0095's amendment; owner, 2026-10-28: the middle of the cadence dial). Its
- * feet hold the ground only at about 35 ms a cel, which read as racing legs;
- * at 70 the steps are calmer and the planted foot slides about 4 world px a
- * stance cel. One number for every family and heading: tune it here.
+ * 0095's amendment: 70 ms at the reference 750 ms/tile). Scale with the live
+ * stroll pace to retain that choice's phase per distance and foot slide,
+ * including combat's unchanged cadence, when exploration speeds up.
  */
-export const BRISK_WALK_CEL_MS = 70;
+export const BRISK_WALK_CEL_MS = (70 * TIMING.strollStep) / STROLL_REFERENCE_MS;
 
 /**
  * How long a finished walk holds its settled pose before the ready stance is
@@ -110,7 +109,8 @@ export interface AnimatorOptions {
   /**
    * Every walk this animator plays ambles (a routine errand, Mira: ADR 0095),
    * so a G sheet keeps the clip time a tile fitted to its drawn feet rather
-   * than the brisk cadence.
+   * than the brisk cadence. Its base walk schedule also stays at the reference
+   * pace, so the residents' slowed clock preserves ramps and settling too.
    */
   readonly amble?: boolean;
   /**
@@ -275,6 +275,7 @@ export class Animator {
       rate,
       pushIndex: this.pushes++,
       silentSteps: options.silentSteps ?? options.alongside,
+      amble: this.options.amble,
       projection: this.projection,
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
       ...(bends ? { bends } : {}),
