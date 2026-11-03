@@ -1,0 +1,2066 @@
+{
+  "kaya/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.74,
+      "slide": 5.14,
+      "worst": 7.81,
+      "fit": 0.462,
+      "ratio": 0.17
+    },
+    {
+      "heading": "south-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.03,
+      "slide": 7.85,
+      "worst": 9.39,
+      "fit": 0.509,
+      "ratio": 0.15
+    },
+    {
+      "heading": "east",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 3.4,
+      "slide": 10.37,
+      "worst": 14.77,
+      "fit": 0.45,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.72,
+      "slide": 8.17,
+      "worst": 9.09,
+      "fit": 0.456,
+      "ratio": 0.13
+    },
+    {
+      "heading": "north",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.25,
+      "slide": 5.63,
+      "worst": 7.11,
+      "fit": 0.333,
+      "ratio": 0.12
+    },
+    {
+      "heading": "north-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.86,
+      "slide": 8.03,
+      "worst": 9.97,
+      "fit": 0.479,
+      "ratio": 0.14
+    },
+    {
+      "heading": "west",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 3.28,
+      "slide": 10.49,
+      "worst": 13.03,
+      "fit": 0.435,
+      "ratio": 0.1
+    },
+    {
+      "heading": "south-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.8,
+      "slide": 8.09,
+      "worst": 10.88,
+      "fit": 0.469,
+      "ratio": 0.12
+    }
+  ],
+  "sura/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.56,
+      "slide": 5.32,
+      "worst": 7.87,
+      "fit": 0.414,
+      "ratio": 0.14
+    },
+    {
+      "heading": "south-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.04,
+      "slide": 7.84,
+      "worst": 10.23,
+      "fit": 0.51,
+      "ratio": 0.14
+    },
+    {
+      "heading": "east",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 3.46,
+      "slide": 10.31,
+      "worst": 11.83,
+      "fit": 0.458,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.57,
+      "slide": 8.31,
+      "worst": 9.57,
+      "fit": 0.432,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.26,
+      "slide": 5.62,
+      "worst": 7.87,
+      "fit": 0.335,
+      "ratio": 0.12
+    },
+    {
+      "heading": "north-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.61,
+      "slide": 8.27,
+      "worst": 9.43,
+      "fit": 0.438,
+      "ratio": 0.13
+    },
+    {
+      "heading": "west",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 3.21,
+      "slide": 10.55,
+      "worst": 12.67,
+      "fit": 0.426,
+      "ratio": 0.1
+    },
+    {
+      "heading": "south-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.89,
+      "slide": 7.99,
+      "worst": 10.68,
+      "fit": 0.485,
+      "ratio": 0.14
+    }
+  ],
+  "bo/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.73,
+      "slide": 5.15,
+      "worst": 7.77,
+      "fit": 0.459,
+      "ratio": 0.16
+    },
+    {
+      "heading": "south-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.26,
+      "slide": 7.62,
+      "worst": 9.43,
+      "fit": 0.546,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 3.48,
+      "slide": 10.28,
+      "worst": 11.93,
+      "fit": 0.461,
+      "ratio": 0.13
+    },
+    {
+      "heading": "north-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.88,
+      "slide": 8.0,
+      "worst": 8.65,
+      "fit": 0.483,
+      "ratio": 0.13
+    },
+    {
+      "heading": "north",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.39,
+      "slide": 5.49,
+      "worst": 7.1,
+      "fit": 0.37,
+      "ratio": 0.15
+    },
+    {
+      "heading": "north-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 2.81,
+      "slide": 8.07,
+      "worst": 13.9,
+      "fit": 0.472,
+      "ratio": 0.14
+    },
+    {
+      "heading": "west",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 3.21,
+      "slide": 10.55,
+      "worst": 12.95,
+      "fit": 0.426,
+      "ratio": 0.1
+    },
+    {
+      "heading": "south-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.04,
+      "slide": 7.84,
+      "worst": 10.43,
+      "fit": 0.511,
+      "ratio": 0.14
+    }
+  ],
+  "household/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.6,
+      "slide": 7.73,
+      "worst": 11.32,
+      "fit": 0.459,
+      "ratio": 0.14
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.6,
+      "slide": 11.72,
+      "worst": 13.19,
+      "fit": 0.515,
+      "ratio": 0.15
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 4.93,
+      "slide": 15.72,
+      "worst": 17.48,
+      "fit": 0.436,
+      "ratio": 0.12
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.11,
+      "slide": 12.22,
+      "worst": 14.82,
+      "fit": 0.459,
+      "ratio": 0.11
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.15,
+      "slide": 8.18,
+      "worst": 10.48,
+      "fit": 0.379,
+      "ratio": 0.15
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.07,
+      "slide": 12.26,
+      "worst": 13.67,
+      "fit": 0.455,
+      "ratio": 0.13
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 4.84,
+      "slide": 15.81,
+      "worst": 17.82,
+      "fit": 0.427,
+      "ratio": 0.07
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.81,
+      "slide": 11.52,
+      "worst": 12.86,
+      "fit": 0.537,
+      "ratio": 0.14
+    }
+  ],
+  "watch/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.61,
+      "slide": 7.72,
+      "worst": 10.57,
+      "fit": 0.461,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.6,
+      "slide": 11.72,
+      "worst": 14.61,
+      "fit": 0.514,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.19,
+      "slide": 14.46,
+      "worst": 21.65,
+      "fit": 0.547,
+      "ratio": 0.15
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.23,
+      "slide": 12.1,
+      "worst": 19.9,
+      "fit": 0.473,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.13,
+      "slide": 8.19,
+      "worst": 11.22,
+      "fit": 0.377,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.6,
+      "slide": 11.73,
+      "worst": 13.04,
+      "fit": 0.514,
+      "ratio": 0.14
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.23,
+      "slide": 15.41,
+      "worst": 17.05,
+      "fit": 0.463,
+      "ratio": 0.09
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.31,
+      "slide": 11.01,
+      "worst": 12.17,
+      "fit": 0.594,
+      "ratio": 0.15
+    }
+  ],
+  "mira/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.02,
+      "slide": 7.3,
+      "worst": 12.2,
+      "fit": 0.534,
+      "ratio": 0.22
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.77,
+      "slide": 10.56,
+      "worst": 11.92,
+      "fit": 0.645,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.96,
+      "slide": 14.69,
+      "worst": 15.98,
+      "fit": 0.526,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.98,
+      "slide": 11.34,
+      "worst": 13.91,
+      "fit": 0.557,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.48,
+      "slide": 7.85,
+      "worst": 9.41,
+      "fit": 0.438,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.99,
+      "slide": 11.34,
+      "worst": 14.05,
+      "fit": 0.558,
+      "ratio": 0.15
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.01,
+      "slide": 14.64,
+      "worst": 16.89,
+      "fit": 0.531,
+      "ratio": 0.1
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.55,
+      "slide": 10.77,
+      "worst": 12.37,
+      "fit": 0.62,
+      "ratio": 0.15
+    }
+  ],
+  "gao/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.6,
+      "slide": 7.72,
+      "worst": 11.2,
+      "fit": 0.46,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.19,
+      "slide": 11.14,
+      "worst": 15.04,
+      "fit": 0.58,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.6,
+      "slide": 15.05,
+      "worst": 15.87,
+      "fit": 0.495,
+      "ratio": 0.11
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.78,
+      "slide": 11.54,
+      "worst": 16.23,
+      "fit": 0.535,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.42,
+      "slide": 7.9,
+      "worst": 10.41,
+      "fit": 0.428,
+      "ratio": 0.18
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.52,
+      "slide": 11.81,
+      "worst": 13.16,
+      "fit": 0.505,
+      "ratio": 0.14
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.7,
+      "slide": 14.94,
+      "worst": 16.6,
+      "fit": 0.504,
+      "ratio": 0.1
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.11,
+      "slide": 11.22,
+      "worst": 12.62,
+      "fit": 0.571,
+      "ratio": 0.16
+    }
+  ],
+  "pella/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.35,
+      "slide": 7.98,
+      "worst": 10.35,
+      "fit": 0.415,
+      "ratio": 0.1
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.1,
+      "slide": 12.22,
+      "worst": 13.21,
+      "fit": 0.458,
+      "ratio": 0.13
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 4.15,
+      "slide": 16.5,
+      "worst": 17.29,
+      "fit": 0.367,
+      "ratio": 0.07
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 3.58,
+      "slide": 12.75,
+      "worst": 14.45,
+      "fit": 0.4,
+      "ratio": 0.11
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 1.59,
+      "slide": 8.73,
+      "worst": 10.55,
+      "fit": 0.282,
+      "ratio": 0.11
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 3.67,
+      "slide": 12.65,
+      "worst": 13.86,
+      "fit": 0.41,
+      "ratio": 0.11
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 4.15,
+      "slide": 16.49,
+      "worst": 17.87,
+      "fit": 0.367,
+      "ratio": 0.04
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 3.91,
+      "slide": 12.41,
+      "worst": 13.3,
+      "fit": 0.437,
+      "ratio": 0.11
+    }
+  ],
+  "dorin/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.15,
+      "slide": 7.18,
+      "worst": 10.45,
+      "fit": 0.556,
+      "ratio": 0.21
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.55,
+      "slide": 10.77,
+      "worst": 12.02,
+      "fit": 0.621,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.85,
+      "slide": 14.8,
+      "worst": 15.25,
+      "fit": 0.517,
+      "ratio": 0.13
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.94,
+      "slide": 11.38,
+      "worst": 13.23,
+      "fit": 0.553,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.46,
+      "slide": 7.87,
+      "worst": 10.42,
+      "fit": 0.435,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.66,
+      "slide": 11.67,
+      "worst": 13.63,
+      "fit": 0.521,
+      "ratio": 0.14
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.57,
+      "slide": 15.07,
+      "worst": 17.55,
+      "fit": 0.493,
+      "ratio": 0.1
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.35,
+      "slide": 10.97,
+      "worst": 12.28,
+      "fit": 0.599,
+      "ratio": 0.16
+    }
+  ],
+  "thug/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.86,
+      "slide": 7.47,
+      "worst": 10.52,
+      "fit": 0.505,
+      "ratio": 0.2
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.22,
+      "slide": 11.11,
+      "worst": 12.28,
+      "fit": 0.583,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.47,
+      "slide": 15.18,
+      "worst": 17.15,
+      "fit": 0.483,
+      "ratio": 0.13
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.36,
+      "slide": 11.96,
+      "worst": 14.13,
+      "fit": 0.488,
+      "ratio": 0.12
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.11,
+      "slide": 8.21,
+      "worst": 10.48,
+      "fit": 0.373,
+      "ratio": 0.13
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.73,
+      "slide": 11.59,
+      "worst": 13.24,
+      "fit": 0.529,
+      "ratio": 0.15
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.33,
+      "slide": 15.32,
+      "worst": 17.15,
+      "fit": 0.471,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.98,
+      "slide": 11.34,
+      "worst": 12.87,
+      "fit": 0.557,
+      "ratio": 0.15
+    }
+  ],
+  "slinger/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.61,
+      "slide": 7.71,
+      "worst": 10.45,
+      "fit": 0.461,
+      "ratio": 0.12
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.09,
+      "slide": 11.24,
+      "worst": 13.07,
+      "fit": 0.569,
+      "ratio": 0.15
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.56,
+      "slide": 15.09,
+      "worst": 19.81,
+      "fit": 0.491,
+      "ratio": 0.11
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.51,
+      "slide": 11.81,
+      "worst": 14.89,
+      "fit": 0.505,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.35,
+      "slide": 7.97,
+      "worst": 10.45,
+      "fit": 0.415,
+      "ratio": 0.15
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.45,
+      "slide": 11.87,
+      "worst": 13.49,
+      "fit": 0.498,
+      "ratio": 0.13
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.46,
+      "slide": 15.19,
+      "worst": 17.85,
+      "fit": 0.482,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.15,
+      "slide": 11.17,
+      "worst": 13.32,
+      "fit": 0.576,
+      "ratio": 0.16
+    }
+  ],
+  "bruiser/walk@1.0": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.12,
+      "slide": 7.21,
+      "worst": 10.61,
+      "fit": 0.551,
+      "ratio": 0.16
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.86,
+      "slide": 10.47,
+      "worst": 13.1,
+      "fit": 0.655,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.86,
+      "slide": 14.79,
+      "worst": 17.69,
+      "fit": 0.518,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.08,
+      "slide": 11.24,
+      "worst": 12.48,
+      "fit": 0.568,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.75,
+      "slide": 7.57,
+      "worst": 10.44,
+      "fit": 0.487,
+      "ratio": 0.2
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.0,
+      "slide": 11.33,
+      "worst": 18.56,
+      "fit": 0.559,
+      "ratio": 0.15
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.65,
+      "slide": 15.0,
+      "worst": 18.15,
+      "fit": 0.499,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.88,
+      "slide": 11.44,
+      "worst": 18.16,
+      "fit": 0.546,
+      "ratio": 0.18
+    }
+  ],
+  "kaya/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 2.18,
+      "loop": 1.825,
+      "slide": 4.7,
+      "worst": 8.04,
+      "fit": 0.578,
+      "ratio": 0.22
+    },
+    {
+      "heading": "south-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.79,
+      "loop": 1.825,
+      "slide": 7.09,
+      "worst": 9.02,
+      "fit": 0.636,
+      "ratio": 0.18
+    },
+    {
+      "heading": "east",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 4.24,
+      "loop": 1.825,
+      "slide": 9.52,
+      "worst": 15.02,
+      "fit": 0.563,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.4,
+      "loop": 1.825,
+      "slide": 7.49,
+      "worst": 8.65,
+      "fit": 0.57,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.57,
+      "loop": 1.825,
+      "slide": 5.31,
+      "worst": 7.17,
+      "fit": 0.416,
+      "ratio": 0.15
+    },
+    {
+      "heading": "north-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.57,
+      "loop": 1.825,
+      "slide": 7.31,
+      "worst": 9.75,
+      "fit": 0.599,
+      "ratio": 0.18
+    },
+    {
+      "heading": "west",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 4.1,
+      "loop": 1.825,
+      "slide": 9.67,
+      "worst": 12.85,
+      "fit": 0.543,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.5,
+      "loop": 1.825,
+      "slide": 7.39,
+      "worst": 10.88,
+      "fit": 0.586,
+      "ratio": 0.15
+    }
+  ],
+  "sura/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.95,
+      "loop": 1.825,
+      "slide": 4.93,
+      "worst": 8.11,
+      "fit": 0.518,
+      "ratio": 0.18
+    },
+    {
+      "heading": "south-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.8,
+      "loop": 1.825,
+      "slide": 7.08,
+      "worst": 10.07,
+      "fit": 0.637,
+      "ratio": 0.18
+    },
+    {
+      "heading": "east",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 4.32,
+      "loop": 1.825,
+      "slide": 9.44,
+      "worst": 11.35,
+      "fit": 0.573,
+      "ratio": 0.18
+    },
+    {
+      "heading": "north-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.22,
+      "loop": 1.825,
+      "slide": 7.66,
+      "worst": 9.24,
+      "fit": 0.54,
+      "ratio": 0.18
+    },
+    {
+      "heading": "north",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.58,
+      "loop": 1.825,
+      "slide": 5.3,
+      "worst": 8.11,
+      "fit": 0.419,
+      "ratio": 0.15
+    },
+    {
+      "heading": "north-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.26,
+      "loop": 1.825,
+      "slide": 7.62,
+      "worst": 9.06,
+      "fit": 0.547,
+      "ratio": 0.16
+    },
+    {
+      "heading": "west",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 4.01,
+      "loop": 1.825,
+      "slide": 9.75,
+      "worst": 12.39,
+      "fit": 0.532,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.62,
+      "loop": 1.825,
+      "slide": 7.27,
+      "worst": 10.62,
+      "fit": 0.606,
+      "ratio": 0.18
+    }
+  ],
+  "bo/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 2.17,
+      "loop": 1.825,
+      "slide": 4.72,
+      "worst": 7.99,
+      "fit": 0.574,
+      "ratio": 0.2
+    },
+    {
+      "heading": "south-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 4.07,
+      "loop": 1.825,
+      "slide": 6.81,
+      "worst": 9.07,
+      "fit": 0.683,
+      "ratio": 0.2
+    },
+    {
+      "heading": "east",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 4.35,
+      "loop": 1.825,
+      "slide": 9.41,
+      "worst": 11.47,
+      "fit": 0.577,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north-east",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.6,
+      "loop": 1.825,
+      "slide": 7.28,
+      "worst": 8.09,
+      "fit": 0.604,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north",
+      "pairs": 12,
+      "game": 6.88,
+      "back": 1.74,
+      "loop": 1.825,
+      "slide": 5.14,
+      "worst": 7.15,
+      "fit": 0.462,
+      "ratio": 0.18
+    },
+    {
+      "heading": "north-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.52,
+      "loop": 1.825,
+      "slide": 7.37,
+      "worst": 14.66,
+      "fit": 0.59,
+      "ratio": 0.17
+    },
+    {
+      "heading": "west",
+      "pairs": 12,
+      "game": 13.77,
+      "back": 4.02,
+      "loop": 1.825,
+      "slide": 9.75,
+      "worst": 12.74,
+      "fit": 0.533,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 12,
+      "game": 10.88,
+      "back": 3.81,
+      "loop": 1.825,
+      "slide": 7.08,
+      "worst": 10.32,
+      "fit": 0.638,
+      "ratio": 0.18
+    }
+  ],
+  "household/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.25,
+      "loop": 1.825,
+      "slide": 7.08,
+      "worst": 11.57,
+      "fit": 0.574,
+      "ratio": 0.17
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.75,
+      "loop": 1.825,
+      "slide": 10.57,
+      "worst": 12.41,
+      "fit": 0.643,
+      "ratio": 0.19
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.16,
+      "loop": 1.825,
+      "slide": 14.49,
+      "worst": 16.69,
+      "fit": 0.545,
+      "ratio": 0.15
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.13,
+      "loop": 1.825,
+      "slide": 11.19,
+      "worst": 14.44,
+      "fit": 0.574,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.68,
+      "loop": 1.825,
+      "slide": 7.64,
+      "worst": 10.52,
+      "fit": 0.474,
+      "ratio": 0.19
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.08,
+      "loop": 1.825,
+      "slide": 11.24,
+      "worst": 13.01,
+      "fit": 0.568,
+      "ratio": 0.16
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.04,
+      "loop": 1.825,
+      "slide": 14.6,
+      "worst": 17.12,
+      "fit": 0.534,
+      "ratio": 0.08
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.01,
+      "loop": 1.825,
+      "slide": 10.32,
+      "worst": 12.0,
+      "fit": 0.672,
+      "ratio": 0.18
+    }
+  ],
+  "watch/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.26,
+      "loop": 1.825,
+      "slide": 7.07,
+      "worst": 10.63,
+      "fit": 0.576,
+      "ratio": 0.16
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.75,
+      "loop": 1.825,
+      "slide": 10.57,
+      "worst": 14.18,
+      "fit": 0.643,
+      "ratio": 0.2
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.74,
+      "loop": 1.825,
+      "slide": 12.91,
+      "worst": 21.9,
+      "fit": 0.684,
+      "ratio": 0.19
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.28,
+      "loop": 1.825,
+      "slide": 11.04,
+      "worst": 20.8,
+      "fit": 0.591,
+      "ratio": 0.22
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.67,
+      "loop": 1.825,
+      "slide": 7.66,
+      "worst": 11.44,
+      "fit": 0.472,
+      "ratio": 0.21
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.75,
+      "loop": 1.825,
+      "slide": 10.58,
+      "worst": 12.22,
+      "fit": 0.642,
+      "ratio": 0.17
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.54,
+      "loop": 1.825,
+      "slide": 14.1,
+      "worst": 16.15,
+      "fit": 0.578,
+      "ratio": 0.11
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.64,
+      "loop": 1.825,
+      "slide": 9.68,
+      "worst": 11.13,
+      "fit": 0.743,
+      "ratio": 0.19
+    }
+  ],
+  "mira/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.78,
+      "loop": 1.825,
+      "slide": 6.55,
+      "worst": 12.67,
+      "fit": 0.668,
+      "ratio": 0.28
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 7.21,
+      "loop": 1.825,
+      "slide": 9.12,
+      "worst": 10.81,
+      "fit": 0.806,
+      "ratio": 0.2
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.44,
+      "loop": 1.825,
+      "slide": 13.2,
+      "worst": 14.81,
+      "fit": 0.658,
+      "ratio": 0.2
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.22,
+      "loop": 1.825,
+      "slide": 10.1,
+      "worst": 13.31,
+      "fit": 0.696,
+      "ratio": 0.2
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.1,
+      "loop": 1.825,
+      "slide": 7.23,
+      "worst": 9.18,
+      "fit": 0.547,
+      "ratio": 0.21
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.23,
+      "loop": 1.825,
+      "slide": 10.09,
+      "worst": 13.48,
+      "fit": 0.697,
+      "ratio": 0.18
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.51,
+      "loop": 1.825,
+      "slide": 13.14,
+      "worst": 15.96,
+      "fit": 0.664,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.94,
+      "loop": 1.825,
+      "slide": 9.39,
+      "worst": 11.38,
+      "fit": 0.776,
+      "ratio": 0.18
+    }
+  ],
+  "gao/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.26,
+      "loop": 1.825,
+      "slide": 7.07,
+      "worst": 11.41,
+      "fit": 0.575,
+      "ratio": 0.17
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.48,
+      "loop": 1.825,
+      "slide": 9.84,
+      "worst": 14.72,
+      "fit": 0.725,
+      "ratio": 0.19
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.0,
+      "loop": 1.825,
+      "slide": 13.65,
+      "worst": 14.68,
+      "fit": 0.618,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.98,
+      "loop": 1.825,
+      "slide": 10.35,
+      "worst": 16.21,
+      "fit": 0.668,
+      "ratio": 0.18
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.03,
+      "loop": 1.825,
+      "slide": 7.3,
+      "worst": 10.43,
+      "fit": 0.535,
+      "ratio": 0.22
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.64,
+      "loop": 1.825,
+      "slide": 10.68,
+      "worst": 12.37,
+      "fit": 0.631,
+      "ratio": 0.18
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.13,
+      "loop": 1.825,
+      "slide": 13.52,
+      "worst": 15.59,
+      "fit": 0.63,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.38,
+      "loop": 1.825,
+      "slide": 9.94,
+      "worst": 11.7,
+      "fit": 0.714,
+      "ratio": 0.2
+    }
+  ],
+  "pella/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.93,
+      "loop": 1.825,
+      "slide": 7.39,
+      "worst": 10.36,
+      "fit": 0.518,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.12,
+      "loop": 1.825,
+      "slide": 11.2,
+      "worst": 12.43,
+      "fit": 0.573,
+      "ratio": 0.16
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.19,
+      "loop": 1.825,
+      "slide": 15.46,
+      "worst": 16.45,
+      "fit": 0.458,
+      "ratio": 0.08
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.47,
+      "loop": 1.825,
+      "slide": 11.85,
+      "worst": 13.98,
+      "fit": 0.5,
+      "ratio": 0.13
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 1.99,
+      "loop": 1.825,
+      "slide": 8.33,
+      "worst": 10.61,
+      "fit": 0.352,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.59,
+      "loop": 1.825,
+      "slide": 11.73,
+      "worst": 13.25,
+      "fit": 0.513,
+      "ratio": 0.14
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 5.19,
+      "loop": 1.825,
+      "slide": 15.46,
+      "worst": 17.18,
+      "fit": 0.459,
+      "ratio": 0.05
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 4.89,
+      "loop": 1.825,
+      "slide": 11.43,
+      "worst": 12.54,
+      "fit": 0.547,
+      "ratio": 0.13
+    }
+  ],
+  "dorin/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.93,
+      "loop": 1.825,
+      "slide": 6.39,
+      "worst": 10.48,
+      "fit": 0.695,
+      "ratio": 0.26
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.94,
+      "loop": 1.825,
+      "slide": 9.38,
+      "worst": 10.94,
+      "fit": 0.776,
+      "ratio": 0.2
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.31,
+      "loop": 1.825,
+      "slide": 13.34,
+      "worst": 13.9,
+      "fit": 0.646,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.18,
+      "loop": 1.825,
+      "slide": 10.15,
+      "worst": 12.46,
+      "fit": 0.691,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.07,
+      "loop": 1.825,
+      "slide": 7.25,
+      "worst": 10.45,
+      "fit": 0.543,
+      "ratio": 0.2
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.82,
+      "loop": 1.825,
+      "slide": 10.5,
+      "worst": 12.95,
+      "fit": 0.651,
+      "ratio": 0.18
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.97,
+      "loop": 1.825,
+      "slide": 13.68,
+      "worst": 16.77,
+      "fit": 0.616,
+      "ratio": 0.13
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.69,
+      "loop": 1.825,
+      "slide": 9.63,
+      "worst": 11.27,
+      "fit": 0.748,
+      "ratio": 0.2
+    }
+  ],
+  "thug/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.57,
+      "loop": 1.825,
+      "slide": 6.75,
+      "worst": 10.57,
+      "fit": 0.631,
+      "ratio": 0.25
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.52,
+      "loop": 1.825,
+      "slide": 9.8,
+      "worst": 11.27,
+      "fit": 0.729,
+      "ratio": 0.2
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.84,
+      "loop": 1.825,
+      "slide": 13.81,
+      "worst": 16.27,
+      "fit": 0.604,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.45,
+      "loop": 1.825,
+      "slide": 10.87,
+      "worst": 13.58,
+      "fit": 0.61,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.64,
+      "loop": 1.825,
+      "slide": 7.68,
+      "worst": 10.52,
+      "fit": 0.467,
+      "ratio": 0.16
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.92,
+      "loop": 1.825,
+      "slide": 10.41,
+      "worst": 12.47,
+      "fit": 0.661,
+      "ratio": 0.19
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.66,
+      "loop": 1.825,
+      "slide": 13.98,
+      "worst": 16.27,
+      "fit": 0.589,
+      "ratio": 0.16
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.23,
+      "loop": 1.825,
+      "slide": 10.09,
+      "worst": 12.0,
+      "fit": 0.696,
+      "ratio": 0.19
+    }
+  ],
+  "slinger/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.26,
+      "loop": 1.825,
+      "slide": 7.06,
+      "worst": 10.48,
+      "fit": 0.576,
+      "ratio": 0.15
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.36,
+      "loop": 1.825,
+      "slide": 9.97,
+      "worst": 12.26,
+      "fit": 0.711,
+      "ratio": 0.19
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.95,
+      "loop": 1.825,
+      "slide": 13.7,
+      "worst": 19.61,
+      "fit": 0.614,
+      "ratio": 0.14
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.64,
+      "loop": 1.825,
+      "slide": 10.68,
+      "worst": 14.53,
+      "fit": 0.631,
+      "ratio": 0.17
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 2.94,
+      "loop": 1.825,
+      "slide": 7.39,
+      "worst": 10.48,
+      "fit": 0.519,
+      "ratio": 0.19
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 5.56,
+      "loop": 1.825,
+      "slide": 10.76,
+      "worst": 12.78,
+      "fit": 0.622,
+      "ratio": 0.17
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 6.82,
+      "loop": 1.825,
+      "slide": 13.83,
+      "worst": 17.15,
+      "fit": 0.603,
+      "ratio": 0.16
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.44,
+      "loop": 1.825,
+      "slide": 9.88,
+      "worst": 12.57,
+      "fit": 0.72,
+      "ratio": 0.2
+    }
+  ],
+  "bruiser/walk@1.25": [
+    {
+      "heading": "south",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.89,
+      "loop": 1.825,
+      "slide": 6.43,
+      "worst": 10.68,
+      "fit": 0.688,
+      "ratio": 0.2
+    },
+    {
+      "heading": "south-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 7.32,
+      "loop": 1.825,
+      "slide": 9.0,
+      "worst": 12.29,
+      "fit": 0.818,
+      "ratio": 0.2
+    },
+    {
+      "heading": "east",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.32,
+      "loop": 1.825,
+      "slide": 13.33,
+      "worst": 16.95,
+      "fit": 0.647,
+      "ratio": 0.21
+    },
+    {
+      "heading": "north-east",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.35,
+      "loop": 1.825,
+      "slide": 9.97,
+      "worst": 11.52,
+      "fit": 0.71,
+      "ratio": 0.2
+    },
+    {
+      "heading": "north",
+      "pairs": 8,
+      "game": 10.32,
+      "back": 3.44,
+      "loop": 1.825,
+      "slide": 6.88,
+      "worst": 10.47,
+      "fit": 0.609,
+      "ratio": 0.25
+    },
+    {
+      "heading": "north-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.25,
+      "loop": 1.825,
+      "slide": 10.08,
+      "worst": 19.12,
+      "fit": 0.698,
+      "ratio": 0.19
+    },
+    {
+      "heading": "west",
+      "pairs": 8,
+      "game": 20.65,
+      "back": 7.06,
+      "loop": 1.825,
+      "slide": 13.58,
+      "worst": 17.52,
+      "fit": 0.624,
+      "ratio": 0.16
+    },
+    {
+      "heading": "south-west",
+      "pairs": 8,
+      "game": 16.32,
+      "back": 6.1,
+      "loop": 1.825,
+      "slide": 10.22,
+      "worst": 18.62,
+      "fit": 0.682,
+      "ratio": 0.22
+    }
+  ]
+}

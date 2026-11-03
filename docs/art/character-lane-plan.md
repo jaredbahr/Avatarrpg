@@ -186,6 +186,8 @@ These looks should not enter the first generation queue without explicit visual 
 
 ### Budget
 
+Superseded on 2026-10-20: ADR 0082 raised the units limit to 8.5 MiB; the figures below are the 2026-10-12 snapshot.
+
 Measured current units files:
 
 - Current: **6,253,289 bytes = 5.96 MiB**

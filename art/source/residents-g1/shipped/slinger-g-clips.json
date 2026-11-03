@@ -1,0 +1,178 @@
+{
+  "koSouthEast": {
+    "frames": [
+      "unit.enemy.slinger/koSouthEast/0",
+      "unit.enemy.slinger/koSouthEast/1",
+      "unit.enemy.slinger/koSouthEast/2",
+      "unit.enemy.slinger/koSouthEast/3",
+      "unit.enemy.slinger/koSouthEast/4",
+      "unit.enemy.slinger/koSouthEast/5",
+      "unit.enemy.slinger/koSouthEast/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": { "w": 147, "h": 139 },
+    "anchor": { "x": 0.462585, "y": 0.879137 }
+  },
+  "koSouthWest": {
+    "frames": [
+      "unit.enemy.slinger/koSouthWest/0",
+      "unit.enemy.slinger/koSouthWest/1",
+      "unit.enemy.slinger/koSouthWest/2",
+      "unit.enemy.slinger/koSouthWest/3",
+      "unit.enemy.slinger/koSouthWest/4",
+      "unit.enemy.slinger/koSouthWest/5",
+      "unit.enemy.slinger/koSouthWest/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": { "w": 139, "h": 140 },
+    "anchor": { "x": 0.57554, "y": 0.872857 }
+  },
+  "koNorthEast": {
+    "frames": [
+      "unit.enemy.slinger/koNorthEast/0",
+      "unit.enemy.slinger/koNorthEast/1",
+      "unit.enemy.slinger/koNorthEast/2",
+      "unit.enemy.slinger/koNorthEast/3",
+      "unit.enemy.slinger/koNorthEast/4",
+      "unit.enemy.slinger/koNorthEast/5",
+      "unit.enemy.slinger/koNorthEast/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": { "w": 152, "h": 134 },
+    "anchor": { "x": 0.473684, "y": 0.956716 }
+  },
+  "koNorthWest": {
+    "frames": [
+      "unit.enemy.slinger/koNorthWest/0",
+      "unit.enemy.slinger/koNorthWest/1",
+      "unit.enemy.slinger/koNorthWest/2",
+      "unit.enemy.slinger/koNorthWest/3",
+      "unit.enemy.slinger/koNorthWest/4",
+      "unit.enemy.slinger/koNorthWest/5",
+      "unit.enemy.slinger/koNorthWest/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": { "w": 142, "h": 134 },
+    "anchor": { "x": 0.542254, "y": 0.956716 }
+  },
+  "hitEast": {
+    "frames": [
+      "unit.enemy.slinger/hitEast/0",
+      "unit.enemy.slinger/hitEast/1",
+      "unit.enemy.slinger/hitEast/2",
+      "unit.enemy.slinger/hitEast/3",
+      "unit.enemy.slinger/hitEast/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 54, "h": 134 },
+    "anchor": { "x": 0.537037, "y": 0.934328 }
+  },
+  "hitSouthEast": {
+    "frames": [
+      "unit.enemy.slinger/hitSouthEast/0",
+      "unit.enemy.slinger/hitSouthEast/1",
+      "unit.enemy.slinger/hitSouthEast/2",
+      "unit.enemy.slinger/hitSouthEast/3",
+      "unit.enemy.slinger/hitSouthEast/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 72, "h": 133 },
+    "anchor": { "x": 0.541667, "y": 0.918797 }
+  },
+  "hitSouth": {
+    "frames": [
+      "unit.enemy.slinger/hitSouth/0",
+      "unit.enemy.slinger/hitSouth/1",
+      "unit.enemy.slinger/hitSouth/2",
+      "unit.enemy.slinger/hitSouth/3",
+      "unit.enemy.slinger/hitSouth/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 79, "h": 133 },
+    "anchor": { "x": 0.620253, "y": 0.941353 }
+  },
+  "hitSouthWest": {
+    "frames": [
+      "unit.enemy.slinger/hitSouthWest/0",
+      "unit.enemy.slinger/hitSouthWest/1",
+      "unit.enemy.slinger/hitSouthWest/2",
+      "unit.enemy.slinger/hitSouthWest/3",
+      "unit.enemy.slinger/hitSouthWest/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 73, "h": 131 },
+    "anchor": { "x": 0.60274, "y": 0.932824 }
+  },
+  "hitWest": {
+    "frames": [
+      "unit.enemy.slinger/hitWest/0",
+      "unit.enemy.slinger/hitWest/1",
+      "unit.enemy.slinger/hitWest/2",
+      "unit.enemy.slinger/hitWest/3",
+      "unit.enemy.slinger/hitWest/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 59, "h": 134 },
+    "anchor": { "x": 0.576271, "y": 0.934328 }
+  },
+  "hitNorthWest": {
+    "frames": [
+      "unit.enemy.slinger/hitNorthWest/0",
+      "unit.enemy.slinger/hitNorthWest/1",
+      "unit.enemy.slinger/hitNorthWest/2",
+      "unit.enemy.slinger/hitNorthWest/3",
+      "unit.enemy.slinger/hitNorthWest/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 72, "h": 134 },
+    "anchor": { "x": 0.555556, "y": 0.956716 }
+  },
+  "hitNorth": {
+    "frames": [
+      "unit.enemy.slinger/hitNorth/0",
+      "unit.enemy.slinger/hitNorth/1",
+      "unit.enemy.slinger/hitNorth/2",
+      "unit.enemy.slinger/hitNorth/3",
+      "unit.enemy.slinger/hitNorth/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 80, "h": 132 },
+    "anchor": { "x": 0.5125, "y": 0.933333 }
+  },
+  "hitNorthEast": {
+    "frames": [
+      "unit.enemy.slinger/hitNorthEast/0",
+      "unit.enemy.slinger/hitNorthEast/1",
+      "unit.enemy.slinger/hitNorthEast/2",
+      "unit.enemy.slinger/hitNorthEast/3",
+      "unit.enemy.slinger/hitNorthEast/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90],
+    "frameSize": { "w": 65, "h": 134 },
+    "anchor": { "x": 0.492308, "y": 0.956716 }
+  }
+}

@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import type { GameEvent, Unit } from '../../core/types';
+import { enemyScale } from './actorScale';
 import { choreograph } from './choreography';
 import type { EmitterTrack } from './timeline';
 
@@ -92,8 +93,10 @@ it.each(['fire_blast', 'oil_flask'])(
         );
         if (release?.kind !== 'pose' || !release.scale) throw new Error('Missing release pose');
         const p = release.ease((flight.start - release.start) / release.duration);
+        // The socket rides the drawn body: the pose's scale at the deserter's oblique body scale.
         expect(flight.attachments!.from!.scale).toBeCloseTo(
-          release.scale.from + (release.scale.to - release.scale.from) * p,
+          enemyScale(caster.sprite, 1, 'oblique') *
+            (release.scale.from + (release.scale.to - release.scale.from) * p),
           9,
         );
         expect(flight.attachments!.from!.offset.x).toBeCloseTo(

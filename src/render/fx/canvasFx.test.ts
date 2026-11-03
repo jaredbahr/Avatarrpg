@@ -17,6 +17,12 @@ vi.mock('./atlas', () => ({
   fxAtlas: () => ({}),
   celAtlasFrame: () => null,
   celReady: () => false,
+  celAtSize: () => null,
+  celPx: (tiles: number) => Math.round(tiles * 64),
+  rungFrame: (_cell: string, px: number) => {
+    const rung = Math.max(2, Math.round(px));
+    return { x: 0, y: 0, size: rung, rung };
+  },
 }));
 
 vi.mock('./simulate', async (original) => {

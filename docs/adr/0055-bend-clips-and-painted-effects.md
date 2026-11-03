@@ -4,7 +4,10 @@
 packed data), again 2026-09-28 (manifest plumbing, lazy bend loading and the
 socket convention), again 2026-09-28 (the painted effects), and again
 2026-09-28 (drawing them: trajectories, sprites and the flash; playback
-follows), and again 2026-09-29 (the combat handoff, step 7)
+follows), and again 2026-09-29 (the combat handoff, step 7). The page's
+pixels are redrawn at the world's grain by ADR 0086 (2026-10-27): same
+frames, pivots, data, timing and sockets; `bend-effects.ts` still writes the
+data, `scripts/art/fx-g1.ts` the shipped page and its cel pins.
 
 ## Context
 
@@ -658,6 +661,32 @@ arrivals[damageRelease])`; nothing of the rules result shows at the jab.
   other, and the ability's `fx` key still names its sound. So the shared
   `fx.earth.rock` string is not a collision, and the effects are not
   renamed.
+
+## Bending practice outside combat (amended 2026-10-27, issue #284)
+
+A village map may name a **practice ground** (`src/app/world/practice.ts`; Ba
+Dan's south canal bank by the bridge is the first). While the party's leader
+stands on it, Practice takes Look around's slot in the explore dock, as Wait
+does at a seat, and each bender throws the bend of their first bending attack
+at the ground's mark, in party order.
+
+- **The combat path, not a copy of it.** The practice is one `abilityUsed`
+  event per bender pushed to the animator with no damage event behind it, so
+  `planBendCast`, the bend track, its holds, flash, shake and the voice at
+  launch are exactly combat's. Nothing is struck, so there is no body hit,
+  floater or health change. The reducer never hears of it and no state changes.
+- **Loading.** Explore preloads the party's bends and the painted effects on
+  arriving at a map with a practice ground, and releases them on leaving, as
+  combat does at its start and end. Practice is disabled ("Getting ready")
+  until both are in, so a practice never falls back to the legacy cast.
+- **Drawing from open water.** `choreograph` takes an optional `waterSources`
+  map (unit id to cell). A water bend from a listed unit adds `openWaterDraw`
+  (content, `src/content/fx.ts`) from that cell to the caster's gather socket
+  across the bend's wind-up. Combat passes none, so combat is unchanged.
+- **Backends and motion.** The bend cels and painted effects draw on both
+  backends as in combat; the canal draw is particles, which both draw. Under
+  reduce motion the cast is the collapsed legacy cast with no particles, as in
+  combat.
 
 ## Planned PR sequence
 

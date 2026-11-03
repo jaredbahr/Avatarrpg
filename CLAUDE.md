@@ -231,20 +231,51 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   already passed through and nothing lights.
 - `previewAbility` consumes no RNG, and the AI's `scoreAbility` must not either.
   That is why damage to props is flat, with no to-hit roll or crit.
-- **Ba Dan is one continuous painting, and `baDan.art.ts` is generated.** Twelve accepted region paintings
-  (`art/source/ba-dan-regions/accepted/`) are stitched, cut into 12 ground plates and 49 uprights (the pieces a figure can stand
-  behind; 29 more are the ground only), and packed by `sh scripts/art/ba-dan-regions/regen.sh` (`--check` proves the shipped files are
+- **Ba Dan is one continuous painting, and `baDan.art.ts` is generated.** Six accepted region paintings
+  (`art/source/ba-dan-regions/accepted/`, crops of the G1 master) are stitched, cut into 12 ground plates and 46 uprights (the
+  pieces a figure can stand behind; 32 more are the ground only), and packed by `sh scripts/art/ba-dan-regions/regen.sh` (`--check` proves the shipped files are
   what the sources make). Never edit `src/content/scenes/baDan.art.ts` or the `ground-NN` / `uprights-N` files by hand. The painting
   holds the light, cast shadow, contact, worn ground, joins and the canal, so Ba Dan is a **complete scene** (no `groundMode:
 'partial'`, `paintedWater: true`) and draws no runtime contact, cast or join wash; do not add one. The split is cut by the **frozen**
   geometry (`art/source/ba-dan-regions/geometry/`), not by `baDan.ts`: moving a piece is a repaint of its region, and a
   piece's footprint, depth key and flags in `baDan.ts` must still equal the frozen ones (`baDan.test.ts`). Rejected by the owner: the
   piece-on-lawn village (houses, trees and dressing laid on baked ground plates: cut, stacked, floating).
-- **Ba Dan's resolution is 1.5 painting px per world px for ground and uprights.** At 1 px the painting is visibly softer than the
-  characters; do not downscale it for bytes. The maps art family is 7.5 MiB (ADR 0076).
+- **Ba Dan's resolution is 1 painting px per world px for ground and uprights** (`regions.py` `SCALE`). The owner approved
+  1 px on 2026-10-28 because the party now ships at 1 px (ADR 0090, replacing the old 1.5 px "do not downscale" rule): integer
+  zoom samples 1 px art nearest at every N, where 1.5 px was smoothed at N = 2. Do not scale the painting back up. The frozen
+  geometry stays in world px. The maps art family is 6 MiB (ADR 0076).
 - **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
   lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
   lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
+- **Every native-G1 figure walks, at 750 ms a tile, until the ~74 px redraw** (ADR 0095's amendment; owner,
+  2026-10-28: "Walk, a bit slower"). The jog read as legs growing, so no sheet's locomotion sets `jog`; its cels stay
+  in the sheets, unplayed, for a natural-stride jog drawn in the redraw. Do not turn the jog back on. The walk's
+  `walkMsPerTile` is fitted per family and heading to its drawn feet (`G1_WALK`, from `walk_stride.py`), and
+  `Animator.walkClipTime` divides it by the figure scale (1.25 on oblique boards), so the planted foot holds at any
+  pace. A brisk move then caps it at `BRISK_WALK_CEL_MS` (70, `animator.ts`: the owner's choice, about 3 px of slide
+  a stance cel for the party): one constant for every family and heading, so tune it there, never in `G1_WALK`.
+  Errands amble at 2 s a tile on the fit (`RESIDENT_AMBLE = 2000 / strollStep`, `AnimatorOptions.amble`), and so does
+  every move of Mira's (`locomotion.amble`). The
+  legacy four-way walk keeps its pinned `WALK_MS_PER_TILE` (475). Refit `G1_WALK` with
+  `walk_stride.py <family> <name> walk --manifest --scale 1.25` whenever a walk is redrawn (add
+  `--cadence 70` to measure the brisk walk).
+- **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
+  on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
+  smooths, or a mask at screen resolution, brings back the soft edge the pass removed. A **figure's shadow is a calm
+  pool, never its silhouette** (ADR 0093's figure amendment; owner, 2026-10-28: "the shadows make them look off"):
+  `figureShadow` rasterises an ellipse under the feet swept a short way along the scene's `castKey` (a quarter of
+  the figure's height at most) at the cast level, with a smaller core under the soles at the contact level. It reads
+  nothing of the figure's art, so it is the same shape on every cel, clip and bend; do not bring back a sole band
+  or a sheared silhouette for figures. Every idle, walk, jog, rest and stance cel **stands on its own lowest sole**:
+  the store measures each cel when its atlas loads (`sheets/feet.ts`) and moves its anchor's foot line there, the
+  pool centres on the heading's resting feet, and a 1–2 px contact line in the contact tone sits under each planted
+  sole; `feet.test.ts` holds every shipped and `?style=world` cel to ±1 world px. A painted scene sets its shadow `ink` and levels so the pool lands on the
+  painting's own tone (Ba Dan's are fitted by `art/source/grounding/tools/figure_shadow_tone.py`). Every prop
+  gets a 2 world px contact line and a cast from its own base (`groundedCast`), so no ground shows between a box's
+  side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is grounded
+  the same way, its feet only inside its footprint; a tree or a hanging lamp does not. Ba Dan's painted
+  objects are shaded in the master by `ba-dan-route-a/tools/shadows.py`, never in the shipped files.
+  `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
   Pixi texture map are bounded LRUs because iOS caps canvas memory; do not
@@ -255,6 +286,13 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   changes that box on most turns. `CombatScene.refit()` refits only when the
   board was fitted, or a rotation has left it smaller than it could be, and
   otherwise clamps; never wire `onViewportChange` straight to `camera.fit()`.
+- **The oblique boards draw at integer zoom** (ADR 0088): `camera.integerZoom` puts a whole number of device pixels on
+  each world pixel and reads the offsets back on the device-pixel grid, and art is sampled nearest only where one of
+  its pixels covers a whole number of device pixels (`src/render/pixelSampling.ts`, both backends). Never write
+  `camera.scale` from a scene to a computed value; go through `fit`, `fitExplore`, `zoomAt`, `raiseToFit` or
+  `snapScale` (the battle opening's ease is the one deliberate exception), or the board resamples. Map art ships
+  at 1 art px per world px, Ba Dan and the forest included (owner-approved 2026-10-28, because the party now ships at 1 px;
+  ADR 0090): a density that does not divide every N, as the old 1.5 px did, is smoothed.
 - **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
   the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
   tappable tile and pans instead; that is the one exception to "combat never

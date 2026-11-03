@@ -63,8 +63,12 @@ export class Curtain {
     if (!motionReduced()) this.node.classList.add('is-down');
   }
 
-  /** Covers the scene and lifts. Call after the new scene has rendered. */
-  reveal(firstFrameSheetKeys: readonly string[] = []): void {
+  /**
+   * Covers the scene and lifts. Call after the new scene has rendered.
+   * `ready` is anything else the first frame needs (a map's painting): the lift
+   * waits for it as it waits for a cold atlas, inside the same bound.
+   */
+  reveal(firstFrameSheetKeys: readonly string[] = [], ready?: Promise<unknown>): void {
     this.cancelTimers();
     if (motionReduced()) {
       this.node.classList.remove('is-down', 'is-lifting');
@@ -76,14 +80,18 @@ export class Curtain {
     // Commit the covered frame before starting the lift, or the browser
     // coalesces both class changes and nothing fades.
     void node.offsetWidth;
-    this.lift(firstFrameSheetKeys, generation);
+    this.lift(firstFrameSheetKeys, generation, ready);
   }
 
   get busy(): boolean {
     return this.node.classList.contains('is-down');
   }
 
-  private lift(firstFrameSheetKeys: readonly string[], generation: number): void {
+  private lift(
+    firstFrameSheetKeys: readonly string[],
+    generation: number,
+    ready?: Promise<unknown>,
+  ): void {
     const node = this.node;
     const keys = [...new Set(firstFrameSheetKeys)];
     const states = new Map<string, SheetLoadState>(
@@ -101,7 +109,7 @@ export class Curtain {
       node.classList.add('is-lifting');
       this.timer = window.setTimeout(() => this.cancel(), FALLBACK_MS);
     };
-    if (curtainSheetDecision(states, 0) === 'lift') {
+    if (!ready && curtainSheetDecision(states, 0) === 'lift') {
       lift();
       return;
     }
@@ -109,7 +117,10 @@ export class Curtain {
     // The initial fallback frame has already been baked by scene mount. Once
     // every cold atlas has arrived or failed, give both backends one frame to
     // install and draw what did arrive under opaque ink, then begin the reveal.
-    void Promise.all(keys.map((key) => sheets.whenLoaded(key))).then(() => {
+    void Promise.all([
+      ...keys.map((key) => sheets.whenLoaded(key)),
+      (ready ?? Promise.resolve()).catch(() => undefined),
+    ]).then(() => {
       if (generation === this.revealGeneration) requestAnimationFrame(() => lift());
     });
     this.timer = window.setTimeout(lift, FIRST_FRAME_SHEET_WAIT_MS);

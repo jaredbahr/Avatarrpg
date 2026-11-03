@@ -1,0 +1,739 @@
+{
+  "character": "watch",
+  "task": "ba-dan-residents-g (issue #284)",
+  "balance_before": 9623.0,
+  "jobs": [
+    {
+      "name": "south-edit-tex-s7201",
+      "endpoint": "/edit-image-pro-flash",
+      "job": "3bfd6b49-3dc1-49ea-be6c-6876838c49dd",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "method": "text",
+        "description": "Redraw this exact character as a different person, keeping the identical pixel art style, outline weight, shading, camera angle, scale, canvas position and relaxed standing pose: an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "no_background": true,
+        "seed": 7201
+      },
+      "inputs": {
+        "image": "kaya-g-south-base.png (Kaya G base v2, character e8c6638a south rotation)"
+      },
+      "frames": 1,
+      "gens": 6.0,
+      "balance_delta_shared_account": 10.0,
+      "balance_before": 9633.0,
+      "balance_after": 9623.0,
+      "usage": {
+        "type": "generations",
+        "generations": 6.0
+      },
+      "secs": 36,
+      "verdict": "used"
+    },
+    {
+      "name": "rot-south-edit-tex-s7201-s7211",
+      "endpoint": "/create-character-pro-flash",
+      "job": "d543086c-e458-4f35-8ae2-05a8535b5592",
+      "character_id": "e033ec67-8913-4506-81a7-73502b114a05",
+      "status": "completed",
+      "settings": {
+        "first_frame": "<png>",
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "name": "watch G base (Ba Dan resident, from Kaya G south edit south-edit-tex-s7201)",
+        "view": "high top-down",
+        "seed": 7211,
+        "template_id": "mannequin"
+      },
+      "inputs": {
+        "first_frame": "design/south-edit-tex-s7201/00.png"
+      },
+      "frames": 0,
+      "gens": 5.0,
+      "balance_delta_shared_account": 237.0,
+      "balance_before": 9536.0,
+      "balance_after": 9299.0,
+      "usage": {
+        "type": "generations",
+        "generations": 5.0
+      },
+      "secs": 148,
+      "verdict": "used"
+    },
+    {
+      "name": "estimate-skeleton x8",
+      "endpoint": "/estimate-skeleton",
+      "inputs": "rotations/<dir>.png",
+      "gens": 0.8,
+      "output": "rotations/skeleton/<dir>.json"
+    },
+    {
+      "name": "walk-spear-south-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "6833d9cc-6178-4103-b408-04a16ce776ae",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/walk-spear-south.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 59.0,
+      "balance_before": 8527.3,
+      "balance_after": 8468.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 138,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-south-east-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4e93b42a-f1f1-4eab-9ae4-53fecabcde06",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/walk-spear-south-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 100.0,
+      "balance_before": 8518.3,
+      "balance_after": 8418.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 147,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-north-east-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "d9a4ced8-f7a7-440a-a982-1547b17ca74b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/walk-spear-north-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 94.0,
+      "balance_before": 8506.3,
+      "balance_after": 8412.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 139,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-north-west-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "162bc59a-06e3-4213-a12a-408af1862aa5",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/walk-spear-north-west.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 93.0,
+      "balance_before": 8497.3,
+      "balance_after": 8404.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 165,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-north-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "30f3ef86-6d0d-4b63-900e-a7b8b67597fd",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/walk-spear-north.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 99.0,
+      "balance_before": 8503.3,
+      "balance_after": 8404.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 181,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-south-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "d0fe005f-19bc-4c7f-a383-5730e4fdd606",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south.png",
+        "keypoints": "design/kp/idle-soft-south.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 33.0,
+      "balance_before": 8434.3,
+      "balance_after": 8401.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 88,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-south-west-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8448e646-4d76-45ca-8991-6cff037daeab",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/walk-spear-south-west.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 103.0,
+      "balance_before": 8468.3,
+      "balance_after": 8365.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 131,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-east-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "bbc0513c-a31b-4c53-b2b6-781fe47ec7ab",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/idle-soft-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 50.0,
+      "balance_before": 8412.3,
+      "balance_after": 8362.3,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 87,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-east-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8cfee1b1-b90c-4e1e-895f-440189309380",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-spear-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 153.1,
+      "balance_before": 8512.3,
+      "balance_after": 8359.2,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 246,
+      "verdict": "superseded: free arm swung forward to horizontal"
+    },
+    {
+      "name": "idle-soft-south-east-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "cba79ca5-f252-4851-9ccb-5c015c8305c8",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-east.png",
+        "keypoints": "design/kp/idle-soft-south-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 68.2,
+      "balance_before": 8418.3,
+      "balance_after": 8350.1,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 113,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-west-s8201",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "5c929851-882b-4dc2-a375-5adb6b31e795",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8201,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/walk-spear-west.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 131.3,
+      "balance_before": 8481.3,
+      "balance_after": 8350.0,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 158,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-north-west-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "560fb531-6436-42ac-b76f-670fbeee8b0b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-west.png",
+        "keypoints": "design/kp/idle-soft-north-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 68.8,
+      "balance_before": 8391.3,
+      "balance_after": 8322.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 79,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-north-east-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "5176dd23-d31b-4dfc-b5c7-7b87e10c7d47",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north-east.png",
+        "keypoints": "design/kp/idle-soft-north-east.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 84.8,
+      "balance_before": 8404.3,
+      "balance_after": 8319.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 112,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-west-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "da7bcacc-311c-4c45-b1a4-34016ca993da",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/west.png",
+        "keypoints": "design/kp/idle-soft-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 101.8,
+      "balance_before": 8365.3,
+      "balance_after": 8263.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 96,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-north-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "176e1f6a-9ea1-42d1-8cdf-52acb1ba8b4a",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/north.png",
+        "keypoints": "design/kp/idle-soft-north.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 143.8,
+      "balance_before": 8404.3,
+      "balance_after": 8260.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 135,
+      "verdict": "used"
+    },
+    {
+      "name": "idle-soft-south-west-s8202",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "928df8e2-1729-44dc-be34-82365d119689",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "idle, standing still and breathing",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<4 frames>",
+        "template_id": "mannequin",
+        "seed": 8202,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/south-west.png",
+        "keypoints": "design/kp/idle-soft-south-west.json",
+        "motion": "CMU 77_02 standing",
+        "cycle": null
+      },
+      "frames": 4,
+      "gens": 3.0,
+      "balance_delta_shared_account": 167.8,
+      "balance_before": 8362.3,
+      "balance_after": 8194.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 162,
+      "verdict": "used"
+    },
+    {
+      "name": "walk-spear-calm-east-s8203",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "e89465b1-1fc8-4493-8cc7-03deada9cfc4",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "an anonymous rural village watchman, sturdy adult man, plain weathered face with no distinctive features, practical soft brown cloth cap, sturdy knee-length muted olive-green padded coat with a plain leather belt, earth-brown trousers, brown wrapped boots, holding a plain straight wooden spear upright in his right hand with the butt on the ground beside his foot, left hand relaxed, no insignia, no armour, no helmet, realistic adult proportions",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 8203,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "rotations/east.png",
+        "keypoints": "design/kp/walk-spear-calm-east.json",
+        "motion": "CMU 08_01 walk",
+        "cycle": {
+          "p": 83,
+          "per": 121,
+          "straight": 0.999,
+          "turn": 3.249,
+          "speed": 28.123
+        }
+      },
+      "frames": 8,
+      "gens": 3.0,
+      "balance_delta_shared_account": 16.0,
+      "balance_before": 7457.5,
+      "balance_after": 7441.5,
+      "usage": {
+        "type": "generations",
+        "generations": 3.0
+      },
+      "secs": 121,
+      "verdict": "used: 0.55x arm swing; cel 7 faint ghost leg"
+    }
+  ],
+  "balance_after": 7419.5,
+  "gens_total": 62.8
+}

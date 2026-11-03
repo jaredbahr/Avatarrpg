@@ -1,11 +1,11 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { enemyScale } from '../anim/actorScale';
+import { enemyScale, partyScale } from '../anim/actorScale';
 import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
 
 it('sizes only the small animal discovery below adult NPCs', () => {
   expect(npcPresentationScale('world.turtle_ducks', 'oblique')).toBe(0.6);
-  for (const sprite of ['npc.elder', 'npc.kid', 'world.runoff_marker', 'world.tea_station']) {
+  for (const sprite of ['world.runoff_marker', 'world.tea_station']) {
     expect(npcPresentationScale(sprite, 'oblique')).toBe(1.5);
     expect(npcPresentationScale(sprite, undefined)).toBe(1);
   }
@@ -16,12 +16,24 @@ it('sizes only the small animal discovery below adult NPCs', () => {
   expect(animal).toBeLessThan(35);
 });
 
-it('brings the painted placeholder people down to the illustrated residents’ height', () => {
-  for (const sprite of ['npc.guard', 'npc.household', 'npc.hanru']) {
-    expect(npcPresentationScale(sprite, 'oblique')).toBe(1.4);
-    expect(npcPresentationScale(sprite, undefined)).toBe(1);
+it('brings the painted placeholder person down to the old illustrated residents’ height', () => {
+  // Level with the residents: 1.4 beside the 1.25 party (ADR 0094's amendment).
+  expect(npcPresentationScale('npc.hanru', 'oblique')).toBeCloseTo(1.4, 9);
+  expect(npcPresentationScale('npc.hanru', undefined)).toBe(1);
+});
+
+it('stands every resident on a G sheet at the party’s scale (issue #284)', () => {
+  for (const sprite of [
+    'npc.elder',
+    'npc.shopkeeper',
+    'npc.kid',
+    'npc.dorin',
+    'npc.guard',
+    'npc.household',
+  ]) {
+    expect(npcPresentationScale(sprite, 'oblique')).toBe(partyScale('oblique'));
+    expect(npcPresentationScale(sprite, undefined)).toBe(partyScale(undefined));
   }
-  expect(npcPresentationScale('npc.dorin', 'oblique')).toBe(1.5);
 });
 
 it('uses the existing forest attacker at both crossings without changing their areas', () => {
@@ -40,13 +52,14 @@ it('uses the existing forest attacker at both crossings without changing their a
     );
   }
   expect(map.npcs.find((npc) => npc.id === 'duck_nest')?.pos).toEqual({ x: 2, y: 9 });
+  // A person on a G sheet (the relief watch, issue #284) stands at the party's scale anywhere.
   expect(triggerPresentationScale({ id: 'quarry_gate', projection: 'oblique' }, 'npc.guard')).toBe(
-    1,
+    partyScale('oblique'),
   );
   expect(
     triggerPresentationScale({ id: 'ambush_road', projection: 'oblique' }, 'unit.enemy.thug'),
   ).toBe(enemyScale('unit.enemy.thug', 1, 'oblique'));
-  // The G thug (ADR 0059) stands at the party's scale on the map's projection.
+  // The G thug (ADR 0059) stands at the party's scale on the map's projection: 1.25 (ADR 0094's amendment).
   expect(enemyScale('unit.enemy.thug', 1, 'oblique')).toBe(1.25);
 });
 

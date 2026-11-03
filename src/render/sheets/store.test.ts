@@ -415,3 +415,43 @@ describe('a bend on its sheet (ADR 0055)', () => {
     expect(store.bendState('unit.enemy.thug')).toBe('none');
   });
 });
+
+describe('a standing cel stands on its own soles (ADR 0093, planting amendment)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    FakeImage.failing.clear();
+  });
+
+  it('moves an idle cel onto the row under its lowest sole, and leaves a knockout as authored', async () => {
+    stubPages();
+    // Every cel the store reads is 128 x 192 with its lowest opaque row at 160: 3.2 px above the 0.85 line.
+    const pixels = new Uint8ClampedArray(128 * 192 * 4);
+    for (let y = 100; y <= 160; y++)
+      for (let x = 50; x < 70; x++) pixels[(y * 128 + x) * 4 + 3] = 255;
+    vi.stubGlobal('document', {
+      createElement: () => ({
+        width: 0,
+        height: 0,
+        getContext: () => ({
+          clearRect: () => undefined,
+          drawImage: () => undefined,
+          getImageData: () => ({ data: pixels }),
+        }),
+      }),
+    });
+    const store = new SheetStore();
+    // Load without asking for a frame, which would bake a painter placeholder meanwhile.
+    expect(await store.whenLoaded(KEY)).toBe(true);
+    const idle = store.frame(KEY, 'idle', 0, undefined, 128, 1);
+    expect(idle?.anchor.y).toBeCloseTo(161 / 192, 6);
+    expect(idle?.feet?.ground).toBe(161);
+    const entry = resolveAsset(KEY);
+    const ko = store.frame(KEY, 'ko', 0, undefined, 128, 1);
+    // A knockout stands by its own authored anchor (its trimmed clip's, ADR 0059), never its soles.
+    const koClip = ko ? store.clips(KEY)?.[ko.clip] : undefined;
+    expect(ko?.anchor).toEqual(
+      koClip?.anchor ?? (entry.kind === 'sheet' ? entry.anchor : undefined),
+    );
+    expect(ko?.feet).toBeUndefined();
+  });
+});

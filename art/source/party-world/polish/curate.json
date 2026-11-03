@@ -1,0 +1,20 @@
+{
+  "_why": "Kaya polish: one steeper idle drawing a heading from kp_probe.py's edit candidates. The first round (seeds 502, 503) read steep but came back with large, childlike heads; seeds 521 and 522 add the adult-proportion sentence and are the picks. Picked for a visible face in the front views, the ponytail with its red tie, a slim adult figure, and the sash knot on her left hip where the heading shows it.",
+  "idle": {
+    "south": "kp-edit-south-s522",
+    "south-east": "kp-edit-south-east-s521",
+    "east": "kp-edit-east-s522",
+    "north-east": "kp-edit-north-east-s521",
+    "north": "kp-edit-north-s521",
+    "north-west": "kp-edit-north-west-s521",
+    "west": "kp-edit-west-s521",
+    "south-west": "kp-edit-south-west-s522"
+  },
+  "why": {
+    "south": "522: 521's face is lost in shadow under the fringe",
+    "east": "522: the cleaner three-quarter turn to the right",
+    "north": "521: 522 draws the sash bow on her right",
+    "north-west": "521: 522 hangs the sash ends on her right",
+    "south-west": "522: 521 hangs the sash on her right hip"
+  }
+}

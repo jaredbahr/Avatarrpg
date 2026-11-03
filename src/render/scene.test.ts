@@ -194,17 +194,11 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       expect(sceneryOpacity(scene, state, camera)).toBe(0.28);
     });
 
-    it('can wait for the head: a roof edge over the legs alone does not fade a flagged piece', () => {
+    it('never fades a piece that reveals instead, with the whole figure behind it', () => {
       const state = view({ units: [unit(origin)] });
-      // The foot is at the image's row 64; the probes are rows 56, 32 and 8. Only the first is opaque.
-      installImage((_x, y) => (y >= 48 ? 255 : 0));
-      expect(sceneryOpacity(roof(camera), state, camera)).toBe(0.28);
-      expect(sceneryOpacity({ ...roof(camera), fadeWhenHeadHidden: true }, state, camera)).toBe(1);
-      // With the head behind it as well, both fade.
       installImage(() => 255);
-      expect(sceneryOpacity({ ...roof(camera), fadeWhenHeadHidden: true }, state, camera)).toBe(
-        0.28,
-      );
+      expect(sceneryOpacity(roof(camera), state, camera)).toBe(0.28);
+      expect(sceneryOpacity({ ...roof(camera), revealOccluded: true }, state, camera)).toBe(1);
     });
 
     it('does not fade for transparent padding even when the actor is inside the image rectangle', () => {

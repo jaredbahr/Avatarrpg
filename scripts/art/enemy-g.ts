@@ -1,8 +1,10 @@
 /**
  * The shared packer for an enemy's G sheet (ADR 0059, ADR 0062): a toned
  * PixelLab unit's eight-heading idle and walk, packed as the party's G
- * locomotion is, beside the old sheet's cast, hit and KO cels. The thug
- * (`thug-g.ts`) and the quarry bandits (`bandits-g.ts`) are definitions of it.
+ * locomotion is, beside the old sheet's cast, hit and KO cels. The quarry
+ * bandits (`bandits-g.ts`) are definitions of it; only the quarry bender's
+ * sheet still ships from it (the thug, the slinger and the bruiser moved to
+ * the G1 grid, ADR 0091, `residents-g1.ts`).
  *
  * Each cel goes through the G build's own map (`normalise` in
  * `g-sprites.ts`): 75% nearest-neighbour into the 128x192 cel, in the same

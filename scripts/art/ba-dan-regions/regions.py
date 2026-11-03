@@ -9,8 +9,8 @@ See README.md.
 
 `regen.sh` runs them in order and then `pack.ts`, which writes the shipped files. Run from the
 repository root. Needs python 3 with PIL and numpy (no scipy) and, for `render`, node with tsx.
-Everything is in "village pixels": the scene's world pixels times 1.5, measured from the pan box's
-top-left corner.
+Everything is in "village pixels": the scene's world pixels times SCALE (1 since ADR 0088: one painting
+pixel is one world pixel), measured from the pan box's top-left corner.
 """
 from __future__ import annotations
 
@@ -24,12 +24,25 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
-SCALE = 1.5
+# Painting px per world px. ADR 0088: 1, so the art is crisp at every integer zoom (it was 1.5, the old camera's zoom,
+# which only an N = 3 zoom draws on whole device pixels). The G1 master is drawn at world px, so it is cut as it is.
+SCALE = 1
 RW, RH = 1536, 1024  # a region as the image tool edits it
+
+
+def px(world: float) -> int:
+    """A length in world px as whole painting px."""
+    return round(world * SCALE)
+
+
+# Region origins and plate cuts sit on whole, even world px: multiples of this many painting px.
+GRID = 2 * SCALE
+assert float(GRID).is_integer(), "SCALE must put an even world px on whole painting px"
+GRID = int(GRID)
 PAN_BOX = (-200, -100, 3000, 1600)  # world px; shows everything the player can pan to
 MIN_OVERLAP_WORLD = 192
 DEFAULT_OUT = ROOT / ".review" / "regions"
@@ -42,9 +55,21 @@ GEOMETRY = ROOT / "art" / "source" / "ba-dan-regions" / "geometry"
 FIGURE_HALF_WIDTH, FIGURE_UP, FIGURE_DOWN = 48, 120, 8
 
 # plates: the painting cut on a regular grid, each overlapping the next by PLATE_OVERLAP px so a
-# fractional screen position can never leave a hairline between two, cuts on multiples of 3 px (whole world px)
+# fractional screen position can never leave a hairline between two, cuts on multiples of GRID px (whole world px)
 PLATE_GRID = (4, 3)
 PLATE_OVERLAP = 2
+
+# The ground plates (and only they) are calmed so the ground reads as a backdrop and the figures and objects keep the
+# detail (ADR 0083): a median filter of this size over the full-resolution painting, then these factors for colour
+# saturation and contrast (PIL `ImageEnhance`, 1.0 = unchanged). Only pixels no geometry piece owns are calmed; the
+# pieces (upright or not) and the uprights keep the unsoftened painting.
+# ADR 0085: at G1 the ground is drawn calm, so the calm step is off and the plates are the picture as drawn. The step
+# stays, behind this switch, for a map that is still a soft painting.
+QUIET_GROUND = False
+QUIET_MEDIAN = 3
+QUIET_SATURATION = 0.85
+QUIET_CONTRAST = 0.88
+QUIET_FEATHER = (0.35, 0.7)  # the softening weight of a ground pixel 1 px and 2 px from a painted piece
 
 BLOB_MIN_AREA = 4000
 BLOB_PAD = 24
@@ -64,8 +89,8 @@ MARGIN_RGB = (70, 91, 64)  # the page behind the village (`MAP_MARGIN_COLORS.ver
 # soft irregular ramp reaching 48 to 96 world px in. The camera never shows past the painting
 # (`Camera.viewExtent`); the fade is what keeps a viewport larger than the painting, or a canopy cut by the
 # painting's border, from showing a ruled line.
-FADE_FLAT = 12  # painting px at the edge that are exactly the margin colour
-FADE_REACH = (72, 144)  # painting px (48 to 96 world px) the ramp may reach in
+FADE_FLAT = px(8)  # painting px (8 world px) at the edge that are exactly the margin colour
+FADE_REACH = (px(48), px(96))  # painting px (48 to 96 world px) the ramp may reach in
 FADE_SEED = 20261010
 
 
@@ -102,13 +127,13 @@ def dump(path, data) -> None:
 # --------------------------------------------------------------------------- plan
 
 def _origins(extent: int, size: int, min_overlap: int) -> list[int]:
-    """Origins along one axis: even spacing, each a multiple of 3 so it is a whole even world px."""
+    """Origins along one axis: even spacing, each a multiple of GRID so it is a whole even world px."""
     if extent <= size:
         return [0]
     step_max = size - min_overlap
     n = math.ceil((extent - size) / step_max) + 1
-    last = 3 * math.ceil((extent - size) / 3)
-    out = [3 * round(i * last / (n - 1) / 3) for i in range(n)]
+    last = GRID * math.ceil((extent - size) / GRID)
+    out = [GRID * round(i * last / (n - 1) / GRID) for i in range(n)]
     out[-1] = last
     return out
 
@@ -214,7 +239,7 @@ def check_plan(plan: dict) -> list[str]:
                 problems.append(f"{r['id']}-{o['id']} overlap {0 if ov is None else ov['height']} px tall")
     seen = set()
     for r in plan["regions"]:
-        if (r["px"]["x"] % 3) or (r["px"]["y"] % 3):
+        if (r["px"]["x"] % GRID) or (r["px"]["y"] % GRID):
             problems.append(f"{r['id']} is not on whole world pixels")
         if r["order"] > 1 and not any(
             n["side"] not in ("corner", "far") and by_order(plan, n["id"]) < r["order"] for n in r["neighbours"]
@@ -231,7 +256,7 @@ def by_order(plan: dict, rid: str) -> int:
 # --------------------------------------------------------------------------- village
 
 class Village:
-    """The frozen upright geometry laid out at 1.5x: the upright layer, the owner map, each piece's sprite."""
+    """The frozen upright geometry laid out at SCALE: the upright layer, the owner map, each piece's sprite."""
 
     def __init__(self, directory: Path):
         self.dir = Path(directory)
@@ -244,6 +269,11 @@ class Village:
         self.ids = ids[..., 0] | (ids[..., 1] << 8) | (ids[..., 2] << 16)
         self.front = load_rgb(self.dir / "front.png")[..., 0]
         self._needed: dict[str, int] | None = None
+
+    # ADR 0085: the pieces drawn as uprights stay the ones the shipped painting had (46), whatever a replaced object's new
+    # silhouette covers: the scene's courtyard props and dressing must stay scenery (their footprints block, and the scene
+    # tests hold them), and the upright set is not a side effect of an object's height.
+    KEEP_UPRIGHT = frozenset({'d11', 'd15', 'north-garden', 'west-planter', 'southeast-planter'})
 
     def needed(self) -> dict[str, int]:
         """For each piece, the number of walkable cells where a figure stands behind it: the figure's
@@ -273,7 +303,7 @@ class Village:
                 y1 = min(h, int((sy + FIGURE_DOWN - oy) * SCALE) - sp["y"])
                 if x1 > x0 and y1 > y0 and alpha[y0:y1, x0:x1].any():
                     hits += 1
-            out[p["id"]] = hits
+            out[p["id"]] = max(hits, 1) if p["id"] in self.KEEP_UPRIGHT else hits
         self._needed = out
         return out
 
@@ -817,9 +847,9 @@ def edge_fade(painting: np.ndarray) -> np.ndarray:
     back clear). Deterministic: a fixed seed, no scipy."""
     h, w = painting.shape[:2]
     rng = np.random.RandomState(FADE_SEED)
-    noise = 0.6 * _value_noise(h, w, 96, rng) + 0.4 * _value_noise(h, w, 28, rng)
+    noise = 0.6 * _value_noise(h, w, px(64), rng) + 0.4 * _value_noise(h, w, px(19), rng)
     near = np.sqrt(((painting.astype(np.float32) - np.array(MARGIN_RGB, np.float32)) ** 2).sum(-1))
-    kin = blur(np.exp(-near / 45.0), 8, 3)
+    kin = blur(np.exp(-near / 45.0), px(5), 3)
     kin = np.clip((kin - kin.mean()) / (3 * kin.std() + 1e-6) + 0.5, 0, 1)
     lo, hi = FADE_REACH
     reach = lo + (hi - lo) * np.clip(0.55 * noise + 0.45 * kin, 0, 1)
@@ -827,6 +857,41 @@ def edge_fade(painting: np.ndarray) -> np.ndarray:
     depth = np.minimum(np.minimum(ys, h - 1 - ys), np.minimum(xs, w - 1 - xs)).astype(np.float32)
     t = np.clip((depth - FADE_FLAT) / (reach - FADE_FLAT), 0, 1)
     return (1 - t * t * (3 - 2 * t)).astype(np.float32)
+
+
+def quiet_ground(painting: np.ndarray) -> np.ndarray:
+    """The painting calmed for the ground plates: `QUIET_MEDIAN` median filter, then `QUIET_SATURATION`, then
+    `QUIET_CONTRAST`. Deterministic (no randomness; the contrast pivot is the painting's own mean grey). Run on
+    the raw painting before the edge fade, so the margin colour at the perimeter stays exact."""
+    im = Image.fromarray(np.ascontiguousarray(painting), "RGB")
+    im = im.filter(ImageFilter.MedianFilter(QUIET_MEDIAN))
+    im = ImageEnhance.Color(im).enhance(QUIET_SATURATION)
+    im = ImageEnhance.Contrast(im).enhance(QUIET_CONTRAST)
+    return np.asarray(im, dtype=np.uint8).copy()
+
+
+def ground_weight(village: "Village", shape: tuple[int, int]) -> np.ndarray:
+    """(h, w) float32 in 0..1: how much of `quiet_ground` a plate pixel takes. 1 where no geometry piece owns the
+    pixel (grass, paving, paths, soil, water, banks), 0 on every pixel any piece owns (upright or not: roofs, walls,
+    stalls, barrels, benches, planters, fences), and a short ramp over the 1 to 2 ground pixels next to a piece so
+    the softening does not step at the edge. The ramp lies on the ground side only: a piece pixel is never touched."""
+    h, w = shape
+    piece = village.ids[:h, :w] > 0
+    weight = np.ones((h, w), np.float32)
+    near2 = _grow(piece, 2)
+    near1 = _grow(piece, 1)
+    weight[near2] = QUIET_FEATHER[1]
+    weight[near1] = QUIET_FEATHER[0]
+    weight[piece] = 0.0
+    return weight
+
+
+def quiet_plates(painting: np.ndarray, village: "Village") -> np.ndarray:
+    """The painting for the ground plates: `quiet_ground` blended in by `ground_weight`, so only the ground is calmed
+    and every painted piece keeps the painting exactly. Run on the raw painting, before the edge fade."""
+    w = ground_weight(village, painting.shape[:2])[..., None]
+    mixed = painting.astype(np.float32) * (1 - w) + quiet_ground(painting).astype(np.float32) * w
+    return np.rint(mixed).astype(np.uint8)
 
 
 def fade_into_margin(colour: np.ndarray, weight: np.ndarray) -> np.ndarray:
@@ -1018,8 +1083,10 @@ def split_sprites(village: Village, painting: np.ndarray, outdir: Path,
         unreached = edge & ~bled
         unseen = silhouette & ~owner_here
         # the colour change is measured on opaque pixels only: a rim pixel's painted colour is the piece blended
-        # with what lies beside it, not the sprite's own colour moved by the repaint
-        samples = trusted & (alpha >= 254)
+        # with what lies beside it, not the sprite's own colour moved by the repaint. And only where this piece owns
+        # the painting: under a ground piece in front the painting shows that piece, so painted minus own there is
+        # another object's colour, not the repaint's change
+        samples = trusted & (alpha >= 254) & (owner_id == p["index"] + 1)
         if unseen.any() and samples.any():
             out[unseen, :3] = _match_fill(own[..., :3], paint, samples, unseen)
             if fade is not None and inside.any():
@@ -1102,8 +1169,8 @@ def straddle_report(village: Village, painting: np.ndarray, min_area: int = 150)
 
 
 def _cuts(total: int, n: int) -> list[int]:
-    """n+1 cut positions along `total` px, the inner ones on multiples of 3 (whole world px)."""
-    step = 3 * round(total / n / 3)
+    """n+1 cut positions along `total` px, the inner ones on multiples of GRID (whole even world px)."""
+    step = GRID * round(total / n / GRID)
     return [i * step for i in range(n)] + [total]
 
 
@@ -1158,7 +1225,14 @@ def cmd_guide(a) -> int:
     plan = load_plan(a.out)
     ids = [r["id"] for r in plan["regions"]] if a.id == "all" else [a.id]
     village = ensure_village(Path(a.out), plan)
-    painting = current_painting(plan, village, Path(a.accepted), Path(a.out))
+    if a.ground:
+        # a guide over another painting of the whole village (a re-cut at a new SCALE has no accepted regions yet)
+        painting = load_rgb(a.ground)
+        v = plan["village"]
+        if painting.shape[:2] != (v["pxHeight"], v["pxWidth"]):
+            sys.exit(f"{a.ground} is {painting.shape[1]}x{painting.shape[0]}, the village is {v['pxWidth']}x{v['pxHeight']}")
+    else:
+        painting = current_painting(plan, village, Path(a.accepted), Path(a.out))
     for rid in ids:
         r = region_of(plan, rid)
         meta = build_guide(plan, village, painting, r, Path(a.accepted), Path(a.out) / "guides" / rid)
@@ -1276,13 +1350,17 @@ def cmd_split(a) -> int:
     if painting.shape[:2] != (vh, vw):
         sys.exit(f"painting is {painting.shape[1]}x{painting.shape[0]}, the village is {vw}x{vh}")
     fade = edge_fade(painting)
+    # the plates: with QUIET_GROUND only the ground is calmed (ADR 0083) and pieces keep the painting; without it (ADR 0085) the
+    # plates are the painting as drawn
+    quiet = fade_into_margin(quiet_plates(painting, village) if QUIET_GROUND else painting, fade)
     painting = fade_into_margin(painting, fade)
     save(Path(a.out) / "faded.png", painting)
+    save(Path(a.out) / "quiet.png", quiet)
     sdir = Path(a.out) / "split"
     for stale in ("uprights", "plates"):
         shutil.rmtree(sdir / stale, ignore_errors=True)
     sprites, baked = split_sprites(village, painting, sdir, fade)
-    plates = cut_plates(painting, sdir)
+    plates = cut_plates(quiet, sdir)
     straddles = straddle_report(village, painting)
     report = {
         "painting": {"file": src.name, "width": vw, "height": vh, "scale": SCALE,
@@ -1318,6 +1396,7 @@ def main(argv=None) -> int:
     p.set_defaults(fn=cmd_plan)
     p = sub.add_parser("guide")
     p.add_argument("id", help="a region id, or `all`")
+    p.add_argument("--ground", help="paint the guide over this whole-village painting, not the accepted regions' stitch")
     p.set_defaults(fn=cmd_guide)
     p = sub.add_parser("gate")
     p.add_argument("id")

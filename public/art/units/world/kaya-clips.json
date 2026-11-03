@@ -1,0 +1,186 @@
+{
+  "hitEast": {
+    "frames": [
+      "unit.fire.kaya/hitEast/0",
+      "unit.fire.kaya/hitEast/1",
+      "unit.fire.kaya/hitEast/2",
+      "unit.fire.kaya/hitEast/3",
+      "unit.fire.kaya/hitEast/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "hitSouthEast": {
+    "frames": [
+      "unit.fire.kaya/hitSouthEast/0",
+      "unit.fire.kaya/hitSouthEast/1",
+      "unit.fire.kaya/hitSouthEast/2",
+      "unit.fire.kaya/hitSouthEast/3",
+      "unit.fire.kaya/hitSouthEast/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "hitSouth": {
+    "frames": [
+      "unit.fire.kaya/hitSouth/0",
+      "unit.fire.kaya/hitSouth/1",
+      "unit.fire.kaya/hitSouth/2",
+      "unit.fire.kaya/hitSouth/3",
+      "unit.fire.kaya/hitSouth/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "hitSouthWest": {
+    "frames": [
+      "unit.fire.kaya/hitSouthWest/0",
+      "unit.fire.kaya/hitSouthWest/1",
+      "unit.fire.kaya/hitSouthWest/2",
+      "unit.fire.kaya/hitSouthWest/3",
+      "unit.fire.kaya/hitSouthWest/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "hitWest": {
+    "frames": [
+      "unit.fire.kaya/hitWest/0",
+      "unit.fire.kaya/hitWest/1",
+      "unit.fire.kaya/hitWest/2",
+      "unit.fire.kaya/hitWest/3",
+      "unit.fire.kaya/hitWest/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "hitNorthWest": {
+    "frames": [
+      "unit.fire.kaya/hitNorthWest/0",
+      "unit.fire.kaya/hitNorthWest/1",
+      "unit.fire.kaya/hitNorthWest/2",
+      "unit.fire.kaya/hitNorthWest/3",
+      "unit.fire.kaya/hitNorthWest/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "hitNorth": {
+    "frames": [
+      "unit.fire.kaya/hitNorth/0",
+      "unit.fire.kaya/hitNorth/1",
+      "unit.fire.kaya/hitNorth/2",
+      "unit.fire.kaya/hitNorth/3",
+      "unit.fire.kaya/hitNorth/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "hitNorthEast": {
+    "frames": [
+      "unit.fire.kaya/hitNorthEast/0",
+      "unit.fire.kaya/hitNorthEast/1",
+      "unit.fire.kaya/hitNorthEast/2",
+      "unit.fire.kaya/hitNorthEast/3",
+      "unit.fire.kaya/hitNorthEast/0"
+    ],
+    "fps": 10.416667,
+    "loop": false,
+    "frameMs": [40, 150, 120, 80, 90]
+  },
+  "koSouthEast": {
+    "frames": [
+      "unit.fire.kaya/koSouthEast/0",
+      "unit.fire.kaya/koSouthEast/1",
+      "unit.fire.kaya/koSouthEast/2",
+      "unit.fire.kaya/koSouthEast/3",
+      "unit.fire.kaya/koSouthEast/4",
+      "unit.fire.kaya/koSouthEast/5",
+      "unit.fire.kaya/koSouthEast/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koSouthWest": {
+    "frames": [
+      "unit.fire.kaya/koSouthWest/0",
+      "unit.fire.kaya/koSouthWest/1",
+      "unit.fire.kaya/koSouthWest/2",
+      "unit.fire.kaya/koSouthWest/3",
+      "unit.fire.kaya/koSouthWest/4",
+      "unit.fire.kaya/koSouthWest/5",
+      "unit.fire.kaya/koSouthWest/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koNorthEast": {
+    "frames": [
+      "unit.fire.kaya/koNorthEast/0",
+      "unit.fire.kaya/koNorthEast/1",
+      "unit.fire.kaya/koNorthEast/2",
+      "unit.fire.kaya/koNorthEast/3",
+      "unit.fire.kaya/koNorthEast/4",
+      "unit.fire.kaya/koNorthEast/5",
+      "unit.fire.kaya/koNorthEast/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  },
+  "koNorthWest": {
+    "frames": [
+      "unit.fire.kaya/koNorthWest/0",
+      "unit.fire.kaya/koNorthWest/1",
+      "unit.fire.kaya/koNorthWest/2",
+      "unit.fire.kaya/koNorthWest/3",
+      "unit.fire.kaya/koNorthWest/4",
+      "unit.fire.kaya/koNorthWest/5",
+      "unit.fire.kaya/koNorthWest/6"
+    ],
+    "fps": 7.692308,
+    "loop": false,
+    "frameMs": [40, 160, 60, 50, 110, 90, 400],
+    "frameSize": {
+      "w": 192,
+      "h": 192
+    },
+    "anchor": {
+      "x": 0.5,
+      "y": 0.786458
+    }
+  }
+}

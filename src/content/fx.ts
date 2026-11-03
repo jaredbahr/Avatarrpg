@@ -794,6 +794,56 @@ export const WATERSKIN_DRAW: ParticleEmitterDef = particles({
   layer: 'over',
 });
 
+/**
+ * Water lifted out of open water into a bender's hands over `span` ms, for a
+ * bend made beside a canal (issue #284): a ring where it leaves the surface
+ * and a stream of drops climbing to the hands. `from` is the water, `to` the
+ * caster.
+ */
+export const openWaterDraw = (span: number): ParticleEmitterDef[] => [
+  { ...splash(12), duration: Math.min(400, span), delay: [0, 0] },
+  // The body of water on its way up: a few cells riding the head of the stream.
+  particles({
+    shape: 'projectile',
+    cell: 'drop',
+    count: 3,
+    duration: span,
+    life: [span, span],
+    delay: [0, 0],
+    speed: [0, 0],
+    spread: 0,
+    gravity: 0,
+    drag: 0,
+    size: [0.16, 0.24],
+    grow: 1,
+    spin: 0,
+    color: 'base',
+    fade: 'none',
+    blend: 'normal',
+    layer: 'over',
+  }),
+  // Drops shed along the way and hanging in the air behind it.
+  particles({
+    shape: 'stream',
+    cell: 'drop',
+    count: 26,
+    duration: span,
+    life: [span * 0.35, span * 0.55],
+    delay: [0, span * 0.85],
+    speed: [0, 0.25],
+    spread: 0,
+    gravity: 0.6,
+    drag: 2,
+    size: [0.09, 0.16],
+    grow: 1,
+    spin: 0,
+    color: 'light',
+    fade: 'out',
+    blend: 'normal',
+    layer: 'over',
+  }),
+];
+
 /** Faceted, tumbling stone in the same colours as its ground eruption. */
 const stone = (): ParticleEmitterDef => cel('boulder', 0.85, 300, true);
 

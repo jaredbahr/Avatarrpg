@@ -35,7 +35,10 @@ import type { MoveContext } from '../../core/rules/grid';
 import { resolveResidents } from '../../core/story/residents';
 import { backgroundFigures, visibleNpcs } from '../../core/story/world';
 import { Animator } from '../animator';
+import { TIMING } from '../anim/choreography';
 import { motionReduced } from '../ui/dom';
+import type { ClipName } from '../../content/assets/clips';
+import { sheetLocomotion } from '../../content/assets/manifest';
 
 /** Someone the map draws from a placement: a resident's NpcDef, or a background role. */
 export interface Standing {
@@ -212,6 +215,8 @@ interface Track {
   readonly walkEnd: number;
   readonly end: number;
   readonly fade: number;
+  /** A routine errand's leg, or any move of Mira's: it ambles on a slowed clock. */
+  readonly amble?: boolean;
 }
 
 /** One person as the map draws them now. */
@@ -234,7 +239,19 @@ export interface ResidentFigure {
   readonly poseScale: 1;
   /** Radians about the feet: a lean into the walk, eased in and out with it. */
   readonly lean?: number;
+  /**
+   * The heading clip, for a resident on an eight-way G sheet (issue #284):
+   * the walk its animator picks while walking, else the idle of the last
+   * heading it walked. Such a figure carries no procedural bob or lean; its
+   * sheet authors both.
+   */
+  readonly clip?: ClipName;
 }
+
+/** The idle a heading clip settles into. */
+const idleOf = (clip: ClipName): ClipName => clip.replace(/^(walk|jog|rest)/, 'idle') as ClipName;
+/** One idle loop: four cels at 4 fps. */
+const G_IDLE_CYCLE_MS = 1000;
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const ease = (n: number) => {
@@ -255,6 +272,13 @@ const WORK_LEAN_RAD = 0.03;
 
 /** A resident stride has two planted contacts and never lifts more than two pixels at 1x. */
 export const RESIDENT_STRIDE_MS = 500;
+/**
+ * How much slower a routine errand goes than the brisk stroll (ADR 0095): 2 s a
+ * tile. Every other move (a placement, a call home) keeps the brisk pace,
+ * except Mira's, who ambles everywhere. The ambling animator is read on a clock
+ * slowed this much.
+ */
+export const RESIDENT_AMBLE = 2000 / TIMING.strollStep;
 export const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
 export const RESIDENT_CONTACT_MS = 60;
 export const RESIDENT_BOB_PX = 2;
@@ -333,6 +357,8 @@ export class ResidentWalks {
   private people: readonly Standing[] = [];
   private tracks = new Map<string, Track>();
   private facings = new Map<string, 1 | -1>();
+  /** The idle each G-sheet resident last settled into. */
+  private idles = new Map<string, ClipName>();
   private errands = new Map<string, Errand>();
   /** What each placed person is doing, by id: `anchor/activity`. */
   private doing = new Map<string, string>();
@@ -349,6 +375,7 @@ export class ResidentWalks {
     this.seen = null;
     this.tracks.clear();
     this.facings.clear();
+    this.idles.clear();
     this.errands.clear();
   }
 
@@ -561,6 +588,7 @@ export class ResidentWalks {
         errand.walk = this.walk(
           { kind: 'walk', who, from: at, path: next.path, enter: false, leave: false },
           map,
+          true,
         );
       } else {
         // Home waits for nobody's tile to clear unless called, and goes round
@@ -578,7 +606,11 @@ export class ResidentWalks {
                 [[...taken, ...clear].map(posKey)],
               );
         errand.walk = path
-          ? this.walk({ kind: 'walk', who, from: at, path, enter: false, leave: false }, map)
+          ? this.walk(
+              { kind: 'walk', who, from: at, path, enter: false, leave: false },
+              map,
+              !recalled && !near,
+            )
           : this.fade({ kind: 'fade', who, from: at, to: who.pos });
       }
       errand.leg = index;
@@ -602,21 +634,32 @@ export class ResidentWalks {
     return { motion, animator: null, start: at, walkEnd: at + out, end, fade };
   }
 
-  private walk(motion: Extract<ResidentMotion, { kind: 'walk' }>, map: MapDef): Track {
+  private walk(
+    motion: Extract<ResidentMotion, { kind: 'walk' }>,
+    map: MapDef,
+    errand?: boolean,
+  ): Track {
     const id = motion.who.id;
     const fade = FADE_MS * (this.reduced() ? 0.02 : 1);
     const at = this.clock;
-    const animator = new Animator(this.content, { motionReduced: this.reduced });
+    // Mira walks everywhere at the amble (ADR 0095).
+    const amble = errand || sheetLocomotion(motion.who.sprite)?.amble === true;
+    const slow = amble ? RESIDENT_AMBLE : 1;
+    const animator = new Animator(this.content, { motionReduced: this.reduced, amble });
     animator.setProjection(map.projection ?? 'orthographic');
     animator.push(
       at,
       [{ type: 'partyWalked', unitId: id, from: motion.from, path: motion.path }],
       [],
-      { silentSteps: true, delayMs: motion.enter ? FADE_MS : 0 },
+      // Read on the slowed clock, the fade-in still lasts FADE_MS.
+      { silentSteps: true, delayMs: motion.enter ? FADE_MS / slow : 0 },
     );
-    const walkEnd = Math.max(at + (motion.enter ? fade : 0), animator.finishesAt);
+    const walkEnd = Math.max(
+      at + (motion.enter ? fade : 0),
+      at + (animator.finishesAt - at) * slow,
+    );
     const end = walkEnd + (motion.leave ? fade : 0);
-    return { motion, animator, start: at, walkEnd, end, fade };
+    return { motion, animator, start: at, walkEnd, end, fade, amble };
   }
 
   /** Everyone the map draws now: the people last planned for, and anyone still walking off. */
@@ -648,7 +691,28 @@ export class ResidentWalks {
     }
     for (const [id, track] of this.tracks)
       if (!placed.has(id)) out.push(this.sample(track.motion.who, track, null));
-    return out;
+    return out.map((figure) => this.presented(figure));
+  }
+
+  /**
+   * A resident on an eight-way G sheet draws its heading clip, as the party
+   * does: the walk while walking, then the idle of the heading it walked, its
+   * four cels looping on the resident clock. Before it has walked it faces
+   * the camera, south-east or south-west by its facing. The sheet authors
+   * the bob, so the procedural bob, breath and walking lean are dropped; a
+   * work stop's lean stays.
+   */
+  private presented(figure: ResidentFigure): ResidentFigure {
+    if (sheetLocomotion(figure.sprite)?.headings !== 8) return figure;
+    if (figure.clip) this.idles.set(figure.id, idleOf(figure.clip));
+    const { offset: _offset, ...rest } = figure;
+    if (figure.walking && figure.clip) return { ...rest, lean: 0, clip: figure.clip };
+    const clip =
+      this.idles.get(figure.id) ?? (figure.facing === 1 ? 'idleSouthEast' : 'idleSouthWest');
+    const clipTime = this.reduced() ? 0 : this.clock + residentPhase(figure.id, G_IDLE_CYCLE_MS);
+    // A work stop keeps its lean: it is the routine's only work beat until the
+    // sheets carry a work idle.
+    return { ...rest, lean: figure.lean ?? 0, clip, clipTime };
   }
 
   /** Someone holding at an errand's stop; at a work stop, reaching into the work and back. */
@@ -697,11 +761,17 @@ export class ResidentWalks {
     }
     const animator = track.animator;
     const end = motion.path.at(-1) ?? motion.from;
-    const drawPos = animator?.renderPos(c, who.id) ?? (c < walkEnd ? motion.from : end);
-    const clip = animator?.locomotion(c, who.id, 'rest', who.sprite).clip ?? 'rest';
+    // An errand's animator runs on its own slowed clock.
+    const t = track.amble ? start + (c - start) / RESIDENT_AMBLE : c;
+    const drawPos = animator?.renderPos(t, who.id) ?? (c < walkEnd ? motion.from : end);
+    const moving = animator?.locomotion(t, who.id, 'rest', who.sprite).clip ?? 'rest';
+    const clip = (track.amble ? moving.replace('jog', 'walk') : moving) as ClipName;
     const facing = animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1;
-    const clipTime = animator?.unitPose(c, who.id, who.sprite)?.clipTime ?? 0;
-    const walking = clip.startsWith('walk');
+    const clipTime = animator?.unitPose(t, who.id, who.sprite)?.clipTime ?? 0;
+    // A G sheet plants an idle cel at a turn, as the party's does (ADR 0067);
+    // the figure is still on its route, so it is still walking.
+    const gait = sheetLocomotion(who.sprite)?.headings === 8;
+    const walking = clip.startsWith('walk') || (gait && c >= start && c < walkEnd);
     const posedWalking = walking && !this.reduced();
     // A full first and last step ease the restrained lean and stepped bob in and out.
     const from = start + (motion.enter ? fade : 0);
@@ -713,6 +783,7 @@ export class ResidentWalks {
       facing,
       walking,
       clipTime,
+      ...(sheetLocomotion(who.sprite)?.headings === 8 ? { clip } : {}),
       lean: RESIDENT_WALK_LEAN_RAD * facing * into || 0, // a still figure leans +0, never -0
       alpha:
         motion.enter && c < start + fade

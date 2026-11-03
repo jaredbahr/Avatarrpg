@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted. Extends ADR 0071.
+Accepted. Extends ADR 0071. Amended by ADR 0093: every scene has a contact layer (default 0.6), props get a
+contact line, a scene may name its cast key (`castKey`), and the mask resolution below is superseded by the
+world-pixel grid.
 
 ## Context
 

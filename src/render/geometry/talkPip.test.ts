@@ -1,7 +1,56 @@
 import { describe, expect, it } from 'vitest';
-import { talkPipPosition, visiblePixelBounds } from './talkPip';
+import { TALK_PIP_GAP, talkPipPosition, visiblePixelBounds } from './talkPip';
+import { TILE } from '../camera';
+import { TALK_PIP_RADIUS, talkPipMark } from '../pixelOverlayGeometry';
+import { placePixelMark, rasterizePixelMark, snapWorldPoints } from '../pixelMarks';
 
 describe('NPC talk pip placement', () => {
+  it('clears visible art with the unchanged four-world-pixel raster after anchor snapping', () => {
+    const bounds = { left: -0.25, top: -0.85, right: 0.35, bottom: 0 };
+    const foot = { x: 100.3, y: 200.4 };
+    const scale = TILE * 1.25 * 0.97;
+    const lean = -0.07;
+    const gap = TALK_PIP_GAP;
+    const pip = talkPipPosition(foot, bounds, scale, lean, TALK_PIP_RADIUS, gap, -1);
+    const anchor = snapWorldPoints([pip])[0];
+    if (!anchor) throw new Error('Missing snapped talk anchor');
+    const mark = talkPipMark(anchor, 1);
+    expect(mark.spec.operations).toEqual([
+      { kind: 'circle', color: 'gold', centre: { x: 0, y: 0 }, radius: 4, fill: true },
+    ]);
+    const raster = rasterizePixelMark(mark.spec);
+    const placement = placePixelMark(raster, anchor);
+    const artTop = Math.min(
+      ...[bounds.left, bounds.right].flatMap((x) =>
+        [bounds.top, bounds.bottom].map(
+          (y) => foot.y + scale * (-x * Math.sin(lean) + y * Math.cos(lean)),
+        ),
+      ),
+    );
+    let solid = 0;
+    for (let y = 0; y < raster.height; y++)
+      for (let x = 0; x < raster.width; x++) {
+        if (!raster.data[(y * raster.width + x) * 4 + 3]) continue;
+        solid++;
+        expect(placement.y + y + 1).toBeLessThan(artTop);
+      }
+    expect(solid).toBeGreaterThan(0);
+    // Canvas performs the same placement in screen space before returning to board pixels.
+    for (const zoom of [1, 2, 3]) {
+      const screen = talkPipPosition(
+        { x: foot.x * zoom, y: foot.y * zoom },
+        bounds,
+        scale * zoom,
+        lean,
+        TALK_PIP_RADIUS * zoom,
+        gap * zoom,
+        -1,
+      );
+      expect(screen.x / zoom).toBeCloseTo(pip.x, 10);
+      expect(screen.y / zoom).toBeCloseTo(pip.y, 10);
+    }
+  });
+
   it('keeps the cue horizontally stable as a small lean changes direction', () => {
     const bounds = { left: -0.3, top: -1, right: 0.3, bottom: 0 };
     const left = talkPipPosition({ x: 100, y: 100 }, bounds, 100, -0.00001, 7, 4);

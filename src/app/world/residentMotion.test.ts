@@ -6,6 +6,8 @@ import { apply } from '../../core/state/reducer';
 import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
 import {
+  FADE_MS,
+  RESIDENT_AMBLE,
   RESIDENT_BOB_PX,
   RESIDENT_WALK_LEAN_RAD,
   ResidentWalks,
@@ -16,7 +18,8 @@ import {
 import type { ResidentMotion } from './residentMotion';
 import { previewWalk } from './walking';
 import { TIMING } from '../anim/choreography';
-import { STROLL_RAMP_MS } from '../anim/stroll';
+import { STROLL_RAMP_MS, strollTiming } from '../anim/stroll';
+import { smoothPath } from '../../render/geometry/curve';
 
 /**
  * The resident walk planner (ADR 0047 §7, W8): who walks where when the
@@ -228,6 +231,22 @@ describe('ResidentWalks', () => {
   const walks = (reduced = false) => new ResidentWalks(CONTENT, () => reduced);
   const figure = (w: ResidentWalks, id: string) => w.figures().find((f) => f.id === id);
 
+  /** Sample one frame beyond the longest planned walk, allowing the slowest resident pace and fades. */
+  const placementDeadline = (before: GameState, after: GameState): number => {
+    const motions = planResidentMotion({ content: CONTENT, map: VILLAGE, before, after, party });
+    const slowest = Math.max(
+      0,
+      ...motions.map((motion) =>
+        motion.kind === 'walk'
+          ? strollTiming(smoothPath(motion.from, motion.path).length, TIMING.strollStep).duration *
+              RESIDENT_AMBLE +
+            2 * FADE_MS
+          : 2 * FADE_MS,
+      ),
+    );
+    return Math.ceil(slowest / 50) * 50 + 50;
+  };
+
   it('places everyone on a new map, then walks them across it at the party pace', () => {
     const w = walks();
     const before = at('midday');
@@ -256,8 +275,10 @@ describe('ResidentWalks', () => {
       const b = trace[i] as Vec2;
       expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.2);
     }
-    // Mira walks off down the river path and is gone once she has faded there.
-    for (let t = 4050; t <= 20 * TIMING.strollStep; t += 50) w.tick(t, false);
+    // Mira walks off down the river path, at her amble (ADR 0095), and is gone
+    // once she has faded there.
+    const deadline = placementDeadline(before, after);
+    for (let t = 4050; t <= deadline; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
       drawPos: { x: 17, y: 6 },
@@ -266,6 +287,31 @@ describe('ResidentWalks', () => {
     });
     expect(w.moving()).toBe(false);
     expect(w.walkingTo({ x: 17, y: 6 })).toBe(false);
+  });
+
+  it('walks Mira everywhere at her amble (ADR 0095)', () => {
+    const w = walks();
+    const before = at('midday');
+    w.tick(0, false);
+    w.update(VILLAGE, before, party, true);
+    w.update(VILLAGE, waited(before, 'afternoon'), party, true);
+    const clips = new Set<string>();
+    let start: Vec2 | undefined;
+    let at1s: Vec2 | undefined;
+    for (let t = 50; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) {
+      w.tick(t, false);
+      const mira = figure(w, 'lw.npc.mira');
+      if (!mira) continue;
+      start ??= mira.drawPos;
+      if (t === 1050) at1s = mira.drawPos;
+      if (mira.walking) clips.add(mira.clip ?? '');
+    }
+    // A placement walk, which every other resident makes at the brisk pace, draws her walk...
+    expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
+    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(false);
+    // ...at the amble: after a second she has covered under a tile.
+    if (!start || !at1s) throw new Error('Mira walks off this afternoon');
+    expect(Math.hypot(at1s.x - start.x, at1s.y - start.y)).toBeLessThan(1);
   });
 
   it('keeps a walk running when a command mid-walk leaves the walker’s tile alone', () => {
@@ -278,7 +324,8 @@ describe('ResidentWalks', () => {
       w.update(VILLAGE, after, party, true);
       const trace: Vec2[] = [];
       let ended = -1;
-      for (let t = 50; t <= 20 * TIMING.strollStep; t += 50) {
+      const deadline = placementDeadline(before, after);
+      for (let t = 50; t <= deadline; t += 50) {
         if (interrupt && t === 1000) {
           // The party walks off; nobody's place changes.
           const walked = apply(CONTENT, after, { type: 'walkTo', pos: { x: 12, y: 7 } }).state;
@@ -332,7 +379,7 @@ describe('ResidentWalks', () => {
     const w = walks();
     // Mira's pre-intro hold keeps her at her table; opening mira_intro lifts
     // it on entry, and only the pin keeps her there (W5 amendment).
-    const before = at('afternoon', { x: 12, y: 6 }, []);
+    const before = at('afternoon', { x: 12, y: 5 }, []);
     w.tick(0, false);
     w.update(VILLAGE, before, party, true);
     const talk = apply(CONTENT, before, { type: 'walkTo', pos: { x: 11, y: 5 } }).state;
@@ -516,7 +563,8 @@ describe('routines (Working Ba Dan)', () => {
 
   it('carries the basket over the bridge and back, pausing on each side', () => {
     const w = walks();
-    const frames = play(w, at('midday', AWAY[0]), 0, 60_000);
+    // The errand ambles at RESIDENT_AMBLE times the stroll (ADR 0095).
+    const frames = play(w, at('midday', AWAY[0]), 0, 120_000);
     const carrier = of(frames, CARRIER);
     const tiles = carrier.map((f) => key(f.drawPos));
     expect(tiles).toContain('9,6'); // on the bridge deck
@@ -555,20 +603,22 @@ describe('routines (Working Ba Dan)', () => {
     );
   });
 
-  it('uses planted step contacts and eases the first and last walking step', () => {
+  it('walks a G-sheet resident on its own heading clips, with no procedural bob or lean', () => {
     const gao = of(play(walks(), at('morning', AWAY[0]), 0, 12_000), GAO);
     const first = gao.findIndex((figure) => figure.walking);
     const after = gao.findIndex((figure, index) => index > first && !figure.walking);
     if (first < 0 || after < 0) throw new Error('Gao completes a walk in the sample');
     const walk = gao.slice(first, after);
-    const leans = walk.map((figure) => Math.abs(figure.lean ?? 0));
-    const bobs = walk.map((figure) => Math.abs((figure.offset?.y ?? 0) * 64));
     expect(walk.length).toBeGreaterThan(4);
-    expect(leans[0]).toBeLessThan(Math.max(...leans));
-    expect(leans.at(-1)).toBeLessThan(Math.max(...leans));
-    expect(bobs.filter((bob) => bob === 0).length).toBeGreaterThan(1);
-    expect(bobs).toContain(0);
-    expect(bobs).toContain(1);
+    // The sheet authors the stride and its bob (issue #284): eight-way clips, nothing added.
+    // An errand leg ambles on the walk (ADR 0095).
+    expect(walk.every((figure) => /^(walk|idle)/.test(figure.clip ?? ''))).toBe(true);
+    expect(walk.some((figure) => (figure.clip ?? '').startsWith('walk'))).toBe(true);
+    expect(walk.every((figure) => figure.offset === undefined && figure.lean === 0)).toBe(true);
+    // Stopped, he settles into the idle of the heading he walked, on the resident clock.
+    const stopped = gao[after];
+    expect(stopped?.clip).toMatch(/^idle/);
+    expect(stopped?.clip?.slice(4)).toBe((walk.at(-1)?.clip ?? '').replace(/^(walk|idle)/, ''));
   });
 
   it('derives a stable, resident-specific idle phase from the id', () => {
@@ -665,10 +715,15 @@ describe('routines (Working Ba Dan)', () => {
     const walking = apply(CONTENT, state, { type: 'walkTo', pos: beside }).state;
     expect(walking.screen).toBe('explore');
     let t = reached.t + 50;
+    const clips = new Set<string>();
     for (; t <= reached.t + 10_000 && v.walkingTo(SHOP); t += 50) {
       v.tick(t, false);
       v.update(VILLAGE, walking, [beside], true);
+      clips.add(gao(v)?.clip ?? '');
     }
+    // Called home, he walks at the brisk pace, never the jog (ADR 0095's amendment).
+    expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
+    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(false);
     // Home on the next leg, not after the four-second hold at the crates.
     expect(t - reached.t).toBeLessThan(2_500);
     expect(gao(v)).toMatchObject({ drawPos: SHOP, walking: false });

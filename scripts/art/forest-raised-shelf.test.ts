@@ -8,21 +8,18 @@ import {
   FOREST_RAISED_SHELF_CELLS,
 } from '../../src/content/scenes/forestRoad';
 import { toHex } from './lib/image';
-import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
+import { expectPackerAlpha, readShipped } from './lib/shipped-pin';
+import { FOREST_G1_OUT } from './forest-g1-pack';
 import { loadForestMaterial } from './forest-village-material';
-import {
-  FOREST_RAISED_SHELF_OUTPUT,
-  SHELF_RISE,
-  packRaisedShelf,
-  shelfTiers,
-} from './forest-raised-shelf';
+import { SHELF_RISE, packRaisedShelf, shelfTiers } from './forest-raised-shelf';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const LIP_STEP = 15;
-const OUTPUT = FOREST_RAISED_SHELF_OUTPUT;
+/** The G1 restyle (ADR 0087), held to its committed source by `forest-g1-pack.test.ts`. */
+const OUTPUT = `${FOREST_G1_OUT}/raised-shelf.webp`;
 const EXIT = { x: 19, y: 4 };
 const raised = new Set(
   [...FOREST_RAISED_SHELF_CELLS, ...FOREST_PERCH_CELLS].map(({ x, y }) => `${x},${y}`),
@@ -67,14 +64,7 @@ it('decodes complete bank and perch coverage while leaving the road exit clear',
   expect([...missingRaised.entries()]).toEqual([]);
 });
 
-/** Generated 2026-10-03 (see docs/art/forest-raised-shelf.md); not packer output. */
-const SHELF_PIN = {
-  bytes: 23442,
-  sha256: '764d2257089b58928af59bb6faaf329307d3cc0de92c88319cb967df92fd2511',
-};
-
 it('ships the generated shelf on the packer footprint', async () => {
-  expectShippedPin(OUTPUT, SHELF_PIN);
   await expectPackerAlpha(OUTPUT, packRaisedShelf(await loadForestMaterial()));
 });
 
@@ -141,6 +131,9 @@ it('stands the top above a darker face, with a light rim along the lip', async (
     }
   }
   expect(columns).toBeGreaterThan(200);
-  expect(rimmedLips / columns).toBeGreaterThan(0.6);
+  // G1 (ADR 0087) draws some lips with the 1 px contour instead of a pale rim:
+  // 0.58 of columns keep the rim (the painted plate was over 0.6), and the face
+  // to top luma ratio is 0.64 against the painted 0.635, so the step reads as before.
+  expect(rimmedLips / columns).toBeGreaterThan(0.5);
   expect(face.sum / face.n).toBeLessThan((top.sum / top.n) * 0.95);
 });

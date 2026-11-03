@@ -1,0 +1,2423 @@
+{
+  "id": "sura.bend",
+  "unitAsset": "unit.water.sura",
+  "element": "water",
+  "facings": {
+    "east": {
+      "frames": [
+        "unit.water.sura/bendEast/0",
+        "unit.water.sura/bendEast/1",
+        "unit.water.sura/bendEast/2",
+        "unit.water.sura/bendEast/3",
+        "unit.water.sura/bendEast/4",
+        "unit.water.sura/bendEast/5",
+        "unit.water.sura/bendEast/6",
+        "unit.water.sura/bendEast/7",
+        "unit.water.sura/bendEast/8",
+        "unit.water.sura/bendEast/9",
+        "unit.water.sura/bendEast/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 106.022,
+              "y": 106.598
+            },
+            "RW": {
+              "x": 97.248,
+              "y": 107.29
+            },
+            "LA": {
+              "x": 95.712,
+              "y": 136.358
+            },
+            "RA": {
+              "x": 87.456,
+              "y": 143.002
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 106.618,
+              "y": 105.178
+            },
+            "RW": {
+              "x": 99.13,
+              "y": 105.178
+            },
+            "LA": {
+              "x": 95.808,
+              "y": 136.378
+            },
+            "RA": {
+              "x": 87.187,
+              "y": 143.002
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 106.195,
+              "y": 102.47
+            },
+            "RW": {
+              "x": 100.397,
+              "y": 103.315
+            },
+            "LA": {
+              "x": 95.942,
+              "y": 136.397
+            },
+            "RA": {
+              "x": 87.072,
+              "y": 142.963
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 103.757,
+              "y": 96.922
+            },
+            "RW": {
+              "x": 100.608,
+              "y": 100.589
+            },
+            "LA": {
+              "x": 96.115,
+              "y": 136.474
+            },
+            "RA": {
+              "x": 86.88,
+              "y": 142.906
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 99.955,
+              "y": 91.546
+            },
+            "RW": {
+              "x": 100.454,
+              "y": 98.746
+            },
+            "LA": {
+              "x": 96.326,
+              "y": 136.454
+            },
+            "RA": {
+              "x": 86.765,
+              "y": 142.81
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 95.616,
+              "y": 86.131
+            },
+            "RW": {
+              "x": 99.61,
+              "y": 97.651
+            },
+            "LA": {
+              "x": 96.461,
+              "y": 136.474
+            },
+            "RA": {
+              "x": 86.688,
+              "y": 142.752
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 92.026,
+              "y": 82.272
+            },
+            "RW": {
+              "x": 99.168,
+              "y": 96.806
+            },
+            "LA": {
+              "x": 96.422,
+              "y": 136.454
+            },
+            "RA": {
+              "x": 86.65,
+              "y": 142.694
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 90.739,
+              "y": 80.717
+            },
+            "RW": {
+              "x": 99.437,
+              "y": 96.749
+            },
+            "LA": {
+              "x": 96.442,
+              "y": 136.474
+            },
+            "RA": {
+              "x": 86.842,
+              "y": 142.502
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 97.171,
+              "y": 91.238
+            },
+            "RW": {
+              "x": 99.206,
+              "y": 101.414
+            },
+            "LA": {
+              "x": 96.077,
+              "y": 136.454
+            },
+            "RA": {
+              "x": 87.302,
+              "y": 142.637
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 101.606,
+              "y": 98.918
+            },
+            "RW": {
+              "x": 98.227,
+              "y": 104.352
+            },
+            "LA": {
+              "x": 95.904,
+              "y": 136.397
+            },
+            "RA": {
+              "x": 87.379,
+              "y": 142.829
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 106.022,
+              "y": 106.598
+            },
+            "RW": {
+              "x": 97.248,
+              "y": 107.29
+            },
+            "LA": {
+              "x": 95.712,
+              "y": 136.358
+            },
+            "RA": {
+              "x": 87.456,
+              "y": 143.002
+            }
+          }
+        }
+      ]
+    },
+    "southEast": {
+      "frames": [
+        "unit.water.sura/bendSouthEast/0",
+        "unit.water.sura/bendSouthEast/1",
+        "unit.water.sura/bendSouthEast/2",
+        "unit.water.sura/bendSouthEast/3",
+        "unit.water.sura/bendSouthEast/4",
+        "unit.water.sura/bendSouthEast/5",
+        "unit.water.sura/bendSouthEast/6",
+        "unit.water.sura/bendSouthEast/7",
+        "unit.water.sura/bendSouthEast/8",
+        "unit.water.sura/bendSouthEast/9",
+        "unit.water.sura/bendSouthEast/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 110.842,
+              "y": 110.074
+            },
+            "RW": {
+              "x": 94.387,
+              "y": 107.405
+            },
+            "LA": {
+              "x": 99.514,
+              "y": 136.627
+            },
+            "RA": {
+              "x": 80.045,
+              "y": 140.544
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 114.682,
+              "y": 109.594
+            },
+            "RW": {
+              "x": 98.381,
+              "y": 106.541
+            },
+            "LA": {
+              "x": 99.59,
+              "y": 136.685
+            },
+            "RA": {
+              "x": 79.853,
+              "y": 140.41
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 118.042,
+              "y": 107.501
+            },
+            "RW": {
+              "x": 101.606,
+              "y": 105.638
+            },
+            "LA": {
+              "x": 99.725,
+              "y": 136.781
+            },
+            "RA": {
+              "x": 79.718,
+              "y": 140.352
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 121.344,
+              "y": 102.106
+            },
+            "RW": {
+              "x": 104.851,
+              "y": 103.642
+            },
+            "LA": {
+              "x": 99.821,
+              "y": 136.915
+            },
+            "RA": {
+              "x": 79.603,
+              "y": 140.218
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 121.92,
+              "y": 96.0
+            },
+            "RW": {
+              "x": 106.829,
+              "y": 102.182
+            },
+            "LA": {
+              "x": 100.051,
+              "y": 136.973
+            },
+            "RA": {
+              "x": 79.507,
+              "y": 140.083
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 121.094,
+              "y": 89.453
+            },
+            "RW": {
+              "x": 107.693,
+              "y": 101.088
+            },
+            "LA": {
+              "x": 100.166,
+              "y": 137.05
+            },
+            "RA": {
+              "x": 79.45,
+              "y": 139.987
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 119.386,
+              "y": 84.422
+            },
+            "RW": {
+              "x": 108.48,
+              "y": 100.301
+            },
+            "LA": {
+              "x": 100.147,
+              "y": 137.011
+            },
+            "RA": {
+              "x": 79.45,
+              "y": 139.91
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 117.696,
+              "y": 82.234
+            },
+            "RW": {
+              "x": 109.075,
+              "y": 100.454
+            },
+            "LA": {
+              "x": 100.128,
+              "y": 137.069
+            },
+            "RA": {
+              "x": 79.814,
+              "y": 139.853
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 114.47,
+              "y": 93.466
+            },
+            "RW": {
+              "x": 103.392,
+              "y": 103.834
+            },
+            "LA": {
+              "x": 99.782,
+              "y": 136.877
+            },
+            "RA": {
+              "x": 80.122,
+              "y": 140.16
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 112.646,
+              "y": 101.779
+            },
+            "RW": {
+              "x": 98.88,
+              "y": 105.638
+            },
+            "LA": {
+              "x": 99.648,
+              "y": 136.742
+            },
+            "RA": {
+              "x": 80.083,
+              "y": 140.352
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 110.842,
+              "y": 110.074
+            },
+            "RW": {
+              "x": 94.387,
+              "y": 107.405
+            },
+            "LA": {
+              "x": 99.514,
+              "y": 136.627
+            },
+            "RA": {
+              "x": 80.045,
+              "y": 140.544
+            }
+          }
+        }
+      ]
+    },
+    "south": {
+      "frames": [
+        "unit.water.sura/bendSouth/0",
+        "unit.water.sura/bendSouth/1",
+        "unit.water.sura/bendSouth/2",
+        "unit.water.sura/bendSouth/3",
+        "unit.water.sura/bendSouth/4",
+        "unit.water.sura/bendSouth/5",
+        "unit.water.sura/bendSouth/5",
+        "unit.water.sura/bendSouth/7",
+        "unit.water.sura/bendSouth/8",
+        "unit.water.sura/bendSouth/9",
+        "unit.water.sura/bendSouth/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 107.482,
+              "y": 113.798
+            },
+            "RW": {
+              "x": 88.339,
+              "y": 111.36
+            },
+            "LA": {
+              "x": 104.525,
+              "y": 142.061
+            },
+            "RA": {
+              "x": 87.821,
+              "y": 136.493
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 112.666,
+              "y": 115.642
+            },
+            "RW": {
+              "x": 92.275,
+              "y": 112.589
+            },
+            "LA": {
+              "x": 104.525,
+              "y": 142.157
+            },
+            "RA": {
+              "x": 87.84,
+              "y": 136.32
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 118.234,
+              "y": 115.891
+            },
+            "RW": {
+              "x": 95.77,
+              "y": 113.434
+            },
+            "LA": {
+              "x": 104.563,
+              "y": 142.253
+            },
+            "RA": {
+              "x": 87.763,
+              "y": 136.205
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 126.067,
+              "y": 113.453
+            },
+            "RW": {
+              "x": 100.435,
+              "y": 113.491
+            },
+            "LA": {
+              "x": 104.563,
+              "y": 142.426
+            },
+            "RA": {
+              "x": 87.782,
+              "y": 136.051
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 131.251,
+              "y": 108.922
+            },
+            "RW": {
+              "x": 103.622,
+              "y": 113.395
+            },
+            "LA": {
+              "x": 104.659,
+              "y": 142.579
+            },
+            "RA": {
+              "x": 87.763,
+              "y": 135.859
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 134.976,
+              "y": 103.181
+            },
+            "RW": {
+              "x": 105.907,
+              "y": 113.146
+            },
+            "LA": {
+              "x": 104.659,
+              "y": 142.675
+            },
+            "RA": {
+              "x": 87.782,
+              "y": 135.763
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 134.976,
+              "y": 103.181
+            },
+            "RW": {
+              "x": 105.907,
+              "y": 113.146
+            },
+            "LA": {
+              "x": 104.659,
+              "y": 142.675
+            },
+            "RA": {
+              "x": 87.782,
+              "y": 135.763
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 135.322,
+              "y": 95.232
+            },
+            "RW": {
+              "x": 108.211,
+              "y": 113.453
+            },
+            "LA": {
+              "x": 104.621,
+              "y": 142.656
+            },
+            "RA": {
+              "x": 88.186,
+              "y": 135.84
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 123.11,
+              "y": 102.355
+            },
+            "RW": {
+              "x": 99.84,
+              "y": 113.165
+            },
+            "LA": {
+              "x": 104.525,
+              "y": 142.368
+            },
+            "RA": {
+              "x": 88.128,
+              "y": 136.224
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 115.296,
+              "y": 108.077
+            },
+            "RW": {
+              "x": 94.099,
+              "y": 112.262
+            },
+            "LA": {
+              "x": 104.525,
+              "y": 142.214
+            },
+            "RA": {
+              "x": 87.955,
+              "y": 136.358
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 107.482,
+              "y": 113.798
+            },
+            "RW": {
+              "x": 88.339,
+              "y": 111.36
+            },
+            "LA": {
+              "x": 104.525,
+              "y": 142.061
+            },
+            "RA": {
+              "x": 87.821,
+              "y": 136.493
+            }
+          }
+        }
+      ]
+    },
+    "southWest": {
+      "frames": [
+        "unit.water.sura/bendSouthWest/0",
+        "unit.water.sura/bendSouthWest/1",
+        "unit.water.sura/bendSouthWest/2",
+        "unit.water.sura/bendSouthWest/3",
+        "unit.water.sura/bendSouthWest/4",
+        "unit.water.sura/bendSouthWest/5",
+        "unit.water.sura/bendSouthWest/6",
+        "unit.water.sura/bendSouthWest/7",
+        "unit.water.sura/bendSouthWest/8",
+        "unit.water.sura/bendSouthWest/9",
+        "unit.water.sura/bendSouthWest/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 103.718,
+              "y": 113.088
+            },
+            "RW": {
+              "x": 81.907,
+              "y": 110.496
+            },
+            "LA": {
+              "x": 104.41,
+              "y": 144.115
+            },
+            "RA": {
+              "x": 93.235,
+              "y": 134.765
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 106.656,
+              "y": 117.082
+            },
+            "RW": {
+              "x": 83.059,
+              "y": 113.05
+            },
+            "LA": {
+              "x": 104.352,
+              "y": 144.211
+            },
+            "RA": {
+              "x": 93.446,
+              "y": 134.65
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 110.592,
+              "y": 119.808
+            },
+            "RW": {
+              "x": 84.403,
+              "y": 115.142
+            },
+            "LA": {
+              "x": 104.256,
+              "y": 144.307
+            },
+            "RA": {
+              "x": 93.485,
+              "y": 134.515
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 117.485,
+              "y": 121.229
+            },
+            "RW": {
+              "x": 87.283,
+              "y": 117.197
+            },
+            "LA": {
+              "x": 104.141,
+              "y": 144.442
+            },
+            "RA": {
+              "x": 93.638,
+              "y": 134.419
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 123.667,
+              "y": 119.635
+            },
+            "RW": {
+              "x": 89.453,
+              "y": 118.502
+            },
+            "LA": {
+              "x": 104.045,
+              "y": 144.595
+            },
+            "RA": {
+              "x": 93.715,
+              "y": 134.246
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 129.293,
+              "y": 116.352
+            },
+            "RW": {
+              "x": 91.546,
+              "y": 119.386
+            },
+            "LA": {
+              "x": 103.968,
+              "y": 144.672
+            },
+            "RA": {
+              "x": 93.773,
+              "y": 134.17
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 132.902,
+              "y": 112.666
+            },
+            "RW": {
+              "x": 93.005,
+              "y": 120.077
+            },
+            "LA": {
+              "x": 103.987,
+              "y": 144.672
+            },
+            "RA": {
+              "x": 93.83,
+              "y": 134.17
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 133.114,
+              "y": 109.517
+            },
+            "RW": {
+              "x": 93.178,
+              "y": 120.749
+            },
+            "LA": {
+              "x": 103.93,
+              "y": 144.653
+            },
+            "RA": {
+              "x": 93.926,
+              "y": 134.4
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 120.442,
+              "y": 110.131
+            },
+            "RW": {
+              "x": 87.917,
+              "y": 116.87
+            },
+            "LA": {
+              "x": 104.141,
+              "y": 144.384
+            },
+            "RA": {
+              "x": 93.542,
+              "y": 134.63
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 112.09,
+              "y": 111.61
+            },
+            "RW": {
+              "x": 84.902,
+              "y": 113.683
+            },
+            "LA": {
+              "x": 104.275,
+              "y": 144.25
+            },
+            "RA": {
+              "x": 93.389,
+              "y": 134.707
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 103.718,
+              "y": 113.088
+            },
+            "RW": {
+              "x": 81.907,
+              "y": 110.496
+            },
+            "LA": {
+              "x": 104.41,
+              "y": 144.115
+            },
+            "RA": {
+              "x": 93.235,
+              "y": 134.765
+            }
+          }
+        }
+      ]
+    },
+    "west": {
+      "frames": [
+        "unit.water.sura/bendWest/0",
+        "unit.water.sura/bendWest/1",
+        "unit.water.sura/bendWest/2",
+        "unit.water.sura/bendWest/3",
+        "unit.water.sura/bendWest/4",
+        "unit.water.sura/bendWest/5",
+        "unit.water.sura/bendWest/6",
+        "unit.water.sura/bendWest/7",
+        "unit.water.sura/bendWest/8",
+        "unit.water.sura/bendWest/9",
+        "unit.water.sura/bendWest/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 90.451,
+              "y": 109.766
+            },
+            "RW": {
+              "x": 88.781,
+              "y": 107.904
+            },
+            "LA": {
+              "x": 98.784,
+              "y": 145.632
+            },
+            "RA": {
+              "x": 107.29,
+              "y": 138.566
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 89.856,
+              "y": 114.278
+            },
+            "RW": {
+              "x": 86.918,
+              "y": 110.342
+            },
+            "LA": {
+              "x": 98.688,
+              "y": 145.69
+            },
+            "RA": {
+              "x": 107.539,
+              "y": 138.547
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 90.278,
+              "y": 117.984
+            },
+            "RW": {
+              "x": 85.69,
+              "y": 112.474
+            },
+            "LA": {
+              "x": 98.534,
+              "y": 145.747
+            },
+            "RA": {
+              "x": 107.654,
+              "y": 138.47
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 92.698,
+              "y": 121.421
+            },
+            "RW": {
+              "x": 85.478,
+              "y": 115.123
+            },
+            "LA": {
+              "x": 98.4,
+              "y": 145.824
+            },
+            "RA": {
+              "x": 107.846,
+              "y": 138.432
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 96.442,
+              "y": 122.016
+            },
+            "RW": {
+              "x": 85.613,
+              "y": 116.928
+            },
+            "LA": {
+              "x": 98.15,
+              "y": 145.882
+            },
+            "RA": {
+              "x": 107.962,
+              "y": 138.298
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 100.723,
+              "y": 120.864
+            },
+            "RW": {
+              "x": 86.438,
+              "y": 118.464
+            },
+            "LA": {
+              "x": 98.035,
+              "y": 145.92
+            },
+            "RA": {
+              "x": 108.038,
+              "y": 138.259
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 104.256,
+              "y": 118.694
+            },
+            "RW": {
+              "x": 86.899,
+              "y": 119.578
+            },
+            "LA": {
+              "x": 98.074,
+              "y": 145.939
+            },
+            "RA": {
+              "x": 108.077,
+              "y": 138.278
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 105.523,
+              "y": 115.853
+            },
+            "RW": {
+              "x": 86.611,
+              "y": 120.23
+            },
+            "LA": {
+              "x": 98.054,
+              "y": 145.901
+            },
+            "RA": {
+              "x": 107.885,
+              "y": 138.47
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 99.187,
+              "y": 112.32
+            },
+            "RW": {
+              "x": 86.861,
+              "y": 115.238
+            },
+            "LA": {
+              "x": 98.419,
+              "y": 145.747
+            },
+            "RA": {
+              "x": 107.443,
+              "y": 138.547
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 94.81,
+              "y": 111.034
+            },
+            "RW": {
+              "x": 87.821,
+              "y": 111.571
+            },
+            "LA": {
+              "x": 98.592,
+              "y": 145.709
+            },
+            "RA": {
+              "x": 107.347,
+              "y": 138.566
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 90.451,
+              "y": 109.766
+            },
+            "RW": {
+              "x": 88.781,
+              "y": 107.904
+            },
+            "LA": {
+              "x": 98.784,
+              "y": 145.632
+            },
+            "RA": {
+              "x": 107.29,
+              "y": 138.566
+            }
+          }
+        }
+      ]
+    },
+    "northWest": {
+      "frames": [
+        "unit.water.sura/bendNorthWest/0",
+        "unit.water.sura/bendNorthWest/1",
+        "unit.water.sura/bendNorthWest/2",
+        "unit.water.sura/bendNorthWest/3",
+        "unit.water.sura/bendNorthWest/4",
+        "unit.water.sura/bendNorthWest/5",
+        "unit.water.sura/bendNorthWest/5",
+        "unit.water.sura/bendNorthWest/7",
+        "unit.water.sura/bendNorthWest/8",
+        "unit.water.sura/bendNorthWest/9",
+        "unit.water.sura/bendNorthWest/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 80.698,
+              "y": 108.0
+            },
+            "RW": {
+              "x": 101.798,
+              "y": 109.306
+            },
+            "LA": {
+              "x": 93.082,
+              "y": 145.152
+            },
+            "RA": {
+              "x": 112.358,
+              "y": 142.694
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 76.858,
+              "y": 111.514
+            },
+            "RW": {
+              "x": 97.786,
+              "y": 110.438
+            },
+            "LA": {
+              "x": 92.986,
+              "y": 145.152
+            },
+            "RA": {
+              "x": 112.55,
+              "y": 142.79
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 73.498,
+              "y": 114.566
+            },
+            "RW": {
+              "x": 94.579,
+              "y": 111.61
+            },
+            "LA": {
+              "x": 92.851,
+              "y": 145.152
+            },
+            "RA": {
+              "x": 112.666,
+              "y": 142.752
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 70.214,
+              "y": 117.792
+            },
+            "RW": {
+              "x": 91.354,
+              "y": 113.491
+            },
+            "LA": {
+              "x": 92.755,
+              "y": 145.171
+            },
+            "RA": {
+              "x": 112.781,
+              "y": 142.79
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 69.638,
+              "y": 119.04
+            },
+            "RW": {
+              "x": 89.357,
+              "y": 114.893
+            },
+            "LA": {
+              "x": 92.506,
+              "y": 145.133
+            },
+            "RA": {
+              "x": 112.896,
+              "y": 142.694
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 70.426,
+              "y": 119.002
+            },
+            "RW": {
+              "x": 88.474,
+              "y": 116.41
+            },
+            "LA": {
+              "x": 92.41,
+              "y": 145.133
+            },
+            "RA": {
+              "x": 112.954,
+              "y": 142.675
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 70.426,
+              "y": 119.002
+            },
+            "RW": {
+              "x": 88.474,
+              "y": 116.41
+            },
+            "LA": {
+              "x": 92.41,
+              "y": 145.133
+            },
+            "RA": {
+              "x": 112.954,
+              "y": 142.675
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 73.843,
+              "y": 115.795
+            },
+            "RW": {
+              "x": 87.11,
+              "y": 117.888
+            },
+            "LA": {
+              "x": 92.448,
+              "y": 145.114
+            },
+            "RA": {
+              "x": 112.57,
+              "y": 142.771
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 77.069,
+              "y": 111.629
+            },
+            "RW": {
+              "x": 92.794,
+              "y": 114.221
+            },
+            "LA": {
+              "x": 92.794,
+              "y": 145.133
+            },
+            "RA": {
+              "x": 112.282,
+              "y": 142.694
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 78.874,
+              "y": 109.805
+            },
+            "RW": {
+              "x": 97.306,
+              "y": 111.763
+            },
+            "LA": {
+              "x": 92.928,
+              "y": 145.133
+            },
+            "RA": {
+              "x": 112.301,
+              "y": 142.694
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 80.698,
+              "y": 108.0
+            },
+            "RW": {
+              "x": 101.798,
+              "y": 109.306
+            },
+            "LA": {
+              "x": 93.082,
+              "y": 145.152
+            },
+            "RA": {
+              "x": 112.358,
+              "y": 142.694
+            }
+          }
+        }
+      ]
+    },
+    "north": {
+      "frames": [
+        "unit.water.sura/bendNorth/0",
+        "unit.water.sura/bendNorth/1",
+        "unit.water.sura/bendNorth/2",
+        "unit.water.sura/bendNorth/3",
+        "unit.water.sura/bendNorth/4",
+        "unit.water.sura/bendNorth/5",
+        "unit.water.sura/bendNorth/6",
+        "unit.water.sura/bendNorth/7",
+        "unit.water.sura/bendNorth/8",
+        "unit.water.sura/bendNorth/9",
+        "unit.water.sura/bendNorth/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 84.691,
+              "y": 103.546
+            },
+            "RW": {
+              "x": 101.741,
+              "y": 102.682
+            },
+            "LA": {
+              "x": 91.469,
+              "y": 137.03
+            },
+            "RA": {
+              "x": 106.099,
+              "y": 143.616
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 79.507,
+              "y": 104.736
+            },
+            "RW": {
+              "x": 97.786,
+              "y": 101.76
+            },
+            "LA": {
+              "x": 91.469,
+              "y": 136.992
+            },
+            "RA": {
+              "x": 106.08,
+              "y": 143.731
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 73.939,
+              "y": 105.466
+            },
+            "RW": {
+              "x": 94.31,
+              "y": 101.184
+            },
+            "LA": {
+              "x": 91.43,
+              "y": 136.954
+            },
+            "RA": {
+              "x": 106.118,
+              "y": 143.75
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 66.106,
+              "y": 105.811
+            },
+            "RW": {
+              "x": 89.626,
+              "y": 101.011
+            },
+            "LA": {
+              "x": 91.45,
+              "y": 136.954
+            },
+            "RA": {
+              "x": 106.118,
+              "y": 143.808
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 60.902,
+              "y": 105.581
+            },
+            "RW": {
+              "x": 86.438,
+              "y": 101.088
+            },
+            "LA": {
+              "x": 91.334,
+              "y": 136.838
+            },
+            "RA": {
+              "x": 106.138,
+              "y": 143.75
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 57.197,
+              "y": 104.774
+            },
+            "RW": {
+              "x": 84.173,
+              "y": 101.779
+            },
+            "LA": {
+              "x": 91.315,
+              "y": 136.781
+            },
+            "RA": {
+              "x": 106.118,
+              "y": 143.731
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 55.718,
+              "y": 103.814
+            },
+            "RW": {
+              "x": 82.464,
+              "y": 102.163
+            },
+            "LA": {
+              "x": 91.315,
+              "y": 136.8
+            },
+            "RA": {
+              "x": 106.061,
+              "y": 143.75
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 56.851,
+              "y": 102.355
+            },
+            "RW": {
+              "x": 81.869,
+              "y": 102.298
+            },
+            "LA": {
+              "x": 91.373,
+              "y": 136.8
+            },
+            "RA": {
+              "x": 105.715,
+              "y": 143.635
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 69.043,
+              "y": 102.202
+            },
+            "RW": {
+              "x": 90.259,
+              "y": 102.298
+            },
+            "LA": {
+              "x": 91.469,
+              "y": 136.934
+            },
+            "RA": {
+              "x": 105.792,
+              "y": 143.501
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 76.877,
+              "y": 102.874
+            },
+            "RW": {
+              "x": 96.0,
+              "y": 102.49
+            },
+            "LA": {
+              "x": 91.469,
+              "y": 136.973
+            },
+            "RA": {
+              "x": 105.926,
+              "y": 143.539
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 84.691,
+              "y": 103.546
+            },
+            "RW": {
+              "x": 101.741,
+              "y": 102.682
+            },
+            "LA": {
+              "x": 91.469,
+              "y": 137.03
+            },
+            "RA": {
+              "x": 106.099,
+              "y": 143.616
+            }
+          }
+        }
+      ]
+    },
+    "northEast": {
+      "frames": [
+        "unit.water.sura/bendNorthEast/0",
+        "unit.water.sura/bendNorthEast/1",
+        "unit.water.sura/bendNorthEast/2",
+        "unit.water.sura/bendNorthEast/3",
+        "unit.water.sura/bendNorthEast/4",
+        "unit.water.sura/bendNorthEast/5",
+        "unit.water.sura/bendNorthEast/6",
+        "unit.water.sura/bendNorthEast/7",
+        "unit.water.sura/bendNorthEast/8",
+        "unit.water.sura/bendNorthEast/9",
+        "unit.water.sura/bendNorthEast/0"
+      ],
+      "frameMs": [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
+      "sourceSize": {
+        "width": 192,
+        "height": 192
+      },
+      "root": {
+        "x": 96.0,
+        "y": 151
+      },
+      "scale": 1,
+      "frameSize": {
+        "width": 192,
+        "height": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.786458
+      },
+      "keyFrames": {
+        "W2": {
+          "frame": 2,
+          "role": "anticipation"
+        },
+        "W3": {
+          "frame": 3,
+          "role": "anticipation"
+        },
+        "W4": {
+          "frame": 5,
+          "role": "contact"
+        },
+        "W5": {
+          "frame": 8,
+          "role": "recovery"
+        }
+      },
+      "smearFrame": 4,
+      "attacks": [
+        {
+          "id": "water-strike",
+          "effectId": "fx.water.bolt",
+          "releases": [
+            {
+              "frame": 5,
+              "launchFrame": 5,
+              "socket": "LW",
+              "launchHoldMs": 80,
+              "impactHoldMs": 80,
+              "shakeTiles": 0.034
+            }
+          ],
+          "damageRelease": 0
+        }
+      ],
+      "socketsPerFrame": [
+        {
+          "frame": 0,
+          "sockets": {
+            "LW": {
+              "x": 85.171,
+              "y": 111.36
+            },
+            "RW": {
+              "x": 109.344,
+              "y": 99.744
+            },
+            "LA": {
+              "x": 89.683,
+              "y": 135.629
+            },
+            "RA": {
+              "x": 95.251,
+              "y": 145.517
+            }
+          }
+        },
+        {
+          "frame": 1,
+          "sockets": {
+            "LW": {
+              "x": 82.195,
+              "y": 110.438
+            },
+            "RW": {
+              "x": 108.154,
+              "y": 97.498
+            },
+            "LA": {
+              "x": 89.76,
+              "y": 135.629
+            },
+            "RA": {
+              "x": 95.059,
+              "y": 145.594
+            }
+          }
+        },
+        {
+          "frame": 2,
+          "sockets": {
+            "LW": {
+              "x": 78.221,
+              "y": 108.672
+            },
+            "RW": {
+              "x": 106.81,
+              "y": 95.654
+            },
+            "LA": {
+              "x": 89.837,
+              "y": 135.59
+            },
+            "RA": {
+              "x": 94.982,
+              "y": 145.594
+            }
+          }
+        },
+        {
+          "frame": 3,
+          "sockets": {
+            "LW": {
+              "x": 71.251,
+              "y": 105.158
+            },
+            "RW": {
+              "x": 103.891,
+              "y": 93.504
+            },
+            "LA": {
+              "x": 89.971,
+              "y": 135.629
+            },
+            "RA": {
+              "x": 94.848,
+              "y": 145.632
+            }
+          }
+        },
+        {
+          "frame": 4,
+          "sockets": {
+            "LW": {
+              "x": 64.992,
+              "y": 101.952
+            },
+            "RW": {
+              "x": 101.683,
+              "y": 92.179
+            },
+            "LA": {
+              "x": 90.067,
+              "y": 135.514
+            },
+            "RA": {
+              "x": 94.771,
+              "y": 145.555
+            }
+          }
+        },
+        {
+          "frame": 5,
+          "sockets": {
+            "LW": {
+              "x": 59.29,
+              "y": 98.688
+            },
+            "RW": {
+              "x": 99.571,
+              "y": 91.718
+            },
+            "LA": {
+              "x": 90.144,
+              "y": 135.475
+            },
+            "RA": {
+              "x": 94.694,
+              "y": 145.536
+            }
+          }
+        },
+        {
+          "frame": 6,
+          "sockets": {
+            "LW": {
+              "x": 55.642,
+              "y": 96.403
+            },
+            "RW": {
+              "x": 98.093,
+              "y": 91.277
+            },
+            "LA": {
+              "x": 90.106,
+              "y": 135.475
+            },
+            "RA": {
+              "x": 94.637,
+              "y": 145.498
+            }
+          }
+        },
+        {
+          "frame": 7,
+          "sockets": {
+            "LW": {
+              "x": 55.411,
+              "y": 95.194
+            },
+            "RW": {
+              "x": 97.92,
+              "y": 91.219
+            },
+            "LA": {
+              "x": 90.163,
+              "y": 135.494
+            },
+            "RA": {
+              "x": 94.56,
+              "y": 145.267
+            }
+          }
+        },
+        {
+          "frame": 8,
+          "sockets": {
+            "LW": {
+              "x": 68.256,
+              "y": 101.53
+            },
+            "RW": {
+              "x": 103.238,
+              "y": 94.771
+            },
+            "LA": {
+              "x": 89.952,
+              "y": 135.59
+            },
+            "RA": {
+              "x": 94.944,
+              "y": 145.248
+            }
+          }
+        },
+        {
+          "frame": 9,
+          "sockets": {
+            "LW": {
+              "x": 76.704,
+              "y": 106.445
+            },
+            "RW": {
+              "x": 106.291,
+              "y": 97.248
+            },
+            "LA": {
+              "x": 89.818,
+              "y": 135.61
+            },
+            "RA": {
+              "x": 95.098,
+              "y": 145.382
+            }
+          }
+        },
+        {
+          "frame": 10,
+          "sockets": {
+            "LW": {
+              "x": 85.171,
+              "y": 111.36
+            },
+            "RW": {
+              "x": 109.344,
+              "y": 99.744
+            },
+            "LA": {
+              "x": 89.683,
+              "y": 135.629
+            },
+            "RA": {
+              "x": 95.251,
+              "y": 145.517
+            }
+          }
+        }
+      ]
+    }
+  }
+}

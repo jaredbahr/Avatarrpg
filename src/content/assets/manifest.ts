@@ -29,8 +29,20 @@
  * the clip logic run the same path whether the art is real or not.
  */
 
-import type { ClipDef, ClipName, Heading, LocomotionDef, MeleeDirection } from './clips';
+import type {
+  ClipDef,
+  ClipName,
+  Heading,
+  HeadingClipBase,
+  LocomotionDef,
+  MeleeDirection,
+} from './clips';
 import { HEADINGS, headingClip } from './clips';
+import { BANDITS_G1_TRIMS } from './banditsG1';
+import { residentGrid } from './residentGrid';
+import { PARTY_G1_TRIMS } from './partyG1';
+import { WORLD_PARTY, type WorldPartyName } from './worldParty';
+import { WORLD_STYLE_TEST, type WorldStyleName } from './worldStyleTest';
 
 export type AssetEntry =
   | {
@@ -161,52 +173,99 @@ function rikoSheet(): SheetEntry {
 /** One complete authored G walk loop covers this many logical ground tiles. */
 export const G_STRIDE_TILES = 1.825;
 
+/** The jog (ADR 0095): one loop of ten cels at 60 ms a cel. Its cels ship; no move plays them for now. */
+const JOG_CELS = 10;
+const JOG_CEL_MS = 60;
+
 /**
- * Distance-phased clip time for a G walk. The source art's measured root
- * travel varies sharply by heading and made short in-game moves cycle several
- * times. One stride target keeps the authored loop coherent while preserving
- * every existing cel and its order.
+ * Tiles one walk loop covers as drawn, by name and heading (`HEADINGS` order),
+ * at one art px a world px: `walk_stride.py`'s fit, so the walk's clip time a
+ * tile holds its planted foot (the animator stretches it by the figure scale).
+ * Every native-G1 figure walks (ADR 0095's amendment, owner, 2026-10-28:
+ * "Walk, a bit slower") until the ~74 px redraw draws a natural-stride jog.
  */
-function gWalkMsPerTile(frameCount: number): Record<Heading, number> {
-  const msPerTile = (frameCount * 114) / G_STRIDE_TILES;
-  return Object.fromEntries(HEADINGS.map((heading) => [heading, msPerTile])) as Record<
-    Heading,
-    number
-  >;
+export const G1_WALK: Readonly<Record<string, readonly number[]>> = {
+  kaya: [0.45, 0.51, 0.46, 0.47, 0.43, 0.48, 0.33, 0.46],
+  sura: [0.46, 0.51, 0.41, 0.48, 0.43, 0.44, 0.34, 0.43],
+  bo: [0.46, 0.55, 0.46, 0.51, 0.43, 0.47, 0.37, 0.48],
+  thug: [0.48, 0.58, 0.51, 0.56, 0.47, 0.53, 0.37, 0.49],
+  slinger: [0.49, 0.57, 0.46, 0.58, 0.48, 0.5, 0.41, 0.51],
+  bruiser: [0.52, 0.66, 0.55, 0.55, 0.5, 0.56, 0.49, 0.57],
+  household: [0.44, 0.52, 0.46, 0.54, 0.43, 0.46, 0.38, 0.46],
+  watch: [0.55, 0.51, 0.46, 0.59, 0.46, 0.51, 0.38, 0.47],
+  mira: [0.53, 0.65, 0.53, 0.62, 0.53, 0.56, 0.44, 0.56],
+  gao: [0.49, 0.58, 0.46, 0.57, 0.5, 0.51, 0.43, 0.54],
+  pella: [0.37, 0.46, 0.41, 0.44, 0.37, 0.41, 0.28, 0.4],
+  dorin: [0.52, 0.62, 0.56, 0.6, 0.49, 0.52, 0.43, 0.55],
+};
+/**
+ * Names that walk everywhere at the amble (the owner, 2026-10-28: "Mira always
+ * walks"): `residentMotion.ts` slows every move they make, not only errands.
+ */
+const G1_AMBLES = new Set(['mira']);
+
+/**
+ * A G1 sheet's eight-way idle, rest, walk and (unplayed) jog, and the
+ * locomotion that walks every move at its authored 114 ms a cel, timed to the
+ * ground its drawn feet cover (`G1_WALK`), from the quarter-cycle passing pose.
+ */
+function g1Locomotion(
+  clips: Partial<Record<ClipName, ClipDef>>,
+  frames: (clip: ClipName, count: number) => string[],
+  name: string,
+  walkCels: number,
+): LocomotionDef {
+  const fit = G1_WALK[name];
+  const msPerTile = {} as Record<Heading, number>;
+  HEADINGS.forEach((heading, i) => {
+    const add = (base: HeadingClipBase, count: number, fps: number) => {
+      const clip = headingClip(base, heading);
+      clips[clip] = { frames: frames(clip, count), fps, loop: true };
+    };
+    // Without a fit (the quarry bender's 128 px G sheet) the walk keeps ADR 0067's shared stride.
+    msPerTile[heading] = (walkCels * 114) / (fit?.[i] ?? G_STRIDE_TILES);
+    add('idle', 4, 4);
+    add('rest', 1, 1);
+    if (fit) add('jog', JOG_CELS, 1000 / JOG_CEL_MS);
+    add('walk', walkCels, 1000 / 114);
+  });
+  return {
+    headings: 8,
+    ...(G1_AMBLES.has(name) && { amble: true as const }),
+    ...(fit && { walkCelMs: 114 }),
+    walkMsPerTile: msPerTile,
+    walkStartMs: (walkCels / 4) * 114,
+    walkCycleMs: walkCels * 114,
+    authoredBob: true,
+  };
 }
 
-/** PixelLab G locomotion and fighting stance plus the existing authored action poses. */
+/**
+ * The party's G sheets, on the world's native G1 grid (ADR 0089): 64 px a
+ * tile, a 64x96 cel, eight-way idle, walk, rest and fighting stance, the
+ * mirrored cast and KO (trimmed cels, `partyG1.ts`), and Kaya's and Sura's
+ * riverside wave and tea, all on the same pages and grid.
+ */
 function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): SheetEntry {
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
-  const walk = (clip: ClipName): ClipDef => ({
-    frames: frames(clip, 12),
-    fps: 1000 / 114,
-    loop: true,
-  });
-  const idle = (clip: ClipName): ClipDef => ({ frames: frames(clip, 4), fps: 4, loop: true });
-  const rest = (clip: ClipName): ClipDef => ({ frames: frames(clip, 1), fps: 1, loop: true });
   // The approved guard loop plays eight cels at 150 ms each (ADR 0052).
   const stance = (clip: ClipName): ClipDef => ({
     frames: frames(clip, 8),
     fps: 1000 / 150,
     loop: true,
   });
+  const trims = PARTY_G1_TRIMS[name];
   const clips: Partial<Record<ClipName, ClipDef>> = {
-    cast: { frames: frames('cast', 3), fps: 8, loop: false },
-    ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    cast: { frames: frames('cast', 3), fps: 8, loop: false, ...trims.cast },
+    ko: { frames: frames('ko', 1), fps: 1, loop: false, ...trims.ko },
   };
-  for (const heading of HEADINGS) {
-    clips[headingClip('idle', heading)] = idle(headingClip('idle', heading));
-    clips[headingClip('walk', heading)] = walk(headingClip('walk', heading));
-    clips[headingClip('rest', heading)] = rest(headingClip('rest', heading));
+  const locomotion = g1Locomotion(clips, frames, name, 12);
+  for (const heading of HEADINGS)
     clips[headingClip('stance', heading)] = stance(headingClip('stance', heading));
-  }
-  // The riverside draws Kaya and Sura from this sheet too (ADR 0054). Their
-  // wave and seated tea have no G art yet, so the preserved legacy cels ride
-  // on a small lossless page of their own and are mirrored like cast and KO.
-  const riverside = name === 'kaya' || name === 'sura';
-  if (riverside) {
+  // The riverside draws Kaya and Sura from this sheet too (ADR 0054): their
+  // wave and seated tea, reduced onto the same grid, ride on page 1.
+  if (name === 'kaya' || name === 'sura') {
     clips.wave = { frames: frames('wave', 2), fps: 4, loop: true };
     clips.tea = { frames: frames('tea', 2), fps: 0.25, loop: true };
   }
@@ -220,24 +279,16 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
       `art/units/${name}-g-2.json`,
       `art/units/${name}-g-3.json`,
       `art/units/${name}-g-4.json`,
-      ...(riverside ? [`art/units/riverside-${name}.json`] : []),
     ],
     clipData: `art/units/${name}-g-clips.json`,
     // The bend loads on its own, only when something asks for it (ADR 0055).
     bend: `art/units/${name}-bend.json`,
     bendPages: [`art/units/${name}-g-bend.json`],
-    pixelsPerTile: 128,
+    pixelsPerTile: 64,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    // Cel 3 is the first planted passing pose after the wide opening stride.
-    locomotion: {
-      headings: 8,
-      walkMsPerTile: gWalkMsPerTile(12),
-      walkStartMs: 3 * 114,
-      walkCycleMs: 12 * 114,
-      authoredBob: true,
-    },
+    locomotion,
     palette,
     clips,
   };
@@ -246,53 +297,77 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
 type EnemyGName = 'thug' | 'slinger' | 'bruiser' | 'quarrybender';
 
 /**
- * A toned PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle,
- * walk and rest at the party's scale and walk rate, and the old sheet's
- * cast, hit and KO cels, mirrored as the party's legacy actions are. The
- * bruiser's club needs a 160 px cel.
+ * A PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle, walk
+ * and rest at the party's scale and walk rate, and the mirrored legacy cast,
+ * hit and KO, as the party's legacy actions are. The thug, the slinger and the
+ * bruiser also draw their own G hits (eight headings) and knockouts (the four
+ * diagonals) from two further pages and a clip file (ADR 0059, ADR 0063), as
+ * the party does.
+ *
+ * The forest bandits (thug, slinger, bruiser) are on the world's native G1
+ * grid (ADR 0091): 64 px a tile, a 64x96 cel, the thug's 80 and the
+ * bruiser's 96 px wide for the club's swing; their one-cel hit and KO are trimmed cels (`banditsG1.ts`). The
+ * quarry bender is still the 128 px G sheet.
  */
 function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
   const key = `unit.enemy.${name}`;
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const g1 = name === 'quarrybender' ? undefined : BANDITS_G1_TRIMS[name];
   const clips: Partial<Record<ClipName, ClipDef>> = {
     cast: { frames: frames('cast', 3), fps: 8, loop: false },
-    hit: { frames: frames('hit', 1), fps: 1, loop: false },
-    ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    hit: { frames: frames('hit', 1), fps: 1, loop: false, ...g1?.hit },
+    ko: { frames: frames('ko', 1), fps: 1, loop: false, ...g1?.ko },
   };
-  for (const heading of HEADINGS) {
-    clips[headingClip('idle', heading)] = {
-      frames: frames(headingClip('idle', heading), 4),
-      fps: 4,
-      loop: true,
-    };
-    clips[headingClip('walk', heading)] = {
-      frames: frames(headingClip('walk', heading), 8),
-      fps: 1000 / 114,
-      loop: true,
-    };
-    clips[headingClip('rest', heading)] = {
-      frames: frames(headingClip('rest', heading), 1),
-      fps: 1,
-      loop: true,
-    };
-  }
+  const locomotion = g1Locomotion(clips, frames, name, 8);
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
-    pixelsPerTile: 128,
-    ...(name === 'bruiser' ? { frameSize: { w: 160, h: 192 } } : {}),
+    // Page 2 holds the knockouts and page 3 the hits, whose clips arrive with them.
+    ...(name === 'thug' || name === 'slinger' || name === 'bruiser'
+      ? {
+          atlasPages: [`art/units/${name}-g-2.json`, `art/units/${name}-g-3.json`],
+          clipData: `art/units/${name}-g-clips.json`,
+        }
+      : {}),
+    pixelsPerTile: g1 ? 64 : 128,
+    // The club's swing needs a wider cel than a tile (ADR 0032): 80 px for the thug, 96 for the bruiser.
+    ...(name === 'thug' ? { frameSize: { w: 80, h: 96 } } : {}),
+    ...(name === 'bruiser' ? { frameSize: { w: 96, h: 96 } } : {}),
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    // Cel 2 is the equivalent quarter-cycle passing pose in the eight-cel family.
-    locomotion: {
-      headings: 8,
-      walkMsPerTile: gWalkMsPerTile(8),
-      walkStartMs: 2 * 114,
-      walkCycleMs: 8 * 114,
-      authoredBob: true,
-    },
+    locomotion,
+    palette,
+    clips,
+  };
+}
+
+type ResidentGName = 'household' | 'watch' | 'mira' | 'gao' | 'pella' | 'dorin';
+
+/**
+ * A Ba Dan resident on a G sheet (issue #284, ADR 0091,
+ * `scripts/art/residents-g1.ts`): PixelLab art redrawn on the world's native
+ * G1 grid by the party's recipe (ADR 0089), eight-way idle, walk and rest at
+ * the party's scale and walk rate, with no combat clips. The walk is eight
+ * cels like the enemies', so it shares their stride timing.
+ */
+function residentGSheet(name: ResidentGName, key: string, palette: string): SheetEntry {
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const clips: Partial<Record<ClipName, ClipDef>> = {};
+  const locomotion = g1Locomotion(clips, frames, name, 8);
+  // The grid the packer used (`residentGrid.ts`): 64 px a tile, a 64x96 cel,
+  // which is the default cel for that grid, so no frame size is declared.
+  const grid = residentGrid();
+  return {
+    kind: 'sheet',
+    atlas: `art/units/${name}-g.json`,
+    pixelsPerTile: grid.pixelsPerTile,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'both',
+    locomotion,
     palette,
     clips,
   };
@@ -344,6 +419,163 @@ function cuttingSheet(name: string, palette: string): SheetEntry {
       ko: { frames: frames('ko', 1), fps: 1, loop: false },
     },
   };
+}
+
+/**
+ * The world-style figure test (art/source/style-test-world-chars, not shipped by
+ * default): Kaya, Sura, Bo and Gao redrawn in the Ba Dan painting's own
+ * rendering, about 74 art px tall, with a designed six-cel walk in the four
+ * diagonals (the cardinals borrow the nearest one). Shown only with
+ * `?style=world` (`useWorldStyleTest`). The atlas says 80 px a tile so that the
+ * oblique figure scale (1.25) lands one art px on exactly one world px: crisp
+ * at every integer zoom, with no resample. Locomotion only; anything else asks
+ * the idle (ADR 0003's fallback).
+ */
+function worldStyleSheet(name: WorldStyleName, key: string, palette: string): SheetEntry {
+  const t = WORLD_STYLE_TEST[name];
+  const frames = (clip: string, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const drawn: Readonly<Record<Heading, string>> = {
+    east: 'walkSouthEast',
+    southEast: 'walkSouthEast',
+    south: 'walkSouthWest',
+    southWest: 'walkSouthWest',
+    west: 'walkSouthWest',
+    northWest: 'walkNorthWest',
+    north: 'walkNorthWest',
+    northEast: 'walkNorthEast',
+  };
+  const clips: Partial<Record<ClipName, ClipDef>> = {};
+  const msPerTile = {} as Record<Heading, number>;
+  HEADINGS.forEach((heading, i) => {
+    const own = drawn[heading].slice('walk'.length);
+    clips[headingClip('idle', heading)] = {
+      frames: frames(`idle${own}`, 2),
+      fps: 1,
+      loop: true,
+      frameMs: t.idleMs,
+    };
+    clips[headingClip('rest', heading)] = { frames: frames(`idle${own}`, 1), fps: 1, loop: true };
+    clips[headingClip('walk', heading)] = {
+      frames: frames(`walk${own}`, t.walkCels),
+      fps: 1000 / t.walkCelMs,
+      loop: true,
+    };
+    msPerTile[heading] = t.walkMsPerTile[i] ?? t.walkCels * t.walkCelMs;
+  });
+  return {
+    kind: 'sheet',
+    atlas: `art/units/style-test/${name}.json`,
+    pixelsPerTile: 80,
+    frameSize: { w: 128, h: 128 },
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: t.anchorY },
+    facing: 'both',
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: msPerTile,
+      walkStartMs: t.walkStartCel * t.walkCelMs,
+      walkCycleMs: t.walkCels * t.walkCelMs,
+      authoredBob: true,
+    },
+    palette,
+    clips,
+  };
+}
+
+/**
+ * Kaya, Sura and Bo in the world's rendering, phase 2a (art/source/party-world): the curated party-g1 roots restyled
+ * as #317 restyled them, every heading drawn (Bo's three west-facing ones mirror his east-facing ones), and every clip
+ * the party plays: idle and rest, the designed six-cel walk, the fighting stance, the hits and knockouts (from the clip
+ * file, at the shipped sheets' own timing), and the bends (party-g1's shipped bend sets on these cels). 80 px a tile, so
+ * the oblique figure scale puts one art px on one world px. Every clip the party plays is drawn, but
+ * they draw only under `?style=world` until the owner has seen them (ADR 0097): switching the default retires the G1
+ * sheets that the art tests pin, which is its own change.
+ */
+/** The 192 px cels' size and foot point: the knockouts', the legacy KO's and the cast's. */
+const WIDE = { frameSize: { w: 192, h: 192 }, anchor: { x: 0.5, y: 151 / 192 } } as const;
+
+function worldPartySheet(name: WorldPartyName, key: string, palette: string): SheetEntry {
+  const t = WORLD_PARTY[name];
+  const frames = (clip: string, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const clips: Partial<Record<ClipName, ClipDef>> = {
+    // The legacy clips, on the 192 px page as party-g1 packs them: the one-cel KO a non-diagonal fall asks for (the
+    // south-east knockout's last cel) and the mirrored cast non-bend abilities play (the east bend's stance, wind-up
+    // and strike).
+    ko: { frames: frames('ko', 1), fps: 1, loop: false, ...WIDE },
+    cast: { frames: frames('cast', 3), fps: 8, loop: false, ...WIDE },
+  };
+  const msPerTile = {} as Record<Heading, number>;
+  HEADINGS.forEach((heading, i) => {
+    const add = (base: HeadingClipBase, count: number, def: Omit<ClipDef, 'frames'>) => {
+      const clip = headingClip(base, heading);
+      clips[clip] = { frames: frames(clip, count), ...def };
+    };
+    add('idle', 2, { fps: 1, loop: true, frameMs: t.idleMs });
+    add('rest', 1, { fps: 1, loop: true });
+    add('walk', t.walkCels, { fps: 1000 / t.walkCelMs, loop: true });
+    add('stance', 2, { fps: 1, loop: true, frameMs: t.idleMs });
+    msPerTile[heading] = t.walkMsPerTile[i] ?? t.walkCels * t.walkCelMs;
+  });
+  // The riverside draws Kaya and Sura from this sheet too (ADR 0054): their wave and seated tea, the G1 cels carried
+  // onto this grid (not redrawn).
+  if (name === 'kaya' || name === 'sura') {
+    clips.wave = { frames: frames('wave', 2), fps: 4, loop: true };
+    clips.tea = { frames: frames('tea', 2), fps: 0.25, loop: true };
+  }
+  return {
+    kind: 'sheet',
+    atlas: `art/units/world/${name}.json`,
+    // Page 2: the knockouts, 192 px cels; their clips and the hits' arrive with the clip file.
+    atlasPages: [`art/units/world/${name}-2.json`],
+    clipData: `art/units/world/${name}-clips.json`,
+    ...(t.bend && {
+      bend: `art/units/world/${name}-bend.json`,
+      bendPages: [`art/units/world/${name}-bend-page.json`],
+    }),
+    pixelsPerTile: 80,
+    frameSize: { w: 128, h: 128 },
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: t.anchorY },
+    facing: 'both',
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: msPerTile,
+      walkStartMs: t.walkStartCel * t.walkCelMs,
+      walkCycleMs: t.walkCels * t.walkCelMs,
+      authoredBob: true,
+    },
+    palette,
+    clips,
+  };
+}
+
+const WORLD_PARTY_KEYS: Readonly<Record<string, readonly [WorldPartyName, string]>> = {
+  'unit.fire.kaya': ['kaya', 'fire'],
+  'unit.water.sura': ['sura', 'water'],
+  'unit.earth.bo': ['bo', 'earth'],
+};
+const WORLD_STYLE_KEYS: Readonly<Record<string, readonly [WorldStyleName, string]>> = {
+  'npc.shopkeeper': ['gao', 'earth'],
+};
+let worldStyle: Readonly<Record<string, AssetEntry>> | undefined;
+
+/**
+ * `?style=world`: draw the world-style figures instead of the shipped sheets (a comparison, not yet the default): the
+ * party's phase 2a sheets (ADR 0097) and #317's Gao.
+ */
+export function useWorldStyleTest(): void {
+  worldStyle = Object.fromEntries([
+    ...Object.entries(WORLD_PARTY_KEYS).map(([key, [name, palette]]) => [
+      key,
+      worldPartySheet(name, key, palette),
+    ]),
+    ...Object.entries(WORLD_STYLE_KEYS).map(([key, [name, palette]]) => [
+      key,
+      worldStyleSheet(name, key, palette),
+    ]),
+  ]);
 }
 
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
@@ -414,18 +646,21 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
-  'npc.elder': image('art/npcs/mira.png', 'neutral'),
-  'npc.shopkeeper': image('art/npcs/gao.png', 'earth'),
+  // The residents' G sheets (issue #284). Dema and the shrine figure share Mira's,
+  // and Sen Gao's, as they shared the old images (owner decision pending).
+  'npc.elder': residentGSheet('mira', 'npc.elder', 'neutral'),
+  'npc.shopkeeper': residentGSheet('gao', 'npc.shopkeeper', 'earth'),
   'world.turtle_ducks': image('art/world/turtle-ducks-nest.webp', 'earth'),
   'world.runoff_marker': image('art/world/runoff-marker.png', 'neutral'),
   'world.tea_station': image('art/props/tea-station.png', 'earth'),
-  'npc.kid': image('art/npcs/pella.png', 'air'),
-  'npc.dorin': image('art/npcs/dorin.png', 'earth'),
-  'npc.guard': painter('villager', 'earth', 'guard'),
-  // ADR 0047 placeholders until A1's art: Hanru, distinct from both of
-  // Dorin's sprites (D7), and an adult of Pella's household who is no named person.
+  'npc.kid': residentGSheet('pella', 'npc.kid', 'air'),
+  'npc.dorin': residentGSheet('dorin', 'npc.dorin', 'earth'),
+  'npc.guard': residentGSheet('watch', 'npc.guard', 'earth'),
+  // ADR 0047's placeholder until A1's art: Hanru, distinct from both of Dorin's
+  // sprites (D7). His look is an owner decision, so he keeps the painted figure.
   'npc.hanru': painter('villager', 'nonbender', 'guard'),
-  'npc.household': painter('villager', 'earth'),
+  // An adult of Pella's household who is no named person; the returnees share it.
+  'npc.household': residentGSheet('household', 'npc.household', 'earth'),
   // Until A1's notice art: a marker stone.
   'world.school_notice': painter('discovery', 'neutral', 'marker'),
   'world.route_sign': image('art/world/route-sign.png', 'neutral'),
@@ -504,7 +739,7 @@ export function sheetLocomotion(key: string | undefined): LocomotionDef | undefi
  * manifest edit, while overriding one still can.
  */
 export function resolveAsset(key: string): AssetEntry {
-  const explicit = ASSETS[key];
+  const explicit = worldStyle?.[key] ?? ASSETS[key];
   if (explicit) return explicit;
 
   if (key.startsWith('fx.')) {

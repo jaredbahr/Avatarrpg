@@ -67,7 +67,8 @@ for (const backend of ['canvas', 'webgl']) {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
-    await expect(stage).toHaveAttribute('data-illustrated-actors', '2');
+    // Sura and Kaya, and the two residents placed here, each drawn from their G sheet (ADR 0084).
+    await expect(stage).toHaveAttribute('data-illustrated-actors', '4');
     await settleLayout(page);
     /*
      * Closing the activities panel reflows the HUD, which resizes the map a

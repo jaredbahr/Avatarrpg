@@ -916,10 +916,11 @@ export interface SceneScenery extends SceneImage {
   readonly wall?: boolean;
   readonly fadeWhenOccluding?: boolean;
   /**
-   * Fade only once the figure's upper body is behind the piece. Where the ground art holds the same
-   * building, a veil over a figure whose head clears the silhouette just draws it standing on the roof.
+   * Never fade: a party member behind the piece is drawn over it as a silhouette instead
+   * (`render/reveal.ts`, ADR 0096). For art whose ground holds the same building, where a faded
+   * piece reads as the figure standing on its roof.
    */
-  readonly fadeWhenHeadHidden?: boolean;
+  readonly revealOccluded?: boolean;
   /** Connected depth slices share the lowest cutaway opacity within this scene. */
   readonly fadeGroup?: string;
   /**
@@ -938,6 +939,13 @@ export interface SceneScenery extends SceneImage {
   readonly contactShadow?: false;
   /** Runtime cast-shadow policy for art that already contains ground shade. */
   readonly castShadow?: false | 'reduced';
+  /**
+   * `'base'` for a solid piece that stands on its whole base — a building, a fence, a signpost, a log, a block: its
+   * cast starts from the lower hull of its own bottom edge and it meets the ground on a contact line, as a prop does
+   * (ADR 0093). Without it a piece is cast from the bottom centre of its box, which is right for a tree (its canopy
+   * is not on the ground) and wrong for anything whose base runs across its box at different heights.
+   */
+  readonly castFrom?: 'base';
 }
 
 export interface MapScene {
@@ -980,10 +988,17 @@ export interface MapScene {
   /** The trees whose leaves drift off in the ambience, in ground tiles at the trunk. */
   readonly canopies?: readonly Vec2[];
   /**
-   * How strongly the renderer grounds figures here (see `ActorGrounding` in
-   * render/lighting.ts). Absent, the defaults every other scene uses.
+   * How strongly the renderer grounds figures and props here, and along which
+   * key their casts fall (see `ActorGrounding` in render/lighting.ts). Absent,
+   * the defaults every other scene uses.
    */
-  readonly actorGrounding?: { readonly cast?: number; readonly contact?: number };
+  readonly actorGrounding?: {
+    readonly cast?: number;
+    readonly contact?: number;
+    readonly castKey?: { readonly x: number; readonly y: number };
+    /** The shadow's tint, 0-255 a channel: the ink that lands on the painting's own shadow tone. */
+    readonly ink?: { readonly r: number; readonly g: number; readonly b: number };
+  };
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
   readonly flock?: SceneFlock;

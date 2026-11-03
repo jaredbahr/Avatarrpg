@@ -1,6 +1,6 @@
 # ADR 0074: Raise the JavaScript budget to 360 KB
 
-**Status:** accepted, 2026-10-08
+**Status:** accepted, 2026-10-08; amended by ADR 0094 (2026-10-28), which raises the gate to 380 KB
 
 Amends ADR 0066. ADR 0057 and ADR 0060 stay in force: the Pixi stubs and the runtime validator are
 requirements, not savings to spend.

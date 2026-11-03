@@ -5,6 +5,7 @@ import type { WalkDirection } from './direction';
 import { ASSETS } from '../../content/assets/manifest';
 import type { ClipName } from '../../content/assets/clips';
 import type { Vec2 } from '../../core/types';
+import { partyScale } from './actorScale';
 import { Animator } from '../animator';
 import type { ContentIndex } from '../../core/types';
 
@@ -208,7 +209,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
     expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
   });
 
-  it('only the G sheets (the party, the thug and the quarry bandits) declare eight-way locomotion today', () => {
+  it('only the G sheets (the party, the thug, the quarry bandits and the Ba Dan residents) declare eight-way locomotion today', () => {
     const eightWay = Object.entries(ASSETS).flatMap(([key, entry]) =>
       entry.kind === 'sheet' && entry.locomotion?.headings === 8 ? [[key, entry.atlas]] : [],
     );
@@ -220,6 +221,12 @@ describe('heading vocabulary is a declared sheet capability', () => {
       ['unit.enemy.slinger', 'art/units/slinger-g.json'],
       ['unit.enemy.bruiser', 'art/units/bruiser-g.json'],
       ['unit.enemy.quarrybender', 'art/units/quarrybender-g.json'],
+      ['npc.elder', 'art/units/mira-g.json'],
+      ['npc.shopkeeper', 'art/units/gao-g.json'],
+      ['npc.kid', 'art/units/pella-g.json'],
+      ['npc.dorin', 'art/units/dorin-g.json'],
+      ['npc.guard', 'art/units/watch-g.json'],
+      ['npc.household', 'art/units/household-g.json'],
     ]);
   });
 
@@ -327,7 +334,8 @@ describe('heading vocabulary is a declared sheet capability', () => {
     it(`plays ${sprite}'s eight-way walk at its sheet-declared gait per heading`, () => {
       const sheet = ASSETS[sprite];
       if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
-      const a = new Animator(content, { motionReduced: () => false });
+      // An amble plays the fitted rate a heading; a brisk move caps it (walkPhase.test).
+      const a = new Animator(content, { motionReduced: () => false, amble: true });
       a.push(
         0,
         [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 4, y: 8 }] }],
@@ -344,23 +352,46 @@ describe('heading vocabulary is a declared sheet capability', () => {
       const sheet = ASSETS[sprite];
       if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
       const { walkMsPerTile } = sheet.locomotion;
-      // Projection chooses the heading, but does not multiply the cadence.
-      for (const [to, expected] of [
+      // Projection chooses the heading; the oblique board's figure scale stretches
+      // the clip over the ground the larger feet cover (ADR 0095).
+      for (const [to, rate] of [
         [{ x: 8, y: 4 }, walkMsPerTile.southEast],
         [{ x: 8, y: 8 }, walkMsPerTile.south],
         [{ x: 8, y: 0 }, walkMsPerTile.east],
       ] as const) {
-        const a = new Animator(content, { motionReduced: () => false });
+        const a = new Animator(content, { motionReduced: () => false, amble: true });
         a.setProjection('oblique');
         a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
         const pose = a.unitPose(300, 'u', sprite);
         const legacy = a.unitPose(300, 'u', FOUR_WAY);
+        const expected = rate / partyScale('oblique');
         expect((pose?.clipTime ?? 0) - sheet.locomotion.walkStartMs).toBeCloseTo(
           ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected,
         );
       }
     });
   }
+});
+
+describe('Mira never jogs (ADR 0095)', () => {
+  it('draws her sheet’s walk at any pace, and never resolves to a jog', () => {
+    for (const projection of ['orthographic', 'oblique'] as const) {
+      const a = new Animator(content, { motionReduced: () => false });
+      a.setProjection(projection);
+      a.push(
+        0,
+        [{ type: 'partyWalked', unitId: 'm', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
+        [],
+      );
+      const clips = new Set<string>();
+      for (let t = 0; t <= a.finishesAt + 400; t += 10)
+        clips.add(a.locomotion(t, 'm', 'rest', 'npc.elder').clip);
+      expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
+      expect([...clips].filter((clip) => clip.startsWith('jog'))).toEqual([]);
+    }
+    const mira = ASSETS['npc.elder'];
+    expect(mira?.kind === 'sheet' && mira.locomotion?.amble).toBe(true);
+  });
 });
 
 describe('the fighting stance (ADR 0052)', () => {
@@ -396,6 +427,7 @@ describe('the fighting stance (ADR 0052)', () => {
           ],
           [],
         );
+        // The brisk stroll walks (ADR 0095's amendment).
         expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
         const done = a.finishesAt + 1;
         a.prune(done);

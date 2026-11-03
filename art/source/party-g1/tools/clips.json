@@ -1,0 +1,39 @@
+{
+  "walk-n": {
+    "kind": "walk",
+    "clip": "08_01",
+    "frames": 8,
+    "amp": 1.0,
+    "action": "walk",
+    "attribution": "CMU 08_01 walk"
+  },
+  "idle-soft": {
+    "kind": "idle",
+    "clip": "77_02",
+    "frames": 4,
+    "start": 2.0,
+    "step": 0.5,
+    "amp": 0.6,
+    "action": "idle, standing still and breathing",
+    "attribution": "CMU 77_02 standing"
+  },
+  "walk-12": {
+    "kind": "walk",
+    "clip": "08_01",
+    "frames": 12,
+    "amp": 1.0,
+    "action": "walk",
+    "attribution": "CMU 08_01 walk",
+    "note": "12 cels per cycle like Kaya's shipped G walk"
+  },
+  "idle": {
+    "kind": "idle",
+    "clip": "77_02",
+    "frames": 4,
+    "start": 2.0,
+    "step": 0.5,
+    "amp": 1.5,
+    "action": "idle, breathing",
+    "attribution": "CMU 77_02 standing"
+  }
+}

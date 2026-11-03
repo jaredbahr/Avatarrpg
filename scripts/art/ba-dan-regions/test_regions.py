@@ -15,8 +15,9 @@ R = importlib.util.module_from_spec(spec)
 sys.modules["regions"] = R
 spec.loader.exec_module(R)
 
-ONE = (1150, 60, 1024, 682)  # one region: the trial's north view
-TWO = (1000, 60, 1500, 682)  # two regions side by side, 822 px of overlap
+# world px boxes (at SCALE 1 a region is 1536 x 1024 world px, ADR 0088)
+ONE = (1150, 60, 1024, 682)  # inside one region: the trial's north view
+TWO = (600, 60, 2200, 1024)  # two regions side by side, 872 px of overlap
 SHIPPED = ROOT / "public" / "art" / "maps" / "ba-dan-scene"
 TABLE = ROOT / "src" / "content" / "scenes" / "baDan.art.ts"
 
@@ -46,21 +47,28 @@ def table():
     return uprights, plates
 
 
+def painting_size():
+    """The shipped painting's width and height in painting px, read from the generated table."""
+    m = re.search(r"size: \{ width: (\d+), height: (\d+) \}", TABLE.read_text())
+    return int(m.group(1)), int(m.group(2))
+
+
 def case_plan_covers_pan_box(work):
     plan = R.make_plan()
-    assert len(plan["regions"]) == 12
+    assert len(plan["regions"]) == 6  # 3 x 2 at 1 painting px per world px
     assert R.check_plan(plan) == []
-    mo = 288
+    mo = R.px(192)
     xs = sorted({r["px"]["x"] for r in plan["regions"]})
     ys = sorted({r["px"]["y"] for r in plan["regions"]})
     assert all(R.RW - (b - a) >= mo for a, b in zip(xs, xs[1:])), xs
     assert all(R.RH - (b - a) >= mo for a, b in zip(ys, ys[1:])), ys
-    assert xs[-1] + R.RW >= 4500 and ys[-1] + R.RH >= 2400
+    assert xs[-1] + R.RW >= R.px(3000) and ys[-1] + R.RH >= R.px(1600)
+    assert all(x % R.GRID == 0 for x in xs + ys), (xs, ys)
     orders = sorted(r["order"] for r in plan["regions"])
-    assert orders == list(range(1, 13))
+    assert orders == list(range(1, len(plan["regions"]) + 1))
     # the first region is the one nearest the village centre; each later one has a painted side neighbour
     first = next(r for r in plan["regions"] if r["order"] == 1)
-    assert first["id"] in ("r1c1", "r1c2"), first["id"]
+    assert first["id"] in ("r0c1", "r1c1"), first["id"]
     # other pan boxes, and a broken plan is caught
     for box in [(-200, -100, 3000, 1600), (0, 0, 2600, 1300), (-100, -100, 5000, 3000), (10, 10, 1000, 600)]:
         p = R.make_plan(box)
@@ -322,7 +330,7 @@ def case_split_plates_cover_and_overlap(work):
         assert im.shape[:2] == (p["height"], p["width"])
         assert np.array_equal(im, painting[p["y"]:p["y"] + p["height"], p["x"]:p["x"] + p["width"]])
         cover[p["y"]:p["y"] + p["height"], p["x"]:p["x"] + p["width"]] += 1
-        assert p["x"] % 3 == 0 and p["y"] % 3 == 0
+        assert p["x"] % R.GRID == 0 and p["y"] % R.GRID == 0  # whole, even world px
     assert cover.min() == 1 + 0 or cover.min() >= 1, "a gap"
     assert (cover > 1).any() and cover.max() <= 4
     cols, rows = R.PLATE_GRID
@@ -336,12 +344,16 @@ def case_straddle_detects_added_clutter(work):
     solid = v.up[:vh, :vw, 3] >= 128
     # a vertical edge of the mask: solid on the left, ground on the right
     edge = solid[:, :-1] & ~solid[:, 1:]
-    ys, xs = np.nonzero(edge[40:-40, 60:-60])
+    # only an edge where the piece's own sprite is plainly not the planting's colour, or the planting would read as
+    # the piece and rightly not be reported (the middle edge moves whenever a silhouette changes)
+    clutter = np.array([90, 120, 70])
+    unlike = np.abs(v.up[:vh, :vw - 1, :3].astype(int) - clutter).max(-1) > 90
+    ys, xs = np.nonzero((edge & unlike)[40:-40, 60:-60])
     pick = len(ys) // 2
     cy, cx = int(ys[pick]) + 40, int(xs[pick]) + 60
     # ground cover painted over the edge: the colour of the ground beside it, where the piece's own sprite
     # is something else
-    painting[cy - 20:cy + 20, cx - 20:cx + 20] = (90, 120, 70)
+    painting[cy - 20:cy + 20, cx - 20:cx + 20] = clutter
     rows = R.straddle_report(v, painting)
     hit = [s for s in rows if s["box"]["x"] - 8 <= cx <= s["box"]["x"] + s["box"]["width"] + 8
            and s["box"]["y"] - 8 <= cy <= s["box"]["y"] + s["box"]["height"] + 8]
@@ -356,7 +368,8 @@ def case_uprights_are_the_pieces_figures_stand_behind(work):
     stands = {p["id"] for p in v.pieces if p["sprite"] is not None and needed[p["id"]] > 0}
     assert stands == set(uprights), (stands ^ set(uprights))
     ground = {p["id"] for p in v.pieces if needed[p["id"]] == 0}
-    assert len(ground) == 29 and len(stands) == 49, (len(ground), len(stands))
+    # ADR 0085: the canal bench and both basket groups are drawn at the brief's size and cover no figure behind them
+    assert len(ground) == 32 and len(stands) == 46, (len(ground), len(stands))
     # the walkable cells frozen with the geometry are the map's (`baDan.test.ts` holds the map to them)
     assert len(v.walkable) > 200
 
@@ -380,12 +393,12 @@ def case_shipped_uprights_are_the_geometry_silhouette(work):
         assert (got[0] > 0).any() and (got[-1] > 0).any() and (got[:, 0] > 0).any() and (got[:, -1] > 0).any(), pid
         assert int((own > 0).sum()) == int((got > 0).sum()), pid
         checked += 1
-    assert checked == 49
+    assert checked == 46
 
 
 def case_shipped_plates_are_continuous(work):
     _, plates = table()
-    painting_w, painting_h = 4500, 2401
+    painting_w, painting_h = painting_size()
     ims = {}
     cover = np.zeros((painting_h, painting_w), np.uint8)
     for index, x, y, w, h in plates:
@@ -427,28 +440,59 @@ def case_shipped_plates_are_continuous(work):
         full[y:y + im.shape[0], x:x + im.shape[1]] = im
     g = full.astype(int).mean(-1)
     # the step over a join, against the steps just either side of it in the same rows
+    # or, where the picture itself has an edge along the join (pixel art runs long straight lines, ADR 0085), the step
+    # of the picture there: the plate before the join holds both rows (the plates overlap by 2 px), so its own step
+    # over them is the picture's, and a seam would add to it
+    def own(axis, at):
+        steps = []
+        for _, (px, py, im) in ims.items():
+            lo, n = (px, im.shape[1]) if axis == 1 else (py, im.shape[0])
+            if lo <= at - 1 and at < lo + n:
+                a = im.astype(int).mean(-1)
+                steps.append(np.abs(a[:, at - lo] - a[:, at - 1 - lo]).mean() if axis == 1 else np.abs(a[at - lo] - a[at - 1 - lo]).mean())
+        return steps
+    def joined(step, near, axis, at):
+        if step < 1.15 * near + 0.5:
+            return True
+        # every plate holding both rows covers only part of the join's length, so compare like with like: the
+        # composite's step over that plate's span against the plate's own step there
+        for _, (px, py, im) in ims.items():
+            lo, n = (px, im.shape[1]) if axis == 1 else (py, im.shape[0])
+            if not (lo <= at - 1 and at < lo + n):
+                continue
+            a = im.astype(int).mean(-1)
+            if axis == 1:
+                mine = np.abs(a[:, at - lo] - a[:, at - 1 - lo]).mean()
+                comp = np.abs(g[py:py + im.shape[0], at] - g[py:py + im.shape[0], at - 1]).mean()
+            else:
+                mine = np.abs(a[at - lo] - a[at - 1 - lo]).mean()
+                comp = np.abs(g[at, px:px + im.shape[1]] - g[at - 1, px:px + im.shape[1]]).mean()
+            if comp >= 1.15 * mine + 0.5:
+                return False
+        return True
     for x in xs:
         step = np.abs(g[:, x] - g[:, x - 1]).mean()
         near = np.mean([np.abs(g[:, c] - g[:, c - 1]).mean() for c in (*range(x - 8, x - 2), *range(x + 3, x + 9))])
-        assert step < 1.15 * near + 0.5, (x, step, near)
+        assert joined(step, near, 1, x), (x, step, near, own(1, x))
     for y in ys:
         step = np.abs(g[y] - g[y - 1]).mean()
         near = np.mean([np.abs(g[r] - g[r - 1]).mean() for r in (*range(y - 8, y - 2), *range(y + 3, y + 9))])
-        assert step < 1.15 * near + 0.5, (y, step, near)
+        assert joined(step, near, 0, y), (y, step, near, own(0, y))
 
 
 def case_shipped_plate_perimeter_is_the_margin(work):
     _, plates = table()
-    w, h = 4500, 2401
+    w, h = painting_size()
     full = np.zeros((h, w, 3), np.uint8)
     for index, x, y, pw, ph in plates:
         full[y:y + ph, x:x + pw] = np.asarray(Image.open(SHIPPED / f"ground-{index:02d}.webp").convert("RGB"))
     margin = np.array(R.MARGIN_RGB, int)
     edge = np.concatenate([full[0], full[-1], full[:, 0], full[:, -1]]).astype(int)
     assert np.abs(edge - margin).max() <= 3, np.abs(edge - margin).max()  # lossy encode, nothing more
-    # and it is a ramp, not a band: 12 px in, still margin; 150 px in, the painting is back in places
-    assert np.abs(full[12, 12:-12].astype(int) - margin).mean() < 4
-    assert (np.abs(full[150, :].astype(int) - margin).max(-1) > 20).any()
+    # and it is a ramp, not a band: FADE_FLAT px in, still margin; 100 world px in, the painting is back in places
+    f = R.FADE_FLAT
+    assert np.abs(full[f, f:-f].astype(int) - margin).mean() < 4
+    assert (np.abs(full[R.px(100), :].astype(int) - margin).max(-1) > 20).any()
 
 
 def case_edge_fade_is_flat_bounded_irregular_and_deterministic(work):
@@ -464,6 +508,111 @@ def case_edge_fade_is_flat_bounded_irregular_and_deterministic(work):
     first = np.argmax(f[:300, 200:1200] < 0.5, axis=0)
     assert first.max() - first.min() >= 10, (first.min(), first.max())
     assert first.min() >= R.FADE_FLAT - 1 and first.max() <= hi
+
+
+def case_quiet_ground_calms_and_is_deterministic(work):
+    assert (R.QUIET_MEDIAN, R.QUIET_SATURATION, R.QUIET_CONTRAST) == (3, 0.85, 0.88)
+    rng = np.random.RandomState(7)
+    base = np.clip(rng.randint(60, 190, (300, 400, 3)), 0, 255).astype(np.uint8)
+    q = R.quiet_ground(base)
+    assert q.shape == base.shape and q.dtype == np.uint8
+    assert np.array_equal(q, R.quiet_ground(base)), "deterministic"
+    def grain(a):
+        a = a.astype(float)
+        return np.abs(np.diff(a, axis=1)).mean()
+    def chroma(a):
+        a = a.astype(float)
+        return (a.max(-1) - a.min(-1)).mean()
+    assert grain(q) < 0.8 * grain(base), (grain(q), grain(base))
+    assert chroma(q) < chroma(base)
+    # a flat field is only moved by saturation and contrast, never by the median
+    flat = np.full((20, 20, 3), (90, 120, 70), np.uint8)
+    f = R.quiet_ground(flat)
+    assert (f == f[0, 0]).all()
+
+
+def case_split_softens_plates_and_not_uprights(work):
+    # ADR 0083's calm, behind its switch (ADR 0085 turns it off for the shipped G1 picture)
+    R.QUIET_GROUND = True
+    try:
+        _split_softens(work)
+    finally:
+        R.QUIET_GROUND = False
+
+
+def case_split_without_calm_ships_the_painting(work):
+    assert R.QUIET_GROUND is False, "ADR 0085: the G1 ground is drawn calm, not filtered"
+    plan, v, painting = split_inputs(work)
+    out = work / "plain"
+    R.save(out / "stitched.png", painting)
+    R.dump(out / "regions.json", plan)
+    assert R.main(["--out", str(out), "split"]) == 0
+    raw = R.fade_into_margin(painting, R.edge_fade(painting))
+    assert np.array_equal(R.load_rgb(out / "quiet.png"), raw)
+    for p in R.json.load(open(out / "split" / "split-report.json"))["plates"]:
+        im = R.load_rgb(out / "split" / p["file"])
+        win = (slice(p["y"], p["y"] + p["height"]), slice(p["x"], p["x"] + p["width"]))
+        assert np.array_equal(im, raw[win]), p["file"]
+
+
+def _split_softens(work):
+    import shutil
+    from types import SimpleNamespace
+    plan, v, painting = split_inputs(work)
+    out = work / "two"
+    R.save(out / "stitched.png", painting)
+    R.dump(out / "regions.json", plan)
+    assert R.main(["--out", str(out), "split"]) == 0
+    sdir = out / "split"
+    fade = R.edge_fade(painting)
+    raw = R.fade_into_margin(painting, fade)
+    quiet = R.fade_into_margin(R.quiet_plates(painting, v), fade)
+    assert not np.array_equal(raw, quiet)
+    # only the ground is softened: a pixel any piece owns (upright or not) is the unsoftened painting, a pixel
+    # beyond the 2 px feather is the softened one
+    vh, vw = painting.shape[:2]
+    owned = v.ids[:vh, :vw] > 0
+    far = ~R._grow(owned, 2)
+    assert owned.sum() > 0 and far.sum() > 0
+    assert np.array_equal(quiet[owned], raw[owned])
+    soft = R.fade_into_margin(R.quiet_ground(painting), fade)
+    assert np.array_equal(quiet[far], soft[far])
+    nonup = [p for p in v.pieces if v.needed()[p["id"]] == 0 and (v.ids == p["index"] + 1).any()]
+    assert nonup, "a piece that is not an upright is owned somewhere"
+    for p in nonup:
+        m = v.ids[:vh, :vw] == p["index"] + 1
+        assert np.array_equal(quiet[m], raw[m]), p["id"]
+    ramp = R._grow(owned, 2) & ~owned
+    assert ramp.any() and (np.abs(quiet[ramp].astype(int) - raw[ramp]) <= np.abs(soft[ramp].astype(int) - raw[ramp])).all()
+    # deterministic
+    assert np.array_equal(quiet, R.fade_into_margin(R.quiet_plates(painting, v), fade))
+    # every plate is the ground-softened painting; none is the raw one
+    for p in R.json.load(open(sdir / "split-report.json"))["plates"]:
+        im = R.load_rgb(sdir / p["file"])
+        win = (slice(p["y"], p["y"] + p["height"]), slice(p["x"], p["x"] + p["width"]))
+        assert np.array_equal(im, quiet[win]), p["file"]
+        assert not np.array_equal(im, raw[win]), p["file"]
+    # every upright pixel it owns is the unsoftened painting, exactly
+    rep = R.json.load(open(sdir / "split-report.json"))
+    checked = 0
+    for row in rep["sprites"]:
+        sp = R.load_rgba(sdir / row["file"])
+        sy0, sx0 = max(0, row["y"]), max(0, row["x"])
+        sy1, sx1 = min(vh, row["y"] + row["height"]), min(vw, row["x"] + row["width"])
+        if sy1 <= sy0 or sx1 <= sx0:
+            continue
+        own_here = v.ids[sy0:sy1, sx0:sx1] == row["index"] + 1
+        part = sp[sy0 - row["y"]:sy1 - row["y"], sx0 - row["x"]:sx1 - row["x"]]
+        solid = own_here & (part[..., 3] > 0) & (v.front[sy0:sy1, sx0:sx1] <= 2)
+        if not solid.any():
+            continue
+        assert np.array_equal(part[..., :3][solid], raw[sy0:sy1, sx0:sx1][solid]), row["file"]
+        checked += int(solid.sum())
+    assert checked > 0
+    # and the second run gives the same plates (deterministic end to end)
+    first = {f.name: f.read_bytes() for f in (sdir / "plates").glob("*.png")}
+    assert R.main(["--out", str(out), "split"]) == 0
+    assert first == {f.name: f.read_bytes() for f in (sdir / "plates").glob("*.png")}
 
 
 CASES = {n[5:]: f for n, f in globals().items() if n.startswith("case_")}

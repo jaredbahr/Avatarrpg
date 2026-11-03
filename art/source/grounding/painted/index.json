@@ -1,0 +1,177 @@
+[
+  {
+    "n": 1,
+    "object": "fence-2x1",
+    "piece": "d13",
+    "world_px": [935, 280, 130, 94],
+    "crop": "01-fence-2x1-d13.png"
+  },
+  {
+    "n": 2,
+    "object": "bench-2x1",
+    "piece": "d12",
+    "world_px": [1090, 372, 76, 48],
+    "crop": "02-bench-2x1-d12.png"
+  },
+  {
+    "n": 3,
+    "object": "gao-display",
+    "piece": "gao-display",
+    "world_px": [1268, 444, 104, 80],
+    "crop": "03-gao-display-gao-display.png"
+  },
+  {
+    "n": 4,
+    "object": "banner-pole",
+    "piece": "d3",
+    "world_px": [1786, 452, 36, 104],
+    "crop": "04-banner-pole-d3.png"
+  },
+  {
+    "n": 5,
+    "object": "baskets-south",
+    "piece": "d1",
+    "world_px": [758, 456, 36, 36],
+    "crop": "05-baskets-south-d1.png"
+  },
+  {
+    "n": 6,
+    "object": "south-market-display",
+    "piece": "south-market-display",
+    "world_px": [821, 463, 104, 96],
+    "crop": "06-south-market-display-south-market-display.png"
+  },
+  {
+    "n": 7,
+    "object": "shop-stack",
+    "piece": "d8",
+    "world_px": [1709, 464, 52, 68],
+    "crop": "07-shop-stack-d8.png"
+  },
+  {
+    "n": 8,
+    "object": "stone-lantern",
+    "piece": "d15",
+    "world_px": [830, 607, 21, 43],
+    "crop": "08-stone-lantern-d15.png"
+  },
+  {
+    "n": 9,
+    "object": "laundry-line",
+    "piece": "d9",
+    "world_px": [2171, 686, 90, 94],
+    "crop": "09-laundry-line-d9.png"
+  },
+  {
+    "n": 10,
+    "object": "north-market-display",
+    "piece": "north-market-display",
+    "world_px": [1780, 697, 106, 86],
+    "crop": "10-north-market-display-north-market-display.png"
+  },
+  {
+    "n": 11,
+    "object": "baskets-north",
+    "piece": "d2",
+    "world_px": [1720, 751, 34, 30],
+    "crop": "11-baskets-north-d2.png"
+  },
+  {
+    "n": 12,
+    "object": "low-planter",
+    "piece": "west-planter",
+    "world_px": [1265, 779, 110, 69],
+    "crop": "12-low-planter-west-planter.png"
+  },
+  {
+    "n": 13,
+    "object": "low-planter",
+    "piece": "north-garden",
+    "world_px": [2033, 779, 110, 69],
+    "crop": "13-low-planter-north-garden.png"
+  },
+  {
+    "n": 14,
+    "object": "notice-board",
+    "piece": "d10",
+    "world_px": [1969, 820, 52, 92],
+    "crop": "14-notice-board-d10.png"
+  },
+  {
+    "n": 15,
+    "object": "lantern-post",
+    "piece": "d5",
+    "world_px": [1657, 837, 32, 104],
+    "crop": "15-lantern-post-d5.png"
+  },
+  {
+    "n": 16,
+    "object": "village-well",
+    "piece": "d0",
+    "world_px": [1132, 861, 57, 79],
+    "crop": "16-village-well-d0.png"
+  },
+  {
+    "n": 17,
+    "object": "lantern-post",
+    "piece": "d6",
+    "world_px": [2105, 869, 32, 104],
+    "crop": "17-lantern-post-d6.png"
+  },
+  {
+    "n": 18,
+    "object": "handcart",
+    "piece": "d11",
+    "world_px": [2203, 870, 104, 56],
+    "crop": "18-handcart-d11.png"
+  },
+  {
+    "n": 19,
+    "object": "banner-pole",
+    "piece": "d4",
+    "world_px": [1722, 932, 36, 104],
+    "crop": "19-banner-pole-d4.png"
+  },
+  {
+    "n": 20,
+    "object": "lantern-post",
+    "piece": "d7",
+    "world_px": [1913, 965, 32, 104],
+    "crop": "20-lantern-post-d7.png"
+  },
+  {
+    "n": 21,
+    "object": "low-planter-1x2",
+    "piece": "southeast-planter",
+    "world_px": [1585, 974, 111, 66],
+    "crop": "21-low-planter-1x2-southeast-planter.png"
+  },
+  {
+    "n": 22,
+    "object": "trough-hay",
+    "piece": "d16",
+    "world_px": [1786, 1007, 116, 108],
+    "crop": "22-trough-hay-d16.png"
+  },
+  {
+    "n": 23,
+    "object": "gao-door-barrel",
+    "piece": null,
+    "world_px": [1596, 488, 17, 36],
+    "crop": "23-gao-door-barrel.png"
+  },
+  {
+    "n": 24,
+    "object": "roof-tile",
+    "piece": null,
+    "world_px": [990, 648, 31, 23],
+    "crop": "24-roof-tile.png"
+  },
+  {
+    "n": 29,
+    "object": "gao-yard",
+    "piece": null,
+    "world_px": [1369, 382, 81, 66],
+    "crop": "29-gao-yard.png"
+  }
+]

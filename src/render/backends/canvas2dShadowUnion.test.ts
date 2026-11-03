@@ -1,8 +1,14 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import * as sceneArt from '../scene';
 import { Canvas2DBackend } from './canvas2d';
-import { sheets } from '../sheets/store';
-import { sprites } from '../spriteCache';
-import { DEFAULT_ACTOR_GROUNDING, SHADOW_COLOR, groundTreatment } from '../lighting';
+import { BA_DAN_ACTOR_GROUNDING } from '../../content/scenes/baDan';
+import {
+  DEFAULT_ACTOR_GROUNDING,
+  DEFAULT_SHADOW_INK,
+  SHADOW_COLOR,
+  contactBand,
+  shadowGrid,
+} from '../lighting';
 import type { ActorGrounding } from '../lighting';
 
 /*
@@ -52,6 +58,7 @@ function parseColour(style: string): [number, number, number] {
 
 class FakeContext {
   globalAlpha = 1;
+  imageSmoothingEnabled = true;
   globalCompositeOperation: Op = 'source-over';
   fillStyle = '#000000';
   private clipRect: [number, number, number, number] | null = null;
@@ -69,6 +76,11 @@ class FakeContext {
   restore(): void {
     const s = this.stack.pop();
     if (s) [this.globalAlpha, this.globalCompositeOperation, this.fillStyle, this.clipRect] = s;
+  }
+  /** The union is run at one texel per screen pixel here, so its transforms are all the identity. */
+  setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void {
+    if (a !== 1 || b !== 0 || c !== 0 || d !== 1 || e !== 0 || f !== 0)
+      throw new Error('this model draws at identity only');
   }
   beginPath(): void {
     this.path = null;
@@ -174,19 +186,24 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
   const run = (
     grounding: ActorGrounding,
     casters: { level: number; x: number; w: number; alpha?: number }[],
+    background?: (canvas: FakeCanvas) => void,
   ): ((x: number) => number[]) => {
     const layerCanvas = new FakeCanvas(W, H);
     const main = new FakeCanvas(W, H);
     const mainCtx = main.getContext();
     mainCtx.fillStyle = `rgb(${LIT.join(', ')})`;
     mainCtx.fillRect(0, 0, W, H);
+    background?.(main);
     const self = {
       grounding,
       shadowLayer: layerCanvas,
       castScratch: new FakeCanvas(W, H),
       ctx: mainCtx,
-      exactMax: proto.exactMax,
+      // One texel per pixel: the union's arithmetic is what is under test, not the grid.
+      shadowGridNow: shadowGrid({ width: W, height: H }, 1, 0, 0),
       castInto: proto.castInto,
+      toShadowTexels: proto.toShadowTexels,
+      drawShadowTexels: proto.drawShadowTexels,
       compositeExactShadow: proto.compositeExactShadow,
       clipShadowGround: () => undefined,
     };
@@ -217,7 +234,12 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
   const near = (got: number[], want: number[]): void =>
     want.forEach((v, k) => expect(Math.abs((got[k] ?? 0) - v)).toBeLessThanOrEqual(1));
 
-  const ba: ActorGrounding = { cast: 0.5, contact: 0.8 };
+  const ba: ActorGrounding = {
+    cast: 0.5,
+    contact: 0.8,
+    castKey: { x: 0.35, y: 0.16 },
+    ink: DEFAULT_SHADOW_INK,
+  };
 
   it('leaves an overlap of two equal casters at their strength, not darker', () => {
     const at = run(ba, [
@@ -258,91 +280,373 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
     ]);
     near(at(20), shaded(0.5));
   });
+
+  it("lands Ba Dan's figure shadows on the painting's own shadow tone", () => {
+    // objects.py multiplies the ground by SHADOW (0.70) under a cast and CONTACT (0.50) under the
+    // contact line, cooled by COOL; on the mean ground its shadows fall on, the runtime ink must agree.
+    const ground = [118, 110, 73];
+    const cool = [0.93, 0.96, 1.06];
+    const grounding = { ...DEFAULT_ACTOR_GROUNDING, ...BA_DAN_ACTOR_GROUNDING };
+    const bg = (canvas: FakeCanvas) => {
+      const c = canvas.getContext();
+      c.fillStyle = `rgb(${ground.join(', ')})`;
+      c.fillRect(0, 0, W, H);
+    };
+    const at = run(
+      grounding,
+      [
+        { level: grounding.cast, x: 4, w: 10 },
+        { level: grounding.contact, x: 20, w: 10 },
+      ],
+      bg,
+    );
+    const painted = (m: number) => ground.map((v, k) => Math.round(v * m * (cool[k] ?? 1)));
+    for (const [x, m] of [
+      [8, 0.7],
+      [24, 0.5],
+    ] as const)
+      painted(m).forEach((v, k) => expect(Math.abs((at(x)[k] ?? 0) - v)).toBeLessThanOrEqual(3));
+  });
 });
 
 describe("what a figure's feet get", () => {
-  const contact: ActorGrounding = { cast: 0.5, contact: 0.8 };
-  const frame = {
-    source: {},
-    frame: { x: 0, y: 0, w: 64, h: 96 },
-    anchor: { x: 0.5, y: 0.85 },
-    pixelsPerTile: 64,
+  const contact: ActorGrounding = {
+    cast: 0.5,
+    contact: 0.8,
+    castKey: { x: 0.35, y: 0.16 },
+    ink: DEFAULT_SHADOW_INK,
   };
-  // The kinds the backends tell apart: what each draws as its radial pool in a default scene.
+  // The kinds of figure the backends tell apart; each gets the same ground shadow.
   const kinds = {
-    'sheet frame': { sprite: 'unit.fire.tenzo', frame: true, unit: false, pool: false },
-    'painter resident': { sprite: 'npc.guard', frame: true, unit: false, pool: false },
-    'single-image resident': { sprite: 'npc.shopkeeper', frame: false, unit: false, pool: true },
-    'painter-fallback unit': { sprite: 'unit.fire.tenzo', frame: false, unit: true, pool: true },
+    'sheet frame': { sprite: 'unit.fire.tenzo', unit: false },
+    'painter resident': { sprite: 'npc.hanru', unit: false },
+    'single-image resident': { sprite: 'world.tea_station', unit: false },
+    'G-sheet resident': { sprite: 'npc.shopkeeper', unit: false },
+    'painter-fallback unit': { sprite: 'unit.fire.tenzo', unit: true },
   } as const;
 
-  /** Drives the Canvas live mask for one figure and returns the band art it asked for. */
-  const bandsFor = (grounding: ActorGrounding, kind: keyof typeof kinds): unknown[][] => {
+  /** Drives the Canvas live mask for one figure and returns the ground shadows it asked for. */
+  const shadowsFor = (grounding: ActorGrounding, kind: keyof typeof kinds): unknown[][] => {
     const k = kinds[kind];
-    const bands: unknown[][] = [];
-    const sheetsSpy = vi.spyOn(sheets, 'frame').mockReturnValue(k.frame ? (frame as never) : null);
-    const spriteSpy = vi.spyOn(sprites, 'get').mockReturnValue({ width: 64, height: 64 } as never);
-    try {
-      const self = {
-        squareFootprints: false,
-        grounding,
-        npcWidth: () => 1,
-        drawPropShadowMask: () => undefined,
-        projectMask: () => undefined,
-        projectContactMask: (...a: unknown[]) => bands.push(a),
-      };
-      const camera = {
-        projection: 'flat',
-        viewport: { dpr: 1 },
-        spriteBox: () => ({ x: 0, y: 0, size: 64 }),
-      };
-      const view = {
-        grid: { width: 1, height: 1, tiles: [] },
-        props: [],
-        scene: null,
-        time: 0,
-        npcs: k.unit ? [] : [{ id: 'n', pos: { x: 0, y: 0 }, sprite: k.sprite }],
-        units: k.unit ? [{ id: 'u', pos: { x: 0, y: 0 }, size: 1, sprite: k.sprite }] : [],
-      };
-      (
-        Canvas2DBackend.prototype as unknown as {
-          drawLiveShadowMask(this: unknown, ...a: unknown[]): void;
-        }
-      ).drawLiveShadowMask.call(self, {}, view, camera);
-    } finally {
-      sheetsSpy.mockRestore();
-      spriteSpy.mockRestore();
-    }
-    return bands;
+    const shadows: unknown[][] = [];
+    const self = {
+      squareFootprints: false,
+      grounding,
+      npcWidth: () => 1,
+      drawPropShadowMask: () => undefined,
+      projectFigureShadow: (...a: unknown[]) => shadows.push(a),
+    };
+    const camera = {
+      projection: 'flat',
+      scale: 1,
+      viewport: { dpr: 1 },
+      spriteBox: () => ({ x: 0, y: 0, size: 64 }),
+    };
+    const view = {
+      grid: { width: 1, height: 1, tiles: [] },
+      props: [],
+      scene: null,
+      time: 0,
+      npcs: k.unit ? [] : [{ id: 'n', pos: { x: 0, y: 0 }, sprite: k.sprite }],
+      units: k.unit ? [{ id: 'u', pos: { x: 0, y: 0 }, size: 1, sprite: k.sprite }] : [],
+    };
+    (
+      Canvas2DBackend.prototype as unknown as {
+        drawLiveShadowMask(this: unknown, ...a: unknown[]): void;
+      }
+    ).drawLiveShadowMask.call(self, {}, view, camera);
+    return shadows;
   };
 
   for (const kind of Object.keys(kinds) as (keyof typeof kinds)[]) {
-    it(`gives a ${kind} exactly one of band or pool in a contact scene`, () => {
-      const bands = bandsFor(contact, kind).length;
-      const { pool } = groundTreatment(contact, { castStrength: 1, defaultPool: kinds[kind].pool });
-      expect(bands).toBe(1);
-      expect(pool).toBe(false);
+    it(`gives a ${kind} exactly one ground shadow in a contact scene`, () => {
+      expect(shadowsFor(contact, kind)).toHaveLength(1);
     });
 
-    it(`leaves a ${kind} with its old treatment in a default scene`, () => {
-      expect(bandsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(0);
-      const { pool } = groundTreatment(DEFAULT_ACTOR_GROUNDING, {
-        castStrength: 1,
-        defaultPool: kinds[kind].pool,
-      });
-      expect(pool).toBe(kinds[kind].pool);
+    it(`gives a ${kind} its ground shadow in a scene that sets nothing (ADR 0093)`, () => {
+      expect(shadowsFor(DEFAULT_ACTOR_GROUNDING, kind)).toHaveLength(1);
     });
   }
 
-  it("cuts a frameless figure's band from the sprite that is drawn, not from a baked stand-in", () => {
-    const [args] = bandsFor(contact, 'painter resident');
-    expect((args?.[1] as { source: unknown }).source).toEqual({ width: 64, height: 64 });
+  it('gives a figure that casts nothing no contact', () => {
+    expect(contactBand(contact, 0)).toBe(false);
+  });
+});
+
+describe('cached static scenery shadow union', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
-  it('keeps a pool for a figure that casts nothing, even in a contact scene', () => {
-    expect(groundTreatment(contact, { castStrength: 0, defaultPool: true })).toEqual({
-      band: false,
-      pool: true,
+  const W = 40;
+  const H = 12;
+  const proto = Canvas2DBackend.prototype as unknown as {
+    drawCachedSceneryShadowMask(this: unknown, ...args: unknown[]): void;
+  };
+
+  function fixture() {
+    const image = {
+      src: 'tree.webp',
+      currentSrc: 'tree.webp',
+      naturalWidth: 16,
+      naturalHeight: 16,
+    };
+    const images = vi.spyOn(sceneArt, 'sceneImage').mockReturnValue(image as never);
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas(W, H) });
+    const camera = {
+      projection: 'oblique',
+      grid: { width: 4, height: 3 },
+      viewport: { width: W, height: H, dpr: 1 },
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+    };
+    const grid = { width: W, height: H, texel: 1, originX: 0, originY: 0 };
+    const view = {
+      scene: {
+        scenery: [
+          {
+            url: 'tree.webp',
+            x: 8,
+            y: 2,
+            width: 8,
+            height: 6,
+            castShadow: 0.5,
+            flip: false,
+            footprint: [{ x: 1, y: 1 }],
+          },
+        ],
+        actorGrounding: { contact: 0.8 },
+      },
+    };
+    const paint = vi.fn((context: FakeContext) => {
+      for (const piece of view.scene.scenery) {
+        if (!sceneArt.sceneImage(piece as never)) continue;
+        const grey = Math.round(piece.castShadow * 255);
+        context.fillStyle = 'rgb(' + grey + ', ' + grey + ', ' + grey + ')';
+        context.fillRect(
+          piece.x * camera.scale - camera.offsetX,
+          piece.y * camera.scale - camera.offsetY,
+          piece.width * camera.scale,
+          piece.height * camera.scale,
+        );
+      }
     });
+    const self = {
+      sceneryShadow: null,
+      castScratch: new FakeCanvas(W, H),
+      // This pixel model covers mask storage/composition at identity. Real
+      // transformed pixels are also compared in the browser before publication.
+      toShadowTexels: () => undefined,
+      drawSceneryShadowMask: paint,
+    };
+    function frame(cached: boolean, actorX?: number) {
+      const canvas = new FakeCanvas(W, H);
+      const context = canvas.getContext();
+      context.fillStyle = '#000000';
+      context.fillRect(0, 0, W, H);
+      context.fillStyle = 'rgb(64, 64, 64)';
+      context.fillRect(0, 0, 10, H);
+      context.globalCompositeOperation = 'lighten';
+      if (cached) proto.drawCachedSceneryShadowMask.call(self, context, view, camera, grid);
+      else paint(context);
+      if (actorX !== undefined) {
+        context.fillStyle = 'rgb(200, 200, 200)';
+        context.fillRect(actorX, 3, 6, 4);
+      }
+      return canvas.px;
+    }
+    return { camera, grid, view, image, images, paint, self, frame };
+  }
+
+  it('reuses the static mask with byte-identical maximum overlap and moving live shadows', () => {
+    const f = fixture();
+    const first = f.frame(true, 12);
+    expect(f.paint).toHaveBeenCalledTimes(1);
+    expect(f.frame(true, 12)).toEqual(first);
+    expect(f.paint).toHaveBeenCalledTimes(1);
+    expect(first).toEqual(f.frame(false, 12));
+    f.paint.mockClear();
+    const moved = f.frame(true, 24);
+    expect(f.paint).not.toHaveBeenCalled();
+    expect(moved).not.toEqual(first);
+    expect(moved).toEqual(f.frame(false, 24));
+  });
+
+  const changes: [string, (f: ReturnType<typeof fixture>) => void][] = [
+    [
+      'mask width',
+      (f) => {
+        f.grid.width -= 1;
+      },
+    ],
+    [
+      'mask height',
+      (f) => {
+        f.grid.height -= 1;
+      },
+    ],
+    [
+      'pan x',
+      (f) => {
+        f.camera.offsetX = 3;
+      },
+    ],
+    [
+      'pan y',
+      (f) => {
+        f.camera.offsetY = 1;
+      },
+    ],
+    [
+      'zoom',
+      (f) => {
+        f.camera.scale = 2;
+      },
+    ],
+    [
+      'viewport width',
+      (f) => {
+        f.camera.viewport.width -= 1;
+      },
+    ],
+    [
+      'viewport height',
+      (f) => {
+        f.camera.viewport.height -= 1;
+      },
+    ],
+    [
+      'DPR',
+      (f) => {
+        f.camera.viewport.dpr = 2;
+      },
+    ],
+    [
+      'grid dimensions',
+      (f) => {
+        f.camera.grid.width += 1;
+      },
+    ],
+    [
+      'mask origin',
+      (f) => {
+        f.grid.originX = -0.5;
+      },
+    ],
+    [
+      'mask texel scale',
+      (f) => {
+        f.grid.texel = 0.5;
+      },
+    ],
+    [
+      'source URL',
+      (f) => {
+        f.view.scene.scenery[0]!.url = 'other.webp';
+      },
+    ],
+    [
+      'in-place geometry',
+      (f) => {
+        f.view.scene.scenery[0]!.x += 2;
+      },
+    ],
+    [
+      'cast strength',
+      (f) => {
+        f.view.scene.scenery[0]!.castShadow = 0.25;
+      },
+    ],
+    [
+      'flip',
+      (f) => {
+        f.view.scene.scenery[0]!.flip = true;
+      },
+    ],
+    [
+      'footprint',
+      (f) => {
+        f.view.scene.scenery[0]!.footprint[0]!.x += 1;
+      },
+    ],
+    [
+      'contact grounding',
+      (f) => {
+        f.view.scene.actorGrounding.contact = 0.4;
+      },
+    ],
+    [
+      'source dimensions',
+      (f) => {
+        f.image.naturalWidth += 1;
+      },
+    ],
+    [
+      'source current URL',
+      (f) => {
+        f.image.currentSrc = 'reloaded.webp';
+      },
+    ],
+    [
+      'source identity',
+      (f) => {
+        f.images.mockReturnValue({ ...f.image } as never);
+      },
+    ],
+  ];
+
+  for (const [name, change] of changes) {
+    it('invalidates on ' + name + ' and agrees with the fresh mask', () => {
+      const f = fixture();
+      f.frame(true);
+      change(f);
+      const cached = f.frame(true);
+      expect(f.paint).toHaveBeenCalledTimes(2);
+      expect(cached).toEqual(f.frame(false));
+    });
+  }
+
+  it('does not retain an incomplete mask after late art arrives, or old art after eviction', () => {
+    const f = fixture();
+    f.images.mockReturnValue(null);
+    const missing = f.frame(true);
+    f.images.mockReturnValue(f.image as never);
+    const arrived = f.frame(true);
+    expect(arrived).not.toEqual(missing);
+    expect(f.paint).toHaveBeenCalledTimes(2);
+    expect(arrived).toEqual(f.frame(false));
+    f.images.mockReturnValue(null);
+    expect(f.frame(true)).toEqual(missing);
+  });
+
+  it('invalidates when the grid-filtered scene loses a caster', () => {
+    const f = fixture();
+    const before = f.frame(true);
+    f.view.scene.scenery = [];
+    const after = f.frame(true);
+    expect(after).not.toEqual(before);
+    expect(after).toEqual(f.frame(false));
+  });
+
+  it('falls back to the uncached painter if the cache canvas has no 2D context', () => {
+    const f = fixture();
+    vi.stubGlobal('document', { createElement: () => ({ getContext: () => null }) });
+    expect(f.frame(true)).toEqual(f.frame(false));
+    expect(f.self.sceneryShadow).toBeNull();
+  });
+
+  it('drops the cached mask while the exact-max scratch context is unavailable and rebuilds on recovery', () => {
+    const f = fixture();
+    const first = f.frame(true);
+    const scratch = vi.spyOn(f.self.castScratch, 'getContext').mockReturnValue(null as never);
+    f.frame(true);
+    expect(f.self.sceneryShadow).toBeNull();
+    expect(f.paint).toHaveBeenCalledTimes(2);
+    scratch.mockRestore();
+    expect(f.frame(true)).toEqual(first);
+    expect(f.paint).toHaveBeenCalledTimes(3);
+    expect(f.frame(true)).toEqual(f.frame(false));
   });
 });

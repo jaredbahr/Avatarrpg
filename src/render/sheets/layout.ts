@@ -9,7 +9,7 @@
  */
 
 import type { ClipName } from '../../content/assets/clips';
-import { CLIP_NAMES } from '../../content/assets/clips';
+import { BAKED_CLIP_NAMES } from '../../content/assets/clips';
 import type { AtlasFrame } from './atlasJson';
 
 export interface SheetLayout {
@@ -42,7 +42,7 @@ export function layoutSheet(
     throw new Error(`A ${frameWidth} px frame does not fit a ${maxWidth} px atlas.`);
   const names: [ClipName, string][] = [];
   const clips: Partial<Record<ClipName, string[]>> = {};
-  for (const clip of CLIP_NAMES) {
+  for (const clip of BAKED_CLIP_NAMES) {
     const count = counts[clip] ?? 0;
     if (count <= 0) continue;
     const list: string[] = [];

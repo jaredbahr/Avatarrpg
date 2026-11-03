@@ -50,6 +50,7 @@ import { imageSize, readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
 import { decodeWebp, isLosslessWebp, webpSize } from './lib/webp';
 import { BEND_FX, CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
+import { CEL_MARGIN } from './fx-g1';
 import type { BendEffectDef } from '../../src/content/bends';
 import {
   bendEffectDefSchema,
@@ -74,25 +75,21 @@ export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: numbe
  * reference.
  */
 export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
-  'unit.fire.kaya': [
-    'art/source/kaya-g/pins.json',
-    'art/source/kaya-clips/pins.json',
-    'art/source/kaya-hits/pins.json',
-  ],
-  'unit.water.sura': [
-    'art/source/sura-g/pins.json',
-    'art/source/sura-clips/pins.json',
-    'art/source/sura-hits/pins.json',
-  ],
-  'unit.earth.bo': [
-    'art/source/bo-g/pins.json',
-    'art/source/bo-clips/pins.json',
-    'art/source/bo-hits/pins.json',
-  ],
-  'unit.enemy.thug': ['art/source/thug-g/pins.json'],
-  'unit.enemy.slinger': ['art/source/slinger-g/pins.json'],
-  'unit.enemy.bruiser': ['art/source/bruiser-g/pins.json'],
+  // The party at native G1 (ADR 0089, `party-g1.ts`).
+  'unit.fire.kaya': ['art/source/party-g1/pins/kaya.json'],
+  'unit.water.sura': ['art/source/party-g1/pins/sura.json'],
+  'unit.earth.bo': ['art/source/party-g1/pins/bo.json'],
+  // The forest bandits and the Ba Dan residents at native G1 (ADR 0091, `residents-g1.ts`).
+  'unit.enemy.thug': ['art/source/residents-g1/pins/thug.json'],
+  'unit.enemy.slinger': ['art/source/residents-g1/pins/slinger.json'],
+  'unit.enemy.bruiser': ['art/source/residents-g1/pins/bruiser.json'],
   'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
+  'npc.household': ['art/source/residents-g1/pins/household.json'],
+  'npc.guard': ['art/source/residents-g1/pins/watch.json'],
+  'npc.elder': ['art/source/residents-g1/pins/mira.json'],
+  'npc.shopkeeper': ['art/source/residents-g1/pins/gao.json'],
+  'npc.kid': ['art/source/residents-g1/pins/pella.json'],
+  'npc.dorin': ['art/source/residents-g1/pins/dorin.json'],
 };
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
@@ -111,6 +108,16 @@ export const STAND_TOLERANCE = 6;
  */
 export const STRIDE_ABOVE = 12;
 export const STRIDE_BELOW = 10;
+/**
+ * A jog's envelope (ADR 0095). Its flight cels leave the ground, lifting the
+ * lowest sole up to 13 px at G1 (the bruiser's south-west), and its long stride
+ * carries the lowest foot up to 26.5 px from the column; its contacts are set
+ * on idle's sole by registration (`assemble.py`), so it has no clip-level
+ * foot row bound: in a back view the trailing foot, nearer the camera, draws
+ * below the planted sole. It sinks no further than a walk.
+ */
+export const JOG_ABOVE = 28;
+export const JOG_CENTRE = 56;
 /**
  * How far the feet's centre may sit from the anchor column, standing and
  * mid-stride. A full 13 px/cel stride on a down-screen diagonal carries the
@@ -133,6 +140,17 @@ export const REST_CENTRE = 12;
  */
 export const FOOT_ROW_TOLERANCE = 4;
 
+/**
+ * The bounds above, and the art bible's clear margin, are measured on the
+ * 128 px-a-tile G grid. A sheet on a coarser grid (the party at the world's
+ * native G1, 64 px a tile, ADR 0089) is held to the same bounds in tiles: each
+ * pixel figure scales by its pixels a tile over 128. A finer sheet keeps the
+ * 128 px figures, so no sheet that passed before is held tighter.
+ */
+export function gridScale(pixelsPerTile: number): number {
+  return Math.min(1, pixelsPerTile / 128);
+}
+
 /** SHA-256 of a decoded cel's RGBA, as the pin files record it. */
 export function celHash(
   image: Image,
@@ -143,7 +161,7 @@ export function celHash(
 }
 
 /** The x centre of the opaque pixels in the lowest `rows` rows of a cel. */
-function footCentre(cel: Image, rows = 6): number | null {
+export function footCentre(cel: Image, rows = 6): number | null {
   const bottom = lowestOpaqueRow(cel);
   let sum = 0;
   let count = 0;
@@ -305,6 +323,8 @@ export async function validateSheets(
     }
     const defaultW = entry.pixelsPerTile * entry.footprint.w;
     const defaultH = entry.pixelsPerTile * 1.5;
+    const g = gridScale(entry.pixelsPerTile);
+    const margin = Math.round(MARGIN * g);
     const wantW = entry.frameSize?.w ?? defaultW;
     const wantH = entry.frameSize?.h ?? defaultH;
     if (
@@ -338,8 +358,8 @@ export async function validateSheets(
             `${key}: frame "${name}" is ${frame.w}x${frame.h}, expected ${clipW}x${clipH}`,
           );
         }
-        if (borderTouched(image, frame, MARGIN)) {
-          problems.push(`${key}: frame "${name}" has art inside the ${MARGIN} px margin`);
+        if (borderTouched(image, frame, margin)) {
+          problems.push(`${key}: frame "${name}" has art inside the ${margin} px margin`);
         }
         // A lossless page (the riverside's, ADR 0054) is its own record.
         if (pinned && lossyCel && pinned[name] !== celHash(image, frame)) {
@@ -370,10 +390,10 @@ export async function validateSheets(
         // Never more than the standing tolerance above the line, so an idle
         // that itself floats cannot lift its walk's envelope with it.
         const stands = Math.max(
-          line - STAND_TOLERANCE,
+          line - STAND_TOLERANCE * g,
           Math.min(line, idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : line),
         );
-        for (const base of ['idle', 'walk', 'rest', 'stance'] as const) {
+        for (const base of ['idle', 'walk', 'jog', 'rest', 'stance'] as const) {
           const clip = headingClip(base, heading);
           const rows: number[] = [];
           for (const name of clips[clip]?.frames ?? []) {
@@ -390,15 +410,23 @@ export async function validateSheets(
             const centre = footCentre(cel) ?? -1;
             const standing = base === 'idle';
             const grounded = standing
-              ? Math.abs(foot - line) <= STAND_TOLERANCE
-              : foot >= stands - STRIDE_ABOVE && foot <= line + STRIDE_BELOW;
+              ? Math.abs(foot - line) <= STAND_TOLERANCE * g
+              : foot >= stands - (base === 'jog' ? JOG_ABOVE : STRIDE_ABOVE) * g &&
+                foot <= line + STRIDE_BELOW * g;
             if (!grounded) {
               problems.push(
                 `${key}: cel "${name}" puts its feet at row ${foot}, off the foot line ${line}`,
               );
             }
             // A guard stance stands feet apart, a stride's width (ADR 0052).
-            const centred = standing ? STAND_CENTRE : base === 'rest' ? REST_CENTRE : STRIDE_CENTRE;
+            const centred =
+              (standing
+                ? STAND_CENTRE
+                : base === 'rest'
+                  ? REST_CENTRE
+                  : base === 'jog'
+                    ? JOG_CENTRE
+                    : STRIDE_CENTRE) * g;
             if (Math.abs(centre - column) > centred) {
               problems.push(
                 `${key}: cel "${name}" centres its feet at x ${centre.toFixed(1)}, off the anchor ${column}`,
@@ -406,9 +434,9 @@ export async function validateSheets(
             }
           }
           const idleRow = idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : undefined;
-          if (base !== 'idle' && idleRow !== undefined && rows.length > 0) {
+          if (base !== 'idle' && base !== 'jog' && idleRow !== undefined && rows.length > 0) {
             const mean = rows.reduce((sum, row) => sum + row, 0) / rows.length;
-            if (Math.abs(mean - idleRow) > FOOT_ROW_TOLERANCE) {
+            if (Math.abs(mean - idleRow) > FOOT_ROW_TOLERANCE * g) {
               problems.push(
                 `${key}: clip "${clip}" has its mean foot row at ${mean.toFixed(2)}, ` +
                   `${(mean - idleRow).toFixed(2)} px from idle's ${idleRow}`,
@@ -428,7 +456,12 @@ export async function validateSheets(
       for (const [clip, heading] of registered) {
         const def = clips[clip];
         if (!def?.anchor) continue;
-        const stanceFound = find(`${key}/${headingClip('stance', heading)}/0`);
+        // An enemy has no fighting stance: its idle's first cel is the stance
+        // its hits and knockouts start and end on (`residents-g1.ts`, ADR 0091).
+        const stanceClip = headingClip('stance', heading);
+        const stanceFound = find(
+          `${key}/${clips[stanceClip] ? stanceClip : headingClip('idle', heading)}/0`,
+        );
         if (!stanceFound) {
           problems.push(`${key}: no ${heading} stance cel to register ${clip} on`);
           continue;
@@ -469,9 +502,9 @@ export async function validateSheets(
             `${key}: ${direction} frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
           );
         }
-        if (borderTouched(image, frame, MARGIN)) {
+        if (borderTouched(image, frame, margin)) {
           problems.push(
-            `${key}: ${direction} frame "${name}" has art inside the ${MARGIN} px margin`,
+            `${key}: ${direction} frame "${name}" has art inside the ${margin} px margin`,
           );
         }
       }
@@ -498,17 +531,17 @@ export const BEND_SHEETS: Readonly<
   >
 > = {
   'unit.fire.kaya': {
-    pins: 'art/source/kaya-bend/pins.json',
+    pins: 'art/source/party-g1/pins/kaya-bend.json',
     data: 'art/units/kaya-bend.json',
     pages: ['art/units/kaya-g-bend.json'],
   },
   'unit.water.sura': {
-    pins: 'art/source/sura-bend/pins.json',
+    pins: 'art/source/party-g1/pins/sura-bend.json',
     data: 'art/units/sura-bend.json',
     pages: ['art/units/sura-g-bend.json'],
   },
   'unit.earth.bo': {
-    pins: 'art/source/bo-bend/pins.json',
+    pins: 'art/source/party-g1/pins/bo-bend.json',
     data: 'art/units/bo-bend.json',
     pages: ['art/units/bo-g-bend.json'],
   },
@@ -622,8 +655,12 @@ export async function validateBends(
           problems.push(
             `${key}: bend frame "${name}" is ${frame.w}x${frame.h}, expected ${width}x${height}`,
           );
-        if (borderTouched(page.image, frame, MARGIN))
-          problems.push(`${key}: bend frame "${name}" has art inside the ${MARGIN} px margin`);
+        const unit = entries[key];
+        const margin = Math.round(
+          MARGIN * gridScale(unit?.kind === 'sheet' ? unit.pixelsPerTile : 128),
+        );
+        if (borderTouched(page.image, frame, margin))
+          problems.push(`${key}: bend frame "${name}" has art inside the ${margin} px margin`);
       }
     }
     for (const name of where.keys()) {
@@ -873,7 +910,10 @@ export function validateFlocks(publicDir = 'public', maps = ALL_MAPS): string[] 
   return problems;
 }
 
-/** Cels need clear gutters so adjacent frames cannot bleed into a GPU sample. */
+/**
+ * Cels need clear gutters so adjacent frames cannot bleed into a GPU sample: the
+ * 192 px cels' 8 px, at the 96 px pixel-art masters (ADR 0086).
+ */
 export function validateFxCels(publicDir = 'public'): string[] {
   const problems: string[] = [];
   for (const sheet of FX_CEL_SHEETS) {
@@ -890,7 +930,8 @@ export function validateFxCels(publicDir = 'public'): string[] {
     sheet.clips.forEach((clip, row) => {
       for (let col = 0; col < CEL_FRAMES; col++) {
         const frame = { x: col * CEL_SIZE, y: row * CEL_SIZE, w: CEL_SIZE, h: CEL_SIZE };
-        if (borderTouched(image, frame, MARGIN)) problems.push(`${clip}/${col} touches its gutter`);
+        if (borderTouched(image, frame, CEL_MARGIN))
+          problems.push(`${clip}/${col} touches its gutter`);
         let ink = 0;
         for (let y = frame.y; y < frame.y + frame.h; y++)
           for (let x = frame.x; x < frame.x + frame.w; x++)

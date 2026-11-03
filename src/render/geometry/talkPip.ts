@@ -1,3 +1,6 @@
+/** Visible space in world pixels between a figure's alpha bounds and its talk pip. */
+export const TALK_PIP_GAP = 4;
+
 export interface VisibleArtBounds {
   readonly left: number;
   readonly top: number;

@@ -89,12 +89,12 @@ it('holds the scenery to the schema limit, the ground to its piece limit and the
 });
 
 it('lays the ground plates over the whole pan box with no gap and a 2 px overlap at every join', () => {
-  // The pan box is 3000 x 1600 world px from (-200, -100); the painting is 1.5 px to the world pixel.
+  // The pan box is 3000 x 1600 world px from (-200, -100); the painting is 1 px to the world pixel (ADR 0088).
   const { scale, origin, size } = BA_DAN_PAINTING;
+  expect(scale).toBe(1);
   expect(size.width).toBe(3000 * scale);
-  // The last of twelve 1024-row regions ends at row 2401: 1600.67 world px, over the 1600 of the pan box.
-  expect(size.height).toBe(2401);
-  expect(size.height).toBeGreaterThanOrEqual(1600 * scale);
+  // The second row of 1024-row regions ends at row 1600, the pan box's last.
+  expect(size.height).toBe(1600 * scale);
   const covered = new Uint8Array(size.width * size.height);
   for (const [index, x, y, width, height] of BA_DAN_GROUND_PLATES) {
     const plate = BA_DAN_SCENE.ground[index];
@@ -123,7 +123,8 @@ it('keeps the uprights to the pieces a figure can stand behind, and the rest in 
   // and the geometry; `ba-dan-regions.test.ts` recomputes it. It leaves 29 of the 78 pieces the painting
   // had in the ground: the four backdrops and six wall strips (not listed here at all, they only paint),
   // the six terrace planters outside the board, the frame's tree clumps, two far trees of the west rim
-  // and one fence.
+  // and one fence. Since ADR 0085 the canal bench and both basket groups are drawn at the brief's size: low
+  // enough that no figure on a cell behind them is covered, so they are ground too (32 of 78).
   const ground = BA_DAN_STANDING.filter((piece) => !BA_DAN_UPRIGHTS[piece.id]).map((p) => p.id);
   expect(ground.sort()).toEqual(
     [
@@ -135,6 +136,9 @@ it('keeps the uprights to the pieces a figure can stand behind, and the rest in 
       'north-terrace-5',
       'tree-0-6',
       'tree-0-10',
+      'd1',
+      'd2',
+      'd12',
       'd13',
       'tree-c0',
       'tree-c1',
@@ -145,8 +149,8 @@ it('keeps the uprights to the pieces a figure can stand behind, and the rest in 
   // scenery any more, only painting.
   expect(BA_DAN_SCENE.scenery.some((piece) => /backdrop|^wall-/.test(piece.id))).toBe(false);
   expect(BA_DAN_SCENE.scenery).toHaveLength(Object.keys(BA_DAN_UPRIGHTS).length);
-  expect(BA_DAN_SCENE.scenery).toHaveLength(49);
-  expect(BA_DAN_STANDING).toHaveLength(49 + ground.length);
+  expect(BA_DAN_SCENE.scenery).toHaveLength(46);
+  expect(BA_DAN_STANDING).toHaveLength(46 + ground.length);
 });
 
 interface Frozen {
@@ -347,15 +351,17 @@ it("stands the courtyard planter, turned, on the south-east house's blocked stri
   // (17,12) stands in front of it.
   expect(planter).toBeGreaterThan(house);
   expect(piece.depth).toEqual({ x: 17.5, y: 11.5 });
-  // Its plinth's front corner is the strip's (18,12), exactly: the lowest opaque pixel of the sprite is
-  // the corner, to within the two painting pixels the regional gate allows.
+  // It stands on the strip: the lowest opaque pixel of the sprite lies inside the strip's diamond, whose front
+  // corner is (18,12). (Since ADR 0085 it is #288's planter, centred in the strip, not a plinth filling it.)
   const corner = { x: 1024 + (18 - 12) * 64, y: (18 + 12) * 32 };
   let low = { x: 0, y: -Infinity };
   for (let y = piece.y; y < piece.y + piece.height; y += 1 / BA_DAN_PAINTING.scale)
     for (let x = piece.x; x < piece.x + piece.width; x += 1 / BA_DAN_PAINTING.scale)
       if (alphaAtScenePixel(piece, x, y) > 128 && y > low.y) low = { x, y };
-  expect(Math.abs(low.y - corner.y), 'front corner height').toBeLessThanOrEqual(2);
-  expect(Math.abs(low.x - corner.x), 'front corner column').toBeLessThanOrEqual(2);
+  const back = { x: 1024 + (17 - 10) * 64, y: (17 + 10) * 32 };
+  expect(low.y, 'front corner height').toBeLessThanOrEqual(corner.y + 2);
+  expect(low.y, 'not above the strip').toBeGreaterThan(back.y);
+  expect(Math.abs(low.x - corner.x), 'front corner column').toBeLessThanOrEqual(64);
 });
 
 it('registers the painted canal to every actual permanent-water cell', () => {
@@ -370,9 +376,9 @@ it('registers the painted canal to every actual permanent-water cell', () => {
   expect(BA_DAN_VILLAGE.rows[BA_DAN_CANAL_BRIDGE.y]?.[BA_DAN_CANAL_BRIDGE.x]).toBe('=');
 });
 
-it('keeps the canal walkable and registers one low bridge at the dry crossing', () => {
+it('blocks canal water and registers one low bridge at the dry crossing', () => {
   const grid = buildGrid(BA_DAN_VILLAGE);
-  for (const pos of BA_DAN_WATER_CELLS) expect(tileAt(grid, pos)?.blocked).not.toBe(true);
+  for (const pos of BA_DAN_WATER_CELLS) expect(tileAt(grid, pos)?.blocked).toBe(true);
   const bridge = BA_DAN_VILLAGE.scene?.scenery.find((piece) => piece.id === 'canal-bridge');
   const bridgeFront = BA_DAN_VILLAGE.scene?.scenery.find(
     (piece) => piece.id === 'canal-bridge-front',
@@ -409,7 +415,8 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     { x: 11, y: 3 },
     { x: 23, y: 7 },
     { x: 19, y: 15 },
-    { x: 5, y: 6 },
+    { x: 9, y: 6 },
+    { x: 13, y: 6 },
     { x: 17, y: 6 },
   ])
     expect(paths.has(posKey(pos)), `Unreachable court destination ${posKey(pos)}`).toBe(true);

@@ -1,1 +1,1575 @@
-{"frames":{"unit.water.sura/bendEast/0":{"frame":{"x":0,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/1":{"frame":{"x":109,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/2":{"frame":{"x":218,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/3":{"frame":{"x":327,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/4":{"frame":{"x":436,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/5":{"frame":{"x":545,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/6":{"frame":{"x":654,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/7":{"frame":{"x":763,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/8":{"frame":{"x":872,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendEast/9":{"frame":{"x":981,"y":0,"w":109,"h":128},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":109,"h":128},"sourceSize":{"w":109,"h":128}},"unit.water.sura/bendSouthEast/0":{"frame":{"x":1090,"y":0,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/1":{"frame":{"x":1217,"y":0,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/2":{"frame":{"x":1344,"y":0,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/3":{"frame":{"x":1471,"y":0,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/4":{"frame":{"x":1598,"y":0,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/5":{"frame":{"x":1725,"y":0,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/6":{"frame":{"x":1852,"y":0,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/7":{"frame":{"x":0,"y":130,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/8":{"frame":{"x":127,"y":130,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouthEast/9":{"frame":{"x":254,"y":130,"w":127,"h":130},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":127,"h":130},"sourceSize":{"w":127,"h":130}},"unit.water.sura/bendSouth/0":{"frame":{"x":381,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/1":{"frame":{"x":472,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/2":{"frame":{"x":563,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/3":{"frame":{"x":654,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/4":{"frame":{"x":745,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/5":{"frame":{"x":836,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/7":{"frame":{"x":927,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/8":{"frame":{"x":1018,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouth/9":{"frame":{"x":1109,"y":130,"w":91,"h":135},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":91,"h":135},"sourceSize":{"w":91,"h":135}},"unit.water.sura/bendSouthWest/0":{"frame":{"x":1200,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/1":{"frame":{"x":1305,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/2":{"frame":{"x":1410,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/3":{"frame":{"x":1515,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/4":{"frame":{"x":1620,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/5":{"frame":{"x":1725,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/6":{"frame":{"x":1830,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/7":{"frame":{"x":1935,"y":130,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/8":{"frame":{"x":0,"y":265,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendSouthWest/9":{"frame":{"x":105,"y":265,"w":105,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":105,"h":131},"sourceSize":{"w":105,"h":131}},"unit.water.sura/bendWest/0":{"frame":{"x":210,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/1":{"frame":{"x":306,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/2":{"frame":{"x":402,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/3":{"frame":{"x":498,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/4":{"frame":{"x":594,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/5":{"frame":{"x":690,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/6":{"frame":{"x":786,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/7":{"frame":{"x":882,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/8":{"frame":{"x":978,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendWest/9":{"frame":{"x":1074,"y":265,"w":96,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":96,"h":125},"sourceSize":{"w":96,"h":125}},"unit.water.sura/bendNorthWest/0":{"frame":{"x":1170,"y":265,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/1":{"frame":{"x":1290,"y":265,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/2":{"frame":{"x":1410,"y":265,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/3":{"frame":{"x":1530,"y":265,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/4":{"frame":{"x":1650,"y":265,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/5":{"frame":{"x":1770,"y":265,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/7":{"frame":{"x":1890,"y":265,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/8":{"frame":{"x":0,"y":396,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorthWest/9":{"frame":{"x":120,"y":396,"w":120,"h":125},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":120,"h":125},"sourceSize":{"w":120,"h":125}},"unit.water.sura/bendNorth/0":{"frame":{"x":240,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/1":{"frame":{"x":330,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/2":{"frame":{"x":420,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/3":{"frame":{"x":510,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/4":{"frame":{"x":600,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/5":{"frame":{"x":690,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/6":{"frame":{"x":780,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/7":{"frame":{"x":870,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/8":{"frame":{"x":960,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorth/9":{"frame":{"x":1050,"y":396,"w":90,"h":144},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":90,"h":144},"sourceSize":{"w":90,"h":144}},"unit.water.sura/bendNorthEast/0":{"frame":{"x":1140,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/1":{"frame":{"x":1233,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/2":{"frame":{"x":1326,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/3":{"frame":{"x":1419,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/4":{"frame":{"x":1512,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/5":{"frame":{"x":1605,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/6":{"frame":{"x":1698,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/7":{"frame":{"x":1791,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/8":{"frame":{"x":1884,"y":396,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}},"unit.water.sura/bendNorthEast/9":{"frame":{"x":0,"y":540,"w":93,"h":131},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":93,"h":131},"sourceSize":{"w":93,"h":131}}},"meta":{"app":"four-nations-tactics","version":"1","image":"sura-g-bend.webp","format":"RGBA8888","size":{"w":2040,"h":671},"scale":"1"}}
+{
+  "frames": {
+    "unit.water.sura/bendSouth/0": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/1": {
+      "frame": {
+        "x": 59,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/2": {
+      "frame": {
+        "x": 116,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/3": {
+      "frame": {
+        "x": 173,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/4": {
+      "frame": {
+        "x": 230,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/5": {
+      "frame": {
+        "x": 287,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/7": {
+      "frame": {
+        "x": 344,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/8": {
+      "frame": {
+        "x": 401,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouth/9": {
+      "frame": {
+        "x": 458,
+        "y": 2,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthEast/0": {
+      "frame": {
+        "x": 515,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/1": {
+      "frame": {
+        "x": 565,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/2": {
+      "frame": {
+        "x": 615,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/3": {
+      "frame": {
+        "x": 665,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/4": {
+      "frame": {
+        "x": 715,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/5": {
+      "frame": {
+        "x": 765,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/6": {
+      "frame": {
+        "x": 815,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/7": {
+      "frame": {
+        "x": 865,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/8": {
+      "frame": {
+        "x": 915,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendSouthEast/9": {
+      "frame": {
+        "x": 965,
+        "y": 2,
+        "w": 48,
+        "h": 66
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 66
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 66
+      }
+    },
+    "unit.water.sura/bendEast/0": {
+      "frame": {
+        "x": 1015,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/1": {
+      "frame": {
+        "x": 1056,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/2": {
+      "frame": {
+        "x": 1097,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/3": {
+      "frame": {
+        "x": 1138,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/4": {
+      "frame": {
+        "x": 1179,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/5": {
+      "frame": {
+        "x": 1220,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/6": {
+      "frame": {
+        "x": 1261,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/7": {
+      "frame": {
+        "x": 1302,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/8": {
+      "frame": {
+        "x": 1343,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendEast/9": {
+      "frame": {
+        "x": 1384,
+        "y": 2,
+        "w": 39,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 39,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 39,
+        "h": 68
+      }
+    },
+    "unit.water.sura/bendNorthEast/0": {
+      "frame": {
+        "x": 1425,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/1": {
+      "frame": {
+        "x": 1484,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/2": {
+      "frame": {
+        "x": 1543,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/3": {
+      "frame": {
+        "x": 1602,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/4": {
+      "frame": {
+        "x": 1661,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/5": {
+      "frame": {
+        "x": 1720,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/6": {
+      "frame": {
+        "x": 1779,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/7": {
+      "frame": {
+        "x": 1838,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/8": {
+      "frame": {
+        "x": 1897,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthEast/9": {
+      "frame": {
+        "x": 1956,
+        "y": 2,
+        "w": 57,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 57,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 57,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/0": {
+      "frame": {
+        "x": 2,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/1": {
+      "frame": {
+        "x": 63,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/2": {
+      "frame": {
+        "x": 124,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/3": {
+      "frame": {
+        "x": 185,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/4": {
+      "frame": {
+        "x": 246,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/5": {
+      "frame": {
+        "x": 307,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/6": {
+      "frame": {
+        "x": 368,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/7": {
+      "frame": {
+        "x": 429,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/8": {
+      "frame": {
+        "x": 490,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorth/9": {
+      "frame": {
+        "x": 551,
+        "y": 72,
+        "w": 59,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 59,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 59,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendNorthWest/0": {
+      "frame": {
+        "x": 612,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/1": {
+      "frame": {
+        "x": 665,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/2": {
+      "frame": {
+        "x": 718,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/3": {
+      "frame": {
+        "x": 771,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/4": {
+      "frame": {
+        "x": 824,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/5": {
+      "frame": {
+        "x": 877,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/7": {
+      "frame": {
+        "x": 930,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/8": {
+      "frame": {
+        "x": 983,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendNorthWest/9": {
+      "frame": {
+        "x": 1036,
+        "y": 72,
+        "w": 51,
+        "h": 62
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 51,
+        "h": 62
+      },
+      "sourceSize": {
+        "w": 51,
+        "h": 62
+      }
+    },
+    "unit.water.sura/bendWest/0": {
+      "frame": {
+        "x": 1089,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/1": {
+      "frame": {
+        "x": 1135,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/2": {
+      "frame": {
+        "x": 1181,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/3": {
+      "frame": {
+        "x": 1227,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/4": {
+      "frame": {
+        "x": 1273,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/5": {
+      "frame": {
+        "x": 1319,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/6": {
+      "frame": {
+        "x": 1365,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/7": {
+      "frame": {
+        "x": 1411,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/8": {
+      "frame": {
+        "x": 1457,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendWest/9": {
+      "frame": {
+        "x": 1503,
+        "y": 72,
+        "w": 44,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 44,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 44,
+        "h": 63
+      }
+    },
+    "unit.water.sura/bendSouthWest/0": {
+      "frame": {
+        "x": 1549,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/1": {
+      "frame": {
+        "x": 1606,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/2": {
+      "frame": {
+        "x": 1663,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/3": {
+      "frame": {
+        "x": 1720,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/4": {
+      "frame": {
+        "x": 1777,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/5": {
+      "frame": {
+        "x": 1834,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/6": {
+      "frame": {
+        "x": 1891,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/7": {
+      "frame": {
+        "x": 1948,
+        "y": 72,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/8": {
+      "frame": {
+        "x": 2,
+        "y": 139,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    },
+    "unit.water.sura/bendSouthWest/9": {
+      "frame": {
+        "x": 59,
+        "y": 139,
+        "w": 55,
+        "h": 65
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 55,
+        "h": 65
+      },
+      "sourceSize": {
+        "w": 55,
+        "h": 65
+      }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "sura-g-bend.webp",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2015,
+      "h": 206
+    },
+    "scale": "1"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "definition": "G1 = 1 art px per world px (source reduced by grain_f / 1.5; Kaya 59 px); G2 = exact 2x NN of G1 + automatic cleanup",
+  "placement": "draw the G1 image with g1_anchor_px on the screen point of logical ground (tile_x * 64 + origin[0], tile_y * 64 + origin[1]) at 1 px per world px; the ground origin is the object's own min-x, min-y ground corner (the back, top vertex of its 2:1 footprint)",
+  "objects": {
+    "gao-display": {
+      "source": "raw/gao-fruit-table-r3-s22/0.png",
+      "factor_from_source": 0.4133,
+      "g1": [104, 80],
+      "g2": [52, 40],
+      "tiles": [[6, 5]],
+      "footprint_tiles": [2, 1],
+      "g1_anchor_px": [20.3, 30.2],
+      "origin_in_footprint_logical_px": [22.3, 21.9],
+      "extent_logical_px": [83.5, 20.3]
+    },
+    "south-market-display": {
+      "source": "fixes/south-grain-table-r3-s21-clean.png",
+      "factor_from_source": 0.4133,
+      "g1": [104, 96],
+      "g2": [52, 48],
+      "tiles": [[3, 9]],
+      "footprint_tiles": [2, 1],
+      "g1_anchor_px": [19.9, 43.4],
+      "origin_in_footprint_logical_px": [22.9, 21.9],
+      "extent_logical_px": [82.3, 20.3]
+    },
+    "north-market-display": {
+      "source": "raw/north-pottery-table-r3-s21/0.png",
+      "factor_from_source": 0.4133,
+      "g1": [106, 86],
+      "g2": [53, 43],
+      "tiles": [[14, 5]],
+      "footprint_tiles": [2, 1],
+      "g1_anchor_px": [21.5, 33.2],
+      "origin_in_footprint_logical_px": [22.9, 21.3],
+      "extent_logical_px": [82.3, 21.5]
+    },
+    "bench-2x1": {
+      "source": "raw/bench-r3-s22/0.png",
+      "factor_from_source": 0.375,
+      "g1": [76, 48],
+      "g2": [38, 24],
+      "tiles": [[3, 5]],
+      "footprint_tiles": [2, 1],
+      "g1_anchor_px": [8.9, 14.0],
+      "origin_in_footprint_logical_px": [31.2, 27.8],
+      "extent_logical_px": [65.6, 8.3]
+    },
+    "fence-2x1": {
+      "source": "raw/fence-segment-r3-s22/0.png",
+      "factor_from_source": 0.375,
+      "g1": [130, 94],
+      "g2": [65, 47],
+      "tiles": [[1, 5]],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [1.0, 25.9],
+      "origin_in_footprint_logical_px": [-1.8, 30.2],
+      "extent_logical_px": [67.6, 3.6]
+    },
+    "shop-stack": {
+      "source": "raw/shop-stack-r3-s21/0.png",
+      "factor_from_source": 0.375,
+      "g1": [52, 68],
+      "g2": [26, 34],
+      "tiles": [[10, 2]],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [20.1, 34.9],
+      "origin_in_footprint_logical_px": [11.1, 18.3],
+      "extent_logical_px": [41.7, 27.4]
+    },
+    "baskets-south": {
+      "source": "raw/baskets-south-fix-cloth-s31/0.png",
+      "factor_from_source": 0.375,
+      "g1": [36, 36],
+      "g2": [18, 18],
+      "tiles": [[2, 9]],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [12.5, 12.7],
+      "origin_in_footprint_logical_px": [14.1, 20.1],
+      "extent_logical_px": [35.8, 23.9]
+    },
+    "baskets-north": {
+      "source": "raw/baskets-north-r3-s21/0.png",
+      "factor_from_source": 0.375,
+      "g1": [34, 30],
+      "g2": [17, 15],
+      "tiles": [[14, 6]],
+      "footprint_tiles": [1, 1],
+      "g1_anchor_px": [9.5, 5.7],
+      "origin_in_footprint_logical_px": [14.1, 20.1],
+      "extent_logical_px": [35.8, 23.9]
+    }
+  }
+}

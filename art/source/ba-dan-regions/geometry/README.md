@@ -16,4 +16,6 @@ the scene can change (and it did, at the integration) without moving what the pa
   `ba-dan-trees-pack.ts` and `ba-dan-surround.ts` from `art/source/ba-dan-true/`, `art/source/ba-dan-restyle/` and
   `art/source/ba-dan-surround/`; those packers are retired (in git history at `7925789c`).
 
-`regions.py render` lays these on the painting's grid (`scripts/art/ba-dan-regions/render-village.ts`).
+`regions.py render` lays these on the painting's grid (`scripts/art/ba-dan-regions/render-village.ts`). The entries are in world
+px and do not change with the painting's scale; the sprites are stored at 1.5 px or more per world px and are area-averaged down
+to the 1 px grid (ADR 0088), so the rasterised silhouettes, not the geometry, are what moved.

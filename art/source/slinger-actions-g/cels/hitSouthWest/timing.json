@@ -1,0 +1,36 @@
+{
+ "take": "hitSouthWest",
+ "foot_pin_dy": [
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "kind": "hit",
+ "n_frames": 5,
+ "ms_per_frame": [
+  40,
+  70,
+  120,
+  80,
+  90
+ ],
+ "hitstop": {
+  "frame": 1,
+  "ms": 80
+ },
+ "last_frame_holds": false,
+ "cel": {
+  "size": [
+   192,
+   192
+  ]
+ },
+ "raw_job": "30999c3f-d0ee-4049-bb8c-43019e5c90fb",
+ "raw": "hit-south-west-s5101 frames [0, 1, 2]",
+ "seed": 5101,
+ "attribution": "motion: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73 'scared', frames 48-72 (120 fps). Licence: CMU mocap is free to use for any purpose, including commercial products and games; credit requested ('The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.'). H3 = the H2 pose at 0.4 amplitude (in-between back to the stance); retargeted onto the character's own stance (amplitude 1.35, exaggerated)",
+ "credit": "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.",
+ "motion": "79_73 source frames ['stance', 60, 72, {'f': 72, 'amp': 0.4}, 'stance']"
+}

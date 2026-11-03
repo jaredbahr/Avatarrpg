@@ -37,6 +37,10 @@
  * every decoded atlas cel in the same file, which `art:validate` holds the
  * shipped WebP to. Every check runs before the first file is written, and two
  * builds write byte-identical files.
+ *
+ * Since ADR 0086 the page this writes is not what ships: it is the painted
+ * input of the G1 pass, and `scripts/art/fx-g1.ts` writes the shipped page
+ * (same frames and pivots) and re-pins its cels. The data stays this script's.
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';

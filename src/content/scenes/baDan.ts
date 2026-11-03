@@ -333,7 +333,7 @@ export const BA_DAN_DEPTH_OVERRIDES: Readonly<Record<string, Vec2>> = {
   'tree-3-15': { x: 3.25, y: 15 },
 };
 
-/** A sprite, drawn where the painting has it: the sprite's rectangle in painting pixels is the world rectangle times 1.5. */
+/** A sprite, drawn where the painting has it: the sprite's rectangle in painting pixels is the world rectangle times the painting's scale (1 since ADR 0088). */
 function upright(piece: Standing): SceneScenery | null {
   const art = BA_DAN_UPRIGHTS[piece.id];
   if (!art) return null;
@@ -348,9 +348,9 @@ function upright(piece: Standing): SceneScenery | null {
     height: height / PIXELS_PER_WORLD,
     footprint: piece.footprint,
     depth: BA_DAN_DEPTH_OVERRIDES[piece.id] ?? piece.depth,
-    // The plates hold every building and tree this fades over, so the veil only shows a figure through
-    // its own roof: it is for a figure that is hidden, not for one whose legs the roof corner covers.
-    ...(piece.fadeWhenOccluding ? { fadeWhenOccluding: true, fadeWhenHeadHidden: true } : {}),
+    // The plates hold every building and tree in front of a figure, so a faded piece reads as the figure
+    // standing on its roof: the piece keeps its paint and a hidden party member shows as a silhouette.
+    ...(piece.fadeWhenOccluding ? { fadeWhenOccluding: true, revealOccluded: true } : {}),
     ...(piece.exterior ? { exterior: true } : {}),
     // The painting has the contact and the cast shade; the runtime would draw them a second time.
     contactShadow: false,
@@ -375,8 +375,21 @@ const plate = ([
 /** The image files the scene draws: the ground plates and the upright pages. */
 export const BA_DAN_IMAGE_COUNT = BA_DAN_GROUND_PLATES.length + BA_DAN_UPRIGHT_PAGES;
 
-/** Ink alpha of a figure's projected cast and of the sole-band contact under both feet. */
-export const BA_DAN_ACTOR_GROUNDING = { cast: 0.5, contact: 0.8 } as const;
+/**
+ * How a figure's shadow is laid in the painting (ADR 0093 and its figure amendment). The key is the one
+ * the G1 pass set the painting's objects in with (`SHADOW_KX`, `SHADOW_KY` in
+ * `art/source/ba-dan-route-a/tools/objects.py`), so a figure's shadow lies the way the table's, the
+ * baskets' and the barrel's beside it do. The tone is theirs too: the painting multiplies the ground by
+ * `SHADOW` and `CONTACT` (0.70 and 0.50) cooled by `COOL`, and this ink at these two levels lands on
+ * those over the ground its shadows fall on, within 1.6 levels RMS
+ * (`art/source/grounding/tools/figure_shadow_tone.py` fits and prints them).
+ */
+export const BA_DAN_ACTOR_GROUNDING = {
+  cast: 0.335,
+  contact: 0.535,
+  castKey: { x: 0.35, y: 0.16 },
+  ink: { r: 0, g: 3, b: 11 },
+} as const;
 
 /**
  * A complete scene: the plates cover the whole pan box, so the grid's procedural terrain is not drawn under

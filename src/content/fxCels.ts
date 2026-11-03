@@ -17,7 +17,8 @@ export const FX_CELS = [
 export type FxCel = (typeof FX_CELS)[number];
 
 export const CEL_FRAMES = 4;
-export const CEL_SIZE = 192;
+/** A master cel: pixel art at one art px a world px for a 1.5-tile effect (ADR 0086). */
+export const CEL_SIZE = 96;
 export const FX_CEL_SHEETS = [
   { url: 'art/fx/fire-cels.png', clips: ['flame', 'fire-burst', 'lightning'] },
   { url: 'art/fx/water-cels.png', clips: ['splash', 'ice', 'healing'] },

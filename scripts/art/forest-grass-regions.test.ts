@@ -3,7 +3,8 @@ import { FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { FOREST_GRASS_REGIONS } from '../../src/content/scenes/forestRoadGround';
 import { pixelAt } from './lib/image';
-import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
+import { expectPackerAlpha, readShipped } from './lib/shipped-pin';
+import { FOREST_G1_OUT } from './forest-g1-pack';
 import { loadForestMaterial } from './forest-village-material';
 import {
   FOREST_GRASS_PACKS,
@@ -16,17 +17,12 @@ import {
 // 5 s default once. Headroom here, not a raised global timeout.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
-/** Generated 2026-10-03 (see docs/art/forest-ground-composition.md); not packer output. */
-const GRASS_PINS: Record<string, { bytes: number; sha256: string }> = {
-  north: {
-    bytes: 37046,
-    sha256: '42723d7694c81b57ca9ac27b295d8058e340b8e2b4d9e4a852f61dba4daa690e',
-  },
-  south: {
-    bytes: 30314,
-    sha256: '291abe5e896816e5c69cf84e8d43bc6a7446fa0e15671004f399c066598c51d2',
-  },
-};
+/**
+ * What ships is the G1 restyle of the 2026-10-03 generated packs (ADR 0087),
+ * held to its committed source by `forest-g1-pack.test.ts`; the packer stays
+ * the authority on the footprint.
+ */
+const shippedPath = (name: string): string => `${FOREST_G1_OUT}/grass-${name}.webp`;
 
 /**
  * Earth-green share of the shipped plate, over opaque pixels that lie inside a
@@ -60,11 +56,8 @@ it('ships generated sparse grass packs on the packer footprint with fully covere
   for (const pack of FOREST_GRASS_PACKS) {
     const packed = packGrassRegion(material, pack.rows, pack.region);
     // Every check below reads the decoded shipped file, not the packer's output.
-    const image = await readShipped(pack.output);
-    const pin = GRASS_PINS[pack.name];
-    expect(pin, `${pack.name} has a recorded pin`).toBeDefined();
-    if (pin) expectShippedPin(pack.output, pin);
-    await expectPackerAlpha(pack.output, packed);
+    const image = await readShipped(shippedPath(pack.name));
+    await expectPackerAlpha(shippedPath(pack.name), packed);
     let opaque = 0,
       feather = 0,
       waterLeaks = 0,

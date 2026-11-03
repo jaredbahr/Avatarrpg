@@ -1,0 +1,1416 @@
+{
+ "marginTone": "verdant",
+ "groundMode": "partial",
+ "paintedRubble": [
+  {
+   "x": 7,
+   "y": 3
+  },
+  {
+   "x": 8,
+   "y": 9
+  }
+ ],
+ "reliefLift": 0.25,
+ "ground": [
+  {
+   "url": "art/maps/forest-scene/grass-north.webp",
+   "x": 512,
+   "y": 0,
+   "width": 1536,
+   "height": 768,
+   "wind": true
+  },
+  {
+   "url": "art/maps/forest-scene/grass-south.webp",
+   "x": 0,
+   "y": 288,
+   "width": 1472,
+   "height": 736,
+   "wind": true
+  },
+  {
+   "url": "art/maps/forest-scene/route-ground.webp",
+   "x": 128,
+   "y": 32,
+   "width": 1984,
+   "height": 960
+  },
+  {
+   "url": "art/maps/forest-scene/pond-bank.webp",
+   "x": 560,
+   "y": 304,
+   "width": 416,
+   "height": 192
+  },
+  {
+   "url": "art/maps/forest-scene/creek-west.webp",
+   "x": -48,
+   "y": 304,
+   "width": 736,
+   "height": 416
+  },
+  {
+   "url": "art/maps/forest-scene/creek-east.webp",
+   "x": 592,
+   "y": 624,
+   "width": 736,
+   "height": 416
+  },
+  {
+   "url": "art/maps/forest-scene/raised-shelf.webp",
+   "x": 1528,
+   "y": 536,
+   "width": 400,
+   "height": 336
+  },
+  {
+   "url": "art/maps/forest-scene/rubble-1.webp",
+   "x": 960,
+   "y": 330.6666666666667,
+   "width": 128,
+   "height": 42.666666666666664
+  },
+  {
+   "url": "art/maps/forest-scene/rubble-2.webp",
+   "x": 640,
+   "y": 554.6666666666666,
+   "width": 128,
+   "height": 42.666666666666664
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-0.webp",
+   "x": 403,
+   "y": -160,
+   "width": 730,
+   "height": 183
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-1.webp",
+   "x": 42,
+   "y": 22,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-2.webp",
+   "x": 768,
+   "y": 22,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-3.webp",
+   "x": -320,
+   "y": 203,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-4.webp",
+   "x": 1130,
+   "y": 203,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-5.webp",
+   "x": -320,
+   "y": 384,
+   "width": 877,
+   "height": 257
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-6.webp",
+   "x": 1491,
+   "y": 384,
+   "width": 877,
+   "height": 257
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-7.webp",
+   "x": 192,
+   "y": 640,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-8.webp",
+   "x": 1642,
+   "y": 640,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-9.webp",
+   "x": 554,
+   "y": 821,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-10.webp",
+   "x": 1280,
+   "y": 821,
+   "width": 726,
+   "height": 182
+  },
+  {
+   "url": "art/maps/forest-scene/exterior-apron-11.webp",
+   "x": 915,
+   "y": 1002,
+   "width": 730,
+   "height": 182
+  }
+ ],
+ "scenery": [
+  {
+   "id": "forest-pine-1--1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 845.0940992167102,
+   "y": -189.76,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 1,
+     "y": -1
+    }
+   ],
+   "depth": {
+    "x": 1.5,
+    "y": -0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-4--1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1037.0940992167102,
+   "y": -93.75999999999999,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 4,
+     "y": -1
+    }
+   ],
+   "depth": {
+    "x": 4.5,
+    "y": -0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-5--1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1101.0940992167102,
+   "y": -61.75999999999999,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 5,
+     "y": -1
+    }
+   ],
+   "depth": {
+    "x": 5.5,
+    "y": -0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-8--1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1293.0940992167102,
+   "y": 34.24000000000001,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 8,
+     "y": -1
+    }
+   ],
+   "depth": {
+    "x": 8.5,
+    "y": -0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-11--1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1485.0940992167102,
+   "y": 130.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 11,
+     "y": -1
+    }
+   ],
+   "depth": {
+    "x": 11.5,
+    "y": -0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-14--1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1677.0940992167102,
+   "y": 226.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 14,
+     "y": -1
+    }
+   ],
+   "depth": {
+    "x": 14.5,
+    "y": -0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-17--1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1869.0940992167102,
+   "y": 322.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 17,
+     "y": -1
+    }
+   ],
+   "depth": {
+    "x": 17.5,
+    "y": -0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine--1-3",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 461.09409921671016,
+   "y": -125.75999999999999,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": -1,
+     "y": 3
+    }
+   ],
+   "depth": {
+    "x": -0.5,
+    "y": 3.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine--1-9",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 77.09409921671018,
+   "y": 66.24000000000001,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": -1,
+     "y": 9
+    }
+   ],
+   "depth": {
+    "x": -0.5,
+    "y": 9.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-20-9",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1421.0940992167102,
+   "y": 738.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 20,
+     "y": 9
+    }
+   ],
+   "depth": {
+    "x": 20.5,
+    "y": 9.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true,
+   "exterior": true
+  },
+  {
+   "id": "forest-pine-2-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 845.0940992167102,
+   "y": -125.75999999999999,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 2.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-3-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 909.0940992167102,
+   "y": -93.75999999999999,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 3,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 3.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-6-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1101.0940992167102,
+   "y": 2.240000000000009,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 6,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 6.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-7-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1165.0940992167102,
+   "y": 34.24000000000001,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 7,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 7.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-8-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1229.0940992167102,
+   "y": 66.24000000000001,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 8,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 8.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-9-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1293.0940992167102,
+   "y": 98.24000000000001,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 9,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 9.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-10-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1357.0940992167102,
+   "y": 130.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 10,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 10.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-11-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1421.0940992167102,
+   "y": 162.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 11,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 11.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-12-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1485.0940992167102,
+   "y": 194.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 12,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 12.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-13-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1549.0940992167102,
+   "y": 226.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 13,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 13.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-15-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1677.0940992167102,
+   "y": 290.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 15,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 15.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-16-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1741.0940992167102,
+   "y": 322.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 16,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 16.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-17-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1805.0940992167102,
+   "y": 354.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 17,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 17.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-18-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1869.0940992167102,
+   "y": 386.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 18,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 18.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-19-0",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1933.0940992167102,
+   "y": 418.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 19,
+     "y": 0
+    }
+   ],
+   "depth": {
+    "x": 19.5,
+    "y": 0.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-7-1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1101.0940992167102,
+   "y": 66.24000000000001,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 7,
+     "y": 1
+    }
+   ],
+   "depth": {
+    "x": 7.5,
+    "y": 1.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-8-1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1165.0940992167102,
+   "y": 98.24000000000001,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 8,
+     "y": 1
+    }
+   ],
+   "depth": {
+    "x": 8.5,
+    "y": 1.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-9-1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1229.0940992167102,
+   "y": 130.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 9,
+     "y": 1
+    }
+   ],
+   "depth": {
+    "x": 9.5,
+    "y": 1.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-18-1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1805.0940992167102,
+   "y": 418.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 18,
+     "y": 1
+    }
+   ],
+   "depth": {
+    "x": 18.5,
+    "y": 1.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-19-1",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 1869.0940992167102,
+   "y": 450.24,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 19,
+     "y": 1
+    }
+   ],
+   "depth": {
+    "x": 19.5,
+    "y": 1.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-pine-0-2",
+   "url": "art/maps/forest-scene/pine.webp",
+   "x": 589.0940992167102,
+   "y": -125.75999999999999,
+   "width": 99.81549173194082,
+   "height": 224,
+   "footprint": [
+    {
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "depth": {
+    "x": 0.5,
+    "y": 2.5
+   },
+   "fadeWhenOccluding": true,
+   "wind": true
+  },
+  {
+   "id": "forest-keeper-lodge",
+   "url": "art/maps/ba-dan-scene/dwelling.webp",
+   "x": 657.408,
+   "y": -36.17169435215948,
+   "width": 256,
+   "height": 164.9966777408638,
+   "footprint": [
+    {
+     "x": 0,
+     "y": 0
+    },
+    {
+     "x": 1,
+     "y": 0
+    },
+    {
+     "x": 0,
+     "y": 1
+    },
+    {
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "depth": {
+    "x": 1.5,
+    "y": 1.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-0-10",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 51.5,
+   "y": 211.456,
+   "width": 150,
+   "height": 146.4,
+   "footprint": [
+    {
+     "x": 0,
+     "y": 10
+    }
+   ],
+   "depth": {
+    "x": 0.5,
+    "y": 10.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-15-10",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 1011.5,
+   "y": 691.456,
+   "width": 150,
+   "height": 146.4,
+   "flip": true,
+   "footprint": [
+    {
+     "x": 15,
+     "y": 10
+    }
+   ],
+   "depth": {
+    "x": 15.5,
+    "y": 10.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-19-10",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 1267.5,
+   "y": 819.456,
+   "width": 150,
+   "height": 146.4,
+   "flip": true,
+   "footprint": [
+    {
+     "x": 19,
+     "y": 10
+    }
+   ],
+   "depth": {
+    "x": 19.5,
+    "y": 10.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-0-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": -12.5,
+   "y": 243.456,
+   "width": 150,
+   "height": 146.4,
+   "flip": true,
+   "footprint": [
+    {
+     "x": 0,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 0.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-1-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 51.5,
+   "y": 275.456,
+   "width": 150,
+   "height": 146.4,
+   "footprint": [
+    {
+     "x": 1,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 1.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-7-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 435.5,
+   "y": 467.456,
+   "width": 150,
+   "height": 146.4,
+   "footprint": [
+    {
+     "x": 7,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 7.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-8-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 499.5,
+   "y": 499.456,
+   "width": 150,
+   "height": 146.4,
+   "flip": true,
+   "footprint": [
+    {
+     "x": 8,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 8.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-9-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 563.5,
+   "y": 531.456,
+   "width": 150,
+   "height": 146.4,
+   "footprint": [
+    {
+     "x": 9,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 9.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-10-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 627.5,
+   "y": 563.456,
+   "width": 150,
+   "height": 146.4,
+   "flip": true,
+   "footprint": [
+    {
+     "x": 10,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 10.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-11-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 691.5,
+   "y": 595.456,
+   "width": 150,
+   "height": 146.4,
+   "footprint": [
+    {
+     "x": 11,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 11.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-17-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 1075.5,
+   "y": 787.456,
+   "width": 150,
+   "height": 146.4,
+   "footprint": [
+    {
+     "x": 17,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 17.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-18-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 1139.5,
+   "y": 819.456,
+   "width": 150,
+   "height": 146.4,
+   "flip": true,
+   "footprint": [
+    {
+     "x": 18,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 18.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-alder-19-11",
+   "url": "art/maps/ba-dan-scene/village-tree.webp",
+   "x": 1203.5,
+   "y": 851.456,
+   "width": 150,
+   "height": 146.4,
+   "footprint": [
+    {
+     "x": 19,
+     "y": 11
+    }
+   ],
+   "depth": {
+    "x": 19.5,
+    "y": 11.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-creek-deadfall",
+   "url": "art/maps/quarry-gate-scene/cover-timber.webp",
+   "x": 388,
+   "y": 465.7142857142857,
+   "width": 120,
+   "height": 51.42857142857143,
+   "footprint": [
+    {
+     "x": 5,
+     "y": 10
+    }
+   ],
+   "depth": {
+    "x": 5.5,
+    "y": 10.5
+   },
+   "castShadow": false
+  },
+  {
+   "id": "forest-bank-nest-reeds",
+   "url": "art/maps/forest-scene/old-nest-reeds.webp",
+   "x": 516,
+   "y": 454,
+   "width": 120,
+   "height": 58,
+   "footprint": [
+    {
+     "x": 6,
+     "y": 9
+    }
+   ],
+   "depth": {
+    "x": 6.1,
+    "y": 9.08
+   },
+   "contactShadow": false,
+   "castShadow": false
+  },
+  {
+   "id": "forest-pond-reeds-4-5",
+   "url": "art/maps/forest-scene/bank-reed-0.webp",
+   "x": 684.6090909090909,
+   "y": 266,
+   "width": 38.78181818181818,
+   "height": 54,
+   "footprint": [
+    {
+     "x": 4,
+     "y": 5
+    }
+   ],
+   "depth": {
+    "x": 4.5,
+    "y": 5.5
+   },
+   "contactShadow": false,
+   "castShadow": false
+  },
+  {
+   "id": "forest-pond-reeds-7-7",
+   "url": "art/maps/forest-scene/bank-reed-1.webp",
+   "x": 754.2985074626865,
+   "y": 453,
+   "width": 27.402985074626866,
+   "height": 27,
+   "footprint": [
+    {
+     "x": 7,
+     "y": 7
+    }
+   ],
+   "depth": {
+    "x": 7.5,
+    "y": 7.5
+   },
+   "contactShadow": false,
+   "castShadow": false
+  },
+  {
+   "id": "forest-pond-reeds-5-8",
+   "url": "art/maps/forest-scene/bank-reed-3.webp",
+   "x": 554.4183673469388,
+   "y": 403,
+   "width": 43.16326530612245,
+   "height": 45,
+   "footprint": [
+    {
+     "x": 5,
+     "y": 8
+    }
+   ],
+   "depth": {
+    "x": 5.5,
+    "y": 8.5
+   },
+   "contactShadow": false,
+   "castShadow": false
+  },
+  {
+   "id": "forest-creek-reeds-3-10",
+   "url": "art/maps/forest-scene/bank-reed-2.webp",
+   "x": 293.6231884057971,
+   "y": 429.76,
+   "width": 52.7536231884058,
+   "height": 40,
+   "footprint": [
+    {
+     "x": 3,
+     "y": 10
+    }
+   ],
+   "depth": {
+    "x": 3.5,
+    "y": 10.5
+   },
+   "contactShadow": false,
+   "castShadow": false
+  },
+  {
+   "id": "forest-creek-reeds-13-10",
+   "url": "art/maps/forest-scene/bank-reed-1.webp",
+   "x": 911.0985074626865,
+   "y": 755.4,
+   "width": 27.402985074626866,
+   "height": 27,
+   "footprint": [
+    {
+     "x": 13,
+     "y": 10
+    }
+   ],
+   "depth": {
+    "x": 13.45,
+    "y": 10.5
+   },
+   "contactShadow": false,
+   "castShadow": false
+  },
+  {
+   "id": "forest-roadside-signpost",
+   "url": "art/maps/forest-scene/roadside-signpost.webp",
+   "x": 871.06,
+   "y": 153.12400000000002,
+   "width": 49.879999999999995,
+   "height": 75.39999999999999,
+   "footprint": [
+    {
+     "x": 4,
+     "y": 2
+    }
+   ],
+   "depth": {
+    "x": 4.5,
+    "y": 2.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-roadside-fence-a",
+   "url": "art/maps/forest-scene/roadside-split-rail-fence.webp",
+   "x": 733.6666666666666,
+   "y": 113.62666666666667,
+   "width": 68.66666666666666,
+   "height": 49.33333333333333,
+   "footprint": [
+    {
+     "x": 2,
+     "y": 2
+    }
+   ],
+   "depth": {
+    "x": 2.5,
+    "y": 2.5
+   },
+   "flip": true,
+   "castShadow": "reduced"
+  },
+  {
+   "id": "forest-roadside-fence-b",
+   "url": "art/maps/forest-scene/roadside-split-rail-fence.webp",
+   "x": 669.6666666666666,
+   "y": 81.62666666666667,
+   "width": 68.66666666666666,
+   "height": 49.33333333333333,
+   "footprint": [
+    {
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "depth": {
+    "x": 1.5,
+    "y": 2.5
+   },
+   "flip": true,
+   "castShadow": "reduced"
+  },
+  {
+   "id": "forest-roadside-fence-c",
+   "url": "art/maps/forest-scene/roadside-split-rail-fence.webp",
+   "x": 797.6666666666666,
+   "y": 209.62666666666667,
+   "width": 68.66666666666666,
+   "height": 49.33333333333333,
+   "footprint": [
+    {
+     "x": 4,
+     "y": 3
+    }
+   ],
+   "depth": {
+    "x": 4.5,
+    "y": 3.5
+   },
+   "castShadow": "reduced"
+  },
+  {
+   "id": "forest-roadside-woodpile",
+   "url": "art/maps/forest-scene/roadside-woodpile-stump.webp",
+   "x": 796,
+   "y": 96.04,
+   "width": 72,
+   "height": 34,
+   "footprint": [
+    {
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "depth": {
+    "x": 2.5,
+    "y": 1.5
+   }
+  },
+  {
+   "id": "forest-roadside-cart-wheel",
+   "url": "art/maps/forest-scene/roadside-broken-cart-wheel.webp",
+   "x": 1378.6666666666667,
+   "y": 429.8666666666667,
+   "width": 58.666666666666664,
+   "height": 53.33333333333333,
+   "footprint": [
+    {
+     "x": 12,
+     "y": 2
+    }
+   ],
+   "depth": {
+    "x": 12.5,
+    "y": 2.5
+   }
+  },
+  {
+   "id": "forest-roadside-milestone",
+   "url": "art/maps/forest-scene/roadside-milestone.webp",
+   "x": 1520.1333333333334,
+   "y": 518.5573333333333,
+   "width": 31.73333333333333,
+   "height": 27.066666666666663,
+   "footprint": [
+    {
+     "x": 14,
+     "y": 2
+    }
+   ],
+   "depth": {
+    "x": 14.5,
+    "y": 2.5
+   }
+  },
+  {
+   "id": "forest-roadside-lantern",
+   "url": "art/maps/forest-scene/roadside-lantern-post.webp",
+   "x": 1452.6666666666667,
+   "y": 484.50666666666666,
+   "width": 38.666666666666664,
+   "height": 97.33333333333333,
+   "footprint": [
+    {
+     "x": 14,
+     "y": 3
+    }
+   ],
+   "depth": {
+    "x": 14.5,
+    "y": 3.5
+   },
+   "fadeWhenOccluding": true
+  },
+  {
+   "id": "forest-roadside-quarry-blocks",
+   "url": "art/maps/forest-scene/roadside-rope-bound-quarry-blocks.webp",
+   "x": 1640.5333333333333,
+   "y": 616.896,
+   "width": 46.93333333333333,
+   "height": 41.6,
+   "footprint": [
+    {
+     "x": 17,
+     "y": 3
+    }
+   ],
+   "depth": {
+    "x": 17.5,
+    "y": 3.5
+   }
+  },
+  {
+   "id": "forest-roadside-mushroom-log",
+   "url": "art/maps/forest-scene/roadside-mushroom-fallen-log.webp",
+   "x": 221,
+   "y": 384.04,
+   "width": 70,
+   "height": 34,
+   "footprint": [
+    {
+     "x": 2,
+     "y": 10
+    }
+   ],
+   "depth": {
+    "x": 2.5,
+    "y": 10.5
+   },
+   "castShadow": "reduced"
+  }
+ ],
+ "flock": {
+  "url": "art/maps/forest-scene/bird-flap.webp",
+  "frames": 6,
+  "frameSize": 32,
+  "size": 20,
+  "count": 6
+ }
+}

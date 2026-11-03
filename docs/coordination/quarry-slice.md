@@ -2,6 +2,8 @@
 
 Current delivery mandate: [finish the complete run through the Driller](finish-through-driller.md), including its outcome and return. v0.2.0 is an interim playable release.
 
+**Next steps (2026-10-29):** the phased plan (M1 art lock, M2 demo-flow polish, M3 the quarry slice through the Driller, and CI health) is in [the roadmap's next stretch](../roadmap.md#next-stretch-2026-10-29). Its issues are tracked in [#348](https://github.com/jaredbahr/Avatarrpg/issues/348). Codex takes the code issues and Claude sessions take the PixelLab art.
+
 Scope approved by Jared on 17 September 2026: a polished, continuous playable
 trip from Ba Dan through the road and quarry, resolving its events and returning
 to the village. No new regions are needed to prove this experience.

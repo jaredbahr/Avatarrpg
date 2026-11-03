@@ -34,6 +34,7 @@ import { tileNoise } from '../../src/render/painters/shapes';
 import { writeApronPlates } from './lib/apron-plates';
 import { newImage, pixelAt, setPixel } from './lib/image';
 import type { Image } from './lib/image';
+import { preG1Path } from './forest-pre-g1';
 
 /** Bilinear value noise over the tile hash: smooth only between lattice points, then thresholded. */
 function valueNoise(x: number, y: number, salt: number): number {
@@ -437,7 +438,7 @@ async function loadPlates(names: readonly string[]): Promise<ApronPlate[]> {
     if (!name) continue;
     found.add(name);
     plates.push({
-      image: fitToPiece(await readWebp(`public/${piece.url}`), piece.width, piece.height),
+      image: fitToPiece(await readWebp(preG1Path(piece.url)), piece.width, piece.height),
       x: piece.x,
       y: piece.y,
     });

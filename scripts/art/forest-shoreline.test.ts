@@ -2,7 +2,8 @@ import { expect, it, vi } from 'vitest';
 import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt, toHex } from './lib/image';
-import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
+import { expectPackerAlpha, readShipped } from './lib/shipped-pin';
+import { FOREST_G1_OUT } from './forest-g1-pack';
 import { FOREST_INK, FOREST_PIECE_TONES, loadForestMaterial } from './forest-village-material';
 import {
   BED_DEEP_AT,
@@ -16,7 +17,6 @@ import {
   organicShore,
   packShoreline,
   pondInset,
-  SHORE_OUTPUT,
   WET_BANK,
   shorePosition,
   shoreDistance,
@@ -34,14 +34,14 @@ const { image, bedPixels, bitePixels } = packShoreline(material);
 const inset = pondInset(image.width, image.height);
 const BED_HEXES = new Set<string>(Object.values(FOREST_PIECE_TONES.bed));
 
-/** Generated 2026-10-03 (see docs/art/forest-pond-shoreline.md); not packer output. */
-const POND_PIN = {
-  bytes: 53422,
-  sha256: '5c9c9772389e1aef7fd54e09fdd56ecfc4312d8a5be75b8a7b2d07bb0dc59d80',
-};
+/**
+ * What ships is the G1 restyle (ADR 0087) of the plate generated 2026-10-03, at
+ * its 2 px per world px with its exact alpha, held to its committed source by
+ * `forest-g1-pack.test.ts`.
+ */
+const SHORE_OUTPUT = `${FOREST_G1_OUT}/pond-bank.webp`;
 
 it('ships the generated pond plate on the packer footprint', async () => {
-  expectShippedPin(SHORE_OUTPUT, POND_PIN);
   await expectPackerAlpha(SHORE_OUTPUT, image);
 });
 
@@ -87,7 +87,8 @@ it('shows blue, darker water at every water cell and a dry bank beyond the shore
       }
     }
   expect(water.sum / water.n, 'mean blue minus red inside the water').toBeGreaterThan(40);
-  expect(water.blue / water.n, 'share of water pixels clearly blue').toBeGreaterThan(0.85);
+  // 0.91 painted; 0.83 at G1 (ADR 0087), whose lily pads and contoured wet edge are not blue.
+  expect(water.blue / water.n, 'share of water pixels clearly blue').toBeGreaterThan(0.8);
   expect(far.n, 'bank samples beyond the shore').toBeGreaterThan(100);
   expect(far.wet / far.n, 'water-keyed share of the bank 0.2 cell and out').toBeLessThan(0.01);
 
@@ -111,7 +112,8 @@ it('shows blue, darker water at every water cell and a dry bank beyond the shore
     expect(clear, `water at ${x},${y} is opaque bed`).toBe(0);
     // `e2e/renderer.spec.ts` wants blue minus red above 20 where the rules say water.
     expect(blueMinusRed / n, `water at ${x},${y} blue minus red`).toBeGreaterThan(50);
-    expect(blue / n, `water at ${x},${y} blue share`).toBeGreaterThan(0.85);
+    // G1 (ADR 0087): 4,6 has a lily pad near its centre, 0.85 there.
+    expect(blue / n, `water at ${x},${y} blue share`).toBeGreaterThan(0.8);
     expect(light / n, `water at ${x},${y} is darker than the bank`).toBeLessThan(
       (bank.luma / bank.n) * 0.8,
     );

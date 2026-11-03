@@ -1,6 +1,7 @@
 # ADR 0021: Hand-drawn bending animation cels
 
-Status: accepted, 2026-09-18.
+Status: accepted, 2026-09-18. Amended 2026-10-27 by ADR 0086: the cels are G1 pixel art at a 96 px master
+(`CEL_SIZE`), drawn nearest-sampled; clips, cues, sizes and timing are unchanged.
 
 The bending recipes already describe casting, aimed travel, impact and affected
 tiles. Procedural particles alone made too many techniques look alike, especially

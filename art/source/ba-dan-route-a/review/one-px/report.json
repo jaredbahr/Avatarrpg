@@ -1,0 +1,20 @@
+{
+  "slice": {
+    "size": [1368, 716],
+    "tilePx": [128, 128]
+  },
+  "uniform2x2": {
+    "paving-and-bank": {
+      "before": 0.2927,
+      "after": 0.8589
+    },
+    "roof-and-wall": {
+      "before": 0.0943,
+      "after": 1.0
+    },
+    "canopy-edge": {
+      "before": 0.1582,
+      "after": 0.9965
+    }
+  }
+}

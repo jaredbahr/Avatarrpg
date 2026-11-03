@@ -1,0 +1,768 @@
+{
+ "task": "style-test-world-chars: characters in the world rendering",
+ "jobs": [
+  {
+   "name": "r1-roots-s11",
+   "endpoint": "/edit-images-v2",
+   "job": "0a86173e-6636-4600-8ad4-1af9da8e4d64",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": "<png>",
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Sixteen people stand on the ground in four rows. Keep every person exactly where they stand, at the same size, pose and facing, with the same hair, face and costume colours; render each person with the same painterly pixel texture, tone clusters, warm upper-left light and soft outline as the ground and buildings around them, so they belong to this scene. Do not add or remove anyone. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "inputs": {
+    "edit_images[0]": "inputs/composite.png"
+   },
+   "outputs": [
+    "00.png",
+    "01.png"
+   ],
+   "gens": 25.0,
+   "balance_before": 443.79999999993925,
+   "balance_after": 418.79999999993925,
+   "secs": 101,
+   "notes": "world restyle settings on the figure composite",
+   "verdict": "used: the 16 roots (output 00; 01 byte-identical)",
+   "error": null
+  },
+  {
+   "name": "skeletons-roots",
+   "endpoint": "/estimate-skeleton",
+   "job": null,
+   "status": "completed",
+   "settings": {
+    "image": "<png>"
+   },
+   "inputs": {
+    "image": "roots/<char>/<dir>.png (128x128)"
+   },
+   "outputs": [
+    "roots/kaya/skeleton/south-east.json",
+    "roots/kaya/skeleton/south-west.json",
+    "roots/kaya/skeleton/north-east.json",
+    "roots/kaya/skeleton/north-west.json",
+    "roots/sura/skeleton/south-east.json",
+    "roots/sura/skeleton/south-west.json",
+    "roots/sura/skeleton/north-east.json",
+    "roots/sura/skeleton/north-west.json",
+    "roots/bo/skeleton/south-east.json",
+    "roots/bo/skeleton/south-west.json",
+    "roots/bo/skeleton/north-east.json",
+    "roots/bo/skeleton/north-west.json",
+    "roots/gao/skeleton/south-east.json",
+    "roots/gao/skeleton/south-west.json",
+    "roots/gao/skeleton/north-east.json",
+    "roots/gao/skeleton/north-west.json"
+   ],
+   "gens": 1.6,
+   "balance_before": 418.79999999993925,
+   "balance_after": 417.1999999999407,
+   "secs": 44,
+   "notes": "16 synchronous calls",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-kaya-south-east-s21",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "43cc2532-ec74-43ee-a0af-5e033359ecc2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 21,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/kaya/south-east.png (128 canvas)",
+    "keypoints": "design/kaya-south-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 417.1999999999407,
+   "balance_after": 414.1999999999407,
+   "secs": 105,
+   "notes": "designed six-pose walk",
+   "verdict": "rejected pilot: the trailing heel at contact (0.035 H) drew as a running kick; lowered to 0.015 for s22",
+   "error": null
+  },
+  {
+   "name": "walk-sura-south-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "31ae902d-20f5-434d-9940-4d10d6ffd165",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs, wide brown belt, pale grey-blue front skirt panel, loose dark navy trousers, dark brown boots with cream fur tops; the tunic stays slate blue in every frame, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/sura/south-east.png (128 canvas)",
+    "keypoints": "design/sura-south-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 414.1999999999407,
+   "secs": 80,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-kaya-north-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "dff96cc7-36c6-4a93-b1c6-243683b35cb2",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/kaya/north-east.png (128 canvas)",
+    "keypoints": "design/kaya-north-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 408.1999999999407,
+   "secs": 100,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-sura-north-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "a42f7e87-3b03-4a79-8b4b-72e386cca444",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs, wide brown belt, pale grey-blue front skirt panel, loose dark navy trousers, dark brown boots with cream fur tops; the tunic stays slate blue in every frame, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/sura/north-east.png (128 canvas)",
+    "keypoints": "design/sura-north-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 399.1999999999407,
+   "secs": 106,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-sura-north-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "e3a7fd14-c99b-4444-9003-029e2f95ece5",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs, wide brown belt, pale grey-blue front skirt panel, loose dark navy trousers, dark brown boots with cream fur tops; the tunic stays slate blue in every frame, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/sura/north-west.png (128 canvas)",
+    "keypoints": "design/sura-north-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 399.1999999999407,
+   "secs": 106,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-kaya-south-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "756134d0-5ae0-405e-a5c1-e29e1aa98ad0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/kaya/south-east.png (128 canvas)",
+    "keypoints": "design/kaya-south-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 399.1999999999407,
+   "secs": 106,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-sura-south-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "33bc7e9e-258b-41c0-8d9a-5251c4e3d26e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman, slim, deep brown skin, dark brown-black hair in one long thick braid, muted slate-blue knee-length wrap tunic with cream trim and cream fur elbow cuffs, wide brown belt, pale grey-blue front skirt panel, loose dark navy trousers, dark brown boots with cream fur tops; the tunic stays slate blue in every frame, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/sura/south-west.png (128 canvas)",
+    "keypoints": "design/sura-south-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 396.1999999999407,
+   "secs": 114,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-kaya-south-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "409d94f2-f748-4dc3-b058-63cefe8976e6",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/kaya/south-west.png (128 canvas)",
+    "keypoints": "design/kaya-south-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 393.1999999999407,
+   "secs": 126,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-bo-south-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "87a2b923-b52b-493c-9b69-5dc9017b91c8",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic over an ochre-mustard shirt with sleeves rolled to the elbows, brown forearm wraps, wide brown sash with a hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bo/south-west.png (128 canvas)",
+    "keypoints": "design/bo-south-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 408.1999999999407,
+   "balance_after": 390.1999999999407,
+   "secs": 86,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-bo-south-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "b9a23742-5e16-4a81-8697-570dcaeede2e",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic over an ochre-mustard shirt with sleeves rolled to the elbows, brown forearm wraps, wide brown sash with a hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bo/south-east.png (128 canvas)",
+    "keypoints": "design/bo-south-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 387.1999999999407,
+   "secs": 120,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-kaya-north-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "8fbb2b80-8bfb-40e4-8d73-c9c128348970",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/kaya/north-west.png (128 canvas)",
+    "keypoints": "design/kaya-north-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 414.1999999999407,
+   "balance_after": 384.1999999999407,
+   "secs": 205,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-gao-south-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "98b84f0f-8a6d-4fa7-8c9e-42172c4c17cc",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic under a long cream apron, a string of dried red peppers at his right shoulder, two brown leather waterskins at his left hip, holding a small wooden abacus against his chest, charcoal trousers, brown cloth shoes, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/south-west.png (128 canvas)",
+    "keypoints": "design/gao-south-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 396.1999999999407,
+   "balance_after": 384.1999999999407,
+   "secs": 92,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-bo-north-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "039e64dd-30fb-48a7-becc-b075736cd6e8",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic over an ochre-mustard shirt with sleeves rolled to the elbows, brown forearm wraps, wide brown sash with a hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bo/north-west.png (128 canvas)",
+    "keypoints": "design/bo-north-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 399.1999999999407,
+   "balance_after": 378.1999999999407,
+   "secs": 112,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-bo-north-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "b48c0b22-d871-4dfd-a2ae-dee68e366130",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "young man, stocky with broad shoulders, tan skin, short thick tousled black hair, sleeveless olive-green knee-length tunic over an ochre-mustard shirt with sleeves rolled to the elbows, brown forearm wraps, wide brown sash with a hanging front flap, loose baggy cream trousers, brown cloth-wrapped boots, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/bo/north-east.png (128 canvas)",
+    "keypoints": "design/bo-north-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 399.1999999999407,
+   "balance_after": 372.1999999999407,
+   "secs": 113,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-gao-south-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "2f47e62e-04bb-4ca9-95e4-3ffb6764e7fc",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic under a long cream apron, a string of dried red peppers at his right shoulder, two brown leather waterskins at his left hip, holding a small wooden abacus against his chest, charcoal trousers, brown cloth shoes, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "south-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/south-east.png (128 canvas)",
+    "keypoints": "design/gao-south-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 396.1999999999407,
+   "balance_after": 372.1999999999407,
+   "secs": 112,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-gao-north-east-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "59b1690e-bf4d-4a3f-8a6f-a70505db36d3",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic under a long cream apron, a string of dried red peppers at his right shoulder, two brown leather waterskins at his left hip, holding a small wooden abacus against his chest, charcoal trousers, brown cloth shoes, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-east",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/north-east.png (128 canvas)",
+    "keypoints": "design/gao-north-east.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 393.1999999999407,
+   "balance_after": 369.1999999999407,
+   "secs": 113,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "walk-gao-north-west-s22",
+   "endpoint": "/animate-with-skeleton-v3",
+   "job": "45ab2c6a-401d-4c6d-b86c-6f33643dc8cf",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "description": "round olive-skinned merchant in his fifties, broad waist and sturdy short legs, short grey-flecked dark beard, brown soft flat cap, green tunic under a long cream apron, a string of dried red peppers at his right shoulder, two brown leather waterskins at his left hip, holding a small wooden abacus against his chest, charcoal trousers, brown cloth shoes, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+    "action": "walk",
+    "direction": "north-west",
+    "view": "high top-down",
+    "first_frame": "<png>",
+    "first_frame_keypoints": "<18 joints>",
+    "keypoints": "<6 frames>",
+    "template_id": "mannequin",
+    "seed": 22,
+    "no_background": true
+   },
+   "inputs": {
+    "first_frame": "roots/gao/north-west.png (128 canvas)",
+    "keypoints": "design/gao-north-west.json (step 0.45 H)"
+   },
+   "outputs": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png"
+   ],
+   "gens": 3.0,
+   "balance_before": 390.1999999999407,
+   "balance_after": 366.1999999999407,
+   "secs": 87,
+   "notes": "designed six-pose walk",
+   "verdict": "used",
+   "error": null
+  },
+  {
+   "name": "p1-walk-kaya-s11",
+   "endpoint": "/edit-images-v2",
+   "job": "ddeb66bd-aed7-4530-84da-3a3dc6a6ece0",
+   "character_id": null,
+   "status": "completed",
+   "settings": {
+    "method": "edit_with_text",
+    "edit_images": [
+     {
+      "image": "<png>",
+      "width": 512,
+      "height": 512
+     }
+    ],
+    "image_size": {
+     "width": 512,
+     "height": 512
+    },
+    "description": "Redraw as fine-grain pixel art: 1 px dark brown outline (#1b1410) only on silhouettes and deep overlaps, 3-5 flat tone groups per material, matte surfaces, no glossy highlights, no white glints, no bevels, warm key light from the upper left, cool brown shadows down-right, muted earth palette, calm low-detail ground. Twenty-four people stand on the ground in four rows. Keep every person exactly where they stand, at the same size, pose and facing, with the same hair, face and costume colours; render each person with the same painterly pixel texture, tone clusters, warm upper-left light and soft outline as the ground and buildings around them, so they belong to this scene. Do not add or remove anyone. Keep the exact composition, camera angle (2:1 isometric, high top-down), every outline and shape position; change only the rendering.",
+    "seed": 11
+   },
+   "inputs": {
+    "edit_images[0]": "inputs/walk-kaya.png"
+   },
+   "outputs": [
+    "00.png",
+    "01.png"
+   ],
+   "gens": 25.0,
+   "balance_before": 366.1999999999407,
+   "balance_after": 341.1999999999407,
+   "secs": 188,
+   "notes": "world restyle settings on the figure composite",
+   "verdict": "rejected probe: walk texture nearer the idle, but upper-body boil about doubled (review/probe-walk-restyle-kaya.json)",
+   "error": null
+  }
+ ],
+ "summary": {
+  "jobs": 20,
+  "generations": 102.6,
+  "balance_start": 443.8,
+  "balance_end": 341.1999999999407
+ }
+}

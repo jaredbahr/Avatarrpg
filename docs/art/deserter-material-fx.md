@@ -25,7 +25,12 @@ the vessel's alpha bounds are 69 × 102px (from 2026-09-30; 86 × 118px before).
 ground shadow. The four cells intentionally repeat one rigid object; the existing
 seeded projectile spin supplies tumble rather than morphing the bottle.
 
-Reproduce with `node --import tsx scripts/art/flask-cels.ts`. The resulting
+**Superseded 2026-10-27 (ADR 0086).** The flask sheet is now the G1 pixel-art vessel: the prop reduced 2:1 to a
+96 px cel, cleaned up by PixelLab Pro Flash and snapped to four clay tones and the ink by `scripts/art/fx-g1.ts`
+(sources in `art/source/fx-g1/`). It is still one rigid vessel repeated in all four cels. `flask-cels.ts` is retired.
+The paragraph below records the painted sheet it replaced.
+
+Reproduce (historical) with `node --import tsx scripts/art/flask-cels.ts`. The resulting
 `public/art/fx/flask-cels.png` is 768 × 192 and 27,597 B (58,423 B before 2026-09-30). The 0.3-tile head makes
 the vessel about 17.7px tall at 96px zoom and 11.8px at 64px before rotation.
 The existing lob arc 0.7, speed 16, dark droplets/shards and ground oil spill stay

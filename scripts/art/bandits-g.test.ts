@@ -73,7 +73,9 @@ describe('quarry bandit G sheets (ADR 0062)', () => {
         if (file.startsWith('idle/')) expect(path).toBe(`${name}/final-toned/${file}`);
   });
 
-  it.each(BANDIT_NAMES)(
+  // The slinger and the bruiser now ship on the G1 grid (ADR 0091, `residents-g1.ts`); this
+  // packer's sheet is the quarry bender's alone, and its other sets stay as history.
+  it.each(['quarrybender'] as const)(
     'pins a decoded cel for every frame the %s manifest draws, and draws every one',
     (name) => {
       const def = BANDITS[name];

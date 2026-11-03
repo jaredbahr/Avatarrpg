@@ -13,7 +13,9 @@ import { tileCentre } from './gallery/stage';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`elevation preview explains the shot and ledge drop on ${renderer}`, async ({ page }) => {
-    test.setTimeout(renderer === 'webgl' ? 90_000 : 30_000);
+    // The canvas run is a long sequence of taps; the CI WebKit runner takes 1 to 2 s per
+    // action, so 30 s ran out on main on 2026-10-20.
+    test.setTimeout(renderer === 'webgl' ? 90_000 : 60_000);
     allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Climber'], ['kaya'], `elevation-preview-${renderer}`);
@@ -200,6 +202,12 @@ test('touching a prop target names its break consequence before confirmation', a
   const point = await tileCentre(page, { x: 12, y: 4 });
   await canvas.tap({ position: { x: point.x - box.x, y: point.y - box.y } });
 
+  const flaskChip = page.locator('.preview-chips .chip-terrain').filter({ hasText: /^Oil Flask/ });
+  await expect(flaskChip).toHaveText(
+    'Oil Flask: The flask shatters and oil spreads across the ground. — affects Kaya',
+  );
+  await expect(flaskChip).not.toContainText(/\(\d+,\s*\d+\)/);
+
   const confirm = page.locator('.confirm-bar').filter({ hasText: 'Confirm' });
   await expect(confirm).toContainText('Oil Flask');
   await expect(confirm).toContainText('flask shatters and oil spreads');
@@ -263,7 +271,7 @@ test('movement confirmation warns about a possible direct attack without claimin
   await expect(page.locator('.confirm-bar')).not.toContainText('safe');
 });
 
-test('player action controls are disabled during an enemy turn', async ({ page }) => {
+test('player action controls are absent during an enemy turn', async ({ page }) => {
   await resetStorage(page);
   await startGame(page, ['Reviewer'], ['kaya'], 'enemy-controls-touch');
   await enterNode(page, 'battle_quarry_gate');
@@ -272,11 +280,10 @@ test('player action controls are disabled during an enemy turn', async ({ page }
 
   /*
    * Take the enemy's turn and read the HUD in one task. `resync()` renders the
-   * action bar synchronously and no timer can run inside a single evaluate, so
+   * actor card synchronously and no timer can run inside a single evaluate, so
    * the read cannot race the AI turn the scene schedules for a quarter-second
-   * later. Split across two evaluates the round trip outlasted the whole enemy
-   * turn on the slower WebKit iPad project, which is why this check reported
-   * `moveDisabled: false` there while passing everywhere else.
+   * later. Split across two evaluates the round trip can outlast the enemy turn
+   * on the slower WebKit iPad project.
    */
   const controls = await page.evaluate(() => {
     const app = window.fnt?.app;
@@ -288,19 +295,23 @@ test('player action controls are disabled during an enemy turn', async ({ page }
       return unit?.faction === 'enemy';
     });
     if (turnIndex < 0) throw new Error('Enemy turn fixture missing an enemy.');
+    const actorName = battle.units.find((unit) => unit.id === battle.order[turnIndex])?.name;
     app.state = { ...state, battle: { ...battle, turnIndex } };
     app.resync();
 
-    const buttons = [...document.querySelectorAll<HTMLButtonElement>('.action-button')];
+    const card = document.querySelector('.enemy-turn-card');
     return {
-      moveDisabled: buttons.find((button) => button.textContent?.includes('Move'))?.disabled,
-      endDisabled: buttons.find((button) => button.textContent?.includes('End turn'))?.disabled,
-      enemyBanner: document.querySelector('.enemy-turn-banner')?.textContent ?? '',
+      actorName,
+      actionButtonCount: document.querySelectorAll('.action-button').length,
+      cardCount: document.querySelectorAll('.enemy-turn-card').length,
+      cardText: card?.textContent?.trim() ?? '',
+      cardAriaHidden: card?.getAttribute('aria-hidden'),
     };
   });
-  expect(controls.moveDisabled).toBe(true);
-  expect(controls.endDisabled).toBe(true);
-  expect(controls.enemyBanner).toContain('moving');
+  expect(controls.actionButtonCount).toBe(0);
+  expect(controls.cardCount).toBe(1);
+  expect(controls.cardText).toBe(`${controls.actorName} is acting`);
+  expect(controls.cardAriaHidden).toBe('true');
 });
 
 test('movement prevention disables Move and explains the status', async ({ page }) => {

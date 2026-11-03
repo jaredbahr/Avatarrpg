@@ -179,13 +179,9 @@ describe('content builders preserve their authored values', () => {
       entry.kind === 'image' ? [[key, entry.url, entry.palette]] : [],
     );
     expect(images).toEqual([
-      ['npc.elder', 'art/npcs/mira.png', 'neutral'],
-      ['npc.shopkeeper', 'art/npcs/gao.png', 'earth'],
       ['world.turtle_ducks', 'art/world/turtle-ducks-nest.webp', 'earth'],
       ['world.runoff_marker', 'art/world/runoff-marker.png', 'neutral'],
       ['world.tea_station', 'art/props/tea-station.png', 'earth'],
-      ['npc.kid', 'art/npcs/pella.png', 'air'],
-      ['npc.dorin', 'art/npcs/dorin.png', 'earth'],
       ['world.route_sign', 'art/world/route-sign.png', 'neutral'],
       ['prop.barrel', 'art/props/barrel.png', 'water'],
       ['prop.flask', 'art/props/flask.png', 'earth'],

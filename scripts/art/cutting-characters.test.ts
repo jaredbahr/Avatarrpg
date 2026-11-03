@@ -77,10 +77,10 @@ describe('Cutting character art', () => {
       const rect = atlas.frames.get(`${key}/idle/0`);
       if (!rect) throw new Error('Missing hero standing pose');
       if (atlas.image.endsWith('.webp')) {
-        // The PixelLab G party (ADR 0050, ADR 0051).
+        // The PixelLab G party (ADR 0050, ADR 0051), on the world's G1 grid (ADR 0089).
         expect(['kaya', 'sura', 'bo']).toContain(name);
-        expect([rect.w, rect.h]).toEqual([128, 192]);
-        expect(entry.pixelsPerTile).toBe(128);
+        expect([rect.w, rect.h]).toEqual([64, 96]);
+        expect(entry.pixelsPerTile).toBe(64);
         expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
       } else {
         const frame = crop(readPng(`public/art/units/${atlas.image}`), {

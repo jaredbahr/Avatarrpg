@@ -157,12 +157,25 @@ const flagValue = z.union([z.boolean(), z.number(), z.string()]);
  */
 export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
   z.union([
-    z.object({
-      kind: z.literal('flag'),
-      key: z.string().min(1),
-      op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
-      value: flagValue.optional(),
-    }),
+    z
+      .object({
+        kind: z.literal('flag'),
+        key: z.string().min(1),
+        op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
+        value: flagValue.optional(),
+      })
+      .superRefine((condition, context) => {
+        if (
+          (condition.op === 'gte' || condition.op === 'lte') &&
+          typeof condition.value !== 'number'
+        ) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['value'],
+            message: `${condition.op} requires a numeric value`,
+          });
+        }
+      }),
     z.object({
       kind: z.literal('partyHas'),
       element: elementId.optional(),
@@ -600,6 +613,19 @@ export const mapSchema = z
           .object({
             cast: z.number().min(0).max(1).optional(),
             contact: z.number().min(0).max(1).optional(),
+            // Down-right only: the one key light is upper-left (ADR 0093).
+            castKey: z
+              .object({ x: z.number().positive().max(1), y: z.number().positive().max(1) })
+              .strict()
+              .optional(),
+            ink: z
+              .object({
+                r: z.number().int().min(0).max(255),
+                g: z.number().int().min(0).max(255),
+                b: z.number().int().min(0).max(255),
+              })
+              .strict()
+              .optional(),
           })
           .strict()
           .optional(),
@@ -645,11 +671,12 @@ export const mapSchema = z
                 exterior: z.boolean().optional(),
                 wall: z.boolean().optional(),
                 fadeWhenOccluding: z.boolean().optional(),
-                fadeWhenHeadHidden: z.boolean().optional(),
+                revealOccluded: z.boolean().optional(),
                 fadeGroup: id.optional(),
                 flip: z.boolean().optional(),
                 contactShadow: z.literal(false).optional(),
                 castShadow: z.union([z.literal(false), z.literal('reduced')]).optional(),
+                castFrom: z.literal('base').optional(),
               })
               .superRefine(validateSceneFeather)
               .superRefine((piece, ctx) => {
@@ -1035,8 +1062,9 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
       .string()
       .regex(/\.json$/, 'must point at the clip JSON')
       .optional(),
-    // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body.
-    pixelsPerTile: z.union([z.literal(80), z.literal(128), z.literal(256)]),
+    // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body. 64 is
+    // the world's native G1 grid, one art pixel a world pixel (ADR 0089).
+    pixelsPerTile: z.union([z.literal(64), z.literal(80), z.literal(128), z.literal(256)]),
     frameSize: z
       .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
       .optional(),
@@ -1618,7 +1646,10 @@ export function validateContent(
       continue;
     }
     if (entry.kind !== 'sheet') continue;
+    // A resident's sheet (`npc.*`, issue #284) only stands and walks on the
+    // map; it is never cast in combat, so it needs no cast.
     for (const clip of REQUIRED_CLIPS) {
+      if (clip === 'cast' && key.startsWith('npc.')) continue;
       if (!entry.clips[clip]) problems.push(`asset ${key}: sheet has no ${clip} clip`);
     }
     // Eight-way locomotion is a declared capability, never inferred: the
@@ -1777,6 +1808,7 @@ export function validateContent(
   const mapIds = new Set(bundle.maps.map((m) => m.id));
   const encounterIds = new Set(bundle.encounters.map((e) => e.id));
   const storyIds = new Set(bundle.story.map((n) => n.id));
+  const characterIds = new Set(bundle.characters.map((c) => c.id));
   const statusIds = new Set(bundle.statuses.map((s) => s.id));
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
   const propIds = new Set(bundle.props.map((p) => p.id));
@@ -2332,13 +2364,23 @@ export function validateContent(
       );
     }
   }
-  // Every flag condition in content, wherever it sits, that compares scene
-  // memory with a value it can never hold.
+  // Cross-reference condition IDs and reject scene-memory comparisons with
+  // values scene memory can never hold, wherever those conditions are nested.
   const seen = new WeakSet<object>();
   const scanConditions = (value: unknown, where: string): void => {
     if (typeof value !== 'object' || value === null || seen.has(value)) return;
     seen.add(value);
     const record = value as Record<string, unknown>;
+    if (record.kind === 'partyHas' && typeof record.characterId === 'string') {
+      if (!characterIds.has(record.characterId)) {
+        problems.push(`${where} checks for unknown character "${record.characterId}"`);
+      }
+    }
+    if (record.kind === 'visited' && typeof record.nodeId === 'string') {
+      if (!storyIds.has(record.nodeId)) {
+        problems.push(`${where} visits unknown story node "${record.nodeId}"`);
+      }
+    }
     if (
       record.kind === 'flag' &&
       typeof record.key === 'string' &&

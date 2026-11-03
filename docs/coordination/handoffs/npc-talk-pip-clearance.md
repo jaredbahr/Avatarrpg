@@ -1,74 +1,60 @@
 # NPC talk indicator clearance
 
-Tracked scope and remaining visual work: [issue #277](https://github.com/jaredbahr/Avatarrpg/issues/277).
+Existing draft [PR #278](https://github.com/jaredbahr/Avatarrpg/pull/278),
+[claim and current validation](https://github.com/jaredbahr/Avatarrpg/issues/277#issuecomment-6605165886).
+This corrects the first bounded marker item in #277. NPC replacement, reported
+ground rectangles, Riverside cohesion and TV-scale art acceptance remain separate.
+Keep Refs #277 without closing the composite issue.
 
-## Bounded outcome
+## Implementation
 
-Place NPC talk indicators above the visible figure in Canvas and WebGL, with
-space for the indicator's full radius. The old tile-relative offset could put
-the dot on a tall resident's head. Keep existing foot anchors, picking,
-presentation scale, motion and art unchanged.
+Main `34dc5f334daa1ae0f9fe8050d0a996cae4e3b03b` includes #375's snapped raster
+cue and #410's house edges. Preserve its approved art and pipeline bytes.
+Both backends retain the same four-world-pixel marker radius, colour, opacity
+and layer. Cached visible-alpha bounds and shared geometry place it above the
+actual frame, accounting for the planted anchor, facing, scale, pose scale,
+lean and rounded lift, with a four-world-pixel gap. Unreadable or empty pixels
+fall back conservatively to full-frame bounds. Foot anchors, picking, movement,
+source art, cache budgets and texture sampling are unchanged.
 
-Both backends use cached alpha bounds and the same transformed marker geometry,
-including facing, pose scale, lift and lean. Each source/page has its own bounds
-cache. If pixels cannot be read, placement conservatively uses the full frame.
-The marker stays centred as lean crosses zero.
+## Validation and reproduction
 
-This is one correction within a Ba Dan interaction corner, not acceptance of
-the whole scene. Preserve the accepted PixelLab party sheets and October
-playback and scene-grounding work.
+`e2e/npc-talk-pip.spec.ts` uses real Look around/walk/Wait controls, normal clocks
+and motion, and camera framing only. It measures actual atlas alpha and raster
+pixels through forwarded Canvas draw calls or actual Pixi sprite transforms.
+Culled emissions cannot shift WebGL pairing; intervening image draws invalidate
+Canvas pairing. Each case requires four fully visible walking and four idle
+frames, two walking cels, no capture overflow, unchanged passive campaign state,
+and a real Dorin body click followed by normal approach to his conversation.
 
-## Remaining visual work
+Current native producer `d3b092be3f2922f1bdabd205f2e2b8533e8fa15d` passed 2/2
+Canvas/WebGL cases in 102.960s, one worker, zero retries/skips. Source, public,
+fixture and dependency/config bytes match the final publication candidate;
+subsequent changes concern handoff and publication packaging only. Focused
+source validation was 108/108, with the final raster cases 7/7. Independent
+source and fixture review found no remaining blockers. The exact clean final
+publication head must pass all nine `npm run ci:local` steps before updating
+the existing branch; its result and actual hosted job identities belong in
+PR #278 and the claim after execution.
 
-- Identify the exact placeholder NPC before proposing an art replacement.
-- Correlate reported dark ground rectangles with actual runtime layers before
-  changing terrain, shadows or rule surfaces.
-- Review Riverside's painting resolution, separate life-layer lighting and
-  scale against its resident assets; do not apply a global art filter.
-- Review the marker and scene at normal TV play scale and in motion. A passing
-  geometry test does not establish aesthetic or gameplay acceptance.
+Original observer/setup failures and genuine current-renderer baseline failures
+are retained outside Git and summarized in the claim. These include the first
+tile-size assumption, culled-pip pairing timeout, Canvas pairing correction,
+and actual negative walking/idle clearance after state/picking controls passed.
+No assertion, required test, timeout or budget is weakened or skipped.
 
-## Validation and delivery constraints
+## Evidence and remaining acceptance
 
-This task is low priority. Targeted regression tests, type checking and checks
-on changed files are appropriate; the full `ci:local` build/budget/balance gate,
-browser suites and gallery remain deferred under the current resource limit.
-Keep the PR draft and list exact executed checks in its description. No merge
-or auto-merge is authorized by partial checks. The requested no-Actions delivery
-uses a CI-skip commit directive without changing workflows or branch rules.
+Follow [#348's evidence rule](https://github.com/jaredbahr/Avatarrpg/issues/348#issuecomment-6605458759):
+review screenshots, videos and generated capture reports stay out of the
+publication tree and its new branch ancestry. Keep source fixtures in Git;
+attach review media to the PR when the available tools support it. Record any
+attachment limitation plainly. Local raw media, traces and checksums are retained
+outside the repository, never used as an excuse to commit media or change access.
 
-Focused validation passed: 31 tests across `talkPip.test.ts`,
-`spriteCache.test.ts` and `actorSilhouette.test.ts`, using one worker with no
-file parallelism. Type checking, lint on the six changed TypeScript files,
-format checks and `git diff --check` passed. No browser, gallery or gameplay
-acceptance is claimed.
-
-NPC replacement art, broad scene changes and the separate comparison checkpoint
-are outside this patch. No new dependency or public deployment is needed.
-
-## Edge-regression follow-up, 2026-10-27
-
-Independent source review of PR #278 at `3478981d` found no demonstrated
-production-code blocker. It identified untested promises around conservative
-alpha bounds. The isolated `codex/npc-talk-pip-edge-regressions` branch adds
-six regression cases covering same-atlas crop isolation, missing 2D context,
-pixel-read failures for frames and sprites, transparent/alpha-cutoff pixels,
-and marker clearance using full-frame fallback bounds. Existing assertions and
-production source are unchanged.
-
-Focused validation: **37/37 tests passed** across `talkPip.test.ts`,
-`spriteCache.test.ts` and `actorSilhouette.test.ts`, with one worker, no file
-parallelism and no cache (Vitest 2.1.9, 1.53s reported duration). Installed
-dependencies were reused through an ignored local junction; no package install
-or lockfile change was made.
-
-Focused ESLint, changed-file Prettier, `tsc --noEmit` and `git diff --check`
-also passed. Independent read-only source review found no blockers in the
-added cases; it did not run another test suite or assess actual gameplay.
-
-This follow-up is for the existing draft PR, not a second landing PR. Full
-`npm run ci:local` remains required before pushing the follow-up. Browser parity,
-gallery and actual normal-play review remain open. Do not merge or deploy this
-checkpoint, and do not infer visual acceptance from these mocked pixel tests.
-Issue #284's Phase 0 art audit remains separate; no art generation, prototype
-revision or art-direction decision is included here.
+Local coverage is installed Chromium, 1368×912, DPR1, integer zoom2, Canvas and
+forced software WebGL. Observer frame intervals are limited observations, not
+accelerated hardware FPS acceptance. Full hosted browser/gallery, WebKit,
+Safari/PWA, physical input and owner aesthetic acceptance remain open. Keep the
+PR draft under the current direct goal; no readiness, merge or deployment.
+No new dependency, paid assistance or art generation is included.

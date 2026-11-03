@@ -24,6 +24,7 @@ import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
 import type { HealthChange, SoundCue } from './anim/choreography';
+import { partyScale } from './anim/actorScale';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
@@ -50,10 +51,20 @@ const BOB = 0.05;
 
 /**
  * A walk clip advances by distance, not time: this many ms of clip per tile
- * of travel. At the brisk exploration pace this keeps legacy four-way walks
- * close to their authored 4 fps while G sheets use their declared stride.
+ * of travel for a legacy four-way walk (ADR 0067's 500 ms stroll times 0.95),
+ * pinned so its feet keep their fit when the brisk pace changes. G sheets use
+ * their declared stride.
  */
-export const WALK_MS_PER_TILE = TIMING.strollStep * 0.95;
+export const WALK_MS_PER_TILE = 475;
+
+/**
+ * Wall ms each walk cel holds at the brisk stroll on a native-G1 sheet (ADR
+ * 0095's amendment; owner, 2026-10-28: the middle of the cadence dial). Its
+ * feet hold the ground only at about 35 ms a cel, which read as racing legs;
+ * at 70 the steps are calmer and the planted foot slides about 4 world px a
+ * stance cel. One number for every family and heading: tune it here.
+ */
+export const BRISK_WALK_CEL_MS = 70;
 
 /**
  * How long a finished walk holds its settled pose before the ready stance is
@@ -96,6 +107,12 @@ export interface UnitHealthPresentation {
 export interface AnimatorOptions {
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
+  /**
+   * Every walk this animator plays ambles (a routine errand, Mira: ADR 0095),
+   * so a G sheet keeps the clip time a tile fitted to its drawn feet rather
+   * than the brisk cadence.
+   */
+  readonly amble?: boolean;
   /**
    * Where a push's sound cues go. Presentation only and entirely optional: the
    * animator never reads them back, nothing about `busy()` or `finishesAt`
@@ -164,6 +181,8 @@ export class Animator {
    * sheet declares eight-way locomotion; four-way art never sees them.
    */
   private headings = new Map<string, Heading>();
+  /** The side each unit faces before it has turned, as `locomotion` was last told (enemies face west). */
+  private restFacings = new Map<string, 1 | -1>();
   /** When each unit's last voluntary walk ended, and when its stop settles. */
   private stops = new Map<
     string,
@@ -196,6 +215,7 @@ export class Animator {
     this.facings.clear();
     this.directions.clear();
     this.headings.clear();
+    this.restFacings.clear();
     this.stops.clear();
     this.walkPhaseFractions.clear();
     this.pendingHeadings = [];
@@ -235,6 +255,8 @@ export class Animator {
       delayMs?: number;
       /** Stable fraction of the authored walk loop; presentation only. */
       walkPhase?: number;
+      /** Open water a water bend in this push draws from, by unit id (see `choreograph`). */
+      waterSources?: Readonly<Record<string, Vec2>>;
     } = {},
   ): void {
     const base = options.alongside
@@ -257,6 +279,7 @@ export class Animator {
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
       ...(bends ? { bends } : {}),
       ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
+      ...(options.waterSources ? { waterSources: options.waterSources } : {}),
     });
     for (const event of events) {
       if (event.type === 'partyWalked')
@@ -440,6 +463,7 @@ export class Animator {
     restFacing: 1 | -1 = 1,
   ): { clip: ClipName; facing: 1 | -1 } {
     this.settleHeadings(now);
+    this.restFacings.set(unitId, restFacing);
     const travel = this.walkTravel(now, unitId);
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
@@ -455,7 +479,9 @@ export class Animator {
     const base = plant
       ? 'idle'
       : travel || planted
-        ? 'walk'
+        ? gait?.jog
+          ? 'jog'
+          : 'walk'
         : stop
           ? gait
             ? 'idle'
@@ -571,11 +597,23 @@ export class Animator {
   private walkClipTime(travel: { track: MoveTrack; distance: number }, sprite?: string): number {
     const gait = sheetLocomotion(sprite);
     if (!gait) return travel.distance * WALK_MS_PER_TILE;
+    // The sheet's clip time a tile is fitted to its art at one art px a world px
+    // (ADR 0095). Drawn larger, its feet cover more ground a loop, so the loop
+    // plays over more of it and the planted foot stays planted at any figure scale.
+    const scale = partyScale(this.projection);
+    // At the brisk stroll a native-G1 walk plays at BRISK_WALK_CEL_MS a cel,
+    // never slower than its fitted rate; an amble keeps the fit (ADR 0095).
+    const brisk =
+      gait.walkCelMs && !this.options.amble
+        ? (gait.walkCelMs * TIMING.strollStep) / BRISK_WALK_CEL_MS
+        : Infinity;
     return (
       gait.walkStartMs +
       (this.walkPhaseFractions.get(travel.track.unitId) ?? 0) * gait.walkCycleMs +
       integrateAlong(travel.track.curve, travel.distance, (tangent) => {
-        return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))];
+        const fitted =
+          gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] / scale;
+        return Math.min(fitted, brisk);
       })
     );
   }
@@ -703,12 +741,18 @@ export class Animator {
    * sheet whose clips carry G knockouts falls on the diagonal `koClip` gives
    * the heading the unit faces, and one carrying G hits flinches in that
    * heading's own; one that does not, or has not loaded, keeps the legacy
-   * pose. A unit that has not turned yet faces east, as its stance does.
+   * pose. A unit that has not turned yet reacts the way it stands: west for
+   * an enemy (its rest facing), east otherwise, as its stance does.
    */
-  private reactionClip(clip: ClipName, unitId: string, sprite?: string): ClipName {
+  private reactionClip(
+    clip: ClipName,
+    unitId: string,
+    sprite?: string,
+    restFacing: 1 | -1 = this.restFacings.get(unitId) ?? 1,
+  ): ClipName {
     if ((clip !== 'ko' && clip !== 'hit') || !sprite || sheetLocomotion(sprite)?.headings !== 8)
       return clip;
-    const heading = this.headings.get(unitId) ?? 'east';
+    const heading = this.heading(unitId, restFacing) ?? 'east';
     const authored = clip === 'ko' ? koClip(heading) : hitClip(heading);
     return this.options.sheetClips?.(sprite)?.[authored] ? authored : clip;
   }
@@ -718,8 +762,12 @@ export class Animator {
    * last frame, held, for a sheet that authors one; undefined otherwise, and
    * the scene keeps its standing pose under the fallen fade (ADR 0059).
    */
-  fallenPose(unitId: string, sprite: string): { clip: ClipName; clipTime: number } | undefined {
-    const clip = this.reactionClip('ko', unitId, sprite);
+  fallenPose(
+    unitId: string,
+    sprite: string,
+    restFacing?: 1 | -1,
+  ): { clip: ClipName; clipTime: number } | undefined {
+    const clip = this.reactionClip('ko', unitId, sprite, restFacing);
     const def = this.options.sheetClips?.(sprite)?.[clip];
     return clip === 'ko' && !def?.frameMs ? undefined : { clip, clipTime: HELD };
   }

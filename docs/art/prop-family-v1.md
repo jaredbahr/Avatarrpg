@@ -31,3 +31,12 @@ Per-item prompt lines:
 Run `npm run art:prop-family`. The family wrapper sends only the six shipped names through `scripts/art/prop.ts`; it does not copy the source-only crate or timber. The existing packer alpha-trims each source, enlarges it 4× with nearest-neighbour and then box-filters it down into its authored per-prop bounds (a non-integer effective scale of about 1.7–1.9×, which softens pixel-cluster edges by about a pixel), centers it in a transparent 256×256 frame, and registers its foot at the shared 85% baseline. The cart retains its wheel-contact correction because its forward shafts extend below the wheels.
 
 At the renderer's 128-world-pixel tile scale, the packed visible heights are intended to be: barrel 87 px (0.58 of a 151 px G adult), cart 84.5 px (0.56), brazier 79.5 px (0.53), rubble 71.5 px (0.47), flask 51 px (0.34), and hay 61.5 px (0.41). Final integer alpha bounds are reported from the generated PNGs after packing.
+
+## G1 (ADR 0087)
+
+On 2026-10-27 the six shipped props were redrawn at the characters' grain with PixelLab Pro Flash from this family:
+each prop's packed sprite was reduced to its size in world px (frame px / 4), edited at that size (seeds 21 and 22, no
+reference), and packed back nearest x4 into the same 256 px frame, on the same foot. So 1 art px = 1 world px and the
+props keep their size against the figures. Jobs, prompt and picks: `art/source/forest-road-g1/` (`uprights.py`,
+`selection.json`, `ledger.json`); packer: `scripts/art/forest-g1-pack.ts`. `npm run art:prop-family` still packs the v1
+sources above and would overwrite the G1 frames, so do not run it without re-running the G1 pack.

@@ -13,6 +13,7 @@ import { RngCursor } from '../rng';
 import { evaluate } from '../story/conditions';
 import { advancePhase } from '../story/clock';
 import { findSettleTile, settle } from '../story/settle';
+import { battleReturnTile } from '../story/battleReturn';
 import { resolveResidents } from '../story/residents';
 import { activeTriggers, backgroundFigures, exitAt, triggerKey, visibleNpcs } from '../story/world';
 import type {
@@ -326,14 +327,38 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
 
   const nextNodeId = node?.kind === 'battle' ? (victory ? node.next : node.onDefeat) : null;
 
+  const map = content.maps.get(battle.mapId);
+  const remembered = state.world.returnPos[battle.mapId];
+  const crossedHere =
+    node?.kind === 'battle' &&
+    map?.triggers?.some(
+      (trigger) =>
+        trigger.node === node.id && trigger.area.some((cell) => samePos(cell, state.location.pos)),
+    );
+  const returnPos =
+    map &&
+    crossedHere &&
+    remembered &&
+    state.location.mapId === battle.mapId &&
+    samePos(remembered, state.location.pos)
+      ? battleReturnTile(content, map, remembered)
+      : null;
+  const worldAfterVictory = victory
+    ? { ...state.world, cleared: [...new Set([...state.world.cleared, battle.encounterId])] }
+    : state.world;
+
   const staged: GameState = {
     ...state,
     party,
     battle: null,
     pendingChoices,
-    world: victory
-      ? { ...state.world, cleared: [...new Set([...state.world.cleared, battle.encounterId])] }
-      : state.world,
+    ...(returnPos ? { location: { ...state.location, pos: returnPos } } : {}),
+    world: returnPos
+      ? {
+          ...worldAfterVictory,
+          returnPos: { ...worldAfterVictory.returnPos, [battle.mapId]: returnPos },
+        }
+      : worldAfterVictory,
   };
 
   if (!nextNodeId) {
@@ -602,7 +627,11 @@ function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
   return cachedGrid(map);
 }
 
-/** Nearest walkable tile adjacent to `target`, for approaching an NPC. */
+/**
+ * Nearest walkable tile adjacent to `target`, for approaching an NPC. A dry
+ * tile beats a nearer one under a surface: the party may wade a shallow canal
+ * on the way, but a conversation never opens with it standing in the water.
+ */
 function findApproach(content: ContentIndex, state: GameState, target: Vec2): Vec2 | null {
   const grid = buildExploreGrid(content, state);
   const map = content.maps.get(state.location.mapId);
@@ -618,6 +647,7 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
   );
   let best: Vec2 | null = null;
   let bestDistance = Infinity;
+  let bestWet = true;
 
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
@@ -640,8 +670,10 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
       );
       if (!path) continue;
       const d = path.path.length;
-      if (d < bestDistance) {
+      const wet = tile.surface !== null && tile.surface !== undefined;
+      if ((bestWet && !wet) || (wet === bestWet && d < bestDistance)) {
         bestDistance = d;
+        bestWet = wet;
         best = candidate;
       }
     }

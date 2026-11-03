@@ -40,11 +40,11 @@ it('derives projected camera extents from the apron fade', () => {
 it('registers forest art only to the existing water, cover and blocked tree cells', () => {
   expect(FOREST_ROAD_SCENE.groundMode).toBe('partial');
   expect(FOREST_ROAD_SCENE.ground.map((piece) => piece.url)).toContain(
-    'art/maps/forest-scene/route-ground.webp',
+    'art/maps/forest-g1/route-ground.webp',
   );
   for (const [name, region] of Object.entries(FOREST_GRASS_REGIONS)) {
     expect(FOREST_ROAD_SCENE.ground).toContainEqual({
-      url: `art/maps/forest-scene/grass-${name}.webp`,
+      url: `art/maps/forest-g1/grass-${name}.webp`,
       ...region,
       wind: true,
     });
@@ -62,7 +62,7 @@ it('registers forest art only to the existing water, cover and blocked tree cell
   expect(FOREST_ROAD.legend[FOREST_GROUND_ROWS[2]?.[19] ?? '']?.elevation).toBe(2);
   expect(FOREST_RAISED_SHELF_CELLS).not.toContainEqual({ x: 19, y: 4 });
   expect(FOREST_ROAD_SCENE.ground).toContainEqual({
-    url: 'art/maps/forest-scene/raised-shelf.webp',
+    url: 'art/maps/forest-g1/raised-shelf.webp',
     ...FOREST_RAISED_SHELF,
   });
   expect(FOREST_RUBBLE_CELLS).toEqual(cells('r'));
@@ -137,7 +137,7 @@ it('registers every exterior pine whose foot qualifies for the painted apron', (
 it('registers the passable flood-bank nest reeds at their authored depth', () => {
   expect(FOREST_BANK_NEST_REEDS).toMatchObject({
     id: 'forest-bank-nest-reeds',
-    url: 'art/maps/forest-scene/old-nest-reeds.webp',
+    url: 'art/maps/forest-g1/nest-reeds.webp',
     x: 516,
     y: 454,
     width: 120,
@@ -159,29 +159,29 @@ it('registers the varied pond and creek reeds on the existing bank cells', () =>
   });
   expect(FOREST_POND_REEDS.map(placement)).toEqual([
     {
-      url: 'art/maps/forest-scene/bank-reed-0.webp',
+      url: 'art/maps/forest-g1/bank-reed-0.webp',
       height: 54,
       footprint: [{ x: 4, y: 5 }],
     },
     {
-      url: 'art/maps/forest-scene/bank-reed-1.webp',
+      url: 'art/maps/forest-g1/bank-reed-1.webp',
       height: 27,
       footprint: [{ x: 7, y: 7 }],
     },
     {
-      url: 'art/maps/forest-scene/bank-reed-3.webp',
+      url: 'art/maps/forest-g1/bank-reed-3.webp',
       height: 45,
       footprint: [{ x: 5, y: 8 }],
     },
   ]);
   expect(FOREST_CREEK_REEDS.map(placement)).toEqual([
     {
-      url: 'art/maps/forest-scene/bank-reed-2.webp',
+      url: 'art/maps/forest-g1/bank-reed-2.webp',
       height: 40,
       footprint: [{ x: 3, y: 10 }],
     },
     {
-      url: 'art/maps/forest-scene/bank-reed-1.webp',
+      url: 'art/maps/forest-g1/bank-reed-1.webp',
       height: 27,
       footprint: [{ x: 13, y: 10 }],
     },

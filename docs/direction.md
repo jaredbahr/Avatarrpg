@@ -60,12 +60,11 @@ finished, convincing map, then carry the method to the other maps.
 
 ## Art route (settled)
 
-- **Maps** are painted. A map is one continuous painting made region by region
-  over its true geometry, then split by the geometry into ground plates and
-  upright pieces so figures walk behind things
-  ([ba-dan-scene.md](art/ba-dan-scene.md), `scripts/art/ba-dan-regions/`).
-  Owner, 2026-10-09: "repaint is what I want. lets make the game that with good
-  assets that move over it." Polishing isolated pieces on a lawn is abandoned.
+- **Maps** are drawn at the characters' grain (Route A at G1, owner 2026-10-27, [ADR 0085](adr/0085-route-a-pixel-world-at-g1.md)):
+  1 art px = 1 world px, made by the same PixelLab G family as the figures, one hand for the world, its objects and its
+  people. A map is still one continuous picture over its true geometry, split into ground plates and upright pieces so
+  figures walk behind things ([ba-dan-scene.md](art/ba-dan-scene.md), `scripts/art/ba-dan-regions/`): the layout is laid out and
+  guided first, then restyled at G1 in one pass, then the figure-scale objects are set in at their footprints.
 - **Everything that moves** (party, NPCs, enemies, animals) comes from the house
   character generator at the high top-down view, with motion-capture walks. Kaya's
   generated model "G" is the standard; the others are toned toward it.
@@ -75,33 +74,14 @@ finished, convincing map, then carry the method to the other maps.
 - **Bends:** one bend animation per character for all its bending abilities, with
   per-element effects; polish later.
 
-## Current art problem: objects vs characters
+## Art problem: objects vs characters (closed 2026-10-27)
 
-Owner, 2026-10-13: "Objects still seem a bit off. Some items feel AI made like the
-fruits and tables. Almost like a different style compared to our various characters.
-If this fails I'm likely going to pivot to a different style."
-
-Diagnosis: [art/object-style-diagnosis.md](art/object-style-diagnosis.md). The
-painted objects are drawn as glossy display pieces and are about twice the size the
-figures need (fruit the size of a head); the characters are restrained and functional.
-
-Trials on one market corner (the fruit table by the canal), all judged at 1x and 4x
-beside real figures:
-
-| Route                                                                          | Result                                                                                                                                                                  |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Repaint the objects in place with the image tool (pixel restyle; calm restyle) | Calmer rendering possible, but the tool will not change size                                                                                                            |
-| Free redesign with smaller goods (two tries)                                   | Better use cues, still oversized and soft                                                                                                                               |
-| Deterministic filters                                                          | No useful change                                                                                                                                                        |
-| Separate sprites drawn by the image tool (two tries)                           | Unusable                                                                                                                                                                |
-| Hybrid: restyled table plus goods shrunk by hand (two tries)                   | Correct-size goods look like specks on furniture that is itself oversized                                                                                               |
-| **Objects from the characters' own generator**                                 | **First match in hand and size.** Remaining faults are integration: table rotated off the 2:1 axis, weak contact and shadow, no grass over the feet, small fruit glints |
-
-Next, if the owner accepts the generator objects in game: one integration round on
-the same corner, then the whole village (about 14 object families, 60 to 90
-sprites), with the baked objects cleaned out of the ground and the new objects
-added as separate scene pieces with footprints and depth keys. The plan for the
-moving residents is [art/character-lane-plan.md](art/character-lane-plan.md).
+Owner, 2026-10-13: "Objects still seem a bit off. Some items feel AI made like the fruits and tables. Almost like a
+different style compared to our various characters." Diagnosis: [art/object-style-diagnosis.md](art/object-style-diagnosis.md).
+The #284 bake-off answered it: the painted world was a second medium (soft, glossy, about twice figure scale) beside crisp
+pixel figures, so the world now follows the figures. Route A redid the rendering in the figures' own generator at G1 and
+set objects in at the brief's measured sizes (draft PRs #287, #288). The owner chose it on 2026-10-27: "Let's do that
+pixel approach is looks cleaner." Routes B (hybrid painted world with generated objects) and C (hand, no artist) closed.
 
 ## Decisions log (owner)
 
@@ -122,6 +102,7 @@ moving residents is [art/character-lane-plan.md](art/character-lane-plan.md).
 | 2026-10-10 | Keep the current Ba Dan layout; greener, nature-led balance; character work approved                                                                                                                                                       |
 | 2026-10-11 | Gentle village motion approved (shipped 2026-10-13)                                                                                                                                                                                        |
 | 2026-10-13 | Objects must match the characters or the style may pivot; generator objects being proven                                                                                                                                                   |
+| 2026-10-27 | Route A (Pixel) at G1: the world, objects and residents from the PixelLab G family at 1 art px = 1 world px; G2 (2x chunky) and routes B and C closed (ADR 0085)                                                                           |
 
 ## Rejected approaches
 
@@ -129,6 +110,12 @@ moving residents is [art/character-lane-plan.md](art/character-lane-plan.md).
   its own projection (19 to 25 degrees instead of 26.57), light and grain;
   "slanted weird", "stuffs floating".
 - Chunky pixel-art restyles of props next to fine painted characters.
+- G2, the world and figures at 1 art px = 2 world px (2026-10-27): uniform, but fruit, goods and faces do not survive
+  at about 30 px figures.
+- A painted world with generator objects set in (#284 route B), and painting out small objects by hand (route C, no
+  artist), both closed when route A was chosen (2026-10-27).
+- Passing a figure as a reference image when restyling world art: the generator pastes ghost copies of the figure into
+  the scene (#287).
 - A whole map from the character generator's tile tools: clean but generic, no
   match to the painted look.
 - The generator's low top-down view (reads as eye level on our maps) and its own
@@ -139,7 +126,7 @@ moving residents is [art/character-lane-plan.md](art/character-lane-plan.md).
 
 ## Open questions for the owner
 
-- Do the generator-made objects look right in game? If not, the art style may pivot.
 - How to show a character fully hidden behind a house (outline or not).
 - Hanru's look, and whether followers keep a tile away from house walls.
 - The game's final name.
+- Whether the camera snaps to an integer zoom so the world and the figures share one on-screen pixel grid (ADR 0085).

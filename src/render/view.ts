@@ -317,12 +317,22 @@ export interface NpcMarker {
   /** Ms into the walk clip while walking; a painted figure strides with it. */
   readonly clipTime?: number;
   readonly walking?: boolean;
+  /**
+   * The heading clip an eight-way sheet draws (a resident's G idle, walk or
+   * rest, issue #284); absent, a sheet draws its plain `walk` or `idle`.
+   */
+  readonly clip?: ClipName;
   /** Procedural resident motion keeps this at one; authored presentation scale is separate. */
   readonly poseScale?: 1;
   /** Radians about the feet, into the walk. */
   readonly lean?: number;
   /** No talk pip: a background role, or someone walking off the map. */
   readonly quiet?: boolean;
+}
+
+/** The sheet clip a marker draws: its heading clip, else the plain walk or idle. */
+export function npcClip(npc: Pick<NpcMarker, 'clip' | 'walking'>): ClipName {
+  return npc.clip ?? (npc.walking ? 'walk' : 'idle');
 }
 
 /**

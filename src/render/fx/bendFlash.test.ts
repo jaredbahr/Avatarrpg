@@ -2,8 +2,8 @@
  * The bend flash is the prototype's `ImageEnhance.Brightness(1.75)` (ADR
  * 0055): the cel added onto itself at 0.75, colour times 1.75, alpha kept.
  *
- * The fixtures are Pillow's own output (12.3.0) on two shipped cels, the fire
- * launch and the water splash, written by `bend-draw-review/flash_fixture.py`
+ * The fixtures are Pillow's own output (12.3.0) on two shipped G1 cels (ADR 0086), the fire
+ * launch and the water splash, written by `art/source/fx-g1/tools/flash_fixture.py`
  * from the same WebP page. Both backends draw a flashed cel from
  * `brighten`'s copy (`bendFxSource`), so this compares the two pixel for pixel.
  * The splash is the hard case: painted at 224 and saturated, it is where an

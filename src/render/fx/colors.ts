@@ -45,6 +45,15 @@ export function roleColor(role: FxColor, paletteKey: string): string {
   }
 }
 
+/**
+ * Palettes of light: fire, water and air glow or catch the light, so their
+ * particles and strokes carry no dark ink (ADR 0086). Earth and everything
+ * else keep it.
+ */
+export function inkedPalette(paletteKey: string): boolean {
+  return paletteKey !== 'fire' && paletteKey !== 'water' && paletteKey !== 'air';
+}
+
 /** `#rrggbb` to the number Pixi tints with. */
 export function hexToNumber(hex: string): number {
   return parseInt(hex.replace('#', '').slice(0, 6), 16);

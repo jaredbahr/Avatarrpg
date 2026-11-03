@@ -10,7 +10,7 @@
  * context, they never own one.
  */
 
-import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
+import type { Grid, SceneFlock, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
@@ -18,11 +18,12 @@ import { Camera, TILE } from '../camera';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
-import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
+import { contourLoops, traceRegions } from '../geometry/contour';
 import {
+  activeGroundCue,
   actorReticleX,
   actorSilhouetteGeometry,
-  actorShadowDensity,
+  combatActorSilhouetteScreenGeometry,
   fallbackBarTop,
   floaterOwner,
   floaterStartY,
@@ -30,10 +31,9 @@ import {
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
-import { talkPipPosition } from '../geometry/talkPip';
+import { TALK_PIP_GAP, talkPipPosition } from '../geometry/talkPip';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import { liftAlong, liftAt } from '../geometry/elevation';
-import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import {
   clip,
@@ -45,12 +45,34 @@ import {
   polyBounds,
 } from '../geometry/lift';
 import type { LiftPlan, Pt, Rect } from '../geometry/lift';
-import { nearestDistanceAlong, sampleAt, smoothPath } from '../geometry/curve';
+import { smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
+import { drawArt } from '../pixelSampling';
+import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
+import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRendering';
+import {
+  aimArcPixelMarks,
+  boardPixelFromTile,
+  cueOpacity,
+  exitMark,
+  healthBarSpikeMark,
+  hoverCalmMark,
+  koCrossMark,
+  overlayPixelMarks,
+  pathPixelMarks,
+  screenToBoardPixel,
+  selectedRingMark,
+  talkPipMark,
+  TALK_PIP_RADIUS,
+  targetReticleMark,
+} from '../pixelOverlayGeometry';
+import type { PixelOverlayCue } from '../pixelOverlayGeometry';
+import { RevealLayer, revealBox, revealsUnit } from '../reveal';
+import type { RevealFigure } from '../reveal';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
@@ -58,22 +80,17 @@ import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
 import { paintedWaterIsDry, surfaceIsPainted } from '../sceneSurfaces';
 import { HP_CAP, HP_COLORS, MAP_MARGIN_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
-import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
+import { paintFloatingNumber } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
 import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
-import {
-  paintExitMarker,
-  paintGridLine,
-  paintOverlay,
-  paintSurface,
-  paintTerrain,
-} from '../painters/tiles';
+import { paintGridLine, paintSurface, paintTerrain } from '../painters/tiles';
 import { npcPose, sprites, visibleFrameBounds, visibleSpriteBounds } from '../spriteCache';
 import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
   floaterScale,
+  npcClip,
   unitMarkerGroundPoint,
   type AimArc,
   type MapView,
@@ -84,26 +101,26 @@ import {
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
+import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
+import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import { restingClip } from '../sheets/feet';
+import type { ResolvedFrame } from '../sheets/store';
 import {
+  CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
-  CONTACT_BAND,
+  CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
-  SHADOW_COLOR,
   actorGrounding,
   castShadowStrength,
-  contactBandRows,
-  groundTreatment,
-  shadowCeiling,
-  spriteBandArt,
-  type BandArt,
+  contactBand,
+  inkColor,
+  type ShadowGrid,
   structureShadowPolygons,
   tileShadowCell,
+  shadowGrid,
   silhouetteProjection,
 } from '../lighting';
-
-/** The rounded square a hovered tile gets, in tile units from its corner. */
-const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
 /** Canvas ordering point, exported so parity can be tested without a drawing context. */
 export function canvasActorDepth(
@@ -120,13 +137,27 @@ export const EDGE_SHADE_TILES = 1.4;
 export const EDGE_SHADE_ALPHA = 0.42;
 export const VIGNETTE_ALPHA = 0.3;
 
+/** The cels a figure's ground shadow reads: the one drawn (its soles' contact) and its heading's resting idle (its pool). */
+interface FigureCels {
+  readonly drawn: Pick<ResolvedFrame, 'frame' | 'anchor' | 'pixelsPerTile' | 'feet'> | null;
+  readonly resting: ResolvedFrame | null;
+  /** Whether the body is mirrored about its foot. */
+  readonly flip: boolean;
+  /** The figure's drawn scale (with any pose scale). */
+  readonly scale: number;
+}
+
 export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
 
   private ctx: CanvasRenderingContext2D;
+  private pixelMarkDrawables = new PixelMarkDrawableCache(pixelMarkCanvas);
   private healthBarStagger = new HealthBarStagger();
   /** Top edge of each unit's bar this frame (as drawn, staggered): floating numbers start above it. */
   private barTops = new Map<string, number>();
+  /** Party frames drawn this pass, for the silhouettes over the pieces that hide them (ADR 0096). */
+  private revealFigures: RevealFigure[] = [];
+  private reveal: RevealLayer | null = null;
   private pendingHealthBars: (HealthBarPlacement & {
     readonly unit: RenderUnit;
     readonly actorX: number;
@@ -138,6 +169,7 @@ export class Canvas2DBackend implements RenderBackend {
    * frame until something changes, and a WeakMap forgets them with it.
    */
   private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  private squareLoops = new WeakMap<OverlayLayer, Vec2[][]>();
   /** Steam regions are memoised by the view's stable obscuring-cell array. */
   private obscuringLoops = new WeakMap<readonly Vec2[], Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
@@ -146,10 +178,18 @@ export class Canvas2DBackend implements RenderBackend {
   private masks = new WeakMap<HTMLCanvasElement | HTMLImageElement, HTMLCanvasElement>();
   /** One union mask, rebuilt each frame from every upright silhouette. */
   private shadowLayer: HTMLCanvasElement | null = null;
+  /** This frame's shadow mask texels (`drawCastShadows`). */
+  private shadowGridNow: ShadowGrid | null = null;
   /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
   private grounding = DEFAULT_ACTOR_GROUNDING;
   /** One caster at a time, in the exact-max path (see `castInto`). */
   private castScratch: HTMLCanvasElement | null = null;
+  /** One viewport's static scenery union; live actors and props never enter it. */
+  private sceneryShadow: {
+    key: string;
+    images: (HTMLImageElement | null)[];
+    canvas: HTMLCanvasElement;
+  } | null = null;
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
@@ -183,7 +223,9 @@ export class Canvas2DBackend implements RenderBackend {
   destroy(): void {
     sprites.clear();
     sheets.clear();
+    this.pixelMarkDrawables.clear();
     this.dropLiftLayer();
+    this.sceneryShadow = null;
   }
 
   draw(view: MapView, camera: Camera): void {
@@ -191,6 +233,7 @@ export class Canvas2DBackend implements RenderBackend {
     this.pendingHealthBars = [];
     this.barTops.clear();
     const dpr = camera.viewport.dpr;
+    this.pixelMarkDrawables.beginFrame();
     view = {
       ...view,
       scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
@@ -329,11 +372,11 @@ export class Canvas2DBackend implements RenderBackend {
             }
           : null;
       const liveMarks = () => {
-        this.drawOverlays(view, ground);
-        this.drawPath(view, ground);
-        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+        this.drawOverlays(view, ground, camera);
+        this.drawPath(view, camera);
+        if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
         this.drawFxLayer(view, ground, 'under', true);
-        this.drawExit(view, ground);
+        this.drawExit(view, camera, view.cameraNudge);
       };
       // The lift layer copies the flat ground, so it is brought up to date
       // before any mark is drawn over it.
@@ -429,8 +472,10 @@ export class Canvas2DBackend implements RenderBackend {
       ].sort((a, b) =>
         compareRenderedDepth(camera.groundPoint(a.pos).y, camera.groundPoint(b.pos).y),
       );
+      this.revealFigures = [];
       for (const occupant of occupants) occupant.draw();
-      this.flushHealthBars();
+      this.drawReveal(view, camera);
+      this.flushHealthBars(camera, view.cameraNudge);
       this.drawTargetReticle(view, camera);
       this.drawFlock(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
@@ -446,9 +491,9 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawOverlays(view, camera);
       this.drawSteamPuffs(view, camera);
       this.drawPath(view, camera);
-      if (view.aimArc) this.drawAimArc(view.aimArc, camera);
+      if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
       this.drawFxLayer(view, camera, 'under');
-      this.drawExit(view, camera);
+      this.drawExit(view, camera, view.cameraNudge);
       this.drawClimbMarkers(view, camera);
       this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
@@ -456,7 +501,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
-      this.flushHealthBars();
+      this.flushHealthBars(camera, view.cameraNudge);
       this.drawTargetReticle(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
@@ -464,6 +509,7 @@ export class Canvas2DBackend implements RenderBackend {
     this.drawFloaters(view, camera);
 
     ctx.restore();
+    this.pixelMarkDrawables.endFrame();
   }
 
   /* ---------------------------------------------------------------- */
@@ -473,12 +519,14 @@ export class Canvas2DBackend implements RenderBackend {
     if (camera.projection === 'oblique') {
       const padding = view.backdrop?.padding;
       const scale = (camera.scale * 64) / (view.backdrop?.pixelsPerTile ?? 64);
-      this.ctx.drawImage(
-        image,
-        -camera.offsetX - (padding?.left ?? 0) * camera.scale,
-        -camera.offsetY - (padding?.top ?? 0) * camera.scale,
-        image.naturalWidth * scale,
-        image.naturalHeight * scale,
+      drawArt(this.ctx, 1, scale, () =>
+        this.ctx.drawImage(
+          image,
+          -camera.offsetX - (padding?.left ?? 0) * camera.scale,
+          -camera.offsetY - (padding?.top ?? 0) * camera.scale,
+          image.naturalWidth * scale,
+          image.naturalHeight * scale,
+        ),
       );
       return;
     }
@@ -796,51 +844,47 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.restore();
   }
 
-  private drawOverlays(view: MapView, camera: Camera): void {
+  private drawPixelCues(
+    cues: readonly PixelOverlayCue[],
+    camera: Camera,
+    plane: 'ground' | 'screen',
+    nudge: Vec2 = { x: 0, y: 0 },
+  ): void {
+    for (const draw of resolvePixelMarkDraws(camera, cues, this.pixelMarkDrawables, nudge)) {
+      drawCanvasPixelMark(this.ctx, camera, draw, nudge, plane);
+    }
+  }
+
+  private drawOverlays(view: MapView, camera: Camera, markCamera = camera): void {
     this.drawObscurement(view, camera);
-    if (view.crispOverlays) {
-      this.drawCrispOverlays(view, camera);
-    } else {
-      const { ctx } = this;
-      const origin = camera.toScreen({ x: 0, y: 0 });
-      const size = origin.size;
-
-      for (const layer of view.overlays) {
-        if (layer.tiles.length === 0) continue;
-        let loops = this.loops.get(layer);
-        if (!loops) {
-          loops = contourLoops(layer.tiles);
-          this.loops.set(layer, loops);
-        }
-        const [fill, edge] = overlayColors(layer.kind);
-
-        ctx.save();
-        ctx.beginPath();
-        for (const loop of loops) tracePolygon(ctx, loop, origin, size);
-        ctx.fillStyle = fill;
-        ctx.fill('evenodd');
-        if (edge) {
-          ctx.lineJoin = 'round';
-          ctx.strokeStyle = edge;
-          ctx.globalAlpha = OVERLAY.softAlpha;
-          ctx.lineWidth = size * OVERLAY.softWidth;
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-          ctx.lineWidth = Math.max(2, size * OVERLAY.edgeWidth);
-          ctx.stroke();
-        }
-        ctx.restore();
+    for (const layer of view.overlays) {
+      if (layer.tiles.length === 0) continue;
+      const cache = view.crispOverlays ? this.squareLoops : this.loops;
+      let loops = cache.get(layer);
+      if (!loops) {
+        loops = view.crispOverlays ? traceRegions(layer.tiles) : contourLoops(layer.tiles);
+        cache.set(layer, loops);
       }
+      this.drawPixelCues(
+        overlayPixelMarks(`overlay:${layer.kind}`, layer.kind, loops, markCamera, overlayColors),
+        markCamera,
+        'ground',
+        view.cameraNudge,
+      );
+    }
 
-      if (view.hoverTile) {
-        const box = camera.toScreen(view.hoverTile);
-        ctx.save();
-        ctx.beginPath();
-        tracePolygon(ctx, HOVER_LOOP, box, box.size);
-        ctx.fillStyle = OVERLAY.hover;
-        ctx.fill();
-        ctx.restore();
-      }
+    if (view.hoverTile) {
+      const cues =
+        view.crispOverlays && view.calmPath && view.path.length > 0
+          ? [hoverCalmMark(view.hoverTile, markCamera)]
+          : overlayPixelMarks(
+              'hover',
+              'hover',
+              traceRegions([view.hoverTile]),
+              markCamera,
+              overlayColors,
+            );
+      this.drawPixelCues(cues, markCamera, 'ground', view.cameraNudge);
     }
     this.drawCliffCues(view, camera);
   }
@@ -1015,13 +1059,8 @@ export class Canvas2DBackend implements RenderBackend {
 
   /** The target cue stays above units so it remains attached to its target. */
   private drawTargetReticle(view: MapView, camera: Camera): void {
-    const ctx = this.ctx;
-    const size = camera.toScreen({ x: 0, y: 0 }).size;
-    ctx.save();
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
     const cue = view.targetReticle;
-    if (cue) {
+    if (cue && (cue.elevation || cue.obscured)) {
       const target = view.units.find((unit) =>
         footprintCells(unit.pos, unit.size, this.squareFootprints).some(
           (cell) => cell.x === cue.pos.x && cell.y === cue.pos.y,
@@ -1063,212 +1102,49 @@ export class Canvas2DBackend implements RenderBackend {
       const cy = this.squareFootprints
         ? silhouette.reticleY
         : box.y - lift * box.size - box.size * 0.04;
-      ctx.fillStyle = OVERLAY.reticleCue;
-      ctx.strokeStyle = OVERLAY.pathUnder;
-      ctx.lineWidth = Math.max(3, size * 0.065);
-      if (cue.elevation) {
-        const direction = cue.elevation === 'above' ? -1 : 1;
-        ctx.beginPath();
-        ctx.moveTo(cx - size * 0.13, cy - direction * size * 0.08);
-        ctx.lineTo(cx, cy + direction * size * 0.13);
-        ctx.lineTo(cx + size * 0.13, cy - direction * size * 0.08);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
-      }
-      if (cue.obscured) {
-        const x = cx + size * 0.27;
-        const y = cy;
-        ctx.beginPath();
-        ctx.arc(x - size * 0.06, y, size * 0.07, Math.PI, 0);
-        ctx.arc(x + size * 0.04, y - size * 0.015, size * 0.09, Math.PI, 0);
-        ctx.lineTo(x + size * 0.12, y + size * 0.06);
-        ctx.lineTo(x - size * 0.13, y + size * 0.06);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
-      }
-    }
-    ctx.restore();
-  }
-
-  /** The pre-contour look, kept for High contrast: a square per tile, hard edges. */
-  private drawCrispOverlays(view: MapView, camera: Camera): void {
-    const { ctx } = this;
-
-    for (const layer of view.overlays) {
-      if (layer.tiles.length === 0) continue;
-      const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
-      const [fill, edge] = overlayColors(layer.kind);
-
-      for (const pos of layer.tiles) {
-        const box = camera.toScreen(pos);
-        if (!camera.isVisible(pos)) continue;
-        // Only the outside of the region gets a border, so a move range reads
-        // as one shape instead of a grid of boxes.
-        paintOverlay(ctx, box, fill, edge, {
-          top: !members.has(`${pos.x},${pos.y - 1}`),
-          right: !members.has(`${pos.x + 1},${pos.y}`),
-          bottom: !members.has(`${pos.x},${pos.y + 1}`),
-          left: !members.has(`${pos.x - 1},${pos.y}`),
-        });
-      }
-    }
-
-    if (view.hoverTile) {
-      const box = camera.toScreen(view.hoverTile);
-      if (view.calmPath && view.path.length > 0) {
-        ctx.save();
-        ctx.globalAlpha = 0.45;
-        ctx.strokeStyle = OVERLAY.calmPath;
-        ctx.lineWidth = Math.max(1, box.size * OVERLAY.calmPathWidth);
-        ctx.beginPath();
-        HOVER_LOOP.forEach((point, index) => {
-          const x = box.x + point.x * box.size;
-          const y = box.y + point.y * box.size;
-          if (index === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        });
-        ctx.closePath();
-        ctx.stroke();
-        ctx.restore();
-      } else {
-        paintOverlay(ctx, box, OVERLAY.hover, null, null);
-      }
+      this.drawPixelCues(
+        [targetReticleMark(screenToBoardPixel(camera, { x: cx, y: cy }), cue)],
+        camera,
+        'screen',
+        view.cameraNudge,
+      );
     }
   }
 
   private drawPath(view: MapView, camera: Camera): void {
     if (view.path.length === 0) return;
-    const { ctx } = this;
-
-    if (!view.pathFrom || (view.crispOverlays && !view.calmPath)) {
-      view.path.forEach((pos: Vec2, index: number) => {
-        const box = camera.toScreen(pos);
-        if (index === view.path.length - 1) paintPathArrow(ctx, box, OVERLAY.path);
-        else paintPathDot(ctx, box, OVERLAY.path);
-      });
-      return;
+    if (
+      view.pathFrom &&
+      (!this.curve || this.curve.path !== view.path || this.curve.from !== view.pathFrom)
+    ) {
+      this.curve = {
+        path: view.path,
+        from: view.pathFrom,
+        curve: smoothPath(view.pathFrom, view.path),
+      };
     }
-
-    const from = view.pathFrom;
-    if (!this.curve || this.curve.path !== view.path || this.curve.from !== from) {
-      this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
-    }
-    const curve = this.curve.curve;
-    const start = view.pathOrigin
-      ? nearestDistanceAlong(curve, view.pathOrigin, view.pathStart, view.path.length)
-      : 0;
-    const first = sampleAt(curve, start).pos;
-    const origin = camera.toScreen({ x: 0, y: 0 });
-    const size = origin.size;
-
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(origin.x + first.x * size, origin.y + first.y * size);
-    curve.points.forEach((p, index) => {
-      if ((curve.cumulative[index] ?? 0) <= start) return;
-      const x = origin.x + p.x * size;
-      const y = origin.y + p.y * size;
-      ctx.lineTo(x, y);
-    });
-    ctx.strokeStyle = view.calmPath ? OVERLAY.calmPathUnder : OVERLAY.pathUnder;
-    ctx.lineWidth = Math.max(
-      1,
-      size * (view.calmPath ? OVERLAY.calmPathUnderWidth : OVERLAY.pathUnderWidth),
+    this.drawPixelCues(
+      pathPixelMarks(view, camera, this.curve?.curve),
+      camera,
+      'ground',
+      view.cameraNudge,
     );
-    ctx.stroke();
-    ctx.strokeStyle =
-      view.calmPath && view.crispOverlays
-        ? OVERLAY.calmPathContrast
-        : view.calmPath
-          ? OVERLAY.calmPath
-          : OVERLAY.path;
-    ctx.lineWidth = Math.max(1, size * (view.calmPath ? OVERLAY.calmPathWidth : OVERLAY.pathWidth));
-    if (!view.calmPath) {
-      // A slow crawl along a combat move route, so it reads as a direction of travel.
-      ctx.setLineDash([size * 0.22, size * 0.16]);
-      ctx.lineDashOffset = -((view.time / 30) % (size * 0.38));
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // The arrowhead sits on the last tangent, pointing the way the walk ends.
-    const end = sampleAt(curve, curve.length);
-    const tip = { x: origin.x + end.pos.x * size, y: origin.y + end.pos.y * size };
-    if (view.calmPath) {
-      ctx.beginPath();
-      ctx.arc(tip.x, tip.y, size * OVERLAY.calmPathMarkerScale, 0, Math.PI * 2);
-      ctx.stroke();
-    } else {
-      this.fillPolygon(
-        arrowheadPolygon(tip, end.tangent, size * OVERLAY.pathArrowScale),
-        OVERLAY.path,
-      );
-    }
-    ctx.restore();
   }
 
-  /**
-   * The throw being aimed: the flight's own curve as dots in the element's
-   * light tone over an ink line, with an arrowhead where it lands. Still,
-   * so reduce motion needs nothing; nothing here is on the timeline.
-   */
-  private drawAimArc(arc: AimArc, camera: Camera): void {
-    const { ctx } = this;
-    const origin = camera.toScreen({ x: 0, y: 0 });
-    const size = origin.size;
-    const points = aimArcPoints(arc.from, arc.to, arc.arc).map((p) => ({
-      x: origin.x + p.x * size,
-      y: origin.y + p.y * size,
-    }));
-
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    points.forEach((p, index) => {
-      if (index === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-    });
-    ctx.strokeStyle = OVERLAY.pathUnder;
-    ctx.lineWidth = Math.max(4, size * 0.1);
-    ctx.stroke();
-
-    ctx.fillStyle = arc.color;
-    for (let i = 0; i < points.length - 1; i += 2) {
-      const p = points[i];
-      if (!p) continue;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(1.5, size * 0.05), 0, Math.PI * 2);
-      ctx.fill();
-    }
-    const tip = points[points.length - 1];
-    if (tip) this.fillPolygon(arrowheadPolygon(tip, arcHeading(points), size), arc.color);
-    ctx.restore();
+  /** The throw being aimed: the flight's own curve as G1 dots over an ink line. */
+  private drawAimArc(arc: AimArc, camera: Camera, nudge: Vec2): void {
+    this.drawPixelCues(aimArcPixelMarks(arc, camera), camera, 'ground', nudge);
   }
 
-  private fillPolygon(flat: readonly number[], color: string): void {
-    const { ctx } = this;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    for (let i = 0; i + 1 < flat.length; i += 2) {
-      const x = flat[i] ?? 0;
-      const y = flat[i + 1] ?? 0;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  private drawExit(view: MapView, camera: Camera): void {
+  private drawExit(view: MapView, camera: Camera, nudge: Vec2): void {
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
-      const box = camera.toScreen(exit.pos);
-      const pulse = (Math.sin(view.time / 420) + 1) / 2;
-      paintExitMarker(this.ctx, box, '#f0c674', pulse);
+      const anchor = boardPixelFromTile(camera, { x: exit.pos.x + 0.5, y: exit.pos.y + 0.5 });
+      this.drawPixelCues(
+        [exitMark(anchor, cueOpacity(view.time, 420, view.reducedMotion))],
+        camera,
+        'ground',
+        nudge,
+      );
     }
   }
 
@@ -1295,25 +1171,22 @@ export class Canvas2DBackend implements RenderBackend {
       const lift = Math.round((npc.offset?.y ?? 0) * box.size * dpr) / dpr;
       ctx.save();
       ctx.globalAlpha = alpha;
-      const { pool } = groundTreatment(actorGrounding(view.scene), {
-        castStrength: 1,
-        defaultPool: entry.kind === 'image',
-      });
-      if (pool) {
-        const s = box.size * scale;
-        const density = actorShadowDensity(view.grid, at, true, width, false);
-        ctx.drawImage(sprites.shadow(s * dpr, density), footX - s / 2, footY - 0.86 * s, s, s);
-      }
       ctx.translate(footX, footY + lift);
       ctx.rotate(npc.lean ?? 0);
       const poseScale = npc.poseScale ?? 1;
-      ctx.scale(scale * poseScale * (npc.facing ?? 1), scale * poseScale);
+      const clip = npcClip(npc);
+      // An eight-way sheet draws its own west and diagonals; only its legacy clips mirror.
+      const facing =
+        entry.kind === 'sheet' && entry.facing === 'both' && authoredForBothSides(clip)
+          ? 1
+          : (npc.facing ?? 1);
+      ctx.scale(scale * poseScale * facing, scale * poseScale);
       ctx.translate(-footX, -footY);
       const frame =
         entry.kind === 'sheet'
           ? sheets.frame(
               npc.sprite,
-              npc.walking ? 'walk' : 'idle',
+              clip,
               npc.clipTime ?? 0,
               undefined,
               box.size * dpr * scale,
@@ -1333,16 +1206,18 @@ export class Canvas2DBackend implements RenderBackend {
           bottom:
             visible.bottom / frame.pixelsPerTile - (frame.anchor.y * f.h) / frame.pixelsPerTile,
         };
-        ctx.drawImage(
-          frame.source,
-          f.x,
-          f.y,
-          f.w,
-          f.h,
-          footX - frame.anchor.x * fw,
-          footY - frame.anchor.y * fh,
-          fw,
-          fh,
+        drawArt(ctx, f.w, fw, () =>
+          ctx.drawImage(
+            frame.source,
+            f.x,
+            f.y,
+            f.w,
+            f.h,
+            footX - frame.anchor.x * fw,
+            footY - frame.anchor.y * fh,
+            fw,
+            fh,
+          ),
         );
       } else {
         const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
@@ -1360,22 +1235,25 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
       if (npc.quiet) continue;
       // A small "talk" pip so a child can tell an NPC from scenery.
-      ctx.save();
-      ctx.globalAlpha = alpha * (0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2));
-      ctx.fillStyle = '#f0c674';
-      ctx.beginPath();
       const pip = talkPipPosition(
         { x: footX, y: footY + lift },
         artBounds,
-        scale * (npc.poseScale ?? 1) * box.size,
+        scale * poseScale * box.size,
         npc.lean ?? 0,
-        box.size * 0.07,
-        box.size * 0.04,
-        npc.facing ?? 1,
+        TALK_PIP_RADIUS * camera.scale,
+        TALK_PIP_GAP * camera.scale,
+        facing,
       );
-      ctx.arc(pip.x, pip.y, box.size * 0.07, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      const anchor = screenToBoardPixel(camera, pip);
+      const cue = talkPipMark(anchor, cueOpacity(view.time, 500, view.reducedMotion, alpha));
+      for (const draw of resolvePixelMarkDraws(
+        camera,
+        [cue],
+        this.pixelMarkDrawables,
+        view.cameraNudge,
+      )) {
+        drawCanvasPixelMark(ctx, camera, draw, view.cameraNudge, 'screen');
+      }
     }
   }
   private drawProps(view: MapView, camera: Camera): void {
@@ -1407,10 +1285,16 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  /** Cast every upright alpha silhouette into one mask, then tint once. */
+  /**
+   * Cast every upright alpha silhouette into one mask, then tint once. The mask
+   * is one texel per world pixel on the world-pixel grid (`shadowGrid`, ADR
+   * 0093): casters are drawn into it with nearest sampling and it is scaled up
+   * nearest, so every shadow is hard-edged and stepped like the art beside it.
+   */
   private drawCastShadows(view: MapView, camera: Camera): void {
-    const width = Math.ceil(camera.viewport.width);
-    const height = Math.ceil(camera.viewport.height);
+    const grid = shadowGrid(camera.viewport, camera.scale, camera.offsetX, camera.offsetY);
+    this.shadowGridNow = grid;
+    const { width, height } = grid;
     if (
       !this.shadowLayer ||
       this.shadowLayer.width !== width ||
@@ -1423,29 +1307,29 @@ export class Canvas2DBackend implements RenderBackend {
     const layer = this.shadowLayer.getContext('2d');
     if (!layer) return;
     this.grounding = actorGrounding(view.scene);
-    const exact = this.exactMax();
-    if (exact) {
-      // The union is a grey level per pixel on opaque black; see `castInto`.
-      if (
-        !this.castScratch ||
-        this.castScratch.width !== width ||
-        this.castScratch.height !== height
-      ) {
-        this.castScratch = document.createElement('canvas');
-        this.castScratch.width = width;
-        this.castScratch.height = height;
-      }
-      layer.globalCompositeOperation = 'source-over';
-      layer.fillStyle = '#000000';
-      layer.fillRect(0, 0, width, height);
-    } else layer.clearRect(0, 0, width, height);
+    // The union is a grey level per pixel on opaque black; see `castInto`.
+    if (
+      !this.castScratch ||
+      this.castScratch.width !== width ||
+      this.castScratch.height !== height
+    ) {
+      this.castScratch = document.createElement('canvas');
+      this.castScratch.width = width;
+      this.castScratch.height = height;
+    }
+    const scratch = this.castScratch.getContext('2d');
+    if (scratch) this.toShadowTexels(scratch, grid);
+    layer.setTransform(1, 0, 0, 1, 0, 0);
+    layer.globalCompositeOperation = 'source-over';
+    layer.fillStyle = '#000000';
+    layer.fillRect(0, 0, width, height);
+    this.toShadowTexels(layer, grid);
     this.drawStructureShadowMask(layer, view, camera);
 
-    // Scenery and still props are drawn straight into the union each frame:
-    // a cached mask only covered the viewport it was built for (so a pan lost
-    // pieces) and was frozen before streamed scene art had arrived.
+    // Only scenery is cached, with the viewport and actual loaded art in its
+    // key. Props and actors still rebuild into this frame's exact-max union.
     if (view.scene && camera.projection === 'oblique') {
-      this.drawSceneryShadowMask(layer, view, camera);
+      this.drawCachedSceneryShadowMask(layer, view, camera, grid);
       this.drawPropShadowMask(
         layer,
         view.props.filter((prop) => !prop.burning),
@@ -1454,39 +1338,116 @@ export class Canvas2DBackend implements RenderBackend {
       );
     }
     this.drawLiveShadowMask(layer, view, camera);
-    if (exact) {
-      this.compositeExactShadow(layer, view, camera, width, height);
+    layer.setTransform(1, 0, 0, 1, 0, 0);
+    this.compositeExactShadow(layer, view, camera, width, height);
+  }
+
+  private drawCachedSceneryShadowMask(
+    target: CanvasRenderingContext2D,
+    view: MapView,
+    camera: Camera,
+    grid: ShadowGrid,
+  ): void {
+    // The uncached fallback can draw coloured casters when scratch allocation
+    // fails. That is not an opaque grey mask we may retain after recovery.
+    if (!this.castScratch?.getContext('2d')) {
+      this.sceneryShadow = null;
+      this.drawSceneryShadowMask(target, view, camera);
       return;
     }
-    layer.globalCompositeOperation = 'source-in';
-    layer.fillStyle = SHADOW_COLOR;
-    layer.fillRect(0, 0, width, height);
-    layer.globalCompositeOperation = 'source-over';
-    this.ctx.save();
-    this.ctx.globalAlpha = shadowCeiling(this.grounding);
-    this.clipShadowGround(this.ctx, view, camera);
-    this.ctx.drawImage(this.shadowLayer, 0, 0);
-    this.ctx.restore();
+    const images = (view.scene?.scenery ?? []).map((piece) => sceneImage(piece));
+    // Content can be filtered by the current grid or changed in place by a
+    // fixture. Do not rely on scene identity, and do not reuse a viewport crop
+    // after a pan, zoom, resize or newly streamed/replaced image.
+    const key = JSON.stringify([
+      view.scene,
+      camera.projection,
+      camera.grid,
+      camera.viewport,
+      camera.scale,
+      camera.offsetX,
+      camera.offsetY,
+      grid,
+      images.map((image) =>
+        image ? [image.src, image.currentSrc, image.naturalWidth, image.naturalHeight] : null,
+      ),
+    ]);
+    let cache = this.sceneryShadow;
+    const cachedImages = cache?.images;
+    if (
+      !cache ||
+      cache.key !== key ||
+      images.some((image, index) => image !== cachedImages?.[index])
+    ) {
+      cache ??= { key: '', images: [], canvas: document.createElement('canvas') };
+      cache.key = '';
+      if (cache.canvas.width !== grid.width) cache.canvas.width = grid.width;
+      if (cache.canvas.height !== grid.height) cache.canvas.height = grid.height;
+      const layer = cache.canvas.getContext('2d');
+      if (!layer) {
+        this.sceneryShadow = null;
+        this.drawSceneryShadowMask(target, view, camera);
+        return;
+      }
+      layer.setTransform(1, 0, 0, 1, 0, 0);
+      layer.globalAlpha = 1;
+      layer.globalCompositeOperation = 'source-over';
+      layer.fillStyle = '#000000';
+      layer.fillRect(0, 0, grid.width, grid.height);
+      this.toShadowTexels(layer, grid);
+      this.drawSceneryShadowMask(layer, view, camera);
+      cache.key = key;
+      cache.images = images;
+      this.sceneryShadow = cache;
+    }
+    // Opaque grey masks combine by maximum, just like individual casters.
+    // Copy at identity in mask texels, not through the camera transform.
+    target.save();
+    target.setTransform(1, 0, 0, 1, 0, 0);
+    target.globalCompositeOperation = 'lighten';
+    target.drawImage(cache.canvas, 0, 0);
+    target.restore();
+  }
+
+  /** A mask context draws in screen CSS px onto world-pixel texels, sampling its casters nearest. */
+  private toShadowTexels(target: CanvasRenderingContext2D, grid: ShadowGrid): void {
+    target.setTransform(
+      1 / grid.texel,
+      0,
+      0,
+      1 / grid.texel,
+      -grid.originX / grid.texel,
+      -grid.originY / grid.texel,
+    );
+    target.imageSmoothingEnabled = false;
+  }
+
+  /** Lays a world-pixel mask over the screen, each texel a hard block of one world pixel. */
+  private drawShadowTexels(source: HTMLCanvasElement, grid: ShadowGrid): void {
+    const smoothing = this.ctx.imageSmoothingEnabled;
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.drawImage(
+      source,
+      grid.originX,
+      grid.originY,
+      grid.width * grid.texel,
+      grid.height * grid.texel,
+    );
+    this.ctx.imageSmoothingEnabled = smoothing;
   }
 
   /**
-   * A scene with its own grounding mixes casters of different strength, and
-   * ADR 0071 wants an overlap to take the strongest, never to add up. Source-over
-   * of two 0.5 casts gives 0.75, so those scenes keep the union as a grey level
-   * per pixel (white at alpha `a` over black is exactly `a`) and combine casters
-   * with `lighten`, which is a per-channel maximum for opaque sources.
-   */
-  private exactMax(): boolean {
-    return this.grounding.contact > 0 || this.grounding.cast !== CAST_SHADOW_ALPHA;
-  }
-
-  /**
-   * Puts one caster into the union at `level`. A default scene draws it straight
-   * into the layer, as it always did. An exact-max scene draws it alone into the
+   * Puts one caster into the union at `level`. Casters of different strength mix
+   * (every scene has a contact layer, ADR 0093), and ADR 0071 wants an overlap to
+   * take the strongest, never to add up: source-over of two 0.5 casts gives 0.75.
+   * So the union is a grey level per pixel (white at alpha `a` over black is
+   * exactly `a`), combined with `lighten`, a per-channel maximum for opaque
+   * sources. Each caster is drawn alone into the
    * scratch (transparent, so the source's colours do not matter), turns that to
    * white at the caster's own alpha on black, scales it by `level` (`multiply`
    * by an opaque grey is exact) and `lighten`s it into the layer. `bounds` is
-   * where the caster can have drawn, in layer pixels.
+   * where the caster can have drawn, in screen CSS px; the pixel work is done in
+   * the mask's texels.
    */
   private castInto(
     layer: CanvasRenderingContext2D,
@@ -1494,22 +1455,32 @@ export class Canvas2DBackend implements RenderBackend {
     bounds: { x0: number; y0: number; x1: number; y1: number },
     draw: (target: CanvasRenderingContext2D) => void,
   ): void {
-    const scratch = this.exactMax() ? this.castScratch?.getContext('2d') : null;
-    if (!scratch || !this.castScratch) {
+    const scratch = this.castScratch?.getContext('2d');
+    const grid = this.shadowGridNow;
+    if (!scratch || !this.castScratch || !grid) {
       draw(layer);
       return;
     }
-    const x0 = Math.max(0, Math.floor(bounds.x0) - 1);
-    const y0 = Math.max(0, Math.floor(bounds.y0) - 1);
-    const x1 = Math.min(this.castScratch.width, Math.ceil(bounds.x1) + 1);
-    const y1 = Math.min(this.castScratch.height, Math.ceil(bounds.y1) + 1);
+    const x0 = Math.max(0, Math.floor((bounds.x0 - grid.originX) / grid.texel) - 1);
+    const y0 = Math.max(0, Math.floor((bounds.y0 - grid.originY) / grid.texel) - 1);
+    const x1 = Math.min(
+      this.castScratch.width,
+      Math.ceil((bounds.x1 - grid.originX) / grid.texel) + 1,
+    );
+    const y1 = Math.min(
+      this.castScratch.height,
+      Math.ceil((bounds.y1 - grid.originY) / grid.texel) + 1,
+    );
     if (x1 <= x0 || y1 <= y0) return;
     scratch.save();
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.beginPath();
     scratch.rect(x0, y0, x1 - x0, y1 - y0);
     scratch.clip();
     scratch.clearRect(x0, y0, x1 - x0, y1 - y0);
+    this.toShadowTexels(scratch, grid);
     draw(scratch);
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.globalCompositeOperation = 'source-in';
     scratch.fillStyle = '#ffffff';
     scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
@@ -1521,7 +1492,9 @@ export class Canvas2DBackend implements RenderBackend {
     scratch.fillStyle = `rgb(${grey}, ${grey}, ${grey})`;
     scratch.fillRect(x0, y0, x1 - x0, y1 - y0);
     scratch.restore();
+    this.toShadowTexels(scratch, grid);
     layer.save();
+    layer.setTransform(1, 0, 0, 1, 0, 0);
     layer.globalCompositeOperation = 'lighten';
     layer.drawImage(this.castScratch, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
     layer.restore();
@@ -1536,24 +1509,26 @@ export class Canvas2DBackend implements RenderBackend {
     height: number,
   ): void {
     const scratch = this.castScratch?.getContext('2d');
-    if (!scratch || !this.castScratch || !this.shadowLayer) return;
+    const grid = this.shadowGridNow;
+    if (!scratch || !this.castScratch || !this.shadowLayer || !grid) return;
     this.ctx.save();
     this.clipShadowGround(this.ctx, view, camera);
+    scratch.setTransform(1, 0, 0, 1, 0, 0);
     scratch.globalCompositeOperation = 'source-over';
     scratch.fillStyle = '#ffffff';
     scratch.fillRect(0, 0, width, height);
     scratch.globalCompositeOperation = 'difference';
     scratch.drawImage(this.shadowLayer, 0, 0);
     this.ctx.globalCompositeOperation = 'multiply';
-    this.ctx.drawImage(this.castScratch, 0, 0);
+    this.drawShadowTexels(this.castScratch, grid);
     scratch.globalCompositeOperation = 'source-over';
-    scratch.fillStyle = SHADOW_COLOR;
+    scratch.fillStyle = inkColor(this.grounding.ink);
     scratch.fillRect(0, 0, width, height);
     scratch.globalCompositeOperation = 'multiply';
     scratch.drawImage(this.shadowLayer, 0, 0);
     scratch.globalCompositeOperation = 'source-over';
     this.ctx.globalCompositeOperation = 'lighter';
-    this.ctx.drawImage(this.castScratch, 0, 0);
+    this.drawShadowTexels(this.castScratch, grid);
     this.ctx.restore();
     layer.globalCompositeOperation = 'source-over';
   }
@@ -1618,85 +1593,87 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.clip();
   }
 
-  private projectMask(
+  /**
+   * A figure's ground shadow (ADR 0093's figure amendment): its pool and short cast at the scene's cast
+   * level, and the core under its soles at the contact level, one canvas pixel a world pixel, so each
+   * lands on one texel of the mask. `foot` is in screen CSS px, `worldPixel` CSS px a world pixel.
+   */
+  private projectFigureShadow(
     target: CanvasRenderingContext2D,
-    source: CanvasImageSource,
-    src: { x: number; y: number; w: number; h: number } | null,
-    dest: { x: number; y: number; w: number; h: number },
     foot: { x: number; y: number },
-    alpha = 1,
-    flip = false,
-    level = CAST_SHADOW_ALPHA,
+    scale: number,
+    widthTiles: number,
+    alpha: number,
+    worldPixel: number,
+    cels?: FigureCels,
   ): void {
-    const m = silhouetteProjection(foot.x, foot.y);
-    const x0 = flip ? 2 * foot.x - dest.x - dest.w : dest.x;
-    this.castInto(
-      target,
-      level,
-      pointBounds(
-        rectCorners(x0, dest.y, dest.w, dest.h).map((p) => ({
-          x: m.a * p.x + m.c * p.y + m.e,
-          y: m.b * p.x + m.d * p.y + m.f,
-        })),
-      ),
-      (t) => {
+    if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
+    const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
+    if (!art) return;
+    // The pool centres on the resting soles; one figure tile is `tile` CSS px.
+    const tile = TILE * worldPixel * (cels?.scale ?? scale);
+    const offset = poolOffset(cels?.resting, cels?.flip ?? false);
+    const x = foot.x + offset.x * tile - art.footX * worldPixel;
+    const y = foot.y + offset.y * tile - art.footY * worldPixel;
+    const w = art.cast.width * worldPixel;
+    const h = art.cast.height * worldPixel;
+    const pool = (canvas: HTMLCanvasElement, level: number) =>
+      this.castInto(target, level, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
         t.save();
         t.globalAlpha = alpha;
-        t.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-        if (flip) {
-          t.translate(foot.x * 2, 0);
-          t.scale(-1, 1);
-        }
-        if (src) t.drawImage(source, src.x, src.y, src.w, src.h, dest.x, dest.y, dest.w, dest.h);
-        else t.drawImage(source, dest.x, dest.y, dest.w, dest.h);
+        t.drawImage(canvas, x, y, w, h);
         t.restore();
-      },
-    );
+      });
+    pool(art.cast, this.grounding.cast);
+    const drawn = cels?.drawn;
+    const soles = drawn?.feet && soleContactArt(drawn.feet, drawn.frame.w);
+    if (!drawn || !soles) {
+      // No measured soles (a painter figure, a bend): the pool's own core is its contact.
+      pool(art.contact, this.grounding.contact);
+      return;
+    }
+    // The contact under each sole, placed exactly as the cel is drawn on the ground point.
+    const fw = (drawn.frame.w / drawn.pixelsPerTile) * tile;
+    const fh = (drawn.frame.h / drawn.pixelsPerTile) * tile;
+    const cx = foot.x - drawn.anchor.x * fw;
+    const cy = foot.y - drawn.anchor.y * fh;
+    const ch = (soles.height / drawn.frame.h) * fh;
+    const x0 = cels.flip ? 2 * foot.x - cx - fw : cx;
+    this.castInto(target, this.grounding.contact, { x0, y0: cy, x1: x0 + fw, y1: cy + ch }, (t) => {
+      t.save();
+      t.globalAlpha = alpha;
+      if (cels.flip) {
+        t.translate(foot.x * 2, 0);
+        t.scale(-1, 1);
+      }
+      t.drawImage(soles, cx, cy, fw, ch);
+      t.restore();
+    });
   }
 
   /**
-   * The sole band of a frame laid flat about its foot, a little wider and lower
-   * than the boots: the contact under both feet, from the pose's own art.
+   * A prop's contact line: its own silhouette `CONTACT_LINE` world pixels lower,
+   * at the contact level, so a line that deep shows under every edge it
+   * stands on, whatever shape its base is (ADR 0093). It is how the painting's
+   * G1 objects meet the ground (`objects.py`); a figure's band is cut from its
+   * soles instead, because a figure stands on two small feet.
    */
-  private projectContactMask(
+  private projectContactLine(
     target: CanvasRenderingContext2D,
-    frame: Pick<BandArt, 'source' | 'frame' | 'anchor' | 'pixelsPerTile'>,
+    source: CanvasImageSource,
     placed: { x: number; y: number; w: number; h: number },
-    foot: { x: number; y: number },
     alpha: number,
-    flip: boolean,
-    tilePx: number,
+    worldPixel: number,
   ): void {
-    const band = contactBandRows(frame.frame.h, frame.anchor.y, frame.pixelsPerTile);
-    const f = frame.frame;
-    const destH = (band.height / frame.frame.h) * placed.h;
-    const sx = CONTACT_BAND.spreadX * (flip ? -1 : 1);
-    const dy = foot.y + CONTACT_BAND.drop * tilePx;
+    const y = placed.y + CONTACT_LINE * worldPixel;
     this.castInto(
       target,
       this.grounding.contact,
-      pointBounds(
-        [placed.x - foot.x, placed.x - foot.x + placed.w].flatMap((px) => [
-          { x: foot.x + px * sx, y: dy },
-          { x: foot.x + px * sx, y: dy - destH * CONTACT_BAND.spreadY },
-        ]),
-      ),
+      { x0: placed.x, y0: y, x1: placed.x + placed.w, y1: y + placed.h },
       (t) => {
         t.save();
         t.globalAlpha = alpha;
-        t.translate(foot.x, dy);
-        t.scale(sx, CONTACT_BAND.spreadY);
-        t.drawImage(
-          frame.source,
-          f.x,
-          f.y + band.top,
-          f.w,
-          band.height,
-          placed.x - foot.x,
-          -destH,
-          placed.w,
-          destH,
-        );
+        t.drawImage(source, placed.x, y, placed.w, placed.h);
         t.restore();
       },
     );
@@ -1715,6 +1692,10 @@ export class Canvas2DBackend implements RenderBackend {
       const y = piece.y * camera.scale - camera.offsetY;
       const w = piece.width * camera.scale;
       const h = piece.height * camera.scale;
+      if (piece.castFrom === 'base') {
+        this.groundSceneryPiece(target, piece, image, { x, y, w, h }, camera);
+        continue;
+      }
       const foot = { x: x + w / 2, y: y + h };
       const m = silhouetteProjection(foot.x, foot.y);
       this.castInto(
@@ -1742,87 +1723,78 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
+  /**
+   * A solid scenery piece (`castFrom: 'base'`) stands on its whole base as a prop does: its cast from the lower hull
+   * of its own bottom edge along the shared key, and its contact line `CONTACT_LINE` world pixels under its silhouette.
+   */
+  private groundSceneryPiece(
+    target: CanvasRenderingContext2D,
+    piece: SceneScenery,
+    image: HTMLImageElement,
+    placed: { x: number; y: number; w: number; h: number },
+    camera: Camera,
+  ): void {
+    const art = pieceArt(image, piece, (context, width, height) =>
+      drawSceneImage(context, image, piece, 0, 0, width, height),
+    );
+    if (!art) return;
+    const strength = castShadowStrength(piece.castShadow);
+    const cast = groundedCastArt(art, CAST_PER_PIXEL, pieceFeet(piece, camera));
+    if (cast && strength > 0) {
+      const k = placed.w / art.width;
+      const w = cast.width * k;
+      const h = cast.height * k;
+      this.castInto(
+        target,
+        CAST_SHADOW_ALPHA,
+        { x0: placed.x, y0: placed.y, x1: placed.x + w, y1: placed.y + h },
+        (t) => {
+          t.save();
+          t.globalAlpha = strength;
+          t.drawImage(cast, placed.x, placed.y, w, h);
+          t.restore();
+        },
+      );
+    }
+    if (piece.contactShadow !== false)
+      this.projectContactLine(target, art, placed, 1, camera.scale);
+  }
+
   private drawLiveShadowMask(
     target: CanvasRenderingContext2D,
     view: MapView,
     camera: Camera,
   ): void {
-    const dpr = camera.viewport.dpr;
+    const worldPixel = camera.scale;
     for (const npc of view.npcs) {
       const at = npc.renderPos ?? npc.pos;
       const width = this.npcWidth(npc.sprite);
       const box = camera.spriteBox(at, width, false);
       box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
-      const scale = npc.scale ?? 1;
-      const foot = { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size };
-      const frame = sheets.frame(
-        npc.sprite,
-        npc.walking ? 'walk' : 'idle',
-        npc.clipTime ?? 0,
-        undefined,
-        box.size * dpr * scale,
-        width,
-      );
       const entry = resolveAsset(npc.sprite);
-      const { band } = groundTreatment(this.grounding, {
-        castStrength: 1,
-        defaultPool: entry.kind === 'image',
-      });
-      if (frame) {
-        const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
-        this.projectMask(
-          target,
-          frame.source,
-          frame.frame,
-          placed,
-          foot,
-          npc.alpha ?? 1,
-          false,
-          this.grounding.cast,
-        );
-        // A painter resident's baked frame is only the cast's stand-in: its band is cut from what is drawn.
-        if (band && entry.kind === 'sheet')
-          this.projectContactMask(
-            target,
-            frame,
-            placed,
-            foot,
-            npc.alpha ?? 1,
-            false,
-            box.size * scale,
-          );
-      }
-      if (!frame || (band && entry.kind !== 'sheet')) {
-        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
-        if (!frame)
-          this.projectMask(
-            target,
-            sprite,
-            null,
-            { x: box.x, y: box.y, w: box.size * width, h: box.size },
-            foot,
-            npc.alpha ?? 1,
-            false,
-            this.grounding.cast,
-          );
-        if (band) {
-          const k = scale * (npc.poseScale ?? 1);
-          this.projectContactMask(
-            target,
-            spriteBandArt(sprite),
-            {
-              x: foot.x - (foot.x - box.x) * k,
-              y: foot.y - (foot.y - box.y) * k,
-              w: box.size * width * k,
-              h: box.size * k,
-            },
-            foot,
-            npc.alpha ?? 1,
-            false,
-            box.size * k,
-          );
-        }
-      }
+      const clip = npcClip(npc);
+      const scale = npc.scale ?? 1;
+      const px = box.size * camera.viewport.dpr * scale;
+      const sheet = entry.kind === 'sheet';
+      // A resident's pool is steady at its feet; its contact follows the soles it draws (ADR 0093).
+      this.projectFigureShadow(
+        target,
+        { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size },
+        scale,
+        1,
+        npc.alpha ?? 1,
+        worldPixel,
+        sheet
+          ? {
+              drawn: sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px, width),
+              resting: sheets.frame(npc.sprite, restingClip(clip), 0, undefined, px, width),
+              flip:
+                !(entry.facing === 'both' && authoredForBothSides(clip)) &&
+                (npc.facing ?? 1) === -1,
+              scale: scale * (npc.poseScale ?? 1),
+            }
+          : undefined,
+      );
     }
     this.drawPropShadowMask(
       target,
@@ -1841,99 +1813,60 @@ export class Canvas2DBackend implements RenderBackend {
         box.y += unit.offset.y * box.size;
       }
       box.y -= liftAlong(view.grid, pos, camera.projection) * box.size;
-      const scale = unit.scale ?? 1;
-      const heightTiles = this.squareFootprints ? unit.size : 1;
       const width = unit.size === 2 ? box.size * 2 : box.size;
-      // With a contact layer the foot is the tile's ground, so the walk bob lifts
-      // the figure off both shadows instead of dragging the cast along with it.
-      const grounded = this.grounding.contact > 0;
-      const { band } = groundTreatment(this.grounding, {
-        castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: true,
-      });
+      // The foot is the tile's ground, so the walk bob lifts the figure off its shadow
+      // instead of dragging the shadow along with it.
       const foot = {
         x: box.x + width / 2,
-        y: box.y - (grounded ? (unit.offset?.y ?? 0) * box.size : 0) + FOOT_LINE * box.size,
+        y: box.y - (unit.offset?.y ?? 0) * box.size + FOOT_LINE * box.size,
       };
-      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
-      const frame =
-        bend ||
-        sheets.frame(
-          unit.sprite,
-          unit.clip ?? 'idle',
-          unit.clipTime ?? view.time + idlePhase(unit.id),
-          unit.clipFrame,
-          box.size * dpr * scale,
-          unit.size,
-          unit.meleeDirection,
-          heightTiles,
-        );
-      if (frame) {
-        const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
-        const f = frame.frame;
-        this.projectMask(
-          target,
-          frame.source,
-          f,
-          placed,
-          foot,
-          (unit.alpha ?? 1) *
-            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-            castShadowStrength(unit.castShadow),
-          !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
-          this.grounding.cast,
-        );
-        if (band)
-          this.projectContactMask(
-            target,
-            frame,
-            placed,
-            foot,
-            (unit.alpha ?? 1) *
-              (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-              castShadowStrength(unit.castShadow),
-            !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
-            box.size * scale,
-          );
-      } else {
-        const sprite = sprites.get(
-          unit.sprite,
-          box.size * dpr * scale,
-          { facing: unit.facing ?? (unit.faction === 'enemy' ? -1 : 1) },
-          unit.size,
-          heightTiles,
-        );
-        const dest = {
-          x: box.x + (width - width * scale) / 2,
-          y: box.y + FOOT_LINE * (box.size - box.size * heightTiles * scale),
-          w: width * scale,
-          h: box.size * heightTiles * scale,
-        };
-        this.projectMask(
-          target,
-          sprite,
-          null,
-          dest,
-          foot,
-          (unit.alpha ?? 1) *
-            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-            castShadowStrength(unit.castShadow),
-          false,
-          this.grounding.cast,
-        );
-        if (band)
-          this.projectContactMask(
-            target,
-            spriteBandArt(sprite, heightTiles),
-            dest,
-            foot,
-            (unit.alpha ?? 1) *
-              (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
-              castShadowStrength(unit.castShadow),
-            false,
-            box.size * scale,
-          );
-      }
+      const scale = unit.scale ?? 1;
+      const heightTiles = this.squareFootprints ? unit.size : 1;
+      const clip = unit.clip ?? 'idle';
+      const asset = resolveAsset(unit.sprite);
+      const px = box.size * camera.viewport.dpr * scale;
+      // A bend cel has no measured feet: the pool alone, with its core.
+      const cels =
+        asset.kind === 'sheet' && !unit.bend
+          ? {
+              drawn: sheets.frame(
+                unit.sprite,
+                clip,
+                unit.clipTime ?? view.time + idlePhase(unit.id),
+                unit.clipFrame,
+                px,
+                unit.size,
+                unit.meleeDirection,
+                heightTiles,
+              ),
+              resting: sheets.frame(
+                unit.sprite,
+                restingClip(clip),
+                0,
+                undefined,
+                px,
+                unit.size,
+                undefined,
+                heightTiles,
+              ),
+              flip:
+                !(asset.facing === 'both' && authoredForBothSides(clip)) &&
+                (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
+              scale,
+            }
+          : undefined;
+      // Its pool is steady at its feet, its contact under the soles it draws (ADR 0093).
+      this.projectFigureShadow(
+        target,
+        foot,
+        scale,
+        unit.size === 2 ? 2 : 1,
+        (unit.alpha ?? 1) *
+          (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+          castShadowStrength(unit.castShadow),
+        worldPixel,
+        cels,
+      );
     }
   }
 
@@ -1949,14 +1882,28 @@ export class Canvas2DBackend implements RenderBackend {
       const box = camera.spriteBox(prop.pos);
       box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
-      this.projectMask(
-        target,
-        sprite,
-        null,
-        { x: box.x, y: box.y, w: box.size, h: box.size },
-        { x: box.x + box.size / 2, y: box.y + FOOT_LINE * box.size },
-        castShadowStrength(prop.castShadow),
-      );
+      const placed = { x: box.x, y: box.y, w: box.size, h: box.size };
+      const strength = castShadowStrength(prop.castShadow);
+      // A prop casts from its own ground, down the scene's key, and meets it on its contact line.
+      const cast = strength > 0 ? groundedCastArt(sprite, this.grounding.castKey) : null;
+      if (cast) {
+        const k = placed.w / Math.max(1, sprite.width);
+        const w = cast.width * k;
+        const h = cast.height * k;
+        this.castInto(
+          target,
+          this.grounding.cast,
+          { x0: placed.x, y0: placed.y, x1: placed.x + w, y1: placed.y + h },
+          (t) => {
+            t.save();
+            t.globalAlpha = strength;
+            t.drawImage(cast, placed.x, placed.y, w, h);
+            t.restore();
+          },
+        );
+      }
+      if (contactBand(this.grounding, strength))
+        this.projectContactLine(target, sprite, placed, strength, camera.scale);
     }
   }
 
@@ -2001,42 +1948,68 @@ export class Canvas2DBackend implements RenderBackend {
       const footprint = this.squareFootprints ? unit.size : 1;
       const width = box.size * unit.size;
       const centreLift = (footprint - 1) * box.size * 0.5;
-      // Active-unit ring, drawn under the sprite.
+      // A stepped active-unit frame, drawn under the sprite like the former ring.
       if (unit.id === view.activeUnitId) {
-        ctx.save();
-        ctx.strokeStyle = OVERLAY.active;
-        ctx.lineWidth = Math.max(2, box.size * 0.06);
-        ctx.globalAlpha = 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2);
-        ctx.beginPath();
-        ctx.ellipse(
-          marker.x + width / 2,
-          marker.y + box.size * 0.86 - centreLift,
-          width * 0.42,
-          box.size * footprint * 0.14,
-          0,
-          0,
-          Math.PI * 2,
+        // Snap in world space, then apply the camera transform. Snapping the
+        // screen point to a zero-based grid loses the offset's device-pixel
+        // phase (for example, half a CSS pixel at DPR 2) and separates this
+        // cue from the Pixi cue and the actor's feet.
+        const cue = activeGroundCue(
+          (marker.x + width / 2 + camera.offsetX) / camera.scale,
+          (marker.y + box.size * 0.86 - centreLift + camera.offsetY) / camera.scale,
+          width / camera.scale,
+          box.size / camera.scale,
+          footprint,
+          1,
+          view.crispOverlays ? 4 : 3,
         );
-        ctx.stroke();
+        ctx.save();
+        ctx.translate(-camera.offsetX, -camera.offsetY);
+        ctx.scale(camera.scale, camera.scale);
+        ctx.fillStyle = HP_COLORS.frame;
+        for (const run of cue.outer) ctx.fillRect(run.x, run.y, run.width, run.height);
+        ctx.fillStyle = OVERLAY.active;
+        for (const run of cue.inner) ctx.fillRect(run.x, run.y, run.width, run.height);
         ctx.restore();
       } else if (unit.id === view.selectedUnitId) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-        ctx.lineWidth = Math.max(1, box.size * 0.03);
-        ctx.beginPath();
-        ctx.ellipse(
-          marker.x + width / 2,
-          marker.y + box.size * 0.86 - centreLift,
-          width * 0.4,
-          box.size * footprint * 0.12,
-          0,
-          0,
-          Math.PI * 2,
+        const centre = screenToBoardPixel(camera, {
+          x: marker.x + width / 2,
+          y: marker.y + box.size * 0.86 - centreLift,
+        });
+        this.drawPixelCues(
+          [
+            selectedRingMark(
+              centre,
+              (width * 0.4) / camera.scale,
+              (box.size * footprint * 0.12) / camera.scale,
+            ),
+          ],
+          camera,
+          'screen',
+          view.cameraNudge,
         );
-        ctx.stroke();
-        ctx.restore();
       }
     }
+  }
+
+  /** The covered part of each hidden party member, over the pieces that keep their paint. */
+  private drawReveal(view: MapView, camera: Camera): void {
+    const scenery = view.scene?.scenery ?? [];
+    if (!scenery.some((piece) => piece.revealOccluded)) return;
+    this.reveal ??= new RevealLayer();
+    const drawn = this.reveal.draw(this.revealFigures, scenery, camera);
+    if (!drawn) return;
+    const { ctx } = this;
+    const width = drawn.width * camera.scale;
+    drawArt(ctx, drawn.width, width, () =>
+      ctx.drawImage(
+        drawn.canvas,
+        drawn.x * camera.scale - camera.offsetX,
+        drawn.y * camera.scale - camera.offsetY,
+        width,
+        drawn.height * camera.scale,
+      ),
+    );
   }
 
   private drawUnits(view: MapView, camera: Camera): void {
@@ -2076,39 +2049,6 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const shadowDensity = actorShadowDensity(
-        view.grid,
-        pos,
-        unit.shadow === true,
-        unit.size,
-        this.squareFootprints,
-      );
-      const { pool } = groundTreatment(actorGrounding(view.scene), {
-        castStrength: castShadowStrength(unit.castShadow),
-        defaultPool: shadowDensity > 0,
-      });
-      if (pool) {
-        // On the ground, not on the bob: the tile's foot line, less the ledge.
-        const footprint = this.squareFootprints ? unit.size : 1;
-        // A square unit's ground contact is its rules footprint. Presentation
-        // compensation (the Driller in oblique) enlarges the upright cel only.
-        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : scale;
-        const s = box.size * shadowScale * footprint;
-        const footX = box.x - (unit.offset?.x ?? 0) * box.size + width / 2;
-        const footY =
-          box.y -
-          (unit.offset?.y ?? 0) * box.size +
-          0.86 * box.size -
-          (footprint - 1) * box.size * 0.5;
-        ctx.globalAlpha = alpha;
-        ctx.drawImage(
-          sprites.shadow(s * dpr, shadowDensity),
-          footX - s / 2,
-          footY - 0.86 * s,
-          s,
-          s,
-        );
-      }
       ctx.globalAlpha = alpha;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at device resolution (ADR 0003); the anchor stands on the foot line.
@@ -2126,12 +2066,14 @@ export class Canvas2DBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const silhouette = actorSilhouetteGeometry(
+      const silhouette = combatActorSilhouetteScreenGeometry(
         { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
-        26,
+        camera.scale,
+        camera.offsetX,
+        camera.offsetY,
       );
       this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {
@@ -2144,12 +2086,35 @@ export class Canvas2DBackend implements RenderBackend {
           ctx.translate(-ax, 0);
         }
         const f = frame.frame;
-        ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
-        // The white mask is a copy of the whole page: never for a bend page.
-        if (unit.flash && unit.flash > 0 && !bend) {
-          ctx.globalAlpha *= Math.min(1, unit.flash);
-          ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+        if (revealsUnit(unit) && camera.projection === 'oblique') {
+          const world = (v: number, offset: number) => (v + offset) / camera.scale;
+          this.revealFigures.push({
+            source: frame.source,
+            rect: f,
+            ...revealBox(
+              {
+                x: world(drawX, camera.offsetX),
+                y: world(drawY, camera.offsetY),
+                w: fw / camera.scale,
+                h: fh / camera.scale,
+              },
+              world(ax, camera.offsetX),
+              drawFacing === -1 && !bend,
+            ),
+            flip: drawFacing === -1 && !bend,
+            foot: camera.groundPoint(renderFoot(pos, unit.size, this.squareFootprints, 'oblique'))
+              .y,
+          });
         }
+        // A sheet pixel on a whole block of device pixels draws nearest (ADR 0088).
+        drawArt(ctx, f.w, fw, () => {
+          ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+          // The white mask is a copy of the whole page: never for a bend page.
+          if (unit.flash && unit.flash > 0 && !bend) {
+            ctx.globalAlpha *= Math.min(1, unit.flash);
+            ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+          }
+        });
       } else {
         const drawWidth = width * scale;
         const drawHeight = box.size * heightTiles * scale;
@@ -2184,16 +2149,16 @@ export class Canvas2DBackend implements RenderBackend {
         this.drawStatusBadges(unit, box.x, width, box.size, silhouette.badgeY);
       } else {
         // A fallen unit gets a clear cross rather than just fading out.
-        ctx.save();
-        ctx.strokeStyle = 'rgba(226,88,74,0.85)';
-        ctx.lineWidth = Math.max(2, box.size * 0.06);
-        ctx.beginPath();
-        ctx.moveTo(box.x + width * 0.3, box.y + box.size * 0.35);
-        ctx.lineTo(box.x + width * 0.7, box.y + box.size * 0.75);
-        ctx.moveTo(box.x + width * 0.7, box.y + box.size * 0.35);
-        ctx.lineTo(box.x + width * 0.3, box.y + box.size * 0.75);
-        ctx.stroke();
-        ctx.restore();
+        const anchor = screenToBoardPixel(camera, {
+          x: box.x + width / 2,
+          y: box.y + box.size * 0.55,
+        });
+        this.drawPixelCues(
+          [koCrossMark(anchor, width / camera.scale)],
+          camera,
+          'screen',
+          view.cameraNudge,
+        );
       }
     }
   }
@@ -2203,24 +2168,56 @@ export class Canvas2DBackend implements RenderBackend {
     bar: ReturnType<typeof actorSilhouetteGeometry>['bar'],
     actorX: number,
     hatch: boolean,
+    camera: Camera,
+    nudge: Vec2,
   ): void {
     const { ctx } = this;
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
     const fill = hpFill(unit.faction, fraction, hatch);
+    const pixel = bar.pixelSize;
+    const innerX = barX + pixel;
+    const innerY = barY + pixel;
+    const innerWidth = Math.max(pixel, barWidth - pixel * 2);
+    const innerHeight = Math.max(pixel, barHeight - pixel * 2);
+    const fillWidth =
+      fraction > 0
+        ? Math.min(innerWidth, Math.max(pixel, Math.round((innerWidth * fraction) / pixel) * pixel))
+        : 0;
 
-    // An ink-framed track, filled in the unit's side colour (pixi.ts matches).
-    ctx.fillStyle = HP_COLORS.back;
+    // The frame and one-pixel upper edge stay sharp at the camera's pixel scale.
+    ctx.fillStyle = HP_COLORS.frame;
     ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillStyle = HP_COLORS.back;
+    ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
     ctx.fillStyle = fill;
-    ctx.fillRect(barX, barY, barWidth * fraction, barHeight);
-    ctx.strokeStyle = HP_COLORS.frame;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1);
+    ctx.fillRect(innerX, innerY, fillWidth, innerHeight);
+    ctx.fillStyle = HP_COLORS.highlight;
+    ctx.fillRect(innerX, innerY, innerWidth, pixel);
 
     // The side's cap, so the bar reads by shape as well as colour.
     const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX);
     if (cap.length === 0) return;
+    if (HP_CAP[unit.faction] === 'spike') {
+      const rawAnchor = { x: cap[0] ?? 0, y: barY + barHeight / 2 };
+      const anchor = screenToBoardPixel(camera, rawAnchor);
+      const points: Vec2[] = [];
+      for (let i = 0; i + 1 < cap.length; i += 2) {
+        points.push({
+          x: ((cap[i] ?? 0) - rawAnchor.x) / camera.scale,
+          y: ((cap[i + 1] ?? 0) - rawAnchor.y) / camera.scale,
+        });
+      }
+      this.drawPixelCues(
+        [healthBarSpikeMark(anchor, points, hpFill(unit.faction, 1, hatch), HP_COLORS.frame)],
+        camera,
+        'screen',
+        nudge,
+      );
+      return;
+    }
+    ctx.strokeStyle = HP_COLORS.frame;
+    ctx.lineWidth = pixel;
     ctx.beginPath();
     for (let i = 0; i < cap.length; i += 2) ctx.lineTo(cap[i] ?? 0, cap[i + 1] ?? 0);
     ctx.closePath();
@@ -2229,13 +2226,13 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.stroke();
   }
 
-  private flushHealthBars(): void {
+  private flushHealthBars(camera: Camera, nudge: Vec2): void {
     const placements = this.healthBarStagger.place(this.pendingHealthBars);
     for (const candidate of this.pendingHealthBars) {
       const bar = placements.get(candidate.id);
       if (!bar) continue;
       this.barTops.set(candidate.id, bar.y);
-      this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch);
+      this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch, camera, nudge);
     }
     this.pendingHealthBars = [];
   }

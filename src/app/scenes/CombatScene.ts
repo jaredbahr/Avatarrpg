@@ -26,6 +26,7 @@ import {
 } from '../../core/rules/abilities';
 import {
   distance,
+  findPath,
   climbSurcharge,
   occupiedCells,
   pathCost,
@@ -41,6 +42,7 @@ import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
+import type { Camera } from '../../render/camera';
 import { renderFoot } from '../../render/renderFoot';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { cliffEdgesFor, placeFloaters, type TargetReticleCue } from '../../render/view';
@@ -67,30 +69,53 @@ import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import {
   formatPropConsequence,
+  formatPropPreviewLabel,
   formatHitBreakdownRows,
   formatLedgeDrop,
   formatShoveMovement,
 } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { PropInspector } from '../ui/PropInspector';
+import type { ToastHandle } from '../ui/Toasts';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
 import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
+import { partyWalkPhase } from '../animator';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
 import { liftAlong } from '../../render/geometry/elevation';
 import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
 import {
   actorKeepInViewDelta,
+  combatCameraGlidePoint,
   combatCameraFollowDecision,
   shouldFollowAnimatedLargeActor,
+  type CombatCameraGlide,
   type CombatCameraFollowState,
 } from './combatCameraFollow';
+import {
+  advanceVictoryBeat,
+  beginVictoryBeat,
+  frameLivingParty,
+  livingPartyFocus,
+  pauseVictoryBeat as pauseVictoryBeatClock,
+  type VictoryBeatClock,
+  victoryActorBounds,
+} from './victoryBeat';
+
+export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
+  return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
+}
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
+const VICTORY_BEAT_HOLD_MS = 1000;
+/** Turn changes use a gentle, short presentation glide. */
+const COMBAT_TURN_GLIDE_MS = 420;
+/** Give the render loop a frame to settle an expired glide before AI playback. */
+const COMBAT_AI_GLIDE_RETRY_MS = 16;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -227,6 +252,9 @@ export class CombatScene implements Scene {
   private freshBattleEntry = false;
   /** One presentation-only formation frame before the first hand-off. */
   private battleOpening: BattleOpeningState | null = null;
+  /** Keeps the first combat frame on the last explore seats until the curtain lifts. */
+  private approachPositions: ReadonlyMap<string, Vec2> | null = null;
+  private approachEndsAt = 0;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
   /**
@@ -236,6 +264,7 @@ export class CombatScene implements Scene {
    */
   private followSuspended = false;
   private cameraFollow: CombatCameraFollowState = { kind: 'idle' };
+  private cameraGlide: CombatCameraGlide | null = null;
   /**
    * The last pending move target revealed for a particular viewport. A
    * confirmation dock can shorten the canvas after the target was selected;
@@ -275,6 +304,10 @@ export class CombatScene implements Scene {
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
   private resultShown = false;
+  private victoryPending = false;
+  private victoryBeat: VictoryBeatClock | null = null;
+  private victoryFocus: Vec2 | null = null;
+  private presentationHeld = false;
   private logOpen = false;
   /** The phone header's More list, and the listeners that close it. */
   private moreOpen = false;
@@ -284,6 +317,8 @@ export class CombatScene implements Scene {
   private layoutMeasuredAfterSync = false;
   /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
   private flushedAt: number | null = null;
+  private endTurnConfirmation: ToastHandle | null = null;
+  private endTurnConfirmationTimer: number | null = null;
 
   constructor(private app: App) {
     this.movementThreatQuery = createMovementThreatQuery(app.content);
@@ -296,9 +331,27 @@ export class CombatScene implements Scene {
   mount(host: HTMLElement): void {
     this.suspended = false;
     this.aiHeld = false;
+    this.presentationHeld = false;
     this.host = host;
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
+    const approach = this.freshBattleEntry
+      ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
+      : null;
+    const party = this.app.state?.battle?.units.filter((unit) => unit.faction === 'party') ?? [];
+    const positions = new Map<string, Vec2>();
+    if (approach && !motionReduced()) {
+      for (const [index, unit] of party.entries()) {
+        const from = approach[index];
+        if (from) positions.set(unit.id, from);
+      }
+    }
+    this.approachPositions = positions.size > 0 ? positions : null;
+    this.approachEndsAt = 0;
     this.battleOpening = null;
+    this.resultShown = false;
+    this.victoryPending = false;
+    this.victoryBeat = null;
+    this.victoryFocus = null;
     this.layoutMeasuredAfterSync = false;
     this.flushedAt = null;
     clear(host);
@@ -320,13 +373,23 @@ export class CombatScene implements Scene {
   }
 
   unmount(): void {
+    this.clearEndTurnConfirmation();
     this.stopAiTimer();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.suspended = false;
     this.aiHeld = false;
+    this.presentationHeld = false;
     this.battleOpening = null;
+    this.victoryPending = false;
+    this.victoryBeat = null;
+    this.victoryFocus = null;
+    this.setVictoryBeatMarker(false);
+    this.cameraGlide = null;
+    this.setCameraGlideMarker(false);
     this.freshBattleEntry = false;
+    this.approachPositions = null;
+    this.approachEndsAt = 0;
     this.recentreButton = null;
     this.actorButton = null;
     this.moreDismiss?.();
@@ -341,7 +404,7 @@ export class CombatScene implements Scene {
     this.renderer = null;
     this.canvas = null;
     this.host = null;
-    // Nothing outside combat bends: let the decoded bend pages go (ADR 0055).
+    // Outside combat only a practice ground bends, and it warms its own: let the decoded bend pages go (ADR 0055).
     sheets.releaseBends();
   }
 
@@ -351,6 +414,7 @@ export class CombatScene implements Scene {
     // opening hold completes. Resolve it now so returning to that same scene
     // never replays a fresh-battle introduction.
     if (this.battleOpening) this.skipBattleOpening();
+    this.pauseVictoryBeat();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.paintingStill = true;
@@ -363,6 +427,7 @@ export class CombatScene implements Scene {
   resume(): void {
     if (!this.suspended) return;
     this.suspended = false;
+    this.pauseVictoryBeat();
     this.loop();
     this.maybeRunAi();
   }
@@ -383,6 +448,16 @@ export class CombatScene implements Scene {
     if (!this.aiHeld) return;
     this.aiHeld = false;
     this.maybeRunAi();
+  }
+
+  pausePresentation(): void {
+    this.presentationHeld = true;
+    this.pauseVictoryBeat();
+  }
+
+  resumePresentation(): void {
+    this.presentationHeld = false;
+    this.pauseVictoryBeat();
   }
 
   private stopAiTimer(): void {
@@ -438,6 +513,25 @@ export class CombatScene implements Scene {
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    if (this.victoryPending) {
+      // Clearing the decision dock may resize the canvas while the last hit
+      // is still playing. Keep its camera frame until playback has finished.
+      this.syncRecentre();
+      return;
+    }
+    if (this.battle()?.phase === 'victory' && motionReduced()) {
+      // Reduced motion keeps the exact frame even when the terminal HUD gives
+      // the canvas more room; clamping would recenter a fitted board here.
+      this.syncRecentre();
+      return;
+    }
+    if (this.victoryBeat && this.victoryFocus) {
+      camera.clamp();
+      const battle = this.battle();
+      if (battle) this.victoryFocus = this.frameVictoryParty(camera, battle) ?? this.victoryFocus;
+      this.syncRecentre();
+      return;
+    }
     if (this.battleOpening) {
       // A HUD reflow during the hold must not snap the formation back to the
       // actor. Keep the opening's frame intact and let the normal clamp absorb
@@ -447,11 +541,11 @@ export class CombatScene implements Scene {
       this.syncRecentre();
       return;
     }
-    if (!this.manualCamera) this.recentre();
-    else {
-      camera.scale = Math.max(camera.scale, camera.fitScale());
-      camera.clampToPanBounds();
-    }
+    if (this.cameraGlide) this.retargetCameraGlide();
+    else if (!this.manualCamera) this.recentre();
+    // A zoomed board keeps its zoom; one a rotation left under its fit rises
+    // to it, on whole device pixels on the pixel-art boards (ADR 0088).
+    else camera.raiseToFit();
     this.revealPendingMoveAfterViewportChange();
     this.syncRecentre();
     if (this.moreOpen) this.measureMoreRoom();
@@ -523,6 +617,7 @@ export class CombatScene implements Scene {
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    this.cancelCameraGlide();
     this.manualCamera = false;
     this.followSuspended = false;
     if (camera.projection === 'oblique') {
@@ -552,7 +647,9 @@ export class CombatScene implements Scene {
         // 96px frame; Huge text needs the larger allowance.
         this.preferredCombatTilePx = preferredTilePx;
       }
-      camera.fitExplore(this.preferredCombatTilePx ?? 96);
+      // Combat rounds its tuned tile down onto whole device pixels (ADR 0088),
+      // so the fight stays at least as much in view as it was tuned to show.
+      camera.fitExplore(this.preferredCombatTilePx ?? 96, 12, 'floor');
     } else camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos, unit.size);
@@ -561,7 +658,13 @@ export class CombatScene implements Scene {
 
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
-    if (!camera) return;
+    if (!camera || this.victoryPending || this.victoryBeat) return;
+    const cancelledGlide = this.cameraGlide !== null;
+    this.cancelCameraGlide();
+    if (cancelledGlide) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
     if (this.battleOpening) this.skipBattleOpening();
     const before = camera.scale;
     camera.zoomAt(at, factor);
@@ -574,7 +677,13 @@ export class CombatScene implements Scene {
 
   private pan(dx: number, dy: number): void {
     const camera = this.renderer?.camera;
-    if (!camera) return;
+    if (!camera || this.victoryPending || this.victoryBeat) return;
+    const cancelledGlide = this.cameraGlide !== null;
+    this.cancelCameraGlide();
+    if (cancelledGlide) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
     if (this.battleOpening) this.skipBattleOpening();
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
@@ -586,6 +695,8 @@ export class CombatScene implements Scene {
 
   /** Camera navigation never selects a target or spends an action. */
   private focusUnit(id: string): void {
+    if (this.victoryPending || this.victoryBeat) return;
+    this.cancelCameraGlide();
     if (this.battleOpening) this.skipBattleOpening();
     const unit = this.battle()?.units.find(
       (candidate) => candidate.id === id && isAlive(candidate),
@@ -605,6 +716,113 @@ export class CombatScene implements Scene {
     const fitted = this.renderer?.camera.fitted ?? true;
     if (button.hidden !== fitted) button.hidden = fitted;
     if (this.actorButton) this.actorButton.hidden = fitted;
+  }
+
+  private frameVictoryParty(camera: Camera, battle: BattleState): Vec2 | null {
+    const now = performance.now();
+    return frameLivingParty(camera, battle.units, (unit) => {
+      const pose = this.poseFields(now, unit.id, 1, true, unit.sprite, false);
+      const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
+      return victoryActorBounds(
+        camera,
+        unit,
+        {
+          pos: this.app.animator.renderPos(now, unit.id) ?? unit.pos,
+          scale: pose.scale ?? partyScale(camera.projection),
+          frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
+          ...(pose.offset ? { offset: pose.offset } : {}),
+        },
+        battle.grid,
+      );
+    });
+  }
+
+  private startVictoryBeat(battle: BattleState, now: number): void {
+    this.victoryPending = false;
+    // The beat owns the camera from here; a turn glide must not keep moving it.
+    this.cancelCameraGlide();
+    this.inspector?.close();
+    this.inspector = null;
+    this.setMoreOpen(false, false);
+    // Reduced motion keeps the last camera frame and reveals the existing
+    // card only after the final knockout has finished playing.
+    if (motionReduced()) {
+      this.renderTopBar();
+      this.renderHud();
+      return;
+    }
+    this.victoryFocus = this.renderer
+      ? this.frameVictoryParty(this.renderer.camera, battle)
+      : livingPartyFocus(battle.units);
+    if (this.victoryFocus && this.renderer) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
+    this.victoryBeat = this.victoryFocus ? beginVictoryBeat(now, VICTORY_BEAT_HOLD_MS) : null;
+    // The first framed render begins the hold; fitting the camera never eats
+    // into the visible beat.
+    this.pauseVictoryBeat();
+    this.setVictoryBeatMarker(this.victoryBeat !== null);
+    this.renderTopBar();
+    this.renderHud();
+  }
+
+  private pauseVictoryBeat(): void {
+    if (this.victoryBeat) this.victoryBeat = pauseVictoryBeatClock(this.victoryBeat);
+  }
+
+  private updateVictoryBeat(now: number): void {
+    const battle = this.battle();
+    if (battle?.phase !== 'victory') {
+      if (!this.victoryPending && !this.victoryBeat) return;
+      this.victoryPending = false;
+      this.victoryBeat = null;
+      this.victoryFocus = null;
+      this.setVictoryBeatMarker(false);
+      this.renderTopBar();
+      this.renderHud();
+      return;
+    }
+    if (this.victoryPending) {
+      if (
+        this.app.animator.busy(now) ||
+        this.suspended ||
+        this.presentationHeld ||
+        this.paintingStill
+      )
+        return;
+      this.startVictoryBeat(battle, now);
+    }
+    const beat = this.victoryBeat;
+    if (!beat) return;
+
+    const step = advanceVictoryBeat(
+      beat,
+      now,
+      this.suspended || this.presentationHeld || this.paintingStill,
+      motionReduced(),
+    );
+    this.victoryBeat = step.complete ? null : step.clock;
+    if (step.complete) {
+      this.setVictoryBeatMarker(false);
+      this.renderTopBar();
+      this.renderHud();
+    }
+  }
+
+  private skipVictoryBeat(): void {
+    if (!this.victoryBeat || this.battle()?.phase !== 'victory') return;
+    this.victoryBeat = null;
+    this.setVictoryBeatMarker(false);
+    this.renderTopBar();
+    this.renderHud();
+  }
+
+  private setVictoryBeatMarker(active: boolean): void {
+    const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
+    if (!scene) return;
+    if (active) scene.dataset.victoryBeat = 'active';
+    else delete scene.dataset.victoryBeat;
   }
 
   private setupRenderer(): void {
@@ -629,10 +847,14 @@ export class CombatScene implements Scene {
       bottom: 0,
       left: 0,
     };
+    // The oblique boards are pixel art at one art px per world px (ADR 0085):
+    // they draw at a whole number of device pixels per world pixel (ADR 0088).
+    this.renderer.camera.integerZoom = this.renderer.camera.projection === 'oblique';
     this.renderer.camera.clampToProgrammaticReachableSet =
       this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull';
     this.app.animator.setProjection(this.renderer.camera.projection);
-    if (this.renderer.camera.projection === 'oblique') this.renderer.camera.fitExplore(96);
+    if (this.renderer.camera.projection === 'oblique')
+      this.renderer.camera.fitExplore(96, 12, 'floor');
     else this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size
@@ -671,6 +893,20 @@ export class CombatScene implements Scene {
       offsetY: camera.offsetY,
       fitted: camera.fitted,
     };
+  }
+
+  /** The same positions supplied to the renderer, including the curtain reveal. */
+  partyPositions(): readonly Vec2[] | null {
+    const battle = this.battle();
+    if (!battle) return null;
+    const now = performance.now();
+    return battle.units
+      .filter((unit) => unit.faction === 'party')
+      .map((unit) => this.renderPosition(unit, now) ?? unit.pos);
+  }
+
+  private renderPosition(unit: Unit, now: number): Vec2 | undefined {
+    return this.approachPositions?.get(unit.id) ?? this.app.animator.renderPos(now, unit.id);
   }
 
   /* ---------------------------------------------------------------- */
@@ -859,6 +1095,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     if (this.skipBattleOpening()) return;
+    if (this.victoryBeat || battle.phase !== 'active') return;
     if (this.app.animator.busy(performance.now())) return;
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
@@ -887,6 +1124,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     if (this.skipBattleOpening()) return;
+    if (this.victoryBeat || battle.phase !== 'active') return;
     const resolved = this.resolvePointer(x, y, 'inspect');
     if (!resolved) return;
     const target = resolved.unit
@@ -937,9 +1175,10 @@ export class CombatScene implements Scene {
   private maybeStartBattleOpening(): void {
     if (!this.freshBattleEntry || this.battleOpening) return;
     this.freshBattleEntry = false;
+    this.cancelCameraGlide();
     const camera = this.renderer!.camera;
     // A board already wholly in view has nothing to establish.
-    if (motionReduced() || camera.fitted) return;
+    if (motionReduced() || (camera.fitted && !this.approachPositions)) return;
 
     // `centreOn` is the same focus path used by turn changes and the Acting
     // unit button. Capture its result as the eased destination, then restore
@@ -947,7 +1186,12 @@ export class CombatScene implements Scene {
     const active = this.active()!;
     camera.centreOn(active.pos, active.size);
     const focus = this.openingFrame(camera);
-    camera.scale = Math.max(0.35, Math.min(camera.scale, camera.fitScale(32)));
+    // The formation hold is a still frame, so it stands on whole device pixels
+    // too (ADR 0088); only the ease from it to the actor passes between them.
+    camera.scale = camera.snapScale(
+      Math.max(0.35, Math.min(camera.scale, camera.fitScale(32))),
+      'floor',
+    );
     camera.centre();
     this.cameraFollow = { kind: 'idle' };
     this.battleOpening = {
@@ -957,6 +1201,47 @@ export class CombatScene implements Scene {
       focus,
     };
     this.setBattleOpeningMarker('hold');
+  }
+
+  /** Play the explore trail into the unchanged authored combat seats. */
+  private startApproach(now: number): void {
+    const positions = this.approachPositions;
+    const battle = this.battle();
+    this.approachPositions = null;
+    if (!positions || !battle) return;
+    const party = battle.units.filter((unit) => unit.faction === 'party');
+    for (const [index, unit] of party.entries()) {
+      const from = positions.get(unit.id);
+      if (!from || samePos(from, unit.pos)) continue;
+      const route = findPath(
+        {
+          grid: battle.grid,
+          blocked: new Set(
+            battle.units
+              .filter((other) => other.faction !== 'party')
+              .map((other) => posKey(other.pos)),
+          ),
+          surfaces: this.app.content.surfaces,
+          size: 1,
+          climbCost: this.app.content.tuning.climbCost,
+        },
+        from,
+        unit.pos,
+        battle.grid.width * battle.grid.height * 4,
+      );
+      const path = route?.path ?? [unit.pos];
+      this.app.animator.push(
+        now,
+        [{ type: 'partyWalked', unitId: unit.id, from, path }],
+        battle.units,
+        {
+          alongside: true,
+          silentSteps: true,
+          walkPhase: partyWalkPhase(index),
+        },
+      );
+    }
+    this.approachEndsAt = this.app.animator.finishesAt;
   }
 
   private skipBattleOpening(): boolean {
@@ -978,10 +1263,11 @@ export class CombatScene implements Scene {
     if (opening.kind === 'hold') {
       if (opening.startedAt === null) {
         if (this.app.curtainBusy) return;
+        this.startApproach(now);
         this.battleOpening = { ...opening, startedAt: now };
         return;
       }
-      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS) return;
+      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS || now < this.approachEndsAt) return;
       this.battleOpening = {
         kind: 'focus',
         startedAt: now,
@@ -1033,17 +1319,25 @@ export class CombatScene implements Scene {
     const activeId = unit?.id ?? null;
 
     if (activeId !== this.lastActiveId) {
+      this.clearEndTurnConfirmation();
       if (this.battleOpening) this.skipBattleOpening();
+      this.cancelCameraGlide();
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
       this.clearPending();
-      this.aiScheduled = false;
+      this.stopAiTimer();
 
       // A new player's turn needs the hand-off card before anything is shown.
       if (unit && unit.faction === 'party' && !this.app.session.solo) {
         this.handedOffTo = null;
       }
-      if (unit) announce(`${this.app.session.labelFor(unit)}'s turn.`);
+      if (unit) {
+        announce(
+          unit.faction === 'party'
+            ? `${this.app.session.labelFor(unit)}'s turn.`
+            : actingTurnCopy(unit),
+        );
+      }
       // The More list was opened for the last turn; the next player at the
       // table finds it closed. The rebuild below hands focus to the toggle.
       this.setMoreOpen(false, false);
@@ -1057,11 +1351,21 @@ export class CombatScene implements Scene {
       const followedStillMoving =
         this.cameraFollow.kind === 'following' &&
         this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
-      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera);
+      // Establish the initial actor immediately so the first settled HUD
+      // measurement can choose compact framing before later turns glide.
+      if (battle.phase === 'active' && !followedStillMoving)
+        this.centreOnActiveUnit(unit, camera, this.layoutMeasuredAfterSync);
     }
 
+    if (battle.phase === 'active') this.resultShown = false;
     if (battle.phase !== 'active' && !this.resultShown) {
       this.resultShown = true;
+      if (battle.phase === 'victory') this.victoryPending = true;
+    } else if (battle.phase !== 'victory' && (this.victoryPending || this.victoryBeat)) {
+      this.victoryPending = false;
+      this.victoryBeat = null;
+      this.victoryFocus = null;
+      this.setVictoryBeatMarker(false);
     }
 
     this.renderTopBar();
@@ -1096,15 +1400,30 @@ export class CombatScene implements Scene {
 
     this.aiScheduled = true;
     const delay = Math.max(0, this.app.animator.finishesAt - performance.now()) + 260;
-    this.aiTimer = window.setTimeout(() => {
-      this.aiTimer = null;
-      // The pause menu can freeze or hold the scene between scheduling and
-      // this callback; a parked fight must not advance behind the menu.
-      if (this.suspended || this.aiHeld) return;
-      if (this.app.state?.battle?.phase !== 'active') return;
-      if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
-      this.app.dispatch({ type: 'runAiTurn' });
-    }, delay);
+    const schedule = (wait: number): void => {
+      const timer = window.setTimeout(() => {
+        // A canceled callback must not clear a newer actor's owned timer.
+        if (this.aiTimer !== timer) return;
+        this.aiTimer = null;
+        // The pause menu can freeze or hold the scene between scheduling and
+        // this callback; a parked fight must not advance behind the menu.
+        if (this.suspended || this.aiHeld) return;
+        if (this.app.state?.battle?.phase !== 'active') return;
+        if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
+        const glide = this.cameraGlide;
+        if (glide) {
+          // The ordinary action delay may end before the incoming actor is
+          // revealed. Wait for the render loop to finish that reveal, even if
+          // its wall-clock deadline has passed before the next frame arrives.
+          const remaining = glide.startedAt + glide.duration - performance.now();
+          schedule(Math.max(COMBAT_AI_GLIDE_RETRY_MS, remaining));
+          return;
+        }
+        this.app.dispatch({ type: 'runAiTurn' });
+      }, wait);
+      this.aiTimer = timer;
+    };
+    schedule(delay);
   }
 
   /* ---------------------------------------------------------------- */
@@ -1123,7 +1442,7 @@ export class CombatScene implements Scene {
     const weather = weatherAt(this.app.content, battle.encounterId, battle.round);
     const weatherText = weatherChipText(this.app.content.tuning, weather);
     const weatherShortText = weatherChipShortText(this.app.content.tuning, weather);
-    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}`;
+    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}|${battle.phase}|${this.victoryPending}|${Boolean(this.victoryBeat)}`;
     if (key === this.topBarKey && bar.childElementCount > 0) return;
     this.topBarKey = key;
     // On a rebuild, the button that had focus is found again by its key, so a
@@ -1171,9 +1490,11 @@ export class CombatScene implements Scene {
     // lay the same buttons inline and never show the toggle (`.combat-more`).
     // The toggle is its mark alone, named for a screen reader: the plate
     // needs the width.
+    const victoryBeat = this.victoryPending || this.victoryBeat !== null;
     const toggle = button('', () => this.setMoreOpen(!this.moreOpen, true), {
       class: 'btn-ghost combat-more-toggle',
       title: 'View and help',
+      disabled: victoryBeat,
     });
     toggle.append(mark(UI_MARKS.more), el('span', { class: 'visually-hidden', text: 'More' }));
     toggle.setAttribute('aria-controls', 'combat-more');
@@ -1196,7 +1517,11 @@ export class CombatScene implements Scene {
     const recentre = button(
       'Recentre',
       folded(() => this.recentre()),
-      { class: 'btn-ghost', title: 'Reset the battlefield view around the acting unit' },
+      {
+        class: 'btn-ghost',
+        title: 'Reset the battlefield view around the acting unit',
+        disabled: victoryBeat,
+      },
     );
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
@@ -1209,7 +1534,11 @@ export class CombatScene implements Scene {
         const unit = this.active();
         if (unit) this.focusUnit(unit.id);
       }),
-      { class: 'btn-ghost', title: 'Return to the acting unit without changing zoom' },
+      {
+        class: 'btn-ghost',
+        title: 'Return to the acting unit without changing zoom',
+        disabled: victoryBeat,
+      },
     );
     actor.hidden = this.renderer?.camera.fitted ?? true;
     actor.dataset.key = 'actor';
@@ -1221,7 +1550,7 @@ export class CombatScene implements Scene {
       const tipButton = button(
         'Tip',
         folded(() => this.app.toasts.show(advice, 'info', 6000)),
-        { class: 'btn-ghost', title: advice },
+        { class: 'btn-ghost', title: advice, disabled: victoryBeat },
       );
       tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
       tipButton.dataset.key = 'tip';
@@ -1236,7 +1565,7 @@ export class CombatScene implements Scene {
         this.renderTopBar();
         this.renderHud();
       },
-      { class: 'btn-ghost' },
+      { class: 'btn-ghost', disabled: victoryBeat },
     );
     logButton.prepend(mark(UI_MARKS.log, 'mark-inline'));
     logButton.dataset.key = 'log';
@@ -1329,7 +1658,8 @@ export class CombatScene implements Scene {
     clear(strip);
 
     for (const unit of upcomingOrder(battle, battle.units.length).filter(isAlive)) {
-      const isActive = unit.id === this.active()?.id;
+      // Once the fight is over nobody is acting, so no chip is plated.
+      const isActive = battle.phase === 'active' && unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
       const definition = unit.enemyId
         ? this.app.content.enemies.get(unit.enemyId)
@@ -1343,7 +1673,11 @@ export class CombatScene implements Scene {
         'button',
         {
           class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
-          attrs: { type: 'button', 'aria-label': `Focus ${unit.name}` },
+          attrs: {
+            type: 'button',
+            'aria-label': `Focus ${unit.name}`,
+            ...(this.victoryPending || this.victoryBeat ? { disabled: '' } : {}),
+          },
           onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
@@ -1371,6 +1705,17 @@ export class CombatScene implements Scene {
     clear(overlays);
 
     if (battle.phase !== 'active') {
+      if (battle.phase === 'victory' && this.victoryPending) return;
+      if (battle.phase === 'victory' && this.victoryBeat) {
+        overlays.appendChild(
+          el(
+            'div',
+            { class: 'victory-beat-overlay', onClick: () => this.skipVictoryBeat() },
+            button('Show result', () => this.skipVictoryBeat(), { class: 'btn-ghost' }),
+          ),
+        );
+        return;
+      }
       overlays.appendChild(this.resultPanel(battle));
       return;
     }
@@ -1391,15 +1736,20 @@ export class CombatScene implements Scene {
     }
 
     if (unit.faction !== 'party') {
-      overlays.appendChild(
+      hud.appendChild(
         el(
           'div',
-          { class: 'enemy-turn-banner' },
-          el('span', {
-            text: unit.faction === 'enemy' ? 'Enemies are moving…' : `${unit.name} is moving…`,
-          }),
+          { class: `enemy-turn-card element-${unit.element}`, attrs: { 'aria-hidden': 'true' } },
+          assetCanvas(
+            portraitKeyFor(this.app.content, unit),
+            3,
+            'unit-portrait square enemy-turn-portrait',
+          ),
+          el('span', { class: 'enemy-turn-copy', text: actingTurnCopy(unit) }),
         ),
       );
+      if (this.logOpen) hud.appendChild(this.logPanel());
+      return;
     }
 
     hud.appendChild(this.unitPanel(unit));
@@ -1643,16 +1993,24 @@ export class CombatScene implements Scene {
   private endTurn(unit: Unit): void {
     if (unit.ap > 0 && !this.confirmedEndTurn) {
       this.confirmedEndTurn = true;
-      this.app.toasts.show(
+      const confirmation = this.app.toasts.show(
         `${unit.name} still has ${unit.ap} AP. Tap End turn again to finish anyway.`,
         'warn',
+        2600,
+        () => this.clearEndTurnConfirmation(),
       );
-      window.setTimeout(() => {
+      if (!confirmation) {
         this.confirmedEndTurn = false;
+        return;
+      }
+      this.endTurnConfirmation = confirmation;
+      this.endTurnConfirmationTimer = window.setTimeout(() => {
+        this.endTurnConfirmationTimer = null;
+        this.clearEndTurnConfirmation();
       }, 4000);
       return;
     }
-    this.confirmedEndTurn = false;
+    this.clearEndTurnConfirmation();
     this.mode = { kind: 'idle' };
     this.clearPending();
     this.handedOffTo = null;
@@ -1660,6 +2018,17 @@ export class CombatScene implements Scene {
   }
 
   private confirmedEndTurn = false;
+
+  private clearEndTurnConfirmation(): void {
+    this.confirmedEndTurn = false;
+    if (this.endTurnConfirmationTimer !== null) {
+      window.clearTimeout(this.endTurnConfirmationTimer);
+      this.endTurnConfirmationTimer = null;
+    }
+    const toast = this.endTurnConfirmation;
+    this.endTurnConfirmation = null;
+    if (toast) this.app.toasts.dismiss(toast);
+  }
 
   /* ---------------------------------------------------------------- */
   /* Confirm step                                                      */
@@ -1826,8 +2195,12 @@ export class CombatScene implements Scene {
       chips.appendChild(el('span', { class: 'chip chip-terrain', text: note }));
     }
 
+    const battlefieldProps = battle.props.map((prop) => ({
+      id: prop.id,
+      name: this.app.content.props.get(prop.propId)?.name ?? prop.propId,
+      from: prop.pos,
+    }));
     for (const prop of preview.props) {
-      const from = `(${prop.from.x + 1},${prop.from.y + 1})`;
       const affected = [...prop.affectedAllies, ...prop.affectedEnemies]
         .map((unit) => unit.name)
         .join(', ');
@@ -1837,7 +2210,7 @@ export class CombatScene implements Scene {
       chips.appendChild(
         el('span', {
           class: 'chip chip-terrain',
-          text: `${prop.name} at ${from}: ${consequence}${suffix}`,
+          text: `${formatPropPreviewLabel(prop, battlefieldProps)}: ${consequence}${suffix}`,
         }),
       );
     }
@@ -2079,6 +2452,7 @@ export class CombatScene implements Scene {
 
   private resultPanel(battle: BattleState): HTMLElement {
     const victory = battle.phase === 'victory';
+    const anyFell = battle.units.some((unit) => unit.faction === 'party' && !isAlive(unit));
     return el(
       'div',
       { class: 'handoff-banner' },
@@ -2089,7 +2463,9 @@ export class CombatScene implements Scene {
         el('p', {
           class: 'muted',
           text: victory
-            ? 'Everyone who went down is patched up. The party keeps what it earned.'
+            ? anyFell
+              ? 'Everyone who went down is patched up. The party keeps what it earned.'
+              : 'The party keeps what it earned.'
             : 'The fight is lost. Continue to see what happens next.',
         }),
         button('Continue', () => this.app.resolveBattle(), {
@@ -2131,7 +2507,8 @@ export class CombatScene implements Scene {
     this.app.stats?.frame(now);
     this.app.animator.prune(now);
     this.updateBattleOpening(now);
-    this.keepAnimatedLargeActorInView(now, battle);
+    this.updateVictoryBeat(now);
+    if (battle.phase === 'active') this.keepAnimatedLargeActorInView(now, battle);
 
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
@@ -2141,7 +2518,11 @@ export class CombatScene implements Scene {
     let rangeBonusTiles: readonly Vec2[] = [];
     let targetReticle: TargetReticleCue | null = null;
 
-    const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
+    const interactive =
+      battle.phase === 'active' &&
+      this.isPlayerTurn() &&
+      !this.needsHandoff() &&
+      !this.app.animator.busy(now);
 
     if (interactive && unit) {
       const pending = this.pending;
@@ -2213,7 +2594,7 @@ export class CombatScene implements Scene {
         maxHp: u.base.maxHp,
         statuses: u.statuses.map((s) => s.id),
         fallen: health.fallen,
-        renderPos: this.app.animator.renderPos(now, u.id),
+        renderPos: this.renderPosition(u, now),
         ...this.poseFields(
           now,
           u.id,
@@ -2284,7 +2665,7 @@ export class CombatScene implements Scene {
       bendFx: this.app.animator.bendFx(now),
       floaters,
       cameraNudge: this.app.animator.cameraNudge(now),
-      activeUnitId: unit?.id ?? null,
+      activeUnitId: battle.phase === 'active' ? (unit?.id ?? null) : null,
       selectedUnitId: null,
       hoverTile:
         interactive && !(SQUARE_FOOTPRINTS && this.mode.kind === 'move' && unit?.size === 2)
@@ -2355,11 +2736,15 @@ export class CombatScene implements Scene {
       reducedMotion: motionReduced(),
     });
     this.cameraFollow = decision.state;
+    if (decision.owner === 'follow') this.cancelCameraGlide();
     if (decision.owner === 'recentre') {
-      this.centreOnActiveUnit(this.active(), camera);
+      this.centreOnActiveUnit(this.active(), camera, true);
       return;
     }
-    if (decision.owner !== 'follow' || !followed) return;
+    if (decision.owner !== 'follow' || !followed) {
+      this.updateCameraGlide(now, camera);
+      return;
+    }
 
     const { unit, pos, scale, pose } = followed;
     const box = camera.spriteBox(pos, unit.size, true);
@@ -2392,8 +2777,90 @@ export class CombatScene implements Scene {
   }
 
   /** Shared turn-change and follow-release centring path. */
-  private centreOnActiveUnit(unit: Unit | undefined, camera = this.renderer?.camera): void {
-    if (unit && camera && !camera.fitted) camera.centreOn(unit.pos, unit.size);
+  private centreOnActiveUnit(
+    unit: Unit | undefined,
+    camera = this.renderer?.camera,
+    animate = false,
+  ): void {
+    if (!unit || !camera || camera.fitted) return;
+    if (!animate || motionReduced()) {
+      this.cancelCameraGlide();
+      camera.centreOn(unit.pos, unit.size);
+      return;
+    }
+
+    const from = { x: camera.offsetX, y: camera.offsetY };
+    camera.centreOn(unit.pos, unit.size);
+    const to = { x: camera.offsetX, y: camera.offsetY };
+    camera.offsetX = from.x;
+    camera.offsetY = from.y;
+    if (from.x === to.x && from.y === to.y) {
+      this.cancelCameraGlide();
+      return;
+    }
+    this.cameraGlide = { from, to, startedAt: performance.now(), duration: COMBAT_TURN_GLIDE_MS };
+    this.setCameraGlideMarker(true);
+  }
+
+  private updateCameraGlide(now: number, camera = this.renderer?.camera): void {
+    const glide = this.cameraGlide;
+    if (!glide || !camera) return;
+    if (camera.fitted) {
+      camera.clamp();
+      this.cancelCameraGlide();
+      return;
+    }
+    const elapsed = now - glide.startedAt;
+    if (elapsed >= glide.duration || motionReduced()) {
+      camera.offsetX = glide.to.x;
+      camera.offsetY = glide.to.y;
+      this.cameraGlide = null;
+      this.setCameraGlideMarker(false);
+      return;
+    }
+    const point = combatCameraGlidePoint(glide, now);
+    camera.offsetX = point.x;
+    camera.offsetY = point.y;
+  }
+
+  private retargetCameraGlide(): void {
+    const glide = this.cameraGlide;
+    const camera = this.renderer?.camera;
+    const active = this.active();
+    if (!glide || !camera || !active) return;
+    const now = performance.now();
+    const elapsed = Math.max(0, now - glide.startedAt);
+    const remaining = Math.max(0, glide.duration - elapsed);
+    const from = { x: camera.offsetX, y: camera.offsetY };
+    if (camera.fitted) {
+      camera.clamp();
+      this.cancelCameraGlide();
+      return;
+    }
+    camera.centreOn(active.pos, active.size);
+    const to = { x: camera.offsetX, y: camera.offsetY };
+    camera.offsetX = from.x;
+    camera.offsetY = from.y;
+    if (motionReduced() || remaining === 0) {
+      camera.offsetX = to.x;
+      camera.offsetY = to.y;
+      this.cancelCameraGlide();
+      return;
+    }
+    this.cameraGlide = { from, to, startedAt: now, duration: remaining };
+  }
+
+  private cancelCameraGlide(): void {
+    if (!this.cameraGlide) return;
+    this.cameraGlide = null;
+    this.setCameraGlideMarker(false);
+  }
+
+  private setCameraGlideMarker(active: boolean): void {
+    const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
+    if (!scene) return;
+    if (active) scene.dataset.cameraGlide = 'active';
+    else delete scene.dataset.cameraGlide;
   }
 
   /**
@@ -2465,7 +2932,8 @@ export class CombatScene implements Scene {
       ? partyScale(projection, pose?.scale)
       : enemyScale(sprite, pose?.scale, projection);
     // Once a G knockout has played, the body stays where it fell (ADR 0059).
-    const down = !pose && fallen ? this.app.animator.fallenPose(unitId, sprite) : undefined;
+    const down =
+      !pose && fallen ? this.app.animator.fallenPose(unitId, sprite, restFacing) : undefined;
     if (down) return { ...down, facing: fallenFacing(down.clip, walked ?? restFacing), scale };
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {

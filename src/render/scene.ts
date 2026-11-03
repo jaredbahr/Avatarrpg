@@ -1,4 +1,5 @@
 import { resolveAsset } from '../content/assets/manifest';
+import { drawArt } from './pixelSampling';
 import { tileAt } from '../core/rules/grid';
 import { SQUARE_FOOTPRINTS } from '../core/rules/footprint';
 import type { Grid, MapScene, SceneImage, SceneScenery } from '../core/types';
@@ -189,9 +190,12 @@ export function drawSceneImage(
   if (!rect) return;
   const source = sceneDrawable(piece, image);
   if (!source) return;
-  if (source === image)
-    context.drawImage(image, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
-  else context.drawImage(source, 0, 0, rect.width, rect.height, x, y, width, height);
+  // Nearest-neighbour where a painting pixel is a whole block of device pixels (ADR 0088).
+  drawArt(context, rect.width, width, () => {
+    if (source === image)
+      context.drawImage(image, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
+    else context.drawImage(source, 0, 0, rect.width, rect.height, x, y, width, height);
+  });
 }
 
 function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number): boolean {
@@ -222,13 +226,19 @@ function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number
   return (mask[Math.floor(y * MASK_SIZE) * MASK_SIZE + Math.floor(x * MASK_SIZE)] ?? 0) > 64;
 }
 
-/** Heights (world px) above the foot at which a figure is tested against a piece's silhouette. */
+/**
+ * Heights above the foot at which a figure is tested against a piece's silhouette, in a figure's art px:
+ * `sceneryOpacity` multiplies each by the figure's scale, so at the 1.25 of ADR 0089 and at the 1 of
+ * ADR 0094 alike the head probe sits at about 95% of a G1 adult (55-61 art px tall).
+ */
 const BODY_PROBES = [8, 32, 56] as const;
-const HEAD_PROBE = [56] as const;
 
-/** The unscaled lifts `sceneryOpacity` tests for a piece; it multiplies each by the figure's scale. */
-export const probeLifts = (scenery: Pick<SceneScenery, 'fadeWhenHeadHidden'>): readonly number[] =>
-  scenery.fadeWhenHeadHidden ? HEAD_PROBE : BODY_PROBES;
+/**
+ * The unscaled lifts `sceneryOpacity` tests for a piece; it multiplies each by the figure's scale.
+ * None for a piece that reveals instead of fading (`reveal.ts`).
+ */
+export const probeLifts = (scenery: Pick<SceneScenery, 'revealOccluded'>): readonly number[] =>
+  scenery.revealOccluded ? [] : BODY_PROBES;
 
 /** Roof cutaway follows actual on-screen overlap and ground depth, on either backend. */
 export function sceneryOpacity(
@@ -237,7 +247,7 @@ export function sceneryOpacity(
   camera: Camera,
   squareFootprints = SQUARE_FOOTPRINTS,
 ): number {
-  if (!scenery.fadeWhenOccluding) return 1;
+  if (!scenery.fadeWhenOccluding || scenery.revealOccluded) return 1;
   const image = sceneImage(scenery);
   if (!image) return 1;
   const depth = camera.groundPoint(scenery.depth).y;
