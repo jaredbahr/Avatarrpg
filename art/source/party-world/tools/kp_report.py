@@ -33,7 +33,7 @@ def load(p):
 
 def clip(cels_dir, name, d, des, W, wrap=False, walk=False):
     if walk:
-        cels = [load(cels_dir / f'walk/{d}/{i:02d}.png') for i in range(6)]; sk = des['frames']
+        cels = [load(p) for p in sorted((cels_dir / f'walk/{d}').glob('*.png'))]; sk = des['frames']
     else:
         idx = [0] + (BEND_CELS if name == 'bend' else list(range(1, len(des['frames']) + 1)))
         cels = [load(cels_dir / f'{name}/{d}/{i:02d}.png') for i in idx]; sk = [des['first_frame_keypoints']] + des['frames']
@@ -44,7 +44,7 @@ def clip(cels_dir, name, d, des, W, wrap=False, walk=False):
 def colours(cels_dir):
     n = lambda p: len(np.unique(load(p)[..., :3][load(p)[..., 3] > 0].reshape(-1, 3), axis=0))
     idle = [n(cels_dir / f'idle/{d}/00.png') for d in DIRS]
-    walk = [n(cels_dir / f'walk/{d}/{i:02d}.png') for d in DIRS for i in range(6)]
+    walk = [n(p) for d in DIRS for p in sorted((cels_dir / f'walk/{d}').glob('*.png'))]
     allc = np.unique(np.concatenate([load(p)[..., :3][load(p)[..., 3] > 0].reshape(-1, 3) for p in cels_dir.glob('*/*/*.png')]), axis=0)
     return dict(idle_mean=round(float(np.mean(idle)), 1), walk_mean=round(float(np.mean(walk)), 1), sheet_total=int(len(allc)))
 

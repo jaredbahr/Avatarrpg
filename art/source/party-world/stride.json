@@ -904,462 +904,478 @@
         "side": "RIGHT",
         "pair": [0, 1],
         "dx": 0,
-        "dy": -1,
+        "dy": 0,
         "iou": 0.94,
-        "along": 1.0
+        "along": -0.0
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
-        "dx": -1,
-        "dy": -11,
-        "iou": 0.69,
-        "along": 11.0
+        "dx": 0,
+        "dy": -1,
+        "iou": 0.87,
+        "along": 1.0
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
         "dx": 0,
-        "dy": -8,
-        "iou": 0.75,
-        "along": 8.0
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
-        "dx": 0,
-        "dy": -2,
-        "iou": 0.84,
-        "along": 2.0
+        "dy": -1,
+        "iou": 0.83,
+        "along": 1.0
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
-        "dx": 1,
-        "dy": -11,
-        "iou": 0.83,
-        "along": 11.0
+        "dx": 0,
+        "dy": -1,
+        "iou": 0.87,
+        "along": 1.0
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
-        "dx": -1,
-        "dy": -9,
-        "iou": 0.71,
-        "along": 9.0
+        "pair": [5, 6],
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.87,
+        "along": -0.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
+        "dx": 0,
+        "dy": -1,
+        "iou": 0.82,
+        "along": 1.0
       }
     ],
-    "back_per_cel": 8.5,
-    "loop_tiles": 1.028,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 1.127
+    "take": 701,
+    "fit": "design",
+    "loop_px": 39.83,
+    "loop_tiles": 0.88,
+    "loop_tiles_measured": 0.88
   },
   "kaya/south-east": {
     "pairs": [
       {
         "side": "RIGHT",
         "pair": [0, 1],
-        "dx": -10,
-        "dy": -2,
-        "iou": 0.93,
-        "along": 9.83
+        "dx": -5,
+        "dy": 2,
+        "iou": 0.9,
+        "along": 3.58
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
-        "dx": -9,
-        "dy": 0,
-        "iou": 0.87,
-        "along": 8.05
+        "dx": -7,
+        "dy": 1,
+        "iou": 0.96,
+        "along": 5.81
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
-        "dx": -12,
-        "dy": -8,
-        "iou": 0.81,
-        "along": 14.3
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
-        "dx": -10,
-        "dy": -1,
-        "iou": 0.78,
-        "along": 9.39
+        "dx": -9,
+        "dy": 0,
+        "iou": 0.86,
+        "along": 8.05
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
-        "dx": -10,
-        "dy": -1,
-        "iou": 0.76,
-        "along": 9.39
+        "dx": -8,
+        "dy": 2,
+        "iou": 0.87,
+        "along": 6.26
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
-        "dx": -12,
-        "dy": -10,
-        "iou": 0.86,
-        "along": 15.2
+        "pair": [5, 6],
+        "dx": -7,
+        "dy": 0,
+        "iou": 0.85,
+        "along": 6.26
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
+        "dx": -7,
+        "dy": -1,
+        "iou": 0.71,
+        "along": 6.71
       }
     ],
-    "back_per_cel": 9.61,
-    "loop_tiles": 0.881,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 0.806
+    "take": 701,
+    "fit": "horizontal",
+    "back_x_per_cel": 7.0,
+    "loop_tiles": 0.906,
+    "loop_tiles_measured": 0.875
   },
   "kaya/east": {
     "pairs": [
       {
         "side": "RIGHT",
         "pair": [0, 1],
-        "dx": -14,
-        "dy": 3,
-        "iou": 0.7,
-        "along": 14.0
+        "dx": -7,
+        "dy": 1,
+        "iou": 0.89,
+        "along": 7.0
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
-        "dx": -12,
-        "dy": 0,
-        "iou": 0.84,
-        "along": 12.0
+        "dx": -10,
+        "dy": -1,
+        "iou": 0.89,
+        "along": 10.0
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
-        "dx": -19,
-        "dy": -1,
-        "iou": 0.73,
-        "along": 19.0
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
-        "dx": -14,
-        "dy": 3,
-        "iou": 0.67,
-        "along": 14.0
+        "dx": -10,
+        "dy": 1,
+        "iou": 0.76,
+        "along": 10.0
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
-        "dx": -8,
-        "dy": 3,
-        "iou": 0.81,
-        "along": 8.0
+        "dx": -16,
+        "dy": 2,
+        "iou": 0.79,
+        "along": 16.0
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
-        "dx": -18,
-        "dy": -4,
-        "iou": 0.83,
-        "along": 18.0
+        "pair": [5, 6],
+        "dx": -3,
+        "dy": -1,
+        "iou": 0.73,
+        "along": 3.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
+        "dx": -10,
+        "dy": 1,
+        "iou": 0.72,
+        "along": 10.0
       }
     ],
-    "back_per_cel": 14.0,
-    "loop_tiles": 0.911,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 0.928
+    "take": 701,
+    "fit": "horizontal",
+    "back_x_per_cel": 10.0,
+    "loop_tiles": 0.796,
+    "loop_tiles_measured": 0.884
   },
   "kaya/north-east": {
     "pairs": [
       {
         "side": "RIGHT",
         "pair": [0, 1],
-        "dx": -11,
-        "dy": 7,
+        "dx": -7,
+        "dy": 1,
         "iou": 0.85,
-        "along": 12.96
+        "along": 6.71
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
-        "dx": -8,
-        "dy": 4,
-        "iou": 0.82,
-        "along": 8.94
+        "dx": -6,
+        "dy": 2,
+        "iou": 0.96,
+        "along": 6.26
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
-        "dx": -11,
-        "dy": 4,
-        "iou": 0.79,
-        "along": 11.62
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
-        "dx": -3,
-        "dy": 3,
-        "iou": 0.83,
-        "along": 4.02
+        "dx": -10,
+        "dy": -4,
+        "iou": 0.77,
+        "along": 7.15
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
-        "dx": -6,
+        "dx": -10,
         "dy": 2,
-        "iou": 0.54,
-        "along": 6.26
+        "iou": 0.7,
+        "along": 9.83
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
-        "dx": -11,
-        "dy": 6,
-        "iou": 0.87,
-        "along": 12.52
+        "pair": [5, 6],
+        "dx": -5,
+        "dy": 0,
+        "iou": 0.8,
+        "along": 4.47
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
+        "dx": -8,
+        "dy": 0,
+        "iou": 0.85,
+        "along": 7.15
       }
     ],
-    "back_per_cel": 10.28,
-    "loop_tiles": 0.843,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 0.862
+    "take": 701,
+    "fit": "horizontal",
+    "back_x_per_cel": 7.5,
+    "loop_tiles": 0.876,
+    "loop_tiles_measured": 0.938
   },
   "kaya/north": {
     "pairs": [
       {
         "side": "RIGHT",
         "pair": [0, 1],
-        "dx": -1,
-        "dy": 7,
+        "dx": 0,
+        "dy": 0,
         "iou": 0.81,
-        "along": 7.0
+        "along": -0.0
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
         "dx": 0,
-        "dy": 7,
-        "iou": 0.55,
-        "along": 7.0
+        "dy": 0,
+        "iou": 0.71,
+        "along": -0.0
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
         "dx": 0,
-        "dy": 8,
-        "iou": 0.83,
-        "along": 8.0
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
-        "dx": -4,
-        "dy": 1,
-        "iou": 0.8,
-        "along": 1.0
+        "dy": 0,
+        "iou": 0.95,
+        "along": -0.0
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
         "dx": 0,
-        "dy": 7,
-        "iou": 0.56,
-        "along": 7.0
+        "dy": 0,
+        "iou": 0.73,
+        "along": -0.0
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
+        "pair": [5, 6],
         "dx": 0,
-        "dy": 7,
-        "iou": 0.84,
-        "along": 7.0
+        "dy": 0,
+        "iou": 0.95,
+        "along": -0.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
+        "dx": 0,
+        "dy": 0,
+        "iou": 1.0,
+        "along": -0.0
       }
     ],
-    "back_per_cel": 7.0,
-    "loop_tiles": 1.028,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 0.928
+    "take": 701,
+    "fit": "design",
+    "loop_px": 39.83,
+    "loop_tiles": 0.88,
+    "loop_tiles_measured": 0.88
   },
   "kaya/north-west": {
     "pairs": [
       {
         "side": "RIGHT",
         "pair": [0, 1],
-        "dx": 17,
-        "dy": 13,
-        "iou": 0.58,
-        "along": 21.01
+        "dx": 6,
+        "dy": 1,
+        "iou": 0.78,
+        "along": 5.81
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
-        "dx": 6,
-        "dy": 4,
-        "iou": 0.72,
-        "along": 7.15
+        "dx": 8,
+        "dy": -1,
+        "iou": 0.8,
+        "along": 6.71
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
-        "dx": 11,
-        "dy": 4,
-        "iou": 0.75,
-        "along": 11.62
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
         "dx": 10,
-        "dy": 5,
-        "iou": 0.89,
-        "along": 11.17
+        "dy": 0,
+        "iou": 0.9,
+        "along": 8.94
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
-        "dx": 10,
-        "dy": 6,
-        "iou": 0.78,
-        "along": 11.62
+        "dx": 7,
+        "dy": 0,
+        "iou": 0.86,
+        "along": 6.26
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
+        "pair": [5, 6],
+        "dx": 4,
+        "dy": 1,
+        "iou": 1.0,
+        "along": 4.02
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
         "dx": 10,
-        "dy": 4,
-        "iou": 0.8,
-        "along": 10.73
+        "dy": 0,
+        "iou": 0.91,
+        "along": 8.94
       }
     ],
-    "back_per_cel": 11.395,
-    "loop_tiles": 0.881,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 0.956
+    "take": 701,
+    "fit": "horizontal",
+    "back_x_per_cel": 7.5,
+    "loop_tiles": 0.906,
+    "loop_tiles_measured": 0.938
   },
   "kaya/west": {
     "pairs": [
       {
         "side": "RIGHT",
         "pair": [0, 1],
-        "dx": 14,
-        "dy": 2,
-        "iou": 0.79,
-        "along": 14.0
+        "dx": 8,
+        "dy": 0,
+        "iou": 0.81,
+        "along": 8.0
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
-        "dx": 13,
-        "dy": 1,
-        "iou": 0.83,
-        "along": 13.0
+        "dx": 9,
+        "dy": -1,
+        "iou": 0.88,
+        "along": 9.0
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
-        "dx": 18,
-        "dy": -2,
+        "dx": 8,
+        "dy": 1,
         "iou": 0.89,
-        "along": 18.0
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
-        "dx": 10,
-        "dy": 3,
-        "iou": 0.68,
-        "along": 10.0
+        "along": 8.0
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
-        "dx": 13,
-        "dy": 0,
-        "iou": 0.93,
-        "along": 13.0
+        "dx": 10,
+        "dy": 2,
+        "iou": 0.82,
+        "along": 10.0
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
-        "dx": 17,
+        "pair": [5, 6],
+        "dx": 8,
+        "dy": 1,
+        "iou": 0.83,
+        "along": 8.0
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
+        "dx": 8,
         "dy": 0,
         "iou": 0.92,
-        "along": 17.0
+        "along": 8.0
       }
     ],
-    "back_per_cel": 13.5,
-    "loop_tiles": 0.911,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 0.895
+    "take": 701,
+    "fit": "horizontal",
+    "back_x_per_cel": 8.0,
+    "loop_tiles": 0.796,
+    "loop_tiles_measured": 0.707
   },
   "kaya/south-west": {
     "pairs": [
       {
         "side": "RIGHT",
         "pair": [0, 1],
-        "dx": 9,
-        "dy": -1,
-        "iou": 0.79,
-        "along": 8.49
+        "dx": 5,
+        "dy": 2,
+        "iou": 0.73,
+        "along": 3.58
       },
       {
         "side": "RIGHT",
         "pair": [1, 2],
-        "dx": 7,
-        "dy": -2,
-        "iou": 0.91,
-        "along": 7.15
+        "dx": 9,
+        "dy": 0,
+        "iou": 0.86,
+        "along": 8.05
       },
       {
         "side": "RIGHT",
         "pair": [2, 3],
-        "dx": 11,
-        "dy": -8,
-        "iou": 0.95,
-        "along": 13.41
-      },
-      {
-        "side": "LEFT",
-        "pair": [3, 4],
-        "dx": 11,
-        "dy": -3,
-        "iou": 0.92,
-        "along": 11.17
+        "dx": 6,
+        "dy": 0,
+        "iou": 0.91,
+        "along": 5.36
       },
       {
         "side": "LEFT",
         "pair": [4, 5],
-        "dx": 9,
-        "dy": -1,
-        "iou": 0.9,
-        "along": 8.49
+        "dx": 8,
+        "dy": 2,
+        "iou": 0.79,
+        "along": 6.26
       },
       {
         "side": "LEFT",
-        "pair": [5, 0],
-        "dx": 11,
-        "dy": -9,
+        "pair": [5, 6],
+        "dx": 6,
+        "dy": 1,
+        "iou": 0.87,
+        "along": 4.92
+      },
+      {
+        "side": "LEFT",
+        "pair": [6, 7],
+        "dx": 7,
+        "dy": 1,
         "iou": 0.81,
-        "along": 13.86
+        "along": 5.81
       }
     ],
-    "back_per_cel": 9.83,
-    "loop_tiles": 0.843,
+    "cels": 8,
     "colours": 64,
     "height": 70,
-    "take": 531,
-    "loop_tiles_measured": 0.824
+    "take": 701,
+    "fit": "horizontal",
+    "back_x_per_cel": 6.5,
+    "loop_tiles": 0.876,
+    "loop_tiles_measured": 0.813
   }
 }

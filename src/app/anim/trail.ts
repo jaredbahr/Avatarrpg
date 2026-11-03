@@ -206,9 +206,15 @@ export class PartyTrail {
     const positions = [...before];
     const clearance: FollowerRoute[] = [];
     const budget = grid.width * grid.height;
-    for (let index = 1; index < count; index++) {
+    // A nearest free seat can trap the next follower in a narrow passage.
+    // Try the next seats in the same deterministic order, with a fixed limit
+    // so a crowded map still fails safely instead of searching indefinitely.
+    const clearanceSearchLimit = 64;
+    let attempts = 0;
+    const clear = (index: number): FollowerRoute[] | null => {
+      if (index === count) return temporalRoutes(clearance, before);
       const from = positions[index];
-      if (!from || !routeNearPoint(leader, from)) continue;
+      if (!from || !routeNearPoint(leader, from)) return clear(index + 1);
       const blocked = new Set([...avoid, ...positions.filter((_, i) => i !== index)].map(posKey));
       const candidates = [
         ...reachable(
@@ -224,11 +230,19 @@ export class PartyTrail {
             !routeNearPoint(leader, cell.pos),
         )
         .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
-      const choice = candidates[0];
-      if (!choice) return null;
-      positions[index] = choice.pos;
-      clearance.push({ index, from, path: choice.path });
-    }
+      for (const choice of candidates) {
+        if (++attempts > clearanceSearchLimit) break;
+        positions[index] = choice.pos;
+        clearance.push({ index, from, path: choice.path });
+        const phase = clear(index + 1);
+        if (phase) return phase;
+        clearance.pop();
+        positions[index] = from;
+      }
+      return null;
+    };
+    const clearPhase = clear(1);
+    if (!clearPhase) return null;
     const afterClearance = [...positions];
     const desired = [...[...path].reverse(), ...before];
     const routes: FollowerRoute[] = [leader];
@@ -265,9 +279,8 @@ export class PartyTrail {
       positions[index] = choice.pos;
       routes.push({ index, from, path: choice.path });
     }
-    const clearPhase = temporalRoutes(clearance, before);
     const travelPhase = temporalRoutes(routes, afterClearance);
-    if (!clearPhase || !travelPhase) return null;
+    if (!travelPhase) return null;
     this.line = positions;
     this.formation = { grid, avoid: [...avoid] };
     return { batches: [...(clearPhase.length ? [clearPhase] : []), travelPhase] };

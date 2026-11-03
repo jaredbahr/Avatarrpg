@@ -376,9 +376,9 @@ it('registers the painted canal to every actual permanent-water cell', () => {
   expect(BA_DAN_VILLAGE.rows[BA_DAN_CANAL_BRIDGE.y]?.[BA_DAN_CANAL_BRIDGE.x]).toBe('=');
 });
 
-it('keeps the canal walkable and registers one low bridge at the dry crossing', () => {
+it('blocks canal water and registers one low bridge at the dry crossing', () => {
   const grid = buildGrid(BA_DAN_VILLAGE);
-  for (const pos of BA_DAN_WATER_CELLS) expect(tileAt(grid, pos)?.blocked).not.toBe(true);
+  for (const pos of BA_DAN_WATER_CELLS) expect(tileAt(grid, pos)?.blocked).toBe(true);
   const bridge = BA_DAN_VILLAGE.scene?.scenery.find((piece) => piece.id === 'canal-bridge');
   const bridgeFront = BA_DAN_VILLAGE.scene?.scenery.find(
     (piece) => piece.id === 'canal-bridge-front',
@@ -415,7 +415,8 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     { x: 11, y: 3 },
     { x: 23, y: 7 },
     { x: 19, y: 15 },
-    { x: 5, y: 6 },
+    { x: 9, y: 6 },
+    { x: 13, y: 6 },
     { x: 17, y: 6 },
   ])
     expect(paths.has(posKey(pos)), `Unreachable court destination ${posKey(pos)}`).toBe(true);

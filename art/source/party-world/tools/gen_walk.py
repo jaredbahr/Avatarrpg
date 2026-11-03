@@ -28,7 +28,7 @@ def one(spec, seed):
     try:
         return pl.run('/animate-with-skeleton-v3', payload, f'walk-{char}-{d}-s{seed}',
                       inputs={'first_frame': f'roots/{char}/idle/{d}.png (128 canvas)', 'keypoints': f'design/{char}-{d}.json (step {kp["step"]} H)'},
-                      notes='designed six-pose walk')
+                      notes=f"designed {len(kp['frames'])}-pose walk" + (' (planted feet on one row, #408)' if kp.get('plant') else ''))
     except Exception as e:
         print(spec, 'FAILED', e)
 

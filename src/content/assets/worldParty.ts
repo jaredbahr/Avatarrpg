@@ -23,12 +23,12 @@ export const WORLD_PARTY: Readonly<
   >
 > = {
   kaya: {
-    walkCels: 6,
+    walkCels: 8,
     walkCelMs: 120,
     walkStartCel: 2,
     idleMs: [1300, 1100],
     anchorY: 0.882812,
-    walkMsPerTile: [987.9, 1021.6, 875.5, 1067.6, 987.9, 1021.6, 875.5, 1067.6],
+    walkMsPerTile: [1507.5, 1324.5, 1363.6, 1369.9, 1507.5, 1324.5, 1363.6, 1369.9],
     bend: true,
   },
   sura: {

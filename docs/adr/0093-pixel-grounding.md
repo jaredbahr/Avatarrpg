@@ -232,3 +232,19 @@ them, are in `art/source/grounding/review/figure-planting/`.
 Known faults: a cel whose soles are more than 0.16 tile off its anchor keeps the authored line (none ships); the
 contact line steps with the art's own pixel grid at 1.25 world px an art px on the shipped sheets; the jog is not
 played (ADR 0095), so its cels are planted but unseen.
+
+## Amendment: painted pieces and house edges (2026-11-03)
+
+Two painted pieces of Ba Dan were never grounded by the master pass, and both read as wrong in play.
+
+1. **The canal bridge (#367, #401)** stood on the painting with no cast or contact of its own. `shadows.py` now takes
+   its outline from its frozen-geometry sprite (`EXTRA_SPRITES`), set at the scene-to-master offset fitted to the painted
+   outline, and grounds it like any authored piece.
+2. **House edges (#369; owner: "crisp outline everywhere")**: some house edges were painted with a dark 1 px contour,
+   others faded into the grass. `shadows.py` now darkens, to the contact line's tone, every pixel of the 1 px ring just
+   inside each house's frozen silhouette that is not already ink dark and that the painting changes across
+   (`EDGE_STEP`, a summed RGB step of 60 to the pixel outside), so the yard boundary running through plain grass draws
+   nothing. 1,048 master pixels change. The rule is in `docs/art-bible.md` (Scenery).
+
+Both go through the pipeline (`shadows.py`, `regions_back.py`, `regen.sh`); `baDan.ts`, the frozen geometry and the
+runtime are untouched, and Ba Dan stays a complete scene with no runtime wash.
