@@ -73,8 +73,9 @@ renderer and combat assignments retain their live owners.
 Session `pace383-eightcel-20261103` continues the same owned draft403 and branch,
 from published `30644838`. The claim above was amended and read back before
 edits. Main `207c8eec` contains #411's eight-cel Kaya world walk. It merged cleanly
-in local merge `242a3891` (parents `30644838`, `207c8eec`); authored changes are
-limited to the owned pace regression and this handoff. Existing main source,
+in merge `4e277ecd` (parents `30644838`, `207c8eec`, identical tree to the
+preserved local producer `242a3891`); authored changes are
+limited to the owned pace regression, native backend assertion and this handoff. Existing main source,
 assets and generator output are inherited exactly. No asset is generated or
 hand-edited, and the default style is preserved.
 
@@ -96,7 +97,7 @@ was already drawn before that boundary, and changes no runtime timing or old
 assertion. Focused checks and their exact results remain in the PR/claim.
 
 Native validation compares frozen current-main production (750) and the integrated
-candidate (625), using the unchanged four-leg fixture on Canvas/WebGL and both
+candidate (625), using the same four-leg route on Canvas/WebGL and both
 default/world profiles. It forwards real renderer views and uses ordinary time;
 positions, three distinct seats, walk frames, no jog and errors remain checked.
 New recordings, frame/cadence analysis, images and hashes live only under
@@ -118,3 +119,11 @@ was unset. Those setup failures remain separate. Validation reuses the existing
 approved encoder profile recorded in `resume20261103/run.py`; no software,
 symlink, permission or recording requirement was changed. The exact profile and
 binary hash are in the external `recorder-profile.receipt.json`.
+
+The native fixture now records `App.rendererBackend()` and requires it to match
+the requested backend, preventing silent Canvas fallback from counting as WebGL
+coverage. All existing motion controls and budgets remain unchanged. The initial
+four-profile baseline is retained as a pre-backend-gate observation. The earlier
+local CI was intentionally interrupted before this test-source change; only the
+new exact final-head run can satisfy publication. Strict paired native results
+and the final CI outcome are recorded in the PR and external receipts.

@@ -55,8 +55,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
             })),
           });
         };
-        return { pos: app.state!.location.pos, camera: app.rendererCamera() };
+        return {
+          pos: app.state!.location.pos,
+          camera: app.rendererCamera(),
+          backend: app.rendererBackend(),
+        };
       });
+      expect(initial.backend, 'requested native renderer actually ran').toBe(renderer);
       const legs = [
         { x: initial.pos.x + 4, y: initial.pos.y },
         initial.pos,
