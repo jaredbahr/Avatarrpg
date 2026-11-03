@@ -66,3 +66,12 @@ original failures are preserved in the session evidence directory.
 Physical Surface/iPad input, WebKit/Safari/PWA, GPU FPS, moving-resident/follower
 clearance, and final owner visual acceptance remain open. Draft delivery does
 not claim those checks or deployed gameplay acceptance.
+
+## Follow-up #407
+
+The original solo proof above did not cover party-to-party collision. Further
+actual three/six-member play found a boxed follower clearance failure on d4's
+NPC-safe detour. The bounded correction and expanded whole-party native proof
+are in [#407's dossier](../407/README.md). Its producer supersedes the original
+runtime/fixture identity for current multi-party acceptance; all original399
+producer results and failures remain historical evidence.

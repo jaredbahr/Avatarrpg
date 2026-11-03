@@ -34,3 +34,15 @@ remote head. Preserve the original local graph in the session bundle.
 Remaining acceptance: physical devices/input, WebKit/Safari/PWA, GPU performance
 and owner visual acceptance. No moving-resident/follower collision redesign is
 part of this bounded leader pathfinding fix.
+
+## #407 correction on the same PR
+
+Claim6602554169, session `followers407-correction-20261103`, continues from
+published d4 on the same branch. Actual three/six-member input exposed the
+leader crossing stationary Bo after `planWalk` rejected a boxed formation.
+The bounded `planWalk` dependency recovery and new observed-seat regressions
+preserve existing temporal/terrain/0.8 clearance, null cases and64-placement cap.
+No ExploreScene, core leader route, fallback, renderer, schema or art change.
+See [the407 dossier](../evidence/407/README.md) for exact new native producers,
+original partial recording/deadline failures and corrected capture protocol.
+The PR carries final exact-head CI and expected-head lease publication.
