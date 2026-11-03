@@ -74,8 +74,10 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
+  activeGroundCue,
   actorReticleX,
   actorSilhouetteGeometry,
+  combatActorSilhouetteGeometry,
   fallbackBarTop,
   floaterFontPx,
   floaterOwner,
@@ -137,6 +139,7 @@ import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } fro
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
+import { trimPixiTextureCaches } from './pixiTextureCache';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
@@ -250,9 +253,9 @@ interface BreezePool {
  */
 const SPRITE_BUCKET = 32;
 
-/** Textures kept alive; older ones are destroyed rather than left on the GPU. */
+/** Idle canvas texture budget; textures still bound to sprites remain live. */
 const MAX_TEXTURES = 128;
-/** Frame views onto those textures (one per pose per sheet); cheap, but bounded all the same. */
+/** Idle frame-view budget; attached sprites may temporarily take the map above it. */
 const MAX_FRAME_TEXTURES = 512;
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
@@ -914,6 +917,7 @@ export class PixiBackend implements RenderBackend {
     });
 
     app.renderer.render(app.stage);
+    this.trimTextures();
   }
 
   /**
@@ -1446,8 +1450,7 @@ export class PixiBackend implements RenderBackend {
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
     if (camera.projection === 'oblique') this.syncSceneryShadows(view, camera);
-    for (const [key, sprite] of this.castSprites)
-      if (!this.castLive.has(key)) sprite.visible = false;
+    this.retireInactiveSprites(this.castSprites, this.castLive);
     const visible = [...this.castSprites.values()].filter((sprite) => sprite.visible);
     this.castLive.clear();
     if (visible.length === 0 && !hasStructure) {
@@ -2673,13 +2676,28 @@ export class PixiBackend implements RenderBackend {
     }
     const texture = Texture.from(canvas, true);
     this.textureCache.set(canvas, texture);
-    while (this.textureCache.size > MAX_TEXTURES) {
-      const oldest = this.textureCache.keys().next().value;
-      if (!oldest) break;
-      this.textureCache.get(oldest)?.destroy(true);
-      this.textureCache.delete(oldest);
-    }
     return texture;
+  }
+
+  /** Release idle textures after all of this frame's sprites have been bound and rendered. */
+  private trimTextures(): void {
+    trimPixiTextureCaches(
+      this.textureCache,
+      this.frameTextures,
+      this.app?.stage ?? null,
+      this.shadowMaskSources,
+      MAX_TEXTURES,
+      MAX_FRAME_TEXTURES,
+    );
+  }
+
+  /** Retired actors and shadows must release their texture references before cache pruning. */
+  private retireInactiveSprites(sprites: Map<string, Sprite>, live: Set<string>): void {
+    for (const [key, sprite] of sprites) {
+      if (live.has(key)) continue;
+      sprite.destroy();
+      sprites.delete(key);
+    }
   }
 
   private dropTextures(): void {
@@ -2706,12 +2724,6 @@ export class PixiBackend implements RenderBackend {
     }
     const texture = new Texture({ source: base.source, frame: new Rectangle(f.x, f.y, f.w, f.h) });
     this.frameTextures.set(key, texture);
-    while (this.frameTextures.size > MAX_FRAME_TEXTURES) {
-      const oldest = this.frameTextures.keys().next().value;
-      if (!oldest) break;
-      this.frameTextures.get(oldest)?.destroy(false);
-      this.frameTextures.delete(oldest);
-    }
     return texture;
   }
 
@@ -2923,12 +2935,12 @@ export class PixiBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const silhouette = actorSilhouetteGeometry(
+      const silhouette = combatActorSilhouetteGeometry(
         { x, y, size: TILE, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
-        26 / camera.scale,
+        1,
       );
       this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {
@@ -3013,18 +3025,19 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.id === view.activeUnitId) {
-        rings
-          .ellipse(
-            marker.x + width / 2,
-            marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
-            width * 0.42,
-            TILE * heightTiles * 0.14,
-          )
-          .stroke({
-            width: Math.max(2, TILE * 0.06),
-            color: OVERLAY.active,
-            alpha: 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2),
-          });
+        const cue = activeGroundCue(
+          marker.x + width / 2,
+          marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
+          width,
+          TILE,
+          heightTiles,
+          1,
+          view.crispOverlays ? 4 : 3,
+        );
+        for (const run of cue.outer)
+          rings.rect(run.x, run.y, run.width, run.height).fill({ color: HP_COLORS.frame });
+        for (const run of cue.inner)
+          rings.rect(run.x, run.y, run.width, run.height).fill({ color: OVERLAY.active });
       } else if (unit.id === view.selectedUnitId) {
         rings
           .ellipse(
@@ -3054,9 +3067,7 @@ export class PixiBackend implements RenderBackend {
       badgeIndex = this.drawStatusBadges(g, unit, x, width, badgeIndex, silhouette.badgeY);
     }
 
-    for (const [key, sprite] of this.unitSprites) {
-      if (!live.has(key)) sprite.visible = false;
-    }
+    this.retireInactiveSprites(this.unitSprites, live);
     this.syncReveal(view, camera, revealFigures);
     for (let i = badgeIndex; i < this.badgeText.length; i++) {
       const text = this.badgeText[i];
@@ -3120,16 +3131,23 @@ export class PixiBackend implements RenderBackend {
   ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
+    const pixel = bar.pixelSize;
+    const innerX = barX + pixel;
+    const innerY = barY + pixel;
+    const innerWidth = Math.max(pixel, barWidth - pixel * 2);
+    const innerHeight = Math.max(pixel, barHeight - pixel * 2);
+    const fillWidth =
+      fraction > 0
+        ? Math.min(innerWidth, Math.max(pixel, Math.round((innerWidth * fraction) / pixel) * pixel))
+        : 0;
 
-    // An ink-framed track, filled in the unit's side colour (canvas2d.ts matches).
-    g.rect(barX, barY, barWidth, barHeight).fill({ color: HP_COLORS.back });
-    g.rect(barX, barY, barWidth * fraction, barHeight).fill({
+    // The frame and one-pixel upper edge stay sharp at the camera's pixel scale.
+    g.rect(barX, barY, barWidth, barHeight).fill({ color: HP_COLORS.frame });
+    g.rect(innerX, innerY, innerWidth, innerHeight).fill({ color: HP_COLORS.back });
+    g.rect(innerX, innerY, fillWidth, innerHeight).fill({
       color: hpFill(unit.faction, fraction, hatch),
     });
-    g.rect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1).stroke({
-      width: 1,
-      color: HP_COLORS.frame,
-    });
+    g.rect(innerX, innerY, innerWidth, pixel).fill({ color: HP_COLORS.highlight });
 
     // The side's cap, so the bar reads by shape as well as colour.
     const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX, 1 / cssScale);

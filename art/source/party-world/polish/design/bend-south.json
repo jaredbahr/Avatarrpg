@@ -161,37 +161,37 @@
       {
         "label": "LEFT SHOULDER",
         "x": 0.5325,
-        "y": 0.5575,
+        "y": 0.5664,
         "z_index": 12
       },
       {
         "label": "RIGHT SHOULDER",
         "x": 0.4617,
-        "y": 0.5189,
+        "y": 0.5118,
         "z_index": 10
       },
       {
         "label": "LEFT ELBOW",
-        "x": 0.5862,
-        "y": 0.5678,
+        "x": 0.5663,
+        "y": 0.5757,
         "z_index": 7
       },
       {
         "label": "RIGHT ELBOW",
-        "x": 0.4024,
-        "y": 0.5318,
+        "x": 0.4145,
+        "y": 0.531,
         "z_index": 8
       },
       {
         "label": "LEFT ARM",
-        "x": 0.5739,
-        "y": 0.7052,
+        "x": 0.5412,
+        "y": 0.6729,
         "z_index": 9
       },
       {
         "label": "RIGHT ARM",
-        "x": 0.3877,
-        "y": 0.6076,
+        "x": 0.413,
+        "y": 0.5872,
         "z_index": 13
       },
       {
@@ -271,37 +271,37 @@
       {
         "label": "LEFT SHOULDER",
         "x": 0.5213,
-        "y": 0.5457,
+        "y": 0.5712,
         "z_index": 13
       },
       {
         "label": "RIGHT SHOULDER",
         "x": 0.4529,
-        "y": 0.5072,
+        "y": 0.4868,
         "z_index": 8
       },
       {
         "label": "LEFT ELBOW",
-        "x": 0.5285,
-        "y": 0.5582,
-        "z_index": 14
+        "x": 0.518,
+        "y": 0.5951,
+        "z_index": 19
       },
       {
         "label": "RIGHT ELBOW",
-        "x": 0.3877,
-        "y": 0.5025,
+        "x": 0.4268,
+        "y": 0.5039,
         "z_index": 7
       },
       {
         "label": "LEFT ARM",
-        "x": 0.4733,
-        "y": 0.6417,
-        "z_index": 15
+        "x": 0.469,
+        "y": 0.6183,
+        "z_index": 19
       },
       {
         "label": "RIGHT ARM",
-        "x": 0.3548,
-        "y": 0.5841,
+        "x": 0.4464,
+        "y": 0.5244,
         "z_index": 9
       },
       {
@@ -381,37 +381,37 @@
       {
         "label": "LEFT SHOULDER",
         "x": 0.5192,
-        "y": 0.5224,
+        "y": 0.5339,
         "z_index": 11
       },
       {
         "label": "RIGHT SHOULDER",
         "x": 0.4364,
-        "y": 0.5067,
+        "y": 0.4975,
         "z_index": 9
       },
       {
         "label": "LEFT ELBOW",
-        "x": 0.5408,
-        "y": 0.5561,
+        "x": 0.5295,
+        "y": 0.5573,
         "z_index": 8
       },
       {
         "label": "RIGHT ELBOW",
-        "x": 0.4046,
-        "y": 0.5377,
+        "x": 0.4096,
+        "y": 0.5314,
         "z_index": 7
       },
       {
         "label": "LEFT ARM",
-        "x": 0.4974,
-        "y": 0.5799,
+        "x": 0.4813,
+        "y": 0.5878,
         "z_index": 15
       },
       {
         "label": "RIGHT ARM",
-        "x": 0.3963,
-        "y": 0.5849,
+        "x": 0.4172,
+        "y": 0.5597,
         "z_index": 12
       },
       {
@@ -491,37 +491,37 @@
       {
         "label": "LEFT SHOULDER",
         "x": 0.5277,
-        "y": 0.526,
+        "y": 0.5209,
         "z_index": 12
       },
       {
         "label": "RIGHT SHOULDER",
         "x": 0.4441,
-        "y": 0.5144,
+        "y": 0.5208,
         "z_index": 10
       },
       {
         "label": "LEFT ELBOW",
-        "x": 0.5784,
-        "y": 0.549,
+        "x": 0.5719,
+        "y": 0.5491,
         "z_index": 8
       },
       {
         "label": "RIGHT ELBOW",
-        "x": 0.4024,
-        "y": 0.5066,
+        "x": 0.4137,
+        "y": 0.5167,
         "z_index": 7
       },
       {
         "label": "LEFT ARM",
-        "x": 0.5134,
-        "y": 0.602,
+        "x": 0.5127,
+        "y": 0.5881,
         "z_index": 13
       },
       {
         "label": "RIGHT ARM",
-        "x": 0.3604,
-        "y": 0.6323,
+        "x": 0.3957,
+        "y": 0.6251,
         "z_index": 9
       },
       {
@@ -601,38 +601,38 @@
       {
         "label": "LEFT SHOULDER",
         "x": 0.541,
-        "y": 0.5214,
+        "y": 0.5081,
         "z_index": 9
       },
       {
         "label": "RIGHT SHOULDER",
         "x": 0.4615,
-        "y": 0.522,
+        "y": 0.5386,
         "z_index": 11
       },
       {
         "label": "LEFT ELBOW",
-        "x": 0.5979,
-        "y": 0.5199,
+        "x": 0.5778,
+        "y": 0.5272,
         "z_index": 6
       },
       {
         "label": "RIGHT ELBOW",
-        "x": 0.4065,
-        "y": 0.5497,
-        "z_index": 14
+        "x": 0.4446,
+        "y": 0.5591,
+        "z_index": 19
       },
       {
         "label": "LEFT ARM",
-        "x": 0.5576,
-        "y": 0.6107,
+        "x": 0.5395,
+        "y": 0.5648,
         "z_index": 8
       },
       {
         "label": "RIGHT ARM",
-        "x": 0.4103,
-        "y": 0.6065,
-        "z_index": 15
+        "x": 0.4815,
+        "y": 0.6102,
+        "z_index": 19
       },
       {
         "label": "LEFT HIP",
@@ -711,38 +711,38 @@
       {
         "label": "LEFT SHOULDER",
         "x": 0.5497,
-        "y": 0.5234,
+        "y": 0.503,
         "z_index": 8
       },
       {
         "label": "RIGHT SHOULDER",
         "x": 0.4755,
-        "y": 0.5223,
+        "y": 0.5478,
         "z_index": 12
       },
       {
         "label": "LEFT ELBOW",
-        "x": 0.5971,
-        "y": 0.5309,
+        "x": 0.5738,
+        "y": 0.5294,
         "z_index": 6
       },
       {
         "label": "RIGHT ELBOW",
-        "x": 0.4924,
-        "y": 0.5411,
-        "z_index": 14
+        "x": 0.4791,
+        "y": 0.5734,
+        "z_index": 19
       },
       {
         "label": "LEFT ARM",
-        "x": 0.5846,
-        "y": 0.6238,
+        "x": 0.5421,
+        "y": 0.5384,
         "z_index": 9
       },
       {
         "label": "RIGHT ARM",
-        "x": 0.5016,
-        "y": 0.639,
-        "z_index": 15
+        "x": 0.5338,
+        "y": 0.6224,
+        "z_index": 19
       },
       {
         "label": "LEFT HIP",
@@ -821,37 +821,37 @@
       {
         "label": "LEFT SHOULDER",
         "x": 0.549,
-        "y": 0.5231,
+        "y": 0.5139,
         "z_index": 8
       },
       {
         "label": "RIGHT SHOULDER",
         "x": 0.4706,
-        "y": 0.5191,
+        "y": 0.5306,
         "z_index": 13
       },
       {
         "label": "LEFT ELBOW",
-        "x": 0.5828,
-        "y": 0.5422,
+        "x": 0.5772,
+        "y": 0.5416,
         "z_index": 6
       },
       {
         "label": "RIGHT ELBOW",
-        "x": 0.4502,
-        "y": 0.5576,
+        "x": 0.461,
+        "y": 0.557,
         "z_index": 9
       },
       {
         "label": "LEFT ARM",
-        "x": 0.5891,
-        "y": 0.6353,
+        "x": 0.5681,
+        "y": 0.5965,
         "z_index": 10
       },
       {
         "label": "RIGHT ARM",
-        "x": 0.4764,
-        "y": 0.6447,
+        "x": 0.5,
+        "y": 0.6276,
         "z_index": 12
       },
       {
@@ -1436,6 +1436,7 @@
     "scale": 0.933,
     "press": 0.9,
     "reach": 1.35,
+    "front_jab": "cross",
     "amp": 1,
     "from_": "design/kaya/bend-south.json onto roots/kaya/stance/south.png"
   }

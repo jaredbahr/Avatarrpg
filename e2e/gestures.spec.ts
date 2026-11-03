@@ -214,19 +214,24 @@ async function expectActorOnScreen(page: Page): Promise<void> {
 
 test.describe('zoom and pan', () => {
   test('normal-text combat framing reserves room for the decision dock', async ({ page }) => {
-    // Integer zoom (ADR 0088): combat floors its tuned tile onto whole device
-    // pixels, so at 1 dpr both the compact 64 px and the roomy 96 px frames
-    // open at 64 px (one device pixel per world pixel), never closer.
+    // Integer zoom (ADR 0088): the compact frame stays at 64 CSS px at both
+    // project DPRs. The roomy 96 px preference floors to 64 at DPR 1, while
+    // DPR 2 can retain all 96 CSS px on its whole-device-pixel grid.
     for (const profile of [
-      { width: 1194, height: 834, tilePx: 64 },
-      { width: 1368, height: 912, tilePx: 64 },
+      { width: 1194, height: 834, tilePxAtDpr1: 64, tilePxAtDpr2: 64 },
+      { width: 1368, height: 912, tilePxAtDpr1: 64, tilePxAtDpr2: 96 },
     ]) {
       await page.setViewportSize({ width: profile.width, height: profile.height });
       await openFight(page);
       await settleLayout(page);
       const initial = await camera(page);
+      const dpr = await page.evaluate(() => window.devicePixelRatio);
+      expect([1, 2], 'the configured Surface and iPad project DPRs').toContain(dpr);
       expect(initial.projection).toBe('oblique');
-      expect(initial.tilePx).toBeCloseTo(profile.tilePx, 3);
+      expect(initial.tilePx).toBeCloseTo(
+        dpr === 2 ? profile.tilePxAtDpr2 : profile.tilePxAtDpr1,
+        3,
+      );
       expect(initial.fitted).toBe(false);
       const canvas = await page.locator('.map-canvas').boundingBox();
       expect(canvas).not.toBeNull();
@@ -234,7 +239,7 @@ test.describe('zoom and pan', () => {
       // These are rendered canvas measurements, not the viewport or the
       // camera's internal dimensions. Preserve a usable tactical view.
       await test.info().attach(`combat-frame-${profile.width}x${profile.height}`, {
-        body: JSON.stringify({ viewport: profile, canvas, camera: initial }),
+        body: JSON.stringify({ viewport: profile, dpr, canvas, camera: initial }),
         contentType: 'application/json',
       });
       expect(canvas.width).toBeGreaterThan(1000);
