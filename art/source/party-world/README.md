@@ -152,3 +152,64 @@ itself, so their figure is mostly motion, not boil; measured the same way they f
    most of it (65) between the last stance job and the restyle's submission, 11 on the 512 restyle itself (the same
    gap #321 saw on its 512 jobs), and two jobs (a hit and a bend) whose connection was reset while polling and were
    resubmitted (`pl.py` now polls through a reset).
+
+## Kaya C fixes (#351, 2026-11-03)
+
+Owner, 2026-11-03: version C (the Kaya polish above, at the board's high-oblique camera) is the base for every character.
+His one reservation, "C seems like the angle is off a bit", we read as the front faces: the fringe hid the eyes, so the
+front headings looked tilted further down than the painting. The camera angle is kept; nothing is redrawn at a new angle.
+The four known faults above (1, 2, 4, 5 and the stray hair in 3) are fixed as follows. Every call is in `ledger.json`
+(job names `kp-face-*`, `walk-kaya-*-s631/632/633`, `kp-ko-*-s543`, `kp-bend-*-s641/642/643`).
+
+| step | tool                                        | what                                                                                                                                                                                                                                                                                                                                                                                                                    | cost        |
+| ---- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| 1    | `kp_face.py probe`                          | **faces**: `inpaint-image-pro-flash` on the idle and stance roots of S, SE, SW, E and W (on the paving colour), the mask a box over the face and the fringe's lowest rows, so the fringe may lift; two candidates a call. Seed 601 for all ten, 602 retakes three                                                                                                                                                       | 6 a root    |
+| 2    | `kp_face.py apply`, `polish/face/`          | one candidate a root (`curate.json`, with reasons), pasted inside the box and the root's silhouette (a hole the cut-out left in idle SE's cheek is filled), plus a few hand pixels from the palette where an eye stayed faint after the lock (`touch`); pre-face roots kept in `orig/`, the face box in `mask/`. The palette is still built from the pre-face roots, so it does not move                                | 0           |
+| 3    | `kp_texture.py`, `kp_assemble.py`           | the face mask rides on every generated head: inside it the head takes the root's colour unconditionally while the head turns under 30 degrees (hits, bends, the knockouts' first cels); the walk's rigid trunk already carried it                                                                                                                                                                                       | 0           |
+| 4    | `kp_walk.py`, `gen_walk.py`                 | **shorter side strides**: the step is now per heading, 0.38 body heights east and west, 0.44 on the diagonals, 0.5 north and south (unchanged); seed 631. East retaken at 632 and 633 for cel 5's boots: 632 kept (`polish/takes.json`)                                                                                                                                                                                 | 3 a heading |
+| 5    | `kp_clips.py`                               | **Fire Jab face-on**: in S, SE and N the two strikes are redesigned with a torso twist (striking shoulder forward, the other back), the striking arm extended along the heading's screen direction with the elbow lifted out, and the other arm up in a guard. 641 (fist tucked at the chest) was rejected; 642 kept for SE and N (extended; N as a forward hook past the shoulder); 643 for S (a cross over the chest) | 3 a heading |
+| 6    | `kp_clips.py`, `polish/clean.json`          | **smears**: the SE and SW knockouts retaken at 543 (SW's fourth cel comes back clean); the two smears 543 still draws (SE's last cel, SW's third) peeled from the edge inside a box (`kp_assemble.clean`)                                                                                                                                                                                                               | 3 a heading |
+| 7    | `kp_assemble.py`                            | **strays**: every cel drops a piece not 4-connected to the figure and under 24 px (`tidy`): the ponytail tip's flicks, 1-2 px hair ends, lone smear pixels                                                                                                                                                                                                                                                              | 0           |
+| 8    | `kp_assemble.py`, `pack.py`, `kp_review.py` | as the polish: the walk's clip time a tile is refitted from the drawn feet (`stride.json` -> `worldParty.ts`; the world sheet's equivalent of `walk_stride.py`'s `G1_WALK` fit), and the turntables and `metrics.json` regenerated                                                                                                                                                                                      | 0           |
+
+```sh
+python3 -I art/source/party-world/tools/kp_face.py probe 601 idle:south ... stance:west && python3 -I art/source/party-world/tools/kp_face.py probe 602 stance:south idle:east idle:south-west
+python3 -I art/source/party-world/tools/kp_face.py apply
+python3 -I art/source/party-world/tools/kp_walk.py && python3 -I art/source/party-world/tools/gen_walk.py 631 kaya:east kaya:west kaya:south-east kaya:south-west kaya:north-east kaya:north-west
+python3 -I art/source/party-world/tools/gen_walk.py 632 kaya:east && python3 -I art/source/party-world/tools/gen_walk.py 633 kaya:east
+python3 -I art/source/party-world/tools/kp_clips.py 543 ko:south-east ko:south-west
+python3 -I art/source/party-world/tools/kp_clips.py 642 bend:south-east bend:north && python3 -I art/source/party-world/tools/kp_clips.py 643 bend:south
+python3 -I art/source/party-world/tools/kp_assemble.py && python3 -I art/source/party-world/tools/pack.py && npx prettier --write src/content/assets/worldParty.ts public/art/units/world
+python3 -I art/source/party-world/tools/kp_review.py
+```
+
+`polish/design/bend-<dir>.json` holds the design of the last seed run for that heading (643 for S, 642 for SE and N): rerun
+`kp_clips.py` with the kept seed (cached, no charge) before assembling if another seed was run since.
+
+### What changed (C fixes)
+
+| item             | polish (C)                                        | C fixes                                                                                    |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| front faces      | eyes under the fringe in S and SW; S stance blank | eyes and brows at 1 px in S, SE, SW, E, W, in idle, stance, walk, hit and bend             |
+| side step        | 0.5 body heights in every heading                 | 0.38 east and west, 0.44 diagonals, 0.5 north and south                                    |
+| walk cadence     | 105-128 ms a cel at 750 ms a tile                 | 93-100 on the side and diagonal headings, 128 north and south (brisk cap 70 never reached) |
+| east cel 5       | boots smeared                                     | one clean boot pair (take 632)                                                             |
+| Fire Jab, S/SE/N | a small arm movement                              | twist, guard and an extended arm with the elbow out                                        |
+| knockout smears  | SE last cel, SW fourth                            | retaken and peeled                                                                         |
+| ponytail strays  | detached flicks on four east walk cels            | dropped                                                                                    |
+| sheet (128 page) | 61.0 KB                                           | 60.2 KB                                                                                    |
+
+### Known faults (C fixes)
+
+1. **South jab, left hand.** The south cross (cel 6, the damage release) reads as a punch over the chest; the left jab
+   (cel 2) still comes back as a guard by the chin. Face-on, the generator will not draw an arm foreshortened toward
+   the camera; a hand-drawn arm for that one cel is the next lever.
+2. **Small faces stay small.** At 128 px tiles the eyes are two to four dark pixels; they read as eyes in motion, and the
+   front views now read as looking ahead rather than down, but the face is still a few skin tones. The idle south-east
+   face is the weakest (a far eye one pixel from the hair).
+3. **Falling heads.** The face does not ride on a head turned more than 30 degrees (the knockouts' later cels), so those
+   keep the generator's face.
+4. **Riverside.** The tea (south) and wave (south-east) cels are not inpainted: they come from their own generations, not
+   the roots.
+5. **Credits.** 129 generations over 30 billed jobs (and one failed, unbilled south bend). The balance fell 129 (18,395
+   to 18,266), matching the ledger.
