@@ -18,10 +18,19 @@
 import { el } from './dom';
 
 export type ToastKind = 'info' | 'warn';
+export type ToastHandle = symbol;
+
+type ToastTimers = {
+  node: HTMLElement;
+  dismissTimer: number;
+  fadeTimer: number | null;
+  onDismiss?: () => void;
+};
 
 export class Toasts {
   private host: HTMLElement;
   private recent = new Map<string, number>();
+  private active = new Map<ToastHandle, ToastTimers>();
   private frame = 0;
   /** What `place` last wrote, so a frame that changes nothing writes nothing. */
   private placed: {
@@ -39,31 +48,63 @@ export class Toasts {
     parent.appendChild(this.host);
   }
 
-  show(text: string, kind: ToastKind = 'info', ms = 2600): void {
-    if (!text) return;
+  show(
+    text: string,
+    kind: ToastKind = 'info',
+    ms = 2600,
+    onDismiss?: () => void,
+  ): ToastHandle | null {
+    if (!text) return null;
 
     // The AI can emit the same line several times in one step; show it once.
     const now = performance.now();
     const last = this.recent.get(text) ?? -Infinity;
-    if (now - last < 900) return;
+    if (now - last < 900) return null;
     this.recent.set(text, now);
 
     const node = el('div', { class: `toast toast-${kind}`, text });
+    const handle = Symbol('toast');
+    const timers: ToastTimers = { node, dismissTimer: 0, fadeTimer: null, onDismiss };
+    this.active.set(handle, timers);
     this.host.appendChild(node);
     this.place();
 
     // Cap the stack so a busy enemy turn cannot fill the screen.
     while (this.host.childElementCount > 4) {
-      this.host.firstElementChild?.remove();
+      const oldest = [...this.active].find(([, item]) => item.node === this.host.firstElementChild);
+      if (oldest) this.dismiss(oldest[0]);
+      else this.host.firstElementChild?.remove();
     }
 
-    window.setTimeout(() => {
+    timers.dismissTimer = window.setTimeout(() => {
+      timers.dismissTimer = 0;
       node.classList.add('toast-out');
-      window.setTimeout(() => node.remove(), 320);
+      timers.fadeTimer = window.setTimeout(() => {
+        timers.fadeTimer = null;
+        this.remove(handle);
+      }, 320);
     }, ms);
+    return handle;
+  }
+
+  /** Remove only the toast represented by this handle, and cancel both timers. */
+  dismiss(handle: ToastHandle | null | undefined): void {
+    if (handle) this.remove(handle);
+  }
+
+  private remove(handle: ToastHandle): void {
+    const timers = this.active.get(handle);
+    if (!timers) return;
+    this.active.delete(handle);
+    if (timers.dismissTimer) window.clearTimeout(timers.dismissTimer);
+    if (timers.fadeTimer !== null) window.clearTimeout(timers.fadeTimer);
+    timers.node.remove();
+    this.place();
+    timers.onDismiss?.();
   }
 
   clear(): void {
+    for (const handle of this.active.keys()) this.remove(handle);
     while (this.host.firstChild) this.host.removeChild(this.host.firstChild);
   }
 

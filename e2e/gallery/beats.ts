@@ -364,7 +364,9 @@ export const BEATS: readonly Beat[] = [
         return backdrop ? app.overrideBackdrop('ba_dan_riverside', backdrop) : false;
       });
       if (!loaded) throw new Error('The riverside painting did not load.');
-      await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();
+      // Sura, Kaya and the two residents placed by the riverside preview, each
+      // drawn from its sheet; the same count `00-riverside.spec.ts` asserts.
+      await ctx.page.locator('.village-life-canvas[data-illustrated-actors="4"]').waitFor();
       await ctx.shoot(this.note);
       await ctx.filmstrip(`${this.note} ${form}.`, [700, 1500, 2200, 2950, 3800], async () => {
         await ctx.page.evaluate((label) => {
@@ -388,7 +390,9 @@ export const BEATS: readonly Beat[] = [
       await ctx.page.getByRole('button', { name: 'Activities', exact: true }).click();
       await ctx.page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
       await ctx.page.getByText('The banyan shades the path.', { exact: false }).waitFor();
-      await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();
+      // Sura, Kaya and the two residents placed by the riverside preview, each
+      // drawn from its sheet; the same count `00-riverside.spec.ts` asserts.
+      await ctx.page.locator('.village-life-canvas[data-illustrated-actors="4"]').waitFor();
       await ctx.shoot(this.note);
     },
   },
