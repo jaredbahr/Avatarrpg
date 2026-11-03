@@ -9,8 +9,9 @@ export function trimPixiTextureCaches(
   shadowMaskSources: Container,
   maxTextures: number,
   maxFrames: number,
+  retiredCanvases?: Set<HTMLCanvasElement>,
 ): void {
-  if (textures.size <= maxTextures && frames.size <= maxFrames) return;
+  if (textures.size <= maxTextures && frames.size <= maxFrames && !retiredCanvases?.size) return;
 
   const live = new Set<Texture>();
   const sources = new Set<Texture['source']>();
@@ -24,6 +25,17 @@ export function trimPixiTextureCaches(
   if (stage) visit(stage);
   // This offstage container is rendered separately into the cast-shadow mask.
   visit(shadowMaskSources);
+
+  // The G1 drawable cache owns these canvases. Release their Pixi wrappers as
+  // soon as no sprite uses the source, even below the general texture budget.
+  for (const canvas of retiredCanvases ?? []) {
+    const texture = textures.get(canvas);
+    if (texture && sources.has(texture.source)) continue;
+    retiredCanvases?.delete(canvas);
+    if (!texture) continue;
+    textures.delete(canvas);
+    texture.destroy(true);
+  }
 
   for (const [key, texture] of frames) {
     if (frames.size <= maxFrames) break;
