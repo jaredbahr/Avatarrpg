@@ -103,10 +103,10 @@ test.describe('the village', () => {
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
       .toBe('mira_intro');
-    // Beside her on the paving by her table, not in the canal below her.
+    // The east crossing reaches the dry paving beside her table.
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.pos))
-      .toEqual({ x: 10, y: 5 });
+      .toEqual({ x: 12, y: 4 });
   });
 
   test('the gate names the road and leads to it', async ({ page }) => {
