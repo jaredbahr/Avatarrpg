@@ -34,16 +34,16 @@ test('a fresh battle establishes the full formation before the acting-unit hand-
     )
     .toBe('hold');
   const formation = await page.evaluate(() => window.fnt!.app.rendererCamera());
-  // Advance deterministic application time inside the authored hold, rather
-  // than guessing how much wall time a frame took on the runner.
-  await page.clock.runFor(300);
+  // Jump inside the authored hold without painting every intermediate frame;
+  // the hold and camera assertions still read the real scene after the jump.
+  await page.clock.fastForward(300);
   expect(await page.locator('.combat-scene').getAttribute('data-battle-opening')).toBe('hold');
   expect(await page.evaluate(() => window.fnt!.app.rendererCamera())).toEqual(formation);
 
   await expect
     .poll(
       async () => {
-        await page.clock.runFor(100);
+        await page.clock.fastForward(100);
         return page.locator('.combat-scene').getAttribute('data-battle-opening');
       },
       { timeout: 25_000, intervals: [50] },

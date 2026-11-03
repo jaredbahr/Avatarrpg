@@ -130,10 +130,12 @@ export async function enterNode(page: Page, nodeId: string): Promise<void> {
  *
  * Returns false if the fight ended while waiting, so a spec that drives
  * several rounds can stop rather than time out on a turn that will never come.
+ * State-only drivers may skip the final camera sample; tests that pick tiles
+ * keep it by default.
  */
 export async function takeTurn(
   page: Page,
-  options: { settleTimeout?: number } = {},
+  options: { settleTimeout?: number; settleCamera?: boolean } = {},
 ): Promise<boolean> {
   const result = await page.waitForFunction(
     () => {
@@ -161,7 +163,7 @@ export async function takeTurn(
     { timeout: 25_000 },
   );
   if (await ready.count()) await ready.click();
-  await settleLayout(page, options.settleTimeout);
+  if (options.settleCamera !== false) await settleLayout(page, options.settleTimeout);
   return true;
 }
 
@@ -348,6 +350,31 @@ export async function waitForIdle(page: Page, timeout = 20_000): Promise<void> {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`waitForIdle: still busy after ${timeout} ms (${pending}) — ${detail}`);
   }
+}
+
+/**
+ * Advance a long authored playback to its actual animator finish, then observe
+ * the last frame and the normal idle state. This is for route assertions that
+ * check the completed scene rather than every intermediate walking frame.
+ * The ordinary waitForIdle deadline remains unchanged.
+ */
+export async function completeAuthoredPlayback(page: Page): Promise<void> {
+  await pauseClock(page);
+  try {
+    const remaining = await page.evaluate(() => {
+      const animator = window.fnt?.app.animator;
+      if (!animator) throw new Error('The game animator is unavailable');
+      return Math.ceil(Math.max(0, animator.finishesAt - performance.now()));
+    });
+    if (!Number.isFinite(remaining)) throw new Error('The playback finish is not finite');
+    // Fast-forward the interior, but publish frames at the end so the route
+    // timer and scene transition run through their real completion path.
+    if (remaining > 17) await page.clock.fastForward(remaining - 17);
+    await page.clock.runFor(34);
+  } finally {
+    await page.clock.resume();
+  }
+  await waitForIdle(page);
 }
 
 /**

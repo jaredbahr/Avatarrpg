@@ -53,7 +53,7 @@ function contentWithTrap(): ContentIndex {
   };
 }
 
-/** Explore, on the village courtyard one tile from Mira's table at (10,5). */
+/** Explore, on the dry rest spot beside Mira's table. */
 function exploring(): GameState {
   const base = createGame(CONTENT, {
     seed: 'wait',
@@ -63,7 +63,7 @@ function exploring(): GameState {
   return {
     ...base,
     screen: 'explore',
-    location: { mapId: 'ba_dan_village', pos: { x: 10, y: 6 } },
+    location: { mapId: 'ba_dan_village', pos: { x: 10, y: 5 } },
     story: { ...base.story, nodeId: 'village_explore' },
   };
 }
