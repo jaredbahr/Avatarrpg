@@ -116,6 +116,9 @@ export interface Scene {
   holdAi?(): void;
   /** Drop the pause hold; re-arm one pending enemy turn if still current. */
   releaseAi?(): void;
+  /** Pause and resume timed scene presentation while the pause menu is open. */
+  pausePresentation?(): void;
+  resumePresentation?(): void;
   /**
    * The events a command produced, before the scene may be swapped for the
    * one the new state calls for. Return true when the scene schedules the
@@ -807,11 +810,13 @@ export class App {
 
   openPause(): void {
     if (this.pause || !this.state) return;
-    // The pause owns combat progress: hold enemy dispatch behind the menu
-    // without disturbing the establishing view or the rest of the board. Only
-    // a fight advances itself; explore keeps running, and a nested Save menu
-    // keeps `this.pause` set so it stays held.
-    if (this.scene?.name === 'combat') this.scene.holdAi?.();
+    // The pause owns combat progress: park enemy dispatch and timed scene
+    // presentation. Explore keeps running, and a nested Save menu keeps
+    // `this.pause` set so both holds remain in force.
+    if (this.scene?.name === 'combat') {
+      this.scene.holdAi?.();
+      this.scene.pausePresentation?.();
+    }
     this.pause = new PauseMenu(this, () => {
       this.pause = null;
       this.resumeAfterPause();
@@ -824,10 +829,13 @@ export class App {
     this.pause = null;
   }
 
-  /** Restarts enemy dispatch held by the pause menu, once the pause is gone. */
+  /** Restarts combat dispatch and timed presentation once the pause is gone. */
   private resumeAfterPause(): void {
     if (this.pause) return;
-    if (this.scene?.name === 'combat') this.scene.releaseAi?.();
+    if (this.scene?.name === 'combat') {
+      this.scene.releaseAi?.();
+      this.scene.resumePresentation?.();
+    }
   }
 
   updateSettings(next: Partial<Settings>): void {

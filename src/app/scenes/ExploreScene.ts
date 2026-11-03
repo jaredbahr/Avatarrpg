@@ -47,6 +47,12 @@ import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExits, nearbyExploreTarget } from '../world/guidance';
 import { partyWalkPhase } from '../animator';
+import {
+  createExploreObjectivePresentation,
+  syncExploreObjective,
+  toggleExploreObjective,
+  walkExploreObjective,
+} from './exploreObjective';
 import { handoverBark } from '../world/barks';
 import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
@@ -132,6 +138,9 @@ export class ExploreScene implements Scene {
   private practiceCamera: { from: Vec2; to: Vec2; start: number; back: boolean } | null = null;
   /** Whether the HUD last drew the practice action ready, so it redraws once the bends are in. */
   private practiceShown: boolean | null = null;
+  /** Objective presentation is ephemeral and keyed by objective text, never saved. */
+  private objectivePresentation = createExploreObjectivePresentation();
+  private objectiveButton: HTMLButtonElement | null = null;
 
   constructor(private app: App) {}
 
@@ -165,7 +174,19 @@ export class ExploreScene implements Scene {
     this.conversationMode = Boolean(worldConversationFor(this.app.content, this.app.state));
 
     const scene = el('div', { class: 'scene explore-scene' });
-    scene.appendChild(el('div', { class: 'top-bar explore-bar' }));
+    this.objectiveButton = button('', () => this.toggleObjective(), {
+      class: 'explore-objective',
+    });
+    this.objectiveButton.setAttribute('aria-expanded', 'true');
+    this.objectiveButton.hidden = true;
+    scene.appendChild(
+      el(
+        'div',
+        { class: 'top-bar explore-bar' },
+        el('div', { class: 'explore-bar-main' }),
+        this.objectiveButton,
+      ),
+    );
 
     const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Village map' } });
     this.canvas = canvas;
@@ -177,7 +198,6 @@ export class ExploreScene implements Scene {
           'div',
           { class: 'map-wrap' },
           canvas,
-          el('div', { class: 'explore-objective' }),
           el('div', { class: 'explore-map-corner' }),
           el('div', { class: 'explore-conversation', hidden: true }),
         ),
@@ -223,6 +243,8 @@ export class ExploreScene implements Scene {
     this.practising = false;
     this.practiceCamera = null;
     this.practiceShown = null;
+    this.objectiveButton = null;
+    this.objectivePresentation = createExploreObjectivePresentation();
     // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
     if (this.warmedBends) sheets.releaseBends();
     this.warmedBends = false;
@@ -303,6 +325,9 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     const grid = this.grid;
     if (!state || !grid || !events.some((event) => event.type === 'partyWalked')) return false;
+    const objective = worldObjective(this.app.content, state);
+    this.objectivePresentation = walkExploreObjective(this.objectivePresentation, objective);
+    this.renderObjective(objective);
     for (const event of events) {
       if (event.type !== 'partyWalked') continue;
       this.needsSettle = true;
@@ -553,7 +578,7 @@ export class ExploreScene implements Scene {
   }
 
   private renderBanner(): void {
-    const banner = this.host?.querySelector<HTMLElement>('.explore-bar');
+    const banner = this.host?.querySelector<HTMLElement>('.explore-bar-main');
     if (!banner) return;
     clear(banner);
     const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
@@ -592,18 +617,7 @@ export class ExploreScene implements Scene {
       );
     }
     banner.append(button('Pause', () => this.app.openPause(), { class: 'explore-header-action' }));
-    const objectiveHost = this.host?.querySelector<HTMLElement>('.explore-objective');
-    if (objectiveHost) {
-      clear(objectiveHost);
-      objectiveHost.hidden = this.conversationMode || !objective;
-      if (objective)
-        objectiveHost.append(
-          el('strong', { class: 'tiny', text: 'Current objective' }),
-          el('span', { class: 'title-plate-objective', text: objective }),
-        );
-      const gate = this.atGate();
-      if (gate) objectiveHost.append(el('span', { class: 'tiny muted', text: gate }));
-    }
+    this.renderObjective(objective);
     const corner = this.host?.querySelector<HTMLElement>('.explore-map-corner');
     const state = this.app.state;
     if (corner && state && this.map && this.grid) {
@@ -622,6 +636,46 @@ export class ExploreScene implements Scene {
       );
       corner.append(follow);
     }
+  }
+
+  private renderObjective(
+    objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null,
+  ): void {
+    const button = this.objectiveButton;
+    if (!button) return;
+    this.objectivePresentation = syncExploreObjective(this.objectivePresentation, objective);
+    const gate = this.atGate();
+    const visible = Boolean(objective) && !this.conversationMode && this.map?.id !== RIVERSIDE_ID;
+    button.hidden = !visible;
+    if (!visible || !objective) return;
+
+    const expanded = this.objectivePresentation.expanded;
+    button.setAttribute('aria-expanded', String(expanded));
+    button.setAttribute('aria-label', `Current objective: ${objective}${gate ? `. ${gate}` : ''}`);
+    button.title = expanded ? 'Hide objective details' : 'Show the full objective';
+    button.classList.toggle('is-collapsed', !expanded);
+    clear(button);
+    if (expanded) {
+      button.append(
+        el('strong', { class: 'explore-objective-label tiny', text: 'Current objective' }),
+        el('span', { class: 'title-plate-objective', text: objective }),
+      );
+      if (gate)
+        button.append(el('span', { class: 'explore-objective-gate tiny muted', text: gate }));
+    } else {
+      button.append(el('span', { class: 'title-plate-objective', text: objective }));
+      if (gate)
+        button.append(
+          el('span', { class: 'explore-objective-gate tiny muted', text: ` · ${gate}` }),
+        );
+    }
+  }
+
+  private toggleObjective(): void {
+    const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
+    this.objectivePresentation = toggleExploreObjective(this.objectivePresentation, objective);
+    if (!objective) return;
+    this.renderObjective(objective);
   }
 
   private followParty(): void {

@@ -73,3 +73,24 @@ it on the rest." Kaya's world sheet is redrawn as the reference for the other el
 - **Riverside.** Kaya's wave and tea are drawn in the new rendering (the G1 cels before).
 
 The sheet is 23 KB smaller than #321's Kaya. Faults and credits are in the README.
+
+## Amendment, 2026-11-03: version C fixes (#351)
+
+Owner, 2026-11-03: version C, the Kaya polish above, is the base for every character; his one reservation was "C seems
+like the angle is off a bit". We read it as the faces, not the camera: the fringe hid the eyes, so the front headings
+looked tilted further down than the painting. The camera angle stays as decided above.
+
+- **Faces are part of the root.** The front roots (S, SE, SW, E, W; idle and stance) get eyes and brows inpainted at
+  1 px (`kp_face.py`), on the one palette, which is still built from the pre-face roots. The face is carried onto every
+  generated head by the texture transfer as a region that always takes the root's colour, so a face fix on a root
+  reaches every clip without redrawing it. This is the rule for the rollout: fix a face on the root, never per cel.
+- **Step per heading.** The walk's step is set per heading (0.38 body heights east and west, 0.44 on the diagonals,
+  0.5 north and south) so the side-on strides do not read as a lunge. The contract is unchanged: the clip time a tile
+  is still fitted from the drawn feet and shipped in `worldParty.ts`.
+- **Face-on strikes are designed, not retargeted.** Where a strike travels toward or away from the camera (S, SE, N),
+  the mocap retarget is replaced around the strike by a designed pose: twist, guard, the arm extended along the
+  heading's screen direction, the elbow out.
+- **Strays and smears** are cleaned by the assembler (detached pieces under 24 px; named smears inside a box), not by
+  hand on the shipped sheet.
+
+Faults that remain and the credit ledger are in the README ("Kaya C fixes").

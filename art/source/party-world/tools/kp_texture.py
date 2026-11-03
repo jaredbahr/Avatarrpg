@@ -11,6 +11,9 @@ flatter hand; this puts the heading's restyled root back on it, part by part, de
    `rigid` (the walk, the hits: the trunk only bobs and sways) the head and torso take the root's colour wherever the
    mapped point is the same part, whatever the cel drew there: the trunk is the root's own drawing, moved.
 
+With `face` (the root's face mask from kp_face.py, #351) the head takes the root's colour at every mapped point inside
+the mask, close or not, while the head turns less than 30 degrees from the root's (a falling head keeps its own): the inpainted eyes and brows ride on every cel's head instead of being dropped as a new colour.
+
 The head and torso of a walk barely change, so they come back as the root's own pixels in every cel: no boil there by
 construction. Then every cel goes through the one Kaya palette (kp_palette.py)."""
 import numpy as np
@@ -20,7 +23,7 @@ from kp_body import NAMES, PARTS, joints, labels, similarity
 TOL_L, TOL_AB, SEARCH = 0.10, 0.07, 3
 
 
-def transfer(cel, cel_kps, root, root_kps, W, rigid=True):
+def transfer(cel, cel_kps, root, root_kps, W, rigid=True, face=None):
     """cel, root: HxWx4 uint8 on the same W canvas. Returns (rgba, fraction of the cel's pixels that took the root's colour)."""
     ac = cel[..., 3] >= 128; ar = root[..., 3] >= 128
     Pc, Zc = joints(cel_kps, W); Pr, Zr = joints(root_kps, W)
@@ -51,6 +54,7 @@ def transfer(cel, cel_kps, root, root_kps, W, rigid=True):
         cy, cx, ry, rx = ys[same], xs[same], qy[same], qx[same]
         A, B = labc[cy, cx], labr[ry, rx]
         close = (np.abs(A[:, 0] - B[:, 0]) < TOL_L) & (np.hypot(*(A[:, 1:] - B[:, 1:]).T) < TOL_AB)
+        if face is not None and NAMES[i] == 'head' and ang < 30: close |= face[ry, rx]   # not on a falling, turned head
         out[cy[close], cx[close], :3] = root[ry[close], rx[close], :3]; took += int(close.sum())
     if rigid: out = trunk(out, lc, Pc, Zc, root, lr, Pr, W)
     return out, took / max(int(ac.sum()), 1)
