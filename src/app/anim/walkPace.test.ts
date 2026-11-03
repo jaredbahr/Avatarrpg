@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../../core/types';
-import { sheetLocomotion, useWorldStyleTest } from '../../content/assets/manifest';
-import { Animator } from '../animator';
+import { resolveAsset, sheetLocomotion, useWorldStyleTest } from '../../content/assets/manifest';
+import { frameIndex, resolveClip } from '../../render/sheets/resolveClip';
+import { Animator, STOP_SETTLE_MS } from '../animator';
 import { choreograph } from './choreography';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
@@ -91,5 +92,49 @@ describe('exploration pace without a combat gait change', () => {
       gait.walkMsPerTile.southEast / 1.25,
       8,
     );
+  });
+
+  it('plays all eight world-Kaya walk cels at 625 ms and approaches a planted stop', () => {
+    useWorldStyleTest();
+    const entry = resolveAsset(sprite);
+    const gait = sheetLocomotion(sprite);
+    if (entry.kind !== 'sheet' || !gait) throw new Error('world Kaya needs a sheet and gait');
+    const animator = new Animator(content, { motionReduced: () => false });
+    animator.setProjection('oblique');
+    animator.push(0, [{ ...walked, path: [...path, { x: 8, y: 3 }, { x: 8, y: 2 }] }], [unit]);
+
+    const drawn = new Set<number>();
+    let priorPhase = -1;
+    for (let at = 1; at < animator.finishesAt; at += 10) {
+      const pos = animator.renderPos(at, 'p');
+      const pose = animator.unitPose(at, 'p', sprite);
+      if (!pos || !pose) throw new Error(`missing walking pose at ${at}`);
+      expect(pose.clipTime).toBeGreaterThan(priorPhase);
+      if (priorPhase >= 0) expect(pose.clipTime - priorPhase).toBeLessThan(25);
+      priorPhase = pose.clipTime;
+      const clip = animator.locomotion(at, 'p', 'idle', sprite).clip;
+      const resolved = resolveClip(entry.clips, clip);
+      if (!resolved) throw new Error(`missing ${clip} at ${at}`);
+      if (clip.startsWith('walk')) drawn.add(frameIndex(resolved, pose.clipTime, pose.frame));
+    }
+    expect([...drawn].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+
+    const end = animator.finishesAt;
+    const settled = animator.unitPose(end + STOP_SETTLE_MS - 1, 'p', sprite);
+    const stopClip = animator.locomotion(end + STOP_SETTLE_MS - 1, 'p', 'idle', sprite).clip;
+    const resolvedStop = resolveClip(entry.clips, stopClip);
+    if (!settled || !resolvedStop) throw new Error('missing planted stop');
+    expect(stopClip).toMatch(/^walk/);
+    // The settle approaches a passing cel; its final sampled time is just
+    // before the idle takes over, so use the nearest authored cel.
+    const celMs = 1000 / resolvedStop.def.fps;
+    const nearestCel = Math.round(settled.clipTime / celMs) % resolvedStop.def.frames.length;
+    expect([2, 6]).toContain(nearestCel);
+    const targetPhase = Math.round(settled.clipTime / celMs) * celMs;
+    expect(targetPhase - settled.clipTime).toBeGreaterThanOrEqual(0);
+    expect(targetPhase - settled.clipTime).toBeLessThanOrEqual(
+      gait.walkCycleMs / 2 / STOP_SETTLE_MS + 1e-6,
+    );
+    expect(animator.unitPose(end + STOP_SETTLE_MS, 'p', sprite)).toBeUndefined();
   });
 });
