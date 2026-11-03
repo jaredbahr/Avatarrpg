@@ -82,7 +82,13 @@ function forestBattle(): BattleState {
 
 function overviewScene(): OverviewHarness {
   vi.spyOn(sheets, 'silhouetteHeadroom').mockReturnValue(0.25);
-  vi.stubGlobal('window', { innerWidth: 1280, innerHeight: 800, visualViewport: null });
+  vi.stubGlobal('window', {
+    innerWidth: 1280,
+    innerHeight: 800,
+    visualViewport: null,
+    setTimeout: globalThis.setTimeout,
+    clearTimeout: globalThis.clearTimeout,
+  });
   vi.stubGlobal('document', {
     getElementById: () => ({ textContent: '' }),
     documentElement: { dataset: {} },
