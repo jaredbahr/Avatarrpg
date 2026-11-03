@@ -5,6 +5,7 @@ import {
   pauseClock,
   resetStorage,
   setLargeText,
+  settleLayout,
   startGame,
   takeTurn,
   waitForIdle,
@@ -53,6 +54,130 @@ test('a fresh battle establishes the full formation before the acting-unit hand-
   expect(actor).not.toEqual(formation);
 });
 
+test.describe('AI camera reveal at DPR 2', () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  test('a distant enemy is revealed before its native AI turn starts playback', async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Solo'], ['kaya'], 'pr353-natural-ai-evidence');
+    await enterNode(page, 'battle_forest_road');
+    expect(await takeTurn(page)).toBe(true);
+    await waitForIdle(page);
+    await page.evaluate(() => window.fnt!.app.updateSettings({ reduceMotion: false }));
+    await settleLayout(page);
+    await pauseClock(page);
+
+    // Observe the application's own AI dispatch and the rendered reveal.
+    // Keep the real authored battle, timer and command playback unchanged.
+    const probe = await page.evaluateHandle(() => {
+      const app = window.fnt!.app;
+      const scene = document.querySelector('.combat-scene')!;
+      const renderer = (app as unknown as { scene: { renderer: { lastView: MapView | null } } })
+        .scene.renderer;
+      const sample = () => {
+        const battle = app.state!.battle!;
+        const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex])!;
+        const camera = app.rendererCamera()!;
+        const canvas = document.querySelector('.map-canvas')!.getBoundingClientRect();
+        const m = camera.groundTransform;
+        const points = [0, actor.size].flatMap((dy) =>
+          [0, actor.size].map((dx) => ({
+            x: (m.a * (actor.pos.x + dx) + m.c * (actor.pos.y + dy)) * 64 + m.tx,
+            y: (m.b * (actor.pos.x + dx) + m.d * (actor.pos.y + dy)) * 64 + m.ty,
+          })),
+        );
+        return {
+          now: performance.now(),
+          activeId: actor.id,
+          faction: actor.faction,
+          size: actor.size,
+          marker: scene.getAttribute('data-camera-glide'),
+          camera,
+          width: canvas.width,
+          height: canvas.height,
+          bounds: {
+            left: Math.min(...points.map((point) => point.x)),
+            right: Math.max(...points.map((point) => point.x)),
+            top: Math.min(...points.map((point) => point.y)),
+            bottom: Math.max(...points.map((point) => point.y)),
+          },
+          busy: app.animator.busy(performance.now()),
+          moving: app.animator.renderPos(performance.now(), actor.id) !== undefined,
+          renderedActiveId: renderer.lastView?.activeUnitId ?? null,
+          battle: JSON.stringify(battle),
+        };
+      };
+      const records = {
+        revealed: null as ReturnType<typeof sample> | null,
+        actions: [] as ReturnType<typeof sample>[],
+      };
+      const observer = new MutationObserver(() => {
+        if (scene.hasAttribute('data-camera-glide') || records.revealed) return;
+        records.revealed = sample();
+        observer.disconnect();
+      });
+      observer.observe(scene, { attributes: true, attributeFilter: ['data-camera-glide'] });
+      const dispatch = app.dispatch.bind(app);
+      app.dispatch = (command) => {
+        if (command.type === 'runAiTurn') records.actions.push(sample());
+        return dispatch(command);
+      };
+      const battle = app.state!.battle!;
+      const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex])!;
+      dispatch({ type: 'endTurn', unitId: actor.id });
+      return { initial: sample(), sample, records };
+    });
+    const initial = await probe.evaluate((value) => value.initial);
+    expect(initial.faction).toBe('enemy');
+    expect(initial.size).toBe(1);
+    expect(initial.marker).toBe('active');
+    expect(initial.bounds.left).toBeGreaterThan(initial.width);
+
+    await page.clock.runFor(300);
+    const waiting = await probe.evaluate((value) => ({
+      current: value.sample(),
+      actions: value.records.actions.length,
+    }));
+    expect(waiting.current.activeId).toBe(initial.activeId);
+    expect(waiting.current.battle).toBe(initial.battle);
+    expect(waiting.current.marker).toBe('active');
+    expect(waiting.current.busy).toBe(false);
+    expect(waiting.current.moving).toBe(false);
+    expect(waiting.actions).toBe(0);
+    expect(waiting.current.camera.offsetX).not.toBe(initial.camera.offsetX);
+
+    await page.clock.runFor(300);
+    const after = await probe.evaluate((value) => ({
+      current: value.sample(),
+      revealed: value.records.revealed,
+      actions: value.records.actions,
+    }));
+    expect(after.actions).toHaveLength(1);
+    const action = after.actions[0];
+    if (!action || !after.revealed) throw new Error('AI acted without a rendered camera reveal.');
+    expect(action.now - initial.now).toBeGreaterThanOrEqual(420);
+    expect(action.activeId).toBe(initial.activeId);
+    expect(action.renderedActiveId).toBe(initial.activeId);
+    expect(action.marker).toBeNull();
+    expect(action.busy).toBe(false);
+    expect(action.moving).toBe(false);
+    expect(action.bounds.left).toBeGreaterThanOrEqual(0);
+    expect(action.bounds.right).toBeLessThanOrEqual(action.width);
+    expect(action.bounds.top).toBeGreaterThanOrEqual(0);
+    expect(action.bounds.bottom).toBeLessThanOrEqual(action.height);
+    expect(action.camera).toEqual(after.revealed.camera);
+    expect(action.camera.tilePx).toBe(initial.camera.tilePx);
+    expect(after.revealed.now).toBeLessThanOrEqual(action.now);
+    expect(after.current.activeId).not.toBe(initial.activeId);
+    expect(after.current.busy).toBe(true);
+    await probe.dispose();
+  });
+});
+
 test('camera follows the moving boss and returns to the next actor with motion on', async ({
   page,
 }) => {
@@ -66,13 +191,14 @@ test('camera follows the moving boss and returns to the next actor with motion o
   await page.evaluate(() => {
     type FollowProbe = {
       animatedFrames: number;
+      glideSeen: boolean;
       outside: {
         points: { x: number; y: number }[];
         viewport: { width: number; height: number };
       }[];
     };
     const win = window as Window & { bossFollowProbe?: FollowProbe };
-    win.bossFollowProbe = { animatedFrames: 0, outside: [] };
+    win.bossFollowProbe = { animatedFrames: 0, glideSeen: false, outside: [] };
     const app = window.fnt!.app;
     const scene = (
       app as unknown as {
@@ -87,6 +213,19 @@ test('camera follows the moving boss and returns to the next actor with motion o
         };
       }
     ).scene;
+    const combatRoot = document.querySelector('.combat-scene');
+    if (!combatRoot) throw new Error('Missing combat root');
+    const latchFollowGlide = () => {
+      if (combatRoot.getAttribute('data-camera-glide') !== 'active') return;
+      if (win.bossFollowProbe!.animatedFrames > 0) {
+        win.bossFollowProbe!.glideSeen = true;
+        observer.disconnect();
+        return;
+      }
+      requestAnimationFrame(latchFollowGlide);
+    };
+    const observer = new MutationObserver(latchFollowGlide);
+    observer.observe(combatRoot, { attributes: true, attributeFilter: ['data-camera-glide'] });
     const draw = scene.renderer.draw.bind(scene.renderer);
     scene.renderer.draw = (view) => {
       draw(view);
@@ -127,6 +266,19 @@ test('camera follows the moving boss and returns to the next actor with motion o
       ),
     )
     .toBeGreaterThan(0);
+  // The large actor owns the camera during its animation; on release the
+  // follow owner hands off to the eased centre for the next actor.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            (window as Window & { bossFollowProbe?: { glideSeen: boolean } }).bossFollowProbe
+              ?.glideSeen ?? false,
+        ),
+      { timeout: 20_000, intervals: [50] },
+    )
+    .toBe(true);
   await waitForIdle(page);
   await takeTurn(page);
   const follow = await page.evaluate(
