@@ -28,7 +28,7 @@ export const WORLD_PARTY: Readonly<
     walkStartCel: 2,
     idleMs: [1300, 1100],
     anchorY: 0.882812,
-    walkMsPerTile: [987.9, 1021.6, 875.5, 1067.6, 987.9, 1021.6, 875.5, 1067.6],
+    walkMsPerTile: [1181.1, 1129.2, 875.5, 1216.2, 1181.1, 1129.2, 875.5, 1216.2],
     bend: true,
   },
   sura: {
