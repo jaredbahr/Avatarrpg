@@ -1005,15 +1005,19 @@ html[data-contrast='high'] .title-card .tagline {
     calc(var(--sp-5) + env(safe-area-inset-bottom, 0px));
 }
 
-/* Endings have no speaker heading, so their summary uses the full stage. */
+/* Endings have no speaker heading. Let the whole summary scroll on its stage. */
 .stage[data-kind='end'] {
   grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  overflow-y: auto;
 }
 
 .stage[data-kind='end'] .end-panel {
   grid-column: 1 / -1;
   justify-self: center;
-  width: min(100%, 58rem);
+  width: min(100%, var(--conversation-panel-max));
+  max-height: none;
+  overflow: visible;
 }
 
 .stage-head {
@@ -2553,7 +2557,7 @@ html[data-contrast='high'] .hud-panel::after {
   }
 
   .stage[data-kind='end'] {
-    grid-template-rows: minmax(0, 1fr);
+    grid-template-rows: auto;
   }
 
   .stage-head {
