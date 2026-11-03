@@ -20,8 +20,10 @@ import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
+  activeGroundCue,
   actorReticleX,
   actorSilhouetteGeometry,
+  combatActorSilhouetteScreenGeometry,
   fallbackBarTop,
   floaterOwner,
   floaterStartY,
@@ -2081,23 +2083,28 @@ export class Canvas2DBackend implements RenderBackend {
       const footprint = this.squareFootprints ? unit.size : 1;
       const width = box.size * unit.size;
       const centreLift = (footprint - 1) * box.size * 0.5;
-      // Active-unit ring, drawn under the sprite.
+      // A stepped active-unit frame, drawn under the sprite like the former ring.
       if (unit.id === view.activeUnitId) {
-        ctx.save();
-        ctx.strokeStyle = OVERLAY.active;
-        ctx.lineWidth = Math.max(2, box.size * 0.06);
-        ctx.globalAlpha = 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2);
-        ctx.beginPath();
-        ctx.ellipse(
-          marker.x + width / 2,
-          marker.y + box.size * 0.86 - centreLift,
-          width * 0.42,
-          box.size * footprint * 0.14,
-          0,
-          0,
-          Math.PI * 2,
+        // Snap in world space, then apply the camera transform. Snapping the
+        // screen point to a zero-based grid loses the offset's device-pixel
+        // phase (for example, half a CSS pixel at DPR 2) and separates this
+        // cue from the Pixi cue and the actor's feet.
+        const cue = activeGroundCue(
+          (marker.x + width / 2 + camera.offsetX) / camera.scale,
+          (marker.y + box.size * 0.86 - centreLift + camera.offsetY) / camera.scale,
+          width / camera.scale,
+          box.size / camera.scale,
+          footprint,
+          1,
+          view.crispOverlays ? 4 : 3,
         );
-        ctx.stroke();
+        ctx.save();
+        ctx.translate(-camera.offsetX, -camera.offsetY);
+        ctx.scale(camera.scale, camera.scale);
+        ctx.fillStyle = HP_COLORS.frame;
+        for (const run of cue.outer) ctx.fillRect(run.x, run.y, run.width, run.height);
+        ctx.fillStyle = OVERLAY.active;
+        for (const run of cue.inner) ctx.fillRect(run.x, run.y, run.width, run.height);
         ctx.restore();
       } else if (unit.id === view.selectedUnitId) {
         ctx.save();
@@ -2193,12 +2200,14 @@ export class Canvas2DBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const silhouette = actorSilhouetteGeometry(
+      const silhouette = combatActorSilhouetteScreenGeometry(
         { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
-        26,
+        camera.scale,
+        camera.offsetX,
+        camera.offsetY,
       );
       this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {
@@ -2298,19 +2307,31 @@ export class Canvas2DBackend implements RenderBackend {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
     const fill = hpFill(unit.faction, fraction, hatch);
+    const pixel = bar.pixelSize;
+    const innerX = barX + pixel;
+    const innerY = barY + pixel;
+    const innerWidth = Math.max(pixel, barWidth - pixel * 2);
+    const innerHeight = Math.max(pixel, barHeight - pixel * 2);
+    const fillWidth =
+      fraction > 0
+        ? Math.min(innerWidth, Math.max(pixel, Math.round((innerWidth * fraction) / pixel) * pixel))
+        : 0;
 
-    // An ink-framed track, filled in the unit's side colour (pixi.ts matches).
-    ctx.fillStyle = HP_COLORS.back;
+    // The frame and one-pixel upper edge stay sharp at the camera's pixel scale.
+    ctx.fillStyle = HP_COLORS.frame;
     ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillStyle = HP_COLORS.back;
+    ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
     ctx.fillStyle = fill;
-    ctx.fillRect(barX, barY, barWidth * fraction, barHeight);
-    ctx.strokeStyle = HP_COLORS.frame;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1);
+    ctx.fillRect(innerX, innerY, fillWidth, innerHeight);
+    ctx.fillStyle = HP_COLORS.highlight;
+    ctx.fillRect(innerX, innerY, innerWidth, pixel);
 
     // The side's cap, so the bar reads by shape as well as colour.
     const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX);
     if (cap.length === 0) return;
+    ctx.strokeStyle = HP_COLORS.frame;
+    ctx.lineWidth = pixel;
     ctx.beginPath();
     for (let i = 0; i < cap.length; i += 2) ctx.lineTo(cap[i] ?? 0, cap[i + 1] ?? 0);
     ctx.closePath();

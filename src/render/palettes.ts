@@ -353,6 +353,8 @@ export const HP_COLORS = {
   /** The empty part of the bar, and the 1px frame round it: the art bible's ink. */
   back: 'rgba(27,20,16,0.55)',
   frame: '#1b1410',
+  /** A one-pixel upper edge keeps the filled track legible against dark ground. */
+  highlight: '#fff6e0',
 } as const;
 
 /**

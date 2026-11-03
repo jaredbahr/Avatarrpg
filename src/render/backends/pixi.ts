@@ -74,8 +74,10 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
+  activeGroundCue,
   actorReticleX,
   actorSilhouetteGeometry,
+  combatActorSilhouetteGeometry,
   fallbackBarTop,
   floaterFontPx,
   floaterOwner,
@@ -2933,12 +2935,12 @@ export class PixiBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const silhouette = actorSilhouetteGeometry(
+      const silhouette = combatActorSilhouetteGeometry(
         { x, y, size: TILE, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
-        26 / camera.scale,
+        1,
       );
       this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {
@@ -3023,18 +3025,19 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.id === view.activeUnitId) {
-        rings
-          .ellipse(
-            marker.x + width / 2,
-            marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
-            width * 0.42,
-            TILE * heightTiles * 0.14,
-          )
-          .stroke({
-            width: Math.max(2, TILE * 0.06),
-            color: OVERLAY.active,
-            alpha: 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2),
-          });
+        const cue = activeGroundCue(
+          marker.x + width / 2,
+          marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
+          width,
+          TILE,
+          heightTiles,
+          1,
+          view.crispOverlays ? 4 : 3,
+        );
+        for (const run of cue.outer)
+          rings.rect(run.x, run.y, run.width, run.height).fill({ color: HP_COLORS.frame });
+        for (const run of cue.inner)
+          rings.rect(run.x, run.y, run.width, run.height).fill({ color: OVERLAY.active });
       } else if (unit.id === view.selectedUnitId) {
         rings
           .ellipse(
@@ -3128,16 +3131,23 @@ export class PixiBackend implements RenderBackend {
   ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
+    const pixel = bar.pixelSize;
+    const innerX = barX + pixel;
+    const innerY = barY + pixel;
+    const innerWidth = Math.max(pixel, barWidth - pixel * 2);
+    const innerHeight = Math.max(pixel, barHeight - pixel * 2);
+    const fillWidth =
+      fraction > 0
+        ? Math.min(innerWidth, Math.max(pixel, Math.round((innerWidth * fraction) / pixel) * pixel))
+        : 0;
 
-    // An ink-framed track, filled in the unit's side colour (canvas2d.ts matches).
-    g.rect(barX, barY, barWidth, barHeight).fill({ color: HP_COLORS.back });
-    g.rect(barX, barY, barWidth * fraction, barHeight).fill({
+    // The frame and one-pixel upper edge stay sharp at the camera's pixel scale.
+    g.rect(barX, barY, barWidth, barHeight).fill({ color: HP_COLORS.frame });
+    g.rect(innerX, innerY, innerWidth, innerHeight).fill({ color: HP_COLORS.back });
+    g.rect(innerX, innerY, fillWidth, innerHeight).fill({
       color: hpFill(unit.faction, fraction, hatch),
     });
-    g.rect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1).stroke({
-      width: 1,
-      color: HP_COLORS.frame,
-    });
+    g.rect(innerX, innerY, innerWidth, pixel).fill({ color: HP_COLORS.highlight });
 
     // The side's cap, so the bar reads by shape as well as colour.
     const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX, 1 / cssScale);
