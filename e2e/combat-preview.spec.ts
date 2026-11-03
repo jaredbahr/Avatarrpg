@@ -265,7 +265,7 @@ test('movement confirmation warns about a possible direct attack without claimin
   await expect(page.locator('.confirm-bar')).not.toContainText('safe');
 });
 
-test('player action controls are disabled during an enemy turn', async ({ page }) => {
+test('player action controls are absent during an enemy turn', async ({ page }) => {
   await resetStorage(page);
   await startGame(page, ['Reviewer'], ['kaya'], 'enemy-controls-touch');
   await enterNode(page, 'battle_quarry_gate');
@@ -274,11 +274,10 @@ test('player action controls are disabled during an enemy turn', async ({ page }
 
   /*
    * Take the enemy's turn and read the HUD in one task. `resync()` renders the
-   * action bar synchronously and no timer can run inside a single evaluate, so
+   * actor card synchronously and no timer can run inside a single evaluate, so
    * the read cannot race the AI turn the scene schedules for a quarter-second
-   * later. Split across two evaluates the round trip outlasted the whole enemy
-   * turn on the slower WebKit iPad project, which is why this check reported
-   * `moveDisabled: false` there while passing everywhere else.
+   * later. Split across two evaluates the round trip can outlast the enemy turn
+   * on the slower WebKit iPad project.
    */
   const controls = await page.evaluate(() => {
     const app = window.fnt?.app;
@@ -290,19 +289,23 @@ test('player action controls are disabled during an enemy turn', async ({ page }
       return unit?.faction === 'enemy';
     });
     if (turnIndex < 0) throw new Error('Enemy turn fixture missing an enemy.');
+    const actorName = battle.units.find((unit) => unit.id === battle.order[turnIndex])?.name;
     app.state = { ...state, battle: { ...battle, turnIndex } };
     app.resync();
 
-    const buttons = [...document.querySelectorAll<HTMLButtonElement>('.action-button')];
+    const card = document.querySelector('.enemy-turn-card');
     return {
-      moveDisabled: buttons.find((button) => button.textContent?.includes('Move'))?.disabled,
-      endDisabled: buttons.find((button) => button.textContent?.includes('End turn'))?.disabled,
-      enemyBanner: document.querySelector('.enemy-turn-banner')?.textContent ?? '',
+      actorName,
+      actionButtonCount: document.querySelectorAll('.action-button').length,
+      cardCount: document.querySelectorAll('.enemy-turn-card').length,
+      cardText: card?.textContent?.trim() ?? '',
+      cardAriaHidden: card?.getAttribute('aria-hidden'),
     };
   });
-  expect(controls.moveDisabled).toBe(true);
-  expect(controls.endDisabled).toBe(true);
-  expect(controls.enemyBanner).toContain('moving');
+  expect(controls.actionButtonCount).toBe(0);
+  expect(controls.cardCount).toBe(1);
+  expect(controls.cardText).toBe(`${controls.actorName} is acting`);
+  expect(controls.cardAriaHidden).toBe('true');
 });
 
 test('movement prevention disables Move and explains the status', async ({ page }) => {

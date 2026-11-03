@@ -73,6 +73,7 @@ import {
 } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { PropInspector } from '../ui/PropInspector';
+import type { ToastHandle } from '../ui/Toasts';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
@@ -88,6 +89,10 @@ import {
   shouldFollowAnimatedLargeActor,
   type CombatCameraFollowState,
 } from './combatCameraFollow';
+
+export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
+  return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
+}
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
@@ -284,6 +289,8 @@ export class CombatScene implements Scene {
   private layoutMeasuredAfterSync = false;
   /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
   private flushedAt: number | null = null;
+  private endTurnConfirmation: ToastHandle | null = null;
+  private endTurnConfirmationTimer: number | null = null;
 
   constructor(private app: App) {
     this.movementThreatQuery = createMovementThreatQuery(app.content);
@@ -320,6 +327,7 @@ export class CombatScene implements Scene {
   }
 
   unmount(): void {
+    this.clearEndTurnConfirmation();
     this.stopAiTimer();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
@@ -1043,6 +1051,7 @@ export class CombatScene implements Scene {
     const activeId = unit?.id ?? null;
 
     if (activeId !== this.lastActiveId) {
+      this.clearEndTurnConfirmation();
       if (this.battleOpening) this.skipBattleOpening();
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
@@ -1053,7 +1062,13 @@ export class CombatScene implements Scene {
       if (unit && unit.faction === 'party' && !this.app.session.solo) {
         this.handedOffTo = null;
       }
-      if (unit) announce(`${this.app.session.labelFor(unit)}'s turn.`);
+      if (unit) {
+        announce(
+          unit.faction === 'party'
+            ? `${this.app.session.labelFor(unit)}'s turn.`
+            : actingTurnCopy(unit),
+        );
+      }
       // The More list was opened for the last turn; the next player at the
       // table finds it closed. The rebuild below hands focus to the toggle.
       this.setMoreOpen(false, false);
@@ -1402,15 +1417,20 @@ export class CombatScene implements Scene {
     }
 
     if (unit.faction !== 'party') {
-      overlays.appendChild(
+      hud.appendChild(
         el(
           'div',
-          { class: 'enemy-turn-banner' },
-          el('span', {
-            text: unit.faction === 'enemy' ? 'Enemies are moving…' : `${unit.name} is moving…`,
-          }),
+          { class: `enemy-turn-card element-${unit.element}`, attrs: { 'aria-hidden': 'true' } },
+          assetCanvas(
+            portraitKeyFor(this.app.content, unit),
+            3,
+            'unit-portrait square enemy-turn-portrait',
+          ),
+          el('span', { class: 'enemy-turn-copy', text: actingTurnCopy(unit) }),
         ),
       );
+      if (this.logOpen) hud.appendChild(this.logPanel());
+      return;
     }
 
     hud.appendChild(this.unitPanel(unit));
@@ -1654,16 +1674,24 @@ export class CombatScene implements Scene {
   private endTurn(unit: Unit): void {
     if (unit.ap > 0 && !this.confirmedEndTurn) {
       this.confirmedEndTurn = true;
-      this.app.toasts.show(
+      const confirmation = this.app.toasts.show(
         `${unit.name} still has ${unit.ap} AP. Tap End turn again to finish anyway.`,
         'warn',
+        2600,
+        () => this.clearEndTurnConfirmation(),
       );
-      window.setTimeout(() => {
+      if (!confirmation) {
         this.confirmedEndTurn = false;
+        return;
+      }
+      this.endTurnConfirmation = confirmation;
+      this.endTurnConfirmationTimer = window.setTimeout(() => {
+        this.endTurnConfirmationTimer = null;
+        this.clearEndTurnConfirmation();
       }, 4000);
       return;
     }
-    this.confirmedEndTurn = false;
+    this.clearEndTurnConfirmation();
     this.mode = { kind: 'idle' };
     this.clearPending();
     this.handedOffTo = null;
@@ -1671,6 +1699,17 @@ export class CombatScene implements Scene {
   }
 
   private confirmedEndTurn = false;
+
+  private clearEndTurnConfirmation(): void {
+    this.confirmedEndTurn = false;
+    if (this.endTurnConfirmationTimer !== null) {
+      window.clearTimeout(this.endTurnConfirmationTimer);
+      this.endTurnConfirmationTimer = null;
+    }
+    const toast = this.endTurnConfirmation;
+    this.endTurnConfirmation = null;
+    if (toast) this.app.toasts.dismiss(toast);
+  }
 
   /* ---------------------------------------------------------------- */
   /* Confirm step                                                      */

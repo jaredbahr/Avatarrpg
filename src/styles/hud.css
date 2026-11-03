@@ -1929,14 +1929,32 @@ html[data-contrast='high'] .hud-panel::after {
   margin: 0;
 }
 
-.enemy-turn-banner {
-  align-self: center;
-  margin-bottom: var(--sp-3);
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
-  border: var(--hairline) solid var(--c-line);
-  color: var(--c-ink-dim);
+.enemy-turn-card {
+  display: flex;
+  flex: 0 1 auto;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-1) var(--sp-2);
+  border: var(--hairline) solid color-mix(in srgb, var(--el, var(--c-gold)) 45%, var(--c-line));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c-bg) 94%, transparent);
+  color: var(--c-ink);
+}
+
+.enemy-turn-portrait {
+  flex: 0 0 var(--tap);
+  width: var(--tap) !important;
+  height: var(--tap) !important;
+  max-width: var(--tap);
+  max-height: var(--tap);
+}
+
+.enemy-turn-copy {
+  min-width: 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
 }
 
 .result-panel h1 {

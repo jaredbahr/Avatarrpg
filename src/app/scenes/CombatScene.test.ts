@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PropInstance, Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
 import { Camera } from '../../render/camera';
@@ -11,6 +11,7 @@ import {
   overlayMemoInputKey,
   occupiedUnitAt,
   overlayMemoHoverKey,
+  actingTurnCopy,
 } from './CombatScene';
 
 function prop(id: string, pos: Vec2): PropInstance {
@@ -58,6 +59,121 @@ function unit(id: string, pos: Vec2, extra: Partial<Unit> = {}): Unit {
     ...extra,
   };
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
+
+describe('acting-turn card copy', () => {
+  it('names the actor and distinctly labels an allied turn', () => {
+    expect(actingTurnCopy({ faction: 'enemy', name: 'Bandit' })).toBe('Bandit is acting');
+    expect(actingTurnCopy({ faction: 'ally', name: 'Sura' })).toBe('Ally turn · Sura is acting');
+  });
+
+  it('cancels and dismisses an AP confirmation handle without clearing other messages', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('window', {
+      setTimeout: globalThis.setTimeout,
+      clearTimeout: globalThis.clearTimeout,
+    });
+    const handle = Symbol('ap confirmation');
+    let dismissed: (() => void) | undefined;
+    const show = vi.fn((_text: string, _kind: string, _ms: number, onDismiss?: () => void) => {
+      dismissed = onDismiss;
+      return handle;
+    });
+    const dismiss = vi.fn();
+    const toasts = { show, dismiss };
+    const scene = Object.create(CombatScene.prototype) as unknown as {
+      app: { toasts: typeof toasts };
+      confirmedEndTurn: boolean;
+      endTurnConfirmation: symbol | null;
+      endTurnConfirmationTimer: number | null;
+      endTurn(unit: Unit): void;
+      clearEndTurnConfirmation(): void;
+    };
+    scene.app = { toasts };
+    scene.confirmedEndTurn = false;
+    scene.endTurnConfirmation = null;
+    scene.endTurnConfirmationTimer = null;
+
+    scene.endTurn(unit('hero', { x: 0, y: 0 }));
+    expect(show).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(1);
+
+    dismissed?.();
+    expect(dismiss).toHaveBeenCalledWith(handle);
+    expect(scene.confirmedEndTurn).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('does not arm a confirmation whose toast was suppressed', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('window', {
+      setTimeout: globalThis.setTimeout,
+      clearTimeout: globalThis.clearTimeout,
+    });
+    const show = vi.fn(() => null);
+    const scene = Object.create(CombatScene.prototype) as unknown as {
+      app: { toasts: { show: typeof show; dismiss: () => void } };
+      confirmedEndTurn: boolean;
+      endTurnConfirmation: symbol | null;
+      endTurnConfirmationTimer: number | null;
+      endTurn(unit: Unit): void;
+    };
+    scene.app = { toasts: { show, dismiss: vi.fn() } };
+    scene.confirmedEndTurn = false;
+    scene.endTurnConfirmation = null;
+    scene.endTurnConfirmationTimer = null;
+
+    scene.endTurn(unit('hero', { x: 0, y: 0 }));
+    expect(show).toHaveBeenCalledOnce();
+    expect(scene.confirmedEndTurn).toBe(false);
+    expect(scene.endTurnConfirmationTimer).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('cancels the AP confirmation during scene unmount', () => {
+    const clearConfirmation = vi.fn();
+    const scene = Object.create(CombatScene.prototype) as unknown as {
+      clearEndTurnConfirmation: () => void;
+      stopAiTimer: () => void;
+      frame: number;
+      suspended: boolean;
+      aiHeld: boolean;
+      battleOpening: null;
+      freshBattleEntry: boolean;
+      moreDismiss: null;
+      moreOpen: boolean;
+      topBarKey: string;
+      detach: null;
+      inspector: null;
+      renderer: null;
+      canvas: null;
+      host: null;
+      unmount(): void;
+    };
+    scene.clearEndTurnConfirmation = clearConfirmation;
+    scene.stopAiTimer = vi.fn();
+    scene.frame = 0;
+    scene.suspended = false;
+    scene.aiHeld = false;
+    scene.battleOpening = null;
+    scene.freshBattleEntry = false;
+    scene.moreDismiss = null;
+    scene.moreOpen = false;
+    scene.topBarKey = '';
+    scene.detach = null;
+    scene.inspector = null;
+    scene.renderer = null;
+    scene.canvas = null;
+    scene.host = null;
+
+    scene.unmount();
+    expect(clearConfirmation).toHaveBeenCalledOnce();
+  });
+});
 
 describe('held knockout facing', () => {
   it("keeps a mirrored sheet's bare knockout the way the unit fell", () => {
