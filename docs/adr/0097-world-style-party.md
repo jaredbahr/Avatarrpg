@@ -94,3 +94,28 @@ looked tilted further down than the painting. The camera angle stays as decided 
   hand on the shipped sheet.
 
 Faults that remain and the credit ledger are in the README ("Kaya C fixes").
+
+## Amendment, 2026-11-03: the eight-cel walk (#408)
+
+Owner, 2026-11-03: "The animation is super hoppy. Needs to be a smidge more smooth. Seems we're missing some frames in
+the walks." Measured as the game draws it, the six-cel walk moved Kaya's head and torso 3 world px a cel east and west
+and 6-9 on the other headings. The cause was mostly not the design's dip: the store stands every walk cel on its own
+lowest pixel (ADR 0093's planting amendment), and the design strode planted feet up and down the cel. Each time the
+lowest foot changed, the whole figure was re-stood by the difference.
+
+- **Eight cels.** Contact, down, passing, up, for each leg. At the 750 ms pace each cel holds 75-85 ms (92-128 before).
+  `walkCels` is 8 for Kaya; the runtime already read the loop's length from the sheet (`walkStartCel`, `walkCycleMs`),
+  and the asset test now does too. Sura and Bo keep 6 until #337 redraws them.
+- **Planted feet keep one row.** In the design, both feet stand on the near foot's row. A foot on the ground never moves
+  up or down the cel, and a lifted foot shows only the part of its stride that carries it up the screen. The horizontal
+  stride is unchanged, so the planted foot still holds sideways. North and south lose their up-screen stride and walk
+  as a classic top-down sprite does.
+- **The trunk's row is set, not searched.** The texture transfer still puts the idle root's own head and torso on every
+  cel, but at the cel's drawn ground row plus a designed 1 px dip on each down cel. On screen the head and torso move 0
+  or 1 px a cel in every heading.
+- **The fit.** The clip time a tile is fitted from the drawn feet's horizontal travel. North and south, which have none,
+  take the design's own loop. The 750 ms pace and `BRISK_WALK_CEL_MS` are unchanged.
+
+`feet.test.ts` holds: every cel still stands on its own lowest sole. Planting walk cels on a fixed line instead would
+bring back the up-screen stride. That is a change to the planting contract, so it is left as a decision for later.
+The recipe, the measurements and the credits are in `art/source/party-world/README.md` ("Smooth walk").

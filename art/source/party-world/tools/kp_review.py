@@ -2,7 +2,7 @@
 nearest on the world's paving colour, rows in the engine's HEADINGS order. Cels are cut to the figure's box on their canvas
 (128 px cels: x 28-100, y 26-122; 192 px cels: x 36-156, y 52-162) so the poses are large enough to judge.
 
-- turntable-locomotion.png: idle (2), rest, walk (6), stance (2), hit (stance + 3);
+- turntable-locomotion.png: idle (2), rest, walk (8 since #408), stance (2), hit (stance + 3);
 - turntable-bend.png: the bend's twelve cels (0-11; cel 7 is not drawn, the set holds cel 6 there);
 - turntable-ko.png: the four knockouts (stance + 6);
 - turntable-riverside.png: wave (2) and tea (2).
@@ -35,10 +35,11 @@ def sheet(name, rows, cols_label):
 
 
 if __name__ == '__main__':
-    cols = ['idle 0', 'idle 1', 'rest'] + [f'walk {i}' for i in range(6)] + ['stance 0', 'stance 1'] + [f'hit {i}' for i in range(4)]
+    nw = len(list((C / 'walk/east').glob('*.png')))
+    cols = ['idle 0', 'idle 1', 'rest'] + [f'walk {i}' for i in range(nw)] + ['stance 0', 'stance 1'] + [f'hit {i}' for i in range(4)]
     rows = []
     for d in HEADINGS:
-        rows.append((d, [C / f'idle/{d}/00.png', C / f'idle/{d}/01.png', C / f'rest/{d}/00.png'] + [C / f'walk/{d}/{i:02d}.png' for i in range(6)]
+        rows.append((d, [C / f'idle/{d}/00.png', C / f'idle/{d}/01.png', C / f'rest/{d}/00.png'] + [C / f'walk/{d}/{i:02d}.png' for i in range(nw)]
                      + [C / f'stance/{d}/{i:02d}.png' for i in range(2)] + [C / f'hit/{d}/{i:02d}.png' for i in range(4)]))
     sheet('locomotion', rows, cols)
     rows = [(d, [C / f'bend/{d}/{i:02d}.png' if (C / f'bend/{d}/{i:02d}.png').exists() else None for i in range(12)]) for d in HEADINGS]

@@ -7030,6 +7030,254 @@
       "notes": "Kaya polish: bend south",
       "verdict": null,
       "error": null
+    },
+    {
+      "name": "walk-kaya-south-east-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4cc77e68-9d08-4063-8c48-9a0a7f16173a",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south-east.png (128 canvas)",
+        "keypoints": "design/kaya-south-east.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18263.0,
+      "secs": 92,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-south-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1cf48753-b2a4-4457-87f9-a8c2de4100d2",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south.png (128 canvas)",
+        "keypoints": "design/kaya-south.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18263.0,
+      "secs": 99,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-east-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "24281d86-25d1-405a-9430-98864e0dc370",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/east.png (128 canvas)",
+        "keypoints": "design/kaya-east.json (step 0.4 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18257.0,
+      "secs": 113,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-east-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "3ff62a8d-9b78-4406-8f89-a5e0a60ae690",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north-east.png (128 canvas)",
+        "keypoints": "design/kaya-north-east.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18251.0,
+      "secs": 119,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-west-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8bce8a07-fec4-4422-9076-283f1e59e419",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north-west.png (128 canvas)",
+        "keypoints": "design/kaya-north-west.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18251.0,
+      "secs": 119,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-west-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "9e4bb125-f722-46f4-b18b-863ad2ae9d34",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/west.png (128 canvas)",
+        "keypoints": "design/kaya-west.json (step 0.4 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18248.0,
+      "secs": 139,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-south-west-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "fc5aa252-d34e-4c0b-a3aa-a5e2f8944975",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south-west.png (128 canvas)",
+        "keypoints": "design/kaya-south-west.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18245.0,
+      "secs": 146,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "a4802ad3-33b4-46c9-942e-8ef4bb61f95b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north.png (128 canvas)",
+        "keypoints": "design/kaya-north.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18245.0,
+      "secs": 146,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
     }
   ]
 }

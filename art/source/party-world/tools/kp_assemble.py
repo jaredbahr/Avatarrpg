@@ -25,6 +25,7 @@ from kp_palette import palette
 from kp_texture import transfer
 from kp_face import mask as face_mask
 from remap import CANVAS, FOOT as RFOOT, root_on
+import kp_walk   # the walk's design settings (design.GROUND_PER_H, STANCE, FWD, screen)
 HERE = Path(__file__).resolve().parent.parent
 DIRS = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west']
 KO_DIRS = ['south-east', 'north-east', 'north-west', 'south-west']
@@ -97,6 +98,11 @@ def take(clip, d):
     t = TAKES[clip]; return t[d] if isinstance(t, dict) else t
 
 
+def ground(a):
+    """The row under the lowest opaque pixel: where the store stands the cel (src/render/sheets/feet.ts)."""
+    return int(np.nonzero((a[..., 3] >= 128).any(1))[0].max()) + 1
+
+
 def save(a, p):
     p.parent.mkdir(parents=True, exist_ok=True); Image.fromarray(a).save(p)
 
@@ -123,21 +129,41 @@ def locomotion(stride):
         save(st, OUT / f'stance/{d}/00.png'); save(sink(st, ssk), OUT / f'stance/{d}/01.png')
         des = json.load(open(HERE / f'design/kaya-{d}.json'))
         root = np.asarray(Image.open(HERE / f'roots/kaya/idle/{d}.png').convert('RGBA'))
-        cels = [L(transfer(c, des['frames'][i], root, des['first_frame_keypoints'], 128, face=face_on('idle', d, 128))[0])
-                for i, c in enumerate(raw(f"walk-kaya-{d}-s{TAKES['walk'][d]}", 6))]
+        n = len(des['frames']); g0 = ground(idle); cels = []
+        for i, c in enumerate(raw(f"walk-kaya-{d}-s{TAKES['walk'][d]}", n)):
+            # #408: the trunk rides the cel's own drawn ground row (the store stands the cel there) plus the designed
+            # dip, so the head and torso move on screen by the dip alone, never more than 1 px a cel.
+            dy = ground(L(c)) - g0 + int(round(des['pelvis_px'][i])) if des.get('plant') else None
+            cels.append(L(transfer(c, des['frames'][i], root, des['first_frame_keypoints'], 128, face=face_on('idle', d, 128), trunk_dy=dy)[0]))
+        shutil.rmtree(OUT / f'walk/{d}', ignore_errors=True)
         for i, a in enumerate(cels): save(a, OUT / f'walk/{d}/{i:02d}.png')
-        ax = np.array(AXIS[d]); travel = []
-        for side, pairs in (('RIGHT', [(0, 1), (1, 2), (2, 3)]), ('LEFT', [(3, 4), (4, 5), (5, 0)])):
-            for i, j in pairs:
+        ax = np.array(AXIS[d]); travel = []; stance = kp_walk.design.STANCE if des.get('plant') else n // 2
+        for side, o in (('RIGHT', 0), ('LEFT', n // 2)):
+            for k in range(stance - 1):
+                i, j = (o + k) % n, (o + k + 1) % n
                 ank = des['ankles'][i][side]; sole = (ank[0], ank[1] + 5)
                 exp = np.array(des['ankles'][j][side]) - np.array(des['ankles'][i][side])
                 m = match(cels[i], cels[j], sole, exp)
                 if m: travel.append(dict(side=side, pair=[i, j], dx=m[0], dy=m[1], iou=round(m[2], 2), along=round(float(-(m[0] * ax[0] + m[1] * ax[1])), 2)))
-        al = [t['along'] for t in travel if t['iou'] > 0.35]; per = float(np.median(al)) if al else None
         ra = np.asarray(root)
-        stride[f'kaya/{d}'] = dict(pairs=travel, back_per_cel=per, loop_tiles=round(6 * per / PX_PER_TILE[d], 3) if per else None,
-                                   colours=int(len(RGB)), height=int(np.ptp(np.nonzero(ra[..., 3])[0]) + 1), take=TAKES['walk'][d])
-        print('walk', d, 'back/cel', per, 'loop tiles', stride[f'kaya/{d}']['loop_tiles'])
+        entry = dict(cels=n, colours=int(len(RGB)), height=int(np.ptp(np.nonzero(ra[..., 3])[0]) + 1), take=TAKES['walk'][d])
+        if des.get('plant'):
+            # A planted foot keeps its row, so it holds sideways only: the fit is the horizontal travel over the screen's
+            # horizontal px a tile for the heading. North and south have none: their loop is the design's own stride.
+            xpt = PX_PER_TILE[d] * abs(ax[0])
+            bx = [-t['dx'] * np.sign(ax[0]) for t in travel if t['iou'] > 0.35]
+            if xpt > 0:
+                per = float(np.median(bx)) if bx else None
+                entry.update(fit='horizontal', back_x_per_cel=per, loop_tiles=round(n * per / xpt, 3) if per else None)
+            else:
+                fx, fy = kp_walk.design.FWD[d]
+                loop = float(np.hypot(*kp_walk.design.screen(2 * des['step'] * fx, 2 * des['step'] * fy, 0, des['height'])))
+                entry.update(fit='design', loop_px=round(loop, 2), loop_tiles=round(loop / PX_PER_TILE[d], 3))
+        else:
+            al = [t['along'] for t in travel if t['iou'] > 0.35]; per = float(np.median(al)) if al else None
+            entry.update(back_per_cel=per, loop_tiles=round(n * per / PX_PER_TILE[d], 3) if per else None)
+        stride[f'kaya/{d}'] = dict(pairs=travel, **entry)
+        print('walk', d, entry.get('fit', 'along'), 'loop tiles', entry['loop_tiles'], 'ms a cel', round(750 * entry['loop_tiles'] / n, 1))
 
 
 def combat():
@@ -203,6 +229,6 @@ if __name__ == '__main__':
     for a, b in list(OPP.items()):
         A, B = stride[f'kaya/{a}'], stride[f'kaya/{b}']; m = round((A['loop_tiles'] + B['loop_tiles']) / 2, 3)
         for e in (A, B): e['loop_tiles_measured'] = e['loop_tiles']; e['loop_tiles'] = m
-        print('loop', a, b, m, 'tiles: real ms a cel at 750 ms a tile', round(750 * m / 6, 1))
+        print('loop', a, b, m, 'tiles: real ms a cel at 750 ms a tile', round(750 * m / A['cels'], 1))
     json.dump(stride, open(sp, 'w'), indent=1)
     combat(); bends(); riverside()
