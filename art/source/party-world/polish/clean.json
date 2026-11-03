@@ -1,0 +1,8 @@
+{
+  "_why": "#351: the generator's smears that a retake did not clear. The south-east knockout is retaken at 543 (541 smeared its last cel's coat in three places; 543 leaves one dusty streak along the coat's top edge); the south-west at 543 (541's fourth cel trailed a pink smear under the coat; 543's is clean, but its third cel trails a smaller one under the hip). Each box holds only the smear: its dusty pinks are peeled from the edge (kp_assemble.clean).",
+  "smear": ["#966857", "#ac7865", "#7e5947"],
+  "cels": {
+    "ko/south-east/06": { "box": [87, 115, 111, 127] },
+    "ko/south-west/03": { "box": [75, 129, 106, 147] }
+  }
+}

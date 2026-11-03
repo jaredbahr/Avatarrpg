@@ -6047,6 +6047,1237 @@
       "notes": "Kaya polish: bend south-west",
       "verdict": null,
       "error": null
+    },
+    {
+      "name": "kp-face-idle-south-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "cd11d572-acab-4a58-a11c-db8f49086cbb",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned toward the viewer: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/idle/south.png on paving",
+        "mask": "face box (59, 53, 70, 61)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18395.0,
+      "balance_after": 18389.0,
+      "secs": 28,
+      "notes": "Kaya C fixes (#351): face inpaint probe idle south",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-idle-south-west-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "20de168e-3b40-429c-ba43-267516cb212f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned three-quarter toward the viewer and to the left: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/idle/south-west.png on paving",
+        "mask": "face box (54, 55, 65, 64)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18389.0,
+      "balance_after": 18365.0,
+      "secs": 21,
+      "notes": "Kaya C fixes (#351): face inpaint probe idle south-west",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-idle-west-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "ff3678c0-7fc8-4e27-9f49-9dbe5104eaf4",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned in profile to the left: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/idle/west.png on paving",
+        "mask": "face box (52, 54, 63, 62)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18389.0,
+      "balance_after": 18365.0,
+      "secs": 21,
+      "notes": "Kaya C fixes (#351): face inpaint probe idle west",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-stance-south-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "a58214de-84e6-41c8-ba74-6c6a63d0f401",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned toward the viewer: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/stance/south.png on paving",
+        "mask": "face box (55, 53, 66, 62)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18389.0,
+      "balance_after": 18365.0,
+      "secs": 22,
+      "notes": "Kaya C fixes (#351): face inpaint probe stance south",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-idle-south-east-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "2853c650-1542-4cb6-9c01-a83fca82d047",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned three-quarter toward the viewer and to the right: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/idle/south-east.png on paving",
+        "mask": "face box (64, 58, 75, 66)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18389.0,
+      "balance_after": 18359.0,
+      "secs": 28,
+      "notes": "Kaya C fixes (#351): face inpaint probe idle south-east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-idle-east-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "de1dcf7b-4f7c-4806-b732-c7cc189152da",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned in profile to the right: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/idle/east.png on paving",
+        "mask": "face box (67, 54, 77, 62)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18389.0,
+      "balance_after": 18353.0,
+      "secs": 34,
+      "notes": "Kaya C fixes (#351): face inpaint probe idle east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-stance-south-east-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "367f8fb7-f3a1-4c02-b3e6-fd07a4ab14f5",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned three-quarter toward the viewer and to the right: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/stance/south-east.png on paving",
+        "mask": "face box (57, 57, 69, 65)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18389.0,
+      "balance_after": 18353.0,
+      "secs": 34,
+      "notes": "Kaya C fixes (#351): face inpaint probe stance south-east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-stance-south-west-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "d0e38307-f4cc-4977-be81-99361ec361e3",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned three-quarter toward the viewer and to the left: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/stance/south-west.png on paving",
+        "mask": "face box (54, 56, 64, 64)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18365.0,
+      "balance_after": 18347.0,
+      "secs": 21,
+      "notes": "Kaya C fixes (#351): face inpaint probe stance south-west",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-stance-east-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "e4dce5fb-ae03-448e-9772-0b077a100a74",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned in profile to the right: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/stance/east.png on paving",
+        "mask": "face box (66, 54, 75, 62)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18365.0,
+      "balance_after": 18335.0,
+      "secs": 27,
+      "notes": "Kaya C fixes (#351): face inpaint probe stance east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-stance-west-s601",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "a3df117d-0aa6-4791-8149-10f827f0a00f",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned in profile to the left: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 601
+      },
+      "inputs": {
+        "image": "roots/kaya/stance/west.png on paving",
+        "mask": "face box (52, 57, 63, 65)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18365.0,
+      "balance_after": 18335.0,
+      "secs": 28,
+      "notes": "Kaya C fixes (#351): face inpaint probe stance west",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-idle-south-west-s602",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "f294ab32-c207-4bdd-8827-e19dcfc372ea",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned three-quarter toward the viewer and to the left: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 602
+      },
+      "inputs": {
+        "image": "roots/kaya/idle/south-west.png on paving",
+        "mask": "face box (54, 55, 65, 64)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18335.0,
+      "balance_after": 18329.0,
+      "secs": 21,
+      "notes": "Kaya C fixes (#351): face inpaint probe idle south-west",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-stance-south-s602",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "e8fc55a3-ae42-430b-b2e9-a3722d7b6c30",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned toward the viewer: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 602
+      },
+      "inputs": {
+        "image": "roots/kaya/stance/south.png on paving",
+        "mask": "face box (55, 53, 66, 62)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18335.0,
+      "balance_after": 18323.0,
+      "secs": 27,
+      "notes": "Kaya C fixes (#351): face inpaint probe stance south",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-face-idle-east-s602",
+      "endpoint": "/inpaint-image-pro-flash",
+      "job": "56fa8675-f0eb-43ce-a125-5a8509bdb004",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "image": "<png>",
+        "mask_image": "<png>",
+        "description": "Pixel art face of a young woman seen from a high oblique camera, her face turned in profile to the right: two small clearly readable dark brown eyes, one pixel each with a light catch beside, and two thin dark brows just under a dark brown fringe that is lifted slightly so the eyes show, tan skin, a hint of a small nose and mouth. Painterly pixel art, warm light from the upper left, same colours as the surrounding hair and skin.",
+        "output_method": "Modify current layer",
+        "seed": 602
+      },
+      "inputs": {
+        "image": "roots/kaya/idle/east.png on paving",
+        "mask": "face box (67, 54, 77, 62)"
+      },
+      "outputs": ["00.png", "01.png"],
+      "gens": 6.0,
+      "balance_before": 18335.0,
+      "balance_after": 18317.0,
+      "secs": 40,
+      "notes": "Kaya C fixes (#351): face inpaint probe idle east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-west-s631",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ee208f7f-a238-4af5-976d-66db09173ecc",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 631,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north-west.png (128 canvas)",
+        "keypoints": "design/kaya-north-west.json (step 0.44 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18317.0,
+      "balance_after": 18317.0,
+      "secs": 80,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-south-east-s631",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "15846989-a403-4c7f-8f42-f44adde90643",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 631,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south-east.png (128 canvas)",
+        "keypoints": "design/kaya-south-east.json (step 0.44 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18317.0,
+      "balance_after": 18311.0,
+      "secs": 87,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-east-s631",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "150dd11f-42b2-4df2-bf70-5c0d67877514",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 631,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/east.png (128 canvas)",
+        "keypoints": "design/kaya-east.json (step 0.38 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18317.0,
+      "balance_after": 18308.0,
+      "secs": 100,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-west-s631",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "9ce1148a-b479-4f41-b2ee-e8fd114e1d7b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 631,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/west.png (128 canvas)",
+        "keypoints": "design/kaya-west.json (step 0.38 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18317.0,
+      "balance_after": 18305.0,
+      "secs": 113,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-east-s631",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "7132d485-ed53-46c4-bd00-8179d0e2b37b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 631,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north-east.png (128 canvas)",
+        "keypoints": "design/kaya-north-east.json (step 0.44 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18317.0,
+      "balance_after": 18302.0,
+      "secs": 153,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-south-west-s631",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "c0b29fcf-9e5d-43d3-9076-37a29c3fc943",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 631,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south-west.png (128 canvas)",
+        "keypoints": "design/kaya-south-west.json (step 0.44 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18317.0,
+      "balance_after": 18302.0,
+      "secs": 158,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-east-s632",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "54e70246-afc0-419d-8991-36b33f4aadc5",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 632,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/east.png (128 canvas)",
+        "keypoints": "design/kaya-east.json (step 0.38 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18299.0,
+      "balance_after": 18299.0,
+      "secs": 73,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-east-s633",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "fcee04b4-3fa8-4c39-8a18-648ce1ea7e60",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 633,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/east.png (128 canvas)",
+        "keypoints": "design/kaya-east.json (step 0.38 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18299.0,
+      "balance_after": 18293.0,
+      "secs": 112,
+      "notes": "designed six-pose walk",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-ko-south-west-s543",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "7ca14d55-e5d7-4f47-b708-e3efd9be14fb",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "knocked down, falling backwards",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 543,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south-west.png on a 192 canvas",
+        "keypoints": "polish/design/ko-south-west.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18293.0,
+      "balance_after": 18290.0,
+      "secs": 87,
+      "notes": "Kaya polish: ko south-west",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-ko-south-east-s543",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "e909bb91-7ddc-4dd5-b21f-5f1a7e165d2a",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "knocked down, falling backwards",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<6 frames>",
+        "template_id": "mannequin",
+        "seed": 543,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south-east.png on a 192 canvas",
+        "keypoints": "polish/design/ko-south-east.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 90 trial 18 (RugPullFall), frames 64-170"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png"],
+      "gens": 3.0,
+      "balance_before": 18293.0,
+      "balance_after": 18290.0,
+      "secs": 106,
+      "notes": "Kaya polish: ko south-east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-bend-north-s641",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "189ad453-ecaf-45ee-bcf5-443dda0aaccf",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 641,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/north.png on a 192 canvas",
+        "keypoints": "polish/design/bend-north.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 18287.0,
+      "balance_after": 18284.0,
+      "secs": 100,
+      "notes": "Kaya polish: bend north",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-bend-south-east-s641",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1fe550b5-f111-482e-be7c-3f902fcaa812",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 641,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south-east.png on a 192 canvas",
+        "keypoints": "polish/design/bend-south-east.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 18287.0,
+      "balance_after": 18281.0,
+      "secs": 105,
+      "notes": "Kaya polish: bend south-east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-bend-south-s641",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "38743a5f-4d3d-4180-84f0-f65b3bbe6012",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 641,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south.png on a 192 canvas",
+        "keypoints": "polish/design/bend-south.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 18287.0,
+      "balance_after": 18278.0,
+      "secs": 133,
+      "notes": "Kaya polish: bend south",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-bend-south-s642",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "394d7b65-4235-4623-87d3-60a6ebd4b288",
+      "character_id": null,
+      "status": "failed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 642,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south.png on a 192 canvas",
+        "keypoints": "polish/design/bend-south.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [],
+      "gens": null,
+      "balance_before": 18278.0,
+      "balance_after": 18278.0,
+      "secs": 34,
+      "notes": "Kaya polish: bend south",
+      "verdict": null,
+      "error": "{\"usage\": {\"type\": \"usd\", \"usd\": 0.0}, \"id\": \"394d7b65-4235-4623-87d3-60a6ebd4b288\", \"status\": \"failed\", \"created_at\": \"2026-11-03T06:04:59.877531+00:00\", \"last_response\": {\"code\": 500, \"type\": \"error\", \"error\": \"Generation failed\", \"trace\": null, \"action\": \"generating\", \"detail\": \"Generation failed: [530] Service error (530). Please try again.\", \"status\": \"initializing\", \"progress\": 0.1, \"flow_kind\": \"animation\", \"limit_type\": null, \"queue_position\": 0, \"generation_started_at\": \"2026-11-03T06:05:00.523356+00:00\", \"estimated_wait_seconds\": 0}}"
+    },
+    {
+      "name": "kp-bend-south-east-s642",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "f04f1fc2-6e57-4b4e-886e-74b65894ac1e",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 642,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south-east.png on a 192 canvas",
+        "keypoints": "polish/design/bend-south-east.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 18278.0,
+      "balance_after": 18278.0,
+      "secs": 106,
+      "notes": "Kaya polish: bend south-east",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-bend-north-s642",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "09ef66fe-da58-49a0-add4-06816353fa0c",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 642,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/north.png on a 192 canvas",
+        "keypoints": "polish/design/bend-north.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 18278.0,
+      "balance_after": 18275.0,
+      "secs": 119,
+      "notes": "Kaya polish: bend north",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-bend-south-s642",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "ca5af286-68c3-43c2-85cc-fa082834e63a",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 642,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south.png on a 192 canvas",
+        "keypoints": "polish/design/bend-south.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 18272.0,
+      "balance_after": 18272.0,
+      "secs": 119,
+      "notes": "Kaya polish: bend south",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "kp-bend-south-s643",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4d6a58cd-b09a-427f-90cb-db01d22ec66b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash knotted at her left hip, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left",
+        "action": "martial arts form, empty hands: a left jab, then a right cross",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<10 frames>",
+        "template_id": "mannequin",
+        "seed": 643,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/stance/south.png on a 192 canvas",
+        "keypoints": "polish/design/bend-south.json",
+        "motion": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 143 trial 23 (punching), frames 195-365"
+      },
+      "outputs": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png"
+      ],
+      "gens": 3.0,
+      "balance_before": 18269.0,
+      "balance_after": 18266.0,
+      "secs": 106,
+      "notes": "Kaya polish: bend south",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-south-east-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "4cc77e68-9d08-4063-8c48-9a0a7f16173a",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south-east.png (128 canvas)",
+        "keypoints": "design/kaya-south-east.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18263.0,
+      "secs": 92,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-south-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "1cf48753-b2a4-4457-87f9-a8c2de4100d2",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south.png (128 canvas)",
+        "keypoints": "design/kaya-south.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18263.0,
+      "secs": 99,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-east-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "24281d86-25d1-405a-9430-98864e0dc370",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/east.png (128 canvas)",
+        "keypoints": "design/kaya-east.json (step 0.4 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18257.0,
+      "secs": 113,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-east-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "3ff62a8d-9b78-4406-8f89-a5e0a60ae690",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north-east",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north-east.png (128 canvas)",
+        "keypoints": "design/kaya-north-east.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18251.0,
+      "secs": 119,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-west-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "8bce8a07-fec4-4422-9076-283f1e59e419",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north-west.png (128 canvas)",
+        "keypoints": "design/kaya-north-west.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18251.0,
+      "secs": 119,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-west-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "9e4bb125-f722-46f4-b18b-863ad2ae9d34",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/west.png (128 canvas)",
+        "keypoints": "design/kaya-west.json (step 0.4 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18248.0,
+      "secs": 139,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-south-west-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "fc5aa252-d34e-4c0b-a3aa-a5e2f8944975",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "south-west",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/south-west.png (128 canvas)",
+        "keypoints": "design/kaya-south-west.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18245.0,
+      "secs": 146,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
+    },
+    {
+      "name": "walk-kaya-north-s701",
+      "endpoint": "/animate-with-skeleton-v3",
+      "job": "a4802ad3-33b4-46c9-942e-8ef4bb61f95b",
+      "character_id": null,
+      "status": "completed",
+      "settings": {
+        "description": "young woman with tan skin, dark brown hair in a high ponytail with a small red hair tie, fitted dark red jacket, red cloth waist sash, long dark red coat tails, dark baggy trousers, dark brown leather calf boots, dark forearm bracers, painterly pixel art with soft mottled tone clusters, warm light from the upper left, muted earth palette",
+        "action": "walk",
+        "direction": "north",
+        "view": "high top-down",
+        "first_frame": "<png>",
+        "first_frame_keypoints": "<18 joints>",
+        "keypoints": "<8 frames>",
+        "template_id": "mannequin",
+        "seed": 701,
+        "no_background": true
+      },
+      "inputs": {
+        "first_frame": "roots/kaya/idle/north.png (128 canvas)",
+        "keypoints": "design/kaya-north.json (step 0.46 H)"
+      },
+      "outputs": ["00.png", "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png"],
+      "gens": 3.0,
+      "balance_before": 18266.0,
+      "balance_after": 18245.0,
+      "secs": 146,
+      "notes": "designed 8-pose walk (planted feet on one row, #408)",
+      "verdict": null,
+      "error": null
     }
   ]
 }

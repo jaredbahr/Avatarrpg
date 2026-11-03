@@ -73,3 +73,49 @@ it on the rest." Kaya's world sheet is redrawn as the reference for the other el
 - **Riverside.** Kaya's wave and tea are drawn in the new rendering (the G1 cels before).
 
 The sheet is 23 KB smaller than #321's Kaya. Faults and credits are in the README.
+
+## Amendment, 2026-11-03: version C fixes (#351)
+
+Owner, 2026-11-03: version C, the Kaya polish above, is the base for every character; his one reservation was "C seems
+like the angle is off a bit". We read it as the faces, not the camera: the fringe hid the eyes, so the front headings
+looked tilted further down than the painting. The camera angle stays as decided above.
+
+- **Faces are part of the root.** The front roots (S, SE, SW, E, W; idle and stance) get eyes and brows inpainted at
+  1 px (`kp_face.py`), on the one palette, which is still built from the pre-face roots. The face is carried onto every
+  generated head by the texture transfer as a region that always takes the root's colour, so a face fix on a root
+  reaches every clip without redrawing it. This is the rule for the rollout: fix a face on the root, never per cel.
+- **Step per heading.** The walk's step is set per heading (0.38 body heights east and west, 0.44 on the diagonals,
+  0.5 north and south) so the side-on strides do not read as a lunge. The contract is unchanged: the clip time a tile
+  is still fitted from the drawn feet and shipped in `worldParty.ts`.
+- **Face-on strikes are designed, not retargeted.** Where a strike travels toward or away from the camera (S, SE, N),
+  the mocap retarget is replaced around the strike by a designed pose: twist, guard, the arm extended along the
+  heading's screen direction, the elbow out.
+- **Strays and smears** are cleaned by the assembler (detached pieces under 24 px; named smears inside a box), not by
+  hand on the shipped sheet.
+
+Faults that remain and the credit ledger are in the README ("Kaya C fixes").
+
+## Amendment, 2026-11-03: the eight-cel walk (#408)
+
+Owner, 2026-11-03: "The animation is super hoppy. Needs to be a smidge more smooth. Seems we're missing some frames in
+the walks." Measured as the game draws it, the six-cel walk moved Kaya's head and torso 3 world px a cel east and west
+and 6-9 on the other headings. The cause was mostly not the design's dip: the store stands every walk cel on its own
+lowest pixel (ADR 0093's planting amendment), and the design strode planted feet up and down the cel. Each time the
+lowest foot changed, the whole figure was re-stood by the difference.
+
+- **Eight cels.** Contact, down, passing, up, for each leg. At the 750 ms pace each cel holds 75-85 ms (92-128 before).
+  `walkCels` is 8 for Kaya; the runtime already read the loop's length from the sheet (`walkStartCel`, `walkCycleMs`),
+  and the asset test now does too. Sura and Bo keep 6 until #337 redraws them.
+- **Planted feet keep one row.** In the design, both feet stand on the near foot's row. A foot on the ground never moves
+  up or down the cel, and a lifted foot shows only the part of its stride that carries it up the screen. The horizontal
+  stride is unchanged, so the planted foot still holds sideways. North and south lose their up-screen stride and walk
+  as a classic top-down sprite does.
+- **The trunk's row is set, not searched.** The texture transfer still puts the idle root's own head and torso on every
+  cel, but at the cel's drawn ground row plus a designed 1 px dip on each down cel. On screen the head and torso move 0
+  or 1 px a cel in every heading.
+- **The fit.** The clip time a tile is fitted from the drawn feet's horizontal travel. North and south, which have none,
+  take the design's own loop. The 750 ms pace and `BRISK_WALK_CEL_MS` are unchanged.
+
+`feet.test.ts` holds: every cel still stands on its own lowest sole. Planting walk cels on a fixed line instead would
+bring back the up-screen stride. That is a change to the planting contract, so it is left as a decision for later.
+The recipe, the measurements and the credits are in `art/source/party-world/README.md` ("Smooth walk").
