@@ -26,6 +26,7 @@ import {
 } from '../../core/rules/abilities';
 import {
   distance,
+  findPath,
   climbSurcharge,
   occupiedCells,
   pathCost,
@@ -81,6 +82,7 @@ import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
 import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
+import { partyWalkPhase } from '../animator';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
 import { liftAlong } from '../../render/geometry/elevation';
@@ -250,6 +252,9 @@ export class CombatScene implements Scene {
   private freshBattleEntry = false;
   /** One presentation-only formation frame before the first hand-off. */
   private battleOpening: BattleOpeningState | null = null;
+  /** Keeps the first combat frame on the last explore seats until the curtain lifts. */
+  private approachPositions: ReadonlyMap<string, Vec2> | null = null;
+  private approachEndsAt = 0;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
   /**
@@ -329,6 +334,19 @@ export class CombatScene implements Scene {
     this.presentationHeld = false;
     this.host = host;
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
+    const approach = this.freshBattleEntry
+      ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
+      : null;
+    const party = this.app.state?.battle?.units.filter((unit) => unit.faction === 'party') ?? [];
+    const positions = new Map<string, Vec2>();
+    if (approach && !motionReduced()) {
+      for (const [index, unit] of party.entries()) {
+        const from = approach[index];
+        if (from) positions.set(unit.id, from);
+      }
+    }
+    this.approachPositions = positions.size > 0 ? positions : null;
+    this.approachEndsAt = 0;
     this.battleOpening = null;
     this.resultShown = false;
     this.victoryPending = false;
@@ -370,6 +388,8 @@ export class CombatScene implements Scene {
     this.cameraGlide = null;
     this.setCameraGlideMarker(false);
     this.freshBattleEntry = false;
+    this.approachPositions = null;
+    this.approachEndsAt = 0;
     this.recentreButton = null;
     this.actorButton = null;
     this.moreDismiss?.();
@@ -875,6 +895,20 @@ export class CombatScene implements Scene {
     };
   }
 
+  /** The same positions supplied to the renderer, including the curtain reveal. */
+  partyPositions(): readonly Vec2[] | null {
+    const battle = this.battle();
+    if (!battle) return null;
+    const now = performance.now();
+    return battle.units
+      .filter((unit) => unit.faction === 'party')
+      .map((unit) => this.renderPosition(unit, now) ?? unit.pos);
+  }
+
+  private renderPosition(unit: Unit, now: number): Vec2 | undefined {
+    return this.approachPositions?.get(unit.id) ?? this.app.animator.renderPos(now, unit.id);
+  }
+
   /* ---------------------------------------------------------------- */
   /* State helpers                                                     */
   /* ---------------------------------------------------------------- */
@@ -1144,7 +1178,7 @@ export class CombatScene implements Scene {
     this.cancelCameraGlide();
     const camera = this.renderer!.camera;
     // A board already wholly in view has nothing to establish.
-    if (motionReduced() || camera.fitted) return;
+    if (motionReduced() || (camera.fitted && !this.approachPositions)) return;
 
     // `centreOn` is the same focus path used by turn changes and the Acting
     // unit button. Capture its result as the eased destination, then restore
@@ -1169,6 +1203,47 @@ export class CombatScene implements Scene {
     this.setBattleOpeningMarker('hold');
   }
 
+  /** Play the explore trail into the unchanged authored combat seats. */
+  private startApproach(now: number): void {
+    const positions = this.approachPositions;
+    const battle = this.battle();
+    this.approachPositions = null;
+    if (!positions || !battle) return;
+    const party = battle.units.filter((unit) => unit.faction === 'party');
+    for (const [index, unit] of party.entries()) {
+      const from = positions.get(unit.id);
+      if (!from || samePos(from, unit.pos)) continue;
+      const route = findPath(
+        {
+          grid: battle.grid,
+          blocked: new Set(
+            battle.units
+              .filter((other) => other.faction !== 'party')
+              .map((other) => posKey(other.pos)),
+          ),
+          surfaces: this.app.content.surfaces,
+          size: 1,
+          climbCost: this.app.content.tuning.climbCost,
+        },
+        from,
+        unit.pos,
+        battle.grid.width * battle.grid.height * 4,
+      );
+      const path = route?.path ?? [unit.pos];
+      this.app.animator.push(
+        now,
+        [{ type: 'partyWalked', unitId: unit.id, from, path }],
+        battle.units,
+        {
+          alongside: true,
+          silentSteps: true,
+          walkPhase: partyWalkPhase(index),
+        },
+      );
+    }
+    this.approachEndsAt = this.app.animator.finishesAt;
+  }
+
   private skipBattleOpening(): boolean {
     if (!this.battleOpening) return false;
     this.battleOpening = null;
@@ -1188,10 +1263,11 @@ export class CombatScene implements Scene {
     if (opening.kind === 'hold') {
       if (opening.startedAt === null) {
         if (this.app.curtainBusy) return;
+        this.startApproach(now);
         this.battleOpening = { ...opening, startedAt: now };
         return;
       }
-      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS) return;
+      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS || now < this.approachEndsAt) return;
       this.battleOpening = {
         kind: 'focus',
         startedAt: now,
@@ -2518,7 +2594,7 @@ export class CombatScene implements Scene {
         maxHp: u.base.maxHp,
         statuses: u.statuses.map((s) => s.id),
         fallen: health.fallen,
-        renderPos: this.app.animator.renderPos(now, u.id),
+        renderPos: this.renderPosition(u, now),
         ...this.poseFields(
           now,
           u.id,
