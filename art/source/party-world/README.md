@@ -244,12 +244,13 @@ other heading. The design's own pelvis dip was under 2 px. The rest was the plan
 ```sh
 python3 -I art/source/party-world/tools/kp_bob.py > before.json   # on main, from cels/kaya
 python3 -I art/source/party-world/tools/kp_walk.py && python3 -I art/source/party-world/tools/gen_walk.py 701 kaya:south kaya:south-east kaya:east kaya:north-east kaya:north kaya:north-west kaya:west kaya:south-west
-python3 -I art/source/party-world/tools/kp_assemble.py && python3 -I art/source/party-world/tools/pack.py && npx prettier --write src/content/assets/worldParty.ts public/art/units/world
+python3 -I art/source/party-world/tools/kp_assemble.py && python3 -I art/source/party-world/tools/pack.py && npx prettier --write src/content/assets/worldParty.ts public/art/units/world art/source/party-world/{design,ledger.json,stride.json}
 python3 -I art/source/party-world/tools/kp_bob.py                  # every heading: bob within 1, cels 8, ms 70-90
 ```
 
 `kp_assemble.py` rewrites `cels/kaya/bend.json` with one-space indents; its content is unchanged, so check it out again
-(or run prettier on it) rather than committing the reformat.
+(or run prettier on it) rather than committing the reformat. The design, ledger and stride files are written the same
+way, so prettier formats them too (format:check fails otherwise).
 
 ### Measured (#408)
 
