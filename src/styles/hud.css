@@ -1463,6 +1463,25 @@ html[data-contrast='high'] .explore-conversation::before {
   pointer-events: auto;
 }
 
+/* The clear-board victory hold can be dismissed by a tap anywhere on its
+   overlay; the visible button gives keyboard and screen-reader users the same
+   explicit action without covering the surviving party. */
+.victory-beat-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-banner);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--sp-4);
+  cursor: pointer;
+}
+
+.victory-beat-overlay > button {
+  background: var(--c-bg);
+  border: var(--hairline) solid var(--c-line);
+}
+
 /* ------------------------------------------------------------------ */
 /* Combat HUD                                                          */
 /* ------------------------------------------------------------------ */
