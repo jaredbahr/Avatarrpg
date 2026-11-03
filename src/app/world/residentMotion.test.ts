@@ -17,7 +17,7 @@ import {
 } from './residentMotion';
 import type { ResidentMotion } from './residentMotion';
 import { previewWalk } from './walking';
-import { TIMING } from '../anim/choreography';
+import { STROLL_REFERENCE_MS, TIMING } from '../anim/choreography';
 import { STROLL_RAMP_MS, strollTiming } from '../anim/stroll';
 import { smoothPath } from '../../render/geometry/curve';
 
@@ -238,7 +238,8 @@ describe('ResidentWalks', () => {
       0,
       ...motions.map((motion) =>
         motion.kind === 'walk'
-          ? strollTiming(smoothPath(motion.from, motion.path).length, TIMING.strollStep).duration *
+          ? strollTiming(smoothPath(motion.from, motion.path).length, STROLL_REFERENCE_MS)
+              .duration *
               RESIDENT_AMBLE +
             2 * FADE_MS
           : 2 * FADE_MS,
