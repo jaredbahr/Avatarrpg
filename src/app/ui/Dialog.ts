@@ -96,6 +96,10 @@ export abstract class Dialog {
     this.markScrollEdges();
 
     this.keyHandler = (event: KeyboardEvent) => {
+      // Parent dialogs register first. Only the top sheet may handle keys,
+      // including when it cannot be dismissed and must keep its parent open.
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (dialogs[dialogs.length - 1] !== panel) return;
       if (event.key === 'Escape' && this.options.dismissable !== false) {
         event.preventDefault();
         this.close();

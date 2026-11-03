@@ -1,0 +1,38 @@
+{
+  "stage": "native",
+  "before": {
+    "sha": "6e043545372e277bd1c7db879da2daca05ce648d",
+    "tree": "44ec5aa3f910382c94cd8db56bcf624847b97e20",
+    "status": ""
+  },
+  "harness_before": {
+    "native.config.ts": "ceffa6b085bbe33eedd784f1de79073a35976c24a4f5c118daf4088ba814bb4e",
+    "run.py": "e891180af7ec434c3273f726372acbea0b9855d23d92c1aafee591fc4c8c5052",
+    "source/e2e/dialog-focus.spec.ts": "efd4c1147dc19cae35436c33199893941f9ab913b3ff6133d78fa92bb57ae7d5",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "command": [
+    "node_modules/.bin/playwright",
+    "test",
+    "-c",
+    "/workspace/avatarrpg-env/nested-pause/native.config.ts"
+  ],
+  "started_utc": "2026-11-02T01:06:43.190988+00:00",
+  "exit_code": 0,
+  "after": {
+    "sha": "6e043545372e277bd1c7db879da2daca05ce648d",
+    "tree": "44ec5aa3f910382c94cd8db56bcf624847b97e20",
+    "status": ""
+  },
+  "harness_after": {
+    "native.config.ts": "ceffa6b085bbe33eedd784f1de79073a35976c24a4f5c118daf4088ba814bb4e",
+    "run.py": "e891180af7ec434c3273f726372acbea0b9855d23d92c1aafee591fc4c8c5052",
+    "source/e2e/dialog-focus.spec.ts": "efd4c1147dc19cae35436c33199893941f9ab913b3ff6133d78fa92bb57ae7d5",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "duration_seconds": 38.370133251999505,
+  "finished_utc": "2026-11-02T01:07:21.561248+00:00",
+  "stable": true
+}
