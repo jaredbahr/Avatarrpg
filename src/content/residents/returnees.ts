@@ -151,7 +151,7 @@ export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
   tile('return.leto', 'FOREST-RETURN', FOREST, 6, 3),
   tile('return.amri', 'FOREST-RETURN', FOREST, 7, 2),
   tile('return.hesra', 'FOREST-RETURN', FOREST, 6, 2),
-  tile('return.senn', 'FOREST-RETURN', FOREST, 5, 2),
+  tile('return.senn', 'FOREST-RETURN', FOREST, 9, 2),
   tile('recovery.bo_shan', 'BD04', VILLAGE, 12, 12),
   tile('recovery.amri', 'BD12-CONTACT', VILLAGE, 13, 9),
   tile('recovery.leto', 'BD13-CONTACT', VILLAGE, 10, 9),
