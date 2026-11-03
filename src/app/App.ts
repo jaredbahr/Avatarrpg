@@ -617,13 +617,20 @@ export class App {
     }
   }
 
+  /** Discard the replaced state's queued animation and audio together. */
+  private resetPlayback(): void {
+    this.animator.clear();
+    this.audio.close();
+    this.audio.unlock();
+  }
+
   startVillagePreview(): void {
     if (this.previewActive) return;
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
     this.state = villagePreviewState(this.content);
     this.session.setPlayers([]);
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: RIVERSIDE_ENTRY });
   }
@@ -635,7 +642,7 @@ export class App {
     this.previewSnapshot = null;
     this.state = previous.state;
     this.session.setPlayers(Session.fromMeta(previous.session).players);
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.closePause();
     this.dismissRewardDialog();
@@ -669,7 +676,7 @@ export class App {
     );
 
     this.state = state;
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
@@ -693,7 +700,7 @@ export class App {
     }
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
     this.session.setPlayers(Session.fromMeta(session).players);
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.closePause();
     // Loading is replacement, even when the screen name happens to match.
