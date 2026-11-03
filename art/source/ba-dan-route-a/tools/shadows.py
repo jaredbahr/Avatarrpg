@@ -56,6 +56,11 @@ EXTRA_SHAPES = {
     'gao-yard-cart-wheel': [(round(1432.5 + 16.5 * np.cos(t * np.pi / 16)), round(400.5 + 18.5 * np.sin(t * np.pi / 16)))
                             for t in range(32)],
 }
+# Painted pieces whose outline is their frozen-geometry sprite (#367): the canal bridge stood on the painting with no cast
+# or contact of its own, so it read as floating. Its silhouette is the sprite's alpha at the piece's scene size, set at its
+# scene x, y plus the scene-to-master offset (200, 100), fitted to the bridge's painted outline to the pixel.
+SCENE_TO_MASTER = (200, 100)
+EXTRA_SPRITES = {'canal-bridge': 'art/source/ba-dan-regions/geometry/sprites/true-canal-bridge.webp'}
 # Upright painting no authored cast may fall on: the porch post at the yard's east side stands beside the wheel.
 NOT_GROUND = {'gao-porch-post': (1446, 330, 1454, 440)}
 INK_DARK = 62
@@ -288,6 +293,12 @@ def authored():
         m = Image.new('L', (x1 - x0 + 1, y1 - y0 + 1), 0)
         ImageDraw.Draw(m).polygon([(x - x0, y - y0) for x, y in pts], fill=255, outline=255)
         yield name, np.asarray(m) > 0, (x0, y0)
+    for name, path in EXTRA_SPRITES.items():
+        piece = next(p for p in SCENE if p['id'] == name)
+        size = (round(piece['width']), int(piece['height']))
+        alpha = Image.open(path).convert('RGBA').split()[3].resize(size, Image.BILINEAR)
+        xy = (round(piece['x']) + SCENE_TO_MASTER[0], round(piece['y']) + SCENE_TO_MASTER[1])
+        yield name, np.asarray(alpha) > 127, xy
 
 
 def main():
@@ -353,7 +364,7 @@ def main():
     retile(a)
     Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)).save(OUT, optimize=True)
     print(f'{OUT}: {len(standing)} objects re-shaded ({len(kept)} set by objects.py, {len(bench_fence)} reshaded, '
-          f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS) + len(EXTRA_SHAPES)} painted pieces grounded')
+          f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS) + len(EXTRA_SHAPES) + len(EXTRA_SPRITES)} painted pieces grounded')
 
 
 if __name__ == '__main__':
