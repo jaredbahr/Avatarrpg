@@ -74,4 +74,26 @@ describe('Pixi texture cache lifetime', () => {
     expect(frames.size).toBe(512);
     expect(textures.size).toBe(128);
   });
+
+  it('retires an idle G1 canvas below the general budget after its sprite detaches', () => {
+    const stage = new Container();
+    const shadowMaskSources = new Container();
+    const canvas = canvasKey();
+    const source = texture();
+    const textures = new Map<HTMLCanvasElement | HTMLImageElement, Texture>([[canvas, source]]);
+    const retired = new Set([canvas]);
+    const sprite = new Sprite(source);
+    stage.addChild(sprite);
+
+    trimPixiTextureCaches(textures, new Map(), stage, shadowMaskSources, 128, 512, retired);
+    expect(source.destroyed).toBe(false);
+    expect(retired.has(canvas)).toBe(true);
+    readSpriteSources(stage);
+
+    sprite.destroy();
+    trimPixiTextureCaches(textures, new Map(), stage, shadowMaskSources, 128, 512, retired);
+    expect(source.destroyed).toBe(true);
+    expect(textures.has(canvas)).toBe(false);
+    expect(retired.size).toBe(0);
+  });
 });
