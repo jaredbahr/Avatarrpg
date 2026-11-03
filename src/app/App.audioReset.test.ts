@@ -6,6 +6,7 @@ import { apply } from '../core/state/reducer';
 import { App } from './App';
 import { AudioBus } from './audio/bus';
 import { Session } from './session';
+import { PauseMenu } from './ui/PauseMenu';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -201,6 +202,92 @@ describe('audio at whole-state animation resets', () => {
     reset(app);
     audio.play([{ key: 'tap', at: 0, seed: 1 }], 0);
     expect(app.animator.clear).toHaveBeenCalledOnce();
+    expect(AudioContextStub.instances).toHaveLength(0);
+    expect(audio.ready).toBe(false);
+  });
+});
+
+describe('quitting to title retires the departing game audio', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    AudioContextStub.instances = [];
+    vi.stubGlobal('window', { AudioContext: AudioContextStub });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(0) })),
+    );
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('closes the old context and queued cues before title, then waits for the next gesture', async () => {
+    const { app, audio } = makeApp(0.7);
+    audio.unlock();
+    const old = AudioContextStub.instances[0]!;
+    const buffer = {} as AudioBuffer;
+    audio.play([{ key: 'step', at: 0, seed: 1 }], 0);
+    await flush();
+    old.decodes[0]!.resolve(buffer);
+    await flush();
+    audio.play([{ key: 'step', at: 2000, seed: 1 }], 0);
+    audio.play([{ key: 'tap', at: 2500, seed: 1 }], 0);
+    await flush();
+    expect(old.starts).toEqual([10, 12]);
+    expect(old.decodes).toHaveLength(2);
+
+    const events: string[] = [];
+    const menu = new PauseMenu(app, vi.fn());
+    vi.spyOn(menu, 'close').mockImplementation(() => events.push('close'));
+    vi.mocked(app.animator.clear).mockImplementation(() => events.push('clear'));
+    const closeAudio = audio.close.bind(audio);
+    vi.spyOn(audio, 'close').mockImplementation(() => {
+      events.push('audio');
+      closeAudio();
+    });
+    vi.spyOn(app, 'start').mockImplementation(() => {
+      events.push('title');
+      expect(app.state).toBeNull();
+      expect(audio.ready).toBe(false);
+      expect(AudioContextStub.instances).toHaveLength(1);
+    });
+
+    (menu as unknown as { quit(): void }).quit();
+
+    expect(events).toEqual(['close', 'clear', 'audio', 'title']);
+    await vi.advanceTimersByTimeAsync(40);
+    expect(old.state).toBe('closed');
+    old.decodes[1]!.resolve(buffer);
+    await flush();
+    expect(old.starts).toEqual([10, 12]);
+    audio.play([{ key: 'tap', at: 0, seed: 1 }], 0);
+    expect(AudioContextStub.instances).toHaveLength(1);
+
+    audio.unlock();
+    expect(AudioContextStub.instances).toHaveLength(2);
+    const current = AudioContextStub.instances[1]!;
+    audio.play([{ key: 'tap', at: 500, seed: 1 }], 0);
+    await flush();
+    expect(current.decodes).toHaveLength(1);
+    current.decodes[0]!.resolve(buffer);
+    await flush();
+    expect(current.starts).toEqual([10.5]);
+  });
+
+  it('keeps Sound Off from creating a context on quit or return to play', () => {
+    const { app, audio } = makeApp(0);
+    const menu = new PauseMenu(app, vi.fn());
+    vi.spyOn(menu, 'close').mockImplementation(() => undefined);
+    vi.spyOn(app, 'start').mockImplementation(() => undefined);
+
+    (menu as unknown as { quit(): void }).quit();
+    audio.unlock();
+    audio.play([{ key: 'tap', at: 0, seed: 1 }], 0);
+
+    expect(app.animator.clear).toHaveBeenCalledOnce();
+    expect(app.state).toBeNull();
     expect(AudioContextStub.instances).toHaveLength(0);
     expect(audio.ready).toBe(false);
   });
