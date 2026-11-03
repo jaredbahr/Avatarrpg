@@ -189,7 +189,7 @@ test('the handover bark is said once per watch, even after leaving the map', asy
     const show = app.toasts.show.bind(app.toasts);
     app.toasts.show = (text, ...rest) => {
       if (text.includes('Hanru: “')) said.push(text);
-      show(text, ...rest);
+      return show(text, ...rest);
     };
     app.dispatch({ type: 'enterNode', nodeId: 'village_explore' });
   });

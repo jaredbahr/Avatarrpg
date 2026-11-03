@@ -916,6 +916,7 @@
     "scale": 0.92,
     "press": 0.9,
     "reach": 1,
+    "amp": 1,
     "from_": "design/kaya/ko-south-west.json onto roots/kaya/stance/south-west.png"
   }
 }

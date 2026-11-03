@@ -32,33 +32,33 @@
     },
     "after": {
       "walk/south": 0.002,
-      "walk/south-east": 0.004,
-      "walk/east": 0.026,
-      "walk/north-east": 0.006,
+      "walk/south-east": 0.007,
+      "walk/east": 0.024,
+      "walk/north-east": 0.004,
       "walk/north": 0.0,
-      "walk/north-west": 0.015,
-      "walk/west": 0.017,
-      "walk/south-west": 0.021,
-      "hit/south": 0.495,
-      "hit/south-east": 0.744,
-      "hit/east": 0.462,
+      "walk/north-west": 0.014,
+      "walk/west": 0.016,
+      "walk/south-west": 0.02,
+      "hit/south": 0.438,
+      "hit/south-east": 0.735,
+      "hit/east": 0.456,
       "hit/north-east": 0.276,
       "hit/north": 0.374,
       "hit/north-west": 0.566,
-      "hit/west": 0.367,
-      "hit/south-west": 0.423,
-      "ko/south-east": 0.738,
+      "hit/west": 0.328,
+      "hit/south-west": 0.385,
+      "ko/south-east": 0.729,
       "ko/north-east": 0.705,
       "ko/north-west": 0.693,
-      "ko/south-west": 0.799,
-      "bend/south": 0.363,
-      "bend/south-east": 0.316,
-      "bend/east": 0.318,
+      "ko/south-west": 0.787,
+      "bend/south": 0.329,
+      "bend/south-east": 0.275,
+      "bend/east": 0.29,
       "bend/north-east": 0.2,
-      "bend/north": 0.306,
+      "bend/north": 0.248,
       "bend/north-west": 0.304,
-      "bend/west": 0.246,
-      "bend/south-west": 0.357
+      "bend/west": 0.221,
+      "bend/south-west": 0.334
     }
   },
   "colours": {
@@ -83,7 +83,7 @@
       "after": {
         "mean": 0.011,
         "min": 0.0,
-        "max": 0.026
+        "max": 0.024
       }
     },
     "hit": {
@@ -93,9 +93,9 @@
         "max": 0.719
       },
       "after": {
-        "mean": 0.463,
+        "mean": 0.445,
         "min": 0.276,
-        "max": 0.744
+        "max": 0.735
       }
     },
     "ko": {
@@ -105,9 +105,9 @@
         "max": 0.86
       },
       "after": {
-        "mean": 0.734,
+        "mean": 0.728,
         "min": 0.693,
-        "max": 0.799
+        "max": 0.787
       }
     },
     "bend": {
@@ -117,9 +117,9 @@
         "max": 0.431
       },
       "after": {
-        "mean": 0.301,
+        "mean": 0.275,
         "min": 0.2,
-        "max": 0.363
+        "max": 0.334
       }
     }
   }

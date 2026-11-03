@@ -283,6 +283,76 @@ test.describe('resize across integer zoom stops at DPR 2', () => {
   });
 });
 
+test.describe('motion-enabled compact save load at DPR 2', () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  test('a loaded battle settles at 64px and keeps a legal lower move reachable', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Solo'], ['kaya', 'sura', 'bo'], 'compact-save-load');
+    await enterNode(page, 'battle_forest_road');
+    expect(await takeTurn(page)).toBe(true);
+    await waitForIdle(page);
+
+    // Load the real battle through the same public API as the save dialog.
+    // Motion must be on when the replacement scene performs its first sync;
+    // this path has no fresh-battle opening to trigger another HUD refit.
+    await page.evaluate(() => {
+      const app = window.fnt!.app;
+      app.updateSettings({ reduceMotion: false });
+      app.adoptSave(structuredClone(app.state!), app.session.toMeta());
+    });
+    const scene = page.locator('.combat-scene');
+    expect(await scene.getAttribute('data-battle-opening')).toBeNull();
+    await page.waitForFunction(() => !document.querySelector('.combat-scene[data-camera-glide]'));
+    await settleLayout(page);
+    const loaded = await page.evaluate(() => ({
+      camera: window.fnt!.app.rendererCamera()!,
+      backend: window.fnt!.app.rendererBackend(),
+      dpr: window.devicePixelRatio,
+      reduceMotion: window.fnt!.app.settings.reduceMotion,
+      battle: JSON.stringify(window.fnt!.app.state!.battle),
+    }));
+    expect(loaded.backend).toBe('canvas');
+    expect(loaded.dpr).toBe(2);
+    expect(loaded.reduceMotion).toBe(false);
+    expect(loaded.camera.projection).toBe('oblique');
+    expect(loaded.camera.tilePx).toBeCloseTo(64, 5);
+    expect(await scene.getAttribute('data-battle-opening')).toBeNull();
+
+    await page.getByRole('button', { name: /^Move/ }).click();
+    await settleLayout(page);
+    const target = await lowestVisibleMoveTarget(page);
+    const point = await paintedTileCentre(page, target);
+    if (!point) throw new Error('Missing loaded battlefield geometry.');
+    expect(
+      await page.evaluate(
+        ({ x, y }) => document.elementFromPoint(x, y) === document.querySelector('.map-canvas'),
+        point,
+      ),
+    ).toBe(true);
+    await page.mouse.click(point.x, point.y);
+    await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeVisible();
+    await settleLayout(page);
+    const confirming = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    expect(confirming.tilePx).toBeCloseTo(loaded.camera.tilePx, 5);
+    const reflowedPoint = await paintedTileCentre(page, target);
+    if (!reflowedPoint) throw new Error('Missing loaded move confirmation geometry.');
+    expect(
+      await page.evaluate(
+        ({ x, y }) => document.elementFromPoint(x, y) === document.querySelector('.map-canvas'),
+        reflowedPoint,
+      ),
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    expect(await page.evaluate(() => JSON.stringify(window.fnt!.app.state!.battle))).toBe(
+      loaded.battle,
+    );
+  });
+});
+
 test('Huge text on a tall viewport reserves the expanded decision panel', async ({ page }) => {
   await page.setViewportSize({ width: 1368, height: 912 });
   await resetStorage(page, '?renderer=canvas');

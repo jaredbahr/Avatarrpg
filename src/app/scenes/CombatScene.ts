@@ -74,6 +74,7 @@ import {
 } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { PropInspector } from '../ui/PropInspector';
+import type { ToastHandle } from '../ui/Toasts';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
@@ -85,13 +86,23 @@ import { liftAlong } from '../../render/geometry/elevation';
 import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
 import {
   actorKeepInViewDelta,
+  combatCameraGlidePoint,
   combatCameraFollowDecision,
   shouldFollowAnimatedLargeActor,
+  type CombatCameraGlide,
   type CombatCameraFollowState,
 } from './combatCameraFollow';
 
+export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
+  return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
+}
+
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
+/** Turn changes use a gentle, short presentation glide. */
+const COMBAT_TURN_GLIDE_MS = 420;
+/** Give the render loop a frame to settle an expired glide before AI playback. */
+const COMBAT_AI_GLIDE_RETRY_MS = 16;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
 
@@ -237,6 +248,7 @@ export class CombatScene implements Scene {
    */
   private followSuspended = false;
   private cameraFollow: CombatCameraFollowState = { kind: 'idle' };
+  private cameraGlide: CombatCameraGlide | null = null;
   /**
    * The last pending move target revealed for a particular viewport. A
    * confirmation dock can shorten the canvas after the target was selected;
@@ -285,6 +297,8 @@ export class CombatScene implements Scene {
   private layoutMeasuredAfterSync = false;
   /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
   private flushedAt: number | null = null;
+  private endTurnConfirmation: ToastHandle | null = null;
+  private endTurnConfirmationTimer: number | null = null;
 
   constructor(private app: App) {
     this.movementThreatQuery = createMovementThreatQuery(app.content);
@@ -321,12 +335,15 @@ export class CombatScene implements Scene {
   }
 
   unmount(): void {
+    this.clearEndTurnConfirmation();
     this.stopAiTimer();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.suspended = false;
     this.aiHeld = false;
     this.battleOpening = null;
+    this.cameraGlide = null;
+    this.setCameraGlideMarker(false);
     this.freshBattleEntry = false;
     this.recentreButton = null;
     this.actorButton = null;
@@ -448,7 +465,8 @@ export class CombatScene implements Scene {
       this.syncRecentre();
       return;
     }
-    if (!this.manualCamera) this.recentre();
+    if (this.cameraGlide) this.retargetCameraGlide();
+    else if (!this.manualCamera) this.recentre();
     // A zoomed board keeps its zoom; one a rotation left under its fit rises
     // to it, on whole device pixels on the pixel-art boards (ADR 0088).
     else camera.raiseToFit();
@@ -523,6 +541,7 @@ export class CombatScene implements Scene {
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    this.cancelCameraGlide();
     this.manualCamera = false;
     this.followSuspended = false;
     if (camera.projection === 'oblique') {
@@ -564,6 +583,12 @@ export class CombatScene implements Scene {
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    const cancelledGlide = this.cameraGlide !== null;
+    this.cancelCameraGlide();
+    if (cancelledGlide) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
     if (this.battleOpening) this.skipBattleOpening();
     const before = camera.scale;
     camera.zoomAt(at, factor);
@@ -577,6 +602,12 @@ export class CombatScene implements Scene {
   private pan(dx: number, dy: number): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    const cancelledGlide = this.cameraGlide !== null;
+    this.cancelCameraGlide();
+    if (cancelledGlide) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
     if (this.battleOpening) this.skipBattleOpening();
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
@@ -588,6 +619,7 @@ export class CombatScene implements Scene {
 
   /** Camera navigation never selects a target or spends an action. */
   private focusUnit(id: string): void {
+    this.cancelCameraGlide();
     if (this.battleOpening) this.skipBattleOpening();
     const unit = this.battle()?.units.find(
       (candidate) => candidate.id === id && isAlive(candidate),
@@ -943,6 +975,7 @@ export class CombatScene implements Scene {
   private maybeStartBattleOpening(): void {
     if (!this.freshBattleEntry || this.battleOpening) return;
     this.freshBattleEntry = false;
+    this.cancelCameraGlide();
     const camera = this.renderer!.camera;
     // A board already wholly in view has nothing to establish.
     if (motionReduced() || camera.fitted) return;
@@ -1044,17 +1077,25 @@ export class CombatScene implements Scene {
     const activeId = unit?.id ?? null;
 
     if (activeId !== this.lastActiveId) {
+      this.clearEndTurnConfirmation();
       if (this.battleOpening) this.skipBattleOpening();
+      this.cancelCameraGlide();
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
       this.clearPending();
-      this.aiScheduled = false;
+      this.stopAiTimer();
 
       // A new player's turn needs the hand-off card before anything is shown.
       if (unit && unit.faction === 'party' && !this.app.session.solo) {
         this.handedOffTo = null;
       }
-      if (unit) announce(`${this.app.session.labelFor(unit)}'s turn.`);
+      if (unit) {
+        announce(
+          unit.faction === 'party'
+            ? `${this.app.session.labelFor(unit)}'s turn.`
+            : actingTurnCopy(unit),
+        );
+      }
       // The More list was opened for the last turn; the next player at the
       // table finds it closed. The rebuild below hands focus to the toggle.
       this.setMoreOpen(false, false);
@@ -1068,7 +1109,9 @@ export class CombatScene implements Scene {
       const followedStillMoving =
         this.cameraFollow.kind === 'following' &&
         this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
-      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera);
+      // Establish the initial actor immediately so the first settled HUD
+      // measurement can choose compact framing before later turns glide.
+      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera, this.layoutMeasuredAfterSync);
     }
 
     if (battle.phase !== 'active' && !this.resultShown) {
@@ -1107,15 +1150,30 @@ export class CombatScene implements Scene {
 
     this.aiScheduled = true;
     const delay = Math.max(0, this.app.animator.finishesAt - performance.now()) + 260;
-    this.aiTimer = window.setTimeout(() => {
-      this.aiTimer = null;
-      // The pause menu can freeze or hold the scene between scheduling and
-      // this callback; a parked fight must not advance behind the menu.
-      if (this.suspended || this.aiHeld) return;
-      if (this.app.state?.battle?.phase !== 'active') return;
-      if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
-      this.app.dispatch({ type: 'runAiTurn' });
-    }, delay);
+    const schedule = (wait: number): void => {
+      const timer = window.setTimeout(() => {
+        // A canceled callback must not clear a newer actor's owned timer.
+        if (this.aiTimer !== timer) return;
+        this.aiTimer = null;
+        // The pause menu can freeze or hold the scene between scheduling and
+        // this callback; a parked fight must not advance behind the menu.
+        if (this.suspended || this.aiHeld) return;
+        if (this.app.state?.battle?.phase !== 'active') return;
+        if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
+        const glide = this.cameraGlide;
+        if (glide) {
+          // The ordinary action delay may end before the incoming actor is
+          // revealed. Wait for the render loop to finish that reveal, even if
+          // its wall-clock deadline has passed before the next frame arrives.
+          const remaining = glide.startedAt + glide.duration - performance.now();
+          schedule(Math.max(COMBAT_AI_GLIDE_RETRY_MS, remaining));
+          return;
+        }
+        this.app.dispatch({ type: 'runAiTurn' });
+      }, wait);
+      this.aiTimer = timer;
+    };
+    schedule(delay);
   }
 
   /* ---------------------------------------------------------------- */
@@ -1403,15 +1461,20 @@ export class CombatScene implements Scene {
     }
 
     if (unit.faction !== 'party') {
-      overlays.appendChild(
+      hud.appendChild(
         el(
           'div',
-          { class: 'enemy-turn-banner' },
-          el('span', {
-            text: unit.faction === 'enemy' ? 'Enemies are moving…' : `${unit.name} is moving…`,
-          }),
+          { class: `enemy-turn-card element-${unit.element}`, attrs: { 'aria-hidden': 'true' } },
+          assetCanvas(
+            portraitKeyFor(this.app.content, unit),
+            3,
+            'unit-portrait square enemy-turn-portrait',
+          ),
+          el('span', { class: 'enemy-turn-copy', text: actingTurnCopy(unit) }),
         ),
       );
+      if (this.logOpen) hud.appendChild(this.logPanel());
+      return;
     }
 
     hud.appendChild(this.unitPanel(unit));
@@ -1655,16 +1718,24 @@ export class CombatScene implements Scene {
   private endTurn(unit: Unit): void {
     if (unit.ap > 0 && !this.confirmedEndTurn) {
       this.confirmedEndTurn = true;
-      this.app.toasts.show(
+      const confirmation = this.app.toasts.show(
         `${unit.name} still has ${unit.ap} AP. Tap End turn again to finish anyway.`,
         'warn',
+        2600,
+        () => this.clearEndTurnConfirmation(),
       );
-      window.setTimeout(() => {
+      if (!confirmation) {
         this.confirmedEndTurn = false;
+        return;
+      }
+      this.endTurnConfirmation = confirmation;
+      this.endTurnConfirmationTimer = window.setTimeout(() => {
+        this.endTurnConfirmationTimer = null;
+        this.clearEndTurnConfirmation();
       }, 4000);
       return;
     }
-    this.confirmedEndTurn = false;
+    this.clearEndTurnConfirmation();
     this.mode = { kind: 'idle' };
     this.clearPending();
     this.handedOffTo = null;
@@ -1672,6 +1743,17 @@ export class CombatScene implements Scene {
   }
 
   private confirmedEndTurn = false;
+
+  private clearEndTurnConfirmation(): void {
+    this.confirmedEndTurn = false;
+    if (this.endTurnConfirmationTimer !== null) {
+      window.clearTimeout(this.endTurnConfirmationTimer);
+      this.endTurnConfirmationTimer = null;
+    }
+    const toast = this.endTurnConfirmation;
+    this.endTurnConfirmation = null;
+    if (toast) this.app.toasts.dismiss(toast);
+  }
 
   /* ---------------------------------------------------------------- */
   /* Confirm step                                                      */
@@ -2374,11 +2456,15 @@ export class CombatScene implements Scene {
       reducedMotion: motionReduced(),
     });
     this.cameraFollow = decision.state;
+    if (decision.owner === 'follow') this.cancelCameraGlide();
     if (decision.owner === 'recentre') {
-      this.centreOnActiveUnit(this.active(), camera);
+      this.centreOnActiveUnit(this.active(), camera, true);
       return;
     }
-    if (decision.owner !== 'follow' || !followed) return;
+    if (decision.owner !== 'follow' || !followed) {
+      this.updateCameraGlide(now, camera);
+      return;
+    }
 
     const { unit, pos, scale, pose } = followed;
     const box = camera.spriteBox(pos, unit.size, true);
@@ -2411,8 +2497,90 @@ export class CombatScene implements Scene {
   }
 
   /** Shared turn-change and follow-release centring path. */
-  private centreOnActiveUnit(unit: Unit | undefined, camera = this.renderer?.camera): void {
-    if (unit && camera && !camera.fitted) camera.centreOn(unit.pos, unit.size);
+  private centreOnActiveUnit(
+    unit: Unit | undefined,
+    camera = this.renderer?.camera,
+    animate = false,
+  ): void {
+    if (!unit || !camera || camera.fitted) return;
+    if (!animate || motionReduced()) {
+      this.cancelCameraGlide();
+      camera.centreOn(unit.pos, unit.size);
+      return;
+    }
+
+    const from = { x: camera.offsetX, y: camera.offsetY };
+    camera.centreOn(unit.pos, unit.size);
+    const to = { x: camera.offsetX, y: camera.offsetY };
+    camera.offsetX = from.x;
+    camera.offsetY = from.y;
+    if (from.x === to.x && from.y === to.y) {
+      this.cancelCameraGlide();
+      return;
+    }
+    this.cameraGlide = { from, to, startedAt: performance.now(), duration: COMBAT_TURN_GLIDE_MS };
+    this.setCameraGlideMarker(true);
+  }
+
+  private updateCameraGlide(now: number, camera = this.renderer?.camera): void {
+    const glide = this.cameraGlide;
+    if (!glide || !camera) return;
+    if (camera.fitted) {
+      camera.clamp();
+      this.cancelCameraGlide();
+      return;
+    }
+    const elapsed = now - glide.startedAt;
+    if (elapsed >= glide.duration || motionReduced()) {
+      camera.offsetX = glide.to.x;
+      camera.offsetY = glide.to.y;
+      this.cameraGlide = null;
+      this.setCameraGlideMarker(false);
+      return;
+    }
+    const point = combatCameraGlidePoint(glide, now);
+    camera.offsetX = point.x;
+    camera.offsetY = point.y;
+  }
+
+  private retargetCameraGlide(): void {
+    const glide = this.cameraGlide;
+    const camera = this.renderer?.camera;
+    const active = this.active();
+    if (!glide || !camera || !active) return;
+    const now = performance.now();
+    const elapsed = Math.max(0, now - glide.startedAt);
+    const remaining = Math.max(0, glide.duration - elapsed);
+    const from = { x: camera.offsetX, y: camera.offsetY };
+    if (camera.fitted) {
+      camera.clamp();
+      this.cancelCameraGlide();
+      return;
+    }
+    camera.centreOn(active.pos, active.size);
+    const to = { x: camera.offsetX, y: camera.offsetY };
+    camera.offsetX = from.x;
+    camera.offsetY = from.y;
+    if (motionReduced() || remaining === 0) {
+      camera.offsetX = to.x;
+      camera.offsetY = to.y;
+      this.cancelCameraGlide();
+      return;
+    }
+    this.cameraGlide = { from, to, startedAt: now, duration: remaining };
+  }
+
+  private cancelCameraGlide(): void {
+    if (!this.cameraGlide) return;
+    this.cameraGlide = null;
+    this.setCameraGlideMarker(false);
+  }
+
+  private setCameraGlideMarker(active: boolean): void {
+    const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
+    if (!scene) return;
+    if (active) scene.dataset.cameraGlide = 'active';
+    else delete scene.dataset.cameraGlide;
   }
 
   /**
