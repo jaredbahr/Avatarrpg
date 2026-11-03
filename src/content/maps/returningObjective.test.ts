@@ -46,12 +46,9 @@ for (const custody of ['trade', 'escort'] as const) {
     it.each(RETURNEE_RECORDS)(
       'keeps the return cue after approaching $name and loading the save',
       (worker) => {
-        // Senn has no reachable adjacent approach from the south of the group.
-        // Walk to the north verge with a public command before tapping him.
-        const before =
-          worker.npc === 'senn'
-            ? issue(fixture.state, { type: 'walkTo', pos: { x: 5, y: 1 } })
-            : fixture.state;
+        // Every returning worker stands where the party can walk up to them
+        // without passing through another person (#399).
+        const before = fixture.state;
         const npc = visibleNpcs(CONTENT, forest, before).find((npc) => npc.id === worker.npc);
         if (!npc) throw new Error(`Returning worker ${worker.name} is absent`);
         const approached = issue(before, { type: 'walkTo', pos: npc.pos });
