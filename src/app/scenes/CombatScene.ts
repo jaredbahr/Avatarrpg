@@ -85,7 +85,7 @@ import { createMovementThreatQuery } from '../ui/movementThreats';
 import { partyWalkPhase } from '../animator';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
-import { liftAlong } from '../../render/geometry/elevation';
+import { liftAlong, liftAt } from '../../render/geometry/elevation';
 import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
 import {
   actorKeepInViewDelta,
@@ -108,6 +108,7 @@ import {
 export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
   return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
 }
+import { frameEnemyTargets, type EnemyFrameActor, type EnemyFrameProp } from './combatEnemyFrame';
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
@@ -118,6 +119,15 @@ const COMBAT_TURN_GLIDE_MS = 420;
 const COMBAT_AI_GLIDE_RETRY_MS = 16;
 
 type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
+
+interface EnemyOverview {
+  readonly encounterId: string;
+  readonly actorId: string;
+  readonly round: number;
+  readonly turnIndex: number;
+  readonly returnTilePx: number;
+  readonly returnActor: Pick<Unit, 'pos' | 'size'>;
+}
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -265,6 +275,8 @@ export class CombatScene implements Scene {
   private followSuspended = false;
   private cameraFollow: CombatCameraFollowState = { kind: 'idle' };
   private cameraGlide: CombatCameraGlide | null = null;
+  /** Explicit view ownership only; never part of the battle or a loaded save. */
+  private enemyOverview: EnemyOverview | null = null;
   /**
    * The last pending move target revealed for a particular viewport. A
    * confirmation dock can shorten the canvas after the target was selected;
@@ -352,6 +364,7 @@ export class CombatScene implements Scene {
     this.victoryPending = false;
     this.victoryBeat = null;
     this.victoryFocus = null;
+    this.enemyOverview = null;
     this.layoutMeasuredAfterSync = false;
     this.flushedAt = null;
     clear(host);
@@ -390,6 +403,7 @@ export class CombatScene implements Scene {
     this.freshBattleEntry = false;
     this.approachPositions = null;
     this.approachEndsAt = 0;
+    this.enemyOverview = null;
     this.recentreButton = null;
     this.actorButton = null;
     this.moreDismiss?.();
@@ -541,6 +555,18 @@ export class CombatScene implements Scene {
       this.syncRecentre();
       return;
     }
+    const battle = this.battle();
+    if (battle && this.enemyOverviewIsCurrent(battle)) {
+      frameEnemyTargets(
+        camera,
+        this.enemyOverviewCells(battle),
+        this.enemyOverviewActors(battle, camera),
+        this.enemyOverviewProps(battle, camera),
+      );
+      this.syncRecentre();
+      if (this.moreOpen) this.measureMoreRoom();
+      return;
+    }
     if (this.cameraGlide) this.retargetCameraGlide();
     else if (!this.manualCamera) this.recentre();
     // A zoomed board keeps its zoom; one a rotation left under its fit rises
@@ -615,6 +641,7 @@ export class CombatScene implements Scene {
 
   /** Restore readable oblique framing, or the fitted orthographic board. */
   private recentre(): void {
+    this.enemyOverview = null;
     const camera = this.renderer?.camera;
     if (!camera) return;
     this.cancelCameraGlide();
@@ -665,6 +692,7 @@ export class CombatScene implements Scene {
       this.manualCamera = true;
       this.followSuspended = true;
     }
+    this.enemyOverview = null;
     if (this.battleOpening) this.skipBattleOpening();
     const before = camera.scale;
     camera.zoomAt(at, factor);
@@ -684,6 +712,7 @@ export class CombatScene implements Scene {
       this.manualCamera = true;
       this.followSuspended = true;
     }
+    this.enemyOverview = null;
     if (this.battleOpening) this.skipBattleOpening();
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
@@ -697,6 +726,12 @@ export class CombatScene implements Scene {
   private focusUnit(id: string): void {
     if (this.victoryPending || this.victoryBeat) return;
     this.cancelCameraGlide();
+    const battle = this.battle();
+    if (battle && this.enemyOverviewIsCurrent(battle) && id === this.active()?.id) {
+      this.recentre();
+      return;
+    }
+    this.enemyOverview = null;
     if (this.battleOpening) this.skipBattleOpening();
     const unit = this.battle()?.units.find(
       (candidate) => candidate.id === id && isAlive(candidate),
@@ -709,13 +744,118 @@ export class CombatScene implements Scene {
     this.syncRecentre();
   }
 
-  /** The Recentre button only exists while there is something off screen. */
+  private enemyOverviewCells(battle: BattleState): readonly Vec2[] {
+    return [
+      ...battle.units
+        .filter((unit) => unit.faction === 'enemy' && isAlive(unit))
+        .flatMap((unit) => occupiedCells(unit)),
+      ...battle.props.filter((prop) => prop.hp > 0).map((prop) => prop.pos),
+    ];
+  }
+
+  private enemyOverviewActors(
+    battle: BattleState,
+    camera: Renderer['camera'],
+  ): readonly EnemyFrameActor[] {
+    return battle.units
+      .filter((unit) => unit.faction === 'enemy' && isAlive(unit))
+      .map((unit) => ({
+        pos: unit.pos,
+        size: unit.size,
+        scale: enemyScale(unit.sprite, 1, camera.projection),
+        headroom: sheets.silhouetteHeadroom(unit.sprite),
+        lift: liftAlong(battle.grid, unit.pos, camera.projection),
+      }));
+  }
+
+  private enemyOverviewProps(
+    battle: BattleState,
+    camera: Renderer['camera'],
+  ): readonly EnemyFrameProp[] {
+    return battle.props
+      .filter((prop) => prop.hp > 0)
+      .map((prop) => ({
+        pos: prop.pos,
+        lift: liftAt(battle.grid, prop.pos, camera.projection),
+      }));
+  }
+
+  private enemyOverviewIsCurrent(battle: BattleState): boolean {
+    const overview = this.enemyOverview;
+    return (
+      !!overview &&
+      battle.phase === 'active' &&
+      battle.encounterId === overview.encounterId &&
+      battle.round === overview.round &&
+      battle.turnIndex === overview.turnIndex &&
+      activeUnit(battle)?.id === overview.actorId
+    );
+  }
+
+  /** View navigation keeps the selected action and pending target untouched. */
+  private showEnemies(): void {
+    const battle = this.battle();
+    const unit = this.active();
+    const camera = this.renderer?.camera;
+    if (
+      !battle ||
+      battle.phase !== 'active' ||
+      !unit ||
+      !camera ||
+      this.battleOpening ||
+      this.app.animator.busy(performance.now())
+    )
+      return;
+    const cells = this.enemyOverviewCells(battle);
+    if (cells.length === 0) return;
+
+    this.resizeAfterHud();
+    // Enter through the existing navigation reset before taking manual ownership.
+    this.recentre();
+    this.enemyOverview = {
+      encounterId: battle.encounterId,
+      actorId: unit.id,
+      round: battle.round,
+      turnIndex: battle.turnIndex,
+      returnTilePx: TILE * camera.scale,
+      returnActor: { pos: unit.pos, size: unit.size },
+    };
+    this.manualCamera = true;
+    this.followSuspended = true;
+    this.cameraFollow = { kind: 'idle' };
+    frameEnemyTargets(
+      camera,
+      cells,
+      this.enemyOverviewActors(battle, camera),
+      this.enemyOverviewProps(battle, camera),
+    );
+    this.syncRecentre();
+  }
+
+  private expireEnemyOverview(battle: BattleState): void {
+    const overview = this.enemyOverview;
+    if (!overview || this.enemyOverviewIsCurrent(battle)) return;
+    this.enemyOverview = null;
+    // Terminal playback/result presentation owns its frame. A turn change instead
+    // restores the outgoing actor before ordinary sync centres/glides the next one.
+    const camera = this.renderer?.camera;
+    if (battle.phase !== 'active' || !camera) return;
+    if (camera.projection === 'oblique') camera.fitExplore(overview.returnTilePx, 12, 'floor');
+    else camera.fit();
+    camera.centreOn(overview.returnActor.pos, overview.returnActor.size);
+    this.manualCamera = false;
+    this.followSuspended = false;
+  }
+
+  /** An explicit overview always leaves its return controls available. */
   private syncRecentre(): void {
     const button = this.recentreButton;
     if (!button) return;
-    const fitted = this.renderer?.camera.fitted ?? true;
-    if (button.hidden !== fitted) button.hidden = fitted;
-    if (this.actorButton) this.actorButton.hidden = fitted;
+    const battle = this.battle();
+    const hidden =
+      (this.renderer?.camera.fitted ?? true) && !(battle && this.enemyOverviewIsCurrent(battle));
+    if (button.hidden !== hidden) button.hidden = hidden;
+    if (this.actorButton) this.actorButton.hidden = hidden;
   }
 
   private frameVictoryParty(camera: Camera, battle: BattleState): Vec2 | null {
@@ -1097,6 +1237,10 @@ export class CombatScene implements Scene {
     if (this.skipBattleOpening()) return;
     if (this.victoryBeat || battle.phase !== 'active') return;
     if (this.app.animator.busy(performance.now())) return;
+    if (this.enemyOverviewIsCurrent(battle)) {
+      this.recentre();
+      return;
+    }
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
 
@@ -1304,6 +1448,7 @@ export class CombatScene implements Scene {
   sync(): void {
     const battle = this.battle();
     if (!battle) return;
+    this.expireEnemyOverview(battle);
 
     if (this.inspector instanceof PropInspector) {
       const inspector = this.inspector;
@@ -1514,6 +1659,19 @@ export class CombatScene implements Scene {
       action();
     };
 
+    const enemies = button(
+      'Show enemies',
+      folded(() => this.showEnemies()),
+      {
+        class: 'btn-ghost',
+        title: 'Show living enemies and intact props; tap the battlefield to return',
+      },
+    );
+    enemies.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
+    enemies.disabled = battle.phase !== 'active';
+    enemies.dataset.key = 'enemies';
+    more.appendChild(enemies);
+
     const recentre = button(
       'Recentre',
       folded(() => this.recentre()),
@@ -1524,7 +1682,8 @@ export class CombatScene implements Scene {
       },
     );
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
-    recentre.hidden = this.renderer?.camera.fitted ?? true;
+    recentre.hidden =
+      (this.renderer?.camera.fitted ?? true) && !this.enemyOverviewIsCurrent(battle);
     recentre.dataset.key = 'recentre';
     this.recentreButton = recentre;
     more.appendChild(recentre);
@@ -1540,7 +1699,7 @@ export class CombatScene implements Scene {
         disabled: victoryBeat,
       },
     );
-    actor.hidden = this.renderer?.camera.fitted ?? true;
+    actor.hidden = (this.renderer?.camera.fitted ?? true) && !this.enemyOverviewIsCurrent(battle);
     actor.dataset.key = 'actor';
     this.actorButton = actor;
     more.appendChild(actor);
@@ -1648,7 +1807,7 @@ export class CombatScene implements Scene {
       document.removeEventListener('pointerdown', onPointer, true);
       document.removeEventListener('keydown', onKey);
     };
-    if (focus) list?.querySelector<HTMLElement>('button:not([hidden])')?.focus();
+    if (focus) list?.querySelector<HTMLElement>('button:not([hidden]):not(:disabled)')?.focus();
   }
 
   private renderTurnStrip(): void {
