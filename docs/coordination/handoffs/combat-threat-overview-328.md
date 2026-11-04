@@ -50,25 +50,31 @@ probe's orphan browser was positively identified and stopped; its CPU contention
 and the original failure remain recorded. Main's subsequent art-contract-only
 change `a7a90caa` was merged via `c2e6b897` before final validation.
 
-On source `a0178751`, the full recorded native matrix passed 13 cases and hit
-both portrait WebGL 360-second caps. Both affected cases also timed out with
-repository-default video off; optional recording was not a sufficient cause.
-All reports, traces and recordings remain separate under the external evidence
-directory. Both Grumbler backends passed every corner/state/cast control.
+The complete matrices on `a0178751` and `16d65cf6` each passed 13 cases and
+hit the two portrait WebGL 360-second caps. A separate no-video pair also timed
+out. Continuous recording was not a sufficient cause. All reports, traces and
+recordings remain separate in the external evidence directory; both Grumbler
+backends passed every corner/state/cast control. A keyboard-precondition trial
+also proved insufficient and is removed from the current source.
 
-The split had repeated the original pointer setup in all three legs. Retained
-traces measure initial More/Move pointer work at 31.496/26.041 seconds in the
-Recentre case and 38.779/27.170 in the next-turn case; an existing native Enter
-activation took 2.002 seconds. The two later legs now use real keyboard More
-open/close and Move activation for that duplicate precondition. The first leg
-still exercises every original pointer setup in every profile, and the phone
-case is byte-identical. Later functional Show enemies, Recentre, map taps,
-Confirm, Ready and end-turn inputs are unchanged. Batched snapshots explicitly
-check Move visibility/enabled state, collapsed More, and exact complete game and
-session equality from before menu activation through pending selection. No
-settle, assertion, profile, input coverage or deadline was removed. Preliminary
-Canvas proof passed all four later-leg/profile cases; final CI/native evidence
-must be bound to the subsequent clean commit, not transferred from `a0178751`.
+The final partition keeps the original initial More/menu inspection and pointer
+Move setup once per profile in the first leg. Later legs select Move directly
+with the original pointer input. They still open More and assert Show enemies
+visible/enabled when invoking that functional action. This removes only the
+split-introduced duplicate menu inspection, not any original assertion or input
+coverage. Batched snapshots check Move visibility/enabled state, collapsed More,
+and complete game/session equality through pending selection. All functional
+Show enemies, Recentre, map taps, Confirm, Ready and end-turn inputs, settles,
+profiles and deadlines remain. Independent semantic review is clear. Retained
+traces measure about 30 seconds of redundant work in the previous later-leg
+setup; sufficient savings are not assumed before native validation.
+
+The direct-Move candidate passed typecheck and four preliminary Canvas cases
+(desktop/portrait Recentre and next-turn) in 54.7 seconds. An initial TypeScript
+union-narrowing error stopped before any browser case; explicit common baseline
+shape corrected it without a cast, and both logs are retained. New exact-head
+CI and full native results must come from `protocol-direct-move/`; earlier
+commits' checks do not transfer to a changed source head.
 
 Final exact-head CI/native results belong to the PR and external receipts under
 `/workspace/avatarrpg-env/enemy-overview-gates328/`. Passing earlier revisions
