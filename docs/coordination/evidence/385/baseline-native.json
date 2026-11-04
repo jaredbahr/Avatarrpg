@@ -1,0 +1,16 @@
+{
+  "status": "expected regression failure; not green",
+  "served_game": "unchanged main0d4 src/public, baseline781c9278 production build",
+  "test_source": "6a0ff5b1 regression fixture against unchanged input runtime",
+  "actual_exit": 1,
+  "stats": {
+    "startTime": "2026-11-02T01:24:59.889Z",
+    "duration": 8417.544,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "observed_failure": "expected party3,7; actual7,7 after a distant release with no final move sample",
+  "assertions_budgets": "unchanged"
+}

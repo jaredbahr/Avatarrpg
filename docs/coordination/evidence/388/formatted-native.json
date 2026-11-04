@@ -1,0 +1,38 @@
+{
+  "stage": "native",
+  "before": {
+    "sha": "5ccb1dd932a774d417b5adc4ec09d68c6fdda5a3",
+    "tree": "d24337dfaa6910c1ffcd20661f42ac0c726404bd",
+    "status": ""
+  },
+  "harness_before": {
+    "native.config.ts": "cd41510568951e45dbbedfea37965f652651ac541b78e2c9ed815849284d22b6",
+    "run.py": "244ce17aca8eeb9f48b9105a14b3179e8dbde9d3c388d7f648fd5d442635db21",
+    "source/e2e/saves.spec.ts": "7e91f8cbf39643fc5455bf8068a71397e9f4511a414c782cb87fa89e9ebcc866",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "command": [
+    "node_modules/.bin/playwright",
+    "test",
+    "-c",
+    "/workspace/avatarrpg-env/import-388/native.config.ts"
+  ],
+  "started_utc": "2026-11-02T02:05:27.385804+00:00",
+  "exit_code": 0,
+  "after": {
+    "sha": "5ccb1dd932a774d417b5adc4ec09d68c6fdda5a3",
+    "tree": "d24337dfaa6910c1ffcd20661f42ac0c726404bd",
+    "status": ""
+  },
+  "harness_after": {
+    "native.config.ts": "cd41510568951e45dbbedfea37965f652651ac541b78e2c9ed815849284d22b6",
+    "run.py": "244ce17aca8eeb9f48b9105a14b3179e8dbde9d3c388d7f648fd5d442635db21",
+    "source/e2e/saves.spec.ts": "7e91f8cbf39643fc5455bf8068a71397e9f4511a414c782cb87fa89e9ebcc866",
+    "source/e2e/helpers.ts": "f140b53294186e62e2a1eebbff1fdc2e63e9fd67f9b51058aedf2923922d1a05",
+    "source/playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+  },
+  "duration_seconds": 60.2388272820026,
+  "finished_utc": "2026-11-02T02:06:27.624644+00:00",
+  "stable": true
+}

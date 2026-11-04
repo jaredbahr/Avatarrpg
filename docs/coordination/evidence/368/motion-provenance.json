@@ -1,0 +1,155 @@
+{
+  "source": "1d4b7ee53442f6e8569f97438c1271114141e93b",
+  "tree": "a091f1be8f02cf3d995e8d93803121d5207e3d24",
+  "browser": "Chromium154.0.8037.57",
+  "dpr": 1,
+  "zoom": 1,
+  "status": "8 passed, actual exit0; both backend summaries complete, errors and emitter violations empty",
+  "browserReceiptSha256": "8ffaa7d9937139d5dd784d0e5e8be3d3188e81ec4bd27102cb5cdbe23402a028",
+  "executedFixtureSha256": "499437338223586afbfe450ca301066990549aff450a7afb877037fa5f471bc8",
+  "configSha256": "494118dd14f11974b80a37b6f7e234352edce762658f1098d213a51a7ac14c8e",
+  "distSha256": "1aba519291d83856c899b19afcabf52b5ca220c143c784cd151ef40ea4d24268",
+  "method": "Native recordVideo captures one uninterrupted context per backend through real UI and live/reduced periods. Curated MP4s each join two continuous shots. No screenshot sequence, forced draw or optical frame interpolation. World location/clock/renderer unaffected by observer; frameAt only changes camera through real APIs.",
+  "runtimeTools": "Installed Chromium154 and ffmpeg7.1.5; task-local FFmpeg executable symlink, no installs or extra launch arguments. Service workers blocked, no offline/PWA proof.",
+  "limits": "Recorder overhead: Canvas live roughly27\u201329 draws/s; software WebGL roughly2.3\u20132.4 draws/s. These recordings establish neither sustained60fps nor physical/native-GPU/WebKit behavior or owner aesthetic acceptance.",
+  "clips": [
+    {
+      "file": "canvas-live.mp4",
+      "bytes": 7961286,
+      "sha256": "9f2cc4f460f27d54d8c5b91934b56cfaf7efec3fc4c54c29b86d412618b22fae",
+      "durationSeconds": 29.96,
+      "width": 1368,
+      "height": 912,
+      "sourceVideoSha256": "1c2924b14e9432d02da217587ca876ef3118cc2bda43918658fed51b4b3b1756",
+      "sourceVideoDurationSeconds": 66.64,
+      "shots": [
+        {
+          "name": "west-live",
+          "offsetSeconds": 10.27,
+          "durationSeconds": 15.0,
+          "wallStartMs": 1793413823392,
+          "wallEndMs": 1793413838579,
+          "renderTimeStartMs": 9679.399999999441,
+          "renderTimeEndMs": 24853.39999999944,
+          "draws": 442
+        },
+        {
+          "name": "lanterns-live",
+          "offsetSeconds": 27.991,
+          "durationSeconds": 15.0,
+          "wallStartMs": 1793413841113,
+          "wallEndMs": 1793413856299,
+          "renderTimeStartMs": 27376,
+          "renderTimeEndMs": 42591.299999999814,
+          "draws": 414
+        }
+      ],
+      "seam": "One explicit hard cut between west and east; each shot is continuous compositor video.",
+      "encoding": "H264 CRF18, unchanged1368x912, yuv420p;25fps is encoding cadence, not gameFPS."
+    },
+    {
+      "file": "canvas-reduced.mp4",
+      "bytes": 4295303,
+      "sha256": "566ba5192ff8c494f50dac8c7d63969deeb9a28c77490715cb8139b1919e14d1",
+      "durationSeconds": 19.96,
+      "width": 1368,
+      "height": 912,
+      "sourceVideoSha256": "1c2924b14e9432d02da217587ca876ef3118cc2bda43918658fed51b4b3b1756",
+      "sourceVideoDurationSeconds": 66.64,
+      "shots": [
+        {
+          "name": "west-reduced",
+          "offsetSeconds": 54.785,
+          "durationSeconds": 10.0,
+          "wallStartMs": 1793413867907,
+          "wallEndMs": 1793413878057,
+          "renderTimeStartMs": 54204.09999999963,
+          "renderTimeEndMs": 64341,
+          "draws": 335
+        },
+        {
+          "name": "lanterns-reduced",
+          "offsetSeconds": 43.813,
+          "durationSeconds": 10.0,
+          "wallStartMs": 1793413856935,
+          "wallEndMs": 1793413867114,
+          "renderTimeStartMs": 43222.299999999814,
+          "renderTimeEndMs": 53405.5,
+          "draws": 319
+        }
+      ],
+      "seam": "One explicit hard cut between west and east; each shot is continuous compositor video.",
+      "encoding": "H264 CRF18, unchanged1368x912, yuv420p;25fps is encoding cadence, not gameFPS."
+    },
+    {
+      "file": "webgl-live.mp4",
+      "bytes": 6741146,
+      "sha256": "269b2f8bf6f69b24a873b357400d637734e04987a7f5c2a0a02c526629fff4c5",
+      "durationSeconds": 29.96,
+      "width": 1368,
+      "height": 912,
+      "sourceVideoSha256": "dee24af6aa2fc05e98e7f6c1cfbe26f11a3186f7055882a1562c390055a3bc58",
+      "sourceVideoDurationSeconds": 142.36,
+      "shots": [
+        {
+          "name": "west-live",
+          "offsetSeconds": 35.446,
+          "durationSeconds": 15.0,
+          "wallStartMs": 1793413914818,
+          "wallEndMs": 1793413931894,
+          "renderTimeStartMs": 34090.699999999255,
+          "renderTimeEndMs": 51126.299999999814,
+          "draws": 41
+        },
+        {
+          "name": "lanterns-live",
+          "offsetSeconds": 77.38,
+          "durationSeconds": 15.0,
+          "wallStartMs": 1793413956752,
+          "wallEndMs": 1793413973846,
+          "renderTimeStartMs": 75911.59999999963,
+          "renderTimeEndMs": 93081.89999999944,
+          "draws": 40
+        }
+      ],
+      "seam": "One explicit hard cut between west and east; each shot is continuous compositor video.",
+      "encoding": "H264 CRF18, unchanged1368x912, yuv420p;25fps is encoding cadence, not gameFPS."
+    },
+    {
+      "file": "webgl-reduced.mp4",
+      "bytes": 3469503,
+      "sha256": "247a73eb397c34a874645e695522c3f16fcf9b69aad064d5076b2d6ef685d0ab",
+      "durationSeconds": 19.96,
+      "width": 1368,
+      "height": 912,
+      "sourceVideoSha256": "dee24af6aa2fc05e98e7f6c1cfbe26f11a3186f7055882a1562c390055a3bc58",
+      "sourceVideoDurationSeconds": 142.36,
+      "shots": [
+        {
+          "name": "west-reduced",
+          "offsetSeconds": 123.038,
+          "durationSeconds": 10.0,
+          "wallStartMs": 1793414002410,
+          "wallEndMs": 1793414014516,
+          "renderTimeStartMs": 121658.59999999963,
+          "renderTimeEndMs": 133772.19999999925,
+          "draws": 29
+        },
+        {
+          "name": "lanterns-reduced",
+          "offsetSeconds": 101.963,
+          "durationSeconds": 10.0,
+          "wallStartMs": 1793413981335,
+          "wallEndMs": 1793413993143,
+          "renderTimeStartMs": 100535.89999999944,
+          "renderTimeEndMs": 112366.29999999981,
+          "draws": 28
+        }
+      ],
+      "seam": "One explicit hard cut between west and east; each shot is continuous compositor video.",
+      "encoding": "H264 CRF18, unchanged1368x912, yuv420p;25fps is encoding cadence, not gameFPS."
+    }
+  ],
+  "rawRetention": "/workspace/avatarrpg-env/review-368-motion/results; original uncut VP8, fixture/config, per-phase observations and receipts retained locally.",
+  "previousSparseEvidenceCommit": "1d4b7ee53442f6e8569f97438c1271114141e93b"
+}

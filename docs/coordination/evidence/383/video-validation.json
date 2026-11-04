@@ -1,0 +1,154 @@
+[
+  {
+    "name": "before-canvas-default",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "13.600000"
+      }
+    }
+  },
+  {
+    "name": "before-canvas-world",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "13.640000"
+      }
+    }
+  },
+  {
+    "name": "before-webgl-default",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "32.800000"
+      }
+    }
+  },
+  {
+    "name": "before-webgl-world",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "32.120000"
+      }
+    }
+  },
+  {
+    "name": "after-canvas-default",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "12.360000"
+      }
+    }
+  },
+  {
+    "name": "after-canvas-world",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "11.600000"
+      }
+    }
+  },
+  {
+    "name": "after-webgl-default",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "32.400000"
+      }
+    }
+  },
+  {
+    "name": "after-webgl-world",
+    "full_decode_exit": 0,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp8",
+          "width": 1368,
+          "height": 912,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "31.600000"
+      }
+    }
+  }
+]

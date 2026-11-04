@@ -1,0 +1,29 @@
+{
+  "producer": "6e043545",
+  "results": [
+    {
+      "name": "Settings",
+      "before": ["Paused", "Settings"],
+      "after": ["Paused"],
+      "paused": true,
+      "focused": true
+    },
+    {
+      "name": "Save game",
+      "before": ["Paused", "Save game"],
+      "after": ["Paused"],
+      "paused": true,
+      "focused": true
+    }
+  ],
+  "combat": {
+    "held": {
+      "pause": true,
+      "releases": 0,
+      "scene": "combat"
+    },
+    "released": 1
+  },
+  "errors": [],
+  "kind": "actual local production game/UI; release observer forwards original; no state/timer edits"
+}
