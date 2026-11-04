@@ -13,6 +13,7 @@ import { RngCursor } from '../rng';
 import { evaluate } from '../story/conditions';
 import { advancePhase } from '../story/clock';
 import { findSettleTile, settle } from '../story/settle';
+import { battleReturnTile } from '../story/battleReturn';
 import { resolveResidents } from '../story/residents';
 import { activeTriggers, backgroundFigures, exitAt, triggerKey, visibleNpcs } from '../story/world';
 import type {
@@ -326,14 +327,38 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
 
   const nextNodeId = node?.kind === 'battle' ? (victory ? node.next : node.onDefeat) : null;
 
+  const map = content.maps.get(battle.mapId);
+  const remembered = state.world.returnPos[battle.mapId];
+  const crossedHere =
+    node?.kind === 'battle' &&
+    map?.triggers?.some(
+      (trigger) =>
+        trigger.node === node.id && trigger.area.some((cell) => samePos(cell, state.location.pos)),
+    );
+  const returnPos =
+    map &&
+    crossedHere &&
+    remembered &&
+    state.location.mapId === battle.mapId &&
+    samePos(remembered, state.location.pos)
+      ? battleReturnTile(content, map, remembered)
+      : null;
+  const worldAfterVictory = victory
+    ? { ...state.world, cleared: [...new Set([...state.world.cleared, battle.encounterId])] }
+    : state.world;
+
   const staged: GameState = {
     ...state,
     party,
     battle: null,
     pendingChoices,
-    world: victory
-      ? { ...state.world, cleared: [...new Set([...state.world.cleared, battle.encounterId])] }
-      : state.world,
+    ...(returnPos ? { location: { ...state.location, pos: returnPos } } : {}),
+    world: returnPos
+      ? {
+          ...worldAfterVictory,
+          returnPos: { ...worldAfterVictory.returnPos, [battle.mapId]: returnPos },
+        }
+      : worldAfterVictory,
   };
 
   if (!nextNodeId) {
@@ -416,7 +441,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   const route = findPath(
     {
       grid,
-      blocked: new Set<string>(),
+      blocked: exploreOccupancy(content, map, state),
       surfaces: content.surfaces,
       size: 1,
       climbCost: content.tuning.climbCost,
@@ -602,6 +627,15 @@ function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
   return cachedGrid(map);
 }
 
+/** Only people currently resolved onto this map block an exploration walk. */
+function exploreOccupancy(content: ContentIndex, map: MapDef, state: GameState): Set<string> {
+  return new Set(
+    [...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map((who) =>
+      posKey(who.pos),
+    ),
+  );
+}
+
 /**
  * Nearest walkable tile adjacent to `target`, for approaching an NPC. A dry
  * tile beats a nearer one under a surface: the party may wade a shallow canal
@@ -613,13 +647,7 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
   // Nobody ends a walk on, or paths through, another person. In particular,
   // the two guards share adjacent handover tiles: approaching one must not
   // recursively tap the other when their tile happens to be the nearest.
-  const occupied = new Set(
-    map
-      ? [...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map(
-          (who) => posKey(who.pos),
-        )
-      : [posKey(target)],
-  );
+  const occupied = map ? exploreOccupancy(content, map, state) : new Set([posKey(target)]);
   let best: Vec2 | null = null;
   let bestDistance = Infinity;
   let bestWet = true;

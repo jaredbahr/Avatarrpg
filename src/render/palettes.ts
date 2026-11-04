@@ -250,6 +250,9 @@ export const ELEVATION = {
 /* ------------------------------------------------------------------ */
 
 export const OVERLAY = {
+  markerGold: '#f0c674',
+  selectedRing: 'rgba(255,255,255,0.6)',
+  koCross: 'rgba(226,88,74,0.85)',
   move: 'rgba(126, 200, 227, 0.30)',
   moveEdge: 'rgba(200, 240, 255, 0.85)',
   target: 'rgba(226, 88, 74, 0.32)',
@@ -353,6 +356,8 @@ export const HP_COLORS = {
   /** The empty part of the bar, and the 1px frame round it: the art bible's ink. */
   back: 'rgba(27,20,16,0.55)',
   frame: '#1b1410',
+  /** A one-pixel upper edge keeps the filled track legible against dark ground. */
+  highlight: '#fff6e0',
 } as const;
 
 /**

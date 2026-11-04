@@ -34,11 +34,14 @@ import { enemyScale, partyScale } from './actorScale';
 import type { BendSources } from './bendHandoff';
 import { planBendCast } from './bendHandoff';
 
+/** ADR 0095's cadence calibration and base clock for the residents' slowed amble. */
+export const STROLL_REFERENCE_MS = 750;
+
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
   step: 110,
   combatWalkStep: 720,
-  strollStep: 750,
+  strollStep: 625,
   windUp: 260,
   release: 120,
   recover: 280,
@@ -81,6 +84,8 @@ export interface ChoreographyInput {
   readonly pushIndex: number;
   /** Followers share the leader's footfalls rather than multiplying the sound. */
   readonly silentSteps?: boolean;
+  /** Keep the reference walk schedule for the residents' slowed amble clock. */
+  readonly amble?: boolean;
   /**
    * A sprite's clips as its loaded sheet draws them, fetched ones among them
    * (ADR 0059); undefined before the sheet is in. Without it every knockout
@@ -415,7 +420,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // followers are the scene's, pushed onto the same timeline.
         if (event.path.length === 0) break;
         const curve = smoothPath(event.from, event.path);
-        const timing = strollTiming(curve.length, TIMING.strollStep);
+        const timing = strollTiming(
+          curve.length,
+          input.amble ? STROLL_REFERENCE_MS : TIMING.strollStep,
+        );
         // Reduced motion retains the same abbreviated, pace-independent action
         // lock as combat movement. A long village route must not become slow
         // again merely because the full-motion walking cadence was retuned.

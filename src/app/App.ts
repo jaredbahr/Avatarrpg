@@ -116,6 +116,9 @@ export interface Scene {
   holdAi?(): void;
   /** Drop the pause hold; re-arm one pending enemy turn if still current. */
   releaseAi?(): void;
+  /** Pause and resume timed scene presentation while the pause menu is open. */
+  pausePresentation?(): void;
+  resumePresentation?(): void;
   /**
    * The events a command produced, before the scene may be swapped for the
    * one the new state calls for. Return true when the scene schedules the
@@ -230,6 +233,9 @@ export class App {
   private resolving = false;
   /** Presentation-only provenance for the next newly mounted combat scene. */
   private freshCombatEntry = false;
+  /** Drawn explore seats for a fresh crossing; never enters GameState or a save. */
+  private combatApproach: { readonly mapId: string; readonly positions: readonly Vec2[] } | null =
+    null;
   private resizeQueued = false;
   private routeTimer: number | null = null;
   private bendFx: BendFxIndex | undefined;
@@ -244,6 +250,12 @@ export class App {
     const fresh = this.freshCombatEntry;
     this.freshCombatEntry = false;
     return fresh;
+  }
+
+  consumeCombatApproach(mapId: string): readonly Vec2[] | null {
+    const approach = this.combatApproach;
+    this.combatApproach = null;
+    return approach?.mapId === mapId ? approach.positions : null;
   }
 
   get curtainBusy(): boolean {
@@ -642,6 +654,7 @@ export class App {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
+    this.combatApproach = null;
     const state = createGame(this.content, {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
@@ -666,6 +679,7 @@ export class App {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
+    this.combatApproach = null;
     // A reward dialog belongs to the state being replaced. Drop it before the
     // swap so its close callback cannot offer a pick against the new save.
     this.dismissRewardDialog();
@@ -710,12 +724,25 @@ export class App {
     const choiceConsumed =
       (command.type === 'chooseLevelUp' || command.type === 'chooseDiscipline') &&
       result.state.pendingChoices !== state.pendingChoices;
-    if (result.events.some((event) => event.type === 'battleStarted')) this.freshCombatEntry = true;
+    if (result.events.some((event) => event.type === 'battleStarted')) {
+      this.freshCombatEntry = true;
+      this.combatApproach = null;
+    }
 
     const now = performance.now();
     if (result.events.length > 0) {
       if (this.scene?.onEvents?.(result.events, now) !== true)
         this.animator.push(now, result.events, unitsBefore);
+    }
+
+    if (
+      state.screen === 'explore' &&
+      result.state.screen === 'combat' &&
+      result.state.battle &&
+      result.events.some((event) => event.type === 'partyWalked')
+    ) {
+      const positions = this.partyPositions();
+      if (positions) this.combatApproach = { mapId: result.state.battle.mapId, positions };
     }
 
     this.announceImportant(result.events);
@@ -807,11 +834,13 @@ export class App {
 
   openPause(): void {
     if (this.pause || !this.state) return;
-    // The pause owns combat progress: hold enemy dispatch behind the menu
-    // without disturbing the establishing view or the rest of the board. Only
-    // a fight advances itself; explore keeps running, and a nested Save menu
-    // keeps `this.pause` set so it stays held.
-    if (this.scene?.name === 'combat') this.scene.holdAi?.();
+    // The pause owns combat progress: park enemy dispatch and timed scene
+    // presentation. Explore keeps running, and a nested Save menu keeps
+    // `this.pause` set so both holds remain in force.
+    if (this.scene?.name === 'combat') {
+      this.scene.holdAi?.();
+      this.scene.pausePresentation?.();
+    }
     this.pause = new PauseMenu(this, () => {
       this.pause = null;
       this.resumeAfterPause();
@@ -824,10 +853,13 @@ export class App {
     this.pause = null;
   }
 
-  /** Restarts enemy dispatch held by the pause menu, once the pause is gone. */
+  /** Restarts combat dispatch and timed presentation once the pause is gone. */
   private resumeAfterPause(): void {
     if (this.pause) return;
-    if (this.scene?.name === 'combat') this.scene.releaseAi?.();
+    if (this.scene?.name === 'combat') {
+      this.scene.releaseAi?.();
+      this.scene.resumePresentation?.();
+    }
   }
 
   updateSettings(next: Partial<Settings>): void {
@@ -922,9 +954,8 @@ export class App {
   }
 
   /**
-   * Where the village draws each party member, leader first, as tiles.
-   * Exposed so the e2e suite can check the drawing against the rules after
-   * a walk. Null outside the village.
+   * Where the current map scene draws each party member, leader first, as tiles.
+   * Exposed so the e2e suite can compare the last explore and first combat frames.
    */
   partyPositions(): readonly Vec2[] | null {
     const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };
