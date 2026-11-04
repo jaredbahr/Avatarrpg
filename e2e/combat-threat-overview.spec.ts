@@ -174,7 +174,24 @@ async function showEnemies(page: Page, keyboard = false): Promise<void> {
   else await show.tap();
 }
 
+/**
+ * Recentre lives on the bar where there is room and behind More where the
+ * header folds (phone, tablet portrait). Check it is reachable, then leave the
+ * header as it was so the next tap reaches the board.
+ */
+async function expectRecentreReachable(page: Page): Promise<void> {
+  const controls = await openViewMenu(page);
+  await expect(page.getByRole('button', { name: 'Recentre', exact: true })).toBeVisible();
+  if (controls.more?.visible) {
+    const more = page.getByRole('button', { name: 'More', exact: true });
+    await more.tap();
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+  }
+}
+
 async function observeNextOverviewClick(page: Page): Promise<void> {
+  // Show enemies is only in the DOM once a folded header's More list is open.
+  await openViewMenu(page);
   await page.getByRole('button', { name: 'Show enemies', exact: true }).evaluate((node) => {
     const probeWindow = window as unknown as ProbeWindow;
     delete probeWindow.threatOverviewClick;
@@ -300,7 +317,7 @@ for (const profile of [
         expect(overview.overview).toBe(true);
         expectNavigationOnly(overview, before);
         await expectThreatsVisible(page, overview);
-        await expect(page.getByRole('button', { name: 'Recentre', exact: true })).toBeVisible();
+        await expectRecentreReachable(page);
         if (reduceMotion) {
           const immediate = await page.evaluate(
             () => (window as unknown as ProbeWindow).threatOverviewClick,
