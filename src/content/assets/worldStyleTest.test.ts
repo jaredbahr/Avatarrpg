@@ -28,14 +28,7 @@ describe('the world-style figures', () => {
       expect(worldPerArt).toBeCloseTo(1, 9);
       for (const n of [1, 2, 3, 4]) expect(crispRatio(n * worldPerArt)).toBe(true);
       for (const heading of HEADINGS) {
-        // A walk loop is as many cels as its sheet draws (six, or eight on the #408 recipe), and the
-        // locomotion's cycle is that many cels long, so the stop's half-cycle plant lands on a passing cel.
-        const walk = entry.clips[headingClip('walk', heading)];
-        expect(walk?.frames.length).toBeGreaterThanOrEqual(6);
-        expect(walk?.frames.length).toBeCloseTo(
-          ((entry.locomotion?.walkCycleMs ?? 0) * (walk?.fps ?? 0)) / 1000,
-          9,
-        );
+        expect(entry.clips[headingClip('walk', heading)]?.frames).toHaveLength(6);
         expect(entry.clips[headingClip('idle', heading)]?.frames).toHaveLength(2);
         expect(entry.locomotion?.walkMsPerTile[heading]).toBeGreaterThan(0);
       }
@@ -52,14 +45,6 @@ describe('the world-style figures', () => {
         expect(cel).toBeLessThan(140);
       }
     }
-  });
-
-  it('holds each cel of an eight-cel walk 90 ms or less at the brisk 750 ms a tile (#408)', () => {
-    const eight = Object.values(WORLD_PARTY).filter((t) => t.walkCels >= 8);
-    expect(eight.length).toBeGreaterThan(0);
-    for (const t of eight)
-      for (const ms of t.walkMsPerTile)
-        expect((t.walkCelMs * 750) / (ms / OBLIQUE_FIGURE_SCALE)).toBeLessThanOrEqual(90);
   });
 
   describe("the party's world sheets (phase 2a)", () => {

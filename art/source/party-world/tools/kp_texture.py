@@ -23,9 +23,8 @@ from kp_body import NAMES, PARTS, joints, labels, similarity
 TOL_L, TOL_AB, SEARCH = 0.10, 0.07, 3
 
 
-def transfer(cel, cel_kps, root, root_kps, W, rigid=True, face=None, trunk_dy=None):
-    """cel, root: HxWx4 uint8 on the same W canvas. Returns (rgba, fraction of the cel's pixels that took the root's colour).
-    trunk_dy (rigid only, #408): the rows the root's trunk is moved down in this cel, set by the caller instead of searched."""
+def transfer(cel, cel_kps, root, root_kps, W, rigid=True, face=None):
+    """cel, root: HxWx4 uint8 on the same W canvas. Returns (rgba, fraction of the cel's pixels that took the root's colour)."""
     ac = cel[..., 3] >= 128; ar = root[..., 3] >= 128
     Pc, Zc = joints(cel_kps, W); Pr, Zr = joints(root_kps, W)
     lc = labels(ac, Pc, Zc); lr = labels(ar, Pr, Zr)
@@ -57,26 +56,23 @@ def transfer(cel, cel_kps, root, root_kps, W, rigid=True, face=None, trunk_dy=No
         close = (np.abs(A[:, 0] - B[:, 0]) < TOL_L) & (np.hypot(*(A[:, 1:] - B[:, 1:]).T) < TOL_AB)
         if face is not None and NAMES[i] == 'head' and ang < 30: close |= face[ry, rx]   # not on a falling, turned head
         out[cy[close], cx[close], :3] = root[ry[close], rx[close], :3]; took += int(close.sum())
-    if rigid: out = trunk(out, lc, Pc, Zc, root, lr, Pr, W, trunk_dy)
+    if rigid: out = trunk(out, lc, Pc, Zc, root, lr, Pr, W)
     return out, took / max(int(ac.sum()), 1)
 
 
-def trunk(cel, lc, Pc, Zc, root, lr, Pr, W, dy_fixed=None):
+def trunk(cel, lc, Pc, Zc, root, lr, Pr, W):
     """The walk's trunk is the root's own: the root's head and torso pixels, moved by one offset (the cel's neck-to-hip
     midpoint onto the root's, nudged within 3 px to the best silhouette overlap), replace the cel's. A limb the cel draws in
     front of the torso (a higher z rank than the torso's) stays in front; the cel's own head pixels the root's head does
-    not cover are dropped, so the hair keeps the root's outline.
-
-    With dy_fixed (#408) the trunk's row is the caller's (moved down dy_fixed rows from the root's) and only its column
-    is nudged: the overlap search moved the trunk up to 3 px a cel, and that was a hop."""
+    not cover are dropped, so the hair keeps the root's outline."""
     T = [NAMES.index('head'), NAMES.index('torso')]; head = NAMES.index('head')
     off = ((Pr['NECK'] + Pr['MIDHIP']) / 2 - (Pc['NECK'] + Pc['MIDHIP']) / 2)
     ry, rx = np.nonzero(np.isin(lr, T)); cy, cx = np.nonzero(np.isin(lc, T))
     rset = set(zip(ry.tolist(), rx.tolist())); best = None
-    for dy in ([None] if dy_fixed is not None else range(-SEARCH, SEARCH + 1)):
+    for dy in range(-SEARCH, SEARCH + 1):
         for dx in range(-SEARCH, SEARCH + 1):
-            oy, ox = (-int(dy_fixed) if dy is None else int(round(off[1])) + dy), int(round(off[0])) + dx
-            v = sum((y + oy, x + ox) in rset for y, x in zip(cy.tolist(), cx.tolist())) - 0.5 * (abs(dx) + abs(dy or 0))
+            oy, ox = int(round(off[1])) + dy, int(round(off[0])) + dx
+            v = sum((y + oy, x + ox) in rset for y, x in zip(cy.tolist(), cx.tolist())) - 0.5 * (abs(dx) + abs(dy))
             if best is None or v > best[0]: best = (v, oy, ox)
     _, oy, ox = best
     zt = (Zc['NECK'] + Zc['MIDHIP']) / 2

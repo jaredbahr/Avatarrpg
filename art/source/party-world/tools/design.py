@@ -1,9 +1,6 @@
 """Step 5 (from #317's style-test-world-chars/tools/design.py, extended to eight headings): the designed walk. No mocap: six key poses a loop, set by hand in the body's own frame and projected onto the
 board's 2:1 ground for each diagonal heading, as deltas on the root's estimated skeleton.
 
-The tables below are #317's six-cel walk (Sura and Bo). kp_walk.py replaces them with Kaya's eight cels and turns on
-PLANT (#408): see its header.
-
 Per foot, over the six cels (contact R, down R, passing R, contact L, down L, passing L), its position along the walk,
 in units of the step S, is +1/2, +1/6, -1/6, -1/2 (the stance foot moves back exactly S/3 a cel, so a pace of S/3 a cel holds
 it still), then it swings: -1/4 lifted, +1/8 lifted and passing, back to +1/2. Pelvis: contact -1.2%, down -2.5%, passing 0
@@ -34,11 +31,6 @@ FOOT = [(+0.5, 0.01), (+1 / 6, 0.0), (-1 / 6, 0.0), (-0.5, 0.015), (-0.25, 0.05)
 PELVIS = [-0.012, -0.025, 0.0, -0.012, -0.025, 0.0]
 ARM = [-1.0, -0.6, 0.0, 1.0, 0.6, 0.0]          # right arm forward fraction (against the right leg)
 ARM_AMP = 0.075                                  # wrist reach forward/back at contact, in H
-# #408: with PLANT, a foot on the ground keeps one screen row in every cel (the store stands each cel on its lowest
-# pixel, so a planted foot striding along screen y would move the whole figure) and a lifted foot shows only the part of
-# its stride that carries it up the screen; the horizontal stride is unchanged. kp_walk.py sets it with eight-cel tables.
-PLANT = False
-STANCE = 4                                       # phases 0..STANCE-1 of FOOT are on the ground (PLANT only)
 
 
 def screen(gx, gy, z, H):
@@ -57,11 +49,6 @@ def ik(hip, ank, L1, L2, fwd):
     return max(ks, key=lambda k: k[0])   # forward knee
 
 
-def height(char, d):
-    """The root's drawn height in px: one body height H."""
-    a = np.asarray(Image.open(HERE / f'roots/{char}/idle/{d}.png'))[..., 3]; ys = np.nonzero(a)[0]; return float(ys.max() - ys.min() + 1)
-
-
 def design(char, d):
     sk = json.load(open(HERE / f'roots/{char}/idle/skeleton/{d}.json'))
     P = {k['label']: np.array([k['x'] * W, k['y'] * W]) for k in sk['keypoints']}
@@ -73,23 +60,18 @@ def design(char, d):
     # Stand both feet on one ground line: the root has one foot set back, which would plant the two steps rows apart
     # (a limp). Base ankles = their midpoint +- half a hip width along the heading's right, knees moved with them.
     mid = (P['LEFT LEG'] + P['RIGHT LEG']) / 2; rx, ry = -fy, fx; half = 0.045
-    base = {side: mid + screen(sg * half * rx, sg * half * ry, 0, H) for side, sg in (('RIGHT', 1), ('LEFT', -1))}
-    if PLANT:
-        # One ground row for both feet (the near one's): the far foot a row or few higher would be the figure's lowest
-        # pixel whenever the near one lifts, and the store would drop the whole figure by the difference (#408).
-        g = max(v[1] for v in base.values())
-        for v in base.values(): v[1] = g
-    for side, new in base.items():
+    for side, sg in (('RIGHT', 1), ('LEFT', -1)):
+        new = mid + screen(sg * half * rx, sg * half * ry, 0, H)
         P[f'{side} KNEE'] = P[f'{side} KNEE'] + (new - P[f'{side} LEG']) / 2; P[f'{side} LEG'] = new
     hipz = (H - (P['LEFT HIP'][1] + P['RIGHT HIP'][1]) / 2 + ys.min()) / H   # hip height over the sole, in H (approx)
     sole = ys.max()
     thigh = {s: np.linalg.norm(P[f'{s} KNEE'] - P[f'{s} HIP']) / H for s in ('LEFT', 'RIGHT')}
     shin = {s: np.linalg.norm(P[f'{s} LEG'] - P[f'{s} KNEE']) / H for s in ('LEFT', 'RIGHT')}
-    frames = []; n = len(FOOT)
-    for i in range(n):
+    frames = []
+    for i in range(6):
         Q = {k: v.copy() for k, v in P.items()}
         pel = PELVIS[i]
-        for side, ph in (('RIGHT', i), ('LEFT', (i + n // 2) % n)):
+        for side, ph in (('RIGHT', i), ('LEFT', (i + 3) % 6)):
             s, az = FOOT[ph]; s *= STEP
             L1, L2 = thigh[side] * 1.04, shin[side] * 1.04       # the drawn root stands slightly bent
             hip = np.array([0.0, hipz + pel]); ank = np.array([s, az + 0.04])
@@ -98,12 +80,7 @@ def design(char, d):
             hip0 = np.array([0.0, hipz]); ank0 = np.array([0.0, 0.04]); knee0 = ik(hip0, ank0, L1, L2, 1)
             for lab, q, q0 in ((f'{side} HIP', hip, hip0), (f'{side} KNEE', knee, knee0), (f'{side} LEG', ank, ank0)):
                 ds, dz = q - q0
-                delta = screen(ds * fx, ds * fy, dz, H)
-                if PLANT and lab != f'{side} HIP':
-                    # the stride's screen-y part: none on the ground, only its upward part in the air
-                    along = screen(ds * fx, ds * fy, 0, H)[1]
-                    delta[1] -= along if ph < STANCE else max(along, 0.0)
-                Q[lab] = P[lab] + delta
+                Q[lab] = P[lab] + screen(ds * fx, ds * fy, dz, H)
         for lab in ['NOSE', 'LEFT EYE', 'RIGHT EYE', 'LEFT EAR', 'RIGHT EAR', 'NECK', 'LEFT SHOULDER', 'RIGHT SHOULDER',
                     'LEFT ELBOW', 'RIGHT ELBOW', 'LEFT ARM', 'RIGHT ARM']:
             Q[lab] = P[lab] + screen(0, 0, pel, H)
@@ -114,8 +91,8 @@ def design(char, d):
         frames.append(Q)
     kp = lambda Q: [{'label': k, 'x': round(float(Q[k][0]) / W, 4), 'y': round(float(Q[k][1]) / W, 4), 'z_index': Z[k]} for k in P]
     allp = np.array([v for Q in frames for v in Q.values()])
-    rec = dict(char=char, dir=d, canvas=W, step=STEP, height=H, action='walk', plant=PLANT, pelvis_px=[round(-p * H, 2) for p in PELVIS],
-               attribution=f'designed {n}-pose walk in the body frame, projected to the 2:1 board' + (' (planted feet on one row)' if PLANT else ''),
+    rec = dict(char=char, dir=d, canvas=W, step=STEP, height=H, action='walk',
+               attribution='designed six-pose walk (contact, down, passing) in the body frame, projected to the 2:1 board',
                first_frame_keypoints=kp(P0), frames=[kp(Q) for Q in frames],
                ankles=[{s: [round(float(v), 2) for v in Q[f'{s} LEG']] for s in ('LEFT', 'RIGHT')} for Q in frames],
                bounds=[allp.min(0).round(1).tolist(), allp.max(0).round(1).tolist()])
