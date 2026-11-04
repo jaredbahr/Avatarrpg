@@ -10,6 +10,37 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
+## Current state: art direction reset (read first, 2026-11-04)
+
+**All Avatarrpg work is paused** until Jared approves a new art direction (#348, "Pause all avatarrpg work until
+we solve the art"). Don't open PRs, push, merge or spend PixelLab credits on the game until #348 says resume.
+
+- **Rejected, don't retry:**
+  - the isometric painted Ba Dan with AI-redrawn characters, whose per-frame redraws flicker ("boil") and drift;
+  - the cel-shaded style test;
+  - the 3D-to-pixel spike, whose procedural model read as a doll;
+  - #411's 8-cel walk, reverted in #425.
+- **The direction under test** is traditional **top-down** pixel art, made entirely with PixelLab.
+  - **References:** a front-facing cobbled harbour town, and the game _Fountains_; Sea of Stars for the look and
+    Children of Morta for fluid motion.
+  - **Demo:** a playable prototype built outside the game (v1 → v3), not merged.
+  - **What worked for consistency:**
+    - `create-character-v3` at a 48 px canvas with 8 rotations;
+    - animations in `skeleton-v3` mode, which poses the same sprite;
+    - 32 px Wang tilesets with tile variants;
+    - `map-objects` with one approved style-anchor asset.
+
+    Template or redraw modes drift. Posing keeps motion small, so a code motion layer adds the bob, stride and
+    follow-through.
+- **Art is judged by Jared, by eye, in motion.**
+  - Show him video at game zoom, never stills or metrics. Art PRs stay as drafts until he says yes; only code
+    auto-merges.
+  - Keep evidence (videos, screenshots) out of the repo; attach it to PRs instead.
+- **GitHub is the source of truth.** Check open PRs and issues, drafts included, before starting anything, and keep
+  one PR per issue.
+- **Agents:** orchestrate and judge art with the strongest model. Spin up cheaper subagents (Sonnet or Haiku) for
+  mechanical work when warranted: merging drafts, running `ci:local`, labelling, recordings, file moves.
+
 ## Non-negotiables
 
 1. **`src/core/` is pure.** No DOM, no `Math.random`, no `Date.now`, no imports
