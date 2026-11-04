@@ -35,3 +35,42 @@ test('a long inspector opens at its title and keeps keyboard focus inside', asyn
   await expect(dialog).toHaveCount(0);
   await expect(lastHero).toBeFocused();
 });
+
+for (const childName of ['Settings', 'Save game']) {
+  test(`Escape closes ${childName} while keeping its parent pause open`, async ({ page }) => {
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Jared'], ['kaya'], `nested-pause-${childName}`);
+    await enterNode(page, 'village_explore');
+
+    const pauseButton = page.getByRole('button', { name: 'Pause', exact: true });
+    await pauseButton.focus();
+    await page.keyboard.press('Enter');
+    const pause = page.getByRole('dialog', { name: 'Paused', exact: true });
+    const opener = pause.getByRole('button', { name: childName, exact: true });
+    await opener.focus();
+    await page.keyboard.press('Enter');
+
+    const child = page.getByRole('dialog', { name: childName, exact: true });
+    await settleDialog(child);
+    await expect(page.getByRole('dialog')).toHaveCount(2);
+    await expect(child.getByRole('heading', { level: 2 })).toBeFocused();
+
+    // Shift+Tab from the heading reaches the last control, then Tab wraps
+    // inside the child rather than reaching a control in the paused sheet.
+    const controls = child.locator('button:not(:disabled)');
+    await page.keyboard.press('Shift+Tab');
+    await expect(controls.last()).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(controls.first()).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(child).toHaveCount(0);
+    await expect(pause).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await expect(opener).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(pauseButton).toBeFocused();
+  });
+}
