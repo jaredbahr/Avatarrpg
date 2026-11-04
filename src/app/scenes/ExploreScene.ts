@@ -647,7 +647,12 @@ export class ExploreScene implements Scene {
     const gate = this.atGate();
     const visible = Boolean(objective) && !this.conversationMode && this.map?.id !== RIVERSIDE_ID;
     button.hidden = !visible;
-    if (!visible || !objective) return;
+    // Riverside and conversations hide the chip, but its text still follows the
+    // story, so it is current the moment it shows again.
+    if (!objective) {
+      clear(button);
+      return;
+    }
 
     const expanded = this.objectivePresentation.expanded;
     button.setAttribute('aria-expanded', String(expanded));
@@ -1369,6 +1374,7 @@ export class ExploreScene implements Scene {
       motionReduced(),
       map.scene?.paintedWater ? waterCells(grid) : [],
       map.scene?.canopies,
+      { sources: map.scene?.ambienceSources, phase: state.world.clock.phase },
     );
 
     // Finish the legal route already in flight before previewing queued intent.

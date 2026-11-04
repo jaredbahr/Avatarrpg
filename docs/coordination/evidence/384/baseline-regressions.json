@@ -1,0 +1,14 @@
+{
+  "status": "EXPECTED REGRESSION FAILURE; not green",
+  "served_game": "baseline781c9278/src-public equalmain0d4",
+  "test_source": "6e043545 candidate regression fixture against unchanged baseline production build on4389",
+  "actual_shell_exit": 1,
+  "stats": {
+    "startTime": "2026-11-02T01:05:29.761Z",
+    "duration": 36488.373,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

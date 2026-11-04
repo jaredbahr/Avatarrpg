@@ -1,0 +1,482 @@
+{
+  "baseline_producer": "49619082368577ae056195179f88a0ae6c0596f4",
+  "baseline_tree": "899e9d99a26fe9a4b9590c66a52034ea0dec9b77",
+  "initial_candidate": "4cb56b7086fde27394ea59a5f53a03e0b361ce8b",
+  "final_native_producer": "2e6af0193fefb96aa514cf6d89f7349a8168b6d9",
+  "final_native_tree": "ce829700437e21712a309b79cea3ced096d12a40",
+  "main_merged": "90f872a341fc9506d5fee732108d7b1b89e2bbd1",
+  "harness_sha256": {
+    "native.config.ts": "87ab45895cfa27f487724b150dc7deb688c91852fb2d36f01853bad5bd3b7db1",
+    "source/e2e/npc-walking.spec.ts": "9ec972d4d74387dc796e973e29ac267b19e1d130406414e3f8c05adcccc508dd",
+    "source/src/core/state/npcWalking.test.ts": "c1c1ddcd4bed17c4e27b86efe57fb271030c231510eaa158774f459495f1430a"
+  },
+  "results": [
+    {
+      "run": "baseline",
+      "backend": "canvas",
+      "status": "failed",
+      "duration_ms": 12622,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "walks": [
+        {
+          "type": "partyWalked",
+          "unitId": "p0",
+          "from": {
+            "x": 8,
+            "y": 4
+          },
+          "path": [
+            {
+              "x": 9,
+              "y": 4
+            },
+            {
+              "x": 10,
+              "y": 5
+            }
+          ]
+        }
+      ],
+      "minimum_drawn_distance": 0.11231234153024958,
+      "moving_frames": 113,
+      "frames": 142,
+      "clips": ["walkSouth", "walkSouthEast"],
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "node": "mira_intro",
+      "errors": []
+    },
+    {
+      "run": "baseline",
+      "backend": "webgl",
+      "status": "failed",
+      "duration_ms": 41297,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "walks": [
+        {
+          "type": "partyWalked",
+          "unitId": "p0",
+          "from": {
+            "x": 8,
+            "y": 4
+          },
+          "path": [
+            {
+              "x": 9,
+              "y": 4
+            },
+            {
+              "x": 10,
+              "y": 5
+            }
+          ]
+        }
+      ],
+      "minimum_drawn_distance": 0.17226427474658312,
+      "moving_frames": 6,
+      "frames": 30,
+      "clips": ["walkSouth", "walkSouthEast"],
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "node": "mira_intro",
+      "errors": []
+    },
+    {
+      "run": "candidate",
+      "backend": "canvas",
+      "status": "passed",
+      "duration_ms": 12902,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "walks": [
+        {
+          "type": "partyWalked",
+          "unitId": "p0",
+          "from": {
+            "x": 8,
+            "y": 4
+          },
+          "path": [
+            {
+              "x": 8,
+              "y": 5
+            },
+            {
+              "x": 9,
+              "y": 5
+            },
+            {
+              "x": 10,
+              "y": 5
+            }
+          ]
+        }
+      ],
+      "minimum_drawn_distance": 1.0000000012499999,
+      "moving_frames": 134,
+      "frames": 161,
+      "clips": ["idleSouthEast", "walkSouth", "walkSouthEast", "walkSouthWest"],
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "node": "mira_intro",
+      "errors": []
+    },
+    {
+      "run": "candidate",
+      "backend": "webgl",
+      "status": "passed",
+      "duration_ms": 39225,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "walks": [
+        {
+          "type": "partyWalked",
+          "unitId": "p0",
+          "from": {
+            "x": 8,
+            "y": 4
+          },
+          "path": [
+            {
+              "x": 8,
+              "y": 5
+            },
+            {
+              "x": 9,
+              "y": 5
+            },
+            {
+              "x": 10,
+              "y": 5
+            }
+          ]
+        }
+      ],
+      "minimum_drawn_distance": 1.0000000028922238,
+      "moving_frames": 7,
+      "frames": 30,
+      "clips": ["idleSouthEast", "walkSouthEast", "walkSouthWest"],
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "node": "mira_intro",
+      "errors": []
+    },
+    {
+      "run": "merged-main",
+      "backend": "canvas",
+      "status": "passed",
+      "duration_ms": 13043,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "walks": [
+        {
+          "type": "partyWalked",
+          "unitId": "p0",
+          "from": {
+            "x": 8,
+            "y": 4
+          },
+          "path": [
+            {
+              "x": 8,
+              "y": 5
+            },
+            {
+              "x": 9,
+              "y": 5
+            },
+            {
+              "x": 10,
+              "y": 5
+            }
+          ]
+        }
+      ],
+      "minimum_drawn_distance": 1.0000000020622468,
+      "moving_frames": 134,
+      "frames": 162,
+      "clips": ["idleSouthEast", "walkSouth", "walkSouthEast", "walkSouthWest"],
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "node": "mira_intro",
+      "errors": []
+    },
+    {
+      "run": "merged-main",
+      "backend": "webgl",
+      "status": "passed",
+      "duration_ms": 39137,
+      "inputs": [
+        {
+          "type": "walkTo",
+          "pos": {
+            "x": 11,
+            "y": 5
+          }
+        }
+      ],
+      "walks": [
+        {
+          "type": "partyWalked",
+          "unitId": "p0",
+          "from": {
+            "x": 8,
+            "y": 4
+          },
+          "path": [
+            {
+              "x": 8,
+              "y": 5
+            },
+            {
+              "x": 9,
+              "y": 5
+            },
+            {
+              "x": 10,
+              "y": 5
+            }
+          ]
+        }
+      ],
+      "minimum_drawn_distance": 1.0000000008201249,
+      "moving_frames": 7,
+      "frames": 30,
+      "clips": ["idleSouthEast", "walkSouthEast", "walkSouthWest"],
+      "location": {
+        "mapId": "ba_dan_village",
+        "pos": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      "node": "mira_intro",
+      "errors": []
+    }
+  ],
+  "raw_artifacts": {
+    "baseline-results.json": {
+      "sha256": "57e0751ecadbfb5cbd9f87ae200867f4c6b1ed45b635ed5a07a693dc9b8126dd",
+      "bytes": 60867
+    },
+    "merged-main-webgl.json": {
+      "sha256": "4673db9bfcbffab597b333fea662aa1a37fd689a8ee9086c6bc75a2b3356c6dc",
+      "bytes": 6495
+    },
+    "eslint-after.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "baseline-installed-chromium-touch-canvas.json": {
+      "sha256": "dba9dcf1c232a2131f5ae0cfb2f848618b07e210cd724c4c7e311454cf4df39a",
+      "bytes": 28844
+    },
+    "merged-main-canvas.json": {
+      "sha256": "6c23dbe57eb245895645a6d8b5c35506601391541fb5dd0eb74068dddcd8e806",
+      "bytes": 32204
+    },
+    "baseline-canvas.json": {
+      "sha256": "dba9dcf1c232a2131f5ae0cfb2f848618b07e210cd724c4c7e311454cf4df39a",
+      "bytes": 28844
+    },
+    "native.config.ts": {
+      "sha256": "87ab45895cfa27f487724b150dc7deb688c91852fb2d36f01853bad5bd3b7db1",
+      "bytes": 877
+    },
+    "baseline-setup-failure.json": {
+      "sha256": "337340af258716be7a4c3a7acf92cc52eb8049b36e61cf5b999401487f15879b",
+      "bytes": 2283
+    },
+    "baseline-installed-chromium-touch-webgl.json": {
+      "sha256": "5b8b12d9fee4f5f67c627ce4df9f77c03f7cb8cafe179b4b1d27e0481f0ef6b2",
+      "bytes": 6348
+    },
+    "native-setup-failure.log": {
+      "sha256": "4585546f5e0bf05451d4803f12c52c471f627ea0999e8ced2b770b8faac3a158",
+      "bytes": 74
+    },
+    "core-eslint.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "core-prettier.log": {
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66
+    },
+    "typecheck-before.log": {
+      "sha256": "5d11463f29be550e32cbcca1fb070a18549263c77547f84bbcc444d3d7dc4af0",
+      "bytes": 743
+    },
+    "prettier-after.log": {
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66
+    },
+    "native-after.log": {
+      "sha256": "2587f2bb2dd5c3272143f830612146136e892c70e0f3b3b2ca828cfe7e6d1650",
+      "bytes": 1272
+    },
+    "candidate-canvas.json": {
+      "sha256": "7dcfe57afcaa438550ec08aaf265b2c6302a5be35012d0d0c17d6e31af3ededd",
+      "bytes": 32021
+    },
+    "harness-sha256.json": {
+      "sha256": "9289cd06880f46d9bc7605d7ac197d4b1ac351de746f7d86298c7ff9e93344f1",
+      "bytes": 311
+    },
+    "focused-after.log": {
+      "sha256": "acfbf86cd7ba01f8294b26ead657eb795eac6ba9bee86125702ebcfe0c21a266",
+      "bytes": 1097
+    },
+    "occupancy-fix.patch": {
+      "sha256": "ccde0245d43ebb2da8dcc2170eb6893b6b231cd8d2f63030e0b02bf07b02556b",
+      "bytes": 1851
+    },
+    "core-before.log": {
+      "sha256": "5c51629a31eace306e5b29d3b8503c024739fea90c79325e87c22b66c6f76eb0",
+      "bytes": 6750
+    },
+    "native-before.log": {
+      "sha256": "d793242d768b444422a87dde6c2b92862056abf1ee113e5afb1586da65372147",
+      "bytes": 7301
+    },
+    "baseline-webgl.json": {
+      "sha256": "5b8b12d9fee4f5f67c627ce4df9f77c03f7cb8cafe179b4b1d27e0481f0ef6b2",
+      "bytes": 6348
+    },
+    "native-merged-main.log": {
+      "sha256": "e5e5cb2a807f1edd7d1d6390ea86ceda93985291d1eeb15f42749c58a5e1a65a",
+      "bytes": 1272
+    },
+    "candidate-results.json": {
+      "sha256": "0fd891504f53068a18f1b84418060d55c9882c627de27c6b561fd44f9c5cfe34",
+      "bytes": 56305
+    },
+    "candidate-webgl.json": {
+      "sha256": "64eab9dda3d3d79ab092587cec59998920c9455d27d0aa30ba0521d269c93a6b",
+      "bytes": 6495
+    },
+    "merged-main-results.json": {
+      "sha256": "759556207898632a0c92765de01ed59e9bd983e7bf7c5e07c914f614ac65c9f4",
+      "bytes": 56552
+    },
+    "typecheck-fixture-fixed.log": {
+      "sha256": "a3a318732df191403d86db09f2e35581eddb0a924eca19a08c051c82040bc999",
+      "bytes": 57
+    },
+    "runs/baseline/artifacts/.last-run.json": {
+      "sha256": "e7ffe0a797d52bf9195093d4e16401bebf9d466079dceaa74f117a2cb076b638",
+      "bytes": 145
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-9a942--with-normal-motion-canvas--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "c5c0ae3ebf4cdcf2cc428a054a8b5276e43c485f6ff92a642b4de17f6932b5cb",
+      "bytes": 803074
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-9a942--with-normal-motion-canvas--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "2a834a3eedb578206a6966bf086c383c1d18608810c0e3be891608ba94d9176d",
+      "bytes": 802914
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-9a942--with-normal-motion-canvas--installed-chromium-touch/trace.zip": {
+      "sha256": "d72f5930e1d489be560b5dc0413909528f74f8b1fb9a6c1fa1751e46bbc161b3",
+      "bytes": 19927476
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-b72f3-o-with-normal-motion-webgl--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "6df26f99423595074d556b9d156e2657d8124e574a802b22452853d8a07b224d",
+      "bytes": 802823
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-b72f3-o-with-normal-motion-webgl--installed-chromium-touch/test-failed-1.png": {
+      "sha256": "804ecb945d342a45b05fe65001d8fe1954e149fb4842c82c99f228f1dee1010e",
+      "bytes": 802588
+    },
+    "runs/baseline/artifacts/npc-walking-approaching-Mi-b72f3-o-with-normal-motion-webgl--installed-chromium-touch/trace.zip": {
+      "sha256": "590d51f8b5303470caa09bf9ed78170bae04a7fa3678fa1e98a16b0743aaa34c",
+      "bytes": 19922483
+    },
+    "runs/merged-main/artifacts/.last-run.json": {
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    "runs/merged-main/artifacts/npc-walking-approaching-Mi-9a942--with-normal-motion-canvas--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "8fd29eedb34952be697fa28be8f8f9af484a2a87014b6147d286d0496308b527",
+      "bytes": 800178
+    },
+    "runs/merged-main/artifacts/npc-walking-approaching-Mi-b72f3-o-with-normal-motion-webgl--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "5b22b94ad09061b08a69b54441d3535c89e23dac2c68f341c5a2db3afb9bc6c7",
+      "bytes": 800154
+    },
+    "runs/candidate/artifacts/.last-run.json": {
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-9a942--with-normal-motion-canvas--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "f5f5ae5b7a5f89c05b61c429e6366ac561f228ff323b6668115d383f9ec343b8",
+      "bytes": 800622
+    },
+    "runs/candidate/artifacts/npc-walking-approaching-Mi-b72f3-o-with-normal-motion-webgl--installed-chromium-touch/mira-arrival.png": {
+      "sha256": "a8fdd6221078141ac97aaa7389d09219cfefb4e6b36fe8edc732e01816be5d2d",
+      "bytes": 800281
+    }
+  },
+  "limitations": "Normalmotion installedChromium Canvas/WebGL1368x912 DPR1 actualmouse soloKaya; no physical/WebKit/PWA/follower/movingresident/hardwareFPS or owneracceptance claim."
+}
