@@ -1,5 +1,52 @@
 # Combat threat overview — issue #328
 
+## 2026-11-04: current-main integration, browser legs and target acceptance
+
+This continues existing draft PR357 on published branch
+`codex/328-show-enemies-cloud`, expected head `64758076` before correction.
+Claude's explicit handback6619057280 and the current #348 map release the earlier
+landing hold. Root claim6620986707 (#328) and the updated conditional claim
+6610205734 (#414) were verified before edits; fresh ten-PR scope checks found
+only PR357 owns CombatScene. The original worker and #414 candidate worktrees
+remain untouched; this isolated local branch is `codex/enemy-overview-aim-gates`.
+
+Main `2ba71a01` was merged via `0fdf2d92`. All nine actual conflict regions were
+reviewed against current main and the earlier `6fd27dde` merge resolution.
+Current victory, defeat, opening, reduced-motion, preview, manual-camera,
+glide-retarget and pending-move behavior survives alongside overview lifecycle,
+turn expiry and first-tap return-only behavior. The reference merge was not
+blindly cherry-picked or used to import another batch. Ordinary More fixture
+patch `e953a101` and timer-stub-only patch `9eef5bdf` were carried with their
+authors preserved. The timer methods supply real platform APIs to the test
+double; no assertions were removed.
+
+The original four viewport/backend/motion combinations are partitioned into
+three independent legs each: overview/tap return; Recentre/picking; and genuine
+Move followed by overview/end-turn/native-AI/next-party ownership. Every old
+assertion, real Move/Confirm/Ready input, mapped motion/DPR profile, 25-second
+next-party wait and 360-second software-WebGL allowance is preserved. The next
+turn still uses the original reducer command; the phone/load lifecycle case is
+unchanged. The portrait More correction opens the list before the click observer,
+checks Recentre there, and closes it before the board tap.
+
+Root's exact four-file test-only #414 candidate `12d373d7` was reused. Its
+82-command earned checkpoint retains the same official reconciled save hash.
+On the current merged source, the actual tap-handler regression failed once
+for raw far-cell acceptance while 35 other cases passed. Calling the existing
+core `resolveAim` after protected pointer/body resolution makes all 36 pass;
+99 additional body-picking, camera, lifecycle, pause, victory and core-aim cases
+also pass. No core targeting rule, renderer/body geometry or outcome is changed.
+The carried native wheel setup now forwards the same delta through the canvas
+listener, preserving all targeting assertions.
+
+Final exact-head CI/native results belong to the PR and external receipts under
+`/workspace/avatarrpg-env/enemy-overview-gates328/`. Passing earlier revisions
+does not transfer to a changed head. Keep this a draft; no new media or assets
+are committed, and no WebKit install, hosted dispatch, physical-device/listening
+or performance acceptance, merge, deployment or formal approval is claimed.
+
+The sections below retain the original revision's source and acceptance record.
+
 - **Updated:** 2026-10-29, final source freeze. Cloud source owner
   `/root/issue328_source_scope`; browser acceptance owner
   `/root/issue328_dependency_audit`; integration and validation owner `/root`.

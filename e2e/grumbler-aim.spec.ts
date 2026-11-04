@@ -244,8 +244,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const box = await page.locator('.map-canvas').boundingBox();
       const tilePx = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);
       if (!box || !tilePx) throw new Error('Missing actual combat camera');
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      await page.mouse.wheel(0, Math.log(tilePx / 32) / 0.002);
+      await page.locator('.map-canvas').dispatchEvent('wheel', {
+        clientX: box.x + box.width / 2,
+        clientY: box.y + box.height / 2,
+        deltaX: 0,
+        deltaY: Math.log(tilePx / 32) / 0.002,
+        deltaMode: 0,
+      });
       await settleLayout(page);
       await tilePoint(page, checkpoint.far);
       await installObserver(page);

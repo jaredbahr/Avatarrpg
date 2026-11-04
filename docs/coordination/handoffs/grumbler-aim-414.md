@@ -1,5 +1,37 @@
 # Highlighted Grumbler target cells (#414)
 
+## 2026-11-04: ownership released; correction carried in draft PR357
+
+Claude's handback6619057280 and the latest #348 map release the original onTap
+hunk hold. Root's updated claim6610205734 and issue328 claim6620986707 were
+verified before editing. This issue continues in existing PR357, with no new PR.
+The isolated local source is `/workspace/avatarrpg-env/enemy-overview-gates328/source`;
+the original test-only candidate `12d373d7` and its raw failures remain preserved.
+
+The exact four-file candidate was cherry-picked after the reviewed main merge.
+Its 82 public commands, checkpoint participants and save SHA256 remain unchanged
+on current content. Before the production correction, eight scene cases yielded
+one genuine raw far-cell failure and seven controls; 28 frame/overview cases
+also passed. After adding existing `resolveAim` to the actual onTap acceptance
+boundary, all 36 pass. Another 99 related body-picking, camera, pause, lifecycle,
+victory and core-aim cases pass. This is wiring to the existing contract, not a
+new combat rule or a fabricated reachable cell.
+
+Move, area/tile, invalid empty and one-cell behavior retains its existing path.
+Overview return-only handling and protected pointer/body resolution still occur
+before normalization. The native Canvas/WebGL fixture retains all corner,
+preview, dispatch, target identity, AP/damage and whole-state controls; its only
+protocol change is replacing unsupported mouse wheel with the same canvas wheel
+event. No old assertion, budget or retry setting is relaxed.
+
+Final exact-head CI and native results will be recorded in PR357 and the external
+correction receipts before any push. Preserve original failures separately; local Chromium does not prove
+WebKit, Safari/PWA, physical input or performance acceptance. No new media,
+assets, core rules, renderer geometry, shared helpers, dependencies, generated
+art, merge, deployment, dispatch, install or security change is part of this fix.
+
+The record below describes the original conditional candidate and its failures.
+
 Owner: Codex root, session `grumbler-aim414-20261103`.
 Branch: `codex/grumbler-aim-414`, based on main `207c8eec`.
 Claim: [6610205734](https://github.com/jaredbahr/Avatarrpg/issues/414#issuecomment-6610205734).

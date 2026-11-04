@@ -273,6 +273,37 @@ async function enterForest(page: Page, renderer: string, reduceMotion: boolean):
   // before projecting any target, so another four-frame probe adds no evidence.
 }
 
+/** Each independent leg starts with a real selected Move and pending target. */
+async function selectPendingMove(page: Page, renderer: string) {
+  const controls = await openViewMenu(page);
+  // This is the intended first failure on unchanged main.
+  expect(controls.show?.visible, 'Show enemies visible').toBe(true);
+  await page.getByRole('button', { name: /^Move/ }).click();
+  await settleLayout(page);
+  const moveView = await readView(page);
+  expect(moveView.backend).toBe(renderer);
+  const first = visibleMoveTargets(moveView)[0];
+  if (!first) throw new Error('Need a visible legal destination.');
+  await tapTile(page, moveView, first);
+  await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
+  await settleLayout(page);
+  const before = await readView(page);
+  expect(before.pending).toEqual(first);
+  return { before, first };
+}
+
+/** Confirm a different legal destination through the current painted projection. */
+async function confirmDifferentMove(page: Page, view: View, first: Vec2): Promise<void> {
+  const second = visibleMoveTargets(view).find((pos) => pos.x !== first.x || pos.y !== first.y);
+  if (!second) throw new Error('Need a different visible legal destination.');
+  await tapTile(page, view, second);
+  await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
+  expect((await readView(page)).pending).toEqual(second);
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+  await waitForIdle(page);
+  await expect.poll(async () => (await readView(page)).actor.pos).toEqual(second);
+}
+
 for (const profile of [
   { name: 'desktop', viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
   { name: 'portrait', viewport: { width: 820, height: 1180 }, deviceScaleFactor: 2 },
@@ -285,39 +316,28 @@ for (const profile of [
     });
 
     for (const renderer of ['canvas', 'webgl'] as const) {
-      // Four complete flows cover both motion settings without repeating eight
-      // long software-renderer flows. The setting is explicit in every title.
+      // Preserve the original four renderer/viewport/motion combinations. Each
+      // flow now has three independent legs with the same per-case budgets.
       const reduceMotion = (profile.name === 'desktop') === (renderer === 'webgl');
-      test(`shows every live threat and returns without taking an action on ${renderer}, reduced=${reduceMotion}`, async ({
+      test(`shows every live threat and tap returns without taking an action on ${renderer}, reduced=${reduceMotion}`, async ({
         page,
       }, info) => {
         allowSoftwareWebgl(test, renderer);
-        await enterForest(page, renderer, reduceMotion);
-        const controls = await openViewMenu(page);
-        // This is the intended first failure on unchanged main.
-        expect(controls.show?.visible, 'Show enemies visible').toBe(true);
-
-        await page.getByRole('button', { name: /^Move/ }).click();
-        await settleLayout(page);
-        const moveView = await readView(page);
-        expect(moveView.backend).toBe(renderer);
-        const targets = visibleMoveTargets(moveView);
-        const first = targets[0];
-        if (!first) throw new Error('Need a visible legal destination.');
-        await tapTile(page, moveView, first);
-        await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
-        await settleLayout(page);
-        const before = await readView(page);
-        expect(before.pending).toEqual(first);
+        await test.step('enter Forest Road through real setup', () =>
+          enterForest(page, renderer, reduceMotion));
+        const { before } = await test.step('select pending Move', () =>
+          selectPendingMove(page, renderer));
 
         if (reduceMotion) await observeNextOverviewClick(page);
-        await showEnemies(page, renderer === 'webgl');
-        await settleLayout(page);
-        const overview = await readView(page);
+        await test.step('open overview through real view control', () =>
+          showEnemies(page, renderer === 'webgl'));
+        await test.step('settle overview layout', () => settleLayout(page));
+        const overview = await test.step('read overview', () => readView(page));
         expect(overview.overview).toBe(true);
         expectNavigationOnly(overview, before);
-        await expectThreatsVisible(page, overview);
-        await expectRecentreReachable(page);
+        await test.step('all live threats are visible and unobstructed', () =>
+          expectThreatsVisible(page, overview));
+        await test.step('Recentre is reachable', () => expectRecentreReachable(page));
         if (reduceMotion) {
           const immediate = await page.evaluate(
             () => (window as unknown as ProbeWindow).threatOverviewClick,
@@ -326,22 +346,33 @@ for (const profile of [
           if (!immediate?.camera) throw new Error('Missing synchronous reduced-motion frame.');
           await expectThreatsVisible(page, { ...overview, camera: immediate.camera });
         }
-        await capture(page, info, `${profile.name}-${renderer}-enemies`, overview);
+        await test.step('capture rendered overview', () =>
+          capture(page, info, `${profile.name}-${renderer}-enemies`, overview));
 
         // This tap returns to the actor instead of resolving/retargeting Move.
-        await page.touchscreen.tap(
-          overview.box.x + overview.box.width / 2,
-          overview.box.y + overview.box.height / 2,
-        );
-        await settleLayout(page);
-        const returned = await readView(page);
+        await test.step('tap overview returns without action', () =>
+          page.touchscreen.tap(
+            overview.box.x + overview.box.width / 2,
+            overview.box.y + overview.box.height / 2,
+          ));
+        await test.step('settle restored actor view', () => settleLayout(page));
+        const returned = await test.step('read restored actor view', () => readView(page));
         expect(returned.overview).toBe(false);
         expectNavigationOnly(returned, before);
         expectInsideCanvas(returned, returned.actor.pos, 'returned actor');
         expect(returned.camera.tilePx).toBe(before.camera.tilePx);
+      });
+
+      test(`Recentre preserves pending Move and restores painted picking on ${renderer}, reduced=${reduceMotion}`, async ({
+        page,
+      }, info) => {
+        allowSoftwareWebgl(test, renderer);
+        await enterForest(page, renderer, reduceMotion);
+        const { before, first } = await selectPendingMove(page, renderer);
 
         // Recentre must be reachable even when the overview fitted the board.
         await showEnemies(page);
+        expect((await readView(page)).overview).toBe(true);
         await openViewMenu(page);
         await page.getByRole('button', { name: 'Recentre', exact: true }).click();
         await settleLayout(page);
@@ -353,16 +384,18 @@ for (const profile of [
         await capture(page, info, `${profile.name}-${renderer}-actor`, recentred);
 
         // The next genuine tile tap must use the restored painted projection.
-        const second = visibleMoveTargets(recentred).find(
-          (pos) => pos.x !== first.x || pos.y !== first.y,
-        );
-        if (!second) throw new Error('Need a different visible legal destination after returning.');
-        await tapTile(page, recentred, second);
-        await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
-        expect((await readView(page)).pending).toEqual(second);
-        await page.getByRole('button', { name: 'Confirm', exact: true }).click();
-        await waitForIdle(page);
-        await expect.poll(async () => (await readView(page)).actor.pos).toEqual(second);
+        await confirmDifferentMove(page, recentred, first);
+      });
+
+      test(`a confirmed Move then overview expires for the next acting unit on ${renderer}, reduced=${reduceMotion}`, async ({
+        page,
+      }) => {
+        allowSoftwareWebgl(test, renderer);
+        await enterForest(page, renderer, reduceMotion);
+        const { before, first } = await selectPendingMove(page, renderer);
+        // Reproduce the old next-turn precondition with actual Move/Confirm,
+        // without replaying the separate overview/tap-return/Recentre legs.
+        await confirmDifferentMove(page, before, first);
 
         // Advance through the real reducer and native AI. No positions or turn
         // order are injected, and later party turns must not enter overview.
