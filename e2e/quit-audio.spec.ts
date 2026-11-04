@@ -19,6 +19,16 @@ interface QuitAudio {
 interface QuitProbe {
   sources: QuitSource[];
   overflow: boolean;
+  onFutureStep: (() => void) | null;
+  triggered: boolean;
+  triggerError: string | null;
+  immediate: {
+    state: unknown;
+    busy: boolean;
+    retired: boolean;
+    oldSteps: number;
+    scene: string | null | undefined;
+  } | null;
   retirement: {
     context: AudioContext;
     master: GainNode;
@@ -33,7 +43,7 @@ declare global {
     quitAudioProbe: QuitProbe;
   }
 }
-async function walk(page: Page, x: number): Promise<void> {
+async function clickWalk(page: Page, x: number): Promise<void> {
   const point = await paintedTileCentre(page, { x, y: 7 });
   const box = await page.locator('.map-canvas').boundingBox();
   if (!point || !box) throw new Error('Missing painted village/canvas');
@@ -42,6 +52,10 @@ async function walk(page: Page, x: number): Promise<void> {
   expect(point.y).toBeGreaterThan(box.y);
   expect(point.y).toBeLessThan(box.y + box.height);
   await page.mouse.click(point.x, point.y);
+}
+
+async function walk(page: Page, x: number): Promise<void> {
+  await clickWalk(page, x);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos))
     .toEqual({ x, y: 7 });
@@ -54,7 +68,15 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const evidence: unknown[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.addInitScript(() => {
-      const probe: QuitProbe = { sources: [], overflow: false, retirement: null };
+      const probe: QuitProbe = {
+        sources: [],
+        overflow: false,
+        onFutureStep: null,
+        triggered: false,
+        triggerError: null,
+        immediate: null,
+        retirement: null,
+      };
       const records = new WeakMap<AudioBufferSourceNode, QuitSource>();
       const start = AudioBufferSourceNode.prototype.start;
       const stop = AudioBufferSourceNode.prototype.stop;
@@ -69,6 +91,24 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         const record = { source: this, at: args[0] ?? 0, url: url ?? null, stops: [] };
         probe.sources.push(record);
         records.set(this, record);
+        if (
+          probe.onFutureStep &&
+          record.url?.startsWith('audio/step-') &&
+          record.at > this.context.currentTime + 0.25
+        ) {
+          const trigger = probe.onFutureStep;
+          probe.onFutureStep = null;
+          // Finish the native scheduling stack before activating Quit.
+          queueMicrotask(() => {
+            try {
+              trigger();
+            } catch (error) {
+              probe.triggerError = String(error);
+            } finally {
+              probe.triggered = true;
+            }
+          });
+        }
       };
       AudioBufferSourceNode.prototype.stop = function (...args) {
         const calledAt = this.context.currentTime;
@@ -120,8 +160,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const box = await page.locator('.map-canvas').boundingBox();
       const zoom = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);
       if (!box || !zoom) throw new Error('Missing real village');
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      await page.mouse.wheel(0, Math.log(zoom / 64) / 0.002);
+      await page.locator('.map-canvas').dispatchEvent('wheel', {
+        clientX: box.x + box.width / 2,
+        clientY: box.y + box.height / 2,
+        deltaX: 0,
+        deltaY: Math.log(zoom / 64) / 0.002,
+        deltaMode: 0,
+      });
       await settleLayout(page);
       for (const x of [9, 3]) {
         await walk(page, x);
@@ -145,71 +190,83 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         .click();
       await page.getByRole('button', { name: 'Resume', exact: true }).click();
       await settleLayout(page);
-      await walk(page, 9);
-      // Actual controls, activated synchronously so software rendering cannot
-      // consume the queue on automation round trips. No fabricated cue or clock.
-      const immediate = await page.evaluate(() => {
+      await page.evaluate(() => {
         const app = window.fnt!.app;
         const probe = window.quitAudioProbe;
-        const click = (label: string) => {
-          const button = [...document.querySelectorAll<HTMLButtonElement>('button')].find(
-            (candidate) => candidate.textContent?.trim() === label,
-          );
-          if (!button || button.disabled) throw new Error(`Missing enabled ${label}`);
-          button.click();
-        };
-        click('Pause');
-        click('Quit to title');
-        const audio = app.audio as unknown as QuitAudio;
-        const context = audio.ctx;
-        const master = audio.master;
-        if (!context || !master) throw new Error('No old unlocked audio graph');
-        const old = {
-          context,
-          master,
-          at: context.currentTime,
-          outputRetiresAt: null as number | null,
-          outputFadeStartedAt: null as number | null,
-          closedAt: null as number | null,
-        };
-        probe.retirement = old;
-        const ramp = master.gain.linearRampToValueAtTime;
-        master.gain.linearRampToValueAtTime = function (value, endTime) {
-          const calledAt = context.currentTime;
-          const result = ramp.call(this, value, endTime);
-          if (value === 0) {
-            old.outputFadeStartedAt = calledAt;
-            old.outputRetiresAt = Math.max(calledAt, endTime);
-          }
-          return result;
-        };
-        const close = context.close;
-        context.close = function () {
-          const result = close.call(this);
-          void result.then(
-            () => {
-              old.closedAt = context.currentTime;
-            },
-            () => undefined,
-          );
-          return result;
-        };
-        const count = probe.sources.filter(
-          (row) =>
-            row.source.context === context &&
-            row.url?.startsWith('audio/step-') &&
-            row.at > old.at + 0.25,
-        ).length;
-        if (!count) throw new Error('No real future old step at Quit');
-        click('Quit');
-        return {
-          state: app.state,
-          busy: app.animator.busy(performance.now()),
-          retired: audio.ctx === null,
-          oldSteps: count,
-          scene: document.querySelector('[data-scene]')?.getAttribute('data-scene'),
+        // A native future footstep triggers the real controls after scheduling.
+        // No cue or clock is fabricated, and no render round trip consumes it.
+        probe.onFutureStep = () => {
+          const click = (label: string) => {
+            const button = [...document.querySelectorAll<HTMLButtonElement>('button')].find(
+              (candidate) => candidate.textContent?.trim() === label,
+            );
+            if (!button || button.disabled) throw new Error(`Missing enabled ${label}`);
+            button.click();
+          };
+          click('Pause');
+          click('Quit to title');
+          const audio = app.audio as unknown as QuitAudio;
+          const context = audio.ctx;
+          const master = audio.master;
+          if (!context || !master) throw new Error('No old unlocked audio graph');
+          const old = {
+            context,
+            master,
+            at: context.currentTime,
+            outputRetiresAt: null as number | null,
+            outputFadeStartedAt: null as number | null,
+            closedAt: null as number | null,
+          };
+          probe.retirement = old;
+          const ramp = master.gain.linearRampToValueAtTime;
+          master.gain.linearRampToValueAtTime = function (value, endTime) {
+            const calledAt = context.currentTime;
+            const result = ramp.call(this, value, endTime);
+            if (value === 0) {
+              old.outputFadeStartedAt = calledAt;
+              old.outputRetiresAt = Math.max(calledAt, endTime);
+            }
+            return result;
+          };
+          const close = context.close;
+          context.close = function () {
+            const result = close.call(this);
+            void result.then(
+              () => {
+                old.closedAt = context.currentTime;
+              },
+              () => undefined,
+            );
+            return result;
+          };
+          const count = probe.sources.filter(
+            (row) =>
+              row.source.context === context &&
+              row.url?.startsWith('audio/step-') &&
+              row.at > old.at + 0.25,
+          ).length;
+          if (!count) throw new Error('No real future old step at Quit');
+          click('Quit');
+          // Capture Quit before any later title input can unlock audio or Load
+          // can retire it, masking missing retirement by Quit itself.
+          probe.immediate = {
+            state: app.state,
+            busy: app.animator.busy(performance.now()),
+            retired: audio.ctx === null,
+            oldSteps: count,
+            scene: document.querySelector('[data-scene]')?.getAttribute('data-scene'),
+          };
         };
       });
+      await clickWalk(page, 9);
+      await expect.poll(() => page.evaluate(() => window.quitAudioProbe.triggered)).toBe(true);
+      const triggered = await page.evaluate(() => ({
+        error: window.quitAudioProbe.triggerError,
+        immediate: window.quitAudioProbe.immediate,
+      }));
+      expect(triggered.error).toBeNull();
+      const immediate = triggered.immediate;
+      if (!immediate) throw new Error('No immediate result from the native Quit trigger');
       evidence.push({ immediate });
       // Preserve the actual Quit result before any later title input can unlock
       // audio or Load can retire it, masking a missing Quit retirement.

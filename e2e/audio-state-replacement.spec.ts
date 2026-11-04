@@ -19,6 +19,9 @@ interface NativeAudio {
 }
 interface AudioReplacementProbe {
   readonly sources: SourceRecord[];
+  onFutureStep: (() => void) | null;
+  triggered: boolean;
+  triggerError: string | null;
   replacement: {
     context: AudioContext;
     at: number;
@@ -35,6 +38,13 @@ declare global {
 async function observeSources(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const sources: SourceRecord[] = [];
+    const probe: AudioReplacementProbe = {
+      sources,
+      onFutureStep: null,
+      triggered: false,
+      triggerError: null,
+      replacement: null,
+    };
     const records = new WeakMap<AudioBufferSourceNode, SourceRecord>();
     const start = AudioBufferSourceNode.prototype.start;
     const stop = AudioBufferSourceNode.prototype.stop;
@@ -45,17 +55,35 @@ async function observeSources(page: Page): Promise<void> {
       const record = { source: this, at: args[0] ?? 0, url: url ?? null, stops: [] };
       records.set(this, record);
       sources.push(record);
+      if (
+        probe.onFutureStep &&
+        record.url?.startsWith('audio/step-') &&
+        record.at > this.context.currentTime + 0.25
+      ) {
+        const trigger = probe.onFutureStep;
+        probe.onFutureStep = null;
+        // Let the real scheduling call finish before activating replacement.
+        queueMicrotask(() => {
+          try {
+            trigger();
+          } catch (error) {
+            probe.triggerError = String(error);
+          } finally {
+            probe.triggered = true;
+          }
+        });
+      }
     };
     AudioBufferSourceNode.prototype.stop = function (...args: Parameters<typeof stop>) {
       const calledAt = this.context.currentTime;
       stop.apply(this, args);
       records.get(this)?.stops.push({ calledAt, effectiveAt: Math.max(args[0] ?? 0, calledAt) });
     };
-    window.audioReplacementProbe = { sources, replacement: null };
+    window.audioReplacementProbe = probe;
   });
 }
 
-async function walk(page: Page, pos: { x: number; y: number }): Promise<void> {
+async function clickWalk(page: Page, pos: { x: number; y: number }): Promise<void> {
   const point = await paintedTileCentre(page, pos);
   const canvas = await page.locator('.map-canvas').boundingBox();
   if (!point || !canvas) throw new Error('Missing actual map geometry');
@@ -64,6 +92,10 @@ async function walk(page: Page, pos: { x: number; y: number }): Promise<void> {
   expect(point.y).toBeGreaterThan(canvas.y);
   expect(point.y).toBeLessThan(canvas.y + canvas.height);
   await page.mouse.click(point.x, point.y);
+}
+
+async function walk(page: Page, pos: { x: number; y: number }): Promise<void> {
+  await clickWalk(page, pos);
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual(pos);
 }
 
@@ -85,8 +117,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const box = await page.locator('.map-canvas').boundingBox();
     const zoom = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);
     if (!box || !zoom) throw new Error('Missing actual camera');
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.wheel(0, Math.log(zoom / 64) / 0.002);
+    await page.locator('.map-canvas').dispatchEvent('wheel', {
+      clientX: box.x + box.width / 2,
+      clientY: box.y + box.height / 2,
+      deltaX: 0,
+      deltaY: Math.log(zoom / 64) / 0.002,
+      deltaMode: 0,
+    });
     await settleLayout(page);
     for (const pos of [
       { x: 9, y: 7 },
@@ -151,27 +188,30 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         };
         adopt.apply(this, args);
       };
-    });
-    await walk(page, { x: 9, y: 7 });
-    // Activate the existing menu controls synchronously so software WebGL cannot
-    // consume the whole walk between automation round trips. These are DOM
-    // activations, not physical-input or ordinary render-speed acceptance.
-    await page.evaluate(() => {
-      const click = (root: ParentNode, label: string) => {
-        const button = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
-          (candidate) => candidate.textContent?.trim() === label,
+      // Arm before the real walk. A native future step triggers these existing
+      // controls after scheduling, without an automation/render round trip.
+      probe.onFutureStep = () => {
+        const click = (root: ParentNode, label: string) => {
+          const button = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+            (candidate) => candidate.textContent?.trim() === label,
+          );
+          if (!button || button.disabled) throw new Error(`Missing enabled ${label} control`);
+          button.click();
+        };
+        click(document, 'Pause');
+        click(document, 'Load game');
+        const slot = [...document.querySelectorAll('.dialog .slot')].find(
+          (candidate) => candidate.querySelector('strong')?.textContent === 'Slot 1',
         );
-        if (!button || button.disabled) throw new Error(`Missing enabled ${label} control`);
-        button.click();
+        if (!slot) throw new Error('Missing real saved slot');
+        click(slot, 'Load');
       };
-      click(document, 'Pause');
-      click(document, 'Load game');
-      const slot = [...document.querySelectorAll('.dialog .slot')].find(
-        (candidate) => candidate.querySelector('strong')?.textContent === 'Slot 1',
-      );
-      if (!slot) throw new Error('Missing real saved slot');
-      click(slot, 'Load');
     });
+    await clickWalk(page, { x: 9, y: 7 });
+    await expect
+      .poll(() => page.evaluate(() => window.audioReplacementProbe?.triggered))
+      .toBe(true);
+    expect(await page.evaluate(() => window.audioReplacementProbe?.triggerError)).toBeNull();
     const report = () =>
       page.evaluate(() => {
         const app = window.fnt?.app;

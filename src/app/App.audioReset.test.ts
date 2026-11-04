@@ -108,7 +108,7 @@ function makeApp(volume: number) {
     closePause: vi.fn(),
     dismissRewardDialog: vi.fn(),
     offerLevelUpIfPending: vi.fn(),
-    toasts: { show: vi.fn() },
+    toasts: { show: vi.fn(), clear: vi.fn() },
   });
   return { app, audio };
 }

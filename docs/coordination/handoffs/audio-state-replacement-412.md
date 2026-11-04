@@ -1,5 +1,56 @@
 # Audio on game-state replacement (#412)
 
+## 2026-11-04: repair the native precondition; retire discarded feedback (#421)
+
+This continues draft PR413 on its existing branch. Claude's merged PR422
+explicitly handed PR413/416 back after the full browser run found a real test
+precondition race. Current main `2ba71a01` was merged with a merge commit;
+published history is preserved. Claims 6608675053 (#412) and 6618662312 (#421)
+were amended and verified before edits. No competing PR was opened.
+
+Hosted run41733375995 retained two failures of the software-WebGL load case:
+zero footsteps remained over 250 ms ahead by the time automation activated Load.
+Mobile WebKit also rejects `page.mouse.wheel`. The corrected fixtures dispatch
+the same wheel delta through the actual canvas listener. A one-shot native
+source observer queues real Load/Quit controls in a microtask after a real
+footstep is scheduled over 250 ms ahead, before another automation/render trip.
+Native start/stop, audio/game clocks and cue deadlines are forwarded unchanged.
+No sound is fabricated or delayed. Trigger walks click the actual destination;
+ordinary warm-up/fresh walks still require their legal target position. Quit's
+immediate state/ownership witness is captured before later title input.
+
+The original future-source count, 250 ms threshold, retirement-before-deadline,
+32 ms release, state equality, fresh-audio/backend checks and 60/360 s budgets
+remain intact. Callback errors and completion are additionally asserted.
+This is scheduling evidence; it does not establish physical input or listening.
+
+The independent wait/save/load pass found #421: a loaded Dawn save retained the
+discarded world's “Morning arrives.” toast. Loading now clears old feedback
+before installing the saved state, so dismissal callbacks see the old game and
+loaded-world feedback survives. Explicit toast clear also resets dedup memory;
+otherwise a rapid second load could suppress its new “Game loaded.” message.
+Normal duplicate suppression, toast lifetimes and dismissal callbacks remain.
+The focused unit regressions failed before these respective corrections.
+
+The new native feedback case proves the old Morning node is present, laid out
+and unfaded at the actual load boundary, then disconnected synchronously. Its
+immediate snapshot contains the fresh load confirmation; complete save equality,
+journal time and a fresh Morning control remain checked. Real Wait/Load menu
+controls run in one task, avoiding expiry between automation trips. Historical
+visible Dawn/Morning contradiction and the original locator-only probe failure
+are retained separately outside Git.
+
+Exact final commit/tree, clean `ci:local`, native results and actual hosted jobs
+are recorded in the PR and external receipts under
+`/workspace/avatarrpg-env/audio-state-412/gate-correction20261104/`. A passing
+earlier build does not transfer to a changed source tree. No new media, game
+assets, shared helpers, budgets, configuration, dependencies or art are committed
+by this correction. Main's merged evidence remains inherited history. WebKit
+cannot run locally without a prohibited install; no hosted dispatch, merge,
+deployment, formal approval or physical-device acceptance is claimed.
+
+The sections below retain historical results for their named revisions.
+
 Owner: Codex root. Branch: `codex/audio-state-replacement-412`, based on main
 `207c8eec`. Initial session `audio-reset412-20261103`; Quit correction session
 `audio-quit412-20261103` continues the same draft PR413.

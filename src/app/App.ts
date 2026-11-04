@@ -690,6 +690,9 @@ export class App {
     // A reward dialog belongs to the state being replaced. Drop it before the
     // swap so its close callback cannot offer a pick against the new save.
     this.dismissRewardDialog();
+    // Feedback and its dismissal callbacks belong to the game being replaced.
+    // Retire them before loading; keep feedback raised by the loaded world.
+    this.toasts.clear();
     // A save can predate a discipline gate the kits have since gained; this
     // hands back any pick the party is owed rather than swallowing it.
     // ADR 0047 §5: also clears a stale conversation pin and steps the
