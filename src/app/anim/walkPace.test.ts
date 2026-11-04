@@ -4,6 +4,7 @@ import { resolveAsset, sheetLocomotion, useWorldStyleTest } from '../../content/
 import { frameIndex, resolveClip } from '../../render/sheets/resolveClip';
 import { Animator, STOP_SETTLE_MS } from '../animator';
 import { choreograph } from './choreography';
+import { WORLD_PARTY } from '../../content/assets/worldParty';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
 const from = { x: 4, y: 4 };
@@ -94,7 +95,7 @@ describe('exploration pace without a combat gait change', () => {
     );
   });
 
-  it('plays all eight world-Kaya walk cels at 625 ms and approaches a planted stop', () => {
+  it('plays every world-Kaya walk cel at 625 ms and approaches a planted stop', () => {
     useWorldStyleTest();
     const entry = resolveAsset(sprite);
     const gait = sheetLocomotion(sprite);
@@ -117,7 +118,9 @@ describe('exploration pace without a combat gait change', () => {
       if (!resolved) throw new Error(`missing ${clip} at ${at}`);
       if (clip.startsWith('walk')) drawn.add(frameIndex(resolved, pose.clipTime, pose.frame));
     }
-    expect([...drawn].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    // Every cel of the sheet's own walk loop, however many it ships.
+    const cels = WORLD_PARTY.kaya.walkCels;
+    expect([...drawn].sort((a, b) => a - b)).toEqual([...Array(cels).keys()]);
 
     const end = animator.finishesAt;
     const settled = animator.unitPose(end + STOP_SETTLE_MS - 1, 'p', sprite);
@@ -129,7 +132,8 @@ describe('exploration pace without a combat gait change', () => {
     // before the idle takes over, so use the nearest authored cel.
     const celMs = 1000 / resolvedStop.def.fps;
     const nearestCel = Math.round(settled.clipTime / celMs) % resolvedStop.def.frames.length;
-    expect([2, 6]).toContain(nearestCel);
+    // The passing cels: third of each half of the loop (2 and 5 of six, 2 and 6 of eight).
+    expect([2, 2 + cels / 2]).toContain(nearestCel);
     const targetPhase = Math.round(settled.clipTime / celMs) * celMs;
     expect(targetPhase - settled.clipTime).toBeGreaterThanOrEqual(0);
     expect(targetPhase - settled.clipTime).toBeLessThanOrEqual(
