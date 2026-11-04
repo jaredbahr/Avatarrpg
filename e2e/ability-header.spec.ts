@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   enterNode,
   resetStorage,
@@ -21,6 +21,140 @@ const viewports = [
 ] as const;
 const levelThreeChoices = ['fire_blast', 'fire_step'] as const;
 
+type Viewport = (typeof viewports)[number];
+type LevelThreeChoice = (typeof levelThreeChoices)[number];
+
+async function prepareKaya(
+  page: Page,
+  viewport: Viewport,
+  choice: LevelThreeChoice,
+  largeText: 'off' | 'huge',
+) {
+  await page.setViewportSize({ width: viewport.width, height: viewport.height });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Explorer'], ['kaya'], 'ability-header-layout');
+  await enterNode(page, 'battle_quarry_gate');
+  expect(await takeTurn(page)).toBe(true);
+  await waitForIdle(page);
+
+  // Stage Kaya's level-three choice and position beside the authored flask. The ability, tap,
+  // targeting rules and preview still run through the real player controls.
+  await page.evaluate((chosen) => {
+    const app = window.fnt?.app;
+    const state = app?.state;
+    const battle = state?.battle;
+    const hero = battle?.units.find((unit) => unit.faction === 'party');
+    if (!app || !state || !battle || !hero) throw new Error('No quarry battle hero.');
+    const kaya = app.content.characters.get('kaya');
+    if (
+      !kaya?.kit.some(
+        (entry) => entry.level === 2 && 'ability' in entry && entry.ability === 'flame_arc',
+      ) ||
+      !kaya.kit.some(
+        (entry) => entry.level === 3 && 'choose' in entry && entry.choose.includes(chosen),
+      )
+    )
+      throw new Error('Kaya no longer has the staged level-three kit.');
+    app.state = {
+      ...state,
+      battle: {
+        ...battle,
+        units: battle.units.map((unit) =>
+          unit.id === hero.id
+            ? {
+                ...unit,
+                level: 3,
+                abilities: ['fire_jab', 'flame_arc', chosen],
+                pos: { x: 11, y: 4 },
+              }
+            : unit,
+        ),
+        turnIndex: battle.order.indexOf(hero.id),
+      },
+    };
+    app.resync();
+  }, choice);
+
+  const originalDescription = await page.evaluate(() => {
+    const ability = window.fnt?.app.content.abilities.get('fire_jab');
+    if (!ability) throw new Error('Fire Jab is missing.');
+    return ability.description;
+  });
+  const abilities = await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const battle = app?.state?.battle;
+    const hero = battle?.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
+    if (!app || !hero) throw new Error('No acting Kaya.');
+    return [...hero.abilities, ...app.content.universalAbilities].map((id) => {
+      const ability = app.content.abilities.get(id);
+      if (!ability) throw new Error(`Unknown ability: ${id}`);
+      return { name: ability.name, id };
+    });
+  });
+  expect(abilities.map((ability) => ability.id)).toEqual([
+    'fire_jab',
+    'flame_arc',
+    choice,
+    'shove',
+  ]);
+  await setLargeText(page, largeText);
+  await settleMapCanvas(page);
+  const idle = await readFrame(page);
+  return { originalDescription, abilities, idle };
+}
+
+async function setDescription(page: Page, description: string): Promise<void> {
+  await page.evaluate((copy) => {
+    const app = window.fnt?.app;
+    const abilities = app?.content.abilities as Map<string, { description: string }> | undefined;
+    const ability = abilities?.get('fire_jab');
+    if (!app || !abilities || !ability) throw new Error('Fire Jab is missing.');
+    abilities.set('fire_jab', { ...ability, description: copy });
+    app.resync();
+  }, description);
+}
+
+function readGeometry(page: Page) {
+  return page.evaluate(() => {
+    const header = document.querySelector<HTMLElement>('.ability-header');
+    const description = header?.querySelector<HTMLElement>('.header-desc');
+    const name = header?.querySelector<HTMLElement>('strong');
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    const button = [...document.querySelectorAll<HTMLButtonElement>('.action-button')].find(
+      (candidate) => candidate.textContent?.includes('Fire Jab'),
+    );
+    if (!header || !description || !name || !canvas || !button)
+      throw new Error('Combat header fixture is incomplete.');
+    const box = description.getBoundingClientRect();
+    return {
+      headerHeight: header.getBoundingClientRect().height,
+      canvasTop: canvas.getBoundingClientRect().top,
+      canvasHeight: canvas.getBoundingClientRect().height,
+      descriptionHeight: box.height,
+      descriptionScrollHeight: description.scrollHeight,
+      descriptionLineClamp: getComputedStyle(description).webkitLineClamp,
+      descriptionText: description.textContent,
+      name: name.textContent,
+      nameWidth: name.clientWidth,
+      nameScrollWidth: name.scrollWidth,
+      buttonHeight: button.getBoundingClientRect().height,
+    };
+  });
+}
+
+function readFrame(page: Page) {
+  return page.evaluate(() => {
+    const header = document.querySelector<HTMLElement>('.ability-header');
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    if (!header || !canvas) throw new Error('Combat frame is incomplete.');
+    return {
+      headerHeight: header.getBoundingClientRect().height,
+      canvasTop: canvas.getBoundingClientRect().top,
+      canvasHeight: canvas.getBoundingClientRect().height,
+    };
+  });
+}
+
 for (const choice of levelThreeChoices) {
   for (const viewport of viewports) {
     for (const largeText of ['off', 'huge'] as const) {
@@ -28,140 +162,19 @@ for (const choice of levelThreeChoices) {
         page,
       }) => {
         mkdirSync(CAPTURE_DIR, { recursive: true });
-        await page.setViewportSize({ width: viewport.width, height: viewport.height });
-        await resetStorage(page, '?renderer=canvas');
-        await startGame(page, ['Explorer'], ['kaya'], 'ability-header-layout');
-        await enterNode(page, 'battle_quarry_gate');
-        expect(await takeTurn(page)).toBe(true);
-        await waitForIdle(page);
-
-        // Stage Kaya's level-three choice and position beside the authored flask. The ability, tap,
-        // targeting rules and preview still run through the real player controls.
-        await page.evaluate((chosen) => {
-          const app = window.fnt?.app;
-          const state = app?.state;
-          const battle = state?.battle;
-          const hero = battle?.units.find((unit) => unit.faction === 'party');
-          if (!app || !state || !battle || !hero) throw new Error('No quarry battle hero.');
-          const kaya = app.content.characters.get('kaya');
-          if (
-            !kaya?.kit.some(
-              (entry) => entry.level === 2 && 'ability' in entry && entry.ability === 'flame_arc',
-            ) ||
-            !kaya.kit.some(
-              (entry) => entry.level === 3 && 'choose' in entry && entry.choose.includes(chosen),
-            )
-          )
-            throw new Error('Kaya no longer has the staged level-three kit.');
-          app.state = {
-            ...state,
-            battle: {
-              ...battle,
-              units: battle.units.map((unit) =>
-                unit.id === hero.id
-                  ? {
-                      ...unit,
-                      level: 3,
-                      abilities: ['fire_jab', 'flame_arc', chosen],
-                      pos: { x: 11, y: 4 },
-                    }
-                  : unit,
-              ),
-              turnIndex: battle.order.indexOf(hero.id),
-            },
-          };
-          app.resync();
-        }, choice);
-
-        const originalDescription = await page.evaluate(() => {
-          const ability = window.fnt?.app.content.abilities.get('fire_jab');
-          if (!ability) throw new Error('Fire Jab is missing.');
-          return ability.description;
-        });
-        const abilities = await page.evaluate(() => {
-          const app = window.fnt?.app;
-          const battle = app?.state?.battle;
-          const hero = battle?.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
-          if (!app || !hero) throw new Error('No acting Kaya.');
-          return [...hero.abilities, ...app.content.universalAbilities].map((id) => {
-            const ability = app.content.abilities.get(id);
-            if (!ability) throw new Error(`Unknown ability: ${id}`);
-            return { name: ability.name, id };
-          });
-        });
-        expect(abilities.map((ability) => ability.id)).toEqual([
-          'fire_jab',
-          'flame_arc',
-          choice,
-          'shove',
-        ]);
-
-        const setDescription = async (description: string) => {
-          await page.evaluate((copy) => {
-            const app = window.fnt?.app;
-            const abilities = app?.content.abilities as
-              Map<string, { description: string }> | undefined;
-            const ability = abilities?.get('fire_jab');
-            if (!app || !abilities || !ability) throw new Error('Fire Jab is missing.');
-            abilities.set('fire_jab', { ...ability, description: copy });
-            app.resync();
-          }, description);
-        };
-
-        const readGeometry = () =>
-          page.evaluate(() => {
-            const header = document.querySelector<HTMLElement>('.ability-header');
-            const description = header?.querySelector<HTMLElement>('.header-desc');
-            const name = header?.querySelector<HTMLElement>('strong');
-            const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-            const button = [...document.querySelectorAll<HTMLButtonElement>('.action-button')].find(
-              (candidate) => candidate.textContent?.includes('Fire Jab'),
-            );
-            if (!header || !description || !name || !canvas || !button)
-              throw new Error('Combat header fixture is incomplete.');
-            const box = description.getBoundingClientRect();
-            return {
-              headerHeight: header.getBoundingClientRect().height,
-              canvasTop: canvas.getBoundingClientRect().top,
-              canvasHeight: canvas.getBoundingClientRect().height,
-              descriptionHeight: box.height,
-              descriptionScrollHeight: description.scrollHeight,
-              descriptionLineClamp: getComputedStyle(description).webkitLineClamp,
-              descriptionText: description.textContent,
-              name: name.textContent,
-              nameWidth: name.clientWidth,
-              nameScrollWidth: name.scrollWidth,
-              buttonHeight: button.getBoundingClientRect().height,
-            };
-          });
-
-        const readFrame = () =>
-          page.evaluate(() => {
-            const header = document.querySelector<HTMLElement>('.ability-header');
-            const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-            if (!header || !canvas) throw new Error('Combat frame is incomplete.');
-            return {
-              headerHeight: header.getBoundingClientRect().height,
-              canvasTop: canvas.getBoundingClientRect().top,
-              canvasHeight: canvas.getBoundingClientRect().height,
-            };
-          });
-
-        await setLargeText(page, largeText);
-        await settleMapCanvas(page);
-        const idle = await readFrame();
+        const { originalDescription, idle } = await prepareKaya(page, viewport, choice, largeText);
         await page.screenshot({
           path: resolve(CAPTURE_DIR, `${viewport.name}-${choice}-${largeText}-idle.png`),
         });
 
         const selectFireJab = async (description: string, pick: boolean) => {
-          await setDescription(description);
+          await setDescription(page, description);
           await page.getByRole('button', { name: /^Fire Jab/ }).click();
           // The level-three fixture moved Kaya near the flask. The visible turn
           // strip's Focus control makes that adjacent target visible at Huge text.
           await page.getByRole('button', { name: 'Focus Kaya', exact: true }).first().click();
           await settleMapCanvas(page);
-          const geometry = await readGeometry();
+          const geometry = await readGeometry(page);
           if (pick) {
             await page.screenshot({
               path: resolve(CAPTURE_DIR, `${viewport.name}-${choice}-${largeText}-selected.png`),
@@ -216,13 +229,30 @@ for (const choice of levelThreeChoices) {
           // clipped description even when every glyph is visible. Review the
           // entire oil clause in the exact-profile PNG alongside this bound.
         }
+      });
 
-        // Every action Kaya can select with this legal level-three choice must leave the
-        // board where the Fire Jab selection put it, even with different copy.
-        for (const ability of abilities) {
+      // Keep each selectable action's original frame comparisons independent
+      // of the short/long-copy and flask-picking foundation above.
+      for (const abilityId of ['fire_jab', 'flame_arc', choice, 'shove'] as const) {
+        test(`Kaya ${choice} ${abilityId} selection keeps the frame at ${viewport.name}/${largeText}`, async ({
+          page,
+        }) => {
+          const { abilities, idle } = await prepareKaya(page, viewport, choice, largeText);
+          const ability = abilities.find((candidate) => candidate.id === abilityId);
+          if (!ability) throw new Error(`Missing selectable ability: ${abilityId}`);
+          const label = `${viewport.name}/${largeText}`;
+
+          // Read the authored Fire Jab frame through real selection and Focus,
+          // without repeating copy mutation, screenshots or flask targeting.
+          await page.getByRole('button', { name: /^Fire Jab/ }).click();
+          await page.getByRole('button', { name: 'Focus Kaya', exact: true }).first().click();
+          await settleMapCanvas(page);
+          const long = await readGeometry(page);
+          await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+
           await page.locator('.action-button').filter({ hasText: ability.name }).click();
           await settleMapCanvas(page);
-          const selected = await readGeometry();
+          const selected = await readGeometry(page);
           expect(selected.name, `${label}/${ability.id}`).toBe(ability.name);
           expect(selected.headerHeight, `${label}/${ability.id}`).toBeCloseTo(long.headerHeight, 1);
           expect(selected.canvasTop, `${label}/${ability.id}`).toBeCloseTo(long.canvasTop, 1);
@@ -240,8 +270,8 @@ for (const choice of levelThreeChoices) {
             1,
           );
           await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-        }
-      });
+        });
+      }
     }
   }
 }
