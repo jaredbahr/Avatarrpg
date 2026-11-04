@@ -174,21 +174,6 @@ async function showEnemies(page: Page, keyboard = false): Promise<void> {
   else await show.tap();
 }
 
-/**
- * Recentre lives on the bar where there is room and behind More where the
- * header folds (phone, tablet portrait). Check it is reachable, then leave the
- * header as it was so the next tap reaches the board.
- */
-async function expectRecentreReachable(page: Page): Promise<void> {
-  const controls = await openViewMenu(page);
-  await expect(page.getByRole('button', { name: 'Recentre', exact: true })).toBeVisible();
-  if (controls.more?.visible) {
-    const more = page.getByRole('button', { name: 'More', exact: true });
-    await more.tap();
-    await expect(more).toHaveAttribute('aria-expanded', 'false');
-  }
-}
-
 async function observeNextOverviewClick(page: Page): Promise<void> {
   // Show enemies is only in the DOM once a folded header's More list is open.
   await openViewMenu(page);
@@ -337,7 +322,6 @@ for (const profile of [
         expectNavigationOnly(overview, before);
         await test.step('all live threats are visible and unobstructed', () =>
           expectThreatsVisible(page, overview));
-        await test.step('Recentre is reachable', () => expectRecentreReachable(page));
         if (reduceMotion) {
           const immediate = await page.evaluate(
             () => (window as unknown as ProbeWindow).threatOverviewClick,
@@ -373,8 +357,16 @@ for (const profile of [
         // Recentre must be reachable even when the overview fitted the board.
         await showEnemies(page);
         expect((await readView(page)).overview).toBe(true);
-        await openViewMenu(page);
-        await page.getByRole('button', { name: 'Recentre', exact: true }).click();
+        const controls = await openViewMenu(page);
+        const recentre = page.getByRole('button', { name: 'Recentre', exact: true });
+        await expect(recentre).toBeVisible();
+        await recentre.click();
+        if (controls.more?.visible) {
+          await expect(page.getByRole('button', { name: 'More', exact: true })).toHaveAttribute(
+            'aria-expanded',
+            'false',
+          );
+        }
         await settleLayout(page);
         const recentred = await readView(page);
         expect(recentred.overview).toBe(false);

@@ -39,6 +39,17 @@ also pass. No core targeting rule, renderer/body geometry or outcome is changed.
 The carried native wheel setup now forwards the same delta through the canvas
 listener, preserving all targeting assertions.
 
+The first instrumented probe preserved a real 360-second portrait timeout before
+its return tap; Canvas targeting passed all controls in 43.171 seconds. The
+portrait trace measured a redundant Recentre menu open/close detour at 76.217
+seconds. Its unchanged visibility and collapsed-menu assertions now live in the
+actual Recentre leg, with folded-header visibility sampled before that click;
+the following painted tile input also proves the menu clears the board. No
+settle guarantee, assertion, profile or deadline was removed. The interrupted
+probe's orphan browser was positively identified and stopped; its CPU contention
+and the original failure remain recorded. Main's subsequent art-contract-only
+change `a7a90caa` was merged via `c2e6b897` before final validation.
+
 Final exact-head CI/native results belong to the PR and external receipts under
 `/workspace/avatarrpg-env/enemy-overview-gates328/`. Passing earlier revisions
 does not transfer to a changed head. Keep this a draft; no new media or assets
