@@ -23,6 +23,19 @@ interface QueuedSource {
   at: number;
   url: string | null;
 }
+interface VolumeChange {
+  label: 'Quiet' | 'Loud';
+  volume: 0.35 | 1;
+  selected: number;
+  checked: string | undefined;
+  at: number;
+  afterAt: number;
+  before: { at: number; url: string | null; gains: GainReading[] }[];
+  after: { at: number; url: string | null; gains: GainReading[] }[];
+  calls: ParamCall[];
+  stateUnchanged: boolean;
+  sameContext: boolean;
+}
 interface VolumeProbe {
   sources: QueuedSource[];
   calls: ParamCall[];
@@ -31,6 +44,10 @@ interface VolumeProbe {
   pending: QueuedSource[];
   context: AudioContext | null;
   overflow: boolean;
+  onFutureStep: (() => Promise<VolumeChange[]>) | null;
+  triggered: boolean;
+  triggerError: string | null;
+  changes: VolumeChange[] | null;
 }
 declare global {
   interface Window {
@@ -91,7 +108,32 @@ function observeAudio(): void {
     }
     const audio = window.fnt?.app.audio as unknown as AudioInternals | undefined;
     const url = [...(audio?.buffers ?? [])].find(([, buffer]) => buffer === this.buffer)?.[0];
-    sources.push({ source: this, at: args[0] ?? 0, url: url ?? null });
+    const row = { source: this, at: args[0] ?? 0, url: url ?? null };
+    sources.push(row);
+    const probe = window.queuedVolumeProbe;
+    if (
+      probe.onFutureStep &&
+      this.context === audio?.ctx &&
+      row.url?.startsWith('audio/step-') &&
+      row.at > this.context.currentTime + 0.5
+    ) {
+      const trigger = probe.onFutureStep;
+      probe.onFutureStep = null;
+      // Finish the native scheduling stack before activating Settings. The
+      // observer awaits the real measurement without delaying native start.
+      queueMicrotask(() => {
+        void trigger().then(
+          (changes) => {
+            probe.changes = changes;
+            probe.triggered = true;
+          },
+          (error: unknown) => {
+            probe.triggerError = String(error);
+            probe.triggered = true;
+          },
+        );
+      });
+    }
   };
   const record = (param: AudioParam, kind: ParamCall['kind'], at: number, value: number | null) => {
     const owner = params.get(param);
@@ -137,6 +179,10 @@ function observeAudio(): void {
     first: 0,
     pending: [],
     context: null,
+    onFutureStep: null,
+    triggered: false,
+    triggerError: null,
+    changes: null,
     get overflow() {
       return overflow;
     },
@@ -160,8 +206,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const box = await page.locator('.map-canvas').boundingBox();
       const zoom = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);
       if (!box || !zoom) throw new Error('Missing rendered village/camera');
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      await page.mouse.wheel(0, Math.log(zoom / 64) / 0.002);
+      await page.locator('.map-canvas').dispatchEvent('wheel', {
+        clientX: box.x + box.width / 2,
+        clientY: box.y + box.height / 2,
+        deltaX: 0,
+        deltaY: Math.log(zoom / 64) / 0.002,
+        deltaMode: 0,
+      });
       await settleLayout(page);
       const walk = async (x: number) => {
         const point = await paintedTileCentre(page, { x, y: 7 });
@@ -179,81 +230,93 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       // Decode both native step variants through actual walks before measuring.
       await walk(9);
       await walk(3);
-      await page.evaluate(() => {
-        window.queuedVolumeProbe.first = window.queuedVolumeProbe.sources.length;
-      });
       const target = await paintedTileCentre(page, { x: 9, y: 7 });
       if (!target) throw new Error('Missing long-walk target');
-      await page.mouse.click(target.x, target.y);
-
-      // Activating real DOM controls synchronously avoids spending a queued cue's
-      // deadline on automation round trips on a software WebGL renderer. The
-      // browser clock and the game's motion remain unmodified throughout.
-      const changes = await page.evaluate(async () => {
-        const app = window.fnt?.app;
-        if (!app) throw new Error('Missing App');
+      await page.evaluate(() => {
         const probe = window.queuedVolumeProbe;
-        const audio = app.audio as unknown as AudioInternals;
-        const context = audio.ctx;
-        if (!context) throw new Error('No unlocked audio context');
-        probe.context = context;
-        const click = (text: string) => {
-          const button = [...document.querySelectorAll<HTMLButtonElement>('button')].find(
-            (node) => node.textContent?.trim() === text,
-          );
-          if (!button || button.disabled) throw new Error(`Missing enabled ${text} control`);
-          button.click();
+        probe.first = probe.sources.length;
+        // Arm before the real walk: a native step over 0.5 seconds ahead starts
+        // measurement after scheduling, without an automation/render round trip.
+        // The actual controls, browser clock and game motion remain unmodified.
+        probe.onFutureStep = async () => {
+          const app = window.fnt?.app;
+          if (!app) throw new Error('Missing App');
+          const audio = app.audio as unknown as AudioInternals;
+          const context = audio.ctx;
+          if (!context) throw new Error('No unlocked audio context');
+          probe.context = context;
+          const click = (text: string) => {
+            const button = [...document.querySelectorAll<HTMLButtonElement>('button')].find(
+              (node) => node.textContent?.trim() === text,
+            );
+            if (!button || button.disabled) throw new Error(`Missing enabled ${text} control`);
+            button.click();
+          };
+          click('Pause');
+          click('Settings');
+          probe.pending = probe.sources
+            .slice(probe.first)
+            .filter(
+              (row) => row.url?.startsWith('audio/step-') && row.at > context.currentTime + 0.5,
+            );
+          if (!probe.pending.length) throw new Error('No future decoded footstep to measure');
+          const snapshot = () =>
+            probe.pending.map((row) => ({
+              at: row.at,
+              url: row.url,
+              gains: probe.path(row.source),
+            }));
+          const results: VolumeChange[] = [];
+          for (const [label, volume] of [
+            ['Quiet', 0.35],
+            ['Loud', 1],
+          ] as const) {
+            const radio = [
+              ...document.querySelectorAll<HTMLButtonElement>(
+                '[role="radiogroup"][aria-label="Sound"] [role="radio"]',
+              ),
+            ].find((node) => node.textContent?.trim() === label);
+            if (!radio) throw new Error(`Missing ${label} sound control`);
+            // Software rendering may consume the first deadline while the Quiet
+            // control refreshes. Measure Loud only on retained sources still ahead
+            // of the audio clock; never pass a past requested endTime as proof.
+            probe.pending = probe.pending.filter((row) => row.at > context.currentTime + 0.2);
+            if (!probe.pending.length)
+              throw new Error(`No old future footstep remains for ${label}`);
+            const before = snapshot();
+            const state = JSON.stringify(app.state);
+            const firstCall = probe.calls.length;
+            const at = context.currentTime;
+            radio.click();
+            await new Promise<void>((resolve) => setTimeout(resolve, 45));
+            results.push({
+              label,
+              volume,
+              selected: app.settings.volume,
+              checked: document
+                .querySelector('[role="radiogroup"][aria-label="Sound"] [aria-checked="true"]')
+                ?.textContent?.trim(),
+              at,
+              afterAt: context.currentTime,
+              before,
+              after: snapshot(),
+              calls: probe.calls.slice(firstCall),
+              stateUnchanged: JSON.stringify(app.state) === state,
+              sameContext: audio.ctx === context && context.state === 'running',
+            });
+          }
+          return results;
         };
-        click('Pause');
-        click('Settings');
-        probe.pending = probe.sources
-          .slice(probe.first)
-          .filter(
-            (row) => row.url?.startsWith('audio/step-') && row.at > context.currentTime + 0.5,
-          );
-        if (!probe.pending.length) throw new Error('No future decoded footstep to measure');
-        const snapshot = () =>
-          probe.pending.map((row) => ({ at: row.at, url: row.url, gains: probe.path(row.source) }));
-        const results = [];
-        for (const [label, volume] of [
-          ['Quiet', 0.35],
-          ['Loud', 1],
-        ] as const) {
-          const radio = [
-            ...document.querySelectorAll<HTMLButtonElement>(
-              '[role="radiogroup"][aria-label="Sound"] [role="radio"]',
-            ),
-          ].find((node) => node.textContent?.trim() === label);
-          if (!radio) throw new Error(`Missing ${label} sound control`);
-          // Software rendering may consume the first deadline while the Quiet
-          // control refreshes. Measure Loud only on retained sources still ahead
-          // of the audio clock; never pass a past requested endTime as proof.
-          probe.pending = probe.pending.filter((row) => row.at > context.currentTime + 0.2);
-          if (!probe.pending.length) throw new Error(`No old future footstep remains for ${label}`);
-          const before = snapshot();
-          const state = JSON.stringify(app.state);
-          const firstCall = probe.calls.length;
-          const at = context.currentTime;
-          radio.click();
-          await new Promise<void>((resolve) => setTimeout(resolve, 45));
-          results.push({
-            label,
-            volume,
-            selected: app.settings.volume,
-            checked: document
-              .querySelector('[role="radiogroup"][aria-label="Sound"] [aria-checked="true"]')
-              ?.textContent?.trim(),
-            at,
-            afterAt: context.currentTime,
-            before,
-            after: snapshot(),
-            calls: probe.calls.slice(firstCall),
-            stateUnchanged: JSON.stringify(app.state) === state,
-            sameContext: audio.ctx === context && context.state === 'running',
-          });
-        }
-        return results;
       });
+      await page.mouse.click(target.x, target.y);
+      await expect.poll(() => page.evaluate(() => window.queuedVolumeProbe.triggered)).toBe(true);
+      const measurement = await page.evaluate(() => ({
+        error: window.queuedVolumeProbe.triggerError,
+        changes: window.queuedVolumeProbe.changes,
+      }));
+      expect(measurement.error).toBeNull();
+      const changes = measurement.changes;
+      if (!changes) throw new Error('No completed native queued-volume measurement');
       evidence.push({ changes });
       for (const [index, change] of changes.entries()) {
         expect(change.selected).toBe(change.volume);
@@ -349,6 +412,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
             sources: probe.sources.map(snapshot),
             pending: probe.pending.map(snapshot),
             overflow: probe.overflow,
+            triggered: probe.triggered,
+            triggerError: probe.triggerError,
           };
         })
         .catch((error: unknown) => ({ observerReadError: String(error) }));

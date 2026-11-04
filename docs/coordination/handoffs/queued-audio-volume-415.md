@@ -1,5 +1,41 @@
 # Queued sound volume (#415)
 
+## 2026-11-04: repair the returned browser gates
+
+This continues the same draft PR416 and published branch. Claude's merged PR422
+explicitly held PR413/416 out and handed them back: mobile WebKit rejected
+`page.mouse.wheel`, and a source queued during a real walk could expire while
+automation crossed a software-WebGL frame. Original run41733375995/job126261927147
+and its unsupported-wheel error are retained outside Git. Claim6611777500 was
+amended and read back before editing the fixture.
+
+Main `2ba71a01` and the tested PR413 correction `ceda125a` were merged through
+merge commit `ca54e1e0`, preserving published history. PR413's six-case native
+evidence belongs to its own head; it does not transfer to a changed AudioBus.
+This correction changes only the volume fixture and this human handoff, with no
+new runtime behavior, shared helper, budget, asset or dependency changes.
+
+The fixture dispatches the same pixel wheel delta to the actual canvas listener.
+Before the real target click, it arms a one-shot native source observer. A real
+current-context footstep scheduled over the original 0.5-second threshold queues
+the existing asynchronous Settings measurement in a microtask. Native start,
+gain calls and clocks are forwarded unchanged; no cue or deadline is fabricated,
+delayed or held. Completion and callback errors are additionally asserted.
+
+The original initial 0.5-second and retained 0.2-second thresholds, 45 ms sampling,
+32/50 ms ramp checks, gain ratios, selected volumes, graph/context/state equality,
+fresh footsteps and Off retirement remain intact, as do the 60/360-second caps.
+Warm-up and fresh-walk controls are unchanged. This avoids spending the queued
+source's lifetime on an automation/render round trip without relaxing the test.
+
+Final exact-head `ci:local` and native results belong to the PR and external
+receipts under `/workspace/avatarrpg-env/queued-volume-415/gate-correction20261104/`.
+Keep this a draft under the current user instruction. No hosted dispatch,
+WebKit installation, merge, deployment, formal approval, physical-input or
+listening acceptance is claimed. Main's separate WebKit failures remain #423.
+
+The sections below retain historical validation for the original revision.
+
 Claim: issue comment 6611777500, session `queued-volume415-20261103`.
 Branch: `codex/queued-audio-volume-415`, based on main
 `207c8eecd0a31a9ed7835d5e1f9969b81f048794`.
