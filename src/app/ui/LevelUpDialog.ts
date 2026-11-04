@@ -84,5 +84,12 @@ export class LevelUpDialog extends Dialog {
       abilityId,
     });
     this.close();
+    // Dispatch replaces the dialogue control remembered as this dialog's previous focus.
+    // Restore its live replacement only after the reward queue has closed.
+    if (document.activeElement === document.body && !document.querySelector('[role="dialog"]')) {
+      document
+        .querySelector<HTMLElement>('.dialogue-scene [data-conversation-control="next"]')
+        ?.focus({ preventScroll: true });
+    }
   }
 }
