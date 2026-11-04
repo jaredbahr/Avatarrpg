@@ -56,6 +56,19 @@ EXTRA_SHAPES = {
     'gao-yard-cart-wheel': [(round(1432.5 + 16.5 * np.cos(t * np.pi / 16)), round(400.5 + 18.5 * np.sin(t * np.pi / 16)))
                             for t in range(32)],
 }
+# Painted pieces whose outline is their frozen-geometry sprite (#367): the canal bridge stood on the painting with no cast
+# or contact of its own, so it read as floating. Its silhouette is the sprite's alpha at the piece's scene size, set at its
+# scene x, y plus the scene-to-master offset (200, 100), fitted to the bridge's painted outline to the pixel.
+SCENE_TO_MASTER = (200, 100)
+EXTRA_SPRITES = {'canal-bridge': 'art/source/ba-dan-regions/geometry/sprites/true-canal-bridge.webp'}
+# Houses get one crisp edge all the way round (#369; owner, 2026-11-03: "crisp outline everywhere"). Some house edges were
+# painted with a dark 1 px contour and some faded into the grass. Every pixel of the 1 px ring just inside each house's
+# frozen silhouette (its yard and apron included) that is not already ink dark is darkened to the contact line's tone, so the
+# outline is the painting's own shade of whatever it edges. Offsets are each sprite's scene x, y to the master, fitted to the
+# painted outline to the pixel (the fractional scene y rounds either way).
+CONTOUR = {'gao-house': (200, 101), 'north-house': (200, 100), 'southwest-house': (200, 101),
+           'southeast-house': (200, 100)}
+EDGE_STEP = 60  # summed RGB difference across the ring that counts as a painted edge
 # Upright painting no authored cast may fall on: the porch post at the yard's east side stands beside the wheel.
 NOT_GROUND = {'gao-porch-post': (1446, 330, 1454, 440)}
 INK_DARK = 62
@@ -278,6 +291,30 @@ def retile(a):
         box[tile] = np.median(lit, axis=0)
 
 
+def contour_ring(a, shape):
+    """The houses' 1 px inner silhouette ring, in master pixels (#369)."""
+    ring = np.zeros(shape, bool)
+    for name, (dx, dy) in CONTOUR.items():
+        piece = next(p for p in SCENE if p['id'] == name)
+        size = (round(piece['width']), int(piece['height']))
+        path = f'art/source/ba-dan-regions/geometry/sprites/{piece["file"]}'
+        m = np.asarray(Image.open(path).convert('RGBA').split()[3].resize(size, Image.BILINEAR)) > 127
+        x0, y0 = round(piece['x']) + dx, round(piece['y']) + dy
+        h, w = m.shape
+        pad = np.pad(m, 1)
+        px = np.pad(a[y0:y0 + h, x0:x0 + w], ((1, 1), (1, 1), (0, 0)), mode='edge')
+        here = px[1:-1, 1:-1]
+        edge = np.zeros_like(m)
+        # A ring pixel is drawn only where the painting changes across it: the yard's frozen boundary also runs through
+        # plain grass, where a line would be a seam the painting never had.
+        for sy, sx in ((0, 1), (2, 1), (1, 0), (1, 2)):
+            out = ~pad[sy:sy + h, sx:sx + w]
+            step = np.abs(here - px[sy:sy + h, sx:sx + w]).sum(axis=2)
+            edge |= m & out & (step >= EDGE_STEP)
+        ring[y0:y0 + h, x0:x0 + w] |= edge
+    return ring
+
+
 def authored():
     """The authored pieces as (name, silhouette, top-left): the rectangles, then the traced outlines."""
     for name, (x0, y0, x1, y1) in EXTRA_RECTS.items():
@@ -288,6 +325,12 @@ def authored():
         m = Image.new('L', (x1 - x0 + 1, y1 - y0 + 1), 0)
         ImageDraw.Draw(m).polygon([(x - x0, y - y0) for x, y in pts], fill=255, outline=255)
         yield name, np.asarray(m) > 0, (x0, y0)
+    for name, path in EXTRA_SPRITES.items():
+        piece = next(p for p in SCENE if p['id'] == name)
+        size = (round(piece['width']), int(piece['height']))
+        alpha = Image.open(path).convert('RGBA').split()[3].resize(size, Image.BILINEAR)
+        xy = (round(piece['x']) + SCENE_TO_MASTER[0], round(piece['y']) + SCENE_TO_MASTER[1])
+        yield name, np.asarray(alpha) > 127, xy
 
 
 def main():
@@ -351,9 +394,11 @@ def main():
     a[cast] *= O.SHADOW * O.COOL
     a[contact] *= O.CONTACT * O.COOL
     retile(a)
+    edge = contour_ring(a, shape) & (a.mean(axis=2) >= INK_DARK)
+    a[edge] *= O.CONTACT * O.COOL
     Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8)).save(OUT, optimize=True)
     print(f'{OUT}: {len(standing)} objects re-shaded ({len(kept)} set by objects.py, {len(bench_fence)} reshaded, '
-          f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS) + len(EXTRA_SHAPES)} painted pieces grounded')
+          f'{len(redrawn)} redrawn), and {len(EXTRA_RECTS) + len(EXTRA_SHAPES) + len(EXTRA_SPRITES)} painted pieces grounded')
 
 
 if __name__ == '__main__':

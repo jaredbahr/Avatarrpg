@@ -247,18 +247,19 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
   lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
   lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
-- **Every native-G1 figure walks, at 750 ms a tile, until the ~74 px redraw** (ADR 0095's amendment; owner,
-  2026-10-28: "Walk, a bit slower"). The jog read as legs growing, so no sheet's locomotion sets `jog`; its cels stay
-  in the sheets, unplayed, for a natural-stride jog drawn in the redraw. Do not turn the jog back on. The walk's
-  `walkMsPerTile` is fitted per family and heading to its drawn feet (`G1_WALK`, from `walk_stride.py`), and
-  `Animator.walkClipTime` divides it by the figure scale (1.25 on oblique boards), so the planted foot holds at any
-  pace. A brisk move then caps it at `BRISK_WALK_CEL_MS` (70, `animator.ts`: the owner's choice, about 3 px of slide
-  a stance cel for the party): one constant for every family and heading, so tune it there, never in `G1_WALK`.
-  Errands amble at 2 s a tile on the fit (`RESIDENT_AMBLE = 2000 / strollStep`, `AnimatorOptions.amble`), and so does
-  every move of Mira's (`locomotion.amble`). The
-  legacy four-way walk keeps its pinned `WALK_MS_PER_TILE` (475). Refit `G1_WALK` with
-  `walk_stride.py <family> <name> walk --manifest --scale 1.25` whenever a walk is redrawn (add
-  `--cadence 70` to measure the brisk walk).
+- **Every native-G1 figure still walks; exploration now cruises at 625 ms a tile** (ADR 0095's
+  2026-11-01 amendment, owner feedback: walking is a bit slow). Combat stays at 720. The jog read as legs
+  growing, so no sheet's locomotion sets `jog`; its cels stay unplayed. Do not turn the jog back on.
+  `walkMsPerTile` stays fitted per family and heading to the drawn feet (`G1_WALK`, from `walk_stride.py`),
+  and `Animator.walkClipTime` divides it by figure scale (1.25 on oblique boards). The brisk cadence retains
+  the accepted **750 ms/tile / 70 ms/cel reference**, including its known stance slide: `BRISK_WALK_CEL_MS`
+  scales with live exploration pace (58⅓ at 625), preserving clip phase per ground distance and combat's
+  cadence. Never retune `G1_WALK` to change travel speed. Errands and every Mira move retain the complete
+  original 2 s/tile amble: `AnimatorOptions.amble` selects `STROLL_REFERENCE_MS` (750) internally, and
+  `RESIDENT_AMBLE = 2000 / STROLL_REFERENCE_MS` slows that private clock. This keeps ramps, turns,
+  settling and fades unchanged. The legacy four-way walk keeps `WALK_MS_PER_TILE` (475). Refit only after
+  a redraw with `walk_stride.py <family> <name> walk --manifest --scale 1.25`; measure the reference with
+  `--pace 750 --cadence 70`, or the live candidate with `--pace 625 --cadence 58.333333333333336`.
 - **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
   on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
   smooths, or a mask at screen resolution, brings back the soft edge the pass removed. A **figure's shadow is a calm

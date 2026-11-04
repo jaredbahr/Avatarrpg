@@ -125,14 +125,15 @@ export const BA_DAN_SOUTHEAST_PLANTER = [
 ] as const;
 
 /**
- * Smoke leaves each dwelling's brick chimney (Mira's house, and Pella's household's) at the middle of its
- * mouth, local (2.5, 0.7) of the footprint at z 208 and 200 (the guides' chimney tops, `houses.py`). Each is
- * the ground point the oblique camera draws under that mouth: `(rx + ry) * 32 - z` as
- * `y / 64 +- (screen x) / 128`, so x - y is the mouth's own and x + y is `rx + ry - z / 32`.
+ * Smoke leaves the three open painted roof-chimney mouths. The two dwelling anchors retain their
+ * registration inside the current north/southwest mouths (upright pixels 308.2,10.4 and 372.2,10.4).
+ * The southeast merchant's wing chimney is measured at upright pixel (279,92), page 0 (1341,94).
+ * Each anchor is the ground point the oblique camera draws under its painted mouth.
  */
 export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
   { x: 11.25, y: -1.55 },
   { x: 5.375, y: 7.575 },
+  paintedSource('southeast-house', 279, 92),
 ];
 
 /** The trunks that let their leaves go: the court trees and the rim's nearest, one emitter each. */
@@ -146,6 +147,26 @@ export const BA_DAN_CANOPIES: readonly Vec2[] = [
   { x: 1, y: 14 },
   { x: 21, y: 15 },
 ];
+
+/** A point inside a registered upright, converted from its local painting pixels to ground tiles. */
+function paintedSource(id: string, x: number, y: number): Vec2 {
+  const piece = BA_DAN_UPRIGHTS[id];
+  if (!piece) throw new Error(`Missing Ba Dan ambience source: ${id}`);
+  const px = origin.x + (piece[3] + x) / PIXELS_PER_WORLD;
+  const py = origin.y + (piece[4] + y) / PIXELS_PER_WORLD;
+  // The village's registered oblique origin is scene pixel (1024, 0).
+  return { x: py / 64 + (px - 1024) / 128, y: py / 64 - (px - 1024) / 128 };
+}
+
+/**
+ * Existing painted sources, not new props: the market's lidded vessel at page 1 (550,773),
+ * and the amber glass at page 0 (1536,391), (1573,391), (1536,498).
+ * Local points are measured on the tracked upright pages; frozen geometry/art stays untouched.
+ */
+export const BA_DAN_AMBIENCE_SOURCES = {
+  steam: [paintedSource('south-market-display', 39, 21)],
+  lanterns: [paintedSource('d5', 20, 30), paintedSource('d6', 20, 30), paintedSource('d7', 20, 30)],
+} as const;
 
 /**
  * What stands in the village, in draw order, and how it sorts: the id (which names its sprite in
@@ -399,6 +420,7 @@ export const BA_DAN_SCENE: MapScene = {
   marginTone: 'verdant',
   chimneys: BA_DAN_CHIMNEYS,
   canopies: BA_DAN_CANOPIES,
+  ambienceSources: BA_DAN_AMBIENCE_SOURCES,
   paintedWater: true,
   // The painting's own casts run ~0.40 darkening with ~0.60 at the contact line; figures answer in kind.
   actorGrounding: BA_DAN_ACTOR_GROUNDING,

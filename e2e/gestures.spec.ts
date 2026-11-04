@@ -212,21 +212,85 @@ async function expectActorOnScreen(page: Page): Promise<void> {
   expect(Math.max(...corners.map((p) => p.y))).toBeLessThanOrEqual(box.height + 0.5);
 }
 
+test('a distant release without its final move sample does not walk the party', async ({
+  page,
+}) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['One'], ['kaya'], 'gesture-release-385', { reduceMotion: false });
+  await enterNode(page, 'village_explore');
+  await page.locator('.explore-scene .map-canvas').waitFor();
+  await waitForIdle(page);
+  await settleLayout(page);
+  const before = await page.evaluate(() => window.fnt!.app.state!.location.pos);
+  const target = { x: before.x + 4, y: before.y };
+  const point = await paintedTileCentre(page, target);
+  if (!point) throw new Error('The native canvas did not project the road tile');
+  const originalCamera = await camera(page);
+  const canvasBox = await page.locator('.map-canvas').boundingBox();
+  if (!canvasBox) throw new Error('The native map canvas is missing');
+  expect(point.x - 40).toBeGreaterThan(canvasBox.x);
+  expect(point.x).toBeLessThan(canvasBox.x + canvasBox.width);
+
+  for (const lastMoveNearStart of [false, true]) {
+    await page.evaluate(
+      ({ point, lastMoveNearStart }) => {
+        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+        if (!canvas) throw new Error('The native map canvas is missing');
+        const fire = (type: string, x: number) =>
+          canvas.dispatchEvent(
+            new PointerEvent(type, {
+              pointerId: 1,
+              pointerType: 'touch',
+              isPrimary: true,
+              clientX: x,
+              clientY: point.y,
+              button: 0,
+              buttons: type === 'pointerup' ? 0 : 1,
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+        fire('pointerdown', point.x - 40);
+        if (lastMoveNearStart) fire('pointermove', point.x - 35);
+        fire('pointerup', point.x);
+      },
+      { point, lastMoveNearStart },
+    );
+    await waitForIdle(page);
+    expect(await page.evaluate(() => window.fnt!.app.state!.location.pos)).toEqual(before);
+    const after = await camera(page);
+    expect(after.tilePx).toBeCloseTo(originalCamera.tilePx, 3);
+    expect(after.offsetX).toBeCloseTo(originalCamera.offsetX, 3);
+    expect(after.offsetY).toBeCloseTo(originalCamera.offsetY, 3);
+  }
+
+  // Positive control: an ordinary real mouse tap still reaches that same road tile.
+  await page.mouse.click(point.x, point.y);
+  await waitForIdle(page);
+  expect(await page.evaluate(() => window.fnt!.app.state!.location.pos)).toEqual(target);
+  expect(await page.evaluate(() => window.fnt!.app.partyPositions()?.[0])).toEqual(target);
+});
+
 test.describe('zoom and pan', () => {
   test('normal-text combat framing reserves room for the decision dock', async ({ page }) => {
-    // Integer zoom (ADR 0088): combat floors its tuned tile onto whole device
-    // pixels, so at 1 dpr both the compact 64 px and the roomy 96 px frames
-    // open at 64 px (one device pixel per world pixel), never closer.
+    // Integer zoom (ADR 0088): the compact frame stays at 64 CSS px at both
+    // project DPRs. The roomy 96 px preference floors to 64 at DPR 1, while
+    // DPR 2 can retain all 96 CSS px on its whole-device-pixel grid.
     for (const profile of [
-      { width: 1194, height: 834, tilePx: 64 },
-      { width: 1368, height: 912, tilePx: 64 },
+      { width: 1194, height: 834, tilePxAtDpr1: 64, tilePxAtDpr2: 64 },
+      { width: 1368, height: 912, tilePxAtDpr1: 64, tilePxAtDpr2: 96 },
     ]) {
       await page.setViewportSize({ width: profile.width, height: profile.height });
       await openFight(page);
       await settleLayout(page);
       const initial = await camera(page);
+      const dpr = await page.evaluate(() => window.devicePixelRatio);
+      expect([1, 2], 'the configured Surface and iPad project DPRs').toContain(dpr);
       expect(initial.projection).toBe('oblique');
-      expect(initial.tilePx).toBeCloseTo(profile.tilePx, 3);
+      expect(initial.tilePx).toBeCloseTo(
+        dpr === 2 ? profile.tilePxAtDpr2 : profile.tilePxAtDpr1,
+        3,
+      );
       expect(initial.fitted).toBe(false);
       const canvas = await page.locator('.map-canvas').boundingBox();
       expect(canvas).not.toBeNull();
@@ -234,7 +298,7 @@ test.describe('zoom and pan', () => {
       // These are rendered canvas measurements, not the viewport or the
       // camera's internal dimensions. Preserve a usable tactical view.
       await test.info().attach(`combat-frame-${profile.width}x${profile.height}`, {
-        body: JSON.stringify({ viewport: profile, canvas, camera: initial }),
+        body: JSON.stringify({ viewport: profile, dpr, canvas, camera: initial }),
         contentType: 'application/json',
       });
       expect(canvas.width).toBeGreaterThan(1000);

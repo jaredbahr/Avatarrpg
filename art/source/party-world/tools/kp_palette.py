@@ -15,8 +15,9 @@ DIRS = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'wes
 
 
 def build(K=64, iters=40):
-    px = np.concatenate([np.asarray(Image.open(HERE / f'roots/kaya/{k}/{d}.png').convert('RGBA')).reshape(-1, 4)
-                         for k in ('idle', 'stance') for d in DIRS])
+    # the pre-face roots where kp_face.py replaced one (#351), so the palette the sheet is locked to stays the same
+    src = lambda k, d: next(p for p in (HERE / f'polish/face/orig/{k}/{d}.png', HERE / f'roots/kaya/{k}/{d}.png') if p.exists())
+    px = np.concatenate([np.asarray(Image.open(src(k, d)).convert('RGBA')).reshape(-1, 4) for k in ('idle', 'stance') for d in DIRS])
     px = px[px[:, 3] >= 128, :3]; lab = to_oklab(px); rng = np.random.default_rng(7)
     # k-means++ seeding
     C = [lab[rng.integers(len(lab))]]

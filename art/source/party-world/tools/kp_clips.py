@@ -23,9 +23,54 @@ PRESS = 0.9
 AMP = {'hit': 1.7}
 REACH = 1.35
 OLD_HEIGHT = 75   # #321's Kaya stance roots stood 73-76 px
+# #351: in the south, south-east and north views the jab travels toward or away from the camera and read as a small arm
+# movement. There the two strikes (the left jab, design frames 0-2 around cel 2; the right cross, frames 3-6 around cel 6)
+# are redrawn as a punch with a raised, flared elbow and a torso twist: the striking shoulder comes forward along the
+# heading's screen direction and the other goes back, the elbow rises to shoulder height and flares out, and the fist
+# lands in front of the chest (south, south-east) or past the shoulder up the screen (north). Each joint moves from the
+# mocap's pose toward that target by the strike's extension (e), and the other arm comes up into a guard. Seed 641 on.
+JAB = {'south': (0, 1), 'south-east': (0.894, 0.447), 'north': (0, -1)}
+STRIKES = (('LEFT', {0: 0.35, 1: 1.0, 2: 0.45}), ('RIGHT', {3: 0.25, 4: 0.65, 5: 1.0, 6: 0.45}))
+TWIST, ELBOW_OUT, ELBOW_UP, FIST = 0.05, 0.11, 0.04, 0.13   # in stance heights (seed 641)
+# Seed 642 on (FULL): the arm extended, not tucked: a straight punch toward the camera shows as an arm foreshortened down
+# the screen to about 0.22 heights from the shoulder (the 40 degree camera), the elbow halfway and lifted out; north, where
+# the fist goes behind the head, punches forward and out (a hook past the shoulder). The twist is 0.07.
+FULL = {'south': dict(fwd=0.22, out=-0.03), 'south-east': dict(fwd=0.24, out=-0.02), 'north': dict(fwd=0.10, out=0.12)}
+# Seed 643 on, south only: 642 drew the foreshortened arm up by her head. The fist goes across the body instead (a
+# cross past the centre line, low), so the forearm makes a diagonal over the chest that reads face-on.
+CROSS = {'south': dict(fwd=0.20, out=-0.16)}
 
 
-def design(clip, d):
+def front_jab(frames, d, H, W, full=False):
+    F = np.array(JAB[d], float); tw = 0.07 if full else TWIST
+    for side, ext in STRIKES:
+        other = 'RIGHT' if side == 'LEFT' else 'LEFT'
+        for i, e in ext.items():
+            P = {j['label']: j for j in frames[i]}
+            at = lambda l: np.array([P[l]['x'], P[l]['y']]) * W
+            def put(l, v): P[l]['x'], P[l]['y'] = round(float(v[0]) / W, 4), round(float(v[1]) / W, 4)
+            sh, osh, neck = at(f'{side} SHOULDER'), at(f'{other} SHOULDER'), at('NECK')
+            O = sh - neck; O = O / max(np.linalg.norm(O), 1e-6)
+            sh2 = sh + e * tw * H * F; put(f'{side} SHOULDER', sh2); put(f'{other} SHOULDER', osh - e * 0.8 * tw * H * F)
+            if full:
+                k = CROSS[d] if full == 'cross' and d in CROSS else FULL[d]
+                fist = sh2 + k['fwd'] * H * F + k['out'] * H * O
+                elbow = (sh2 + fist) / 2 + 0.07 * H * O + np.array([0, -0.03 * H])
+            else:
+                elbow = sh2 + ELBOW_OUT * H * O + np.array([0, -ELBOW_UP * H])
+                fist = sh2 + FIST * H * F - 0.04 * H * O
+            for l, t in ((f'{side} ELBOW', elbow), (f'{side} ARM', fist)): put(l, at(l) + e * (t - at(l)))
+            # the other arm comes up into a guard by the chin (the mocap swings it wide, which reads as flailing face-on)
+            og = osh - e * 0.8 * tw * H * F
+            for l, t in ((f'{other} ELBOW', og - 0.05 * H * O + np.array([0, 0.07 * H])), (f'{other} ARM', og + 0.06 * H * F + 0.05 * H * O + np.array([0, -0.02 * H]))):
+                put(l, at(l) + 0.8 * e * (t - at(l)))
+            if e >= 0.6:   # the striking arm in front of the body toward the camera, behind it going away
+                zs = [j['z_index'] for j in frames[i]]
+                for l in (f'{side} ELBOW', f'{side} ARM'): P[l]['z_index'] = (max(zs) + 1) if F[1] > 0 else (min(zs) - 1)
+    return frames
+
+
+def design(clip, d, seed=0):
     old = json.load(open(HERE / f'design/kaya/{clip}-{d}.json'))
     W = CANVAS[clip]; dx, dy = (W - 128) // 2, FOOT[W] - 112
     new = kps(HERE / f'roots/kaya/stance/skeleton/{d}.json')
@@ -44,8 +89,9 @@ def design(clip, d):
                 ox *= REACH; oy *= REACH
             out.append(dict(label=l, x=round((base[l][0] + ox) / W, 4), y=round((base[l][1] + oy) / W, 4), z_index=F[l]['z_index']))
         frames.append(out)
+    if clip == 'bend' and d in JAB: frames = front_jab(frames, d, height(HERE / f'roots/kaya/stance/{d}.png'), W, full='cross' if seed >= 643 else seed >= 642)
     rec = dict(old, canvas=W, first_frame_keypoints=first, frames=frames, foot_row=FOOT[W], polish=dict(scale=round(k, 3), press=PRESS,
-               reach=REACH if clip == 'bend' else 1, amp=AMP.get(clip, 1), from_=f'design/kaya/{clip}-{d}.json onto roots/kaya/stance/{d}.png'))
+               reach=REACH if clip == 'bend' else 1, front_jab=(('cross' if seed >= 643 else 'full' if seed >= 642 else 'tucked') if clip == 'bend' and d in JAB else None), amp=AMP.get(clip, 1), from_=f'design/kaya/{clip}-{d}.json onto roots/kaya/stance/{d}.png'))
     (HERE / 'polish/design').mkdir(parents=True, exist_ok=True)
     json.dump(rec, open(HERE / f'polish/design/{clip}-{d}.json', 'w'), indent=1)
     return rec
@@ -53,7 +99,7 @@ def design(clip, d):
 
 def one(spec, seed):
     clip, d = spec.split(':')
-    rec = design(clip, d)
+    rec = design(clip, d, seed)
     # z ranks: integers, as the endpoint needs
     for L in [rec['first_frame_keypoints']] + rec['frames']:
         for i, j in enumerate(sorted(L, key=lambda j: j['z_index'])): j['z_index'] = i + 1

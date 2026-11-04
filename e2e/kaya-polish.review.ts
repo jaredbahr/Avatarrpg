@@ -84,17 +84,21 @@ async function place(page: Page, x: number, y: number): Promise<void> {
   await waitForIdle(page);
 }
 
-/** Two-tile legs on Ba Dan's open ground, one in each screen heading (grid step -> heading on the oblique board). */
-const START = [6, 6] as const;
+/**
+ * Legs on Ba Dan's open ground, one in each screen heading (grid step -> heading on the oblique board). The canal (row 6)
+ * is water since #356 except the bridge deck at (9,6) and the dry crossing at (13,6), so the route crosses north over
+ * the bridge and back south over the crossing.
+ */
+const START = [7, 7] as const;
 const LEGS = [
-  ['south-east', [8, 6]],
-  ['south', [10, 8]],
-  ['north-east', [10, 6]],
-  ['east', [12, 4]],
-  ['south-west', [12, 6]],
-  ['west', [10, 8]],
-  ['north-west', [8, 8]],
-  ['north', [6, 6]],
+  ['south', [9, 9]],
+  ['north-east', [9, 5]], // over the bridge
+  ['south-east', [13, 5]],
+  ['south-west', [13, 8]], // over the dry crossing
+  ['east', [15, 6]],
+  ['west', [12, 9]],
+  ['north-west', [10, 9]],
+  ['north', [8, 7]],
 ] as const;
 
 function timing(name: string, t0: number, ready: number, extra: object = {}): void {

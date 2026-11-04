@@ -206,9 +206,19 @@ export class PartyTrail {
     const positions = [...before];
     const clearance: FollowerRoute[] = [];
     const budget = grid.width * grid.height;
-    for (let index = 1; index < count; index++) {
+    // A nearest free seat can trap the next follower in a narrow passage.
+    // Try the next seats in the same deterministic order, with a fixed limit
+    // so a crowded map still fails safely instead of searching indefinitely.
+    const clearanceSearchLimit = 64;
+    let attempts = 0;
+    const moveClearance = (
+      index: number,
+      next: () => FollowerRoute[] | null,
+      dependencies: ReadonlySet<number>,
+      recover: boolean,
+    ): FollowerRoute[] | null => {
       const from = positions[index];
-      if (!from || !routeNearPoint(leader, from)) continue;
+      if (!from) return null;
       const blocked = new Set([...avoid, ...positions.filter((_, i) => i !== index)].map(posKey));
       const candidates = [
         ...reachable(
@@ -224,11 +234,60 @@ export class PartyTrail {
             !routeNearPoint(leader, cell.pos),
         )
         .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
-      const choice = candidates[0];
-      if (!choice) return null;
-      positions[index] = choice.pos;
-      clearance.push({ index, from, path: choice.path });
-    }
+      for (const choice of candidates) {
+        if (++attempts > clearanceSearchLimit) break;
+        positions[index] = choice.pos;
+        clearance.push({ index, from, path: choice.path });
+        const phase = next();
+        if (phase) return phase;
+        clearance.pop();
+        positions[index] = from;
+      }
+      // Keep ordinary seat backtracking unchanged. If the first corridor
+      // walker is boxed in before any clearance, release a blocking follower
+      // first; that follower can itself depend on one more occupied seat.
+      if (candidates.length || !recover) return null;
+      const chain = new Set([...dependencies, index]);
+      for (let helper = 1; helper < count; helper++) {
+        const seat = positions[helper];
+        if (!seat || chain.has(helper) || clearance.some((route) => route.index === helper))
+          continue;
+        const withoutHelper = new Set(
+          [...avoid, ...positions.filter((_, i) => i !== index && i !== helper)].map(posKey),
+        );
+        // Only a follower whose removal opens a reachable tile can unblock us.
+        if (
+          !reachable(
+            {
+              grid,
+              blocked: withoutHelper,
+              surfaces: new Map(),
+              size: 1,
+              climbCost: this.climbCost,
+            },
+            from,
+            budget,
+          ).has(posKey(seat))
+        )
+          continue;
+        const phase = moveClearance(
+          helper,
+          () => moveClearance(index, next, chain, true),
+          chain,
+          true,
+        );
+        if (phase) return phase;
+      }
+      return null;
+    };
+    const clear = (index: number): FollowerRoute[] | null => {
+      if (index === count) return temporalRoutes(clearance, before);
+      const from = positions[index];
+      if (!from || !routeNearPoint(leader, from)) return clear(index + 1);
+      return moveClearance(index, () => clear(index + 1), new Set(), clearance.length === 0);
+    };
+    const clearPhase = clear(1);
+    if (!clearPhase) return null;
     const afterClearance = [...positions];
     const desired = [...[...path].reverse(), ...before];
     const routes: FollowerRoute[] = [leader];
@@ -265,9 +324,8 @@ export class PartyTrail {
       positions[index] = choice.pos;
       routes.push({ index, from, path: choice.path });
     }
-    const clearPhase = temporalRoutes(clearance, before);
     const travelPhase = temporalRoutes(routes, afterClearance);
-    if (!clearPhase || !travelPhase) return null;
+    if (!travelPhase) return null;
     this.line = positions;
     this.formation = { grid, avoid: [...avoid] };
     return { batches: [...(clearPhase.length ? [clearPhase] : []), travelPhase] };

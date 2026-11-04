@@ -152,3 +152,146 @@ itself, so their figure is mostly motion, not boil; measured the same way they f
    most of it (65) between the last stance job and the restyle's submission, 11 on the 512 restyle itself (the same
    gap #321 saw on its 512 jobs), and two jobs (a hit and a bend) whose connection was reset while polling and were
    resubmitted (`pl.py` now polls through a reset).
+
+## Kaya C fixes (#351, 2026-11-03)
+
+Owner, 2026-11-03: version C (the Kaya polish above, at the board's high-oblique camera) is the base for every character.
+His one reservation, "C seems like the angle is off a bit", we read as the front faces: the fringe hid the eyes, so the
+front headings looked tilted further down than the painting. The camera angle is kept; nothing is redrawn at a new angle.
+The four known faults above (1, 2, 4, 5 and the stray hair in 3) are fixed as follows. Every call is in `ledger.json`
+(job names `kp-face-*`, `walk-kaya-*-s631/632/633`, `kp-ko-*-s543`, `kp-bend-*-s641/642/643`).
+
+| step | tool                                        | what                                                                                                                                                                                                                                                                                                                                                                                                                    | cost        |
+| ---- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| 1    | `kp_face.py probe`                          | **faces**: `inpaint-image-pro-flash` on the idle and stance roots of S, SE, SW, E and W (on the paving colour), the mask a box over the face and the fringe's lowest rows, so the fringe may lift; two candidates a call. Seed 601 for all ten, 602 retakes three                                                                                                                                                       | 6 a root    |
+| 2    | `kp_face.py apply`, `polish/face/`          | one candidate a root (`curate.json`, with reasons), pasted inside the box and the root's silhouette (a hole the cut-out left in idle SE's cheek is filled), plus a few hand pixels from the palette where an eye stayed faint after the lock (`touch`); pre-face roots kept in `orig/`, the face box in `mask/`. The palette is still built from the pre-face roots, so it does not move                                | 0           |
+| 3    | `kp_texture.py`, `kp_assemble.py`           | the face mask rides on every generated head: inside it the head takes the root's colour unconditionally while the head turns under 30 degrees (hits, bends, the knockouts' first cels); the walk's rigid trunk already carried it                                                                                                                                                                                       | 0           |
+| 4    | `kp_walk.py`, `gen_walk.py`                 | **shorter side strides**: the step is now per heading, 0.38 body heights east and west, 0.44 on the diagonals, 0.5 north and south (unchanged); seed 631. East retaken at 632 and 633 for cel 5's boots: 632 kept (`polish/takes.json`)                                                                                                                                                                                 | 3 a heading |
+| 5    | `kp_clips.py`                               | **Fire Jab face-on**: in S, SE and N the two strikes are redesigned with a torso twist (striking shoulder forward, the other back), the striking arm extended along the heading's screen direction with the elbow lifted out, and the other arm up in a guard. 641 (fist tucked at the chest) was rejected; 642 kept for SE and N (extended; N as a forward hook past the shoulder); 643 for S (a cross over the chest) | 3 a heading |
+| 6    | `kp_clips.py`, `polish/clean.json`          | **smears**: the SE and SW knockouts retaken at 543 (SW's fourth cel comes back clean); the two smears 543 still draws (SE's last cel, SW's third) peeled from the edge inside a box (`kp_assemble.clean`)                                                                                                                                                                                                               | 3 a heading |
+| 7    | `kp_assemble.py`                            | **strays**: every cel drops a piece not 4-connected to the figure and under 24 px (`tidy`): the ponytail tip's flicks, 1-2 px hair ends, lone smear pixels                                                                                                                                                                                                                                                              | 0           |
+| 8    | `kp_assemble.py`, `pack.py`, `kp_review.py` | as the polish: the walk's clip time a tile is refitted from the drawn feet (`stride.json` -> `worldParty.ts`; the world sheet's equivalent of `walk_stride.py`'s `G1_WALK` fit), and the turntables and `metrics.json` regenerated                                                                                                                                                                                      | 0           |
+
+```sh
+python3 -I art/source/party-world/tools/kp_face.py probe 601 idle:south ... stance:west && python3 -I art/source/party-world/tools/kp_face.py probe 602 stance:south idle:east idle:south-west
+python3 -I art/source/party-world/tools/kp_face.py apply
+python3 -I art/source/party-world/tools/kp_walk.py && python3 -I art/source/party-world/tools/gen_walk.py 631 kaya:east kaya:west kaya:south-east kaya:south-west kaya:north-east kaya:north-west
+python3 -I art/source/party-world/tools/gen_walk.py 632 kaya:east && python3 -I art/source/party-world/tools/gen_walk.py 633 kaya:east
+python3 -I art/source/party-world/tools/kp_clips.py 543 ko:south-east ko:south-west
+python3 -I art/source/party-world/tools/kp_clips.py 642 bend:south-east bend:north && python3 -I art/source/party-world/tools/kp_clips.py 643 bend:south
+python3 -I art/source/party-world/tools/kp_assemble.py && python3 -I art/source/party-world/tools/pack.py && npx prettier --write src/content/assets/worldParty.ts public/art/units/world
+python3 -I art/source/party-world/tools/kp_review.py
+```
+
+`polish/design/bend-<dir>.json` holds the design of the last seed run for that heading (643 for S, 642 for SE and N): rerun
+`kp_clips.py` with the kept seed (cached, no charge) before assembling if another seed was run since.
+
+### What changed (C fixes)
+
+| item             | polish (C)                                        | C fixes                                                                                    |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| front faces      | eyes under the fringe in S and SW; S stance blank | eyes and brows at 1 px in S, SE, SW, E, W, in idle, stance, walk, hit and bend             |
+| side step        | 0.5 body heights in every heading                 | 0.38 east and west, 0.44 diagonals, 0.5 north and south                                    |
+| walk cadence     | 105-128 ms a cel at 750 ms a tile                 | 93-100 on the side and diagonal headings, 128 north and south (brisk cap 70 never reached) |
+| east cel 5       | boots smeared                                     | one clean boot pair (take 632)                                                             |
+| Fire Jab, S/SE/N | a small arm movement                              | twist, guard and an extended arm with the elbow out                                        |
+| knockout smears  | SE last cel, SW fourth                            | retaken and peeled                                                                         |
+| ponytail strays  | detached flicks on four east walk cels            | dropped                                                                                    |
+| sheet (128 page) | 61.0 KB                                           | 60.2 KB                                                                                    |
+
+### Known faults (C fixes)
+
+1. **South jab, left hand.** The south cross (cel 6, the damage release) reads as a punch over the chest; the left jab
+   (cel 2) still comes back as a guard by the chin. Face-on, the generator will not draw an arm foreshortened toward
+   the camera; a hand-drawn arm for that one cel is the next lever.
+2. **Small faces stay small.** At 128 px tiles the eyes are two to four dark pixels; they read as eyes in motion, and the
+   front views now read as looking ahead rather than down, but the face is still a few skin tones. The idle south-east
+   face is the weakest (a far eye one pixel from the hair).
+3. **Falling heads.** The face does not ride on a head turned more than 30 degrees (the knockouts' later cels), so those
+   keep the generator's face.
+4. **Riverside.** The tea (south) and wave (south-east) cels are not inpainted: they come from their own generations, not
+   the roots.
+5. **Credits.** 129 generations over 30 billed jobs (and one failed, unbilled south bend). The balance fell 129 (18,395
+   to 18,266), matching the ledger.
+
+## Smooth walk (#408, 2026-11-03)
+
+Owner, 2026-11-03: "The animation is super hoppy. Needs to be a smidge more smooth. Seems we're missing some frames in
+the walks." Kaya's world walk is redrawn as eight cels with the head and torso riding level. This is the walk recipe
+Sura and Bo (#337) and every later figure inherit. Every call is in `ledger.json` (job names `walk-kaya-*-s701`).
+
+**Why it hopped.** `kp_bob.py` measures the walk as the game draws it. The store stands every walk cel on its own lowest
+opaque row (`src/render/sheets/feet.ts`, `plantAnchor`), so the trunk's screen travel from cel to cel is its row in the
+cel minus that cel's ground row. The six-cel walk moved the trunk 3 world px a cel east and west and up to 6-9 on every
+other heading. The design's own pelvis dip was under 2 px. The rest was the planting:
+
+1. The design strode the feet along the heading's screen direction, so on every heading but east and west a planted foot
+   moved up or down the cel. Whenever the lowest foot changed (a foot landing ahead, a near foot lifting), the store
+   re-stood the whole figure by the difference: about half a step's projection, 11 px north and south.
+2. On the oblique board the far foot stands a few rows above the near one, so lifting the near foot dropped the figure
+   by that gap.
+3. The texture transfer nudged the rigid trunk up to 3 px a cel to its best silhouette overlap (east and west's hop).
+4. Each of the six cels held 92-128 ms.
+
+| step | tool                              | what                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | cost        |
+| ---- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| 1    | `kp_bob.py`                       | **measure**: cels a loop, ms a cel at the shipped pace, and the trunk's screen row per cel (the idle root's head and torso found by exact match, minus the cel's ground row), on `main` and after                                                                                                                                                                                                                                                                                                                                                                                                                           | 0           |
+| 2    | `kp_walk.py`, `design.py`         | **eight poses**: contact, down, passing, up, for each leg. A stance foot moves back S/4 a cel; the swing foot lifts off behind, passes under the body at its highest and reaches forward. **Planted feet on one row** (`design.PLANT`): both feet stand on the near foot's ground row, a foot on the ground never moves up or down the cel, and a lifted foot shows only the part of its stride that carries it up the screen. The horizontal stride is unchanged. **Dip**: the pelvis, and so the head and torso, drops 1 px on each down cel and is level otherwise. Step 0.40 body heights east and west, 0.46 elsewhere | 0           |
+| 3    | `gen_walk.py`                     | `animate-with-skeleton-v3` from each heading's idle root, one designed skeleton a cel, seed 701 (one take a heading, all kept: `polish/takes.json`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 3 a heading |
+| 4    | `kp_assemble.py`, `kp_texture.py` | as #350 (the per-part texture transfer from the idle root, the trunk the root's own pixels, the one 64-colour palette, `tidy`), except the trunk's **row** is set, not searched: the cel's own drawn ground row plus the designed dip (`trunk_dy`); only its column is nudged. Whatever the generator does with the feet, the eye sees the dip alone                                                                                                                                                                                                                                                                        | 0           |
+| 5    | `kp_assemble.py`, `pack.py`       | **refit**: a planted foot keeps its row, so it holds sideways only. The fit is the drawn feet's horizontal travel over the heading's horizontal px a tile (90.5 east and west, 64.0 on the diagonals). North and south have none and take the design's own loop. Opposite headings share their mean as before. `pack.py` now reads the cel count from the cels (`walkCels: 8` for Kaya; Sura and Bo keep 6)                                                                                                                                                                                                                 | 0           |
+
+```sh
+python3 -I art/source/party-world/tools/kp_bob.py > before.json   # on main, from cels/kaya
+python3 -I art/source/party-world/tools/kp_walk.py && python3 -I art/source/party-world/tools/gen_walk.py 701 kaya:south kaya:south-east kaya:east kaya:north-east kaya:north kaya:north-west kaya:west kaya:south-west
+python3 -I art/source/party-world/tools/kp_assemble.py && python3 -I art/source/party-world/tools/pack.py && npx prettier --write src/content/assets/worldParty.ts public/art/units/world art/source/party-world/{design,ledger.json,stride.json}
+python3 -I art/source/party-world/tools/kp_bob.py                  # every heading: bob within 1, cels 8, ms 70-90
+```
+
+`kp_assemble.py` rewrites `cels/kaya/bend.json` with one-space indents; its content is unchanged, so check it out again
+(or run prettier on it) rather than committing the reformat. The design, ledger and stride files are written the same
+way, so prettier formats them too (format:check fails otherwise).
+
+### Measured (#408)
+
+Trunk screen row per cel, in world px (+ is down), and its largest change between consecutive cels (the loop wraps). The
+ms is a cel's real hold at 750 ms a tile.
+
+| heading    | before: cels, ms | before: rows         | before: max | after: cels, ms | after: rows            | after: max |
+| ---------- | ---------------- | -------------------- | ----------- | --------------- | ---------------------- | ---------- |
+| east       | 6, 95.3          | 3, 2, 0, 2, 4, 1     | 3           | 8, 74.6         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+| south-east | 6, 99.6          | 0, 3, 5, 3, 6, 3     | 3           | 8, 84.9         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+| south      | 6, 128.5         | −6, −4, 2, −6, −3, 2 | 8           | 8, 82.5         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+| south-west | 6, 92.5          | 3, 5, 6, 0, 0, 0     | 6           | 8, 82.1         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+| west       | 6, 95.3          | 1, 4, 4, 4, 2, 0     | 3           | 8, 74.6         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+| north-west | 6, 99.6          | −4, 1, 2, 0, 7, 0    | 7           | 8, 84.9         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+| north      | 6, 128.5         | −8, 0, −3, −9, 0, −3 | 9           | 8, 82.5         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+| north-east | 6, 92.5          | 0, 7, 0, −4, 1, 3    | 7           | 8, 82.1         | 0, 1, 0, 0, 0, 1, 0, 0 | 1          |
+
+Trunk boil (`kp_boil.py`, searched within 6 px because the trunk now moves up to 4 px inside a cel to follow its ground)
+is 2.8% of the head and torso a cel pair (0.1-6.7% by heading), against 1.1% before. The 750 ms pace and
+`BRISK_WALK_CEL_MS` (70) are unchanged; the brisk cap still never applies to the world sheets.
+
+### The recipe for the rollout (#337 onward)
+
+- Eight cels, `design.FOOT`/`ARM`/`PELVIS` as `kp_walk.py` sets them, with `design.PLANT` on.
+- The trunk's row is the cel's ground row plus the dip (`kp_assemble.py`'s `trunk_dy`), never the overlap search.
+- Pick the step so `kp_assemble.py` prints 70-90 ms a cel for every heading: 8 x cel ms = 750 x loop tiles.
+- Run `kp_bob.py` on the result before packing: every heading must read `max 1`.
+
+### Known faults (#408)
+
+1. **North and south no longer stride up the screen.** The planted feet keep their row, so walking toward or away from
+   the camera the feet lift and pass in place, as a classic top-down sprite walks, and the figure is carried by the
+   move. The back foot still kicks up the screen walking south, and the reaching foot walking north. A planted foot
+   cannot both hold still on the ground and be the lowest pixel the store stands the cel on. Showing the stride there
+   again would mean planting walk cels on a fixed line, which is a change to `plantAnchor` and `feet.test.ts`'s contract,
+   so it was not made here.
+2. **A planted foot slides vertically.** On every heading but east and west, the store moves the planted foot with the
+   figure up and down the screen (as it did before, under the hop). Sideways it holds, by the fit.
+3. **The trunk follows the generator's feet.** Where the generator drew a cel's feet up to 4 px higher (south-east and
+   south-west contacts), the trunk rises with them inside the cel, so the hips meet the legs as drawn. The coat hides the
+   join; boil rises from 1.1% to 2.8%.
+4. **Generator texture.** The south-east coat keeps a few dark flecks in cels 0 and 2 (the generator's, kept by the
+   transfer where the root has no close colour).
+5. **Credits.** 24 generations over 8 jobs; the balance fell 24 (18,266 to 18,242), matching the ledger.

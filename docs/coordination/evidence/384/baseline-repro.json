@@ -1,0 +1,8 @@
+{
+  "baseline": "781c927817e1ceadb2dd5df2141b14b483bec9f4; src/public same main0d4",
+  "before": ["Paused", "Settings"],
+  "after": [],
+  "expectedAfter": ["Paused"],
+  "reproduced": true,
+  "errors": []
+}
