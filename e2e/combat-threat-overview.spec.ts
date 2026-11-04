@@ -48,6 +48,8 @@ async function readView(page: Page) {
     const dpr = window.devicePixelRatio || 1;
     return {
       state: JSON.stringify(app.state),
+      session: JSON.stringify(app.session.toMeta()),
+      moreExpanded: document.querySelector('.combat-more-toggle')?.getAttribute('aria-expanded'),
       rng: app.state!.rng,
       mode: JSON.stringify(scene.mode),
       pending: scene.pending,
@@ -133,12 +135,14 @@ async function expectThreatsVisible(page: Page, view: View): Promise<void> {
 
 async function readViewControls(page: Page) {
   return page
-    .getByRole('button', { name: /^(More|Show enemies)$/, includeHidden: true })
+    .getByRole('button', { name: /^(More|Show enemies)$|^Move/, includeHidden: true })
     .evaluateAll((buttons) => {
+      const app = window.fnt!.app;
       const observe = (name: string) => {
-        const button = buttons.find(
-          (node) => (node.getAttribute('aria-label') ?? node.textContent)?.trim() === name,
-        );
+        const button = buttons.find((node) => {
+          const label = (node.getAttribute('aria-label') ?? node.textContent)?.trim();
+          return name === 'Move' ? label?.startsWith(name) : label === name;
+        });
         if (!button) return null;
         const rect = button.getBoundingClientRect();
         return {
@@ -151,18 +155,27 @@ async function readViewControls(page: Page) {
           expanded: button.getAttribute('aria-expanded'),
         };
       };
-      return { more: observe('More'), show: observe('Show enemies') };
+      return {
+        more: observe('More'),
+        show: observe('Show enemies'),
+        move: observe('Move'),
+        state: JSON.stringify(app.state),
+        session: JSON.stringify(app.session.toMeta()),
+      };
     });
 }
 
-async function openViewMenu(page: Page) {
+async function openViewMenu(page: Page, keyboard = false) {
   const controls = await readViewControls(page);
+  const before = { state: controls.state, session: controls.session };
   if (controls.more?.visible && controls.more.expanded !== 'true') {
     expect(controls.more.enabled, 'More enabled').toBe(true);
-    await page.getByRole('button', { name: 'More', exact: true }).tap();
-    return readViewControls(page);
+    const more = page.getByRole('button', { name: 'More', exact: true });
+    if (keyboard) await more.press('Enter');
+    else await more.tap();
+    return { ...(await readViewControls(page)), before };
   }
-  return controls;
+  return { ...controls, before };
 }
 
 async function showEnemies(page: Page, keyboard = false): Promise<void> {
@@ -259,11 +272,21 @@ async function enterForest(page: Page, renderer: string, reduceMotion: boolean):
 }
 
 /** Each independent leg starts with a real selected Move and pending target. */
-async function selectPendingMove(page: Page, renderer: string) {
-  const controls = await openViewMenu(page);
+async function selectPendingMove(page: Page, renderer: string, keyboardSetup = false) {
+  const controls = await openViewMenu(page, keyboardSetup);
   // This is the intended first failure on unchanged main.
   expect(controls.show?.visible, 'Show enemies visible').toBe(true);
-  await page.getByRole('button', { name: /^Move/ }).click();
+  const move = page.getByRole('button', { name: /^Move/ });
+  if (keyboardSetup) {
+    expect(controls.move?.visible, 'Move visible').toBe(true);
+    expect(controls.move?.enabled, 'Move enabled').toBe(true);
+    if (controls.more?.visible) {
+      expect(controls.more.enabled, 'More enabled').toBe(true);
+      // The real More toggle closes the list without an Escape reaching Pause.
+      await page.getByRole('button', { name: 'More', exact: true }).press('Enter');
+    }
+    await move.press('Enter');
+  } else await move.click();
   await settleLayout(page);
   const moveView = await readView(page);
   expect(moveView.backend).toBe(renderer);
@@ -274,6 +297,9 @@ async function selectPendingMove(page: Page, renderer: string) {
   await settleLayout(page);
   const before = await readView(page);
   expect(before.pending).toEqual(first);
+  expect(before.state).toBe(controls.before.state);
+  expect(before.session).toBe(controls.before.session);
+  if (controls.more?.visible) expect(before.moreExpanded).toBe('false');
   return { before, first };
 }
 
@@ -352,7 +378,7 @@ for (const profile of [
       }, info) => {
         allowSoftwareWebgl(test, renderer);
         await enterForest(page, renderer, reduceMotion);
-        const { before, first } = await selectPendingMove(page, renderer);
+        const { before, first } = await selectPendingMove(page, renderer, true);
 
         // Recentre must be reachable even when the overview fitted the board.
         await showEnemies(page);
@@ -384,7 +410,7 @@ for (const profile of [
       }) => {
         allowSoftwareWebgl(test, renderer);
         await enterForest(page, renderer, reduceMotion);
-        const { before, first } = await selectPendingMove(page, renderer);
+        const { before, first } = await selectPendingMove(page, renderer, true);
         // Reproduce the old next-turn precondition with actual Move/Confirm,
         // without replaying the separate overview/tap-return/Recentre legs.
         await confirmDifferentMove(page, before, first);

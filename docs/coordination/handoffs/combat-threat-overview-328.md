@@ -50,6 +50,26 @@ probe's orphan browser was positively identified and stopped; its CPU contention
 and the original failure remain recorded. Main's subsequent art-contract-only
 change `a7a90caa` was merged via `c2e6b897` before final validation.
 
+On source `a0178751`, the full recorded native matrix passed 13 cases and hit
+both portrait WebGL 360-second caps. Both affected cases also timed out with
+repository-default video off; optional recording was not a sufficient cause.
+All reports, traces and recordings remain separate under the external evidence
+directory. Both Grumbler backends passed every corner/state/cast control.
+
+The split had repeated the original pointer setup in all three legs. Retained
+traces measure initial More/Move pointer work at 31.496/26.041 seconds in the
+Recentre case and 38.779/27.170 in the next-turn case; an existing native Enter
+activation took 2.002 seconds. The two later legs now use real keyboard More
+open/close and Move activation for that duplicate precondition. The first leg
+still exercises every original pointer setup in every profile, and the phone
+case is byte-identical. Later functional Show enemies, Recentre, map taps,
+Confirm, Ready and end-turn inputs are unchanged. Batched snapshots explicitly
+check Move visibility/enabled state, collapsed More, and exact complete game and
+session equality from before menu activation through pending selection. No
+settle, assertion, profile, input coverage or deadline was removed. Preliminary
+Canvas proof passed all four later-leg/profile cases; final CI/native evidence
+must be bound to the subsequent clean commit, not transferred from `a0178751`.
+
 Final exact-head CI/native results belong to the PR and external receipts under
 `/workspace/avatarrpg-env/enemy-overview-gates328/`. Passing earlier revisions
 does not transfer to a changed head. Keep this a draft; no new media or assets
