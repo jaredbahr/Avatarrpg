@@ -987,6 +987,11 @@ export interface MapScene {
   readonly chimneys?: readonly Vec2[];
   /** The trees whose leaves drift off in the ambience, in ground tiles at the trunk. */
   readonly canopies?: readonly Vec2[];
+  /** Painted vessel mouths and lantern glass, in fractional ground tiles (ADR 0101). */
+  readonly ambienceSources?: {
+    readonly steam: readonly Vec2[];
+    readonly lanterns: readonly Vec2[];
+  };
   /**
    * How strongly the renderer grounds figures and props here, and along which
    * key their casts fall (see `ActorGrounding` in render/lighting.ts). Absent,

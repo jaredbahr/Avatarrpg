@@ -1,0 +1,260 @@
+{
+  "baseline": {
+    "receipt": {
+      "before": {
+        "sha": "0095a625d84bb46e53297c0ce6306f3e1797e479",
+        "tree": "5fbd872ff59f22b92f423cf663d5aa577221d94e",
+        "status": ""
+      },
+      "harness_before": {
+        "e2e/returning-worker-objective.spec.ts": "94512bf24d6f656c12479dd7a5f0f77a11a08ac0d3e2de0d7b99d06a8256368b",
+        "scripts/e2e/returning-worker-checkpoint.ts": "be5084eadc502a1b5cb8f4fd33edf27968c1d162d13a11209271d2be0d71c010",
+        "e2e/helpers.ts": "480c6742513f8ec618f3f5fe1dff0453cabd45d8874c2828c9c1b1dd60056521",
+        "e2e/projection.ts": "3c905b9b998be697e7ff99ba04cc1673328a64e08033f71ede7ddc28a73fda56",
+        "e2e/budget.ts": "52d9c4dc2e6a3a6dc63973dbba59a53b3842edf91c912cb157258df1185d01dd",
+        "playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+      },
+      "command": [
+        "node_modules/.bin/playwright",
+        "test",
+        "-c",
+        "/workspace/avatarrpg-env/forest-return-404/native.config.ts"
+      ],
+      "started_utc": "2026-11-03T07:16:41.010578+00:00",
+      "exit_code": 1,
+      "after": {
+        "sha": "0095a625d84bb46e53297c0ce6306f3e1797e479",
+        "tree": "5fbd872ff59f22b92f423cf663d5aa577221d94e",
+        "status": ""
+      },
+      "harness_after": {
+        "e2e/returning-worker-objective.spec.ts": "94512bf24d6f656c12479dd7a5f0f77a11a08ac0d3e2de0d7b99d06a8256368b",
+        "scripts/e2e/returning-worker-checkpoint.ts": "be5084eadc502a1b5cb8f4fd33edf27968c1d162d13a11209271d2be0d71c010",
+        "e2e/helpers.ts": "480c6742513f8ec618f3f5fe1dff0453cabd45d8874c2828c9c1b1dd60056521",
+        "e2e/projection.ts": "3c905b9b998be697e7ff99ba04cc1673328a64e08033f71ede7ddc28a73fda56",
+        "e2e/budget.ts": "52d9c4dc2e6a3a6dc63973dbba59a53b3842edf91c912cb157258df1185d01dd",
+        "playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+      },
+      "duration_seconds": 188.23151850298746,
+      "finished_utc": "2026-11-03T07:19:49.242110+00:00",
+      "stable": true,
+      "log_sha256": "1d4670bce40c47170a729f0f28a64339c36b30d8ea4236215b79b54dcc48ec21"
+    },
+    "cases": [
+      {
+        "title": "returning-worker objective survives mouse and reload: trade, canvas",
+        "status": "failed",
+        "duration_ms": 16056,
+        "errors": [
+          "Error: expect(locator).toHaveAttribute(expected) failed\n\nLocator:  getByRole('button', { name: /^Current objective:/ })\nExpected: \"Current objective: The five workers are returning. Continue west to Ba Dan.\"\nReceived: \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveAttribute\" getByRole('button', { name: /^Current objective:/ }) with timeout 10000ms\n  - waiting for getByRole('button', { name: /^Current objective:/ })\n    23 \u00d7 locator resolved to <button type=\"button\" aria-expanded=\"true\" class=\"explore-objective\" title=\"Hide objective details\" aria-label=\"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\">\u2026</button>\n       - unexpected value \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\n\n\n   96 |       });\n   97 |       await page.screenshot({ path: info.outputPath('interaction.png') });\n>  98 |       await expect(objective).toHaveAttribute('aria-label', expectedLabel);\n      |                               ^\n   99 |       expect(after.story.nodeId).toBe(fixture.state.story.nodeId);\n  100 |       expect(after.location).toEqual(fixture.state.location);\n  101 |       expect(after.world.residentProfiles).toEqual(fixture.state.world.residentProfiles);\n    at /workspace/avatarrpg-env/forest-return-404/source/e2e/returning-worker-objective.spec.ts:98:31"
+        ]
+      },
+      {
+        "title": "returning-worker objective survives touch and reload: trade, webgl",
+        "status": "failed",
+        "duration_ms": 56795,
+        "errors": [
+          "Error: expect(locator).toHaveAttribute(expected) failed\n\nLocator:  getByRole('button', { name: /^Current objective:/ })\nExpected: \"Current objective: The five workers are returning. Continue west to Ba Dan.\"\nReceived: \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveAttribute\" getByRole('button', { name: /^Current objective:/ }) with timeout 10000ms\n  - waiting for getByRole('button', { name: /^Current objective:/ })\n    14 \u00d7 locator resolved to <button type=\"button\" aria-expanded=\"true\" class=\"explore-objective\" title=\"Hide objective details\" aria-label=\"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\">\u2026</button>\n       - unexpected value \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\n\n\n   96 |       });\n   97 |       await page.screenshot({ path: info.outputPath('interaction.png') });\n>  98 |       await expect(objective).toHaveAttribute('aria-label', expectedLabel);\n      |                               ^\n   99 |       expect(after.story.nodeId).toBe(fixture.state.story.nodeId);\n  100 |       expect(after.location).toEqual(fixture.state.location);\n  101 |       expect(after.world.residentProfiles).toEqual(fixture.state.world.residentProfiles);\n    at /workspace/avatarrpg-env/forest-return-404/source/e2e/returning-worker-objective.spec.ts:98:31"
+        ]
+      },
+      {
+        "title": "returning-worker objective survives mouse and reload: escort, canvas",
+        "status": "failed",
+        "duration_ms": 21522,
+        "errors": [
+          "Error: expect(locator).toHaveAttribute(expected) failed\n\nLocator:  getByRole('button', { name: /^Current objective:/ })\nExpected: \"Current objective: The five workers are returning. Continue west to Ba Dan.\"\nReceived: \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveAttribute\" getByRole('button', { name: /^Current objective:/ }) with timeout 10000ms\n  - waiting for getByRole('button', { name: /^Current objective:/ })\n    23 \u00d7 locator resolved to <button type=\"button\" aria-expanded=\"true\" class=\"explore-objective\" title=\"Hide objective details\" aria-label=\"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\">\u2026</button>\n       - unexpected value \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\n\n\n   96 |       });\n   97 |       await page.screenshot({ path: info.outputPath('interaction.png') });\n>  98 |       await expect(objective).toHaveAttribute('aria-label', expectedLabel);\n      |                               ^\n   99 |       expect(after.story.nodeId).toBe(fixture.state.story.nodeId);\n  100 |       expect(after.location).toEqual(fixture.state.location);\n  101 |       expect(after.world.residentProfiles).toEqual(fixture.state.world.residentProfiles);\n    at /workspace/avatarrpg-env/forest-return-404/source/e2e/returning-worker-objective.spec.ts:98:31"
+        ]
+      },
+      {
+        "title": "returning-worker objective survives touch and reload: escort, webgl",
+        "status": "failed",
+        "duration_ms": 57748,
+        "errors": [
+          "Error: expect(locator).toHaveAttribute(expected) failed\n\nLocator:  getByRole('button', { name: /^Current objective:/ })\nExpected: \"Current objective: The five workers are returning. Continue west to Ba Dan.\"\nReceived: \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveAttribute\" getByRole('button', { name: /^Current objective:/ }) with timeout 10000ms\n  - waiting for getByRole('button', { name: /^Current objective:/ })\n    16 \u00d7 locator resolved to <button type=\"button\" aria-expanded=\"true\" class=\"explore-objective\" title=\"Hide objective details\" aria-label=\"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\">\u2026</button>\n       - unexpected value \"Current objective: Explore the pine road east to the quarry gate, or go back west to Ba Dan.\"\n\n\n   96 |       });\n   97 |       await page.screenshot({ path: info.outputPath('interaction.png') });\n>  98 |       await expect(objective).toHaveAttribute('aria-label', expectedLabel);\n      |                               ^\n   99 |       expect(after.story.nodeId).toBe(fixture.state.story.nodeId);\n  100 |       expect(after.location).toEqual(fixture.state.location);\n  101 |       expect(after.world.residentProfiles).toEqual(fixture.state.world.residentProfiles);\n    at /workspace/avatarrpg-env/forest-return-404/source/e2e/returning-worker-objective.spec.ts:98:31"
+        ]
+      }
+    ],
+    "artifacts": [
+      {
+        "path": "runs/baseline/artifacts/.last-run.json",
+        "bytes": 243,
+        "sha256": "46e60a411b55a148dd51616ab19f1af7993717827b2fa28b2df1aceb7ee61004"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-613bf-se-and-reload-escort-canvas-installed-chromium-touch/error-context.md",
+        "bytes": 8309,
+        "sha256": "d2a77359bdacc21334fcb43b8155dc1409316beba38a864b9fa4050313ab4ccc"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-613bf-se-and-reload-escort-canvas-installed-chromium-touch/interaction.png",
+        "bytes": 818120,
+        "sha256": "32fc3af7346543a93e85ac97da23da03c4ec04eed1f879ced0125ca09244640a"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-613bf-se-and-reload-escort-canvas-installed-chromium-touch/test-failed-1.png",
+        "bytes": 818388,
+        "sha256": "e6b805958e2b7d286ba596e8e0bfa79d49fd4c0728d5bc74aadb2b120cc9de77"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-613bf-se-and-reload-escort-canvas-installed-chromium-touch/trace.zip",
+        "bytes": 19971861,
+        "sha256": "c04654763507238a733399cb1431c289539b41f042d92fdac8e9cd49812e6e44"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-79ce3-uch-and-reload-escort-webgl-installed-chromium-touch/error-context.md",
+        "bytes": 8308,
+        "sha256": "2b0ec31cc58850ba93d9e7e2279e232d84d9a199c07c1503547b9c140c0004f0"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-79ce3-uch-and-reload-escort-webgl-installed-chromium-touch/interaction.png",
+        "bytes": 916104,
+        "sha256": "c95c95766449b15ed8c3654f54f6fb50d6417013ef94487672fe7ad03638aaa5"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-79ce3-uch-and-reload-escort-webgl-installed-chromium-touch/test-failed-1.png",
+        "bytes": 911299,
+        "sha256": "fa7c7aea3e917b6ac3d5f8e2f3586e8c0d2543995c055233cf883d6934a3f225"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-79ce3-uch-and-reload-escort-webgl-installed-chromium-touch/trace.zip",
+        "bytes": 20064756,
+        "sha256": "3234b4690af57addf7c8698ec036a5614e456e5d08caf418cdedfe78c19baa51"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-a5381-use-and-reload-trade-canvas-installed-chromium-touch/error-context.md",
+        "bytes": 8308,
+        "sha256": "b7f56b00aa79072aea8a0037da5643a86ae9974ebff9a1d7f3386e919d09afac"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-a5381-use-and-reload-trade-canvas-installed-chromium-touch/interaction.png",
+        "bytes": 765897,
+        "sha256": "b409620fad82932acba9ebac6926a9092ab074b120f854a67d6edac2b5967dab"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-a5381-use-and-reload-trade-canvas-installed-chromium-touch/test-failed-1.png",
+        "bytes": 764337,
+        "sha256": "c30d654f51dd0e564ab6d77af0d825d02952b64d857c68d834610bac4f4f2a01"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-a5381-use-and-reload-trade-canvas-installed-chromium-touch/trace.zip",
+        "bytes": 19912886,
+        "sha256": "7e79436ee56522952c381b9e1c9f09ad367e6dcf6f74618b7540cf45049268c6"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-fe458-ouch-and-reload-trade-webgl-installed-chromium-touch/error-context.md",
+        "bytes": 8307,
+        "sha256": "01cb12cf5f5bbf80bb8a8bd6719e6c18fde416c09af081f37026a984366e2f8c"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-fe458-ouch-and-reload-trade-webgl-installed-chromium-touch/interaction.png",
+        "bytes": 876637,
+        "sha256": "1237e4e1821fbbbcd42d1364a280636a336ebccd63bcdfc14942fe878e27cfcd"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-fe458-ouch-and-reload-trade-webgl-installed-chromium-touch/test-failed-1.png",
+        "bytes": 875314,
+        "sha256": "c7e4b0cf0b1672e8a372ccc81ba11ef4d8d9fb2dbf67f0a9829c9a94019ba05e"
+      },
+      {
+        "path": "runs/baseline/artifacts/returning-worker-objective-fe458-ouch-and-reload-trade-webgl-installed-chromium-touch/trace.zip",
+        "bytes": 20023067,
+        "sha256": "4d502a9ef6b52ed2d42cded7956a236938539ad151f4c232b468d950c0c50436"
+      }
+    ]
+  },
+  "candidate": {
+    "receipt": {
+      "before": {
+        "sha": "ec5688641b8ba5e0b9e8aa12392980f47919236c",
+        "tree": "156ac8f7073e0f8fa523859937388fd517ad3773",
+        "status": ""
+      },
+      "harness_before": {
+        "e2e/returning-worker-objective.spec.ts": "94512bf24d6f656c12479dd7a5f0f77a11a08ac0d3e2de0d7b99d06a8256368b",
+        "scripts/e2e/returning-worker-checkpoint.ts": "be5084eadc502a1b5cb8f4fd33edf27968c1d162d13a11209271d2be0d71c010",
+        "e2e/helpers.ts": "480c6742513f8ec618f3f5fe1dff0453cabd45d8874c2828c9c1b1dd60056521",
+        "e2e/projection.ts": "3c905b9b998be697e7ff99ba04cc1673328a64e08033f71ede7ddc28a73fda56",
+        "e2e/budget.ts": "52d9c4dc2e6a3a6dc63973dbba59a53b3842edf91c912cb157258df1185d01dd",
+        "playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+      },
+      "command": [
+        "node_modules/.bin/playwright",
+        "test",
+        "-c",
+        "/workspace/avatarrpg-env/forest-return-404/native.config.ts"
+      ],
+      "started_utc": "2026-11-03T07:22:55.642766+00:00",
+      "exit_code": 0,
+      "after": {
+        "sha": "ec5688641b8ba5e0b9e8aa12392980f47919236c",
+        "tree": "156ac8f7073e0f8fa523859937388fd517ad3773",
+        "status": ""
+      },
+      "harness_after": {
+        "e2e/returning-worker-objective.spec.ts": "94512bf24d6f656c12479dd7a5f0f77a11a08ac0d3e2de0d7b99d06a8256368b",
+        "scripts/e2e/returning-worker-checkpoint.ts": "be5084eadc502a1b5cb8f4fd33edf27968c1d162d13a11209271d2be0d71c010",
+        "e2e/helpers.ts": "480c6742513f8ec618f3f5fe1dff0453cabd45d8874c2828c9c1b1dd60056521",
+        "e2e/projection.ts": "3c905b9b998be697e7ff99ba04cc1673328a64e08033f71ede7ddc28a73fda56",
+        "e2e/budget.ts": "52d9c4dc2e6a3a6dc63973dbba59a53b3842edf91c912cb157258df1185d01dd",
+        "playwright.config.ts": "bdda21558ebbdd6868dc72e45f2115fe527356b05f362e6d0daf5b17c65f0944"
+      },
+      "duration_seconds": 211.78670026702457,
+      "finished_utc": "2026-11-03T07:26:27.429480+00:00",
+      "stable": true,
+      "log_sha256": "b07909ba2710a230142c6285cdfee03f84489d5b29e6a3a227066294da82dde2"
+    },
+    "cases": [
+      {
+        "title": "returning-worker objective survives mouse and reload: trade, canvas",
+        "status": "passed",
+        "duration_ms": 8118,
+        "errors": []
+      },
+      {
+        "title": "returning-worker objective survives touch and reload: trade, webgl",
+        "status": "passed",
+        "duration_ms": 76328,
+        "errors": []
+      },
+      {
+        "title": "returning-worker objective survives mouse and reload: escort, canvas",
+        "status": "passed",
+        "duration_ms": 18569,
+        "errors": []
+      },
+      {
+        "title": "returning-worker objective survives touch and reload: escort, webgl",
+        "status": "passed",
+        "duration_ms": 79098,
+        "errors": []
+      }
+    ],
+    "artifacts": [
+      {
+        "path": "runs/candidate/artifacts/.last-run.json",
+        "bytes": 45,
+        "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+      },
+      {
+        "path": "runs/candidate/artifacts/returning-worker-objective-613bf-se-and-reload-escort-canvas-installed-chromium-touch/interaction.png",
+        "bytes": 815248,
+        "sha256": "a196b5cea64468212fc91404793fcf18d72f2f3b4d0244740142031928ecc152"
+      },
+      {
+        "path": "runs/candidate/artifacts/returning-worker-objective-79ce3-uch-and-reload-escort-webgl-installed-chromium-touch/interaction.png",
+        "bytes": 916676,
+        "sha256": "42c325d8dcc93ca06512ec73d79f996a3e78e0f62934c60d85711b00160afbc9"
+      },
+      {
+        "path": "runs/candidate/artifacts/returning-worker-objective-a5381-use-and-reload-trade-canvas-installed-chromium-touch/interaction.png",
+        "bytes": 764700,
+        "sha256": "645f611375270fbc61a0381a40827ac62188dace63e7fbcf808aec1be103af2a"
+      },
+      {
+        "path": "runs/candidate/artifacts/returning-worker-objective-fe458-ouch-and-reload-trade-webgl-installed-chromium-touch/interaction.png",
+        "bytes": 870838,
+        "sha256": "62abe97216a89b0e7158e3ded622f7d8f24bbbca356aba6bbb657fa6917a8ed2"
+      }
+    ]
+  }
+}

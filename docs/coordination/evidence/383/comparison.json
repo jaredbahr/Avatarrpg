@@ -1,0 +1,1364 @@
+{
+  "records": [
+    {
+      "name": "before-canvas-default",
+      "producer": {
+        "sha": "67aa6c82038ff6330850f7500491a6dead895578",
+        "tree": "993202958bf1a22d03d5cdc17b1bea8da5266c07",
+        "status": ""
+      },
+      "renderer": "canvas",
+      "style": "default",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 369347,
+          "sha256": "808e76d5a7f950e805556e4b18cb48b617788cee9c780cbff64de8edac790428"
+        },
+        "video.webm": {
+          "bytes": 1949822,
+          "sha256": "bdb363986ccdfdb55c41b56aa2ca3fc2ca4a939c49cb006a15a7274b942af0c7"
+        },
+        "settled.png": {
+          "bytes": 647495,
+          "sha256": "19d2d2fa9c1b5b1d7ffd8ee8bdb4ab3f64237c8984ab8ab129076da4000c189b"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/before-canvas-default",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 493,
+      "draw_gap_ms": {
+        "max": 117.10000002384186,
+        "median": 17.600000023841858
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3123.600000023842
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 4122
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 871.0
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 871.5
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "before-canvas-world",
+      "producer": {
+        "sha": "67aa6c82038ff6330850f7500491a6dead895578",
+        "tree": "993202958bf1a22d03d5cdc17b1bea8da5266c07",
+        "status": ""
+      },
+      "renderer": "canvas",
+      "style": "world",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 372654,
+          "sha256": "e8aa49995411048b57039f8e4d04a0171b39b763e99f8a97681ab3d1b2cb2607"
+        },
+        "video.webm": {
+          "bytes": 1898036,
+          "sha256": "1a76f514fc517ce8ff2909cf36159769323d4a1e12651a7fa11b04754b9c88c8"
+        },
+        "settled.png": {
+          "bytes": 633810,
+          "sha256": "2c24877aad4438c4847dfa9cc0f3a92181959bbc6f70a1db5753dcd93cda65fb"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/before-canvas-world",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 497,
+      "draw_gap_ms": {
+        "max": 69.30000001192093,
+        "median": 17.899999976158142
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3123.2999999821186
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 4122.800000011921
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 871.4000000059605
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 870.9000000059605
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "before-webgl-default",
+      "producer": {
+        "sha": "67aa6c82038ff6330850f7500491a6dead895578",
+        "tree": "993202958bf1a22d03d5cdc17b1bea8da5266c07",
+        "status": ""
+      },
+      "renderer": "webgl",
+      "style": "default",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 41457,
+          "sha256": "9eb1f6e219f277e6335e1899b860da8a245f6af9893b192b9081d841c047edc5"
+        },
+        "video.webm": {
+          "bytes": 3757960,
+          "sha256": "bd3cfd32e6f57abd16a10a9bd154ff3238beae75958e2da714688cbbc60f7397"
+        },
+        "settled.png": {
+          "bytes": 643059,
+          "sha256": "ea495e1a6d1a953c7b024dafdd99e60c6732910804e4df5a901c84e54b45daa8"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/before-webgl-default",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 57,
+      "draw_gap_ms": {
+        "max": 624.0999999940395,
+        "median": 318.09999999403954
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3122.4000000059605
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 4123.9000000059605
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 870.9000000059605
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 871.1000000238419
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "before-webgl-world",
+      "producer": {
+        "sha": "67aa6c82038ff6330850f7500491a6dead895578",
+        "tree": "993202958bf1a22d03d5cdc17b1bea8da5266c07",
+        "status": ""
+      },
+      "renderer": "webgl",
+      "style": "world",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 41460,
+          "sha256": "2ef44e4f1cc9380db0026edf7a09fd3c8035cb30e0bc66038517a939f9fe7f3b"
+        },
+        "video.webm": {
+          "bytes": 3649685,
+          "sha256": "2ada3c75d2528f12e87fd0c5a17624916cac5066f61428a86c423d30b304d861"
+        },
+        "settled.png": {
+          "bytes": 627927,
+          "sha256": "f93869d34bd0345c5a1af934e34b0df168bb90101c08c4c0e4128c0430c471fc"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/before-webgl-world",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 57,
+      "draw_gap_ms": {
+        "max": 641.4000000059605,
+        "median": 321.80000001192093
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3123.0999999940395
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 4122.0
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 875.0999999940395
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 871.0
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "after-canvas-default",
+      "producer": {
+        "sha": "5ac1e74b144ceb4eea8f88ab209a00f2e95f749f",
+        "tree": "8e997e3a70724aa6c2616d53da70abfb5610ef53",
+        "status": ""
+      },
+      "renderer": "canvas",
+      "style": "default",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 328414,
+          "sha256": "04afba665d73e9b6c8abfb23947ab856810deaa8da0b16415ceef0139a338b05"
+        },
+        "video.webm": {
+          "bytes": 1717414,
+          "sha256": "ac32789db4df73c83527d92be0c5b8a1290f8c78f747d32a87cf1c2c80de27b0"
+        },
+        "settled.png": {
+          "bytes": 648078,
+          "sha256": "b6c8fb89e899f5d8b8224ae4730d03c28328c5bb1e5c66f8785354abb84f25e2"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/after-canvas-default",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 440,
+      "draw_gap_ms": {
+        "max": 66.19999998807907,
+        "median": 17.299999982118607
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 2623.100000023842
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3492.5
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 746.2000000178814
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 746.1999999880791
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "after-canvas-world",
+      "producer": {
+        "sha": "5ac1e74b144ceb4eea8f88ab209a00f2e95f749f",
+        "tree": "8e997e3a70724aa6c2616d53da70abfb5610ef53",
+        "status": ""
+      },
+      "renderer": "canvas",
+      "style": "world",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 321265,
+          "sha256": "c2798312a3358fd01be9b3e794b63c8ccb92a9387d25837313f8de93560da2a4"
+        },
+        "video.webm": {
+          "bytes": 1759851,
+          "sha256": "849bea2197f563df7b284e8350427a4680aa5532eee1c9879e468e5ee9305ad1"
+        },
+        "settled.png": {
+          "bytes": 634230,
+          "sha256": "2340dd5de3bae4c5f40af106c72c7ef5d576d6d3d8c6f373bd7516e41a986928"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/after-canvas-world",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 431,
+      "draw_gap_ms": {
+        "max": 56.5,
+        "median": 17.599999994039536
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 2625.300000011921
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3492.2999999821186
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 745.8000000119209
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 746.2999999821186
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "after-webgl-default",
+      "producer": {
+        "sha": "5ac1e74b144ceb4eea8f88ab209a00f2e95f749f",
+        "tree": "8e997e3a70724aa6c2616d53da70abfb5610ef53",
+        "status": ""
+      },
+      "renderer": "webgl",
+      "style": "default",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 38460,
+          "sha256": "e2ff76238cd43307901b56ac2b92a5c3cc8e20c15f304a8c4e24cca77302f000"
+        },
+        "video.webm": {
+          "bytes": 3671018,
+          "sha256": "581a9f0390186e40f37be787a6a50c507044cc81a4cd80e725038a1c0cb3e934"
+        },
+        "settled.png": {
+          "bytes": 644546,
+          "sha256": "b946c610aefc09633db206af71a6a8a23655ace1640618594b21d253ceb1adb0"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/after-webgl-default",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 53,
+      "draw_gap_ms": {
+        "max": 641.1999999880791,
+        "median": 317.7000000178814
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 2622.300000011921
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3492.199999988079
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 746.5999999940395
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 746.1999999880791
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "after-webgl-world",
+      "producer": {
+        "sha": "5ac1e74b144ceb4eea8f88ab209a00f2e95f749f",
+        "tree": "8e997e3a70724aa6c2616d53da70abfb5610ef53",
+        "status": ""
+      },
+      "renderer": "webgl",
+      "style": "world",
+      "artifacts": {
+        "playback.json": {
+          "bytes": 38250,
+          "sha256": "d1e1dd4fdf3bac11772721eadbe0c7a0830b09be9f5eb87983d32966b4f131c1"
+        },
+        "video.webm": {
+          "bytes": 3690690,
+          "sha256": "7bff00a1e36f5aded3ecf711d89c0dabf24c88f691a21190bc0d4804ecaac1a8"
+        },
+        "settled.png": {
+          "bytes": 630012,
+          "sha256": "51608acdfe256f44980398f86a025369d83eeda31899c43c09272a1cfc609ceb"
+        }
+      },
+      "retention_path": "/workspace/avatarrpg-env/pace-383/resume20261103/native-media/after-webgl-world",
+      "initial": {
+        "pos": {
+          "x": 3,
+          "y": 7
+        },
+        "camera": {
+          "projection": "oblique",
+          "groundTransform": {
+            "a": 2,
+            "b": 1,
+            "c": -2,
+            "d": 1,
+            "tx": 1196,
+            "ty": -382
+          },
+          "tilePx": 128,
+          "offsetX": 852,
+          "offsetY": 382,
+          "fitted": false
+        }
+      },
+      "frames": 53,
+      "draw_gap_ms": {
+        "max": 655.5999999940395,
+        "median": 318.59999999403954
+      },
+      "moves": [
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 7,
+            "y": 7
+          },
+          "target": {
+            "x": 7,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 7,
+              "y": 7
+            },
+            {
+              "x": 6,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 2624.199999988079
+        },
+        {
+          "before": {
+            "x": 7,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 3493.4000000059605
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 7
+          },
+          "after": {
+            "x": 3,
+            "y": 8
+          },
+          "target": {
+            "x": 3,
+            "y": 8
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 8
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 745.8999999761581
+        },
+        {
+          "before": {
+            "x": 3,
+            "y": 8
+          },
+          "after": {
+            "x": 3,
+            "y": 7
+          },
+          "target": {
+            "x": 3,
+            "y": 7
+          },
+          "drawn": [
+            {
+              "x": 3,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 5,
+              "y": 7
+            }
+          ],
+          "planned_ms": 746.6999999880791
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

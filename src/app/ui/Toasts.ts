@@ -106,6 +106,7 @@ export class Toasts {
   clear(): void {
     for (const handle of this.active.keys()) this.remove(handle);
     while (this.host.firstChild) this.host.removeChild(this.host.firstChild);
+    this.recent.clear();
   }
 
   /**

@@ -35,7 +35,7 @@ import type { MoveContext } from '../../core/rules/grid';
 import { resolveResidents } from '../../core/story/residents';
 import { backgroundFigures, visibleNpcs } from '../../core/story/world';
 import { Animator } from '../animator';
-import { TIMING } from '../anim/choreography';
+import { STROLL_REFERENCE_MS } from '../anim/choreography';
 import { motionReduced } from '../ui/dom';
 import type { ClipName } from '../../content/assets/clips';
 import { sheetLocomotion } from '../../content/assets/manifest';
@@ -273,12 +273,13 @@ const WORK_LEAN_RAD = 0.03;
 /** A resident stride has two planted contacts and never lifts more than two pixels at 1x. */
 export const RESIDENT_STRIDE_MS = 500;
 /**
- * How much slower a routine errand goes than the brisk stroll (ADR 0095): 2 s a
+ * How much slower a routine errand goes than the reference stroll (ADR 0095): 2 s a
  * tile. Every other move (a placement, a call home) keeps the brisk pace,
  * except Mira's, who ambles everywhere. The ambling animator is read on a clock
- * slowed this much.
+ * slowed this much. Keep its base pace and this factor fixed together so brisk
+ * exploration tuning changes neither its ramps nor its reduced-motion timing.
  */
-export const RESIDENT_AMBLE = 2000 / TIMING.strollStep;
+export const RESIDENT_AMBLE = 2000 / STROLL_REFERENCE_MS;
 export const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
 export const RESIDENT_CONTACT_MS = 60;
 export const RESIDENT_BOB_PX = 2;

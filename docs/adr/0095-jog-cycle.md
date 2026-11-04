@@ -266,3 +266,37 @@ Measured as shipped (`walk_stride.py <family> <name> walk --manifest --scale 1.2
 ground): the party's 12-cel walk slides about 3 px a stance cel, the eight-cel residents' and bandits' 1 to 2. Their
 loops differ (1.12 and 0.75 tiles east) because every figure now holds the same cel time, and the party's loop has 12
 cels to the others' 8. The known fault "the legs are quick" above is superseded by this choice.
+
+## Amendment, 2026-11-01: quicker exploration with the existing walk (#383)
+
+Jared reported that walking feels a little slow while playing Ba Dan. Exploration
+now cruises at **625 ms per tile**, a 20% increase in speed from 750. The fixed
+120 ms start/stop ramp remains: a one-tile walk takes 745 ms rather than 870.
+Combat stays at 720 ms per tile, and reduced-motion moves retain their existing
+abbreviated timing. This supersedes the interim exploration pace above; it does
+not approve the jog, a new sheet, or a default art/style change.
+
+The accepted **750 ms / 70 ms-per-cel** pair remains the distance calibration,
+named `STROLL_REFERENCE_MS`. The live `BRISK_WALK_CEL_MS` scales proportionally to
+exploration pace (58⅓ at 625). Their ratio in `walkClipTime` therefore stays
+constant: a planted foot covers the same ground per drawn cel, including during
+combat. Exploration plays both root movement and the same walk cels faster.
+Existing foot slide remains a known limitation; this does not improve the drawn
+stride. Fitted sheets without a cel cap, including the opt-in world sheets, keep
+their existing phase per distance. The old 70–140 ms world-sheet test at 750 is a
+reference-fit check, not a claim about current 625 ms runtime cadence.
+
+Mira and routine errands keep their **whole** previous timeline, including ramp,
+turn, settle, fade and reduced-motion timing. Their existing `amble` flag selects
+750 for the private animator's base schedule; `RESIDENT_AMBLE` keeps the old
+`2000 / 750` slow-clock factor. Recomputing that factor from 625 would preserve
+cruise speed but stretch every internal pause, so it is deliberately decoupled.
+The independent resident completion helper uses the same reference schedule for
+amble sheets; its validation ceiling is unchanged.
+
+The owner still reports a mismatch between actors and static scenery, and object
+shadow problems in Ba Dan. Those remain separate visual work. No figure art,
+portrait, default variant, painted contact/cast shadow, runtime shadow mask,
+collision, core state or RNG changes are part of this pace correction. Native
+local playback and automated invariants are recorded in the #383 handoff; neither
+establishes owner aesthetic acceptance or physical-device performance.

@@ -1,5 +1,5 @@
 import { FADE_MS, RESIDENT_AMBLE } from '../src/app/world/residentMotion';
-import { TIMING } from '../src/app/anim/choreography';
+import { STROLL_REFERENCE_MS, TIMING } from '../src/app/anim/choreography';
 import { strollTiming } from '../src/app/anim/stroll';
 import { smoothPath } from '../src/render/geometry/curve';
 import { sheetLocomotion } from '../src/content/assets/manifest';
@@ -70,8 +70,9 @@ export function residentCompletionPlan(snapshot: ResidentPlanSnapshot): Resident
       if (!finitePosition(motion.from) || motion.path.some((position) => !finitePosition(position)))
         throw new Error('Resident route coordinates must be finite');
       const curveLength = smoothPath(motion.from, motion.path).length;
-      const timing = strollTiming(curveLength, TIMING.strollStep);
-      const pace = sheetLocomotion(motion.who.sprite)?.amble ? RESIDENT_AMBLE : 1;
+      const amble = sheetLocomotion(motion.who.sprite)?.amble;
+      const timing = strollTiming(curveLength, amble ? STROLL_REFERENCE_MS : TIMING.strollStep);
+      const pace = amble ? RESIDENT_AMBLE : 1;
       duration =
         timing.duration * pace + (motion.enter ? FADE_MS : 0) + (motion.leave ? FADE_MS : 0);
     }

@@ -196,7 +196,8 @@ export class GestureRecognizer {
         if (id !== phase.id) return;
         this.cancelLongPress();
         this.phase = { kind: 'idle' };
-        if (!phase.longPressed) this.handlers.onTap?.(point);
+        if (!phase.longPressed && distance(phase.start, point) <= this.config.dragThreshold)
+          this.handlers.onTap?.(point);
         return;
       case 'dragging':
         if (id !== phase.id) return;
