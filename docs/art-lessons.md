@@ -95,6 +95,12 @@ animation or presentation work. Add to it when something fails.
   houses never read at 1x (v12, v13). A prompt naming the cues ("front facade, narrow side wall receding in deep
   shade, thick eaves, recessed windows with sills, stone foundation") gave real 3D in one pass. "In shade" alone
   came back light; say "deep shade, clearly darker than the front".
+- **Volume, but straight on.** The first redraw's houses had an angled side wall, an oblique 3/4 view in a
+  straight-on world. Its diagonal foot left the back-right corner over nothing, and the owner saw them as
+  floating. Say "straight front view, horizontal base, no side wall"; that wording controls the camera. Ground
+  the house with a packed-earth apron, a seam and a hard lower-right cast, so no grass colour shows between the
+  footing and the shadow.
+- **Measure a cast against clean ground.** A dark apron pulls down a ring-of-nearby-ground contrast check.
 - **Canvas size doesn't set the drawn size.** A 192×240 canvas gave a 103 px house. Say "fills the canvas, no
   empty margin", and use a short, wide canvas for a wide building.
 - **Recolour only the outer outline.** PixelLab outlines come back near-black; a global dark threshold would erase

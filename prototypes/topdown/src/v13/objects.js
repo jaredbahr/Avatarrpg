@@ -13,20 +13,20 @@ const NB = 336, SB = 812;   // the north and south house rows stand on their lan
 const gaoHouse = put('house_gao', 448, NB, { kind: 'house', foot: [140, 104] });
 put('banner_pole', 564, NB + 4, { foot: [10, 6] });
 const miraHouse = put('house_mira', 688, NB, { kind: 'house', foot: [140, 104] });
-const neHouse = put('house_ne', 912, NB, { kind: 'house', foot: [140, 104] });
+const neHouse = put('house_ne', 932, NB, { kind: 'house', foot: [140, 104] });
 // Gao's yard on his west side: a fence, his bread oven, the sacks; his door barrel and herb rack at his shopfront
 put('fence', 330, NB + 4, { foot: [70, 8] }); put('fence', 330, NB - 40, { foot: [70, 8] });
 put('oven', 318, NB - 12); put('sacks', 352, NB - 18);
 put('barrel', 505, NB + 8); put('herb_shelf', 388, NB + 10);
 put('rain_barrel', 801, NB + 8);
-put('bucket_broom', 744, NB + 8); put('flower_pots', 958, NB + 10); put('crates', 990, NB + 22);
+put('bucket_broom', 744, NB + 8); put('flower_pots', 978, NB + 10); put('crates', 1010, NB + 22);
 // the north court: Gao's display, Mira's table with the pot on the fire, the north display; the handcart
 put('market_jars', 412, 404);
 const miraTable = put('mira_table', 560, 402);
 put('cookpot', 646, 392);
 put('market_veg', 776, 402);
 put('handcart', 968, 392);
-put('laundry_line', 1066, 252, { foot: [70, 6] }); put('woodshed', 1080, NB + 4, { foot: [70, 14] });
+put('laundry_line', 1090, 252, { foot: [70, 6] }); put('woodshed', 1102, NB + 4, { foot: [70, 14] });
 // the canal: the bridge styled on its own bank stones (deck walkable, drawn as ground), the dry crossing is paving
 const bridge = put('bridge', 508, 476, { flat: true, kind: 'bridge' });
 // the watch post on the east square: Dorin's post, the notice board, the shrine, lamps; the road's drains
