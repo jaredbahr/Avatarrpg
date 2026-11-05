@@ -1389,3 +1389,21 @@ if (TUTM) {
   window.__tut = { flags: () => Object.assign({}, tutFlags), leaving: () => leaving };
   const h = document.getElementById('hint'); if (h) h.style.display = 'none';
 }
+
+// dialogue portraits: the tutorial shell holds the images (PORTRAITS); a resident with one gets it on the right of the box (Kaya's on
+// the left, in the shell). Hanru has none, so his box stays plain. Same box styling as the shell's.
+if (TUTM) {
+  const PORT_OF = { mira: 'mira', gao: 'gao', pella: 'pella', dorin: 'dorin' };
+  const st = document.createElement('style');
+  st.textContent = '#dlg.hasp { min-height: 7.25rem; padding-right: 7.1rem; } #dlg img { display: none; position: absolute; top: 0.75rem; right: 0.75rem; width: 5.25rem; height: 5.25rem; box-sizing: border-box; object-fit: cover; background: #e8d8b0; border: 0.1875rem solid #e8d8b0; outline: 0.125rem solid #1c1719; border-radius: 0.2rem; image-rendering: auto; } #dlg.hasp img { display: block; }';
+  document.head.appendChild(st);
+  const im = document.createElement('img'); im.alt = ''; dlgEl.insertBefore(im, dlgEl.firstChild);
+  const renderDialog0 = renderDialog;
+  renderDialog = function () {
+    renderDialog0();
+    let P = null; try { P = parent.PORTRAITS; } catch (e) { /* stand-alone */ }
+    const k = dlg.who && PORT_OF[dlg.who.def.id];
+    if (k && P && P[k]) { if (im.getAttribute('src') !== P[k]) im.src = P[k]; im.alt = dlg.who.def.name; dlgEl.classList.add('hasp'); }
+    else { im.removeAttribute('src'); dlgEl.classList.remove('hasp'); }
+  };
+}

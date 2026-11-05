@@ -30,7 +30,16 @@ const onTap = e => { e.preventDefault(); if (typing && typing.n < typing.s.lengt
 catcher.addEventListener('pointerdown', onTap); $('dlg').addEventListener('pointerdown', onTap);
 addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'e') onTap(e); });
 // ---------- the pieces of a scene
+// speaker -> portrait id (the shipped game's manifest: portrait.kaya, .ruon, .jin ...). The narrator has none, and neither does anyone
+// not listed (no portrait is invented). The party sits on the left of the box, everyone else on the right.
+const PORTRAIT_OF = { 'Kaya': ['kaya', 'left'], 'Captain Ruon': ['ruon', 'right'], 'Jin': ['jin', 'right'] };
+function setPortrait(speaker) {
+  const d = $('dlg'), im = d.querySelector('img'), po = PORTRAIT_OF[speaker];
+  if (po && typeof PORTRAITS !== 'undefined' && PORTRAITS[po[0]]) { im.src = PORTRAITS[po[0]]; im.alt = speaker; d.className = 'hasp ' + po[1]; }
+  else { im.removeAttribute('src'); d.className = ''; }
+}
 async function say(speaker, lines) {
+  setPortrait(speaker); $('dlg').querySelector('span').textContent = '';
   $('dlg').style.display = 'block'; catcher.style.display = 'block'; $('dlg').querySelector('b').textContent = speaker;
   for (const s of lines) {
     typing = { s, n: 0 };

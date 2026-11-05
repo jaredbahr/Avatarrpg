@@ -13,6 +13,13 @@
   #title { position: fixed; left: 0; right: 0; top: 40%; transform: translateY(-50%); text-align: center; color: var(--gold); font: bold 2.2rem/1.1 monospace; letter-spacing: 0.18em; text-shadow: 0 0.2rem 0 var(--ink), 0 0 0.8rem var(--ink); opacity: 0; pointer-events: none; padding: 0 1rem; }
   #title small { display: block; margin-top: 0.7rem; font-size: 0.95rem; letter-spacing: 0.08em; color: var(--sand); }
   #dlg { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(1rem, env(safe-area-inset-bottom)); width: min(44rem, calc(100% - 2rem)); box-sizing: border-box; background: color-mix(in srgb, var(--panel) 94%, transparent); border: 0.1875rem solid var(--ink); box-shadow: 0 0 0 0.125rem color-mix(in srgb, var(--sand) 55%, transparent); border-radius: 0.35rem; color: var(--cream); padding: 0.75rem 1rem 1rem; display: none; min-height: var(--tap); }
+  #dlg.hasp { min-height: 7.25rem; }
+  #dlg.hasp.left { padding-left: 7.1rem; }
+  #dlg.hasp.right { padding-right: 7.1rem; }
+  #dlg img { display: none; position: absolute; top: 0.75rem; width: 5.25rem; height: 5.25rem; box-sizing: border-box; object-fit: cover; background: var(--sand); border: 0.1875rem solid var(--sand); outline: 0.125rem solid var(--ink); border-radius: 0.2rem; image-rendering: auto; }
+  #dlg.hasp img { display: block; }
+  #dlg.left img { left: 0.75rem; }
+  #dlg.right img { right: 0.75rem; }
   #dlg b { display: block; color: var(--gold); font-size: 0.85rem; letter-spacing: 0.08em; margin-bottom: 0.35rem; }
   #dlg span { font-size: 0.98rem; line-height: 1.45; }
   #dlg i { position: absolute; right: 0.8rem; bottom: 0.35rem; color: var(--sand); font-style: normal; font-size: 0.8rem; }
@@ -36,7 +43,7 @@
 <div id="fade"></div>
 <div id="title"></div>
 <div id="card"></div>
-<div id="dlg"><b></b><span></span><i>▼</i></div>
+<div id="dlg"><img alt=""><b></b><span></span><i>▼</i></div>
 <div id="choice"></div>
 <script>
 /*DOCS*/

@@ -153,7 +153,7 @@ the Driller's object animations 15, characters 10. Totals: 1,870 before this pas
 - **Oil** on the floor and gate still reads a little blocky (2×2 and 2×6 authored cells), and its sheen is a texture, not a gloss.
 - **Shadow contrast on dark moss** (the switchbacks' margin forest) is under 25% for 32 objects (pines and props); the bar is out of reach there.
 - **Fights are long-ish** at real HP (the Driller has 130); the video steps them at 3.5×. The party's levels are a stand-in.
-- **Dialogue** has no portraits; the shell draws a plain box. Ba Dan's dusk is a tint over the day village and barely reads on video.
+- **Dialogue** shows the shipped game's painted busts (tools/portraits.py, assets/portraits/; Kaya left, others right; narrators, Hanru: none); Ruon's bust does not match his sprite. Ba Dan's dusk is a tint over the day village and barely reads on video.
 - The switchbacks board is the demo's own (the content walks it in free-roam).
 
 ### Lessons (this pass)
