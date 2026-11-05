@@ -17,52 +17,52 @@
  "anims": {
   "breathing-idle@98f2f4": {
    "west": [
-    "breathing-idle@98f2f4_west_0.png",
-    "breathing-idle@98f2f4_west_1.png",
-    "breathing-idle@98f2f4_west_2.png",
-    "breathing-idle@98f2f4_west_3.png"
+    "breathing-idle_98f2f4_west_0.png",
+    "breathing-idle_98f2f4_west_1.png",
+    "breathing-idle_98f2f4_west_2.png",
+    "breathing-idle_98f2f4_west_3.png"
    ],
    "south": [
-    "breathing-idle@98f2f4_south_0.png",
-    "breathing-idle@98f2f4_south_1.png",
-    "breathing-idle@98f2f4_south_2.png",
-    "breathing-idle@98f2f4_south_3.png"
+    "breathing-idle_98f2f4_south_0.png",
+    "breathing-idle_98f2f4_south_1.png",
+    "breathing-idle_98f2f4_south_2.png",
+    "breathing-idle_98f2f4_south_3.png"
    ],
    "east": [
-    "breathing-idle@98f2f4_east_0.png",
-    "breathing-idle@98f2f4_east_1.png",
-    "breathing-idle@98f2f4_east_2.png",
-    "breathing-idle@98f2f4_east_3.png"
+    "breathing-idle_98f2f4_east_0.png",
+    "breathing-idle_98f2f4_east_1.png",
+    "breathing-idle_98f2f4_east_2.png",
+    "breathing-idle_98f2f4_east_3.png"
    ],
    "south-west": [
-    "breathing-idle@98f2f4_south-west_0.png",
-    "breathing-idle@98f2f4_south-west_1.png",
-    "breathing-idle@98f2f4_south-west_2.png",
-    "breathing-idle@98f2f4_south-west_3.png"
+    "breathing-idle_98f2f4_south-west_0.png",
+    "breathing-idle_98f2f4_south-west_1.png",
+    "breathing-idle_98f2f4_south-west_2.png",
+    "breathing-idle_98f2f4_south-west_3.png"
    ],
    "north-east": [
-    "breathing-idle@98f2f4_north-east_0.png",
-    "breathing-idle@98f2f4_north-east_1.png",
-    "breathing-idle@98f2f4_north-east_2.png",
-    "breathing-idle@98f2f4_north-east_3.png"
+    "breathing-idle_98f2f4_north-east_0.png",
+    "breathing-idle_98f2f4_north-east_1.png",
+    "breathing-idle_98f2f4_north-east_2.png",
+    "breathing-idle_98f2f4_north-east_3.png"
    ],
    "south-east": [
-    "breathing-idle@98f2f4_south-east_0.png",
-    "breathing-idle@98f2f4_south-east_1.png",
-    "breathing-idle@98f2f4_south-east_2.png",
-    "breathing-idle@98f2f4_south-east_3.png"
+    "breathing-idle_98f2f4_south-east_0.png",
+    "breathing-idle_98f2f4_south-east_1.png",
+    "breathing-idle_98f2f4_south-east_2.png",
+    "breathing-idle_98f2f4_south-east_3.png"
    ],
    "north": [
-    "breathing-idle@98f2f4_north_0.png",
-    "breathing-idle@98f2f4_north_1.png",
-    "breathing-idle@98f2f4_north_2.png",
-    "breathing-idle@98f2f4_north_3.png"
+    "breathing-idle_98f2f4_north_0.png",
+    "breathing-idle_98f2f4_north_1.png",
+    "breathing-idle_98f2f4_north_2.png",
+    "breathing-idle_98f2f4_north_3.png"
    ],
    "north-west": [
-    "breathing-idle@98f2f4_north-west_0.png",
-    "breathing-idle@98f2f4_north-west_1.png",
-    "breathing-idle@98f2f4_north-west_2.png",
-    "breathing-idle@98f2f4_north-west_3.png"
+    "breathing-idle_98f2f4_north-west_0.png",
+    "breathing-idle_98f2f4_north-west_1.png",
+    "breathing-idle_98f2f4_north-west_2.png",
+    "breathing-idle_98f2f4_north-west_3.png"
    ]
   }
  }

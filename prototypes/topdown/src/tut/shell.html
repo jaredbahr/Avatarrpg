@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Ba Dan to the Driller</title>
+<style>
+  :root { --ink: #1c1719; --panel: #2a2124; --cream: #f6eed6; --sand: #e8d8b0; --ember: #c9473a; --gold: #d9a441; --sky: #4a8f98; --moss: #4f7d4a; --tap: 3rem; --dur-fade: 0.7s; }
+  html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; font-family: monospace; }
+  #area { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: var(--ink); }
+  #tint { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: linear-gradient(180deg, color-mix(in srgb, #c4643f 38%, transparent), color-mix(in srgb, #5e1a20 30%, transparent)); mix-blend-mode: multiply; }
+  #fade { position: fixed; inset: 0; background: var(--ink); opacity: 1; pointer-events: none; }
+  #title { position: fixed; left: 0; right: 0; top: 40%; transform: translateY(-50%); text-align: center; color: var(--gold); font: bold 2.2rem/1.1 monospace; letter-spacing: 0.18em; text-shadow: 0 0.2rem 0 var(--ink), 0 0 0.8rem var(--ink); opacity: 0; pointer-events: none; padding: 0 1rem; }
+  #title small { display: block; margin-top: 0.7rem; font-size: 0.95rem; letter-spacing: 0.08em; color: var(--sand); }
+  #dlg { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(1rem, env(safe-area-inset-bottom)); width: min(44rem, calc(100% - 2rem)); box-sizing: border-box; background: color-mix(in srgb, var(--panel) 94%, transparent); border: 0.1875rem solid var(--ink); box-shadow: 0 0 0 0.125rem color-mix(in srgb, var(--sand) 55%, transparent); border-radius: 0.35rem; color: var(--cream); padding: 0.75rem 1rem 1rem; display: none; min-height: var(--tap); }
+  #dlg b { display: block; color: var(--gold); font-size: 0.85rem; letter-spacing: 0.08em; margin-bottom: 0.35rem; }
+  #dlg span { font-size: 0.98rem; line-height: 1.45; }
+  #dlg i { position: absolute; right: 0.8rem; bottom: 0.35rem; color: var(--sand); font-style: normal; font-size: 0.8rem; }
+  #choice { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(1rem, env(safe-area-inset-bottom)); width: min(44rem, calc(100% - 2rem)); box-sizing: border-box; display: none; background: color-mix(in srgb, var(--panel) 95%, transparent); border: 0.1875rem solid var(--ink); box-shadow: 0 0 0 0.125rem color-mix(in srgb, var(--sand) 55%, transparent); border-radius: 0.35rem; padding: 0.75rem; color: var(--cream); }
+  #choice p { margin: 0 0 0.6rem; font-size: 0.95rem; line-height: 1.4; }
+  #choice button { display: block; width: 100%; min-height: var(--tap); text-align: left; margin: 0.35rem 0 0; padding: 0.45rem 0.7rem; border: 0.125rem solid var(--ink); border-radius: 0.3rem; background: color-mix(in srgb, var(--ink) 70%, transparent); color: var(--cream); font: bold 0.9rem/1.3 monospace; }
+  #choice button small { display: block; font-weight: normal; color: var(--sand); font-size: 0.78rem; margin-top: 0.15rem; }
+  #choice button.pick { background: color-mix(in srgb, var(--ember) 70%, transparent); }
+  #choice button[disabled] { opacity: 0.45; }
+  #choice .foot { margin-top: 0.5rem; font-size: 0.75rem; color: var(--sand); }
+  #card { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; color: var(--cream); padding: 1.5rem; box-sizing: border-box; pointer-events: none; }
+  #card h1 { color: var(--gold); font-size: 2rem; letter-spacing: 0.14em; margin: 0 0 1rem; text-shadow: 0 0.2rem 0 var(--ink); }
+  #card p { max-width: 40rem; margin: 0.25rem 0; font-size: 0.98rem; line-height: 1.5; text-shadow: 0 0.1rem 0 var(--ink); }
+  #card p.teaser { margin-top: 1rem; color: var(--sand); font-style: italic; }
+  #card p.small { margin-top: 1.4rem; font-size: 0.75rem; color: var(--sand); }
+</style>
+</head>
+<body>
+<iframe id="area" title="The current area"></iframe>
+<div id="tint"></div>
+<div id="fade"></div>
+<div id="title"></div>
+<div id="card"></div>
+<div id="dlg"><b></b><span></span><i>▼</i></div>
+<div id="choice"></div>
+<script>
+/*DOCS*/
+/*SHELL*/
+</script>
+</body>
+</html>

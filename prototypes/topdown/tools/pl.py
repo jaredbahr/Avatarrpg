@@ -7,7 +7,7 @@ API = 'https://api.pixellab.ai/v2'
 HERE = Path(__file__).resolve().parent.parent
 LEDGER = HERE / 'ledger.json'
 RAW = HERE / 'raw'
-BUDGET = 2850.0   # v11 + forest combat add ~1000 (coordinator, 2026-11-05)
+BUDGET = 4370.0   # v13 + the tutorial pass: 1,870 spent before it, plus a 2,500 cap for this pass (orchestrator, 2026-11-05)
 
 
 def req(method, path, body=None):

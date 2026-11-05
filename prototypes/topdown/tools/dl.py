@@ -1,5 +1,5 @@
 """Download a character's rotations and every animation's frames into assets/chars/<label>/."""
-import json, sys
+import json, re, sys
 from pathlib import Path
 sys.path.insert(0, 'tools'); import pl
 from sheet import sheet
@@ -14,7 +14,7 @@ def download(label, cid):
         for dd in a['directions']:
             fs = []
             for i, u in enumerate(dd['frames']):
-                f = f'{t}_{dd["direction"]}_{i}.png'; pl.fetch(u).save(out / f); fs.append(f)
+                f = re.sub(r'[^A-Za-z0-9._-]+', '_', f'{t}_{dd["direction"]}_{i}.png')   # filename-safe (safenames.py); pl.fetch(u).save(out / f); fs.append(f)
             meta['anims'].setdefault(t, {})[dd['direction']] = fs
     json.dump(meta, open(out / 'meta.json', 'w'), indent=1)
     return out, meta

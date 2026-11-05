@@ -1,0 +1,1159 @@
+{
+ "usage": null,
+ "tileset": {
+  "total_tiles": 25,
+  "tile_size": {
+   "width": 32,
+   "height": 32
+  },
+  "terrain_types": [
+   "lower",
+   "upper"
+  ],
+  "tiles": [
+   {
+    "id": "d548c27d-0c02-43b6-b3c2-281be3bb1905",
+    "name": "t1_0_r1_c0",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "lower",
+     "SW": "lower",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 1,
+     "col": 0
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "1",
+    "name": "t1_1_r2_c1",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "lower",
+     "SW": "lower",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 2,
+     "col": 1
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "2",
+    "name": "t1_2_r2_c2",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "lower",
+     "SW": "upper",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 2,
+     "col": 2
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "3",
+    "name": "t1_3_r2_c3",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "lower",
+     "SW": "upper",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 2,
+     "col": 3
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "10",
+    "name": "t1_10_r3_c1",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "upper",
+     "SW": "lower",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 3,
+     "col": 1
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "4",
+    "name": "t1_4_r4_c1",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "upper",
+     "SW": "lower",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 4,
+     "col": 1
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "bf96b9e5-fa74-476f-8c53-443b4416ef4c",
+    "name": "t1_5_r5_c2",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "upper",
+     "SW": "upper",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 5,
+     "col": 2
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "6",
+    "name": "t1_6_r3_c6",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "lower",
+     "SW": "upper",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 3,
+     "col": 6
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "14",
+    "name": "t1_14_r4_c6",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "lower",
+     "SW": "upper",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 4,
+     "col": 6
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "8",
+    "name": "t1_8_r4_c3",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "lower",
+     "SW": "upper",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 4,
+     "col": 3
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "9",
+    "name": "t1_9_r4_c4",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "upper",
+     "SW": "upper",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 4,
+     "col": 4
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "16",
+    "name": "t1_16_r6_c4",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "upper",
+     "SW": "upper",
+     "SE": "transition"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      2,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      0,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 6,
+     "col": 4
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "17",
+    "name": "t1_17_r6_c5",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "upper",
+     "SW": "transition",
+     "SE": "transition"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      2,
+      2,
+      255
+     ],
+     "row_3": [
+      255,
+      0,
+      0,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 6,
+     "col": 5
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "18",
+    "name": "t1_18_r6_c6",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "lower",
+     "SW": "transition",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      2,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      0,
+      0,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 6,
+     "col": 6
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "19",
+    "name": "t1_19_r7_c4",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "transition",
+     "SW": "upper",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      1,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      2,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 7,
+     "col": 4
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "20",
+    "name": "t1_20_r7_c5",
+    "image": "<png>",
+    "corners": {
+     "NW": "transition",
+     "NE": "transition",
+     "SW": "lower",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_1": [
+      255,
+      2,
+      2,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 7,
+     "col": 5
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "21",
+    "name": "t1_21_r7_c6",
+    "image": "<png>",
+    "corners": {
+     "NW": "transition",
+     "NE": "lower",
+     "SW": "lower",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      2,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 7,
+     "col": 6
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "22",
+    "name": "t1_22_r8_c1",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "upper",
+     "SW": "lower",
+     "SE": "transition"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      2,
+      255
+     ],
+     "row_3": [
+      255,
+      0,
+      0,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 8,
+     "col": 1
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "23",
+    "name": "t1_23_r8_c2",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "upper",
+     "SW": "transition",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      2,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      0,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 8,
+     "col": 2
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "24",
+    "name": "t1_24_r8_c4",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "lower",
+     "SW": "transition",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_2": [
+      255,
+      2,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      0,
+      1,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 8,
+     "col": 4
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "25",
+    "name": "t1_25_r9_c1",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "transition",
+     "SW": "lower",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      2,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 9,
+     "col": 1
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "26",
+    "name": "t1_26_r9_c2",
+    "image": "<png>",
+    "corners": {
+     "NW": "transition",
+     "NE": "upper",
+     "SW": "lower",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      1,
+      255
+     ],
+     "row_1": [
+      255,
+      2,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 9,
+     "col": 2
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "27",
+    "name": "t1_27_r9_c4",
+    "image": "<png>",
+    "corners": {
+     "NW": "transition",
+     "NE": "upper",
+     "SW": "lower",
+     "SE": "upper"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_1": [
+      255,
+      2,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 9,
+     "col": 4
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "28",
+    "name": "t1_28_r10_c2",
+    "image": "<png>",
+    "corners": {
+     "NW": "lower",
+     "NE": "upper",
+     "SW": "upper",
+     "SE": "transition"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      255,
+      255,
+      255
+     ],
+     "row_1": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      2,
+      255
+     ],
+     "row_3": [
+      255,
+      1,
+      0,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 10,
+     "col": 2
+    },
+    "description": null,
+    "connections": null
+   },
+   {
+    "id": "30",
+    "name": "t1_30_r11_c2",
+    "image": "<png>",
+    "corners": {
+     "NW": "upper",
+     "NE": "transition",
+     "SW": "upper",
+     "SE": "lower"
+    },
+    "pattern_4x4": {
+     "row_0": [
+      255,
+      0,
+      1,
+      255
+     ],
+     "row_1": [
+      255,
+      1,
+      2,
+      255
+     ],
+     "row_2": [
+      255,
+      1,
+      0,
+      255
+     ],
+     "row_3": [
+      255,
+      255,
+      255,
+      255
+     ]
+    },
+    "original_position": {
+     "row": 11,
+     "col": 2
+    },
+    "description": null,
+    "connections": null
+   }
+  ]
+ },
+ "metadata": {
+  "edge_types": [
+   "lower",
+   "upper"
+  ],
+  "terrain_prompts": {
+   "lower": "pale cream-grey limestone quarry floor: packed grit and fine gravel with scattered small white stone chips and pale dust, a few thin dark cracks",
+   "upper": "the flat top of a raised rough limestone shelf: weathered pale grey rock with cracks, grit and a few dry grass tufts",
+   "transition": "a sheer cut limestone quarry face: pale cream rock in stepped blocks with vertical drill marks and dark cracks"
+  },
+  "terrain_ids": {
+   "lower": "d548c27d-0c02-43b6-b3c2-281be3bb1905",
+   "upper": "bf96b9e5-fa74-476f-8c53-443b4416ef4c"
+  },
+  "transition_size": 1.0,
+  "view": "low top-down",
+  "generation_parameters": {
+   "mode": "pro",
+   "spread_x": 0.5,
+   "raggedness": 0.0,
+   "slope_size": 0.0,
+   "tile_strength": 1.0,
+   "target_palette": {
+    "name": "village",
+    "colors": [
+     "#1c1719",
+     "#3a2e2c",
+     "#5a3d2b",
+     "#7d5434",
+     "#a6713f",
+     "#c99a5b",
+     "#e8d8b0",
+     "#f6eed6",
+     "#6b2a1f",
+     "#9a4129",
+     "#c4643f",
+     "#e09a6a",
+     "#243d33",
+     "#35593f",
+     "#4f7d4a",
+     "#7aa05a",
+     "#a9c46f",
+     "#3e3d47",
+     "#5d5b63",
+     "#85807f",
+     "#aea89c",
+     "#1f3a4f",
+     "#2c6070",
+     "#4a8f98",
+     "#86c2bd",
+     "#5e1a20",
+     "#962b2b",
+     "#c9473a",
+     "#f0c39c",
+     "#c98b66",
+     "#8c5a45",
+     "#d9a441",
+     "#f2d47a",
+     "#3b2f45"
+    ]
+   },
+   "tileset_adherence": 100.0,
+   "text_guidance_scale": 8.0,
+   "requested_transition_size": 1.0,
+   "tileset_adherence_freedom": 500
+  },
+  "created_at": "2026-11-05T05:34:18.239605+00:00"
+ }
+}

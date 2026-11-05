@@ -1,5 +1,200 @@
 # Ba Dan Lane — top-down PixelLab test
 
+## v13 / tutorial pass: both areas polished, and the whole tutorial from Ba Dan to the Driller (2026-11-05)
+
+Jared: "This is great. Write all this work to GitHub. Let's polish both these areas. Then run the demo from Ba Dan to the
+Driller. Do this tutorial area and see how good we can make it. Remember to write failures in the project so we learn from
+them. It's important we maintain consistency."
+
+**Files (this folder)**
+- `tutorial-demo.html` (6.3 MiB, self-contained): the whole tutorial, playable on a phone and on desktop. `?auto=1` plays itself;
+  `?gate=bluff|kin` and `?ruon=trade` pick the other branches for the self-playing run.
+- `tutorial-run.mp4`: the self-playing run, about 4:00 at 1280×720, Ba Dan to the Driller's defeat and the walk home (fights
+  are stepped at 3.5× game time and walks at 2.5×, then the whole video re-timed 1.16×; Ba Dan, the forest fire and the Driller
+  floor at 3× zoom, the other boards at 2×). Route: knock at the gate, escort Ruon.
+- `badan-topdown.html` (v13), `badan-tour.mp4` (v13, the v12 route; v12's kept as `badan-tour-v12.mp4`).
+- `forest-combat.html` (v3), `forest-combat.mp4` (v3).
+- `polish-before-after.png`: the bridge (4×), the houses (2×) and the burning ground (3×, game zoom), before and after.
+- `quarry-overview.png` (the switchbacks, the gate, the cutting and the floor at 1×), `driller-floor-overview.png`.
+- `cast-sheet.png`: the new cast and the old cast's new headings and poses, every heading as a row, and the Driller's eight views.
+- Sources: `src/b3/` (the board engine v3: `levels.js` the boards from the content, `world_forest.js` v2's forest verbatim,
+  `world_quarry.js` the quarry terrain and checks, `units.js`, `rules.js`, `surfvis.js`, `fx.js`, `combat.js`, `auto.js`,
+  `draw.js`), `src/v13/` (Ba Dan; `tutorial.js` is the tutorial's hooks), `src/tut/` (the tutorial shell).
+- Build: `sh tools/v13build.sh` (Ba Dan), `python3 tools/build_b3.py forest` (forest-combat.html),
+  `python3 tools/build_b3.py tutorial` (t13/board.html), `python3 tools/build_tut.py` (tutorial-demo.html).
+- Generators (all log to `ledger.json`): `tools/t13chars.py` (characters, clips, merge-download), `tools/t13obj.py` and
+  `tools/t13objproc.py` (objects, cleanup), `tools/t13driller.py` (the Driller's views and animations), `tools/t13tiles.py`
+  (quarry terrain), `tools/t13vfx.py` (effects), `tools/t13fixcredits.py` (books object-animation jobs).
+- Checks: `tools/t13checks.js` (shadow contrast and straight edges per board, writes `t13/checks.json`), `tools/t13halo.py`,
+  `tools/tutrec.js` (drives the whole run; `dry` checks it end to end without frames), `tools/t13smoke.js`, `tools/t13shots.js`,
+  `tools/t13ov.js`, `tools/t13castsheet.py`.
+
+### Filename hygiene
+3,794 files (not only the 1,536 with `:`) had characters outside `[A-Za-z0-9._-]` (spaces, `:`, `,`, `@`), all frames under
+`assets/chars/`. `tools/safenames.py` renames every one (runs of bad characters become `_`), rewrites every `meta.json` to the new
+names and keeps the animation keys (the builds look clips up by key prefix), and writes `hyg/rename-map.json`. `tools/dl.py`
+and `tools/t13chars.py` now write safe names. **Proof:** `badan-topdown.html` (v12) and `forest-combat.html` (v2) were rebuilt
+before and after the rename and are byte-identical (md5 `6a2766ca…` and `32b92919…`, copies in `hyg/`). No file in the folder
+has an unsafe name now.
+
+### Part A: Ba Dan v13
+- **The bridge's shadow** (`bridgeShadow` in `src/v13/ground.js`): the flat grey rectangles are gone. The bridge sprite's own
+  silhouette, row by row inside the canal, is cast 8 px right and 4 px down (light from the upper left), each row nudged a pixel
+  by the ripples, laid only on water pixels, deeper next to the deck and dithered at its far edge. The rails and posts cast too.
+- **Houses** (`tools/v13houses.py`, objects in `assets/objects_bd13/`, v12's untouched): the eave shadow is 6 px deep, the facade
+  darkens toward its shaded right and toward the ground, a 7 px strip of the right side wall recedes up the picture under the
+  roof's overhang (in the wall's own plaster and plinth colours, outlined in their dark tone), the dark openings get a left
+  jamb shadow (v12 had the lintel), the plinth's top edge catches the light. On the ground (`houseSideShadow`), the shaded side
+  throws a hard band back along the house, never past one tile. **Partly:** better at 2×, still quiet at 1×; the houses are
+  front-on art and the strongest cue would be a redraw.
+- `badan-tour.mp4` re-recorded on v13 (the old one showed the code-composed bridge).
+
+### Part A: the forest fight v3
+- **Fire** (`src/b3/surfvis.js`): no carpet. The burning ground is charred earth with glowing embers; on it stand PixelLab's
+  looping ground flames (`/vfx`: three sizes, the tallest a roaring tongue 48 px canvas) on a loose jittered lattice, thinned
+  by a slow noise so they burn in clumps, tall ones in the core, small licks at the rim. A cell that has just caught shows only
+  small licks for half a second, so the fire visibly creeps cell to cell. Flames are y-sorted with the figures. The square
+  additive "flash" boxes are now stepped pixel ellipses; the surfaces use a slower, wider noise so a 3×3 pool never reads square.
+- **Poses:** Kaya's Fire Blast has its own skeleton-v3 clip (both palms driven forward). Sura: Water Whip (her strike), Ice Path
+  (a low sweep), Healing Stream (palms rising). Bo: Rock Throw (stamp and punch), Earth Wall (horse stance, forearms up), Stone
+  Stance (forearms crossed, braced). All eight headings.
+- **Eight headings** for the bandits, Sura and Bo: PixelLab's own four diagonals added to the same animation groups; v2's
+  mirrored west rows are dropped, so no club, sling or braid swaps sides (the bruiser's west idle is PixelLab's and clean now).
+- **Painted effects** (`/vfx`, lite artist, 1 credit each): water lash and splash, ice burst, healing light, rock hit, dust ring,
+  club hit, sword slash, bolt hit, ground slam, oil splash, tumbling torch, debris, mud churn, fire punch. **Hit-stop:** 50–170 ms
+  on the heavy blows (club, blade, sabre, rock, the Driller's slam and debris).
+- **Reach tint:** a slower, wider noise on its edge, so the reachable area no longer runs straight along cell rows.
+- **The auto-player's odd picks:** an Earth Wall only goes up between a party member and a foe 1–2 tiles off; Ice Path only
+  under a foe or onto water; nobody chooses to stand on ice, oil or mud; Healing Stream only when someone is below 75%; Stone
+  Stance only when hurt and threatened; the party keeps more than two tiles from the Driller (the encounter's own tip).
+- The board is the content's `enc_forest_road` **'thugs' variant** now (two thugs and a slinger), not v2's one-of-each.
+
+### Part B: the tutorial, Ba Dan → the Driller (`tutorial-demo.html`)
+Faithful to `story/act1.ts`, `encounters.ts`, `enemies.ts`, `abilities/enemy.ts`, `props.ts` and `maps/combat.ts` (read-only):
+1. **Ba Dan** (v13 in tutorial mode): `act1_open` narration; the objective ("Talk to Elder Mira, then take the east road" and its
+   variant after Mira); Mira's, Gao's, Pella's and Dorin's talk nodes, short; Pella sets `pella_asked`. Sura and Bo walk Kaya's
+   trail. The east road leaves over the rim; before Mira, Kaya is turned back with a nudge, not a wall.
+2. **The Forest Road**: `road_depart`, the ambush on `FOREST_GROUND_ROWS`, `after_forest` in Kaya's voice (or the defeat lines).
+3. **The Switchbacks**: a short explore beat on a board drawn for the demo (the content walks this in free-roam): three legs
+   climbing out of the pines onto pale rock; tap to walk, the party follows.
+4. **The Quarry Gate** (`QUARRY_GATE` rows, props and `enc_quarry_gate`): the speaker choice `gate_parley`, all three options:
+   knock (deserter, thug, bruiser), the firebender's bluff (the `bluffed` variant: bruiser, quarry bender, bruiser), or the
+   earthbender's kinship (no fight, Ruon's lines). Then `ruon_surrender` and `ruon_choice`.
+5. **Escort**: `escort_chosen`, **The Cutting** (`AMBUSH_ROAD`, `enc_ambush`: two mercenaries and a crossbow, with Ruon fighting
+   beside you), `after_ambush`. **Trade**: `trade_chosen` (Jin's lines; no fight), and the floor's `jins_people` variant.
+6. **The Quarry Floor** (`QUARRY_FLOOR`, `enc_grumbler`): `quarry_descent`, then Grumbler in the Driller (2×2, 130 HP) with the
+   quarry bender (or Jin's crossbow). Bo-shan's **cabbage cart is parked at (9,6) only if Pella was asked**.
+7. **Victory**: the `act1_epilogue` card, **the walk home** (Ba Dan at dusk, the party in along the east road to Mira's
+   `mira_epilogue`), and the end card with the teaser. Defeats follow the content's defeat nodes and carry on.
+Moving between areas: a fade and the area's name. A dialogue box (tap to advance) and a choice panel that shows every option.
+
+**New quarry terrain (one family):** three 32 px Wang sets in pro mode on the village palette: the quarry floor (fine pale
+crushed limestone; the first take was cracked paving and tiled into a grid, see lessons), with Ba Dan's dirt as its haul road's
+reference; the terrace (rock shelf top, a cut limestone face, its foot); the rim (the cut face over the void). Everything is
+classed per pixel from the authored rows with cell values blended between centres and two to three octaves of noise, so no
+edge follows the grid. Raised rock (the legend's elevation 1 and 2) shows its top, its cut face hanging 13 px a tier below the
+shelf edge (sampled from the set's own face strip, ending on its own foot line), a lit lip, a dark foot, a short cast to the
+lower right, a shaded right side and a lit left side. The road mouths run off the rim.
+
+**New objects** (`create-object-pro-flash`, low top-down, the oven as the one angle reference, size in px against Kaya):
+gatehouse, two curtain-wall sections, brazier, oil barrels, cabbage cart, scaffold, rails, mine cart, cut stone blocks, drill
+junk, headframe, barred gallery door, tool rack, limestone rubble and boulder, lean-to. Cleaned by `t13objproc.py` (1-bit alpha,
+plate peel, specks). All front-on with a shallow top (the angle table below).
+
+**The cast:** five new characters with Kaya's settings (create-character-v3, 48 px, 8 rotations, mannequin, seed 11): the Fire
+Nation deserter, the quarry bender, the mercenary, the crossbow, Captain Ruon; each an idle, a walk (`walking-8-frames`) and a
+strike in skeleton-v3, eight headings (the deserter also a throw). **The Driller:** a 128 px pro-flash object (Grumbler in the
+cabin), turned to eight views from that image (only the rotations charged), with a v3 object idle (shudder, smoke) and slam in
+the three west headings; its slam's frame 4 has a white smear and is dropped. It sits on its 2×2 cells, jams instead of fading.
+
+**The rules, ported (on top of v2's port):** `enc_*` rosters and variants; the enemies' real stats and kits: Rush (dash), Oil
+Flask, Torch Toss, Fire Blast, Raise Rubble, Mercenary Blade (Slowed 30%), Crossbow (range 8), Ruon's Sabre and Bark an Order
+(Inspired), the Driller's Slam (cone 2, knock-back), Debris Throw (3×3, rubble at the centre), Oil Spray (line 4), Churn the
+Ground (5×5 mud, Rooted 50%), Raise Rubble. Props from `props.ts`: brazier (fire and coals), loose rubble (collapses), cabbage
+cart ("MY CABBAGES!": Blinded 90% and a push), with vulnerable (×2) and immune types. Elevation: a step of one tier costs one
+more Move, two tiers is a wall, and high ground is +10 to hit (−10 shooting up). Size-2 units occupy and are hit on all four
+cells (a blast over two of them hits once). AI: one planner for every foe and Ruon, forecasting each stand × ability × target on
+a copy with the real `resolve()` and scoring by role (aggressive, cautious, boss).
+**Simplified (honest):** the party's growth is a stand-in (+5 HP, +1 Power a level above 1), no XP; no shove for the party;
+push stops at an obstacle (no collision damage); Ruon's order is not limited to heroes; reinforcements (above three players)
+are not spawned; the Driller's turn uses the same planner rather than `ai.ts`'s boss script; hit chance has the elevation term
+but no plunging cover.
+
+### The measurable checks
+- **Shadow contrast** (`t13/checks.json`, every object with at least 20 visible shadow px): gate 35 objects, all ≥ 25% darker
+  (min 44%, mean 63%); floor 20, all pass (min 29%, mean 56%); cutting 9, one fails (a rubble heap on a shelf lip, 7%); the
+  switchbacks 99, 67 pass, 32 fail: every failure is a pine in the dense margin forest or a prop on the dark moss, where the
+  ground is already about lum 48 and the one shadow colour `#322125` is lum 37 (the 25% bar is not reachable on that ground with
+  the house shadow colour; the moss takes the mask ×1.45 already). Mean 37%.
+- **Halo** (`tools/t13halo.py` over `assets/objects13`): zero soft-alpha pixels; zero light edge pixels in the plate zone (the
+  bottom 35%) on every object except the headframe (1 px, a lit chain link). The Driller's light edge pixels are its exhaust smoke.
+- **Straight terrain edges** (`edgeRunsQ`): the longest boundary run that stays on one pixel row or column is 17–23 px
+  (0.5–0.7 of a tile) on every quarry board.
+- **Angle table (new assets):** every object came back front-on low top-down with a shallow top: gatehouse, walls, brazier,
+  barrels, cart, scaffold, mine cart, blocks, junk, headframe, gallery door, rack, rubble, boulder, lean-to. The rails lie flat
+  as ground. The Driller's south view is front-on; its other seven views are PixelLab's rotations of it at the same camera.
+  The characters are v3 rotations at Kaya's camera.
+- **Playwright** (preinstalled Chromium): `node tools/tutrec.js file://…/tutorial-demo.html dry` plays the whole run end to end
+  with no page errors and no errors inside the areas; `t13smoke.js` on forest-combat.html: victory in 3 rounds, no errors.
+
+### Credits (this pass, by each job's own usage in `ledger.json`, entries after index 283)
+**902** over 90 jobs, against the 2,500 cap: character clips 684 (37 skeleton-v3 jobs: the five new characters' idle, walk and
+strike in 8 headings, the deserter's throw, the old cast's 4 missing headings ×3 clips ×5, and the five per-ability poses),
+objects 102 (21 pro-flash, including the Driller twice), terrain 70 (four Wang sets, one tiles-pro), effects 21 (20 `/vfx`),
+the Driller's object animations 15, characters 10. Totals: 1,870 before this pass, 2,772 after.
+
+### Still off (honest)
+- **Houses:** deeper than v12 at 2×, still quiet at 1×. A front-on redraw with a visible side would do more than code cues.
+- **The Driller's slam** is PixelLab's object animation: the machine lurches and dust flies, but the drill arm barely rears.
+- **Effects inside poses:** "no effects" did not hold for every clip: Kaya's Fire Blast and the deserter's punch have fire
+  painted in their hands, Bo's Earth Wall shows a small earth pillar in two headings, the crossbow a blue flash in one; the
+  painted `/vfx` then doubles them a little.
+- **The quarry bender's strike** loses her headcloth for its middle frames (identity drift in that one clip).
+- **Oil** on the floor and gate still reads a little blocky (2×2 and 2×6 authored cells), and its sheen is a texture, not a gloss.
+- **Shadow contrast on dark moss** (the switchbacks' margin forest) is under 25% for 32 objects (pines and props); the bar is out of reach there.
+- **Fights are long-ish** at real HP (the Driller has 130); the video steps them at 3.5×. The party's levels are a stand-in.
+- **Dialogue** has no portraits; the shell draws a plain box. Ba Dan's dusk is a tint over the day village and barely reads on video.
+- The switchbacks board is the demo's own (the content walks it in free-roam).
+
+### Lessons (this pass)
+1. **Count every unsafe filename character, not one.** The brief said 1,536 files with `:`; 3,794 had spaces, commas or `@`.
+   Rename with a map, keep the lookup keys, and prove the build is byte-identical before and after.
+2. **A floor tileset can come back as paving.** The first quarry floor was cracked slabs and tiled into a visible grid; its
+   tiles-pro variants, swapped per tile, read as square patches. Ask for "fine gravel… no cracks, no slabs, no tiles, no
+   pattern", and never swap whole variant tiles on a flat floor (break it up with grit and a slow tone instead).
+3. **The angle reference also fixes the pixel size.** The first Driller came back 58 px wide although the prompt said 88: with
+   the oven as reference, size words lose. A boss needs a bigger canvas and a relative size ("more than twice as tall as a
+   person"); the 128 px take came back 80×91.
+4. **Low top-down with the oven gives the south view.** For a vehicle that must face the party, accept the south image and let
+   `create-object-pro-flash` turn it (first_frame, n_directions 8): only the rotations are charged (2 credits).
+5. **Object animations queue one job per direction and return at once**, so the ledger logged 0 credits. Poll each submission
+   and book its own usage (`tools/t13fixcredits.py`). Their v3 motion is small, and one slam frame had a white smear.
+6. **"No effects" in a skeleton-v3 prompt is a hint, not a rule.** Fire, an earth pillar and a muzzle flash were painted into
+   some strike frames. Check every strike heading before adding a painted effect on top.
+7. **A custom strike can drift identity** (the quarry bender's headcloth). Look at the middle frames, not only frame 0.
+8. **Flames are clumps, not wallpaper.** Evenly spaced small flames read as a patterned carpet; three sizes, clumped by a slow
+   noise, taller in the core, small licks at the rim, read as fire.
+9. **A box hides until the ground goes dark.** The additive "flash" rectangles were invisible on v2's orange carpet and obvious
+   on charred ground; the steam puffs were rectangles too. Draw stepped pixel ellipses.
+10. **Blocks of authored cells stay square** unless the edge noise is slow and wide (periods 17 and 7 px, not 9 and 2.5).
+11. **A fallback class makes a halo.** Classing road, then grass, else floor drew a cream band between road and grass; the
+    strongest field must win (argmax).
+12. **Noise alone opens specks.** Water and pits appeared as isolated pixels where the field was zero; require the field first.
+13. **Check the timestamps of your own stills.** The still tool took "before" and "after" at the same moment (absolute vs
+    relative time) and made the flames look unchanged.
+14. **The one shadow colour has a floor.** On moss of lum about 48, `#322125` (lum 37) cannot be 25% darker; say so rather
+    than inventing a second shadow colour.
+15. **Sample the material, not its outline.** The houses' side-wall strip first took the corner post's outline colour and read
+    as a thicker outline (the old thick-black-outline failure).
+16. **Mirroring swaps hands.** v2's west rows were mirrored east rows; a club or a braid changed sides. PixelLab's own headings,
+    added to the same animation group, keep identity and handedness.
+17. **An iframe from a blob URL is cross-origin under `file://`**; `srcdoc` inherits the page's origin, so the shell can drive
+    each area frame by frame.
+18. **Look at the end of the video too.** The epilogue card first faded the board back in behind its text, over the VICTORY
+    banner; a dry run reports no errors for that. Only frames show it.
+19. **Jobs in parallel inflate the balance difference.** With three queues running, only the per-job usage is a credit count.
+
+
 ## Forest combat v2: no grid, the real elemental rules (v1 kept as `forest-combat-v1.html`, `forest-combat-v1.mp4`)
 
 Jared: "It's not bad. I don't want the grid overview; I think it pulls from the visuals. I want the elemental play we
@@ -1362,7 +1557,6 @@ ffmpeg (command in this folder's history: `-framerate 30 -c:v libx264 -crf 14 -p
 
 ## Repository note (2026-11-05)
 
-Committed to the game repo as the approved art-direction prototype (ADR 0103). The raw PixelLab frames whose file
-names contain `:` (1,536 files under `assets/chars/`) are not committed yet. Windows cannot check them out. The built
-`badan-topdown.html` and `forest-combat.html` already embed every frame. The next prototype pass renames them with a
-filename-safe scheme and updates the build scripts to match. Videos and screenshots stay out of git (#348).
+Committed to the game repo as the approved art-direction prototype (ADR 0103). All asset filenames are filename-safe
+(`tools/safenames.py`; rebuilds before and after the rename are byte-identical). Not committed: frame dumps (`work/`,
+`fc/`, `v8/`, `v9/`), the built `t13/board.html`, and all videos and screenshots, which stay out of git (#348).

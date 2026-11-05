@@ -51,6 +51,37 @@ animation or presentation work. Add to it when something fails.
 
   Check the placement of every animated overlay and route.
 
+- **The tutorial pass (2026-11-05):**
+  - A flat floor tileset came back as cracked paving and tiled into a visible grid. Prompt "no cracks, no slabs, no
+    pattern", and never swap per-tile variants on a flat floor.
+  - Authored surface blocks (mud, rubble) stay square unless their edge noise is slow and wide. Draw ellipses, not
+    rectangles, for anything that can show once the ground goes dark.
+  - A fallback terrain class makes a halo; the strongest class must win. Noise alone opens specks.
+  - The single shadow colour has a floor: on dark moss `#322125` cannot be 25% darker than the ground.
+  - Evenly spaced small flames read as wallpaper; mixed-size clumps read as fire.
+  - A side-wall strip sampled from the outline read as a thick outline. Sample the material.
+
+- **The quarry polish (2026-11-05):**
+  - One Wang tile sampled by modulo is wallpaper; the quarry rock showed a tuft in a grid. Quilt plain tiles in warped
+    regions with flips, turns and offsets, and never leave one baked feature (a pebble) in a quilt source tile.
+  - A `create-tiles-pro` set of 16 tiles held only 2–4 distinct looks. Don't count tiles as variants.
+  - Cell-field blends leave straight edges. Union jittered round blobs and fade the noise inside so no holes open.
+  - Measure straightness as the eye sees it (chains within 3 px), not exact pixel runs; the run check passed edges
+    that looked ruler-straight.
+  - A cell of another kind under a road (oil, a pool) cut the road straight. Class the terrain by the ground beneath.
+  - A string replace on a repeated expression hit the wrong line and shrank a pool. Re-view every board after a
+    shared edit.
+  - The camera framed the midpoint of actor and target, so the boss was cut off. Big sprites need a fit-in-frame rule.
+
+### Characters and objects
+
+- **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;
+  check every strike heading. A custom strike clip can also drift identity in its middle frames.
+- **Mirrored rows swap hands.** Use PixelLab's own headings.
+- **The angle reference also fixes pixel size.** "88 px" came back 58 px wide. A boss needs a bigger canvas and a
+  relative size ("more than twice as tall as a person"). For a vehicle, accept the south view and let PixelLab
+  rotate it.
+
 ### Process
 
 - **Codex drafts piled up** (24 at once, none ready). Reviewers skipped drafts; duplicate PRs and issues followed.
@@ -62,6 +93,11 @@ animation or presentation work. Add to it when something fails.
 - **The PixelLab key is shared with other projects.** Account the credits from each job's own usage, not from the
   balance.
 - **Committing evidence:** videos and screenshots in git history are permanent. Attach them to PRs instead.
+- **Unsafe filenames:** the first scan looked for `:` only and found 1,536 files; spaces, commas and `@` made it
+  3,794. Scan for every unsafe character, and prove the rebuild is byte-identical after a rename.
+- **Object animation jobs return at once and log 0 credits.** Re-poll them to book the real usage.
+- **Stills can lie:** a "before" and an "after" were shot at the same moment. Check timestamps, and watch the end of
+  every video (an epilogue card once drew over the board).
 
 ## What worked
 
