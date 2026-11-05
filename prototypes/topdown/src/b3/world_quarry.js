@@ -6,7 +6,8 @@
 const Q_FACE = 13;
 const qcell = (x, y) => {   // the authored character, extended past the board: a walkable edge cell carries on (an exit), the rest is rock
   const cx = Math.max(0, Math.min(GW - 1, x)), cy = Math.max(0, Math.min(GH - 1, y)), c = ROWS[cy][cx];
-  if (x === cx && y === cy) return LEVEL_KEY === 'gate' && y === GH - 1 && (c === '#' || c === 'G') ? 'X' : c;
+  if (x === cx && y === cy) return LEVEL_KEY === 'gate' && y === GH - 1 && (c === '#' || c === 'G') ? 'X' : c === 'o' && (ROWS[cy][Math.max(0, cx - 1)] === '=' || ROWS[cy][Math.min(GW - 1, cx + 1)] === '=') ? '=' : c;
+  if (c === 'o' && (ROWS[cy][Math.max(0, cx - 1)] === '=' || ROWS[cy][Math.min(GW - 1, cx + 1)] === '=')) return '=';   // spilled oil lies on the road; it does not cut it
   const L = LEG(c); if (L.blocked || L.elev) return 'X';
   if (LV.ground === 'quarry' && LEVEL_KEY === 'road' && c === ',') return 'T';
   return c === '=' || c === '.' || c === ',' ? c : 'X';
@@ -18,7 +19,7 @@ function cellField(fn, wx, wy) {   // smoothstep-blended cell indicator at a wor
 }
 // the rock mass: an inset rectangle with soft organic bites, open where a road leaves the board
 function inQMass(wx, wy) {
-  const n = vnoise(wx, wy, 201, 30) * 14 + vnoise(wx, wy, 203, 9) * 5;
+  const n = vnoise(wx, wy, 201, 30) * 14 + vnoise(wx, wy, 203, 9) * 7 + vnoise(wx, wy, 205, 17) * 9;
   const L = 18 + n, R = PW - 18 - n, Tp = 22 + n, B = PH - 46 + n;
   if (wy >= Tp && wy <= B && wx >= L && wx <= R) return true;
   // a road mouth: the road's own rows carry it out to the frame
@@ -33,6 +34,52 @@ function texData(key) {
   return (tex[key] = { d: x.getImageData(0, 0, im.width, im.height).data, w: im.width, h: im.height });
 }
 function sample(key, x, y) { const t = texData(key), i = (((y % t.h) + t.h) % t.h * t.w + (((x % t.w) + t.w) % t.w)) * 4; return [t.d[i], t.d[i + 1], t.d[i + 2]]; }
+// polish pass: the shelf rock is not one tile repeated. A warped Voronoi quilt of ~60 px regions, each drawn from one of four plain rock
+// tiles with its own flip, turn and offset; the region borders dither over 3 px, and a slow tone drift runs across several tiles
+const ROCKN = 4;
+function quilt(keys, x, y, R, sk) {   // keys: texture names; each region takes one, flipped/turned/offset at random
+  const wx = x + vnoise(x, y, sk + 1, 22) * 18 + vnoise(x, y, sk + 2, 7) * 4, wy = y + vnoise(x, y, sk + 3, 22) * 18 + vnoise(x, y, sk + 4, 7) * 4;
+  let best = 1e9, second = 1e9, bi = 0, bj = 0, sj = 0, sk2 = 0;
+  const cx = Math.floor(wx / R), cy = Math.floor(wy / R);
+  for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) {
+    const gx = cx + j, gy = cy + k, px = (gx + 0.15 + hash2(gx, gy, sk + 11) * 0.7) * R, py = (gy + 0.15 + hash2(gx, gy, sk + 12) * 0.7) * R, d = (wx - px) ** 2 + (wy - py) ** 2;
+    if (d < best) { second = best; sj = bi; sk2 = bj; best = d; bi = gx; bj = gy; } else if (d < second) { second = d; sj = gx; sk2 = gy; }
+  }
+  let gx = bi, gy = bj;
+  if (Math.sqrt(second) - Math.sqrt(best) < 3 && hash2(x, y, sk + 13) < 0.5) { gx = sj; gy = sk2; }   // a dithered border
+  const t = Math.floor(hash2(gx, gy, sk + 14) * keys.length), f = Math.floor(hash2(gx, gy, sk + 15) * 8), ox = Math.floor(hash2(gx, gy, sk + 16) * 32), oy = Math.floor(hash2(gx, gy, sk + 17) * 32);
+  let u = (x + ox) & 31, v = (y + oy) & 31; if (f & 1) u = 31 - u; if (f & 2) v = 31 - v; if (f & 4) { const q = u; u = v; v = q; }
+  return sample(keys[t], u, v);
+}
+const ROCK_KEYS = ['rock0', 'rock1', 'rock2', 'rock3'];
+function rockTop(x, y) {
+  const c = quilt(ROCK_KEYS, x, y, 58, 300), b = 1 + vnoise(x, y, 321, 70) * 0.12 + vnoise(x, y, 322, 24) * 0.05;
+  return c.map(a => Math.max(0, Math.min(255, a * b)));
+}
+// the sand: one plain tile, quilted the same way, with a slow warm/cool drift and pale dust drifts over tens of tiles
+function sandFloor(x, y) {
+  const c = quilt(['floor'], x, y, 74, 400), n1 = vnoise(x, y, 421, 90), n2 = vnoise(x, y, 422, 34), dust = vnoise(x, y, 423, 26) > 0.42 ? 1.045 : 1;
+  const warm = 0.012 + n1 * 0.016 + n2 * 0.008, b = (1 + n1 * 0.04 + n2 * 0.025) * dust;
+  return [c[0] * b * (1 + warm), c[1] * b, c[2] * b * (1 - warm * 1.6)].map(a => Math.max(0, Math.min(255, a)));
+}
+// road stubs that end inside the board: { side, xEnd, yc, half } in px (left or right edge, the road's last cell column, its rows)
+function roadStubs() {
+  const out = []; if (LEVEL_KEY === 'road') return out;
+  for (const side of [0, 1]) {
+    const R = ch => ch === '=' || ch === 'o', end = r => { const row = ROWS[r]; if (side === 0) { if (!R(row[0])) return -1; let e = 0; while (e + 1 < GW && R(row[e + 1])) e++; return e >= GW - 1 ? -1 : e; } if (!R(row[GW - 1])) return -1; let e = GW - 1; while (e - 1 >= 0 && R(row[e - 1])) e--; return e <= 0 ? -1 : e; };
+    let y = 0; while (y < GH) { const e0 = end(y); if (e0 < 0) { y++; continue; } let y1 = y; while (y1 + 1 < GH && end(y1 + 1) === e0) y1++;
+      const sideCol = side ? e0 : e0, adj = (y > 0 && ROWS[y - 1][sideCol] === '=') || (y1 < GH - 1 && ROWS[y1 + 1][sideCol] === '=');   // a band beside more road is not an end
+      if (!adj) out.push({ side, xEnd: side ? GX + e0 * CS : GX + (e0 + 1) * CS, yc: GY + (y + y1 + 1) * CS / 2, half: (y1 - y + 1) * CS / 2 }); y = y1 + 1; }
+  }
+  return out;
+}
+const STUBS = roadStubs();
+function stubTip(x, y) {   // > 0 where a stub's end should round off into a tongue
+  let t = 0;
+  for (const b of STUBS) { const L = 70, u = b.side ? ((b.xEnd - x) < L ? 1 - (x - (b.xEnd - L)) / L : -1) : 0; const dx = b.side ? (b.xEnd - x) : (x - b.xEnd);
+    const f = (dx + L) / L; if (f <= 0.35) continue; const v = Math.abs(y - b.yc) / b.half; t = Math.max(t, (Math.min(1.2, f) - 0.35) * 0.55 + Math.max(0, v - 0.45) * (f - 0.35) * 1.6 - 0.0); }
+  return t;
+}
 function bakeQuarry() {
   const g = ground.getContext('2d', { willReadFrequently: true }); g.imageSmoothingEnabled = false;
   const id = g.createImageData(PW, PH), d = id.data, lev = new Int8Array(PW * PH), cls = new Uint8Array(PW * PH);   // cls: 0 floor 1 road 2 water 3 pit 4 grass 5 rock-top 6 face 9 void
@@ -46,11 +93,11 @@ function bakeQuarry() {
     lev[i] = h2 > 0.5 ? 2 : h1 > 0.5 ? 1 : 0;
     if (lev[i]) { cls[i] = 5; continue; }
     const m = vnoise(x, y, 221, 19) * 0.26 + vnoise(x, y, 222, 8) * 0.16 + vnoise(x, y, 223, 3) * 0.07;
-    const fp = cellField(c => (c === 'P' ? 1 : 0), x, y), fw = cellField(c => (c === 'W' || c === '~' ? 1 : 0), x, y);
+    const fp = cellField(c => (c === 'P' ? 1 : 0), x, y), fw = cellField(c => (c === 'W' || c === '~' ? 1 : 0), x + Math.round(vnoise(y, 3, 224, 17) * 10), y + Math.round(vnoise(x, 4, 225, 17) * 8));
     if (fp > 0.08 && fp + m * 1.4 > 0.62) cls[i] = 3;          // only near a pit or a pool: the noise alone never opens a speck of either
     else if (fw > 0.08 && fw + m * 1.7 > 0.55) cls[i] = 2;
     else {   // v3: the strongest of road, grass and floor wins (no band of a third ground between two others)
-      const fr = cellField(c => (c === '=' ? 1 : 0), x, y + Math.round(vnoise(x, 7, 227, 40) * 9)) + m * 1.25, fg = cellField(c => (c === ',' || c === 'T' ? 1 : 0), x, y) - m, ff = cellField(c => (c !== '=' && c !== ',' && c !== 'T' && c !== '~' && c !== 'W' && !LEG(c).elev ? 1 : 0), x, y) + vnoise(x, y, 229, 13) * 0.2;
+      const fr = cellField(c => (c === '=' ? 1 : 0), x + Math.round(vnoise(y, 5, 228, 26) * 13 + vnoise(y, 6, 230, 8) * 4), y + Math.round(vnoise(x, 7, 227, 36) * 14 + vnoise(x, 8, 226, 13) * 5)) + m * 1.7 - stubTip(x, y), fg = (gf => (gf > 0.03 || cellField(c => (c === '~' || c === 'W' ? 1 : 0), x, y) > 0.03 ? gf - m : -9))(cellField(c => (c === ',' || c === 'T' ? 1 : 0), x, y)), ff = cellField(c => (c !== '=' && c !== ',' && c !== 'T' && c !== '~' && c !== 'W' && !LEG(c).elev ? 1 : 0), x, y) + vnoise(x, y, 229, 13) * 0.2;
       cls[i] = fr >= fg && fr >= ff ? 1 : fg >= ff ? 4 : 0;
     }
   }
@@ -78,13 +125,27 @@ function bakeQuarry() {
       const sh = 1 - 0.22 * k / F; c = c.map(v => v * sh);
       if (k === 1) c = c.map(v => Math.min(255, v * 1.22 + 10));         // the lit lip
       if (k === F) c = c.map((v, j) => v * 0.55 + [0x32, 0x21, 0x25][j] * 0.45);   // the foot's occlusion line
-    } else if (cls[i] === 5) c = sample('top', x, y);
-    else if (cls[i] === 1) c = sample('road', x, y);
+    } else if (cls[i] === 5) c = rockTop(x, y);
+    else if (cls[i] === 1) c = quilt(['road'], x, y, 70, 440).map((a, j) => a * (1 + vnoise(x, y, 441, 60) * 0.07));
     else if (cls[i] === 2) c = sample('water', x, y);
     else if (cls[i] === 4) c = vnoise(x, y, 41, 46) + vnoise(x, y, 43, 9) * 0.25 > 0.98 ? sample('grass', x, y) : sample(hash2(Math.floor(x / T), Math.floor(y / T), 245) < 0.5 ? 'moss0' : 'moss1', x, y);
     else if (cls[i] === 3) { const r = vnoise(x, y, 251, 5); c = r > 0.3 ? [40, 30, 32] : [27, 20, 23]; }
-    else { c = sample(fl(x, y), x, y); const b = 1 + vnoise(x, y, 247, 23) * 0.06; c = c.map(v => v * b); }
+    else { c = sandFloor(x, y); }
     d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
+  }
+  // 3b. polish pass: the road frays into the sand (worn ground a few px further out, in specks, never a line) and, where a stub
+  // ends inside the board, its two wheel ruts carry on a short way, fading
+  { const RAD = 9, tmp = new Float32Array(PW * PH), fld = new Float32Array(PW * PH);
+    for (let y = 0; y < PH; y++) { let acc = 0; for (let x = -RAD; x < PW; x++) { if (x + RAD < PW) acc += cls[y * PW + x + RAD] === 1 ? 1 : 0; if (x - RAD - 1 >= 0) acc -= cls[y * PW + x - RAD - 1] === 1 ? 1 : 0; if (x >= 0) tmp[y * PW + x] = acc / (2 * RAD + 1); } }
+    for (let x = 0; x < PW; x++) { let acc = 0; for (let y = -RAD; y < PH; y++) { if (y + RAD < PH) acc += tmp[(y + RAD) * PW + x]; if (y - RAD - 1 >= 0) acc -= tmp[(y - RAD - 1) * PW + x]; if (y >= 0) fld[y * PW + x] = acc / (2 * RAD + 1); } }
+    for (let y = 0; y < PH; y++) for (let x = 0; x < PW; x++) { const i = y * PW + x; if (cls[i] !== 0 || face[i] || fld[i] < 0.03) continue;
+      if (hash2(x, y, 461) < fld[i] * 1.1 + vnoise(x, y, 462, 5) * 0.2 - 0.05) { const c = quilt(['road'], x, y, 70, 440); const a = 0.8; d[i * 4] = d[i * 4] * (1 - a) + c[0] * a; d[i * 4 + 1] = d[i * 4 + 1] * (1 - a) + c[1] * a; d[i * 4 + 2] = d[i * 4 + 2] * (1 - a) + c[2] * a; cls[i] = 0; } }
+    for (const bd of STUBS) {
+      const dir = bd.side ? -1 : 1, yr = Math.round(bd.yc); let x0 = bd.side ? PW - 1 : 0; while (x0 >= 0 && x0 < PW && cls[yr * PW + x0] !== 1) x0 += dir; while (x0 >= 0 && x0 < PW && cls[yr * PW + x0] === 1) x0 += dir;
+      for (const off of [-8, 8]) { let yy = bd.yc + off; for (let s = 0; s < 130; s++) { const x = x0 + dir * (s + 6); yy += vnoise(s, off, 471, 14) * 0.4; const Y = Math.round(yy);
+        if (x < 2 || x >= PW - 2) break; if ((s % 17) > 12 - Math.floor(s / 22) || hash2(s, off, 472) < s / 150) continue;
+        for (let h = 0; h < 2; h++) { const i = (Y + h) * PW + x; if (face[i] || cls[i] === 1 || cls[i] === 9) continue; const m = h ? 0.7 : 0.8; d[i * 4] *= m; d[i * 4 + 1] *= m * 0.95; d[i * 4 + 2] *= m * 0.84; } } }
+    }
   }
   // 4. edges: a shelf's sides (dark on the right, lit on the left), the cast of a face and a right side on the lower ground,
   // the floor darkening into the road's verge and the grass edge, the pit's lip
@@ -112,6 +173,33 @@ function bakeQuarry() {
     const x = 2 + Math.floor(hash2(k, 1, 271) * (PW - 4)), y = 2 + Math.floor(hash2(k, 2, 271) * (PH - 4)), i = y * PW + x;
     if (!(cls[i] === 1 || cls[i] === 0) || ![-2, 2].some(o => cls[i + o] === 4 || cls[i + o * PW] === 4)) continue;
     for (let b = 0; b < 3; b++) { const len = 2 + Math.floor(hash2(k, b, 272) * 3), lean = b - 1; for (let s = 0; s < len; s++) { g.fillStyle = s >= len - 1 ? GR[4] : GR[2]; g.fillRect(x + Math.round(lean * s * 0.5), y + 1 - s, 1, 1); } }
+  }
+  // polish pass: sparse hairline cracks, scree chips and the odd dry tuft on the shelf rock (each on its own spot, never a lattice)
+  for (let gy = 0; gy < PH / 70; gy++) for (let gx = 0; gx < PW / 70; gx++) {
+    if (hash2(gx, gy, 331) > 0.55) continue;
+    let x = Math.floor((gx + hash2(gx, gy, 332)) * 70), y = Math.floor((gy + hash2(gx, gy, 333)) * 70), ang = hash2(gx, gy, 334) * 6.283;
+    const len = 12 + Math.floor(hash2(gx, gy, 335) * 22);
+    for (let s = 0; s < len; s++) {
+      ang += (hash2(gx, s, 336) - 0.5) * 0.9; x += Math.cos(ang) * 1.2; y += Math.sin(ang) * 1.2; const X = Math.round(x), Y = Math.round(y), i = Y * PW + X;
+      if (X < 1 || Y < 1 || X >= PW - 1 || Y >= PH - 1 || cls[i] !== 5 || face[i]) break;
+      g.fillStyle = s > len - 4 ? '#6f666b' : '#4f464c'; g.fillRect(X, Y, 1, 1); if (s % 5 === 2) { g.fillStyle = '#9d979a'; g.fillRect(X + 1, Y + 1, 1, 1); }
+    }
+  }
+  for (let k = 0; k < 420; k++) {
+    const x = 3 + Math.floor(hash2(k, 1, 341) * (PW - 6)), y = 3 + Math.floor(hash2(k, 2, 341) * (PH - 6)), i = y * PW + x; if (cls[i] !== 5 || face[i] || face[i - PW * 3]) continue;
+    const sz = hash2(k, 3, 341), grp = sz < 0.3 ? 3 : 1;   // a few scree chips, each with its dark foot and a pale top
+    for (let c = 0; c < grp; c++) { const cx = x + Math.round((hash2(k, c, 342) - 0.5) * 8), cy = y + Math.round((hash2(k, c, 343) - 0.5) * 5), w = 2 + (hash2(k, c, 344) < 0.4 ? 1 : 0);
+      g.fillStyle = '#4a4147'; g.fillRect(cx, cy + 1, w + 1, 1); g.fillStyle = '#6b6469'; g.fillRect(cx, cy, w, 1); g.fillStyle = '#b4aeab'; g.fillRect(cx, cy - 1, w - 1, 1); }
+  }
+  for (let k = 0; k < 150; k++) {   // loose stones, 4-6 px, each with a pale lit top-left, a dark right side and a hard foot
+    const x = 4 + Math.floor(hash2(k, 1, 361) * (PW - 8)), y = 6 + Math.floor(hash2(k, 2, 361) * (PH - 12)), i = y * PW + x; if (cls[i] !== 5 || face[i] || face[i - PW * 4] || cls[i + PW * 3] !== 5) continue;
+    const w = 3 + Math.floor(hash2(k, 3, 361) * 3), h = w - 1;
+    g.fillStyle = '#322125'; g.fillRect(x + 1, y + h, w, 1); g.fillStyle = '#6a6368'; g.fillRect(x, y, w, h); g.fillStyle = '#4f484e'; g.fillRect(x + w - 1, y, 1, h); g.fillStyle = '#aaa5a6'; g.fillRect(x, y, w - 1, 1);
+  }
+  for (let k = 0; k < 26; k++) {   // a dry tuft: three blades in the old shelf tone
+    const x = 4 + Math.floor(hash2(k, 1, 351) * (PW - 8)), y = 6 + Math.floor(hash2(k, 2, 351) * (PH - 12)), i = y * PW + x; if (cls[i] !== 5 || face[i] || cls[i + PW * 3] !== 5) continue;
+    for (let b = -1; b <= 1; b++) { const len = 3 + Math.floor(hash2(k, b, 352) * 3); for (let s = 0; s < len; s++) { g.fillStyle = s === len - 1 ? '#c98f3e' : '#8d6b3a'; g.fillRect(x + b + Math.round(b * s * 0.4), y - s, 1, 1); } }
+    g.fillStyle = '#4a4147'; g.fillRect(x - 1, y + 1, 3, 1);
   }
   // pale grit and chips scattered over the floor, densest under the faces (ART_DIRECTION §4: detail near walls, calm centre)
   for (let k = 0; k < 2600; k++) {
@@ -175,9 +263,24 @@ function placeQuarry() {
     put('lime_boulder', cellX(13), GY + 5 * CS + 32, { cell: [13, 5] }); put('log', cellX(5), GY + 10 * CS + 30, { cell: [5, 10] });
     for (const [x, y] of [[3, 3], [7, 4], [12, 7], [2, 6], [17, 7], [6, 8]]) put(hash2(x, y, 1) < 0.5 ? 'tuft' : 'flowers', cellX(x), cellY(y) + 6, { flat: true });
   }
+  dressPlateaus();
   // the pines beyond a forest edge in the margins (road only: the quarry is bare rock)
   if (LEVEL_KEY === 'road') for (let i = 0; i < 2; i++) for (let x = -10; x < GX + 9 * CS; x += 34 + Math.round(hash2(i, x, 5) * 16)) put(PINES[(x + i * 3) % PINES.length], x, GY - 10 - i * 46 - Math.round(hash2(x, i, 6) * 20), { kind: 'tree' });
   if (LEVEL_KEY === 'road') for (let y = 0; y < GH; y++) { if (ROWS[y][0] !== 'T') continue; put(PINES[(y * 7) % PINES.length], 40 + Math.round(hash2(y, 1, 7) * 20), GY + y * CS + CS - 2, { kind: 'tree' }); }
+}
+// polish pass: the big rock plateaus get a little sparse dressing (PixelLab scree heaps, a few dead shrubs, a loose rubble heap), each on its own
+// spot well inside the plateau and away from every other object, grounded like any prop
+function dressPlateaus() {
+  const rockCell = (cx, cy) => (cx < 0 || cy < 0 || cx >= GW || cy >= GH ? qcell(cx, cy) === 'X' : LEG(ROWS[cy][cx]).elev > 0 && !LEG(ROWS[cy][cx]).ramp);
+  const inside = (px, py) => { const cx = Math.floor((px - GX) / CS), cy = Math.floor((py - GY) / CS); for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) if (!rockCell(cx + j, cy + k)) return false; return inQMass(px - 40, py - 22) && inQMass(px + 40, py + 40); };
+  let shrubs = 0, n = 0;
+  for (let k = 0; k < 400 && n < 15; k++) {
+    const px = 30 + Math.floor(hash2(k, 1, 501) * (PW - 60)), py = 40 + Math.floor(hash2(k, 2, 501) * (PH - 120)); if (!inside(px, py)) continue;
+    if (OBJ.some(o => Math.hypot(o.x + o.w / 2 - px, o.base - py) < 95)) continue;
+    const r = hash2(k, 3, 501), key = r < 0.22 && shrubs < 5 ? 'dead_shrub' : r < 0.3 ? 'lime_rubble' : 'scree';
+    if (key === 'dead_shrub') shrubs++;
+    put(key, px, py, { flip: hash2(k, 4, 501) < 0.5 }); n++;
+  }
 }
 // every object's own shadow on the floor (the ported grounding.js), grass kits on grass, the floor reaction on hard ground
 function groundObjects(QB) {
@@ -223,5 +326,23 @@ function edgeRunsQ() {
       } }
   }
   return { longestPx: best.len, tiles: +(best.len / T).toFixed(2), at: best.at, horizontal: best.horiz };
+}
+// (E) polish pass: how straight the boundary LOOKS. Boundaries are traced as chains of per-column (and per-row) crossings; the longest
+// stretch of a chain whose position stays within 3 px counts as one straight edge. v1's exact-pixel-run count missed a stepped but ruler-straight edge.
+function straightQ() {
+  const C = QB.cls, Lv = QB.lev, key = i => (C[i] === 9 ? 99 : C[i] * 4 + Lv[i] + 1); let best = { len: 0 };
+  for (const horiz of [true, false]) {
+    const A = horiz ? PW : PH, B = horiz ? PH : PW, at = (a, b) => horiz ? b * PW + a : a * PW + b;   // a runs along the edge, b across it
+    let chains = [];   // { b: last position, from, hist: [b per a] }
+    for (let a = 0; a < A; a++) {
+      const cross = []; for (let b = 1; b < B - 1; b++) if (key(at(a, b)) !== key(at(a, b + 1))) cross.push(b);
+      const next = [];
+      for (const b of cross) { let ch = chains.find(c => !c.used && Math.abs(c.b - b) <= 2); if (ch) { ch.used = true; ch.b = b; ch.hist.push(b); next.push(ch); } else next.push({ b, from: a, hist: [b], used: true }); }
+      for (const c of chains) if (!c.used) { const h = c.hist; for (let i = 0; i < h.length; i++) { let lo = h[i], hi = h[i], j = i; while (j + 1 < h.length && Math.max(hi, h[j + 1]) - Math.min(lo, h[j + 1]) <= 3) { j++; lo = Math.min(lo, h[j]); hi = Math.max(hi, h[j]); } if (j - i + 1 > best.len) best = { len: j - i + 1, at: horiz ? [c.from + i, h[i]] : [h[i], c.from + i], horiz }; } }
+      for (const c of next) c.used = false; chains = next;
+    }
+    for (const c of chains) { const h = c.hist; for (let i = 0; i < h.length; i++) { let lo = h[i], hi = h[i], j = i; while (j + 1 < h.length && Math.max(hi, h[j + 1]) - Math.min(lo, h[j + 1]) <= 3) { j++; lo = Math.min(lo, h[j]); hi = Math.max(hi, h[j]); } if (j - i + 1 > best.len) best = { len: j - i + 1, at: horiz ? [c.from + i, h[i]] : [h[i], c.from + i], horiz }; } }
+  }
+  return { straightPx: best.len, tiles: +(best.len / T).toFixed(2), at: best.at, horizontal: best.horiz };
 }
 let QB = null;

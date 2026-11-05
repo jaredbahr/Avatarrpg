@@ -40,6 +40,11 @@ if MODE != 'forest':
     q = {'moss0': var[0], 'moss1': var[3] if len(var) > 3 else var[0], 'floor': t(FL, 'LLLL'), 'road': t(FL, 'UUUU'), 'top': t('q_terrace32', 'UUUU'), 'face': face, 'rim': rim, 'water': water, 'grass': floor}
     qv = [Image.open(p).convert('RGBA').crop((0, 0, TS, TS)) for p in sorted((A / 'tiles' / 'q_var_floor').glob('tile_*.png'), key=lambda p: int(p.stem.split('_')[1]))]
     for i, im in enumerate(qv): q[f'var{i}'] = im
+    # polish pass: plain rock variants for the raised shelves (the Wang set's own top repeats a tuft motif)
+    RK = A / 'tiles' / 'q_rock_var'
+    if RK.exists():
+        rk = [Image.open(RK / f).convert('RGBA').crop((0, 0, TS, TS)) for f in ('tile_0.png', 'tile_2.png', 'clean_12.png', 'clean_14.png')]
+        for i, im in enumerate(rk): q[f'rock{i}'] = im
     out['qtiles'] = {k: uri(v) for k, v in q.items()}; out['qtiles_nvar'] = len(qv)
 # ---- the cast: every clip packed by build8's packer (feet on (AX, AY) of each 80 px cell), eight headings where PixelLab has them
 exec(B8[B8.index('TAKES = '):B8.index('CH = {')])

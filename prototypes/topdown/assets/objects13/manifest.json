@@ -9,6 +9,11 @@
   "h": 47,
   "src": "t13/obj/cabbage_cart_3.png"
  },
+ "dead_shrub": {
+  "w": 25,
+  "h": 34,
+  "src": "t13/obj/dead_shrub_3.png"
+ },
  "drill_junk": {
   "w": 44,
   "h": 30,
@@ -113,6 +118,11 @@
   "w": 43,
   "h": 64,
   "src": "t13/obj/scaffold_3.png"
+ },
+ "scree": {
+  "w": 33,
+  "h": 14,
+  "src": "t13/obj/scree_3.png"
  },
  "stone_blocks": {
   "w": 28,

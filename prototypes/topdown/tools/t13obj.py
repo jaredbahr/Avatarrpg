@@ -28,6 +28,8 @@ IT = {
  'lime_rubble': ('a low heap of broken pale cream limestone chunks and grit', 36, 20, 48, 48),
  'lime_boulder': ('a big rough pale cream limestone boulder with a few dark cracks', 40, 32, 48, 48),
  'lean_to': ('a small lean-to shelter of the quarry crew: stained cream canvas stretched on two wooden poles over a bedroll and a cooking pot', 56, 44, 64, 64),
+ 'dead_shrub': ('a small dead dry shrub of grey-brown bare twisted twigs with a few dry tan leaves, growing from a crack in pale rock', 26, 22, 48, 48),
+ 'scree': ('a small low scatter of loose grey and pale limestone stones and pebbles lying together, no grass', 30, 12, 48, 48),
  'driller_big': ('a large mecha-driller boss machine, as big as a small cart, facing the viewer: a boxy rust-orange riveted iron body on two broad dark caterpillar treads, a small open driver cabin on top with a stout scowling bald man in a dusty vest gripping two levers, '
              'a thick riveted arm at the front ending in a big steel spiral drill bit pointing to the left, a short smoking exhaust pipe at the back, oil stains, a split black hose; it is a big heavy machine, more than twice as tall as a person', 112, 100, 128, 128),
 }

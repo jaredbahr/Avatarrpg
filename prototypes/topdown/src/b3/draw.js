@@ -12,7 +12,18 @@ addEventListener('resize', resize);
 function updateCamera(dt) {
   const f = focus || { x: GX + 10 * CS, y: GY + 6 * CS };
   const tx = f.x - view.w / 2, ty = f.y - 20 - view.h / 2;
-  const cx = Math.max(0, Math.min(PW - view.w, tx)), cy = Math.max(0, Math.min(PH - view.h, ty));
+  let cx = Math.max(0, Math.min(PW - view.w, tx)), cy = Math.max(0, Math.min(PH - view.h, ty));
+  // polish pass: the boss is big (up to 116 x 106 px). Whenever any of it is in the frame the camera is nudged until all of it is, so a midpoint
+  // between the Grumbler and its target never cuts the machine off at the bottom or a side (round 5 and 8 of the floor fight did)
+  for (const u of typeof UNITS !== 'undefined' ? UNITS : []) {
+    if (u.k !== 'grumbler' || u.ko >= 0) continue;
+    const bt = u.y - 106 + 6 - 4, bb = u.y + 12, bl = u.x - 64, br = u.x + 64;
+    if (bb > cy && bt < cy + view.h && br > cx && bl < cx + view.w) {
+      if (view.h >= bb - bt) { if (bb > cy + view.h) cy = bb - view.h; if (bt < cy) cy = bt; }
+      if (view.w >= br - bl) { if (br > cx + view.w) cx = br - view.w; if (bl < cx) cx = bl; }
+      cx = Math.max(0, Math.min(PW - view.w, cx)); cy = Math.max(0, Math.min(PH - view.h, cy));
+    }
+  }
   if (!cam.init) { cam.x = cx; cam.y = cy; cam.init = true; }
   const k = 1 - Math.exp(-3.2 * dt / 1000); cam.x += (cx - cam.x) * k; cam.y += (cy - cam.y) * k;
   cam.rx = Math.round(cam.x); cam.ry = Math.round(cam.y);
@@ -108,7 +119,7 @@ Promise.all(loads).then(() => {
   for (const [k, x, y, d] of LV.party) mkUnit(k, x, y, d);
   for (const [k, x, y, d] of LV.allies || []) mkUnit(k, x, y, d);
   for (const [k, x, y, d] of (LV.foes ? LV.foes[variant] || LV.foes.base : [])) mkUnit(k, x, y, d);
-  if (LV.ground === 'forest') CLS = bakeForest(); else { QB = bakeQuarry(); CLS = QB.cls; groundObjects(QB); window.__checks = () => ({ shadows: shadowTableQ(), edges: edgeRunsQ() }); }
+  if (LV.ground === 'forest') CLS = bakeForest(); else { QB = bakeQuarry(); CLS = QB.cls; groundObjects(QB); window.__checks = () => ({ shadows: shadowTableQ(), edges: edgeRunsQ(), straight: straightQ() }); }
   setupBoard(); resize(); focus = UNITS[0]; updateCamera(16); render();
   cv.addEventListener('pointerdown', e => {
     const r = cv.getBoundingClientRect(), wx = (e.clientX - r.left) / r.width * view.w + cam.rx, wy = (e.clientY - r.top) / r.height * view.h + cam.ry;

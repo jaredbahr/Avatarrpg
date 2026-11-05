@@ -3,6 +3,7 @@
 const BW = GW * CS, BH = GH * CS;
 function organicMask(isOn, seedK, edge = 0.5, amp = 1, wide = false) {   // Uint8 mask over the board, 1 where the field passes the threshold
   const m = new Uint8Array(BW * BH);
+  if (wide) return metaMask(isOn, seedK, edge);
   const v = (x, y) => (x < 0 || y < 0 || x >= GW || y >= GH ? 0 : isOn(x, y) ? 1 : 0);
   for (let py = 0; py < BH; py++) for (let px = 0; px < BW; px++) {
     const fx = px / CS - 0.5, fy = py / CS - 0.5, ix = Math.floor(fx), iy = Math.floor(fy), sx = fx - ix, sy = fy - iy;
@@ -11,6 +12,23 @@ function organicMask(isOn, seedK, edge = 0.5, amp = 1, wide = false) {   // Uint
     const f = a0 * (1 - s0) * (1 - s1) + a1 * s0 * (1 - s1) + a2 * (1 - s0) * s1 + a3 * s0 * s1;
     const n = wide ? vnoise(px, py, seedK, 17) * 0.32 + vnoise(px, py, seedK + 2, 7) * 0.16 + vnoise(px, py, seedK + 1, 2.5) * 0.05 : (vnoise(px, py, seedK, 9) * 0.16 + vnoise(px, py, seedK + 1, 2.5) * 0.06) * amp;
     if (f + n > edge) m[py * BW + px] = 1;
+  }
+  return m;
+}
+// polish pass: a pool or a burn is a union of soft round blobs, one per cell (each centre nudged, each a slightly different size), never a
+// box with chamfers: the field is the sum of (1 - d^2/r^2)^2 over the cells around the pixel, cut by a slow, wide noise
+function metaMask(isOn, seedK, edge) {
+  const m = new Uint8Array(BW * BH), on = [];
+  for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) if (isOn(x, y)) on.push([x + 0.5 + (hash2(x, y, seedK + 31) - 0.5) * 0.6, y + 0.5 + (hash2(x, y, seedK + 32) - 0.5) * 0.6, 0.92 + (hash2(x, y, seedK + 33) - 0.5) * 0.4, x, y]);
+  if (!on.length) return m;
+  const grid = new Map(); for (const o of on) grid.set(o[3] + ',' + o[4], o);
+  const thr = edge * 0.62;
+  for (let py = 0; py < BH; py++) for (let px = 0; px < BW; px++) {
+    const cx = px / CS, cy = py / CS, ix = Math.floor(cx), iy = Math.floor(cy); let f = 0;
+    for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) { const o = grid.get((ix + j) + ',' + (iy + k)); if (!o) continue; const d2 = ((cx - o[0]) ** 2 + (cy - o[1]) ** 2) / (o[2] * o[2]); if (d2 < 1) f += (1 - d2) ** 2; }
+    if (!f) continue;
+    const n = vnoise(px, py, seedK, 21) * 0.34 + vnoise(px, py, seedK + 2, 9) * 0.14 + vnoise(px, py, seedK + 1, 2.5) * 0.03;
+    if (f + n * Math.max(0, 1 - f / (thr * 2.6)) > thr) m[py * BW + px] = 1;   // the noise fades inside, so a pool never opens a hole
   }
   return m;
 }
@@ -23,7 +41,7 @@ function bakeSurfaces() {
   const near = (m, x, y) => !m[y * BW + x - 1] || !m[y * BW + x + 1] || !m[(y - 1) * BW + x] || !m[(y + 1) * BW + x];
   FIRE_PTS = []; STEAM_PTS = [];
   for (const sid of ['mud', 'water', 'oil', 'ice', 'fire']) {
-    const m = organicMask(on(sid), { mud: 101, water: 103, oil: 105, ice: 107, fire: 109 }[sid], 0.5, 1, true);   // v3: slow noise, so a 3x3 pool never reads square
+    const m = organicMask(on(sid), { mud: 101, water: 103, oil: 105, ice: 107, fire: 109 }[sid], sid === 'water' ? 0.3 : 0.5, 1, true);   // v3: slow noise, so a 3x3 pool never reads square
     for (let y = 1; y < BH - 1; y++) for (let x = 1; x < BW - 1; x++) {
       const i = y * BW + x; if (!m[i]) continue; const e = near(m, x, y), h = hash2(x, y, 131);
       if (sid === 'water') e ? put(i, 40, 62, 66, 230) : put(i, 58 + h * 12, 104 + h * 14, 112 + h * 10, 190);
@@ -44,13 +62,18 @@ function bakeSurfaces() {
     const m = organicMask(on('fire'), 109, 0.5, 1, true);
     // clumps, not a carpet: sites on a loose lattice, kept only where a slow noise says the fire is fierce; between them the
     // ground is charred and glowing
-    for (let gy = 5; gy < BH; gy += 12) for (let gx = 5 + (gy % 24 ? 7 : 0); gx < BW; gx += 14) {
-      const x = gx + Math.round((hash2(gx, gy, 118) - 0.5) * 10), y = gy + Math.round((hash2(gx, gy, 119) - 0.5) * 7);
+    // polish pass: far sparser. A jittered lattice ~1.6x looser than v3's, a slow "hole" noise that leaves charred, glowing ground between the
+    // clumps, and each clump is one main flame plus up to two smaller ones beside it, in mixed sizes (a roaring tongue only deep inside)
+    for (let gy = 6; gy < BH; gy += 17) for (let gx = 6 + ((gy / 17 | 0) % 2 ? 10 : 0); gx < BW; gx += 20) {
+      const x = gx + Math.round((hash2(gx, gy, 118) - 0.5) * 16), y = gy + Math.round((hash2(gx, gy, 119) - 0.5) * 12);
       if (x < 0 || y < 0 || x >= BW || y >= BH || !m[y * BW + x]) continue;
-      const fierce = vnoise(x, y, 125, 30); if (fierce < -0.45) continue;
+      const fierce = vnoise(x, y, 125, 34), hole = vnoise(x, y, 127, 21); if (fierce < -0.35 || hole < -0.28 || hash2(x, y, 128) < 0.12) continue;
       const inner = core[y * BW + x], r = hash2(x, y, 120);
-      const k = inner && fierce > 0.1 && r < 0.45 && ASSETS.vfx13.fire_ground_c ? 'fire_ground_c' : inner && r < 0.8 ? 'fire_ground_a' : 'fire_ground_b';
-      FIRE_PTS.push([x, y, Math.floor(hash2(x, y, 117) * 997), k, Math.floor(x / CS) + ',' + Math.floor(y / CS)]);
+      const pick = (xx, yy, rr, deep) => rr < 0.2 && deep && fierce > 0.05 && ASSETS.vfx13.fire_ground_c ? 'fire_ground_c' : rr < 0.62 && deep ? 'fire_ground_a' : rr < 0.75 ? 'fire_ground_a' : 'fire_ground_b';
+      const add = (xx, yy, k) => { if (xx < 0 || yy < 0 || xx >= BW || yy >= BH || !m[yy * BW + xx]) return; FIRE_PTS.push([xx, yy, Math.floor(hash2(xx, yy, 117) * 997), k, Math.floor(xx / CS) + ',' + Math.floor(yy / CS)]); };
+      add(x, y, pick(x, y, r, inner));
+      const extra = Math.floor(hash2(x, y, 122) * 3);   // 0, 1 or 2 licks beside the main flame
+      for (let e = 0; e < extra; e++) add(x + Math.round((hash2(x, y, 123 + e) - 0.5) * 22), y + Math.round((hash2(x, y, 126 + e) - 0.5) * 12), 'fire_ground_b');
     } }
   const sm = organicMask(on('steam'), 161, 0.42);
   for (let y = 0; y < BH; y += 9) for (let x = 0; x < BW; x += 9) if (sm[y * BW + x]) STEAM_PTS.push([x, y, Math.floor(hash2(x, y, 163) * 4000)]);

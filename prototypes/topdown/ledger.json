@@ -16394,6 +16394,193 @@
    "ids": {
     "animation_group_id": "28df8f1a-c04e-4510-a3b7-63320ae89dc3"
    }
+  },
+  {
+   "name": "q13_rock_var",
+   "endpoint": "/create-tiles-pro",
+   "job": "9efca747-5ab8-425e-9586-1d4633738bc4",
+   "status": "completed",
+   "settings": {
+    "description": "1). plain weathered grey limestone rock surface, rough natural stone, mottled to...",
+    "tile_type": "square_topdown",
+    "tile_size": 32,
+    "tile_view": "top-down",
+    "style_images": [
+     "<png>"
+    ],
+    "seed": 11
+   },
+   "credits": 10.0,
+   "credit_source": "usage",
+   "balance_diff": 10.0,
+   "usage": {
+    "type": "generations",
+    "generations": 10.0
+   },
+   "balance_before": 13182.965464062501,
+   "balance_after": 13172.965464062501,
+   "secs": 64,
+   "notes": "",
+   "ids": {
+    "background_job_id": "9efca747-5ab8-425e-9586-1d4633738bc4",
+    "tile_id": "a680ba0c-f1cf-42a2-bd04-c1b2668c3e57"
+   }
+  },
+  {
+   "name": "t13_obj_dead_shrub_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "a148db61-0f82-4e44-92db-73abfb5684d5",
+   "status": "completed",
+   "settings": {
+    "description": "a small dead dry shrub of grey-brown bare twisted twigs with a few dry tan leave...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 13172.965464062501,
+   "balance_after": 13167.965464062501,
+   "secs": 47,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a148db61-0f82-4e44-92db-73abfb5684d5",
+    "object_id": "ba4dc7e8-a463-42d9-a449-d634c64726f9"
+   }
+  },
+  {
+   "name": "t13_obj_scree_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "46b9663f-33c2-46fa-8ae4-e3704c1c9704",
+   "status": "completed",
+   "settings": {
+    "description": "a small low scatter of loose grey and pale limestone stones and pebbles lying to...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 13167.965464062501,
+   "balance_after": 13162.965464062501,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "46b9663f-33c2-46fa-8ae4-e3704c1c9704",
+    "object_id": "03a62064-0e18-4c35-b849-fa71586e7cb6"
+   }
   }
  ],
  "end_balance": 16728.0,

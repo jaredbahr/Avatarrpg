@@ -61,6 +61,18 @@ animation or presentation work. Add to it when something fails.
   - Evenly spaced small flames read as wallpaper; mixed-size clumps read as fire.
   - A side-wall strip sampled from the outline read as a thick outline. Sample the material.
 
+- **The quarry polish (2026-11-05):**
+  - One Wang tile sampled by modulo is wallpaper; the quarry rock showed a tuft in a grid. Quilt plain tiles in warped
+    regions with flips, turns and offsets, and never leave one baked feature (a pebble) in a quilt source tile.
+  - A `create-tiles-pro` set of 16 tiles held only 2–4 distinct looks. Don't count tiles as variants.
+  - Cell-field blends leave straight edges. Union jittered round blobs and fade the noise inside so no holes open.
+  - Measure straightness as the eye sees it (chains within 3 px), not exact pixel runs; the run check passed edges
+    that looked ruler-straight.
+  - A cell of another kind under a road (oil, a pool) cut the road straight. Class the terrain by the ground beneath.
+  - A string replace on a repeated expression hit the wrong line and shrank a pool. Re-view every board after a
+    shared edit.
+  - The camera framed the midpoint of actor and target, so the boss was cut off. Big sprites need a fit-in-frame rule.
+
 ### Characters and objects
 
 - **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;
