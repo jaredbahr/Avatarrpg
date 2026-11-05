@@ -13,6 +13,7 @@ NEW = {
  'qbender': (48, 'a quarry earthbender, a strong broad-shouldered woman in her thirties, tan skin, black hair tied back under a dusty olive headcloth, a sleeveless olive-green work tunic, a thick brown leather apron dusted with pale stone powder, brown wrapped forearms, baggy khaki trousers, heavy brown work boots; dusty and practical'),
  'merc': (48, 'a hired mercenary swordsman, a lean scarred man in his thirties, dark hair tied in a short tail, a charcoal-grey quilted jacket with a deep teal sash, one brown leather shoulder guard, a short curved sword in his right hand, dark trousers, tall dark boots; tidy and professional'),
  'xbow': (48, 'a hired mercenary crossbow woman, wiry, cropped dark hair, a charcoal-grey quilted jacket with a deep teal sash, a leather quiver of bolts at her right hip, holding a wooden crossbow across her body in both hands, dark trousers, tall dark boots; alert'),
+ 'ruon2': (48, 'a grizzled provincial guard captain in his fifties, short swept-back grey hair, a short grey stubble beard and moustache, tired weathered eyes, a long grey-brown wool trench coat with a high stand collar, brass buttons down the front, a squared shoulder epaulette and a faded patch, a brown leather strap crossing the chest from the shoulder, a curved sabre with a brass hand guard at his left hip, dark trousers, brown boots; dignified but weary'),
  'ruon': (48, 'a grizzled provincial guard captain in his fifties, short grey hair and a short grey beard, tired eyes, a dented olive-green and dull brass lamellar breastplate over a faded green tunic, a worn olive half-cloak, a curved sabre in a scabbard at his left hip, dark trousers, brown boots; dignified but weary'),
 }
 IDLE = 'standing at rest in a ready stance: the chest rises and falls slowly, a slight weight shift, arms relaxed; no effects'
@@ -32,6 +33,14 @@ ACT = {
  ('deserter', 'attack'): 'a fire-bending punch: draws the right fist back to the hip, then drives it straight forward hard with a step, then returns to stance; no effects',
  ('deserter', 'throw'): 'throws a small jar underarm toward the front with the right hand, following through, then recovers to stance; no effects',
  ('qbender', 'attack'): 'an earth-bending throw: crouches and scoops both hands up from the ground, lifts them overhead, then hurls forward with both arms, then returns to stance; no effects',
+ # fixes pass (2026-11-05): element words ("fire-bending", "earth-bending") made PixelLab paint flames and rocks INTO the frames, "no effects" or not.
+ # These retakes describe pure body motion and say what is not in the hands.
+ ('kaya', 'blast2'): 'a martial-arts double palm strike: draws both fists back to her right hip, then thrusts both open palms forward together in one powerful push, leaning into it with a step, then recovers to a ready stance. Pure body motion: her hands are plain and empty, no flames, no glow, no light, no particles',
+ ('kaya', 'jab2'): 'a martial-arts punch: draws the right fist back to the hip, then drives it straight forward hard with a step, then recovers to a ready stance. Pure body motion: her fist is a plain fist, no flames, no glow, no light, no particles',
+ ('kaya', 'stomp2'): 'a martial-arts ground stomp: shifts her weight, raises one knee high, stamps that foot down hard into a wide low stance with both fists sinking to her sides, then rises back to a ready stance. Pure body motion: nothing around her feet or hands, no flames, no glow, no light, no particles',
+ ('deserter', 'punch2'): 'a martial-arts punch: draws the right fist back to the hip, then drives it straight forward hard with a step, then returns to stance. Pure body motion: a plain fist, no flames, no glow, no light, no particles',
+ ('qbender', 'throw2'): 'a heavy two-handed throw: crouches low, scoops both empty hands up from knee height, lifts them overhead, then hurls both arms forward with a step, then returns to stance. Pure body motion: her hands are empty, nothing is held or thrown, no rocks, no dirt, no dust, no particles; her olive headcloth stays tied on her head the same in every frame',
+ ('ruon2', 'attack'): 'a disciplined sabre cut: draws the sabre and steps forward with one diagonal cut across the front, then returns to a guard stance',
  ('merc', 'attack'): 'a quick low sword slash: steps forward and cuts the short sword in a low fast arc across the front, then recovers to a guard stance',
  ('xbow', 'attack'): 'raises the crossbow to the shoulder and aims to the front, the crossbow kicks back as it shoots, then lowers it to a ready stance',
  ('ruon', 'attack'): 'a disciplined sabre cut: draws the sabre and steps forward with one diagonal cut across the front, then returns to a guard stance',
@@ -48,7 +57,7 @@ def anim(k, clip, dirs=None):
         body = {'character_id': cid, 'template_animation_id': 'walking-8-frames', 'mode': 'skeleton-v3', 'directions': dirs}
     else:
         act = IDLE if clip == 'idle' else ACT[(k, clip)]
-        body = {'character_id': cid, 'mode': 'skeleton-v3', 'action_description': act, 'frame_count': 8 if clip == 'idle' else 10, 'directions': dirs}
+        body = {'character_id': cid, 'mode': 'skeleton-v3', 'action_description': act, 'frame_count': int(os.environ.get('FC') or (8 if clip == 'idle' else 10)), 'directions': dirs}
     grp = existing_group(k, clip)
     if grp: body['animation_group_id'] = grp
     e, r = pl.run('/characters/animations', body, name, estimate=3 * len(dirs) + 1)

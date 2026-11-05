@@ -16581,6 +16581,515 @@
     "background_job_id": "46b9663f-33c2-46fa-8ae4-e3704c1c9704",
     "object_id": "03a62064-0e18-4c35-b849-fa71586e7cb6"
    }
+  },
+  {
+   "name": "t13_driller_slam2_west_southwest_northwest",
+   "endpoint": "/objects/b0cc7559-12db-4011-aac0-82a7a3d4fb9b/animations",
+   "job": null,
+   "status": "completed",
+   "settings": {
+    "mode": "v3",
+    "animation_description": "the whole mecha-driller winds up for a heavy slam: first the thick front arm hau...",
+    "directions": [
+     "west",
+     "south-west",
+     "north-west"
+    ],
+    "frame_count": 12,
+    "display_name": "slam2"
+   },
+   "credits": 9.0,
+   "credit_source": "usage (per-direction jobs, polled after)",
+   "balance_diff": 0.0,
+   "usage": null,
+   "balance_before": 12995.965464062501,
+   "balance_after": 12995.965464062501,
+   "secs": 3,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "80ae86f5-24b8-4062-98f4-3ce9438f86a9",
+    "object_id": "b0cc7559-12db-4011-aac0-82a7a3d4fb9b"
+   }
+  },
+  {
+   "name": "t13_driller_slam3_southwest",
+   "endpoint": "/objects/b0cc7559-12db-4011-aac0-82a7a3d4fb9b/animations",
+   "job": null,
+   "status": "completed",
+   "settings": {
+    "mode": "v3",
+    "animation_description": "the mecha-driller rears its whole front end up: the long drill arm tilts steeply...",
+    "directions": [
+     "south-west"
+    ],
+    "frame_count": 12,
+    "display_name": "slam3"
+   },
+   "credits": 3.0,
+   "credit_source": "usage (per-direction jobs, polled after)",
+   "balance_diff": 0.0,
+   "usage": null,
+   "balance_before": 12974.965464062501,
+   "balance_after": 12974.965464062501,
+   "secs": 3,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "d54a2c16-7a1d-4c65-86ad-c258a9d3694b",
+    "object_id": "b0cc7559-12db-4011-aac0-82a7a3d4fb9b"
+   }
+  },
+  {
+   "name": "t13_driller_slam2_east_southeast_northeast_south_north",
+   "endpoint": "/objects/b0cc7559-12db-4011-aac0-82a7a3d4fb9b/animations",
+   "job": null,
+   "status": "completed",
+   "settings": {
+    "mode": "v3",
+    "animation_description": "the whole mecha-driller winds up for a heavy slam: first the thick front arm hau...",
+    "directions": [
+     "east",
+     "south-east",
+     "north-east",
+     "south",
+     "north"
+    ],
+    "frame_count": 12,
+    "display_name": "slam2",
+    "animation_group_id": "80ae86f5-24b8-4062-98f4-3ce9438f86a9"
+   },
+   "credits": 15.0,
+   "credit_source": "usage (per-direction jobs, polled after)",
+   "balance_diff": 0.0,
+   "usage": null,
+   "balance_before": 12969.965464062501,
+   "balance_after": 12969.965464062501,
+   "secs": 7,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "80ae86f5-24b8-4062-98f4-3ce9438f86a9",
+    "object_id": "b0cc7559-12db-4011-aac0-82a7a3d4fb9b"
+   }
+  },
+  {
+   "name": "t13_kaya_blast2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "fc113009-8538-44d5-ae6c-17fccec22d71"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts double palm strike: draws both fists back to her right hip, then thrusts both open palms forward together in one powerful push, leaning into it with a step, then recovers to a ready stance. Pure body motion: her hands are plain and empty, no flames, no glow, no light, no particles",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 22.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 12963.965464062501,
+   "balance_after": 12941.965464062501,
+   "secs": 113,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3814b650-95de-4f59-b425-ef84622bc468"
+   }
+  },
+  {
+   "name": "t13_char_ruon2",
+   "endpoint": "/create-character-v3",
+   "job": "021bec19-f8a6-47f2-bae5-eabe083f6df1",
+   "status": "completed",
+   "settings": {
+    "description": "a grizzled provincial guard captain in his fifties, short swept-back grey hair, ...",
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "view": "low top-down",
+    "outline": "single color black outline",
+    "detail": "medium detail",
+    "template_id": "mannequin",
+    "seed": 11,
+    "name": "Tutorial ruon2"
+   },
+   "credits": 2.0,
+   "credit_source": "usage",
+   "balance_diff": 30.0,
+   "usage": {
+    "type": "generations",
+    "generations": 2.0
+   },
+   "balance_before": 12963.965464062501,
+   "balance_after": 12933.965464062501,
+   "secs": 163,
+   "notes": "",
+   "ids": {
+    "background_job_id": "021bec19-f8a6-47f2-bae5-eabe083f6df1",
+    "character_id": "c6aeeb28-28fd-4ecc-b3e4-253304f193a5"
+   }
+  },
+  {
+   "name": "t13_kaya_blast2_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "354a10cb-fa1a-448c-891e-666d0f28cc41",
+    "7472edba-3315-4b75-abb5-4ad8a6984f07",
+    "444e6cf4-9c5e-491c-a229-7cf14b8ecc05",
+    "1032e5f4-9275-4956-a60c-2854607cf8cf",
+    "9c587b57-e990-4c25-8436-73e2389790c3",
+    "55494c03-027a-431b-b3b3-124dd80355f0",
+    "0f4f58c8-95ec-44e8-bbac-7dcb3aa53f0f"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts double palm strike: draws both fists back to her right hip, then thrusts both open palms forward together in one powerful push, leaning into it with a step, then recovers to a ready stance. Pure body motion: her hands are plain and empty, no flames, no glow, no light, no particles",
+    "frame_count": 10,
+    "directions": [
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "3814b650-95de-4f59-b425-ef84622bc468"
+   },
+   "credits": 21.0,
+   "credit_source": "usage",
+   "balance_diff": 55.0,
+   "usage": {
+    "generations": 21.0
+   },
+   "balance_before": 12941.965464062501,
+   "balance_after": 12886.965464062501,
+   "secs": 178,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3814b650-95de-4f59-b425-ef84622bc468"
+   }
+  },
+  {
+   "name": "t13_ruon2_idle",
+   "endpoint": "/characters/animations",
+   "job": [
+    "cf92fe7c-26be-44a6-ad87-44ae08540802",
+    "d5f03541-9413-4d95-a316-d35184574352",
+    "a0527b26-2abc-478c-ae93-17776e3f133d",
+    "e26f685e-b102-43fb-8bcb-4d2eb4670b8b",
+    "02ee0cfe-760f-4b71-a33c-431f50a3590b",
+    "23a725f4-d95d-43d1-8f3b-f41ba347ae99",
+    "6d05b427-aa8f-440f-8551-5687996115a3",
+    "cf4ac220-68e5-420a-ba94-cc9558d95db3"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "c6aeeb28-28fd-4ecc-b3e4-253304f193a5",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest in a ready stance: the chest rises and falls slowly, a slight weight shift, arms relaxed; no effects",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 47.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12933.965464062501,
+   "balance_after": 12886.965464062501,
+   "secs": 150,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "8f3b8eba-025f-41bf-bdfe-003173818e77"
+   }
+  },
+  {
+   "name": "t13_ruon2_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "6ec05a7e-63cb-4f91-9fb9-26265df81d4e",
+    "94f64cc4-3987-4f2c-9721-2b3555ac3e53",
+    "c5286b57-77f4-45a9-82a4-9dc160017801",
+    "16869d50-a8cb-406c-ba9b-e1bc80558454",
+    "cec593df-4d75-40bd-ad52-06e5e78ef785",
+    "3fc31130-a32f-48bb-9464-78a12803ddc9",
+    "250c0831-baac-4e47-9a78-72996edf949e",
+    "afeb5f53-6f4c-4447-955f-a59a53f817b7"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "c6aeeb28-28fd-4ecc-b3e4-253304f193a5",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 38.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12886.965464062501,
+   "balance_after": 12848.965464062501,
+   "secs": 137,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "56f096fa-1862-43cf-ac8b-b94295d2172b"
+   }
+  },
+  {
+   "name": "t13_kaya_jab2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "ebdcd7f7-1f60-4885-8aa5-9506af41d45d",
+    "39e4bbde-790b-4fbe-9243-985bf3551949",
+    "2dfb09d9-134c-4e0c-810d-fde6b7e80f65",
+    "f0981b07-96c3-429d-9479-7b14b251e2d6",
+    "f7c2081b-f89c-4045-9e22-5a0f8ae8eb2f",
+    "01d22336-3894-4832-9e5d-fb7f1300f3a0",
+    "9f9bdf1d-1f4b-4b31-b5e8-059ff5410d92",
+    "ce70722e-9bcf-4a23-827d-49e3f47579ec"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts punch: draws the right fist back to the hip, then drives it straight forward hard with a step, then recovers to a ready stance. Pure body motion: her fist is a plain fist, no flames, no glow, no light, no particles",
+    "frame_count": 12,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 50.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12886.965464062501,
+   "balance_after": 12836.965464062501,
+   "secs": 219,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ca8c40e6-35d0-4585-b142-f5edfbe33aab"
+   }
+  },
+  {
+   "name": "t13_ruon2_attack",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9d1b5464-8310-4994-8353-ef9212cf8081",
+    "c960ce4e-5db3-4242-8e31-988ad4065110",
+    "41fa25b2-9d94-4b90-9216-2b81f2b2901f",
+    "751d25bf-6e9e-4485-8230-d2c8dbf2d600",
+    "7822525f-a1a5-4cd9-abf8-5cef5eece818",
+    "27d3801e-9023-48cc-b61e-a93608218166",
+    "f195e943-2801-4b44-b14a-f6948e919fee",
+    "25c9332a-9edc-4585-8f46-8a5c76afddd1"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "c6aeeb28-28fd-4ecc-b3e4-253304f193a5",
+    "mode": "skeleton-v3",
+    "action_description": "a disciplined sabre cut: draws the sabre and steps forward with one diagonal cut across the front, then returns to a guard stance",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 36.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12848.965464062501,
+   "balance_after": 12812.965464062501,
+   "secs": 171,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "4d716f6e-87ee-4ac0-9c99-8dc27fde3cf6"
+   }
+  },
+  {
+   "name": "t13_kaya_stomp2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "a018cd48-1e25-4c1b-b737-aa8786ca609a",
+    "4dca745b-36c3-409d-8d16-81f50d91d55b",
+    "f1e8da66-a808-4149-981a-599fa997dc95",
+    "0022aa1c-60bc-489c-b1cc-260666bce8bb",
+    "3d5a3018-aede-4072-9dcc-42921b745eae",
+    "7dfe8251-9b3b-4f3b-9783-f7135390cd67",
+    "309cf161-5f84-48ba-8c71-6247b5083d0a",
+    "0323d7ed-358f-4050-bdf2-000acb2195ef"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts ground stomp: shifts her weight, raises one knee high, stamps that foot down hard into a wide low stance with both fists sinking to her sides, then rises back to a ready stance. Pure body motion: nothing around her feet or hands, no flames, no glow, no light, no particles",
+    "frame_count": 12,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 48.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12836.965464062501,
+   "balance_after": 12788.965464062501,
+   "secs": 237,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "edf5778a-cb02-4fcc-a551-c8533c6ab080"
+   }
+  },
+  {
+   "name": "t13_deserter_punch2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "4fd65d00-1fef-4560-beff-ed2e747ed3dc",
+    "f38c8a4f-9743-467e-bc89-5b1d650fdd52",
+    "dc28c8a7-6229-43a1-8cd0-e82b29b0c813",
+    "f01b5eb6-f168-48a4-a877-a11476883e86",
+    "7e55c419-dbc0-4e18-b9a2-44e35cc23970",
+    "80aff1d8-6f0e-4a54-ab8a-e5537c4adb4d",
+    "0f5b06d1-e729-4803-8be3-165df6bb1977",
+    "9ccebd32-3a0a-4df4-a8b9-609fc514c4b1"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "00ea5bfd-5f5d-482b-94f7-401fb8a3bf0d",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts punch: draws the right fist back to the hip, then drives it straight forward hard with a step, then returns to stance. Pure body motion: a plain fist, no flames, no glow, no light, no particles",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12788.965464062501,
+   "balance_after": 12764.965464062501,
+   "secs": 191,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "6c46febe-1e96-4996-9a27-1773555a0130"
+   }
+  },
+  {
+   "name": "t13_qbender_throw2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "cd0dd1bb-6cef-411b-a054-0c4573918a7f",
+    "6b8bda23-4e44-49a7-b72d-69a71f7d1afc",
+    "afd52f45-38ba-4486-b3e7-362352b9af49",
+    "de16b333-4f3e-40fb-a945-a95382887552",
+    "fa6d758e-00ab-4c66-8c34-bbc34a183410",
+    "795bf740-5aac-4d7d-be78-b7aa5c866621",
+    "cfa3a093-8cbd-4ba9-b14b-4ae9a6aa2980",
+    "7b3cf7c4-0451-43bb-98e6-e22498bce7d1"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "1c49d23d-0233-4649-8f81-a16021726262",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy two-handed throw: crouches low, scoops both empty hands up from knee hei...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12764.965464062501,
+   "balance_after": 12740.965464062501,
+   "secs": 187,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "01c4bc86-0e59-4c5f-9a4c-a03ae66c5ab9"
+   }
   }
  ],
  "end_balance": 16728.0,

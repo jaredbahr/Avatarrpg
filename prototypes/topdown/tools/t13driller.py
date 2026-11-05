@@ -8,6 +8,11 @@ DESC = ('a mecha-driller boss machine: a boxy rust-orange riveted iron body on t
         'a thick riveted arm at the front ending in a big steel spiral drill bit, a short smoking exhaust pipe, oil stains, a split black hose')
 ACT = {'idle': 'the engine idles: the whole machine shudders and rumbles slightly on its treads, the drill bit spins slowly, the driver bobs; it stays in place',
        'slam': 'the drill arm rears up high, then slams down hard onto the ground in front, the whole machine lurching forward, then the arm lifts back to rest'}
+ACT['slam2'] = ('the whole mecha-driller winds up for a heavy slam: first the thick front arm hauls the big steel drill bit UP HIGH, tilted far above the cabin roof at about 60 degrees, '
+                'the body rocking back on its treads; it holds there; then the arm crashes DOWN hard so the drill bit pounds into the ground in front of the machine, the whole body lurching forward and shaking, dust kicking up; then it lifts slowly back to rest. '
+                'The arm clearly rises well above the cabin and clearly drops; no white flashes or effects')
+ACT['slam3'] = ('the mecha-driller rears its whole front end up: the long drill arm tilts steeply UP, the drill bit pointing high into the air far above the cabin roof, the treads staying on the ground; it hangs there a moment; '
+                'then the arm SMASHES down so the drill bit hammers the ground in front of the machine and the body jolts; then it rises slowly back to rest. No effects')
 cmd = sys.argv[1]
 if cmd == 'rot':
     body = {'description': DESC, 'view': 'low top-down', 'n_directions': 8, 'first_frame': pl.b64('t13/obj/driller_big_5.png'), 'seed': 5}
@@ -15,7 +20,7 @@ if cmd == 'rot':
     lr = r['final'].get('last_response') or r['final']; st['object_id'] = lr.get('object_id') or r['post'].get('object_id'); json.dump(st, open(F, 'w'), indent=1); print(st, list(lr.keys()))
 if cmd == 'anim':
     clip, dirs = sys.argv[2], sys.argv[3].split(',')
-    body = {'mode': 'v3', 'animation_description': ACT[clip], 'directions': dirs, 'frame_count': 8 if clip == 'idle' else 10, 'display_name': clip}
+    body = {'mode': 'v3', 'animation_description': ACT[clip], 'directions': dirs, 'frame_count': 8 if clip == 'idle' else 12 if clip in ('slam2', 'slam3') else 10, 'display_name': clip}
     if st.get(clip): body['animation_group_id'] = st[clip]
     e, r = pl.run(f"/objects/{st['object_id']}/animations", body, f't13_driller_{clip}_' + '_'.join(d.replace('-', '') for d in dirs), estimate=8 * len(dirs))
     st[clip] = r['post'].get('animation_group_id') or st.get(clip); json.dump(st, open(F, 'w'), indent=1); print(clip, st)

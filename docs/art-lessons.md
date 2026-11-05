@@ -91,6 +91,13 @@ animation or presentation work. Add to it when something fails.
 - **Portraits and sprites can disagree.** Ruon's shipped bust is a grey-haired man in a brown coat; his top-down
   sprite is a bearded man in a green hooded cloak. Compare bust and sprite side by side, and settle one canonical
   design before more art depends on it.
+- **Element words paint effects into the frames.** "Fire-bending" or "earth-bending" in a `skeleton-v3` prompt made
+  PixelLab draw flames and rocks into Kaya's, the deserter's and the quarry bender's strikes, even with "no
+  effects". Describe pure body motion ("martial-arts punch"), say what the hands hold, and leave effects to `/vfx`.
+- **Check every heading of an object animation.** The Driller's slam raised the drill in six headings and barely
+  in one; a retake that spelled out the raise ("steeply up, far above the cabin roof") fixed it.
+- **Fix only what the owner names.** Sura's eyes read as blank white in the south heading alone; a recolour of
+  every heading would have touched a model the owner likes.
 - **Mirrored rows swap hands.** Use PixelLab's own headings.
 - **The angle reference also fixes pixel size.** "88 px" came back 58 px wide. A boss needs a bigger canvas and a
   relative size ("more than twice as tall as a person"). For a vehicle, accept the south view and let PixelLab
@@ -112,7 +119,8 @@ animation or presentation work. Add to it when something fails.
 - **A top-level `const` is not on `window`.** The Ba Dan iframe read `parent.PORTRAITS` as undefined and silently
   drew no portrait. Share data with `var` or an explicit `window` property.
 - **Screenshot dialogue only once the text stops typing,** or the shot catches half a line.
-- **Object animation jobs return at once and log 0 credits.** Re-poll them to book the real usage.
+- **Object animation jobs return at once and log 0 credits.** Re-poll them to book the real usage. Even re-polled,
+  they under-report: one pass booked 221 credits while the balance fell 255. Check the balance delta.
 - **Stills can lie:** a "before" and an "after" were shot at the same moment. Check timestamps, and watch the end of
   every video (an epilogue card once drew over the board).
 
