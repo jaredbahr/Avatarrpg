@@ -624,7 +624,8 @@ let CLS = null;
 const Q_FACE = 13;
 const qcell = (x, y) => {   // the authored character, extended past the board: a walkable edge cell carries on (an exit), the rest is rock
   const cx = Math.max(0, Math.min(GW - 1, x)), cy = Math.max(0, Math.min(GH - 1, y)), c = ROWS[cy][cx];
-  if (x === cx && y === cy) return LEVEL_KEY === 'gate' && y === GH - 1 && (c === '#' || c === 'G') ? 'X' : c;
+  if (x === cx && y === cy) return LEVEL_KEY === 'gate' && y === GH - 1 && (c === '#' || c === 'G') ? 'X' : c === 'o' && (ROWS[cy][Math.max(0, cx - 1)] === '=' || ROWS[cy][Math.min(GW - 1, cx + 1)] === '=') ? '=' : c;
+  if (c === 'o' && (ROWS[cy][Math.max(0, cx - 1)] === '=' || ROWS[cy][Math.min(GW - 1, cx + 1)] === '=')) return '=';   // spilled oil lies on the road; it does not cut it
   const L = LEG(c); if (L.blocked || L.elev) return 'X';
   if (LV.ground === 'quarry' && LEVEL_KEY === 'road' && c === ',') return 'T';
   return c === '=' || c === '.' || c === ',' ? c : 'X';
@@ -636,7 +637,7 @@ function cellField(fn, wx, wy) {   // smoothstep-blended cell indicator at a wor
 }
 // the rock mass: an inset rectangle with soft organic bites, open where a road leaves the board
 function inQMass(wx, wy) {
-  const n = vnoise(wx, wy, 201, 30) * 14 + vnoise(wx, wy, 203, 9) * 5;
+  const n = vnoise(wx, wy, 201, 30) * 14 + vnoise(wx, wy, 203, 9) * 7 + vnoise(wx, wy, 205, 17) * 9;
   const L = 18 + n, R = PW - 18 - n, Tp = 22 + n, B = PH - 46 + n;
   if (wy >= Tp && wy <= B && wx >= L && wx <= R) return true;
   // a road mouth: the road's own rows carry it out to the frame
@@ -651,6 +652,52 @@ function texData(key) {
   return (tex[key] = { d: x.getImageData(0, 0, im.width, im.height).data, w: im.width, h: im.height });
 }
 function sample(key, x, y) { const t = texData(key), i = (((y % t.h) + t.h) % t.h * t.w + (((x % t.w) + t.w) % t.w)) * 4; return [t.d[i], t.d[i + 1], t.d[i + 2]]; }
+// polish pass: the shelf rock is not one tile repeated. A warped Voronoi quilt of ~60 px regions, each drawn from one of four plain rock
+// tiles with its own flip, turn and offset; the region borders dither over 3 px, and a slow tone drift runs across several tiles
+const ROCKN = 4;
+function quilt(keys, x, y, R, sk) {   // keys: texture names; each region takes one, flipped/turned/offset at random
+  const wx = x + vnoise(x, y, sk + 1, 22) * 18 + vnoise(x, y, sk + 2, 7) * 4, wy = y + vnoise(x, y, sk + 3, 22) * 18 + vnoise(x, y, sk + 4, 7) * 4;
+  let best = 1e9, second = 1e9, bi = 0, bj = 0, sj = 0, sk2 = 0;
+  const cx = Math.floor(wx / R), cy = Math.floor(wy / R);
+  for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) {
+    const gx = cx + j, gy = cy + k, px = (gx + 0.15 + hash2(gx, gy, sk + 11) * 0.7) * R, py = (gy + 0.15 + hash2(gx, gy, sk + 12) * 0.7) * R, d = (wx - px) ** 2 + (wy - py) ** 2;
+    if (d < best) { second = best; sj = bi; sk2 = bj; best = d; bi = gx; bj = gy; } else if (d < second) { second = d; sj = gx; sk2 = gy; }
+  }
+  let gx = bi, gy = bj;
+  if (Math.sqrt(second) - Math.sqrt(best) < 3 && hash2(x, y, sk + 13) < 0.5) { gx = sj; gy = sk2; }   // a dithered border
+  const t = Math.floor(hash2(gx, gy, sk + 14) * keys.length), f = Math.floor(hash2(gx, gy, sk + 15) * 8), ox = Math.floor(hash2(gx, gy, sk + 16) * 32), oy = Math.floor(hash2(gx, gy, sk + 17) * 32);
+  let u = (x + ox) & 31, v = (y + oy) & 31; if (f & 1) u = 31 - u; if (f & 2) v = 31 - v; if (f & 4) { const q = u; u = v; v = q; }
+  return sample(keys[t], u, v);
+}
+const ROCK_KEYS = ['rock0', 'rock1', 'rock2', 'rock3'];
+function rockTop(x, y) {
+  const c = quilt(ROCK_KEYS, x, y, 58, 300), b = 1 + vnoise(x, y, 321, 70) * 0.12 + vnoise(x, y, 322, 24) * 0.05;
+  return c.map(a => Math.max(0, Math.min(255, a * b)));
+}
+// the sand: one plain tile, quilted the same way, with a slow warm/cool drift and pale dust drifts over tens of tiles
+function sandFloor(x, y) {
+  const c = quilt(['floor'], x, y, 74, 400), n1 = vnoise(x, y, 421, 90), n2 = vnoise(x, y, 422, 34), dust = vnoise(x, y, 423, 26) > 0.42 ? 1.045 : 1;
+  const warm = 0.012 + n1 * 0.016 + n2 * 0.008, b = (1 + n1 * 0.04 + n2 * 0.025) * dust;
+  return [c[0] * b * (1 + warm), c[1] * b, c[2] * b * (1 - warm * 1.6)].map(a => Math.max(0, Math.min(255, a)));
+}
+// road stubs that end inside the board: { side, xEnd, yc, half } in px (left or right edge, the road's last cell column, its rows)
+function roadStubs() {
+  const out = []; if (LEVEL_KEY === 'road') return out;
+  for (const side of [0, 1]) {
+    const R = ch => ch === '=' || ch === 'o', end = r => { const row = ROWS[r]; if (side === 0) { if (!R(row[0])) return -1; let e = 0; while (e + 1 < GW && R(row[e + 1])) e++; return e >= GW - 1 ? -1 : e; } if (!R(row[GW - 1])) return -1; let e = GW - 1; while (e - 1 >= 0 && R(row[e - 1])) e--; return e <= 0 ? -1 : e; };
+    let y = 0; while (y < GH) { const e0 = end(y); if (e0 < 0) { y++; continue; } let y1 = y; while (y1 + 1 < GH && end(y1 + 1) === e0) y1++;
+      const sideCol = side ? e0 : e0, adj = (y > 0 && ROWS[y - 1][sideCol] === '=') || (y1 < GH - 1 && ROWS[y1 + 1][sideCol] === '=');   // a band beside more road is not an end
+      if (!adj) out.push({ side, xEnd: side ? GX + e0 * CS : GX + (e0 + 1) * CS, yc: GY + (y + y1 + 1) * CS / 2, half: (y1 - y + 1) * CS / 2 }); y = y1 + 1; }
+  }
+  return out;
+}
+const STUBS = roadStubs();
+function stubTip(x, y) {   // > 0 where a stub's end should round off into a tongue
+  let t = 0;
+  for (const b of STUBS) { const L = 70, u = b.side ? ((b.xEnd - x) < L ? 1 - (x - (b.xEnd - L)) / L : -1) : 0; const dx = b.side ? (b.xEnd - x) : (x - b.xEnd);
+    const f = (dx + L) / L; if (f <= 0.35) continue; const v = Math.abs(y - b.yc) / b.half; t = Math.max(t, (Math.min(1.2, f) - 0.35) * 0.55 + Math.max(0, v - 0.45) * (f - 0.35) * 1.6 - 0.0); }
+  return t;
+}
 function bakeQuarry() {
   const g = ground.getContext('2d', { willReadFrequently: true }); g.imageSmoothingEnabled = false;
   const id = g.createImageData(PW, PH), d = id.data, lev = new Int8Array(PW * PH), cls = new Uint8Array(PW * PH);   // cls: 0 floor 1 road 2 water 3 pit 4 grass 5 rock-top 6 face 9 void
@@ -664,10 +711,11 @@ function bakeQuarry() {
     lev[i] = h2 > 0.5 ? 2 : h1 > 0.5 ? 1 : 0;
     if (lev[i]) { cls[i] = 5; continue; }
     const m = vnoise(x, y, 221, 19) * 0.26 + vnoise(x, y, 222, 8) * 0.16 + vnoise(x, y, 223, 3) * 0.07;
-    if (cellField(c => (c === 'P' ? 1 : 0), x, y) + m * 1.4 > 0.62) cls[i] = 3;
-    else if (cellField(c => (c === 'W' || c === '~' ? 1 : 0), x, y) + m * 1.7 > 0.55) cls[i] = 2;
+    const fp = cellField(c => (c === 'P' ? 1 : 0), x, y), fw = cellField(c => (c === 'W' || c === '~' ? 1 : 0), x + Math.round(vnoise(y, 3, 224, 17) * 10), y + Math.round(vnoise(x, 4, 225, 17) * 8));
+    if (fp > 0.08 && fp + m * 1.4 > 0.62) cls[i] = 3;          // only near a pit or a pool: the noise alone never opens a speck of either
+    else if (fw > 0.08 && fw + m * 1.7 > 0.55) cls[i] = 2;
     else {   // v3: the strongest of road, grass and floor wins (no band of a third ground between two others)
-      const fr = cellField(c => (c === '=' ? 1 : 0), x, y + Math.round(vnoise(x, 7, 227, 40) * 9)) + m * 1.25, fg = cellField(c => (c === ',' || c === 'T' ? 1 : 0), x, y) - m, ff = cellField(c => (c !== '=' && c !== ',' && c !== 'T' && c !== '~' && c !== 'W' && !LEG(c).elev ? 1 : 0), x, y) + vnoise(x, y, 229, 13) * 0.2;
+      const fr = cellField(c => (c === '=' ? 1 : 0), x + Math.round(vnoise(y, 5, 228, 26) * 13 + vnoise(y, 6, 230, 8) * 4), y + Math.round(vnoise(x, 7, 227, 36) * 14 + vnoise(x, 8, 226, 13) * 5)) + m * 1.7 - stubTip(x, y), fg = (gf => (gf > 0.03 || cellField(c => (c === '~' || c === 'W' ? 1 : 0), x, y) > 0.03 ? gf - m : -9))(cellField(c => (c === ',' || c === 'T' ? 1 : 0), x, y)), ff = cellField(c => (c !== '=' && c !== ',' && c !== 'T' && c !== '~' && c !== 'W' && !LEG(c).elev ? 1 : 0), x, y) + vnoise(x, y, 229, 13) * 0.2;
       cls[i] = fr >= fg && fr >= ff ? 1 : fg >= ff ? 4 : 0;
     }
   }
@@ -695,13 +743,27 @@ function bakeQuarry() {
       const sh = 1 - 0.22 * k / F; c = c.map(v => v * sh);
       if (k === 1) c = c.map(v => Math.min(255, v * 1.22 + 10));         // the lit lip
       if (k === F) c = c.map((v, j) => v * 0.55 + [0x32, 0x21, 0x25][j] * 0.45);   // the foot's occlusion line
-    } else if (cls[i] === 5) c = sample('top', x, y);
-    else if (cls[i] === 1) c = sample('road', x, y);
+    } else if (cls[i] === 5) c = rockTop(x, y);
+    else if (cls[i] === 1) c = quilt(['road'], x, y, 70, 440).map((a, j) => a * (1 + vnoise(x, y, 441, 60) * 0.07));
     else if (cls[i] === 2) c = sample('water', x, y);
-    else if (cls[i] === 4) c = vnoise(x, y, 41, 46) + vnoise(x, y, 43, 9) * 0.25 > 0.78 ? sample('grass', x, y) : sample(hash2(Math.floor(x / T), Math.floor(y / T), 245) < 0.5 ? 'moss0' : 'moss1', x, y);
+    else if (cls[i] === 4) c = vnoise(x, y, 41, 46) + vnoise(x, y, 43, 9) * 0.25 > 0.98 ? sample('grass', x, y) : sample(hash2(Math.floor(x / T), Math.floor(y / T), 245) < 0.5 ? 'moss0' : 'moss1', x, y);
     else if (cls[i] === 3) { const r = vnoise(x, y, 251, 5); c = r > 0.3 ? [40, 30, 32] : [27, 20, 23]; }
-    else { c = sample(fl(x, y), x, y); const b = 1 + vnoise(x, y, 247, 23) * 0.06; c = c.map(v => v * b); }
+    else { c = sandFloor(x, y); }
     d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
+  }
+  // 3b. polish pass: the road frays into the sand (worn ground a few px further out, in specks, never a line) and, where a stub
+  // ends inside the board, its two wheel ruts carry on a short way, fading
+  { const RAD = 9, tmp = new Float32Array(PW * PH), fld = new Float32Array(PW * PH);
+    for (let y = 0; y < PH; y++) { let acc = 0; for (let x = -RAD; x < PW; x++) { if (x + RAD < PW) acc += cls[y * PW + x + RAD] === 1 ? 1 : 0; if (x - RAD - 1 >= 0) acc -= cls[y * PW + x - RAD - 1] === 1 ? 1 : 0; if (x >= 0) tmp[y * PW + x] = acc / (2 * RAD + 1); } }
+    for (let x = 0; x < PW; x++) { let acc = 0; for (let y = -RAD; y < PH; y++) { if (y + RAD < PH) acc += tmp[(y + RAD) * PW + x]; if (y - RAD - 1 >= 0) acc -= tmp[(y - RAD - 1) * PW + x]; if (y >= 0) fld[y * PW + x] = acc / (2 * RAD + 1); } }
+    for (let y = 0; y < PH; y++) for (let x = 0; x < PW; x++) { const i = y * PW + x; if (cls[i] !== 0 || face[i] || fld[i] < 0.03) continue;
+      if (hash2(x, y, 461) < fld[i] * 1.1 + vnoise(x, y, 462, 5) * 0.2 - 0.05) { const c = quilt(['road'], x, y, 70, 440); const a = 0.8; d[i * 4] = d[i * 4] * (1 - a) + c[0] * a; d[i * 4 + 1] = d[i * 4 + 1] * (1 - a) + c[1] * a; d[i * 4 + 2] = d[i * 4 + 2] * (1 - a) + c[2] * a; cls[i] = 0; } }
+    for (const bd of STUBS) {
+      const dir = bd.side ? -1 : 1, yr = Math.round(bd.yc); let x0 = bd.side ? PW - 1 : 0; while (x0 >= 0 && x0 < PW && cls[yr * PW + x0] !== 1) x0 += dir; while (x0 >= 0 && x0 < PW && cls[yr * PW + x0] === 1) x0 += dir;
+      for (const off of [-8, 8]) { let yy = bd.yc + off; for (let s = 0; s < 130; s++) { const x = x0 + dir * (s + 6); yy += vnoise(s, off, 471, 14) * 0.4; const Y = Math.round(yy);
+        if (x < 2 || x >= PW - 2) break; if ((s % 17) > 12 - Math.floor(s / 22) || hash2(s, off, 472) < s / 150) continue;
+        for (let h = 0; h < 2; h++) { const i = (Y + h) * PW + x; if (face[i] || cls[i] === 1 || cls[i] === 9) continue; const m = h ? 0.7 : 0.8; d[i * 4] *= m; d[i * 4 + 1] *= m * 0.95; d[i * 4 + 2] *= m * 0.84; } } }
+    }
   }
   // 4. edges: a shelf's sides (dark on the right, lit on the left), the cast of a face and a right side on the lower ground,
   // the floor darkening into the road's verge and the grass edge, the pit's lip
@@ -729,6 +791,33 @@ function bakeQuarry() {
     const x = 2 + Math.floor(hash2(k, 1, 271) * (PW - 4)), y = 2 + Math.floor(hash2(k, 2, 271) * (PH - 4)), i = y * PW + x;
     if (!(cls[i] === 1 || cls[i] === 0) || ![-2, 2].some(o => cls[i + o] === 4 || cls[i + o * PW] === 4)) continue;
     for (let b = 0; b < 3; b++) { const len = 2 + Math.floor(hash2(k, b, 272) * 3), lean = b - 1; for (let s = 0; s < len; s++) { g.fillStyle = s >= len - 1 ? GR[4] : GR[2]; g.fillRect(x + Math.round(lean * s * 0.5), y + 1 - s, 1, 1); } }
+  }
+  // polish pass: sparse hairline cracks, scree chips and the odd dry tuft on the shelf rock (each on its own spot, never a lattice)
+  for (let gy = 0; gy < PH / 70; gy++) for (let gx = 0; gx < PW / 70; gx++) {
+    if (hash2(gx, gy, 331) > 0.55) continue;
+    let x = Math.floor((gx + hash2(gx, gy, 332)) * 70), y = Math.floor((gy + hash2(gx, gy, 333)) * 70), ang = hash2(gx, gy, 334) * 6.283;
+    const len = 12 + Math.floor(hash2(gx, gy, 335) * 22);
+    for (let s = 0; s < len; s++) {
+      ang += (hash2(gx, s, 336) - 0.5) * 0.9; x += Math.cos(ang) * 1.2; y += Math.sin(ang) * 1.2; const X = Math.round(x), Y = Math.round(y), i = Y * PW + X;
+      if (X < 1 || Y < 1 || X >= PW - 1 || Y >= PH - 1 || cls[i] !== 5 || face[i]) break;
+      g.fillStyle = s > len - 4 ? '#6f666b' : '#4f464c'; g.fillRect(X, Y, 1, 1); if (s % 5 === 2) { g.fillStyle = '#9d979a'; g.fillRect(X + 1, Y + 1, 1, 1); }
+    }
+  }
+  for (let k = 0; k < 420; k++) {
+    const x = 3 + Math.floor(hash2(k, 1, 341) * (PW - 6)), y = 3 + Math.floor(hash2(k, 2, 341) * (PH - 6)), i = y * PW + x; if (cls[i] !== 5 || face[i] || face[i - PW * 3]) continue;
+    const sz = hash2(k, 3, 341), grp = sz < 0.3 ? 3 : 1;   // a few scree chips, each with its dark foot and a pale top
+    for (let c = 0; c < grp; c++) { const cx = x + Math.round((hash2(k, c, 342) - 0.5) * 8), cy = y + Math.round((hash2(k, c, 343) - 0.5) * 5), w = 2 + (hash2(k, c, 344) < 0.4 ? 1 : 0);
+      g.fillStyle = '#4a4147'; g.fillRect(cx, cy + 1, w + 1, 1); g.fillStyle = '#6b6469'; g.fillRect(cx, cy, w, 1); g.fillStyle = '#b4aeab'; g.fillRect(cx, cy - 1, w - 1, 1); }
+  }
+  for (let k = 0; k < 150; k++) {   // loose stones, 4-6 px, each with a pale lit top-left, a dark right side and a hard foot
+    const x = 4 + Math.floor(hash2(k, 1, 361) * (PW - 8)), y = 6 + Math.floor(hash2(k, 2, 361) * (PH - 12)), i = y * PW + x; if (cls[i] !== 5 || face[i] || face[i - PW * 4] || cls[i + PW * 3] !== 5) continue;
+    const w = 3 + Math.floor(hash2(k, 3, 361) * 3), h = w - 1;
+    g.fillStyle = '#322125'; g.fillRect(x + 1, y + h, w, 1); g.fillStyle = '#6a6368'; g.fillRect(x, y, w, h); g.fillStyle = '#4f484e'; g.fillRect(x + w - 1, y, 1, h); g.fillStyle = '#aaa5a6'; g.fillRect(x, y, w - 1, 1);
+  }
+  for (let k = 0; k < 26; k++) {   // a dry tuft: three blades in the old shelf tone
+    const x = 4 + Math.floor(hash2(k, 1, 351) * (PW - 8)), y = 6 + Math.floor(hash2(k, 2, 351) * (PH - 12)), i = y * PW + x; if (cls[i] !== 5 || face[i] || cls[i + PW * 3] !== 5) continue;
+    for (let b = -1; b <= 1; b++) { const len = 3 + Math.floor(hash2(k, b, 352) * 3); for (let s = 0; s < len; s++) { g.fillStyle = s === len - 1 ? '#c98f3e' : '#8d6b3a'; g.fillRect(x + b + Math.round(b * s * 0.4), y - s, 1, 1); } }
+    g.fillStyle = '#4a4147'; g.fillRect(x - 1, y + 1, 3, 1);
   }
   // pale grit and chips scattered over the floor, densest under the faces (ART_DIRECTION §4: detail near walls, calm centre)
   for (let k = 0; k < 2600; k++) {
@@ -779,7 +868,7 @@ function placeQuarry() {
   if (LEVEL_KEY === 'floor') {
     // the drill shaft (P) under its headframe; the barred galleries in the north and south faces (quarry_descent: "the gallery
     // entrances have been barred with timber"); rails and a cart along the north terrace; the crew's tools; the driller's junk
-    put('headframe', GX + 19 * CS, GY + 6 * CS + 6, {});
+    put('headframe', GX + 19 * CS - 4, GY + 8 * CS + 2, {});   // its legs on the floor at the shaft's south lip, not in the dark
     for (const x of [5, 13]) put('gallery_door', cellX(x), GY + CS + 4, {});
     put('rails', cellX(9), GY + 2 * CS + 12, { flat: true }); put('rails', cellX(9) + 62, GY + 2 * CS + 12, { flat: true });
     put('minecart', cellX(10) + 4, GY + 2 * CS + 6, {});
@@ -792,9 +881,24 @@ function placeQuarry() {
     put('lime_boulder', cellX(13), GY + 5 * CS + 32, { cell: [13, 5] }); put('log', cellX(5), GY + 10 * CS + 30, { cell: [5, 10] });
     for (const [x, y] of [[3, 3], [7, 4], [12, 7], [2, 6], [17, 7], [6, 8]]) put(hash2(x, y, 1) < 0.5 ? 'tuft' : 'flowers', cellX(x), cellY(y) + 6, { flat: true });
   }
+  dressPlateaus();
   // the pines beyond a forest edge in the margins (road only: the quarry is bare rock)
   if (LEVEL_KEY === 'road') for (let i = 0; i < 2; i++) for (let x = -10; x < GX + 9 * CS; x += 34 + Math.round(hash2(i, x, 5) * 16)) put(PINES[(x + i * 3) % PINES.length], x, GY - 10 - i * 46 - Math.round(hash2(x, i, 6) * 20), { kind: 'tree' });
   if (LEVEL_KEY === 'road') for (let y = 0; y < GH; y++) { if (ROWS[y][0] !== 'T') continue; put(PINES[(y * 7) % PINES.length], 40 + Math.round(hash2(y, 1, 7) * 20), GY + y * CS + CS - 2, { kind: 'tree' }); }
+}
+// polish pass: the big rock plateaus get a little sparse dressing (PixelLab scree heaps, a few dead shrubs, a loose rubble heap), each on its own
+// spot well inside the plateau and away from every other object, grounded like any prop
+function dressPlateaus() {
+  const rockCell = (cx, cy) => (cx < 0 || cy < 0 || cx >= GW || cy >= GH ? qcell(cx, cy) === 'X' : LEG(ROWS[cy][cx]).elev > 0 && !LEG(ROWS[cy][cx]).ramp);
+  const inside = (px, py) => { const cx = Math.floor((px - GX) / CS), cy = Math.floor((py - GY) / CS); for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) if (!rockCell(cx + j, cy + k)) return false; return inQMass(px - 40, py - 22) && inQMass(px + 40, py + 40); };
+  let shrubs = 0, n = 0;
+  for (let k = 0; k < 400 && n < 15; k++) {
+    const px = 30 + Math.floor(hash2(k, 1, 501) * (PW - 60)), py = 40 + Math.floor(hash2(k, 2, 501) * (PH - 120)); if (!inside(px, py)) continue;
+    if (OBJ.some(o => Math.hypot(o.x + o.w / 2 - px, o.base - py) < 95)) continue;
+    const r = hash2(k, 3, 501), key = r < 0.22 && shrubs < 5 ? 'dead_shrub' : r < 0.3 ? 'lime_rubble' : 'scree';
+    if (key === 'dead_shrub') shrubs++;
+    put(key, px, py, { flip: hash2(k, 4, 501) < 0.5 }); n++;
+  }
 }
 // every object's own shadow on the floor (the ported grounding.js), grass kits on grass, the floor reaction on hard ground
 function groundObjects(QB) {
@@ -807,11 +911,59 @@ function groundObjects(QB) {
     const m = hardShadowMask(alphaOf(img), img.width, img.height, opts);
     const ix = Math.max(0, Math.min(PW - 1, o.x + (o.w >> 1))), iy = Math.min(PH - 1, o.base - 2), under = QB.cls[iy * PW + ix];
     SHADOW_LOG.push({ o, m, dx: o.x - m.pad, dy: o.y });
-    if (under === 4) { const kit = groundKit(img, o.x * 7 + o.base, { tall: o.kind === 'tree' ? 7 : 5 }); if (kit) { g.drawImage(kit.contact, o.x - kit.m, o.y - kit.m); FRINGE.push([o, kit]); } paintMask(g, m, o.x - m.pad, o.y); }
+    if (under === 4) { const kit = groundKit(img, o.x * 7 + o.base, { tall: o.kind === 'tree' ? 7 : 5 }); if (kit) { g.drawImage(kit.contact, o.x - kit.m, o.y - kit.m); FRINGE.push([o, kit]); } paintMask(g, m, o.x - m.pad, o.y, 1.45); }   // the dark moss needs the deeper notch to read 25%
     else { paintMask(g, m, o.x - m.pad, o.y, 1.3); floorReaction(g, m, o.x - m.pad, o.y, o.x * 31 + o.base); }
   }
 }
 const SHADOW_LOG = [];
+
+// ---------- the measurable checks (tutorial pass), run from tools/t13checks.js
+// (A) shadow contrast: each object's visible shadow (mask pixels not under any sprite) against open ground 5-6 px beyond it
+function shadowTableQ() {
+  const d = ground.getContext('2d').getImageData(0, 0, PW, PH).data, cover = new Uint8Array(PW * PH), shad = new Uint8Array(PW * PH);
+  for (const o of OBJ) { if (o.flat) continue; const A = alphaOf(IMG['ob:' + o.k]); for (let y = 0; y < o.h; y++) for (let x = 0; x < o.w; x++) if (A[y * o.w + x]) { const X = o.x + x, Y = o.y + y; if (X >= 0 && Y >= 0 && X < PW && Y < PH) cover[Y * PW + X] = 1; } }
+  for (const { m, dx, dy } of SHADOW_LOG) for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) if (m.alpha[y * m.width + x] >= 120) { const X = dx + x, Y = dy + y; if (X >= 0 && Y >= 0 && X < PW && Y < PH) shad[Y * PW + X] = 1; }
+  const lum = i => 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+  return SHADOW_LOG.map(({ o, m, dx, dy }) => {
+    let s = 0, n = 0, rs = 0, rn = 0; const mine = [];
+    for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) if (m.alpha[y * m.width + x] >= 120) { const X = dx + x, Y = dy + y; if (X < 0 || Y < 0 || X >= PW || Y >= PH) continue; const i = Y * PW + X; mine.push(i); if (!cover[i]) { s += lum(i); n++; } }
+    for (const i of mine) { const X = i % PW, Y = (i / PW) | 0; for (const [ex, ey] of [[6, 0], [-6, 0], [0, 6], [0, -6], [5, 5], [-5, 5]]) { const X2 = X + ex, Y2 = Y + ey; if (X2 < 0 || Y2 < 0 || X2 >= PW || Y2 >= PH) continue; const j = Y2 * PW + X2; if (!cover[j] && !shad[j]) { rs += lum(j); rn++; } } }
+    const sl = n ? s / n : 0, rl = rn ? rs / rn : 0;
+    return { k: o.k, x: o.x + (o.w >> 1), y: o.base, visible: n, shadow: +sl.toFixed(1), ground: +rl.toFixed(1), darker: rl ? +(1 - sl / rl).toFixed(3) : 0 };
+  });
+}
+// (D) straight edges: the longest run of terrain boundary that stays on one pixel row or column (ground classes and shelf levels)
+function edgeRunsQ() {
+  const C = QB.cls, Lv = QB.lev, key = i => C[i] * 4 + Lv[i] + 1; let best = { len: 0 };
+  for (const horiz of [true, false]) {
+    const A = horiz ? PH : PW, B = horiz ? PW : PH;
+    for (let a = 1; a < A - 1; a++) { let run = 0;
+      for (let b = 0; b < B; b++) {
+        const i = horiz ? a * PW + b : b * PW + a, j = horiz ? (a + 1) * PW + b : b * PW + a + 1;
+        if (C[i] !== 9 && C[j] !== 9 && key(i) !== key(j)) { run++; if (run > best.len) best = { len: run, at: horiz ? [b - run + 1, a] : [a, b - run + 1], horiz }; } else run = 0;
+      } }
+  }
+  return { longestPx: best.len, tiles: +(best.len / T).toFixed(2), at: best.at, horizontal: best.horiz };
+}
+// (E) polish pass: how straight the boundary LOOKS. Boundaries are traced as chains of per-column (and per-row) crossings; the longest
+// stretch of a chain whose position stays within 3 px counts as one straight edge. v1's exact-pixel-run count missed a stepped but ruler-straight edge.
+function straightQ() {
+  const C = QB.cls, Lv = QB.lev, key = i => (C[i] === 9 ? 99 : C[i] * 4 + Lv[i] + 1); let best = { len: 0 };
+  for (const horiz of [true, false]) {
+    const A = horiz ? PW : PH, B = horiz ? PH : PW, at = (a, b) => horiz ? b * PW + a : a * PW + b;   // a runs along the edge, b across it
+    let chains = [];   // { b: last position, from, hist: [b per a] }
+    for (let a = 0; a < A; a++) {
+      const cross = []; for (let b = 1; b < B - 1; b++) if (key(at(a, b)) !== key(at(a, b + 1))) cross.push(b);
+      const next = [];
+      for (const b of cross) { let ch = chains.find(c => !c.used && Math.abs(c.b - b) <= 2); if (ch) { ch.used = true; ch.b = b; ch.hist.push(b); next.push(ch); } else next.push({ b, from: a, hist: [b], used: true }); }
+      for (const c of chains) if (!c.used) { const h = c.hist; for (let i = 0; i < h.length; i++) { let lo = h[i], hi = h[i], j = i; while (j + 1 < h.length && Math.max(hi, h[j + 1]) - Math.min(lo, h[j + 1]) <= 3) { j++; lo = Math.min(lo, h[j]); hi = Math.max(hi, h[j]); } if (j - i + 1 > best.len) best = { len: j - i + 1, at: horiz ? [c.from + i, h[i]] : [h[i], c.from + i], horiz }; } }
+      for (const c of next) c.used = false; chains = next;
+    }
+    for (const c of chains) { const h = c.hist; for (let i = 0; i < h.length; i++) { let lo = h[i], hi = h[i], j = i; while (j + 1 < h.length && Math.max(hi, h[j + 1]) - Math.min(lo, h[j + 1]) <= 3) { j++; lo = Math.min(lo, h[j]); hi = Math.max(hi, h[j]); } if (j - i + 1 > best.len) best = { len: j - i + 1, at: horiz ? [c.from + i, h[i]] : [h[i], c.from + i], horiz }; } }
+  }
+  return { straightPx: best.len, tiles: +(best.len / T).toFixed(2), at: best.at, horizontal: best.horiz };
+}
+let QB = null;
 
 // ---------- the units. Every figure is PixelLab's posed frames (create-character-v3 at 48 px, skeleton-v3 clips), drawn as-is.
 // v3: all eight headings for the whole cast (PixelLab's own diagonal and west rows: no mirrored strips, so no weapon swaps hands),
@@ -1200,8 +1352,54 @@ function pushUnit(B, v, dx, dy, out) {
 // ---------- surfaces drawn in the pixel family: each surface's cells become one organic shape (cell centres blended,
 // edges broken with noise, never the tile's square), then a texture per surface; fire and steam animate on top
 const BW = GW * CS, BH = GH * CS;
+// polish pass 2: a surface lies only on the walkable ground under its cells. GOK is 1 where a patch may be painted: the ground's own
+// class (never a ledge face, a rock top, the void, a pit), not a blocked or walled cell, not the foot of a prop; and a patch stays
+// within a quarter tile (CAP px) of its authored cells, so the rule cells read correctly
+const CAP = 9;
+let GOKC = null, GOKLEVEL = '';
+function groundOK() {
+  const key = LEVEL_KEY + (CLS ? 1 : 0); if (GOKC && GOKLEVEL === key) return GOKC;
+  const g = new Uint8Array(BW * BH), forest = LV.ground === 'forest', okc = forest ? [1, 1, 0, 1] : [1, 1, 0, 0, 1, 0, 0, 0, 0, 0];
+  for (let y = 0; y < BH; y++) for (let x = 0; x < BW; x++) {
+    const wx = GX + x, wy = GY + y, i = wy * PW + wx; if (!CLS || !okc[CLS[i]]) continue;
+    if (!forest && QB && QB.face[i]) continue; g[y * BW + x] = 1; }
+  for (const o of OBJ) { if (!o.flat) continue;   // flat ground dressing (the rails) is never covered; a standing prop simply stands on its patch, so no notch is cut
+    for (let wy = Math.max(GY, o.y); wy < Math.min(GY + BH, o.y + o.h); wy++) for (let wx = Math.max(GX, o.x); wx < Math.min(GX + BW, o.x + o.w); wx++) g[(wy - GY) * BW + (wx - GX)] = 0; }
+  GOKLEVEL = key; return (GOKC = g);
+}
+function clipMask(m, isOn) {
+  const g = groundOK(), blocked = new Uint8Array(GW * GH), on = new Uint8Array(GW * GH);
+  for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { const c = cellOf(BOARD, x, y); blocked[y * GW + x] = !c || (LEGEND[ROWS[y][x]] && LEGEND[ROWS[y][x]].blocked) || c.wall > 0 ? 1 : 0; on[y * GW + x] = isOn(x, y) ? 1 : 0; }
+  // distance (px) to the nearest authored cell's box; the cap on it wanders between 3 and CAP px, so the limit is never a straight line
+  const odist = (px, py) => { let best = 99; const cx0 = Math.floor(px / CS), cy0 = Math.floor(py / CS);
+    for (let cy = Math.max(0, cy0 - 1); cy <= Math.min(GH - 1, cy0 + 1); cy++) for (let cx = Math.max(0, cx0 - 1); cx <= Math.min(GW - 1, cx0 + 1); cx++) if (on[cy * GW + cx]) {
+      const dx = Math.max(0, cx * CS - px, px - (cx * CS + CS - 1)), dy = Math.max(0, cy * CS - py, py - (cy * CS + CS - 1)); best = Math.min(best, Math.hypot(dx, dy)); }
+    return best; };
+  const near = (px, py) => { const d = odist(px, py); return d <= 0 || d < 3.5 + (CAP - 3.5) * Math.min(1, Math.max(0, 0.5 + 0.9 * vnoise(px, py, 191, 8) + 0.5 * vnoise(px, py, 193, 3.5))); };
+  for (let y = 0; y < BH; y++) for (let x = 0; x < BW; x++) {
+    const i = y * BW + x, cell = Math.floor(y / CS) * GW + Math.floor(x / CS);
+    if (m[i] && (!g[i] || blocked[cell] || !near(x, y))) m[i] = 0;
+    // the cell's own core is always covered (where the ground allows it), so the rule's cells are never read short
+    else if (!m[i] && g[i] && on[cell] && !blocked[cell] && x % CS > 12 && x % CS < CS - 12 && y % CS > 12 && y % CS < CS - 12) m[i] = 1;
+  }
+  // the clip edge is soft: a patch stands off the ledge by a wandering 0-4 px, then two majority passes round every corner
+  const bad = new Uint8Array(BW * BH); for (let i = 0; i < bad.length; i++) bad[i] = g[i] ? 0 : 1;
+  const nb = insideDist(bad, 5);
+  for (let y = 0; y < BH; y++) for (let x = 0; x < BW; x++) { const i = y * BW + x; if (m[i] && nb[i] && nb[i] <= Math.round(3.4 * (0.5 + 0.5 * vnoise(x, y, 197, 7)))) m[i] = 0; }
+  for (let pass = 0; pass < 2; pass++) { const src = m.slice();
+    for (let y = 2; y < BH - 2; y++) for (let x = 2; x < BW - 2; x++) { const i = y * BW + x; let c = 0; for (let j = -2; j <= 2; j++) for (let k = -2; k <= 2; k++) c += src[i + j * BW + k];
+      if (c >= 15) m[i] = g[i] ? 1 : 0; else if (c <= 9) m[i] = 0; } }
+  return m;
+}
+function insideDist(m, cap = 8) {   // 0 outside; 1 at the edge, rising inward (4-neighbour chamfer, capped)
+  const D = new Uint8Array(BW * BH);
+  for (let y = 0; y < BH; y++) for (let x = 0; x < BW; x++) { const i = y * BW + x; if (!m[i]) continue; D[i] = Math.min(cap, 1 + Math.min(x && D[i - 1] || 0, y && D[i - BW] || 0)); if (!x || !y) D[i] = 1; }
+  for (let y = BH - 1; y >= 0; y--) for (let x = BW - 1; x >= 0; x--) { const i = y * BW + x; if (!m[i]) continue; const r = x < BW - 1 ? D[i + 1] : 0, d = y < BH - 1 ? D[i + BW] : 0; D[i] = Math.min(D[i], 1 + Math.min(r, d)); }
+  return D;
+}
 function organicMask(isOn, seedK, edge = 0.5, amp = 1, wide = false) {   // Uint8 mask over the board, 1 where the field passes the threshold
   const m = new Uint8Array(BW * BH);
+  if (wide) return clipMask(metaMask(isOn, seedK, edge), isOn);
   const v = (x, y) => (x < 0 || y < 0 || x >= GW || y >= GH ? 0 : isOn(x, y) ? 1 : 0);
   for (let py = 0; py < BH; py++) for (let px = 0; px < BW; px++) {
     const fx = px / CS - 0.5, fy = py / CS - 0.5, ix = Math.floor(fx), iy = Math.floor(fy), sx = fx - ix, sy = fy - iy;
@@ -1213,23 +1411,72 @@ function organicMask(isOn, seedK, edge = 0.5, amp = 1, wide = false) {   // Uint
   }
   return m;
 }
+// polish pass: a pool or a burn is a union of soft round blobs, one per cell (each centre nudged, each a slightly different size), never a
+// box with chamfers: the field is the sum of (1 - d^2/r^2)^2 over the cells around the pixel, cut by a slow, wide noise
+function metaMask(isOn, seedK, edge) {
+  const m = new Uint8Array(BW * BH), on = [];
+  for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) if (isOn(x, y)) on.push([x + 0.5 + (hash2(x, y, seedK + 31) - 0.5) * 0.6, y + 0.5 + (hash2(x, y, seedK + 32) - 0.5) * 0.6, 0.92 + (hash2(x, y, seedK + 33) - 0.5) * 0.24, x, y]);
+  if (!on.length) return m;
+  const grid = new Map(); for (const o of on) grid.set(o[3] + ',' + o[4], o);
+  const thr = edge * 0.62;
+  for (let py = 0; py < BH; py++) for (let px = 0; px < BW; px++) {
+    const cx = px / CS, cy = py / CS, ix = Math.floor(cx), iy = Math.floor(cy); let f = 0;
+    for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) { const o = grid.get((ix + j) + ',' + (iy + k)); if (!o) continue; const d2 = ((cx - o[0]) ** 2 + (cy - o[1]) ** 2) / (o[2] * o[2]); if (d2 < 1) f += (1 - d2) ** 2; }
+    if (!f) continue;
+    const n = vnoise(px, py, seedK, 21) * 0.2 + vnoise(px, py, seedK + 2, 9) * 0.09 + vnoise(px, py, seedK + 1, 2.5) * 0.03;
+    if (f + n * Math.max(0, 1 - f / (thr * 2.6)) > thr) m[py * BW + px] = 1;   // the noise fades inside, so a pool never opens a hole
+  }
+  return m;
+}
 const SURF_LAYER = document.createElement('canvas'); SURF_LAYER.width = BW; SURF_LAYER.height = BH;
-let FIRE_PTS = [], STEAM_PTS = [], surfDirty = true; const FIRE_BORN = new Map(); const FIRE_GLOW = document.createElement('canvas'); FIRE_GLOW.width = BW; FIRE_GLOW.height = BH;
+let FIRE_PTS = [], STEAM_PTS = [], surfDirty = true; const SPARK = []; const FIRE_BORN = new Map(); const FIRE_GLOW = document.createElement('canvas'); FIRE_GLOW.width = BW; FIRE_GLOW.height = BH;
+
+// ---- mud and oil are drawn as materials, opaque pixels only. Light comes from the upper left: a wet rim catches it on the upper-left inside
+// of the patch, a darker damp ring sits just inside the outline, and a few glints twinkle (SPARK, drawn each frame)
+const litEdge = (m, x, y, k) => !m[(y - k) * BW + x - k] || !m[(y - k) * BW + x] && !m[y * BW + x - k];   // ground (not patch) lies up-left of this pixel
+function mudPx(m, D, x, y, i, e, h, put, SPARK) {
+  const d = D[i], lit = litEdge(m, x, y, 3);
+  if (e) { put(i, 38, 27, 24, 255); return; }                       // the outline, a darker tone of the mud (never black)
+  if (d <= 2) { put(i, 60, 42, 32, 255); if (d === 2 && lit && h < 0.3) put(i, 120, 88, 60, 255); return; }   // the damp rim, darker, with a wet catch where the light hits it
+  const n = vnoise(x, y, 143, 8) * 0.6 + vnoise(x, y, 147, 3) * 0.3 + (h - 0.5) * 0.18;
+  const rut = Math.abs(vnoise(x + y * 0.35, y, 145, 15)) < 0.045, rutLit = Math.abs(vnoise(x + y * 0.35 - 1, y - 1, 145, 15)) >= 0.045 && rut === false && Math.abs(vnoise(x + y * 0.35 + 1, y + 1, 145, 15)) < 0.045;
+  const pool = vnoise(x, y, 149, 5.5) > 0.62 && d > 4;                // a few wet hollows: slick, bluer, with a sky glint on the upper-left lip
+  if (pool) {
+    const up = vnoise(x - 2, y - 2, 149, 5.5) <= 0.5; put(i, 74, 62, 58, 255);
+    if (up && h < 0.55) put(i, 150, 112, 78, 255);
+    else if (vnoise(x + 2, y + 2, 149, 5.5) <= 0.5) put(i, 52, 40, 36, 255);
+    
+    return;
+  }
+  if (rut) { put(i, 52, 36, 29, 255); return; }                      // wheel and boot ruts, wet dark
+  if (rutLit && h < 0.45) { put(i, 112, 82, 56, 255); return; }                  // the lit crest of a rut, on its upper-left
+  put(i, ...(n > 0.34 ? [128, 94, 64] : n > 0.14 ? [104, 76, 52] : n > -0.12 ? [86, 62, 44] : [70, 50, 38]), 255);   // clumps: four tones, hard steps
+  if (h > 0.9994 && n > 0.0) SPARK.push([x, y, 214, 176, 126, Math.floor(h * 4000) % 5, 1, 1]);   // a rare warm wet fleck
+}
+function oilPx(m, D, x, y, i, e, h, put, SPARK) {
+  const d = D[i], lit = litEdge(m, x, y, 7);
+  if (e) { put(i, 66, 50, 40, 255); return; }                         // where it meets the sand the oil soaks in: a thin, slightly lighter wet-brown edge
+  if (d === 2) { put(i, 38, 29, 27, 255); return; }
+  // ONE soft highlight band on the upper-left: a pale, desaturated two-tone streak, broken so it is never a continuous line
+  if (lit && d >= 3 && d <= 6 && vnoise(x, y, 157, 14) > -0.2) { const c = d === 3 || d === 6 ? [70, 62, 58] : [136, 126, 114]; put(i, ...c, 255); return; }
+  // at most a faint, thin, low-saturation rainbow along one short contour
+  if (d >= 5 && Math.abs(vnoise(x, y, 155, 26)) < 0.016 && vnoise(x, y, 159, 30) > 0.5 && vnoise(x, y, 171, 9) > 0.1) { const t = vnoise(x, y, 161, 40); put(i, ...(t < 0 ? [84, 104, 100] : [110, 94, 112]), 255); return; }
+  const w = vnoise(x, y, 141, 18), w2 = vnoise(x, y, 143, 7); put(i, ...(w > 0.25 ? [38, 30, 28] : w2 > 0.3 ? [31, 25, 24] : [24, 19, 19]), 255);   // a deep warm black in three close tones
+}
 function bakeSurfaces() {
   const g = SURF_LAYER.getContext('2d'), id = g.createImageData(BW, BH), d = id.data;
   const on = sid => (x, y) => { const c = cellOf(BOARD, x, y); return c && c.surface && c.surface.id === sid && !(sid === 'water' && c.c === '~'); };
   const put = (i, r, gg, b, a) => { d[i * 4] = r; d[i * 4 + 1] = gg; d[i * 4 + 2] = b; d[i * 4 + 3] = a; };
   const near = (m, x, y) => !m[y * BW + x - 1] || !m[y * BW + x + 1] || !m[(y - 1) * BW + x] || !m[(y + 1) * BW + x];
-  FIRE_PTS = []; STEAM_PTS = [];
+  FIRE_PTS = []; STEAM_PTS = []; SPARK.length = 0;
   for (const sid of ['mud', 'water', 'oil', 'ice', 'fire']) {
-    const m = organicMask(on(sid), { mud: 101, water: 103, oil: 105, ice: 107, fire: 109 }[sid], 0.5, 1, true);   // v3: slow noise, so a 3x3 pool never reads square
+    const m = organicMask(on(sid), { mud: 101, water: 103, oil: 105, ice: 107, fire: 109 }[sid], sid === 'water' ? 0.3 : 0.5, 1, true);   // v3: slow noise, so a 3x3 pool never reads square
+    const D = insideDist(m);
     for (let y = 1; y < BH - 1; y++) for (let x = 1; x < BW - 1; x++) {
       const i = y * BW + x; if (!m[i]) continue; const e = near(m, x, y), h = hash2(x, y, 131);
       if (sid === 'water') e ? put(i, 40, 62, 66, 230) : put(i, 58 + h * 12, 104 + h * 14, 112 + h * 10, 190);
-      if (sid === 'mud') { const v = vnoise(x, y, 143, 6), rut = Math.abs(vnoise(x, y, 145, 11)) < 0.05; e ? put(i, 46, 34, 30, 235) : rut ? put(i, 52, 38, 32, 235) : v > 0.45 ? put(i, 120, 92, 66, 225) : put(i, 74 + h * 12 + v * 14, 54 + h * 8 + v * 8, 40, 225); }   // v3: wet ruts and lit ridges, not a flat brown
-      if (sid === 'oil') {   // v3: spilled lamp oil: a glossy dark brown film, the ground faintly through it, a lit rim and a few highlights
-        const sheen = vnoise(x, y, 141, 7), lit = !m[i - BW] || !m[i - 1];
-        e ? put(i, lit ? 120 : 30, lit ? 96 : 22, lit ? 70 : 20, 235) : sheen > 0.62 ? put(i, 150, 126, 96, 200) : sheen > 0.45 ? put(i, 84, 62, 52, 200) : put(i, 44 + h * 8, 32, 28, 190); }
+      if (sid === 'mud') mudPx(m, D, x, y, i, e, h, put, SPARK);
+      if (sid === 'oil') oilPx(m, D, x, y, i, e, h, put, SPARK);
       if (sid === 'ice') { const crack = Math.abs(vnoise(x, y, 151, 6)) < 0.04; e ? put(i, 120, 160, 178, 240) : crack ? put(i, 240, 250, 252, 230) : put(i, 168 + h * 20, 208 + h * 14, 222, 200); }
       if (sid === 'fire') { const v = vnoise(x, y, 113, 4), ember = h < 0.035 && !e; ember ? put(i, 242, 140 + h * 1500, 60, 235) : e ? put(i, 50, 33, 37, 150) : v > 0.35 ? put(i, 92, 38, 26, 200) : put(i, 40 + v * 20, 28, 26, 205); }
     }
@@ -1243,13 +1490,18 @@ function bakeSurfaces() {
     const m = organicMask(on('fire'), 109, 0.5, 1, true);
     // clumps, not a carpet: sites on a loose lattice, kept only where a slow noise says the fire is fierce; between them the
     // ground is charred and glowing
-    for (let gy = 5; gy < BH; gy += 12) for (let gx = 5 + (gy % 24 ? 7 : 0); gx < BW; gx += 14) {
-      const x = gx + Math.round((hash2(gx, gy, 118) - 0.5) * 10), y = gy + Math.round((hash2(gx, gy, 119) - 0.5) * 7);
+    // polish pass: far sparser. A jittered lattice ~1.6x looser than v3's, a slow "hole" noise that leaves charred, glowing ground between the
+    // clumps, and each clump is one main flame plus up to two smaller ones beside it, in mixed sizes (a roaring tongue only deep inside)
+    for (let gy = 6; gy < BH; gy += 17) for (let gx = 6 + ((gy / 17 | 0) % 2 ? 10 : 0); gx < BW; gx += 20) {
+      const x = gx + Math.round((hash2(gx, gy, 118) - 0.5) * 16), y = gy + Math.round((hash2(gx, gy, 119) - 0.5) * 12);
       if (x < 0 || y < 0 || x >= BW || y >= BH || !m[y * BW + x]) continue;
-      const fierce = vnoise(x, y, 125, 30); if (fierce < -0.45) continue;
+      const fierce = vnoise(x, y, 125, 34), hole = vnoise(x, y, 127, 21); if (fierce < -0.35 || hole < -0.28 || hash2(x, y, 128) < 0.12) continue;
       const inner = core[y * BW + x], r = hash2(x, y, 120);
-      const k = inner && fierce > 0.1 && r < 0.45 && ASSETS.vfx13.fire_ground_c ? 'fire_ground_c' : inner && r < 0.8 ? 'fire_ground_a' : 'fire_ground_b';
-      FIRE_PTS.push([x, y, Math.floor(hash2(x, y, 117) * 997), k, Math.floor(x / CS) + ',' + Math.floor(y / CS)]);
+      const pick = (xx, yy, rr, deep) => rr < 0.2 && deep && fierce > 0.05 && ASSETS.vfx13.fire_ground_c ? 'fire_ground_c' : rr < 0.62 && deep ? 'fire_ground_a' : rr < 0.75 ? 'fire_ground_a' : 'fire_ground_b';
+      const add = (xx, yy, k) => { if (xx < 0 || yy < 0 || xx >= BW || yy >= BH || !m[yy * BW + xx]) return; FIRE_PTS.push([xx, yy, Math.floor(hash2(xx, yy, 117) * 997), k, Math.floor(xx / CS) + ',' + Math.floor(yy / CS)]); };
+      add(x, y, pick(x, y, r, inner));
+      const extra = Math.floor(hash2(x, y, 122) * 3);   // 0, 1 or 2 licks beside the main flame
+      for (let e = 0; e < extra; e++) add(x + Math.round((hash2(x, y, 123 + e) - 0.5) * 22), y + Math.round((hash2(x, y, 126 + e) - 0.5) * 12), 'fire_ground_b');
     } }
   const sm = organicMask(on('steam'), 161, 0.42);
   for (let y = 0; y < BH; y += 9) for (let x = 0; x < BW; x += 9) if (sm[y * BW + x]) STEAM_PTS.push([x, y, Math.floor(hash2(x, y, 163) * 4000)]);
@@ -1261,6 +1513,7 @@ function drawSurfaces() {
   ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.12 + 0.05 * Math.sin(clock / 90) + 0.03 * Math.sin(clock / 37);
   ctx.drawImage(FIRE_GLOW, GX - cam.rx, GY - cam.ry); ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
+  if (!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) for (const [x, y, r, g2, b, ph, w, hh] of SPARK) { if ((Math.floor(clock / 380) + ph) % 4) continue; ctx.fillStyle = `rgb(${r},${g2},${b})`; ctx.fillRect(GX + x - cam.rx, GY + y - cam.ry, w, hh); }   // glints twinkle on a stepped clock, never a fade
 }
 function drawSteam() {   // drawn over the figures: soft grey puffs that drift up and right and loop
   for (const [x, y, ph] of STEAM_PTS) {
@@ -1778,7 +2031,18 @@ addEventListener('resize', resize);
 function updateCamera(dt) {
   const f = focus || { x: GX + 10 * CS, y: GY + 6 * CS };
   const tx = f.x - view.w / 2, ty = f.y - 20 - view.h / 2;
-  const cx = Math.max(0, Math.min(PW - view.w, tx)), cy = Math.max(0, Math.min(PH - view.h, ty));
+  let cx = Math.max(0, Math.min(PW - view.w, tx)), cy = Math.max(0, Math.min(PH - view.h, ty));
+  // polish pass: the boss is big (up to 116 x 106 px). Whenever any of it is in the frame the camera is nudged until all of it is, so a midpoint
+  // between the Grumbler and its target never cuts the machine off at the bottom or a side (round 5 and 8 of the floor fight did)
+  for (const u of typeof UNITS !== 'undefined' ? UNITS : []) {
+    if (u.k !== 'grumbler' || u.ko >= 0) continue;
+    const bt = u.y - 106 + 6 - 4, bb = u.y + 12, bl = u.x - 64, br = u.x + 64;
+    if (bb > cy && bt < cy + view.h && br > cx && bl < cx + view.w) {
+      if (view.h >= bb - bt) { if (bb > cy + view.h) cy = bb - view.h; if (bt < cy) cy = bt; }
+      if (view.w >= br - bl) { if (br > cx + view.w) cx = br - view.w; if (bl < cx) cx = bl; }
+      cx = Math.max(0, Math.min(PW - view.w, cx)); cy = Math.max(0, Math.min(PH - view.h, cy));
+    }
+  }
   if (!cam.init) { cam.x = cx; cam.y = cy; cam.init = true; }
   const k = 1 - Math.exp(-3.2 * dt / 1000); cam.x += (cx - cam.x) * k; cam.y += (cy - cam.y) * k;
   cam.rx = Math.round(cam.x); cam.ry = Math.round(cam.y);
@@ -1874,7 +2138,7 @@ Promise.all(loads).then(() => {
   for (const [k, x, y, d] of LV.party) mkUnit(k, x, y, d);
   for (const [k, x, y, d] of LV.allies || []) mkUnit(k, x, y, d);
   for (const [k, x, y, d] of (LV.foes ? LV.foes[variant] || LV.foes.base : [])) mkUnit(k, x, y, d);
-  if (LV.ground === 'forest') CLS = bakeForest(); else { const QB = bakeQuarry(); CLS = QB.cls; groundObjects(QB); }
+  if (LV.ground === 'forest') CLS = bakeForest(); else { QB = bakeQuarry(); CLS = QB.cls; groundObjects(QB); window.__checks = () => ({ shadows: shadowTableQ(), edges: edgeRunsQ(), straight: straightQ() }); }
   setupBoard(); resize(); focus = UNITS[0]; updateCamera(16); render();
   cv.addEventListener('pointerdown', e => {
     const r = cv.getBoundingClientRect(), wx = (e.clientX - r.left) / r.width * view.w + cam.rx, wy = (e.clientY - r.top) / r.height * view.h + cam.ry;

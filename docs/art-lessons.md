@@ -73,6 +73,17 @@ animation or presentation work. Add to it when something fails.
     shared edit.
   - The camera framed the midpoint of actor and target, so the boss was cut off. Big sprites need a fit-in-frame rule.
 
+- **The surfaces pass (2026-11-05):**
+  - Flat translucent fills read as shadows. A wet surface needs opaque pixels, a rim, an upper-left catch and
+    highlights at two scales.
+  - "Iridescent" teal, violet and amber on a dark slick made oil look like a cut-out vinyl sticker. Stay on the
+    palette: warm blacks, a pale desaturated highlight and almost no hue.
+  - Metaball sums over stacked cells grow far past the cells. Cap a patch by its distance to the authored cells,
+    with a cap that wanders.
+  - Hard-cutting a patch at a ledge leaves straight runs. Stand it off the edge by a noisy amount and round it.
+  - Notching a patch around a prop's foot leaves holes. Let the prop stand on the patch.
+  - A `//` comment inserted mid-line in an inlined build silently killed the page. Check `pageerror` first.
+
 ### Characters and objects
 
 - **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;
