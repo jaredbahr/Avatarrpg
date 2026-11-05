@@ -1,0 +1,177 @@
+{
+ "id": "eca3f2ea-9a35-411c-b35e-d0765699cd5e",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "custom-a relaxed natural walking cycl@b4228a": {
+   "south": [
+    "custom-a relaxed natural walking cycl@b4228a_south_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_south_11.png"
+   ],
+   "south-east": [
+    "custom-a relaxed natural walking cycl@b4228a_south-east_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-east_11.png"
+   ],
+   "east": [
+    "custom-a relaxed natural walking cycl@b4228a_east_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_east_11.png"
+   ],
+   "south-west": [
+    "custom-a relaxed natural walking cycl@b4228a_south-west_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_south-west_11.png"
+   ],
+   "west": [
+    "custom-a relaxed natural walking cycl@b4228a_west_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_west_11.png"
+   ],
+   "north-west": [
+    "custom-a relaxed natural walking cycl@b4228a_north-west_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-west_11.png"
+   ],
+   "north-east": [
+    "custom-a relaxed natural walking cycl@b4228a_north-east_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_north-east_11.png"
+   ],
+   "north": [
+    "custom-a relaxed natural walking cycl@b4228a_north_0.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_1.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_2.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_3.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_4.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_5.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_6.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_7.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_8.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_9.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_10.png",
+    "custom-a relaxed natural walking cycl@b4228a_north_11.png"
+   ]
+  },
+  "custom-standing at rest and breathing@498b80": {
+   "west": [
+    "custom-standing at rest and breathing@498b80_west_0.png",
+    "custom-standing at rest and breathing@498b80_west_1.png",
+    "custom-standing at rest and breathing@498b80_west_2.png",
+    "custom-standing at rest and breathing@498b80_west_3.png",
+    "custom-standing at rest and breathing@498b80_west_4.png",
+    "custom-standing at rest and breathing@498b80_west_5.png",
+    "custom-standing at rest and breathing@498b80_west_6.png",
+    "custom-standing at rest and breathing@498b80_west_7.png",
+    "custom-standing at rest and breathing@498b80_west_8.png",
+    "custom-standing at rest and breathing@498b80_west_9.png",
+    "custom-standing at rest and breathing@498b80_west_10.png",
+    "custom-standing at rest and breathing@498b80_west_11.png"
+   ],
+   "south": [
+    "custom-standing at rest and breathing@498b80_south_0.png",
+    "custom-standing at rest and breathing@498b80_south_1.png",
+    "custom-standing at rest and breathing@498b80_south_2.png",
+    "custom-standing at rest and breathing@498b80_south_3.png",
+    "custom-standing at rest and breathing@498b80_south_4.png",
+    "custom-standing at rest and breathing@498b80_south_5.png",
+    "custom-standing at rest and breathing@498b80_south_6.png",
+    "custom-standing at rest and breathing@498b80_south_7.png",
+    "custom-standing at rest and breathing@498b80_south_8.png",
+    "custom-standing at rest and breathing@498b80_south_9.png",
+    "custom-standing at rest and breathing@498b80_south_10.png",
+    "custom-standing at rest and breathing@498b80_south_11.png"
+   ],
+   "east": [
+    "custom-standing at rest and breathing@498b80_east_0.png",
+    "custom-standing at rest and breathing@498b80_east_1.png",
+    "custom-standing at rest and breathing@498b80_east_2.png",
+    "custom-standing at rest and breathing@498b80_east_3.png",
+    "custom-standing at rest and breathing@498b80_east_4.png",
+    "custom-standing at rest and breathing@498b80_east_5.png",
+    "custom-standing at rest and breathing@498b80_east_6.png",
+    "custom-standing at rest and breathing@498b80_east_7.png",
+    "custom-standing at rest and breathing@498b80_east_8.png",
+    "custom-standing at rest and breathing@498b80_east_9.png",
+    "custom-standing at rest and breathing@498b80_east_10.png",
+    "custom-standing at rest and breathing@498b80_east_11.png"
+   ]
+  }
+ }
+}

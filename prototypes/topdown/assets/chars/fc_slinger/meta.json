@@ -1,0 +1,153 @@
+{
+ "id": "7cc165fd-1e21-4780-9690-9ac3f4cd6e4a",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "custom-standing at rest in a ready st@1f338f": {
+   "north": [
+    "custom-standing at rest in a ready st@1f338f_north_0.png",
+    "custom-standing at rest in a ready st@1f338f_north_1.png",
+    "custom-standing at rest in a ready st@1f338f_north_2.png",
+    "custom-standing at rest in a ready st@1f338f_north_3.png",
+    "custom-standing at rest in a ready st@1f338f_north_4.png",
+    "custom-standing at rest in a ready st@1f338f_north_5.png",
+    "custom-standing at rest in a ready st@1f338f_north_6.png",
+    "custom-standing at rest in a ready st@1f338f_north_7.png"
+   ],
+   "east": [
+    "custom-standing at rest in a ready st@1f338f_east_0.png",
+    "custom-standing at rest in a ready st@1f338f_east_1.png",
+    "custom-standing at rest in a ready st@1f338f_east_2.png",
+    "custom-standing at rest in a ready st@1f338f_east_3.png",
+    "custom-standing at rest in a ready st@1f338f_east_4.png",
+    "custom-standing at rest in a ready st@1f338f_east_5.png",
+    "custom-standing at rest in a ready st@1f338f_east_6.png",
+    "custom-standing at rest in a ready st@1f338f_east_7.png"
+   ],
+   "south": [
+    "custom-standing at rest in a ready st@1f338f_south_0.png",
+    "custom-standing at rest in a ready st@1f338f_south_1.png",
+    "custom-standing at rest in a ready st@1f338f_south_2.png",
+    "custom-standing at rest in a ready st@1f338f_south_3.png",
+    "custom-standing at rest in a ready st@1f338f_south_4.png",
+    "custom-standing at rest in a ready st@1f338f_south_5.png",
+    "custom-standing at rest in a ready st@1f338f_south_6.png",
+    "custom-standing at rest in a ready st@1f338f_south_7.png"
+   ],
+   "west": [
+    "custom-standing at rest in a ready st@1f338f_west_0.png",
+    "custom-standing at rest in a ready st@1f338f_west_1.png",
+    "custom-standing at rest in a ready st@1f338f_west_2.png",
+    "custom-standing at rest in a ready st@1f338f_west_3.png",
+    "custom-standing at rest in a ready st@1f338f_west_4.png",
+    "custom-standing at rest in a ready st@1f338f_west_5.png",
+    "custom-standing at rest in a ready st@1f338f_west_6.png",
+    "custom-standing at rest in a ready st@1f338f_west_7.png"
+   ]
+  },
+  "custom-whirls the leather sling overh@7218e5": {
+   "north": [
+    "custom-whirls the leather sling overh@7218e5_north_0.png",
+    "custom-whirls the leather sling overh@7218e5_north_1.png",
+    "custom-whirls the leather sling overh@7218e5_north_2.png",
+    "custom-whirls the leather sling overh@7218e5_north_3.png",
+    "custom-whirls the leather sling overh@7218e5_north_4.png",
+    "custom-whirls the leather sling overh@7218e5_north_5.png",
+    "custom-whirls the leather sling overh@7218e5_north_6.png",
+    "custom-whirls the leather sling overh@7218e5_north_7.png",
+    "custom-whirls the leather sling overh@7218e5_north_8.png",
+    "custom-whirls the leather sling overh@7218e5_north_9.png"
+   ],
+   "east": [
+    "custom-whirls the leather sling overh@7218e5_east_0.png",
+    "custom-whirls the leather sling overh@7218e5_east_1.png",
+    "custom-whirls the leather sling overh@7218e5_east_2.png",
+    "custom-whirls the leather sling overh@7218e5_east_3.png",
+    "custom-whirls the leather sling overh@7218e5_east_4.png",
+    "custom-whirls the leather sling overh@7218e5_east_5.png",
+    "custom-whirls the leather sling overh@7218e5_east_6.png",
+    "custom-whirls the leather sling overh@7218e5_east_7.png",
+    "custom-whirls the leather sling overh@7218e5_east_8.png",
+    "custom-whirls the leather sling overh@7218e5_east_9.png"
+   ],
+   "south": [
+    "custom-whirls the leather sling overh@7218e5_south_0.png",
+    "custom-whirls the leather sling overh@7218e5_south_1.png",
+    "custom-whirls the leather sling overh@7218e5_south_2.png",
+    "custom-whirls the leather sling overh@7218e5_south_3.png",
+    "custom-whirls the leather sling overh@7218e5_south_4.png",
+    "custom-whirls the leather sling overh@7218e5_south_5.png",
+    "custom-whirls the leather sling overh@7218e5_south_6.png",
+    "custom-whirls the leather sling overh@7218e5_south_7.png",
+    "custom-whirls the leather sling overh@7218e5_south_8.png",
+    "custom-whirls the leather sling overh@7218e5_south_9.png"
+   ],
+   "west": [
+    "custom-whirls the leather sling overh@7218e5_west_0.png",
+    "custom-whirls the leather sling overh@7218e5_west_1.png",
+    "custom-whirls the leather sling overh@7218e5_west_2.png",
+    "custom-whirls the leather sling overh@7218e5_west_3.png",
+    "custom-whirls the leather sling overh@7218e5_west_4.png",
+    "custom-whirls the leather sling overh@7218e5_west_5.png",
+    "custom-whirls the leather sling overh@7218e5_west_6.png",
+    "custom-whirls the leather sling overh@7218e5_west_7.png",
+    "custom-whirls the leather sling overh@7218e5_west_8.png",
+    "custom-whirls the leather sling overh@7218e5_west_9.png"
+   ]
+  },
+  "walking-8-frames@08e4c0": {
+   "east": [
+    "walking-8-frames@08e4c0_east_0.png",
+    "walking-8-frames@08e4c0_east_1.png",
+    "walking-8-frames@08e4c0_east_2.png",
+    "walking-8-frames@08e4c0_east_3.png",
+    "walking-8-frames@08e4c0_east_4.png",
+    "walking-8-frames@08e4c0_east_5.png",
+    "walking-8-frames@08e4c0_east_6.png",
+    "walking-8-frames@08e4c0_east_7.png"
+   ],
+   "west": [
+    "walking-8-frames@08e4c0_west_0.png",
+    "walking-8-frames@08e4c0_west_1.png",
+    "walking-8-frames@08e4c0_west_2.png",
+    "walking-8-frames@08e4c0_west_3.png",
+    "walking-8-frames@08e4c0_west_4.png",
+    "walking-8-frames@08e4c0_west_5.png",
+    "walking-8-frames@08e4c0_west_6.png",
+    "walking-8-frames@08e4c0_west_7.png"
+   ],
+   "north": [
+    "walking-8-frames@08e4c0_north_0.png",
+    "walking-8-frames@08e4c0_north_1.png",
+    "walking-8-frames@08e4c0_north_2.png",
+    "walking-8-frames@08e4c0_north_3.png",
+    "walking-8-frames@08e4c0_north_4.png",
+    "walking-8-frames@08e4c0_north_5.png",
+    "walking-8-frames@08e4c0_north_6.png",
+    "walking-8-frames@08e4c0_north_7.png"
+   ],
+   "south": [
+    "walking-8-frames@08e4c0_south_0.png",
+    "walking-8-frames@08e4c0_south_1.png",
+    "walking-8-frames@08e4c0_south_2.png",
+    "walking-8-frames@08e4c0_south_3.png",
+    "walking-8-frames@08e4c0_south_4.png",
+    "walking-8-frames@08e4c0_south_5.png",
+    "walking-8-frames@08e4c0_south_6.png",
+    "walking-8-frames@08e4c0_south_7.png"
+   ]
+  }
+ }
+}

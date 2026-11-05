@@ -1,0 +1,63 @@
+{
+ "id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "custom-a relaxed natural walking cycl@e7f0ee": {
+   "south": [
+    "custom-a relaxed natural walking cycl@e7f0ee_south_0.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_1.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_2.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_3.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_4.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_5.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_6.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_7.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_8.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_9.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_10.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_south_11.png"
+   ],
+   "east": [
+    "custom-a relaxed natural walking cycl@e7f0ee_east_0.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_1.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_2.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_3.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_4.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_5.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_6.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_7.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_8.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_9.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_10.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_east_11.png"
+   ],
+   "north-east": [
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_0.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_1.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_2.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_3.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_4.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_5.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_6.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_7.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_8.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_9.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_10.png",
+    "custom-a relaxed natural walking cycl@e7f0ee_north-east_11.png"
+   ]
+  }
+ }
+}
