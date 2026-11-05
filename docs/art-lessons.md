@@ -91,6 +91,16 @@ animation or presentation work. Add to it when something fails.
 - **Portraits and sprites can disagree.** Ruon's shipped bust is a grey-haired man in a brown coat; his top-down
   sprite is a bearded man in a green hooded cloak. Compare bust and sprite side by side, and settle one canonical
   design before more art depends on it.
+- **Ask PixelLab for volume; code can't add it.** Eave, side-strip and plinth tricks drawn in code on front-on
+  houses never read at 1x (v12, v13). A prompt naming the cues ("front facade, narrow side wall receding in deep
+  shade, thick eaves, recessed windows with sills, stone foundation") gave real 3D in one pass. "In shade" alone
+  came back light; say "deep shade, clearly darker than the front".
+- **Canvas size doesn't set the drawn size.** A 192×240 canvas gave a 103 px house. Say "fills the canvas, no
+  empty margin", and use a short, wide canvas for a wide building.
+- **Recolour only the outer outline.** PixelLab outlines come back near-black; a global dark threshold would erase
+  real eave and side-wall shade.
+- **A bigger sprite covers what was behind it.** The new roof hid a tree and crowded the next house. Re-check
+  neighbours and anything behind after a redraw.
 - **Element words paint effects into the frames.** "Fire-bending" or "earth-bending" in a `skeleton-v3` prompt made
   PixelLab draw flames and rocks into Kaya's, the deserter's and the quarry bender's strikes, even with "no
   effects". Describe pure body motion ("martial-arts punch"), say what the hands hold, and leave effects to `/vfx`.

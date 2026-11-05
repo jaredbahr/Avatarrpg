@@ -56,7 +56,8 @@ const riverSign = put('signpost', 818, 866, { label: 'RIVERSIDE' });
 // trees and bushes: the court trees, a few behind the north houses, and the rim (overhanging the edge)
 const BLOSSOMS = [];
 for (const [k, x, y] of [
-  ['tree_blossom', 790, 236], ['bush', 520, 300],
+  ['bush', 520, 300],   // v14: the blossom tree that stood at (790, 236) is gone: the redrawn Mira house's side wall and roof now cover its crown, so it showed as a red blob on the eave
+ 
   ['tree', 150, 160], ['tree_blossom', 270, 140], ['tree', 400, 150], ['tree', 1080, 150], ['tree_blossom', 1150, 190], ['tree', 700, 132], ['bush', 860, 130], ['bush', 560, 140],
   ['tree', 110, 300], ['bush', 96, 360], ['tree', 104, 620], ['tree_blossom', 120, 760], ['tree', 180, 860], ['bush', 480, 852], ['tree', 300, 850], ['tree_blossom', 556, 880],
   ['bush', 700, 880], ['bush', 968, 852], ['bush', 1150, 700], ['bush', 1186, 250],

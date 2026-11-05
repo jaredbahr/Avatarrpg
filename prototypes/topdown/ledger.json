@@ -17090,6 +17090,942 @@
    "ids": {
     "animation_group_id": "01c4bc86-0e59-4c5f-9a4c-a03ae66c5ab9"
    }
+  },
+  {
+   "name": "v14_house_mira_3_192x240",
+   "endpoint": "/create-object-pro-flash",
+   "job": "51c53cd9-3a07-4a8a-90d0-508096b4d377",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: cream plaster walls with dark brown half-timbering, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 192,
+     "height": 240
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12739.965464062501,
+   "balance_after": 12730.965464062501,
+   "secs": 36,
+   "notes": "",
+   "ids": {
+    "background_job_id": "51c53cd9-3a07-4a8a-90d0-508096b4d377",
+    "object_id": "34c64568-0316-4215-b296-4bc2f948c8de"
+   }
+  },
+  {
+   "name": "v14_house_mira_3_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "714251cc-782b-4646-ad6c-669e656a3fce",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: cream plaster walls with dark brown half-timbering, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12730.965464062501,
+   "balance_after": 12721.965464062501,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "714251cc-782b-4646-ad6c-669e656a3fce",
+    "object_id": "8d169230-fde1-418e-8432-e7eb899fbbfe"
+   }
+  },
+  {
+   "name": "v14_house_mira_4_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "a8ba61ed-a5a3-4213-8f46-64bb7bb63b91",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: cream plaster walls with dark brown half-timbering, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12721.965464062501,
+   "balance_after": 12712.965464062501,
+   "secs": 81,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a8ba61ed-a5a3-4213-8f46-64bb7bb63b91",
+    "object_id": "97e77ed2-ee18-4437-9937-04c42f46e111"
+   }
+  },
+  {
+   "name": "v14_house_merchant_4_256x224",
+   "endpoint": "/create-object-pro-flash",
+   "job": "d4cc9463-0296-4f6c-a55e-aed6a460e32d",
+   "status": "completed",
+   "settings": {
+    "description": "a wide two-storey village shop-house: cream plaster walls with dark brown timber...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 224
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12712.965464062501,
+   "balance_after": 12703.965464062501,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d4cc9463-0296-4f6c-a55e-aed6a460e32d",
+    "object_id": "2410d072-844c-4b4d-8454-9dc1fccc5859"
+   }
+  },
+  {
+   "name": "v14_house_ne_4_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "67806b74-5f04-4310-876c-5806aba3dd07",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: pale grey-white plaster walls with dark timber beams...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12712.965464062501,
+   "balance_after": 12694.965464062501,
+   "secs": 58,
+   "notes": "",
+   "ids": {
+    "background_job_id": "67806b74-5f04-4310-876c-5806aba3dd07",
+    "object_id": "c8fb6712-4e5d-4a66-9c0f-ec64a107d80b"
+   }
+  },
+  {
+   "name": "v14_house_pella_4_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "ffc45890-618a-4898-9c3d-29afae655df0",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: cream plaster walls with dark brown half-timbering, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 27.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12712.965464062501,
+   "balance_after": 12685.965464062501,
+   "secs": 63,
+   "notes": "",
+   "ids": {
+    "background_job_id": "ffc45890-618a-4898-9c3d-29afae655df0",
+    "object_id": "d3bfff1c-ecc1-4b90-90f8-1f122bfb5fad"
+   }
+  },
+  {
+   "name": "v14_house_gao_4_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "149eb739-4920-43c5-b836-ebe535ce198a",
+   "status": "completed",
+   "settings": {
+    "description": "a narrow two-storey village cottage: warm ochre plaster walls with dark brown ti...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 45.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12712.965464062501,
+   "balance_after": 12667.965464062501,
+   "secs": 74,
+   "notes": "",
+   "ids": {
+    "background_job_id": "149eb739-4920-43c5-b836-ebe535ce198a",
+    "object_id": "23b736a1-20b3-4ff5-9f7e-e87bfe96b17a"
+   }
+  },
+  {
+   "name": "v14_house_se_4_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "f1c12ad5-a3e7-456e-995d-2f525477fefb",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: warm ochre plaster walls with dark brown timber beam...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 45.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12712.965464062501,
+   "balance_after": 12667.965464062501,
+   "secs": 80,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f1c12ad5-a3e7-456e-995d-2f525477fefb",
+    "object_id": "470cdb65-0a22-4a1a-855b-40a7a520efa1"
+   }
+  },
+  {
+   "name": "v14_house_merchant_6_256x192",
+   "endpoint": "/create-object-pro-flash",
+   "job": "c2dc318b-3d19-4c19-8654-e22cc8909e8a",
+   "status": "completed",
+   "settings": {
+    "description": "a wide two-storey village shop-house: cream plaster walls with dark brown timber...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 192
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 6
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12667.965464062501,
+   "balance_after": 12658.965464062501,
+   "secs": 47,
+   "notes": "",
+   "ids": {
+    "background_job_id": "c2dc318b-3d19-4c19-8654-e22cc8909e8a",
+    "object_id": "5ad6d099-11d3-4a9f-ae7b-05d28cb2be97"
+   }
+  },
+  {
+   "name": "v14_house_merchant_5_256x192",
+   "endpoint": "/create-object-pro-flash",
+   "job": "d50169cc-22a3-4f6f-ac8a-7cf849b0e4de",
+   "status": "completed",
+   "settings": {
+    "description": "a wide two-storey village shop-house: cream plaster walls with dark brown timber...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 192
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 5
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 19.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12667.965464062501,
+   "balance_after": 12648.965464062501,
+   "secs": 80,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d50169cc-22a3-4f6f-ac8a-7cf849b0e4de",
+    "object_id": "d49c0d58-5b1d-4b92-be51-d179d404b4a7"
+   }
+  },
+  {
+   "name": "v14_house_pella_7_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "a929c9cf-3dd0-4e66-b19a-61950a73bf4f",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: cream plaster walls with dark brown half-timbering, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 7
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12648.965464062501,
+   "balance_after": 12639.965464062501,
+   "secs": 36,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a929c9cf-3dd0-4e66-b19a-61950a73bf4f",
+    "object_id": "d140aaab-f068-45db-ac3d-292c4182ca82"
+   }
+  },
+  {
+   "name": "v14_house_pella_8_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "4c7f0a24-1894-4b8b-b616-d968db0c7457",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey village house: cream plaster walls with dark brown half-timbering, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera-height and pixel-style reference: a low top-down camera, the front fa..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 8
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 12648.965464062501,
+   "balance_after": 12630.965464062501,
+   "secs": 64,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4c7f0a24-1894-4b8b-b616-d968db0c7457",
+    "object_id": "bacf3e1d-8635-45f1-991b-d198964c7519"
+   }
   }
  ],
  "end_balance": 16728.0,

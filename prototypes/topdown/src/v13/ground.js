@@ -146,15 +146,11 @@ function bakeGround() {
 // ground's own texture (trodden earth, pebbles, grass, moss) lying over the plinth's bottom rows, so the base is never a clean traceable line
 const mkCanvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 function houseDoorstep(g, o) {
-  if (o.k === 'house_merchant') return;     // its own broad steps are in the art
-  const cx = o.x + (o.w >> 1), w = 36, x0 = cx - (w >> 1), b = o.base;
-  g.fillStyle = 'rgba(50,33,37,0.6)'; g.fillRect(x0 + 3, b + 6, w, 2);                      // the slab's cast, to the lower right
-  g.fillStyle = '#3e3d47'; g.fillRect(x0 - 1, b - 3, w + 2, 10);                              // outline in the stone's dark tone
-  g.fillStyle = '#85807f'; g.fillRect(x0, b - 2, w, 5); g.fillStyle = '#aea89c'; g.fillRect(x0, b - 2, w, 1); g.fillRect(x0, b - 2, 1, 5);   // lit top
-  g.fillStyle = '#5d5b63'; g.fillRect(x0, b + 3, w, 3); g.fillStyle = '#3e3d47'; g.fillRect(x0, b + 5, w, 1);                                 // front face
-  for (let x = x0 + 5; x < x0 + w - 3; x += 11) { g.fillStyle = '#3e3d47'; g.fillRect(x, b - 1, 1, 4); }
-  g.fillStyle = 'rgba(50,33,37,0.5)'; g.fillRect(x0, b - 2, w, 1);                            // the wall's contact on the slab
-  for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? DIRT[1] : GR[2]; g.fillRect(x0 - 3 + Math.floor(hash2(i, b, 61) * (w + 6)), b + 4 + (i % 3), 2, 1); }   // earth tracked on
+  // v14: the redrawn houses carry their own doorstep slab and foundation in the art (v13 painted a 36 px slab here, which would double up).
+  // What stays on the ground is earth tracked in over the step's foot and a 1 px contact line, so the step is no clean cut-out.
+  const cx = o.x + (o.w >> 1), w = o.k === 'house_merchant' ? 56 : 30, x0 = cx - (w >> 1), b = o.base;
+  g.fillStyle = 'rgba(50,33,37,0.55)'; g.fillRect(x0 + 2, b, w, 1);
+  for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? DIRT[1] : GR[2]; g.fillRect(x0 - 3 + Math.floor(hash2(i, b, 61) * (w + 6)), b + 1 + (i % 3), 2, 1); }
 }
 function houseSkirt(o, kit) {
   const f = kit.fringe.getContext('2d'), M = kit.m, b = o.base - o.y;
@@ -226,15 +222,22 @@ function bridgeShadow(g, o, img) {
   }
   g.putImageData(id, x0, y0);
 }
-// v13: a house has a body behind its front. Its right side (in shade) throws a short band of shadow onto the ground beside it, from
-// the plinth back along the side, skewed down to the right and never longer than ART_DIRECTION's one tile; hard edged.
+// v14: the redrawn houses show their side wall in the art (receding up and to the right in shade), so the ground beside it follows the
+// wall's own foot line: per column from the front corner out to the far end, a hard 6 px band under the foot (contact, then a lighter
+// cast), and past the far end a short tail to the lower right. Light from the upper left, so it falls on the right and never past ~9 px.
 function houseSideShadow(g, o, img) {
-  const A = alphaOf(img), W = img.width, Hh = img.height; let xr = -1;
-  for (let y = Hh - 10; y < Hh; y++) for (let x = W - 1; x >= 0; x--) if (A[y * W + x]) { xr = Math.max(xr, x); break; }
-  if (xr < 0) return;
-  const X = o.x + xr + 1, depth = 38;
-  for (let k = 0; k <= depth; k++) {
-    const y = o.base - depth + k, reach = 4 + Math.round(12 * k / depth) + Math.round(vnoise(X, y, 91, 4) * 1.5);
-    for (let x = 0; x < reach; x++) { const edge = x >= reach - 1; g.fillStyle = edge ? 'rgba(50,33,37,0.3)' : 'rgba(50,33,37,0.42)'; g.fillRect(X + x + Math.round(k * 0.25), y, 1, 1); }
+  const A = alphaOf(img), W = img.width, Hh = img.height, f = new Array(W).fill(-1);
+  for (let x = 0; x < W; x++) for (let y = Hh - 1; y >= 0; y--) if (A[y * W + x]) { f[x] = y; break; }
+  let xc = 0; for (let x = 0; x < W; x++) if (f[x] >= Hh - 3) xc = x;           // the last column still standing on the base line
+  let xm = xc; for (let x = xc + 1; x < W; x++) if (f[x] >= 0) xm = x;           // the far end of the side wall
+  if (xm - xc < 6) return;
+  for (let x = xc + 1; x < xm + 10; x++) {
+    const fx = f[Math.min(x, xm)] + (x > xm ? -Math.round((x - xm) * 0.45) : 0), n = x > xm ? 4 : 5;
+    if (fx < 0) continue;
+    for (let k = 1; k <= n; k++) {
+      const wy = o.y + fx + k, wx = o.x + x, py = fx + k;
+      if (x <= xm && py < Hh && A[py * W + x]) continue;
+      g.fillStyle = 'rgba(50,33,37,0.44)'; g.fillRect(wx, wy, 1, 1);
+    }
   }
 }
