@@ -10,36 +10,30 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
-## Current state: art direction reset (read first, 2026-11-04)
+## Current state: top-down art direction (read first, 2026-11-05)
 
-**All Avatarrpg work is paused** until Jared approves a new art direction (#348, "Pause all avatarrpg work until
-we solve the art"). Don't open PRs, push, merge or spend PixelLab credits on the game until #348 says resume.
+The owner approved a new art direction in a standalone prototype: **traditional top-down PixelLab pixel art**
+(ADR 0103). It lives in `prototypes/topdown/` (its own build; outside the bundle, lint and format). Game work in
+`src/` stays paused (#348) until the port to this style is planned. The active work is the prototype: the whole
+tutorial, Ba Dan to the Forest Road to the quarry and the Driller.
 
-- **Rejected, don't retry:**
-  - the isometric painted Ba Dan with AI-redrawn characters, whose per-frame redraws flicker ("boil") and drift;
-  - the cel-shaded style test;
-  - the 3D-to-pixel spike, whose procedural model read as a doll;
-  - #411's 8-cel walk, reverted in #425.
-- **The direction under test** is traditional **top-down** pixel art, made entirely with PixelLab.
-  - **References:** a front-facing cobbled harbour town, and the game _Fountains_; Sea of Stars for the look and
-    Children of Morta for fluid motion.
-  - **Demo:** a playable prototype built outside the game (v1 → v3), not merged.
-  - **What worked for consistency:**
-    - `create-character-v3` at a 48 px canvas with 8 rotations;
-    - animations in `skeleton-v3` mode, which poses the same sprite;
-    - 32 px Wang tilesets with tile variants;
-    - `map-objects` with one approved style-anchor asset.
-
-    Template or redraw modes drift. Posing keeps motion small, so a code motion layer adds the bob, stride and
-    follow-through.
-- **Art is judged by Jared, by eye, in motion.**
-  - Show him video at game zoom, never stills or metrics. Art PRs stay as drafts until he says yes; only code
-    auto-merges.
-  - Keep evidence (videos, screenshots) out of the repo; attach it to PRs instead.
+- **Read `docs/art-lessons.md` first.** It records every failed attempt (isometric painting with AI-redrawn
+  characters, the cel-shaded test, 3D-to-pixel, #411's walk, the code motion layer) so nobody repeats them.
+- **Consistency rules** (ADR 0103):
+  - **Characters:** `create-character-v3` at 48 px with 8 rotations, posed by `skeleton-v3`. Kaya is **v2**.
+  - **Objects:** `create-object-pro-flash`, low top-down, with ONE angle reference image and the size in px.
+  - **Terrain:** 32 px Wang tilesets with per-pixel organic edges.
+  - **Grounding:** the owner's Imagination `hardShadowMask`, ported verbatim. Outlines are 1 px in a darker
+    material tone. The map edge falls into a void.
+  - **Combat:** no grid; the real elemental rules are kept.
+- **Art is judged by the owner, by eye, in motion.**
+  - The orchestrator checks 3x crops and measurable rules before forwarding.
+  - Art PRs wait for his yes; only code auto-merges.
+  - Evidence (videos, screenshots) stays out of the repo.
 - **GitHub is the source of truth.** Check open PRs and issues, drafts included, before starting anything, and keep
   one PR per issue.
 - **Agents:** orchestrate and judge art with the strongest model. Spin up cheaper subagents (Sonnet or Haiku) for
-  mechanical work when warranted: merging drafts, running `ci:local`, labelling, recordings, file moves.
+  mechanical or well-briefed visual work.
 
 ## Non-negotiables
 

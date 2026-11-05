@@ -58,6 +58,7 @@ export default tseslint.config(
       'test-results/**',
       '.shots/**',
       'gallery/**',
+      'prototypes/**',
     ],
   },
   js.configs.recommended,
