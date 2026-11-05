@@ -48,15 +48,15 @@ if MODE != 'forest':
     out['qtiles'] = {k: uri(v) for k, v in q.items()}; out['qtiles_nvar'] = len(qv)
 # ---- the cast: every clip packed by build8's packer (feet on (AX, AY) of each 80 px cell), eight headings where PixelLab has them
 exec(B8[B8.index('TAKES = '):B8.index('CH = {')])
-CH = {'kaya': ('kaya2', {'walk': WALK_MIX, 'idle': 'custom-standing at rest', 'jab': 'custom-a martial-arts', 'whip': 'custom-a fire-bending whip', 'stomp': 'custom-a fire-bending ground', 'blast': 'custom-a fire-bending blast'}),
+CH = {'kaya': ('kaya2', {'walk': WALK_MIX, 'idle': 'custom-standing at rest', 'jab': 'custom-a martial-arts punch', 'whip': 'custom-a fire-bending whip', 'stomp': 'custom-a martial-arts ground', 'blast': 'custom-a martial-arts double'}),
       'sura': ('fc_sura', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-a water-bending strike', 'ice': 'custom-an ice-bending sweep', 'heal': 'custom-a healing gesture'}),
       'bo': ('fc_bo', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-an earth-bending strike', 'wall': 'custom-an earth-bending wall', 'stance': 'custom-a defensive stance'}),
       'thug': ('fc_thug', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-swings'}),
       'slinger': ('fc_slinger', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-whirls'})}
 if MODE != 'forest':
     CH.update({'bruiser': ('fc_bruiser', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-raises'}),
-               'deserter': ('t13_deserter', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-a fire-bending punch', 'throw': 'custom-throws a small jar'}),
-               'qbender': ('t13_qbender', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-an earth-bending throw'}),
+               'deserter': ('t13_deserter', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-a martial-arts punch', 'throw': 'custom-throws a small jar'}),
+               'qbender': ('t13_qbender', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-a heavy two-handed throw'}),
                'merc': ('t13_merc', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-a quick low sword'}),
                'xbow': ('t13_xbow', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-raises the crossbow'}),
                'ruon': ('t13_ruon', {'idle': 'custom-standing at rest', 'walk': 'walking-8-frames', 'attack': 'custom-a disciplined sabre'})})
@@ -112,11 +112,20 @@ if MODE != 'forest':
     dr = {'rot': {}}
     for d in D8:
         im = Image.open(A / 'objects13' / f"driller_{d.replace('-', '')}.png").convert('RGBA'); dr['rot'][d] = {'src': uri(im), 'w': im.width, 'h': im.height, 'n': 1}
-    DROP = {'slam': {4}}   # the slam's frame 4 has a white smear over the cabin in PixelLab's output: dropped
-    for clip, pre in [('idle', 'the_engine'), ('slam', 'the_drill_arm')]:
+    DROP = {}   # v1's slam dropped frame 4 (a white smear); the fixes pass's slam (slam2/slam3) is whole
+    # fixes pass: the slam is wound up (the drill arm hauled high, held, then dropped) in all eight headings. Per heading: the clip's
+    # file prefix, the frame the blow lands on (hit) and the held top frames (hold); frame times are derived below.
+    SLAM = {'south': ('the_whole_mecha-driller_winds', 8, (6, 7)), 'south-east': ('the_whole_mecha-driller_winds', 9, (7, 8)),
+            'east': ('the_whole_mecha-driller_winds', 10, (6, 7)), 'north-east': ('the_whole_mecha-driller_winds', 8, (6, 7)),
+            'north': ('the_whole_mecha-driller_winds', 8, (6, 7)), 'north-west': ('the_whole_mecha-driller_winds', 7, (5, 6)),
+            'west': ('the_whole_mecha-driller_winds', 8, (6, 7)), 'south-west': ('the_mecha-driller_rears', 10, (8, 9))}
+    def slam_ms(n, hit, hold):
+        return [90 if i < 3 else 230 if i in hold else 110 if i < hold[0] else 170 if i == hit else 70 if i < hit else 90 for i in range(n)]
+    for clip, pre in [('idle', 'the_engine'), ('slam', None)]:
         dr[clip] = {}
         for d in D8:
-            fs = sorted(glob.glob(str(A / 'driller' / f'animations__{pre}*__{d}__frame_*.png')))
+            pr = pre or SLAM[d][0]
+            fs = sorted(glob.glob(str(A / 'driller' / f'animations__{pr}*__{d}__frame_*.png')))
             if not fs: continue
             ims = [Image.open(f).convert('RGBA') for i, f in enumerate(fs) if i not in DROP.get(clip, ())]
             for im in ims:
@@ -131,6 +140,7 @@ if MODE != 'forest':
             w, h = x1 - x0, base - y0; s = Image.new('RGBA', (w * len(ims), h))
             for i, im in enumerate(ims): s.alpha_composite(im.crop((x0, y0, x1, base)), (i * w, 0))
             dr[clip][d] = {'src': uri(s), 'w': w, 'h': h, 'n': len(ims)}
+            if clip == 'slam': dr[clip][d].update({'ms': slam_ms(len(ims), SLAM[d][1], SLAM[d][2]), 'hit': SLAM[d][1]})
     out['driller'] = dr
 js = '\n'.join(open(H / 'src' / 'b3' / f).read() for f in ['levels.js', 'head.js']) + '\n' + open(H / 'src' / 'v8' / 'shadow.js').read() + '\n' + \
      '\n'.join(open(H / 'src' / 'b3' / f).read() for f in ['world_forest.js', 'world_quarry.js', 'units.js', 'rules.js', 'surfvis.js', 'fx.js', 'combat.js', 'auto.js', 'draw.js'])

@@ -55,11 +55,14 @@ function drawSprite(u, img, sx, sy, sw, sh, x, y, alpha = 1) {
   ctx.globalAlpha = 1;
 }
 // the Driller: its PixelLab view for the heading (nearest of its eight), the rumbling idle and the slam where animated
+// fixes pass: the slam has per-frame times (a long hold at the top of the wind-up, a short drop onto the hit frame)
+function slamFrame(v, at) { if (!v.ms) return Math.min(v.n - 1, Math.floor(at / 70)); let t = 0; for (let i = 0; i < v.n; i++) { t += v.ms[i]; if (at < t) return i; } return v.n - 1; }
+function slamTimes(v) { if (!v.ms) return { hit: 70 * Math.round(v.n * 0.55), end: 70 * v.n }; let t = 0, h = 0; for (let i = 0; i < v.n; i++) { if (i === v.hit) h = t; t += v.ms[i]; } return { hit: h, end: t }; }
 function drillerDraw(u) {
   const D = ASSETS.driller, d = D.rot[u.dir] ? u.dir : 'west';
   let img = IMG[`dr:rot:${d}`], v = D.rot[d], f = 0;
   const clip = u.anim === 'attack' && D.slam && D.slam[d] ? 'slam' : D.idle && D.idle[d] && u.ko < 0 ? 'idle' : null;
-  if (clip) { v = D[clip][d]; img = IMG[`dr:${clip}:${d}`]; f = clip === 'slam' ? Math.min(v.n - 1, Math.floor(u.at / 70)) : Math.floor((clock + u.phase) / 110) % v.n; }
+  if (clip) { v = D[clip][d]; img = IMG[`dr:${clip}:${d}`]; f = clip === 'slam' ? slamFrame(v, u.at) : Math.floor((clock + u.phase) / 110) % v.n; }
   const x = Math.round(u.x + u.shove[0] - v.w / 2) - cam.rx, y = Math.round(u.y + u.shove[1] - v.h + 6) - cam.ry;
   if (u.ko >= 0) { ctx.filter = 'brightness(0.72) saturate(0.7)'; drawSprite(u, img, f * v.w, 0, v.w, v.h, x, y); ctx.filter = 'none'; return; }
   drawSprite(u, img, f * v.w, 0, v.w, v.h, x, y);
@@ -92,7 +95,8 @@ function updateUnits(dt) {
       else { u.x += dx / d * st; u.y += dy / d * st; u.dist += st; }
     }
     if (u.anim === 'attack') {
-      u.at += dt; const n = u.k === 'grumbler' ? (ASSETS.driller.slam && ASSETS.driller.slam[u.dir] ? ASSETS.driller.slam[u.dir].n : 8) : ((ASSETS.chars[u.k] || {})[u.clip || 'attack'] || { frames: 8 }).frames, per = u.k === 'grumbler' ? 70 : ATK_MS;
+      u.at += dt; if (u.k === 'grumbler' && ASSETS.driller.slam && ASSETS.driller.slam[u.dir]) { const T = slamTimes(ASSETS.driller.slam[u.dir]); if (!u.struck && u.at >= T.hit) { u.struck = true; u.onStrike && u.onStrike(); } if (u.at >= T.end) { u.anim = 'idle'; u.clip = null; u.done && u.done(); } continue; }
+      const n = u.k === 'grumbler' ? (ASSETS.driller.slam && ASSETS.driller.slam[u.dir] ? ASSETS.driller.slam[u.dir].n : 8) : ((ASSETS.chars[u.k] || {})[u.clip || 'attack'] || { frames: 8 }).frames, per = u.k === 'grumbler' ? 70 : ATK_MS;
       if (!u.struck && u.at >= per * Math.round(n * 0.55)) { u.struck = true; u.onStrike && u.onStrike(); }
       if (u.at >= per * n) { u.anim = 'idle'; u.clip = null; u.done && u.done(); }
     }
