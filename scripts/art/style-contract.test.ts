@@ -1,18 +1,28 @@
 /**
- * The one art style (ADR 0102): every asset the contract lists draws only from the shared palette and has hard
- * alpha (each pixel fully opaque or fully clear). Converted assets join the list and stay on it, so the style can
- * only spread, never drift back.
+ * The one art style (ADR 0102, amended 2026-11-06): every asset the contract lists has hard alpha (each pixel fully
+ * opaque or fully clear), and holds the number of colours recorded for it, never more than its own cap or the
+ * contract's ceiling. The single shared palette is gone (the owner: "dropping the palette is fine"); a count per
+ * asset keeps a repack from drifting silently toward a painting. Listed assets stay listed, so the style can only
+ * spread, never drift back.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Image } from './lib/image';
 import { readImage } from './lib/image';
 import { decodeWebp } from './lib/webp';
+import { measureStyle as measure } from './lib/colours';
+
+interface AssetRecord {
+  /** The distinct opaque colours the asset holds, as measured when it was last packed. */
+  readonly colours: number;
+  /** The most it may hold: raising it is a decision made in review, with a reason. */
+  readonly cap: number;
+}
 
 interface StyleContract {
-  readonly cap: number;
-  readonly palette: readonly string[];
-  readonly assets: readonly string[];
+  /** No asset's cap passes this: pixel art at these sizes holds tens or hundreds of colours, a painting tens of thousands. */
+  readonly ceiling: number;
+  readonly assets: Readonly<Record<string, AssetRecord>>;
 }
 
 const contract = JSON.parse(readFileSync('art/style/contract.json', 'utf8')) as StyleContract;
@@ -21,60 +31,53 @@ async function load(path: string): Promise<Image> {
   return path.endsWith('.webp') ? decodeWebp(new Uint8Array(readFileSync(path))) : readImage(path);
 }
 
-const hex = (r: number, g: number, b: number): string =>
-  `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-
-/** Up to `limit` problems, so a failure names the colours and pixels rather than just a count. */
-export function styleProblems(image: Image, palette: ReadonlySet<string>, limit = 5): string[] {
+/** What is wrong with one asset against its record, so a failure names the numbers. */
+export function styleProblems(image: Image, record: AssetRecord, ceiling: number): string[] {
+  const { colours, soft } = measure(image);
   const problems: string[] = [];
-  const strays = new Map<string, number>();
-  let soft = 0;
-  for (let i = 0; i < image.width * image.height; i++) {
-    const o = i * 4;
-    const a = image.data[o + 3] ?? 0;
-    if (a === 0) continue;
-    if (a !== 255) {
-      soft++;
-      continue;
-    }
-    const c = hex(image.data[o] ?? 0, image.data[o + 1] ?? 0, image.data[o + 2] ?? 0);
-    if (!palette.has(c)) strays.set(c, (strays.get(c) ?? 0) + 1);
-  }
   if (soft) problems.push(`${soft} semi-transparent pixels (alpha must be 0 or 255)`);
-  const top = [...strays].sort((x, y) => y[1] - x[1]).slice(0, limit);
-  for (const [c, n] of top) problems.push(`${c} is off the palette (${n} px)`);
-  if (strays.size > limit) problems.push(`…and ${strays.size - limit} more off-palette colours`);
+  if (colours > record.cap) problems.push(`${colours} colours, over its cap of ${record.cap}`);
+  else if (colours !== record.colours)
+    problems.push(`${colours} colours, recorded as ${record.colours}: update the record`);
+  if (record.cap > ceiling) problems.push(`its cap ${record.cap} is over the ceiling ${ceiling}`);
   return problems;
 }
 
 describe('the art style contract (ADR 0102)', () => {
-  const palette = new Set(contract.palette.map((c) => c.toLowerCase()));
+  const paths = Object.keys(contract.assets);
 
-  it('keeps one palette, unique and under its cap', () => {
-    expect(palette.size).toBe(contract.palette.length);
-    expect(palette.size).toBeLessThanOrEqual(contract.cap);
-    for (const c of palette) expect(c).toMatch(/^#[0-9a-f]{6}$/);
+  it('records a count under a cap for every asset', () => {
+    expect(paths.length).toBeGreaterThan(0);
+    for (const path of paths) {
+      const record = contract.assets[path];
+      expect(Number.isInteger(record?.colours) && Number.isInteger(record?.cap), path).toBe(true);
+      expect(record?.colours, path).toBeLessThanOrEqual(record?.cap ?? 0);
+    }
   });
 
-  it('lists each asset once', () => {
-    expect(new Set(contract.assets).size).toBe(contract.assets.length);
-  });
-
-  it('flags a stray colour and a soft edge', () => {
+  it('flags a soft edge, a count over its cap and a count that drifted from its record', () => {
     const image: Image = {
-      width: 2,
+      width: 3,
       height: 1,
-      data: new Uint8Array([1, 2, 3, 255, 9, 9, 9, 128]),
+      data: new Uint8Array([1, 2, 3, 255, 9, 9, 9, 128, 4, 5, 6, 255]),
     };
-    expect(styleProblems(image, new Set())).toEqual([
+    expect(measure(image)).toEqual({ colours: 2, soft: 1 });
+    expect(styleProblems(image, { colours: 2, cap: 1 }, 64)).toEqual([
       '1 semi-transparent pixels (alpha must be 0 or 255)',
-      '#010203 is off the palette (1 px)',
+      '2 colours, over its cap of 1',
+    ]);
+    expect(styleProblems(image, { colours: 3, cap: 128 }, 64)).toEqual([
+      '1 semi-transparent pixels (alpha must be 0 or 255)',
+      '2 colours, recorded as 3: update the record',
+      'its cap 128 is over the ceiling 64',
     ]);
   });
 
-  for (const path of contract.assets) {
-    it(`${path} uses only the palette, with hard alpha`, async () => {
-      expect(styleProblems(await load(path), palette)).toEqual([]);
+  for (const path of paths) {
+    it(`${path} has hard alpha and its recorded colours`, async () => {
+      const record = contract.assets[path];
+      if (!record) throw new Error(`${path} has no record`);
+      expect(styleProblems(await load(path), record, contract.ceiling)).toEqual([]);
     });
   }
 });

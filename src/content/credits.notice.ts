@@ -234,6 +234,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Generated with PixelLab; provenance in docs/art/driller-2x2.md; sources in media/art-sources/driller-2x2-v1/, packed without resampling by scripts/art/driller-2x2.ts. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.',
   },
   {
+    what: 'The top-down figure sheets',
+    work: 'Kaya, Sura, Bo, the forest bandits, the Ba Dan residents and the Driller, in the top-down style',
+    authors: 'This project, generated with PixelLab',
+    licence: 'own work',
+    source: '',
+    covers: ['art/topdown'],
+    note: 'Characters made with PixelLab create-character-v3 and posed by its skeleton-v3 animations; the Driller is a PixelLab object with its own animations. Sources and every job’s credits in prototypes/topdown/ (assets/, ledger.json), packed without resampling by scripts/art/topdown/pack-sheets.ts. See docs/adr/0103-top-down-pixellab-direction.md and docs/adr/0104-top-down-port-plan.md. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The village NPC sprites',
     work: 'Mira, Gao, Pella and Dorin idle illustrations',
     authors: 'This project, generated with OpenAI image generation',

@@ -2,7 +2,8 @@
  * A figure stands on its own soles (ADR 0093's planting amendment; owner, 2026-10-28: "They're still floating").
  * Every idle and walk cel of every eight-way sheet the game ships, and of the `?style=world` test sheets, is stood
  * by the anchor the store resolves for it (`plantAnchor`), and that anchor must be the row under its lowest opaque
- * sole within one world pixel at the oblique figure scale: no hovering, no sinking.
+ * sole within one world pixel at the oblique figure scale: no hovering, no sinking. The `?style=topdown` sheets
+ * (ADR 0104) are held to the same pixel at their own scale: one art px a world px on the 40 px tile.
  */
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
@@ -11,11 +12,14 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { OBLIQUE_FIGURE_SCALE } from '../../app/anim/actorScale';
 import {
   ASSETS,
+  TOPDOWN_KEYS,
   resolveAsset,
+  useTopDownStyle,
   useWorldStyleTest,
   type SheetEntry,
 } from '../../content/assets/manifest';
 import { TILE } from '../camera';
+import { TOPDOWN_TILE } from '../projection';
 import { poolOffset } from '../figureShadowArt';
 import { feetFromPixels, plantAnchor, restingClip, standsOnSoles } from './feet';
 
@@ -104,6 +108,8 @@ function holdsEveryCelOnItsSoles(
   label: string,
   keys: () => readonly string[],
   atlas: RegExp = /./,
+  // World px a tile spans, times the figure scale: the oblique board's 64 x 1.25 unless a style says otherwise.
+  worldPerTile: number = TILE * OBLIQUE_FIGURE_SCALE,
 ): void {
   it(`stands every idle and walk cel of the ${label} sheets on its lowest sole, within a world pixel`, async () => {
     let checked = 0;
@@ -111,8 +117,8 @@ function holdsEveryCelOnItsSoles(
       const entry = resolveAsset(key);
       if (entry.kind !== 'sheet') continue;
       expect(entry.atlas).toMatch(atlas);
-      // World px a cel's art px covers on an oblique board.
-      const k = (TILE * OBLIQUE_FIGURE_SCALE) / entry.pixelsPerTile;
+      // World px a cel's art px covers on its board.
+      const k = worldPerTile / entry.pixelsPerTile;
       for (const cel of await standingCels(entry)) {
         const feet = feetFromPixels(cel.data, cel.w, cel.h, entry.pixelsPerTile) ?? undefined;
         const def = entry.clips[cel.clip as keyof typeof entry.clips];
@@ -141,6 +147,17 @@ describe('every figure stands on its own soles', () => {
   describe('the ?style=world test sheets', () => {
     beforeAll(() => useWorldStyleTest());
     holdsEveryCelOnItsSoles('?style=world', () => WORLD_STYLE, /style-test|units\/world\//);
+  });
+
+  describe('the ?style=topdown sheets', () => {
+    beforeAll(() => useTopDownStyle());
+    // Figure scale 1 on the top-down board (ADR 0104): one art px is one world px.
+    holdsEveryCelOnItsSoles(
+      '?style=topdown',
+      () => Object.keys(TOPDOWN_KEYS),
+      /^art\/topdown\//,
+      TOPDOWN_TILE,
+    );
   });
 });
 

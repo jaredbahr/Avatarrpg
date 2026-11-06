@@ -64,3 +64,18 @@ only pixel art keeps consistent between frames, so the world and props come to t
 - Ba Dan stops being "one continuous painting" in its shipped form. The regions and frozen geometry stay; the plates
   and uprights are re-encoded on the palette, and `regen.sh --check` moves with them in P2.
 - ADR 0097's deferred default switch (41 tests that pin the G1 party sheets) becomes P1.
+
+## Amendment 2026-11-06: a colour count per asset, not one palette
+
+The owner, answering ADR 0104's question 4: **"dropping the palette is fine."** The top-down PixelLab art (ADR 0103)
+holds hundreds of colours across a cast, and `art-lessons.md` records palette locks on AI frames as a failure (each
+lock added an artifact). Rule 2 is replaced; rules 1, 3, 4 and 5 stand.
+
+2. **A colour count per asset.** `art/style/contract.json` records, for every listed asset, the distinct opaque
+   colours it holds (`colours`) and the most it may hold (`cap`), and one `ceiling` no cap may pass (1,024: pixel art
+   at these sizes holds tens or hundreds, a painting tens of thousands). A repack that changes the count updates the
+   record in the same change; raising a cap is a decision made in review, with its reason.
+
+`scripts/art/style-contract.test.ts` keeps hard alpha on every listed asset and checks each count against its record
+and cap. Kaya C's world sheets stay listed (63–64 colours, their old palette), and the top-down atlases (ADR 0104 T2,
+`public/art/topdown/`) join the list with their counts as packed.

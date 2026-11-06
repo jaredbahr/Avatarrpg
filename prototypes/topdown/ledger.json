@@ -18521,6 +18521,991 @@
     "animation_group_id": "81df729c-e6b3-4c13-b340-bcddd979d0a4",
     "object_id": "b0cc7559-12db-4011-aac0-82a7a3d4fb9b"
    }
+  },
+  {
+   "name": "t2_kaya_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "709e68a4-3ded-4031-8b71-d276c952ef04",
+    "4cbf0b2e-e87c-4146-93d1-af15356f5692",
+    "d0ecac7c-a5e2-41d4-9066-fa3d19ee807e",
+    "0773e703-92fe-4cfa-9d36-5c1c149280fc",
+    "e0c4e8e2-0403-4925-9867-dcca2082c623",
+    "684b412b-5aa3-4637-b777-a489c7aa7d20",
+    "80f801f9-3b0f-4900-9bcf-c93af6787c8e",
+    "a1ca6318-b649-43f3-bcea-53c083b7556e"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12148.965464062501,
+   "balance_after": 12124.965464062501,
+   "secs": 235,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "b53df150-9d1d-455c-bfb5-fecd57a02a60"
+   }
+  },
+  {
+   "name": "t2_sura_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "5e0aa9fc-4a02-4017-a0a6-72f8a57d8d21",
+    "f8b9f5e0-bfaf-4b3a-b0dc-4cce6241f2c3",
+    "2af866e5-d8b8-4d3f-9033-947b2e84977f",
+    "03559a3a-3370-47eb-a41a-92ae40ed9f5c"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "60e95676-bc43-4a4a-88b0-08d79955126f",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 54.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 12070.965464062501,
+   "secs": 123,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "0fd50158-2997-4e4c-a06e-063a25ec851c"
+   }
+  },
+  {
+   "name": "t2_kaya_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "4edcd957-623e-4a93-a5aa-8c84702eb6e2",
+    "2103a891-3a38-41a3-8ee4-8f479e932fd8",
+    "20d4f472-16b3-40c4-a1a2-af06096f33bb",
+    "26b09789-1169-4e0a-a8c4-7ddff369629d",
+    "3c0c1660-0812-4373-a086-832eeb7f62ac",
+    "71372152-91d0-427e-ade4-d86b0e1eed03",
+    "71b6f262-96a7-45d1-87ee-4df8746262b4",
+    "04a20757-289a-4ee6-ab9e-9a0c43291e45"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 57.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 12067.965464062501,
+   "secs": 163,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "867b245d-ba6c-4778-b428-47585c6005c3"
+   }
+  },
+  {
+   "name": "t2_sura_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "5087dfb1-997d-4bfd-abb7-10ea2113ea54",
+    "efdd23b2-8ed6-4134-ab03-cd50a734464e",
+    "9e209907-3c5a-46f7-9628-88f3ff22517f",
+    "d28fa43c-cf48-421e-bd36-0b61d9161a35",
+    "7427fd49-ae3f-4a53-b0a9-1f1f2d59fd4f",
+    "d72d9765-cfec-4baf-974b-955522067ad0",
+    "f111cb87-d327-4899-bbec-c22aee349832",
+    "37d2e657-2d59-4189-b313-36f0a5b56dd8"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "60e95676-bc43-4a4a-88b0-08d79955126f",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 69.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 12055.965464062501,
+   "secs": 178,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "365153c6-af37-4ac5-8f67-9b30ab92f488"
+   }
+  },
+  {
+   "name": "t2_bruiser_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9b0e24ec-f1d3-4bbe-92ab-f5e7b3f1a1ba",
+    "e819c8c3-7ce3-463a-a451-856b9e919dd8",
+    "e2377180-4b39-411e-861e-f0a9b013af85",
+    "bedbde44-28fb-4593-8ec2-a863650f6f9b",
+    "f9a66210-21b6-444a-b17a-52d52595c4aa",
+    "492fded7-7ab0-47ff-a688-e5be2e0cdcb2",
+    "bac38c7b-27b6-402e-8686-483695d610e9"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f93e8efd-5e83-4603-a40f-388803a861f4",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: the heavy cudgel stays in his hands; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 21.0,
+   "credit_source": "usage",
+   "balance_diff": 105.0,
+   "usage": {
+    "generations": 21.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 12019.965464062501,
+   "secs": 210,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "65522de9-d8ad-4175-b6d4-6085fb7e486d"
+   }
+  },
+  {
+   "name": "t2_thug_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "33ddccc2-ebb6-4e80-8d9e-71c390fa5872",
+    "f90d2218-5bf7-41e9-b577-d7a56e059963",
+    "afec6695-0bfd-4806-baef-2cf1d3e40876",
+    "0bea522e-1e9f-4971-87c4-b1b305f9cee3",
+    "bf276c71-72fb-469a-a7a2-d28275321cf6",
+    "3b9d9370-0651-478f-9525-4438564fb6b1"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "69c30927-54ee-4bde-b3f6-0e4a8aa5db0d",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 105.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 12019.965464062501,
+   "secs": 220,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
+   }
+  },
+  {
+   "name": "t2_sura_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "e63d927c-2ab7-4b58-a40d-2eec6ae972ee",
+    "82d24c38-24cd-46f1-b366-8dca183f63f4",
+    "abaa1b61-300e-442d-9466-6335b431c3e0",
+    "52fb4a12-7606-4ace-bd99-92e3c2095f49"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "60e95676-bc43-4a4a-88b0-08d79955126f",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "0fd50158-2997-4e4c-a06e-063a25ec851c"
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 57.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 12070.965464062501,
+   "balance_after": 12013.965464062501,
+   "secs": 120,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "0fd50158-2997-4e4c-a06e-063a25ec851c"
+   }
+  },
+  {
+   "name": "t2_bruiser_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "e033f6b1-5721-407d-8488-edd6ddc9fde4"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f93e8efd-5e83-4603-a40f-388803a861f4",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 126.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 11998.965464062501,
+   "secs": 265,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3b23278e-53c5-4205-8053-ee50cb77dd98"
+   }
+  },
+  {
+   "name": "t2_bo_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "a2ab3298-af57-4b22-9839-2e335e5a3937"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "a0ef8769-5b78-4a25-b402-d7910d07582e",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 135.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 11989.965464062501,
+   "secs": 278,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ccae2f7a-6757-4957-af81-5e0ffc7daec5"
+   }
+  },
+  {
+   "name": "t2_slinger_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "d200d02e-82d6-4186-95cd-d5e19f90f515",
+    "89f86939-c958-4af6-b461-f91b955986fa",
+    "4a05f587-9738-44f3-b2e8-70d95bd99e3d",
+    "47901764-e96b-4543-831a-195dc43f7e86"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "7cc165fd-1e21-4780-9690-9ac3f4cd6e4a",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: the leather sling stays in his hand; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 144.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 11980.965464062501,
+   "secs": 288,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "6293c1c1-827c-47a5-8b2f-d210653f7e1d"
+   }
+  },
+  {
+   "name": "t2_bruiser_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9466f5ed-0f41-4d29-8225-aa48a9983647"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f93e8efd-5e83-4603-a40f-388803a861f4",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: the heavy cudgel stays in his hands; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south-west"
+    ],
+    "animation_group_id": "65522de9-d8ad-4175-b6d4-6085fb7e486d"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 45.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 12019.965464062501,
+   "balance_after": 11974.965464062501,
+   "secs": 81,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "65522de9-d8ad-4175-b6d4-6085fb7e486d"
+   }
+  },
+  {
+   "name": "t2_thug_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "4b640d3f-ae5f-48c0-8a03-266dfda11f9c",
+    "f862a790-2a0a-46d1-8df4-aa8f59bb0a6d"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "69c30927-54ee-4bde-b3f6-0e4a8aa5db0d",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 51.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 12019.965464062501,
+   "balance_after": 11968.965464062501,
+   "secs": 103,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
+   }
+  },
+  {
+   "name": "t2_bo_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "5e926792-26c9-45c0-bffd-569ae7c289cd",
+    "9c3d5e45-eb66-4e3d-bb8d-cb9b27614740",
+    "5ebf4345-c8b5-4ad1-b2de-e388a3190966",
+    "bec948e6-e29b-4700-afb8-038a0a959917",
+    "44db2906-3014-4730-af3c-0b2de1d1ca95",
+    "88bbe1ef-a521-4ab5-b237-791429d7f3dc"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "a0ef8769-5b78-4a25-b402-d7910d07582e",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 156.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 11968.965464062501,
+   "secs": 330,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "66539e4e-ef3a-4b36-9980-dc217fe7d675"
+   }
+  },
+  {
+   "name": "t2_bo_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "cc660e53-a703-4611-945f-bae2130e8ecc",
+    "f6cf0ed7-97f7-4474-bfbe-81fe0e3816ea",
+    "27f7389b-3ba8-43ef-ba59-526629540217",
+    "d9e13b99-b25c-4e86-8ed2-24ddbc0ef66d",
+    "9036daa6-87cf-4563-a192-b09249dd67a7"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "a0ef8769-5b78-4a25-b402-d7910d07582e",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "ccae2f7a-6757-4957-af81-5e0ffc7daec5"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 66.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 11989.965464062501,
+   "balance_after": 11923.965464062501,
+   "secs": 115,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ccae2f7a-6757-4957-af81-5e0ffc7daec5"
+   }
+  },
+  {
+   "name": "t2_bruiser_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "519b7a35-6400-4a27-aaea-fede55e2ef0c",
+    "e8816bc2-bb1a-4373-92d0-36b636231087",
+    "33ab282c-5169-49e9-87a9-97cfa8f46253",
+    "059c4606-541a-4b04-ae69-56eb533b5ec8",
+    "8205ad89-ccef-45da-a4ed-fa123d13f862",
+    "9c7510dd-e456-4e2f-89cd-5ae4333dd98d",
+    "41b04bfe-b7ac-46a3-b0fe-627add170516"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f93e8efd-5e83-4603-a40f-388803a861f4",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "3b23278e-53c5-4205-8053-ee50cb77dd98"
+   },
+   "credits": 21.0,
+   "credit_source": "usage",
+   "balance_diff": 72.0,
+   "usage": {
+    "generations": 21.0
+   },
+   "balance_before": 11995.965464062501,
+   "balance_after": 11923.965464062501,
+   "secs": 122,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3b23278e-53c5-4205-8053-ee50cb77dd98"
+   }
+  },
+  {
+   "name": "t2_bo_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "41534ec6-fd94-4098-9009-52401c26ec8d",
+    "17511817-306d-48d8-bb9a-81d6dc152104"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "a0ef8769-5b78-4a25-b402-d7910d07582e",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "south-east",
+     "south-west"
+    ],
+    "animation_group_id": "66539e4e-ef3a-4b36-9980-dc217fe7d675"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 69.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 11968.965464062501,
+   "balance_after": 11899.965464062501,
+   "secs": 124,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "66539e4e-ef3a-4b36-9980-dc217fe7d675"
+   }
+  },
+  {
+   "name": "t2_slinger_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "443c8abe-51b7-4b8d-a254-4938ff70a47b",
+    "4b7556bc-37ab-4662-8061-ac9fe9c07b5f",
+    "e637e640-bd4e-406b-a650-e7d4d86f70e9",
+    "39ed1557-1bc7-46fe-95e0-51ed7c8f2888"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "7cc165fd-1e21-4780-9690-9ac3f4cd6e4a",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: the leather sling stays in his hand; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "6293c1c1-827c-47a5-8b2f-d210653f7e1d"
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 81.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 11980.965464062501,
+   "balance_after": 11899.965464062501,
+   "secs": 160,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "6293c1c1-827c-47a5-8b2f-d210653f7e1d"
+   }
+  },
+  {
+   "name": "t2_thug_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "1faeb05e-0dd4-4efb-8534-bf0649b13a1e",
+    "2b24bd68-5d21-4f5d-9ca7-9160b1ad4d43",
+    "d0d48a4a-9644-4ec1-be8f-8018a1ed0ce6",
+    "ad81da21-b39b-4142-97d0-360faa5a8ae3"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "69c30927-54ee-4bde-b3f6-0e4a8aa5db0d",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: the wooden club stays in his hand; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 228.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 11896.965464062501,
+   "secs": 456,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c9af84d7-50e2-4773-a39a-d0fae41841c3"
+   }
+  },
+  {
+   "name": "t2_slinger_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "846dfa6d-1cb5-404f-869e-4d31b3a8b862",
+    "08759f45-f9ed-4007-b88b-b10ae8e27d94",
+    "00acce64-c693-4764-b126-0e467537b710",
+    "80deb42f-4a00-4cad-87a7-62434f3e960d",
+    "1c427287-0073-431e-8cee-daa7fb5b95ba",
+    "0e43d724-3495-4af7-be53-8f429841a4b8",
+    "be74fcb3-c551-42ed-903d-3894c24fc528",
+    "0942e360-d437-4378-b641-92375a17a8b4"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "7cc165fd-1e21-4780-9690-9ac3f4cd6e4a",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 246.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 12124.965464062501,
+   "balance_after": 11878.965464062501,
+   "secs": 533,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c90d945b-96df-4a41-b414-0665e2e75a95"
+   }
+  },
+  {
+   "name": "t2_sura_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "57f970ce-f133-4fd7-bd47-5026eb6ff8fa"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "60e95676-bc43-4a4a-88b0-08d79955126f",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "west"
+    ],
+    "animation_group_id": "365153c6-af37-4ac5-8f67-9b30ab92f488"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 11878.965464062501,
+   "balance_after": 11860.965464062501,
+   "secs": 91,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "365153c6-af37-4ac5-8f67-9b30ab92f488"
+   }
+  },
+  {
+   "name": "t2_kaya_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "96e41dd6-6be2-485a-9732-145738079fc3",
+    "c55f08ec-cbf9-422c-9d8d-69bc79d8f0e0"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "west"
+    ],
+    "animation_group_id": "b53df150-9d1d-455c-bfb5-fecd57a02a60"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 11878.965464062501,
+   "balance_after": 11860.965464062501,
+   "secs": 92,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "b53df150-9d1d-455c-bfb5-fecd57a02a60"
+   }
+  },
+  {
+   "name": "t2_thug_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "bd1d23be-61cf-4b48-a898-6f0613daf1c3",
+    "84a8869e-5b39-43f7-ba80-515fd55f607b",
+    "858cf75b-b1cc-4e0d-bcff-d75b21f6a721",
+    "0d4c8494-c635-401c-91b4-7ceef4b3ca3f"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "69c30927-54ee-4bde-b3f6-0e4a8aa5db0d",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: the wooden club stays in his hand; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "c9af84d7-50e2-4773-a39a-d0fae41841c3"
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 45.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 11896.965464062501,
+   "balance_after": 11851.965464062501,
+   "secs": 358,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c9af84d7-50e2-4773-a39a-d0fae41841c3"
+   }
+  },
+  {
+   "name": "t2_thug_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "60b83328-de00-4b91-ae72-c19bfbc5ab95",
+    "2edc5019-3ef6-48cf-8151-3b5178b85bd3"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "69c30927-54ee-4bde-b3f6-0e4a8aa5db0d",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "north-west",
+     "west"
+    ],
+    "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 11860.965464062501,
+   "balance_after": 11848.965464062501,
+   "secs": 97,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
+   }
+  },
+  {
+   "name": "t2_bruiser_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "0de97168-998a-4a46-b8b4-81a0d18ad951",
+    "f64c5bc1-ad61-4884-af6e-b85ecd1a32c5"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f93e8efd-5e83-4603-a40f-388803a861f4",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "3b23278e-53c5-4205-8053-ee50cb77dd98"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 15.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 11860.965464062501,
+   "balance_after": 11845.965464062501,
+   "secs": 109,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3b23278e-53c5-4205-8053-ee50cb77dd98"
+   }
+  },
+  {
+   "name": "t2_bo_ko_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "13521911-000f-41dd-a4e0-db2efc75ec87",
+    "53372aab-fc60-4740-b3c9-e0e54621c077"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "a0ef8769-5b78-4a25-b402-d7910d07582e",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "ccae2f7a-6757-4957-af81-5e0ffc7daec5"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 11845.965464062501,
+   "balance_after": 11839.965464062501,
+   "secs": 87,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ccae2f7a-6757-4957-af81-5e0ffc7daec5"
+   }
+  },
+  {
+   "name": "t2_thug_hit_retake2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "c7af7883-4716-4d50-b16f-77e728209e85",
+    "b7bc3df6-c3e1-40cd-b3da-166bd6988bd9"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "69c30927-54ee-4bde-b3f6-0e4a8aa5db0d",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "north-west",
+     "west"
+    ],
+    "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 11839.965464062501,
+   "balance_after": 11833.965464062501,
+   "secs": 103,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
+   }
   }
  ],
  "end_balance": 16728.0,
@@ -18544,5 +19529,9 @@
  "v6_ledger_spent": 102.0,
  "v6_end_balance": 15476.0,
  "v12_ledger_spent": 0,
- "v12_note": "v12 polish pass: no PixelLab jobs (bridge composed in code by tools/v12bridge.py; outlines recoloured by tools/v12outline.py). 0 of ~200 credits used."
+ "v12_note": "v12 polish pass: no PixelLab jobs (bridge composed in code by tools/v12bridge.py; outlines recoloured by tools/v12outline.py). 0 of ~200 credits used.",
+ "t2_start_balance": 12148.965464062501,
+ "t2_ledger_spent": 315.0,
+ "t2_end_balance": 11833.965464062501,
+ "t2_note": "ADR 0104 T2 (2026-11-06): hits and knockouts for Kaya, Sura, Bo, the thug, the slinger and the bruiser (skeleton-v3, 8 headings) and 6 retakes; cap 400. The balance fell exactly the booked usage (315); balance_diff per job overlaps because the jobs ran in parallel."
 }

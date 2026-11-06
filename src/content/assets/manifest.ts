@@ -43,6 +43,7 @@ import { residentGrid } from './residentGrid';
 import { PARTY_G1_TRIMS } from './partyG1';
 import { WORLD_PARTY, type WorldPartyName } from './worldParty';
 import { WORLD_STYLE_TEST, type WorldStyleName } from './worldStyleTest';
+import { TOPDOWN_SHEETS, type TopdownName } from './topdownSheets';
 
 export type AssetEntry =
   | {
@@ -87,7 +88,13 @@ export type AssetEntry =
        * sheet draws once it is in, and those clips are asked of the store.
        */
       readonly clipData?: string;
-      /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
+      /**
+       * The per-heading ability poses of a top-down sheet (ADR 0104), as a JSON of clips by pose name
+       * and then heading, relative to the site root, whose cels live on the pages above. Nothing plays
+       * them before the top-down combat slice (T4); the legacy `cast` stands in until then.
+       */
+      readonly actions?: string;
+      /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet; 40 on the top-down board. */
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
       readonly frameSize?: { readonly w: number; readonly h: number };
@@ -578,20 +585,117 @@ export function useWorldStyleTest(): void {
   ]);
 }
 
-let topDownStyle = false;
+/**
+ * A top-down figure (ADR 0104 T2), packed from the prototype's approved PixelLab takes by
+ * `scripts/art/topdown/pack-sheets.ts`: 48 px characters at one art px a world px on the 40 px
+ * top-down tile, PixelLab's eight drawn headings (never mirrored) and eight-way locomotion. Idle, walk
+ * and rest share the sheet's frame and foot anchor; the idle plays the prototype's calm cels there and
+ * back. The hits (eight headings) and knockouts (the four diagonals the clip vocabulary asks for) arrive
+ * with the clip file; every heading of every ability, and all eight knockouts, are in the actions file
+ * for the combat slice (T4). The legacy mirrored `cast` is the main ability's east heading. A figure the
+ * prototype never walked (Mira, Hanru, the Driller) holds its idle's first cel as its walk.
+ */
+export function topdownSheet(name: TopdownName, key: string, palette: string): SheetEntry {
+  const t = TOPDOWN_SHEETS[name];
+  const clips: Partial<Record<ClipName, ClipDef>> = {};
+  const msPerTile = {} as Record<Heading, number>;
+  const cel = (clip: ClipName, index: number) => `${key}/${clip}/${index}`;
+  HEADINGS.forEach((heading, i) => {
+    const idle = headingClip('idle', heading);
+    const n = t.idleCels[i] ?? 1;
+    // There and back over the calm cels (0 1 2 1), as the prototype plays them; one cel is held.
+    const order = n >= 3 ? [0, 1, 2, 1] : n === 2 ? [0, 1] : [0, 0];
+    clips[idle] = {
+      frames: order.map((j) => cel(idle, j)),
+      fps: 1000 / t.idleMs,
+      loop: true,
+      frameMs: order.map(() => t.idleMs),
+    };
+    const rest = headingClip('rest', heading);
+    clips[rest] = { frames: [cel(rest, 0)], fps: 1, loop: true };
+    const walk = headingClip('walk', heading);
+    const w = t.walkCels[i] ?? 0;
+    clips[walk] =
+      w > 0
+        ? {
+            frames: Array.from({ length: w }, (_, j) => cel(walk, j)),
+            fps: 1000 / t.walkCelMs,
+            loop: true,
+          }
+        : {
+            frames: [0, 0, 0, 0].map((j) => cel(walk, j)),
+            fps: 4,
+            loop: true,
+            frameMs: [250, 250, 250, 250],
+          };
+    msPerTile[heading] = t.walkMsPerTile;
+  });
+  if (t.cast) clips.cast = t.cast;
+  const eastWalk = t.walkCels[0] ?? 0;
+  return {
+    kind: 'sheet',
+    atlas: `art/topdown/${name}.json`,
+    ...(t.pages > 1 && {
+      atlasPages: Array.from(
+        { length: t.pages - 1 },
+        (_, i) => `art/topdown/${name}-${i + 2}.json`,
+      ),
+    }),
+    ...(t.clipData && { clipData: `art/topdown/${name}-clips.json` }),
+    ...(t.actions && { actions: `art/topdown/${name}-actions.json` }),
+    pixelsPerTile: 40,
+    frameSize: t.frame,
+    footprint: { w: t.footprint, h: t.footprint },
+    anchor: t.anchor,
+    facing: 'both',
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: msPerTile,
+      walkStartMs: 0,
+      walkCycleMs: eastWalk > 0 ? eastWalk * t.walkCelMs : 1000,
+      authoredBob: true,
+    },
+    palette,
+    clips,
+  };
+}
+
+/** The asset keys `?style=topdown` draws from the top-down sheets, with each one's sheet and palette. */
+export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string]>> = {
+  'unit.fire.kaya': ['kaya', 'fire'],
+  'unit.water.sura': ['sura', 'water'],
+  'unit.earth.bo': ['bo', 'earth'],
+  'unit.enemy.thug': ['thug', 'enemy'],
+  'unit.enemy.slinger': ['slinger', 'enemy'],
+  'unit.enemy.bruiser': ['bruiser', 'enemy'],
+  'unit.enemy.driller': ['driller', 'enemy'],
+  'npc.elder': ['mira', 'neutral'],
+  'npc.shopkeeper': ['gao', 'earth'],
+  'npc.kid': ['pella', 'air'],
+  'npc.dorin': ['dorin', 'earth'],
+  'npc.household': ['household', 'earth'],
+  'npc.hanru': ['hanru', 'nonbender'],
+};
+
+let topDownStyle: Readonly<Record<string, AssetEntry>> | undefined;
 
 /**
- * `?style=topdown`: the top-down PixelLab direction (ADR 0104), beside `?style=world`. Plumbing only
- * for now (phase T1): it records the choice and nothing draws differently yet. T2 hangs the
- * `topdownSheet` figures on it and T3 onwards the maps; it switches to the default at T6.
+ * `?style=topdown`: the top-down PixelLab direction (ADR 0104), beside `?style=world`. Phase T2 hangs
+ * the `topdownSheet` figures on it (the party, the forest bandits, the Driller and the Ba Dan residents);
+ * T3 onwards the maps; it switches to the default at T6.
  */
 export function useTopDownStyle(): void {
-  topDownStyle = true;
+  topDownStyle = Object.fromEntries(
+    Object.entries(TOPDOWN_KEYS).map(([key, [name, palette]]) => [
+      key,
+      topdownSheet(name, key, palette),
+    ]),
+  );
 }
 
 /** Whether `?style=topdown` is on for this page (`useTopDownStyle`). */
 export function topDownStyleActive(): boolean {
-  return topDownStyle;
+  return topDownStyle !== undefined;
 }
 
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
@@ -755,7 +859,7 @@ export function sheetLocomotion(key: string | undefined): LocomotionDef | undefi
  * manifest edit, while overriding one still can.
  */
 export function resolveAsset(key: string): AssetEntry {
-  const explicit = worldStyle?.[key] ?? ASSETS[key];
+  const explicit = topDownStyle?.[key] ?? worldStyle?.[key] ?? ASSETS[key];
   if (explicit) return explicit;
 
   if (key.startsWith('fx.')) {
