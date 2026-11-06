@@ -157,7 +157,14 @@ import {
 } from '../pixelOverlayGeometry';
 import type { PixelOverlayCue } from '../pixelOverlayGeometry';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
-import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import {
+  TOPDOWN_FEET_LEVEL,
+  TOPDOWN_FEET_WIDTH,
+  feetBlobArt,
+  figureShadowArt,
+  poolOffset,
+  soleContactArt,
+} from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
 import {
   CAST_PER_PIXEL,
@@ -495,6 +502,8 @@ export class PixiBackend implements RenderBackend {
   private shadowFilter: Filter | null = null;
   /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
   private grounding = DEFAULT_ACTOR_GROUNDING;
+  /** True on the top-down board, whose figures stand on `feetBlob` rather than the swept pool. */
+  private topdownFigures = false;
   private castSprites = new Map<string, Sprite>();
   private castLive = new Set<string>();
   /** Painted bend effects under and over the actors (ADR 0055). */
@@ -1361,13 +1370,9 @@ export class PixiBackend implements RenderBackend {
     cels?: FigureCels,
   ): void {
     if (strength <= 0 || !contactBand(this.grounding, 1)) return;
-    const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
-    if (!art) return;
     // The pool centres on the resting soles, in world px; one figure tile is `tile`.
     const tile = TILE * (cels?.scale ?? scale);
     const offset = poolOffset(cels?.resting, cels?.flip ?? false);
-    const drawn = cels?.drawn;
-    const soles = drawn?.feet && soleContactArt(drawn.feet, drawn.frame.w);
     const place = (id: string, canvas: HTMLCanvasElement, level: number) => {
       this.castLive.add(id);
       let sprite = this.castSprites.get(id);
@@ -1388,6 +1393,23 @@ export class PixiBackend implements RenderBackend {
       sprite.visible = sprite.alpha > 0;
       return sprite;
     };
+    if (this.topdownFigures) {
+      // The top-down board grounds a figure on Imagination's feet blob, centred on its resting soles.
+      const blob = feetBlobArt(TOPDOWN_FEET_WIDTH * scale * widthTiles);
+      if (!blob) return;
+      const feet = place(key, blob, TOPDOWN_FEET_LEVEL);
+      feet.position.set(
+        Math.round(foot.x + offset.x * tile - blob.width / 2),
+        Math.round(foot.y + offset.y * tile - blob.height / 2),
+      );
+      feet.width = blob.width;
+      feet.height = blob.height;
+      return;
+    }
+    const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
+    if (!art) return;
+    const drawn = cels?.drawn;
+    const soles = drawn?.feet && soleContactArt(drawn.feet, drawn.frame.w);
     const pool = place(key, art.cast, this.grounding.cast);
     pool.position.set(foot.x + offset.x * tile - art.footX, foot.y + offset.y * tile - art.footY);
     pool.width = art.cast.width;
@@ -1545,6 +1567,7 @@ export class PixiBackend implements RenderBackend {
     const app = this.app;
     if (!app) return;
     this.grounding = actorGrounding(view.scene);
+    this.topdownFigures = camera.projection === 'topdown';
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
     if (groundsSceneAtRuntime(camera.projection)) this.syncSceneryShadows(view, camera);
@@ -2702,6 +2725,7 @@ export class PixiBackend implements RenderBackend {
     rings.clear();
     const px = this.spritePx(camera);
     this.grounding = actorGrounding(view.scene);
+    this.topdownFigures = camera.projection === 'topdown';
     this.pixelTalkUsed = 0;
 
     const live = new Set<string>();

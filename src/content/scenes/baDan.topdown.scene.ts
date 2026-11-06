@@ -46,6 +46,9 @@ export const BA_DAN_TOPDOWN_SCENE: MapScene = {
   canopies: BA_DAN_TOPDOWN_OBJECTS.filter((o) => o.kind === 'tree' && o.sprite !== 'bush').map(
     (o) => ({ x: o.depth.x, y: o.depth.y - 1 }),
   ),
+  // The figures' feet blobs are drawn in the owner's shadow colour (ADR 0103's grounding); the
+  // union's ceiling is paving's 205 of 255, so the blob's 170 lands as Imagination draws it.
+  actorGrounding: { contact: 205 / 255, ink: { r: 0x32, g: 0x21, b: 0x25 } },
   ground: BA_DAN_TOPDOWN_GROUND,
   scenery: SCENERY,
 };

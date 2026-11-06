@@ -6,6 +6,42 @@
  */
 import { FIGURE_CONTACT, figureShadow, type CastKey } from './lighting';
 import type { FrameFeet } from './sheets/feet';
+import { feetBlob } from './shadow/hardShadowMask';
+
+/**
+ * The top-down board's figure shadow (ADR 0104, T4; ADR 0103's grounding): the owner's Imagination
+ * `feetBlob`, a hard ellipse under the feet in place of the swept pool, at this strength of the
+ * shadow ink (170 of 255 on soft ground, as Imagination draws it).
+ */
+export const TOPDOWN_FEET_LEVEL = 170 / 255;
+
+/** How wide a figure's feet are, in world px of a one-tile figure at scale 1: the blob is 65 % of it. */
+export const TOPDOWN_FEET_WIDTH = 32;
+
+const blobCache = new Map<number, HTMLCanvasElement | null>();
+
+/** `feetBlob` for a figure `width` world px wide, white, one canvas px a world px. */
+export function feetBlobArt(width: number): HTMLCanvasElement | null {
+  const w = Math.max(4, Math.round(width));
+  const cached = blobCache.get(w);
+  if (cached !== undefined) return cached;
+  const blob = feetBlob(w, 255);
+  const canvas = document.createElement('canvas');
+  canvas.width = blob.width;
+  canvas.height = blob.height;
+  const ctx = canvas.getContext('2d');
+  let art: HTMLCanvasElement | null = null;
+  if (ctx) {
+    const image = ctx.createImageData(blob.width, blob.height);
+    for (let i = 0; i < blob.data.length; i += 4)
+      if (blob.data[i + 3]) image.data.set([255, 255, 255, 255], i);
+    ctx.putImageData(image, 0, 0);
+    art = canvas;
+  }
+  if (blobCache.size > 16) blobCache.clear();
+  blobCache.set(w, art);
+  return art;
+}
 
 export interface FigureShadowArt {
   readonly cast: HTMLCanvasElement;

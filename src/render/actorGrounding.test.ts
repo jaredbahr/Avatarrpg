@@ -99,6 +99,12 @@ describe("a figure's shadow is a calm pool (ADR 0093's figure amendment)", () =>
       for (const gone of ['castFrame(', 'steadyCaster(', 'contactBandRows(', 'projectContactMask('])
         expect(source).not.toContain(gone);
     });
+    it(`${file} stands a figure on the feet blob on the top-down board only`, () => {
+      // ADR 0104, T4: Imagination's feetBlob in place of the swept pool, at its own level.
+      expect(source).toContain("this.topdownFigures = camera.projection === 'topdown';");
+      expect(source).toMatch(/if \(this\.topdownFigures\) \{[^}]*feetBlobArt\(/);
+      expect(source).toContain('TOPDOWN_FEET_LEVEL');
+    });
   }
 });
 
