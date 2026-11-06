@@ -18,7 +18,10 @@ it('ships exactly what the committed sources pack to', () => {
     const bytes = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
     expect(bytes.equals(readFileSync(path)), `${path} is stale: run pack-sheets.ts`).toBe(true);
   }
-  const shipped = readdirSync(OUT).map((name) => `${OUT}/${name}`);
+  // Files only: the `ba-dan/` folder beside them is `pack-ground.ts`'s, held by its own test.
+  const shipped = readdirSync(OUT, { withFileTypes: true })
+    .filter((e) => e.isFile())
+    .map((e) => `${OUT}/${e.name}`);
   expect(shipped.sort()).toEqual([...files.keys()].filter((path) => path !== DATA).sort());
 });
 

@@ -969,7 +969,12 @@ async function main(): Promise<void> {
     if (check) console.error(`stale: ${path}`);
     else writeFileSync(path, bytes);
   }
-  const shipped = existsSync(OUT) ? readdirSync(OUT).map((f) => `${OUT}/${f}`) : [];
+  // Files only: `ba-dan/` beside them is the ground packer's (`pack-ground.ts`).
+  const shipped = existsSync(OUT)
+    ? readdirSync(OUT, { withFileTypes: true })
+        .filter((e) => e.isFile())
+        .map((e) => `${OUT}/${e.name}`)
+    : [];
   const extra = shipped.filter((p) => !files.has(p));
   for (const p of extra) console.error(`not packed: ${p}`);
   const total = [...files]
