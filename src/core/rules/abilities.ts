@@ -495,7 +495,8 @@ export function previewAbility(
         case 'damage':
           damage += expectedDamage(content, caster, unit, effect);
           // One call, so the chip's percentage and its explanation cannot
-          // disagree: `chance` *is* `breakdown.chance`.
+          // disagree: `chance` *is* `breakdown.chance`. The board's roster is
+          // who can stand between (ADR 0105), as resolution reads it.
           breakdown = hitBreakdown(
             content,
             battle.grid,
@@ -504,6 +505,8 @@ export function previewAbility(
             weather,
             origin,
             squareFootprints,
+            battle.units,
+            !ability.requiresLineOfSight,
           );
           chance = breakdown.chance;
           break;
@@ -673,6 +676,10 @@ export function resolveAbility(
   );
   const hitIds = struck.map((u) => u.id);
   const friendlyIds = struck.filter((u) => sameSide(caster, u)).map((u) => u.id);
+  // Who can stand between the caster and a target (ADR 0105), read from the
+  // same snapshot moment: the preview reads the board before the ability, so a
+  // bystander a blast fells or a shove moves still screens every roll of it.
+  const screens = draft.units.filter(isAlive);
 
   /** Ids that a to-hit roll actually connected with, per damage effect. */
   for (const effect of ability.effects) {
@@ -686,6 +693,7 @@ export function resolveAbility(
       tiles,
       hitIds,
       friendlyIds,
+      screens,
       squareFootprints,
       rng,
     );
@@ -702,6 +710,7 @@ function applyEffect(
   tiles: readonly Vec2[],
   hitIds: readonly string[],
   friendlyIds: readonly string[],
+  screens: readonly Unit[],
   squareFootprints: boolean,
   rng: RngCursor,
 ): void {
@@ -722,6 +731,8 @@ function applyEffect(
           weather,
           origin,
           squareFootprints,
+          screens,
+          !ability.requiresLineOfSight,
         );
         if (!rng.chance(breakdown.chance / 100)) {
           draft.emit({
