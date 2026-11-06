@@ -1,5 +1,46 @@
 # Combat threat overview — issue #328
 
+## 2026-11-06: horizontal wheel must not cancel navigation (#444)
+
+Continue the same draft PR357 and published branch, expected head `be913263`.
+Root session `horizontal-wheel444-20261106T0958` recorded and verified #444
+claim6682203355 and extended #328 claim6620986707 before edits. A native Canvas
+probe on the exact published CI build reproduces a new edge case: horizontal
+wheel input (`deltaX=160`, `deltaY=0`) clears overview ownership while camera,
+full game/session state and selected Move remain unchanged. Its report, trace
+and readback are retained outside Git. This is not a main-only Show enemies
+reproduction or a repeat of the two existing portrait-WebGL timeout gates.
+
+The correction belongs only in the zoom-only pointer adapter: keep existing
+browser default prevention, then ignore raw zero vertical delta. Preserve all
+nonzero vertical intent, including ctrl, line/page normalization and zoom clamps.
+Do not infer no intent from an unchanged scale: that would break the accepted
+manual cancellation of camera glides at a zoom limit. No scene, camera, core,
+asset or configuration change belongs to this correction.
+
+Acceptance combines unit red-to-green and unchanged pointer controls with a
+dedicated native fixture. It selects a real pending Move, opens Show enemies,
+uses horizontal wheel, proves navigation/state/camera preservation, then uses
+the first real tap to return without spending or changing that selection. A
+nonzero vertical wheel remains a real zoom positive control. Cover desktop
+Canvas/WebGL at DPR1 and portrait Canvas at DPR2, normal clock and motion,
+plus the existing gesture controls. Keep the original 60s/360s allowances,
+zero retries/skips, full captures and real inputs. Review exact source, run
+clean committed-head `ci:local` before push, and qualify the actual CI build.
+
+Chromium uses native `mouse.wheel`. Mobile WebKit does not support that API;
+its branch dispatches the same wheel point and deltas through the canvas
+adapter after proving the canvas owns the hit point. No assertions are removed
+and no WebKit cases are skipped. Readbacks label the actual browser and input
+protocol. Local WebKit acceptance remains unrun. The vertical positive control
+proves a real zoom increase, not native zoom-clamp coverage; the existing
+scene/unit contract protects nonzero intent at clamps.
+
+Final counts and producer identities belong to the PR and external receipts.
+Both original #328 portrait-WebGL timeouts remain open; do not repeat them
+unchanged or relabel old results as this head. Keep PR357 draft, with no merge,
+deployment, installation or art action.
+
 ## 2026-11-06: qualification outcome and portrait focus precondition
 
 Clean `967d471d` passed all nine local CI checks (285 files, 3,258 tests).
