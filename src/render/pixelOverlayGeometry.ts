@@ -75,11 +75,22 @@ export function pixelMark(
   return { id, spec: { bounds, palette, operations }, alpha, anchor };
 }
 
+/** Radius in world pixels, shared by raster geometry and visible-art clearance. */
+export const TALK_PIP_RADIUS = 4;
+
 /** A 1 px-per-world-pixel filled talk marker. */
 export function talkPipMark(anchor: G1Point, alpha: number): PixelOverlayCue {
   return pixelMark(
     'talk',
-    [{ kind: 'circle', color: 'gold', centre: { x: 0, y: 0 }, radius: 4, fill: true }],
+    [
+      {
+        kind: 'circle',
+        color: 'gold',
+        centre: { x: 0, y: 0 },
+        radius: TALK_PIP_RADIUS,
+        fill: true,
+      },
+    ],
     { gold: OVERLAY.markerGold },
     alpha,
     1,

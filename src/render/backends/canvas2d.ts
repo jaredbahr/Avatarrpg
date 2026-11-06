@@ -31,6 +31,7 @@ import {
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
+import { TALK_PIP_GAP, talkPipPosition } from '../geometry/talkPip';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import { liftAlong, liftAt } from '../geometry/elevation';
 import type { Curve } from '../geometry/curve';
@@ -66,6 +67,7 @@ import {
   screenToBoardPixel,
   selectedRingMark,
   talkPipMark,
+  TALK_PIP_RADIUS,
   targetReticleMark,
 } from '../pixelOverlayGeometry';
 import type { PixelOverlayCue } from '../pixelOverlayGeometry';
@@ -83,8 +85,7 @@ import { FOOT_LINE } from '../sheets/bake';
 import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
 import { paintGridLine, paintSurface, paintTerrain } from '../painters/tiles';
-import { npcPose, sprites } from '../spriteCache';
-import { npcPipLift } from '../npcPip';
+import { npcPose, sprites, visibleFrameBounds, visibleSpriteBounds } from '../spriteCache';
 import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
@@ -1192,10 +1193,19 @@ export class Canvas2DBackend implements RenderBackend {
               width,
             )
           : null;
+      let artBounds: { left: number; top: number; right: number; bottom: number };
       if (frame) {
         const fw = (frame.frame.w / frame.pixelsPerTile) * box.size;
         const fh = (frame.frame.h / frame.pixelsPerTile) * box.size;
         const f = frame.frame;
+        const visible = visibleFrameBounds(frame.source, f);
+        artBounds = {
+          left: visible.left / frame.pixelsPerTile - (frame.anchor.x * f.w) / frame.pixelsPerTile,
+          top: visible.top / frame.pixelsPerTile - (frame.anchor.y * f.h) / frame.pixelsPerTile,
+          right: visible.right / frame.pixelsPerTile - (frame.anchor.x * f.w) / frame.pixelsPerTile,
+          bottom:
+            visible.bottom / frame.pixelsPerTile - (frame.anchor.y * f.h) / frame.pixelsPerTile,
+        };
         drawArt(ctx, f.w, fw, () =>
           ctx.drawImage(
             frame.source,
@@ -1211,16 +1221,30 @@ export class Canvas2DBackend implements RenderBackend {
         );
       } else {
         const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
+        const visible = visibleSpriteBounds(sprite);
+        const pixelsPerTile = sprite.height;
+        artBounds = {
+          left: visible.left / pixelsPerTile - sprite.width / pixelsPerTile / 2,
+          top: visible.top / pixelsPerTile - FOOT_LINE,
+          right: visible.right / pixelsPerTile - sprite.width / pixelsPerTile / 2,
+          bottom: visible.bottom / pixelsPerTile - FOOT_LINE,
+        };
         ctx.drawImage(sprite, box.x, box.y, box.size * width, box.size);
       }
 
       ctx.restore();
       if (npc.quiet) continue;
       // A small "talk" pip so a child can tell an NPC from scenery.
-      const anchor = screenToBoardPixel(camera, {
-        x: box.x + box.size * width * 0.5,
-        y: footY + lift - box.size * npcPipLift(npc.sprite, scale),
-      });
+      const pip = talkPipPosition(
+        { x: footX, y: footY + lift },
+        artBounds,
+        scale * poseScale * box.size,
+        npc.lean ?? 0,
+        TALK_PIP_RADIUS * camera.scale,
+        TALK_PIP_GAP * camera.scale,
+        facing,
+      );
+      const anchor = screenToBoardPixel(camera, pip);
       const cue = talkPipMark(anchor, cueOpacity(view.time, 500, view.reducedMotion, alpha));
       for (const draw of resolvePixelMarkDraws(
         camera,

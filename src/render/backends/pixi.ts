@@ -86,6 +86,7 @@ import {
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
+import { TALK_PIP_GAP, talkPipPosition } from '../geometry/talkPip';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import {
   clip,
@@ -118,8 +119,13 @@ import { placeFrame } from '../sheets/placement';
 import { RevealLayer, revealBox, revealsUnit } from '../reveal';
 import type { RevealFigure } from '../reveal';
 import { idlePhase, sheets } from '../sheets/store';
-import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
-import { npcPipLift } from '../npcPip';
+import {
+  MAX_SPRITE_PX,
+  npcPose,
+  sprites,
+  visibleFrameBounds,
+  visibleSpriteBounds,
+} from '../spriteCache';
 import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
@@ -152,6 +158,7 @@ import {
   pathPixelMarks,
   selectedRingMark,
   talkPipMark,
+  TALK_PIP_RADIUS,
   targetReticleMark,
 } from '../pixelOverlayGeometry';
 import type { PixelOverlayCue } from '../pixelOverlayGeometry';
@@ -2701,6 +2708,7 @@ export class PixiBackend implements RenderBackend {
         entry.kind === 'sheet'
           ? sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px * scale, width)
           : null;
+      let artBounds: { left: number; top: number; right: number; bottom: number };
       const screen = camera.spriteBox(at, width, false);
       const anchor = {
         x: (screen.x + camera.offsetX) / camera.scale,
@@ -2720,9 +2728,32 @@ export class PixiBackend implements RenderBackend {
         sprite.position.set(footX, y + FOOT_LINE * TILE);
         sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale * poseScale;
         sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale * poseScale;
+        const visible = visibleFrameBounds(frame.source, frame.frame);
+        artBounds = {
+          left:
+            visible.left / frame.pixelsPerTile -
+            (frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
+          top:
+            visible.top / frame.pixelsPerTile -
+            (frame.anchor.y * frame.frame.h) / frame.pixelsPerTile,
+          right:
+            visible.right / frame.pixelsPerTile -
+            (frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
+          bottom:
+            visible.bottom / frame.pixelsPerTile -
+            (frame.anchor.y * frame.frame.h) / frame.pixelsPerTile,
+        };
         this.sampleArt(sprite, camera.scale);
       } else {
         const art = sprites.get(npc.sprite, px * scale, npcPose(npc), width);
+        const visible = visibleSpriteBounds(art);
+        const pixelsPerTile = art.height;
+        artBounds = {
+          left: visible.left / pixelsPerTile - art.width / pixelsPerTile / 2,
+          top: visible.top / pixelsPerTile - FOOT_LINE,
+          right: visible.right / pixelsPerTile - art.width / pixelsPerTile / 2,
+          bottom: visible.bottom / pixelsPerTile - FOOT_LINE,
+        };
         sprite.texture = this.texture(art);
         sprite.anchor.set(0.5, FOOT_LINE);
         sprite.position.set(footX, y + FOOT_LINE * TILE);
@@ -2752,12 +2783,18 @@ export class PixiBackend implements RenderBackend {
 
       // A small G1 talk pip stays in the labels layer, above depth-sorted art.
       if (!npc.quiet) {
+        const pip = talkPipPosition(
+          { x: footX, y: y + FOOT_LINE * TILE },
+          artBounds,
+          scale * poseScale * TILE,
+          npc.lean ?? 0,
+          TALK_PIP_RADIUS,
+          TALK_PIP_GAP,
+          facing,
+        );
         this.drawTalkPip(
           camera,
-          {
-            x: x + TILE * width * 0.5,
-            y: y + TILE * (FOOT_LINE - npcPipLift(npc.sprite, scale)),
-          },
+          pip,
           cueOpacity(view.time, 500, view.reducedMotion, alpha),
           view.cameraNudge,
         );
