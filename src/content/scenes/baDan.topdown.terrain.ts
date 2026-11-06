@@ -260,7 +260,8 @@ export const NOISE = {
 export const CANAL = { row: 14, from: 2, to: 20, kerbTo: 21 } as const;
 /**
  * The flooded ford where the east road ends at the west, cells (0, 7) and (0, 8): water on these
- * vertices, an uneven spread rather than a ruled channel, with a stone lip along its south side.
+ * vertices, an uneven spread rather than a ruled channel, with a stone lip along its south side. It
+ * spreads west, over the road's end, never east into the open cells (1, 7) and (1, 8).
  */
 export const FORD = {
   water: [
@@ -269,10 +270,10 @@ export const FORD = {
     [3, 16],
     [4, 16],
     [5, 16],
-    [6, 16],
     [4, 17],
     [5, 17],
     [3, 17],
+    [3, 15],
   ],
   lip: [
     [2, 18],
