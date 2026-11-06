@@ -19861,6 +19861,240 @@
    "ids": {
     "animation_group_id": "9bfadcfe-5574-4f1f-8b32-530483b8d3cc"
    }
+  },
+  {
+   "name": "t3_obj_bridge_low_5",
+   "endpoint": "/create-object-pro-flash",
+   "job": "e5adfe9b-dd9c-412c-b03a-b2c44847f443",
+   "status": "completed",
+   "settings": {
+    "description": "straight top-down view, horizontal base, no perspective; a short wooden footbrid...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 5
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 11003.9654640625,
+   "balance_after": 10998.9654640625,
+   "secs": 25,
+   "notes": "T3 bridge redraw (owner: visually off)",
+   "ids": {
+    "background_job_id": "e5adfe9b-dd9c-412c-b03a-b2c44847f443",
+    "object_id": "c40c03ae-d4a0-4749-8221-76bdd4b2e36e"
+   }
+  },
+  {
+   "name": "t3_obj_bridge_high_7",
+   "endpoint": "/create-object-pro-flash",
+   "job": "4b6a8b59-dba3-47dc-acce-565718ea25e6",
+   "status": "completed",
+   "settings": {
+    "description": "straight top-down view, horizontal base, no perspective; a short wooden footbrid...",
+    "view": "high top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 7
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 10998.9654640625,
+   "balance_after": 10993.9654640625,
+   "secs": 31,
+   "notes": "T3 bridge redraw (owner: visually off)",
+   "ids": {
+    "background_job_id": "4b6a8b59-dba3-47dc-acce-565718ea25e6",
+    "object_id": "76e8db8c-4010-4dc3-b108-8dc36d58f805"
+   }
+  },
+  {
+   "name": "t3_obj_bridge_high_7_wide",
+   "endpoint": "/create-object-pro-flash",
+   "job": "62f29cfe-d72f-4002-8ab0-c1d566297a14",
+   "status": "completed",
+   "settings": {
+    "description": "straight top-down view, horizontal base, no perspective; a short wooden footbrid...",
+    "view": "high top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 80,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 7
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 10993.9654640625,
+   "balance_after": 10988.9654640625,
+   "secs": 31,
+   "notes": "T3 bridge redraw (owner: visually off)",
+   "ids": {
+    "background_job_id": "62f29cfe-d72f-4002-8ab0-c1d566297a14",
+    "object_id": "7ffb5d61-665e-43c6-a44c-e5fb831443e3"
+   }
   }
  ],
  "end_balance": 16728.0,

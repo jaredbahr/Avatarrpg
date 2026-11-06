@@ -1,9 +1,9 @@
-"""T3: clean the two Ba Dan objects into assets/objects_t3/: hard 1-bit alpha, detached specks under 6 px dropped, cropped to
+"""T3: clean the Ba Dan objects (route sign, school notice, the redrawn canal bridge) into assets/objects_t3/: hard 1-bit alpha, detached specks under 6 px dropped, cropped to
 the bounding box (the object stands on its lowest pixel). PICK maps key -> the seed kept. Run from prototypes/topdown."""
 from pathlib import Path
 from PIL import Image
 H = Path(__file__).resolve().parent.parent; OUT = H / 'assets' / 'objects_t3'
-PICK = {'route_sign': 4, 'school_notice': 3}
+PICK = {'route_sign': 4, 'school_notice': 3, 'bridge': 'high_7_wide'}   # the bridge: take 3 of 3 (tools/t3bridge.py), the only one 60 px wide
 for k, seed in PICK.items():
     im = Image.open(OUT / 'raw' / f'{k}_{seed}.png').convert('RGBA'); p = im.load(); W, Hh = im.size
     soft = 0
