@@ -17,11 +17,11 @@
 
 import type { RngCursor } from '../rng';
 import type { AbilityEffect, ContentIndex, Grid, Unit, Vec2, WeatherIntensity } from '../types';
-import { distanceBetweenUnits, occupiedCells, tileAt } from './grid';
+import { distanceBetweenUnits, lineBetween, occupiedCells, posKey, tileAt } from './grid';
 import { SQUARE_FOOTPRINTS } from './footprint';
 import { obscurementFor } from './obscurement';
 import type { ObscurementBreakdown } from './obscurement';
-import { accuracyModifier, effectiveStats, incomingMultiplier } from './stats';
+import { accuracyModifier, effectiveStats, incomingMultiplier, isAlive } from './stats';
 
 export const CRIT_MULTIPLIER = 1.5;
 export const VARIANCE_MIN = 0.9;
@@ -51,7 +51,89 @@ function elevationOf(
 }
 
 /**
- * Whether the terrain the unit stands on counts as cover.
+ * Where a shot comes from, for cover *between* the attacker and the defender
+ * (ADR 0105). `origin` is the firing cell, the same one hit elevation reads;
+ * `units` is everyone on the board, of whom only the living, other than the
+ * attacker and the defender, can screen.
+ */
+export interface CoverSource {
+  readonly origin: Vec2;
+  readonly attacker: Unit;
+  readonly units: readonly Unit[];
+}
+
+/** Whether a tile itself is cover: its `cover` flag (props bake theirs in) or its surface. */
+function tileGrantsCover(content: ContentIndex, grid: Grid, pos: Vec2): boolean {
+  const tile = tileAt(grid, pos);
+  if (!tile) return false;
+  if (tile.cover) return true;
+  if (!tile.surface) return false;
+  return content.surfaces.get(tile.surface.id)?.grantsCover ?? false;
+}
+
+/**
+ * The cell that screens `cell` from a shot fired from `origin`: the last cell
+ * of the line sight walks (`lineBetween`), so always the one neighbour of the
+ * defender's cell that the shot passes through — the orthogonal one for a
+ * straight shot, the diagonal one for a diagonal shot, and wherever the line's
+ * tie-break puts it for anything in between. Null when the cells touch or are
+ * the same, because nothing can stand between them.
+ */
+export function screenCellFor(origin: Vec2, cell: Vec2): Vec2 | null {
+  const line = lineBetween(origin, cell);
+  return line[line.length - 1] ?? null;
+}
+
+/** Every cell a living character other than the attacker and the defender stands on. */
+function screeningCharacters(
+  source: CoverSource,
+  defender: Unit,
+  squareFootprints: boolean,
+): Set<string> {
+  const cells = new Set<string>();
+  for (const unit of source.units) {
+    if (unit.id === source.attacker.id || unit.id === defender.id || !isAlive(unit)) continue;
+    for (const cell of occupiedCells(unit, squareFootprints)) cells.add(posKey(cell));
+  }
+  return cells;
+}
+
+/**
+ * Whether something stands between `origin` and one defender cell, on the
+ * defender's side (ADR 0105). The screen cell counts when it is a cover tile (a
+ * cover prop, a cover surface such as rubble), a sight-blocking tile (a wall, a
+ * tree, a solid prop: only a shot that ignores sight gets this far), or holds a
+ * living character other than the attacker and the defender, friend or foe.
+ * The attacker's cells and the defender's own cells never screen, and a screen
+ * standing lower than the defender's cell does not count unless it blocks sight.
+ */
+function screened(
+  content: ContentIndex,
+  grid: Grid,
+  origin: Vec2,
+  cell: Vec2,
+  own: ReadonlySet<string>,
+  attackerCells: ReadonlySet<string>,
+  characters: ReadonlySet<string>,
+): boolean {
+  const screen = screenCellFor(origin, cell);
+  if (!screen) return false;
+  const key = posKey(screen);
+  if (own.has(key) || attackerCells.has(key)) return false;
+  const tile = tileAt(grid, screen);
+  if (!tile) return false;
+  if (tile.blocksSight) return true;
+  if (tile.elevation < elevationAt(grid, cell)) return false;
+  return characters.has(key) || tileGrantsCover(content, grid, screen);
+}
+
+/**
+ * Whether the unit is in cover.
+ *
+ * A cell is covered when its own tile is cover or — given the shot's `source` —
+ * when something screens it on the line from the firing cell (ADR 0105). The
+ * two are a union per cell, so a defender in cover *and* behind cover is
+ * covered once, never twice. Without a source only the unit's own cells count.
  *
  * A single-tile unit needs its one cell covered. A big unit is covered once at
  * least half its footprint (rounded up) is: 1 of 2 for the legacy 2x1 that
@@ -64,19 +146,52 @@ export function hasCover(
   grid: Grid,
   unit: Unit,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
+  source: CoverSource | null = null,
+): boolean {
+  return coveredCells(content, grid, unit, squareFootprints, source, true);
+}
+
+/**
+ * Cover between alone, without the unit's own tiles: the same half-footprint
+ * rule, every cell judged only by what screens it from `source`. The AI's
+ * gate-off position score reads own cover from the anchor alone, as it was
+ * tuned, and adds this beside it.
+ */
+export function hasCoverBetween(
+  content: ContentIndex,
+  grid: Grid,
+  unit: Unit,
+  squareFootprints: boolean,
+  source: CoverSource,
+): boolean {
+  return coveredCells(content, grid, unit, squareFootprints, source, false);
+}
+
+function coveredCells(
+  content: ContentIndex,
+  grid: Grid,
+  unit: Unit,
+  squareFootprints: boolean,
+  source: CoverSource | null,
+  ownTiles: boolean,
 ): boolean {
   const cells = occupiedCells(unit, squareFootprints);
+  const own = new Set(cells.map(posKey));
+  const attackerCells = new Set(
+    source ? occupiedCells(source.attacker, squareFootprints).map(posKey) : [],
+  );
+  const characters = source
+    ? screeningCharacters(source, unit, squareFootprints)
+    : new Set<string>();
   let covered = 0;
   for (const cell of cells) {
-    const tile = tileAt(grid, cell);
-    if (!tile) continue;
-    if (tile.cover) {
+    if (ownTiles && tileGrantsCover(content, grid, cell)) {
       covered++;
-      continue;
-    }
-    if (tile.surface) {
-      const def = content.surfaces.get(tile.surface.id);
-      if (def?.grantsCover) covered++;
+    } else if (
+      source &&
+      screened(content, grid, source.origin, cell, own, attackerCells, characters)
+    ) {
+      covered++;
     }
   }
   return covered >= Math.ceil(cells.length / 2);
@@ -96,8 +211,15 @@ export interface HitBreakdown {
 }
 
 /**
- * Melee (range 1) attacks ignore cover — you are standing next to them. Every
- * other modifier applies the same way to everyone.
+ * Melee (range 1) attacks ignore cover — you are standing next to them — and
+ * so does an ability that needs no line of sight (`ignoresCover`, from
+ * `!ability.requiresLineOfSight`): it arcs over whatever stands between, and its
+ * card says "Ignores cover". Every other modifier applies the same way to everyone.
+ *
+ * Cover is the defender's own tile or anything between it and the firing cell
+ * (ADR 0105), characters included. `units` is the board's roster; the preview,
+ * the reducer and the AI pass the same one, so the chip, the roll and the AI's
+ * score read one rule. Left empty, only the grid can screen.
  *
  * `weather` is the intensity in effect this round; the caller resolves it from
  * the encounter's schedule and the round (`weatherAt`), so the roll and the
@@ -111,6 +233,8 @@ export function hitBreakdown(
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
+  units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): HitBreakdown {
   const tuning = content.tuning;
   /*
@@ -128,7 +252,14 @@ export function hitBreakdown(
   const elevation = elevationDelta * tuning.elevationStep;
 
   const adjacent = distanceBetweenUnits(attacker, defender, squareFootprints) <= 1;
-  const covered = !adjacent && hasCover(content, grid, defender, squareFootprints);
+  const covered =
+    !adjacent &&
+    !ignoresCover &&
+    hasCover(content, grid, defender, squareFootprints, {
+      origin: origin ?? attacker.pos,
+      attacker,
+      units,
+    });
   const plunging =
     covered && elevationDelta > 0
       ? Math.floor(tuning.coverPenalty / tuning.plungingCoverDivisor)
@@ -158,6 +289,8 @@ export function hitChance(
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
+  units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): number {
   const breakdown = hitBreakdown(
     content,
@@ -167,6 +300,8 @@ export function hitChance(
     weather,
     origin,
     squareFootprints,
+    units,
+    ignoresCover,
   );
   return breakdown.chance;
 }
@@ -224,8 +359,20 @@ export function averageDamage(
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
+  units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): number {
-  const chance = hitChance(content, grid, attacker, defender, weather, origin, squareFootprints);
+  const chance = hitChance(
+    content,
+    grid,
+    attacker,
+    defender,
+    weather,
+    origin,
+    squareFootprints,
+    units,
+    ignoresCover,
+  );
   const hit = chance / 100;
   const crit = critChance(content, attacker) / 100;
   const normal = compute(content, attacker, defender, effect, 1, false);
@@ -254,9 +401,21 @@ export function rollHit(
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
+  units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): boolean {
   return rng.chance(
-    hitChance(content, grid, attacker, defender, weather, origin, squareFootprints) / 100,
+    hitChance(
+      content,
+      grid,
+      attacker,
+      defender,
+      weather,
+      origin,
+      squareFootprints,
+      units,
+      ignoresCover,
+    ) / 100,
   );
 }
 
@@ -283,9 +442,5 @@ export function surfaceDamage(
 
 /** Convenience for the AI and the preview: does this position give cover? */
 export function positionHasCover(content: ContentIndex, grid: Grid, pos: Vec2): boolean {
-  const tile = tileAt(grid, pos);
-  if (!tile) return false;
-  if (tile.cover) return true;
-  if (!tile.surface) return false;
-  return content.surfaces.get(tile.surface.id)?.grantsCover ?? false;
+  return tileGrantsCover(content, grid, pos);
 }
