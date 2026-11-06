@@ -1,5 +1,55 @@
 # Combat threat overview — issue #328
 
+## 2026-11-06: adjacent observations and handoff-settle qualification
+
+Continue the same draft PR357 and published branch
+`codex/328-show-enemies-cloud`, whose expected remote head is `d32adb3d`.
+Root session `overview-readback328-20261106T0740` verified claim6620986707
+before editing the existing native fixture and this handoff. The own isolated
+local branch remains `codex/enemy-overview-aim-gates`. Main `9225cd59` was
+merged normally as `06eb9277`, with D32 as its first parent and no conflicts;
+its accepted source and assets are inherited unchanged. Initial typecheck caught
+the old overview's remaining `TILE` reference after main removed that import.
+The separately claimed one-expression integration fix uses `camera.tile` for
+the saved return zoom, as ADR0104 requires; the legacy 64px tile stays 64px. No
+new artwork or game rule is authored by this correction. D32 captures and failures
+retain their producer identity and are not relabelled as this integration.
+
+The retained portrait WebGL traces quantify the remaining fixture cost. The
+initial handoff camera settle costs 11.391s and 11.431s. Recentre also captures a
+full DPR2 PNG in 16.834s; the next-turn case has no screenshot, so that capture
+cannot explain its timeout. Both captures stay at their original stages and
+resolution. Adjacent observations account for another 3.325s and 7.587s; these
+measurements justify reducing duplication, not a promised timing improvement.
+
+Coalesce the overview-active observation with the immediately adjacent menu
+control snapshot, retaining the assertion before the next More input. Reuse
+only the successful Move-position poll's accepted snapshot for the immediately
+following Show enemies initial controls; refresh controls after actually opening
+More. All role-based selectors and visibility/enabled, full state/session,
+pending, navigation, painted-picking and frame assertions remain.
+
+Only the two affected portrait-WebGL later legs may defer the initial
+`takeTurn` camera probe through its existing `settleCamera` option. Actual Ready,
+opening/party predicates and `waitForIdle` remain, followed by the existing
+explicit Move-layout settle before any projected target. The first overview leg,
+desktop/Canvas cases and phone keep their original setup. Qualify the deferred
+fixture through the existing initial control observation: idle mode, 96px camera
+and matching preferred frame, followed by 96px in the pending snapshot. These
+stricter preconditions protect against locking a provisional idle frame; they do
+not establish that qualification has passed before a rendered run.
+
+Do not remove settles at projection boundaries, change clocks or motion, lower
+DPR, bypass controls, split cases, remove screenshots or extend deadlines.
+The original 25-second next-party, 60-second ordinary and 360-second forced-GL
+caps remain. Root will run exact clean-head `ci:local`, then the complete 13-case
+overview, six unchanged combat-focus and two Grumbler targeting cases on the
+actual CI build, serialized with zero retries. New results belong to the final
+PR and external `readback-deferral-20261106/` receipts. Keep every earlier failure.
+WebKit, device, physical-input and accelerated-performance acceptance remain
+separate. This correction authorizes no readiness, formal approval, merge,
+deployment, dispatch, installation, asset generation or security change.
+
 ## 2026-11-04: current-main integration, browser legs and target acceptance
 
 This continues existing draft PR357 on published branch

@@ -21,6 +21,7 @@ interface SceneProbe {
   readonly mode: unknown;
   readonly pending: Vec2 | null;
   readonly enemyOverview?: unknown;
+  readonly preferredCombatTilePx?: number | null;
 }
 
 interface ClickProbe {
@@ -35,35 +36,59 @@ interface ProbeWindow {
 
 /** Read-only observations; no fixture writes to actors, rules, or camera state. */
 async function readView(page: Page) {
-  return page.evaluate(() => {
-    const app = window.fnt!.app;
-    const battle = app.state?.battle;
-    const camera = app.rendererCamera();
-    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-    const scene = (app as unknown as { scene: SceneProbe }).scene;
-    if (!battle || !camera || !canvas) throw new Error('Missing live battlefield.');
-    const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
-    if (!actor) throw new Error('Missing acting unit.');
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    return {
-      state: JSON.stringify(app.state),
-      session: JSON.stringify(app.session.toMeta()),
-      moreExpanded: document.querySelector('.combat-more-toggle')?.getAttribute('aria-expanded'),
-      rng: app.state!.rng,
-      mode: JSON.stringify(scene.mode),
-      pending: scene.pending,
-      overview: scene.enemyOverview != null,
-      battle,
-      actor,
-      camera,
-      backend: app.rendererBackend(),
-      dpr,
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-      box: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
-      stretch: { x: rect.width / (canvas.width / dpr), y: rect.height / (canvas.height / dpr) },
-    };
-  });
+  return page
+    .getByRole('button', { name: /^(More|Show enemies)$|^Move/, includeHidden: true })
+    .evaluateAll((buttons) => {
+      const app = window.fnt!.app;
+      const battle = app.state?.battle;
+      const camera = app.rendererCamera();
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const scene = (app as unknown as { scene: SceneProbe }).scene;
+      if (!battle || !camera || !canvas) throw new Error('Missing live battlefield.');
+      const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
+      if (!actor) throw new Error('Missing acting unit.');
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const observe = (name: string) => {
+        const button = buttons.find((node) => {
+          const label = (node.getAttribute('aria-label') ?? node.textContent)?.trim();
+          return name === 'Move' ? label?.startsWith(name) : label === name;
+        });
+        if (!button) return null;
+        const rect = button.getBoundingClientRect();
+        return {
+          visible:
+            !button.closest('[aria-hidden="true"]') &&
+            getComputedStyle(button).visibility === 'visible' &&
+            rect.width > 0 &&
+            rect.height > 0,
+          enabled: !button.matches(':disabled') && !button.closest('[aria-disabled="true"]'),
+          expanded: button.getAttribute('aria-expanded'),
+        };
+      };
+      return {
+        more: observe('More'),
+        show: observe('Show enemies'),
+        move: observe('Move'),
+        state: JSON.stringify(app.state),
+        session: JSON.stringify(app.session.toMeta()),
+        moreExpanded: document.querySelector('.combat-more-toggle')?.getAttribute('aria-expanded'),
+        rng: app.state!.rng,
+        mode: JSON.stringify(scene.mode),
+        modeKind: (scene.mode as { kind: string }).kind,
+        preferredCombatTilePx: scene.preferredCombatTilePx,
+        pending: scene.pending,
+        overview: scene.enemyOverview != null,
+        battle,
+        actor,
+        camera,
+        backend: app.rendererBackend(),
+        dpr,
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        box: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+        stretch: { x: rect.width / (canvas.width / dpr), y: rect.height / (canvas.height / dpr) },
+      };
+    });
 }
 
 type View = Awaited<ReturnType<typeof readView>>;
@@ -134,39 +159,11 @@ async function expectThreatsVisible(page: Page, view: View): Promise<void> {
 }
 
 async function readViewControls(page: Page) {
-  return page
-    .getByRole('button', { name: /^(More|Show enemies)$|^Move/, includeHidden: true })
-    .evaluateAll((buttons) => {
-      const app = window.fnt!.app;
-      const observe = (name: string) => {
-        const button = buttons.find((node) => {
-          const label = (node.getAttribute('aria-label') ?? node.textContent)?.trim();
-          return name === 'Move' ? label?.startsWith(name) : label === name;
-        });
-        if (!button) return null;
-        const rect = button.getBoundingClientRect();
-        return {
-          visible:
-            !button.closest('[aria-hidden="true"]') &&
-            getComputedStyle(button).visibility === 'visible' &&
-            rect.width > 0 &&
-            rect.height > 0,
-          enabled: !button.matches(':disabled') && !button.closest('[aria-disabled="true"]'),
-          expanded: button.getAttribute('aria-expanded'),
-        };
-      };
-      return {
-        more: observe('More'),
-        show: observe('Show enemies'),
-        move: observe('Move'),
-        state: JSON.stringify(app.state),
-        session: JSON.stringify(app.session.toMeta()),
-      };
-    });
+  return readView(page);
 }
 
-async function openViewMenu(page: Page) {
-  const controls = await readViewControls(page);
+async function openViewMenu(page: Page, initialControls?: View) {
+  const controls = initialControls ?? (await readViewControls(page));
   const before = { state: controls.state, session: controls.session };
   if (controls.more?.visible && controls.more.expanded !== 'true') {
     expect(controls.more.enabled, 'More enabled').toBe(true);
@@ -176,8 +173,8 @@ async function openViewMenu(page: Page) {
   return { ...controls, before };
 }
 
-async function showEnemies(page: Page, keyboard = false): Promise<void> {
-  const controls = await openViewMenu(page);
+async function showEnemies(page: Page, keyboard = false, initialControls?: View): Promise<void> {
+  const controls = await openViewMenu(page, initialControls);
   const show = page.getByRole('button', { name: 'Show enemies', exact: true });
   expect(controls.show?.visible, 'Show enemies visible').toBe(true);
   expect(controls.show?.enabled, 'Show enemies enabled').toBe(true);
@@ -256,21 +253,31 @@ async function capture(page: Page, info: TestInfo, label: string, view: View): P
   });
 }
 
-async function enterForest(page: Page, renderer: string, reduceMotion: boolean): Promise<void> {
+async function enterForest(
+  page: Page,
+  renderer: string,
+  reduceMotion: boolean,
+  options: { settleCamera?: boolean } = {},
+): Promise<void> {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await resetStorage(page, `?renderer=${renderer}`);
   await startGame(page, PLAYERS, PARTY, SEED, { reduceMotion });
   // Skip the unrelated campaign walk through the normal reducer entry path.
   // Actor positions, enemies, props, HP and camera are never staged.
   await enterNode(page, 'battle_forest_road');
-  expect(await takeTurn(page)).toBe(true);
+  expect(await takeTurn(page, options)).toBe(true);
   await waitForIdle(page);
-  // takeTurn already settles the initial handoff. Move mode settles again
-  // before projecting any target, so another four-frame probe adds no evidence.
+  // Only the two portrait-WebGL navigation legs defer the handoff camera sample.
+  // Their existing Move boundary still settles before any projected target.
 }
 
 /** Each independent leg starts with a real selected Move and pending target. */
-async function selectPendingMove(page: Page, renderer: string, inspectSetupMenu = true) {
+async function selectPendingMove(
+  page: Page,
+  renderer: string,
+  inspectSetupMenu = true,
+  deferredInitialCamera = false,
+) {
   const controls = inspectSetupMenu
     ? await openViewMenu(page)
     : await readViewControls(page).then((current) => ({
@@ -278,6 +285,11 @@ async function selectPendingMove(page: Page, renderer: string, inspectSetupMenu 
         before: { state: current.state, session: current.session },
       }));
   const initial = controls.before;
+  if (deferredInitialCamera) {
+    expect(controls.modeKind, 'Deferred handoff is still idle before Move').toBe('idle');
+    expect(controls.camera.tilePx, 'Deferred handoff keeps its original 96px frame').toBe(96);
+    expect(controls.preferredCombatTilePx, 'Deferred handoff preference is already 96px').toBe(96);
+  }
   if (inspectSetupMenu) {
     // This is the intended first failure on unchanged main.
     expect(controls.show?.visible, 'Show enemies visible').toBe(true);
@@ -296,6 +308,10 @@ async function selectPendingMove(page: Page, renderer: string, inspectSetupMenu 
   await settleLayout(page);
   const before = await readView(page);
   expect(before.pending).toEqual(first);
+  if (deferredInitialCamera) {
+    expect(before.camera.tilePx, 'Pending Move keeps the original 96px frame').toBe(96);
+    expect(before.preferredCombatTilePx, 'Pending Move keeps the 96px preference').toBe(96);
+  }
   expect(before.state).toBe(initial.state);
   expect(before.session).toBe(initial.session);
   if (controls.more?.visible) expect(before.moreExpanded).toBe('false');
@@ -303,7 +319,7 @@ async function selectPendingMove(page: Page, renderer: string, inspectSetupMenu 
 }
 
 /** Confirm a different legal destination through the current painted projection. */
-async function confirmDifferentMove(page: Page, view: View, first: Vec2): Promise<void> {
+async function confirmDifferentMove(page: Page, view: View, first: Vec2): Promise<View> {
   const second = visibleMoveTargets(view).find((pos) => pos.x !== first.x || pos.y !== first.y);
   if (!second) throw new Error('Need a different visible legal destination.');
   await tapTile(page, view, second);
@@ -311,7 +327,16 @@ async function confirmDifferentMove(page: Page, view: View, first: Vec2): Promis
   expect((await readView(page)).pending).toEqual(second);
   await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   await waitForIdle(page);
-  await expect.poll(async () => (await readView(page)).actor.pos).toEqual(second);
+  let moved: View | undefined;
+  await expect
+    .poll(async () => {
+      const current = await readView(page);
+      moved = current;
+      return current.actor.pos;
+    })
+    .toEqual(second);
+  if (!moved) throw new Error('Missing confirmed Move snapshot.');
+  return moved;
 }
 
 for (const profile of [
@@ -376,13 +401,22 @@ for (const profile of [
         page,
       }, info) => {
         allowSoftwareWebgl(test, renderer);
-        await enterForest(page, renderer, reduceMotion);
-        const { before, first } = await selectPendingMove(page, renderer, false);
+        const deferInitialCamera = profile.name === 'portrait' && renderer === 'webgl';
+        await enterForest(page, renderer, reduceMotion, {
+          settleCamera: !deferInitialCamera,
+        });
+        const { before, first } = await selectPendingMove(
+          page,
+          renderer,
+          false,
+          deferInitialCamera,
+        );
 
         // Recentre must be reachable even when the overview fitted the board.
         await showEnemies(page);
-        expect((await readView(page)).overview).toBe(true);
-        const controls = await openViewMenu(page);
+        const overviewControls = await readViewControls(page);
+        expect(overviewControls.overview).toBe(true);
+        const controls = await openViewMenu(page, overviewControls);
         const recentre = page.getByRole('button', { name: 'Recentre', exact: true });
         await expect(recentre).toBeVisible();
         await recentre.click();
@@ -408,15 +442,23 @@ for (const profile of [
         page,
       }) => {
         allowSoftwareWebgl(test, renderer);
-        await enterForest(page, renderer, reduceMotion);
-        const { before, first } = await selectPendingMove(page, renderer, false);
+        const deferInitialCamera = profile.name === 'portrait' && renderer === 'webgl';
+        await enterForest(page, renderer, reduceMotion, {
+          settleCamera: !deferInitialCamera,
+        });
+        const { before, first } = await selectPendingMove(
+          page,
+          renderer,
+          false,
+          deferInitialCamera,
+        );
         // Reproduce the old next-turn precondition with actual Move/Confirm,
         // without replaying the separate overview/tap-return/Recentre legs.
-        await confirmDifferentMove(page, before, first);
+        const moved = await confirmDifferentMove(page, before, first);
 
         // Advance through the real reducer and native AI. No positions or turn
         // order are injected, and later party turns must not enter overview.
-        await showEnemies(page);
+        await showEnemies(page, false, moved);
         expect((await readView(page)).overview).toBe(true);
         await page.evaluate(() => {
           const app = window.fnt!.app;
