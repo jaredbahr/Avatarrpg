@@ -12,19 +12,32 @@
  *  - The player can pinch or wheel in to look closer, and pan while zoomed.
  *    "Recentre" in the HUD puts the whole board back.
  *
+ * The top-down board (ADR 0104, owner's answer 1) bends it further: combat
+ * there may scroll. Its tiles are 40 world px and it draws on integer zoom
+ * at N >= dpr device px per world px, so a tile is never under `MIN_TILE_PX`;
+ * a 20x12 fight at a readable zoom is wider than most screens, so the camera
+ * follows the action and pans. Recentre zooms out to the whole board, at the
+ * largest whole scale that shows it, and only where that would drop a tile
+ * under a fingertip does it stop at N = dpr, centre on whoever is acting and
+ * pan. The oblique and orthographic boards keep the rule above.
+ *
  * Explore maps are larger than the viewport and pan by drag, clamped so the
  * map edge never leaves the frame.
  */
 
 import type { Grid, Vec2 } from '../core/types';
 import { SQUARE_FOOTPRINTS, footprintFoot } from '../core/rules/footprint';
-import { groundBounds, projectGround, unprojectGround } from './projection';
+import { TILE, groundBounds, projectGround, tileSize, unprojectGround } from './projection';
 import type { Projection } from './projection';
 import { pickCell } from './geometry/elevation';
 import { renderFoot } from './renderFoot';
 
-/** Logical tile size before the fit scale is applied. */
-export const TILE = 64;
+/**
+ * Logical tile size before the fit scale is applied, on the oblique and
+ * orthographic boards. Anything that may meet a top-down board reads
+ * `Camera.tile` (or `tileSize(projection)`) instead.
+ */
+export { TILE };
 
 /**
  * Smallest tile worth fitting to, in CSS pixels. Below this a fingertip covers
@@ -176,7 +189,7 @@ export interface CameraClampRing {
 const NO_CLAMP_RING: CameraClampRing = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export class Camera {
-  /** Screen (CSS) pixels per world pixel; a tile is `TILE * scale` CSS pixels. */
+  /** Screen (CSS) pixels per world pixel; a tile is `tile * scale` CSS pixels. */
   scale = 1;
   /**
    * Top-left of the viewport in scaled world space, as exact as the gestures
@@ -212,6 +225,14 @@ export class Camera {
     /** Painted ground outside the grid that may remain visible while panning. */
     public clampRingTiles: CameraClampRing = NO_CLAMP_RING,
   ) {}
+
+  /**
+   * World pixels per tile for this camera's projection (`tileSize`): 40 on the
+   * top-down board, 64 otherwise. Every tile-to-pixel conversion reads it.
+   */
+  get tile(): number {
+    return tileSize(this.projection);
+  }
 
   /** Top-left of the viewport in scaled world space; whole device pixels under integer zoom. */
   get offsetX(): number {
@@ -266,7 +287,17 @@ export class Camera {
 
   /** The smallest whole device scale at which a tile is still a fingertip (`MIN_TILE_PX`). */
   private get tappableDeviceScale(): number {
-    return wholeDeviceScale(MIN_TILE_PX / TILE, this.viewport.dpr, 'ceil');
+    return wholeDeviceScale(MIN_TILE_PX / this.tile, this.viewport.dpr, 'ceil');
+  }
+
+  /**
+   * The smallest whole device scale any integer-zoom stop may take. The
+   * top-down board never goes under a fingertip (N >= dpr, ADR 0104), so a
+   * pinch out stops there and it has no smoothed overview; the oblique board
+   * may zoom out to one device pixel, or to its overview below that.
+   */
+  private get floorDeviceScale(): number {
+    return this.projection === 'topdown' ? this.tappableDeviceScale : 1;
   }
 
   /** The smallest whole device scale that keeps the view inside `viewExtent` (1 without one). */
@@ -284,6 +315,7 @@ export class Camera {
    * or a painted extent stops the zoom first.
    */
   private get overviewScale(): number | null {
+    if (this.projection === 'topdown') return null;
     const fit = Math.max(Math.min(this.fitScale(), this.maxScale), this.minContinuousExtentScale);
     return fit * this.viewport.dpr < 1 - WHOLE_EPSILON ? fit : null;
   }
@@ -321,6 +353,7 @@ export class Camera {
     const low = Math.max(
       wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
       this.extentDeviceScale,
+      this.floorDeviceScale,
     );
     const high = Math.max(low, this.maxDeviceScale);
     return Math.max(low, Math.min(high, wholeDeviceScale(scale, dpr, 'nearest'))) / dpr;
@@ -349,7 +382,11 @@ export class Camera {
    */
   raiseToFit(): void {
     const fit = this.integerZoom
-      ? (this.overviewScale ?? this.snapScale(this.fitScale(), 'floor'))
+      ? (this.overviewScale ??
+        Math.max(
+          this.snapScale(this.fitScale(), 'floor'),
+          this.floorDeviceScale / this.viewport.dpr,
+        ))
       : this.fitScale();
     if (this.scale < fit) {
       this.zoomIntent = null;
@@ -375,19 +412,19 @@ export class Camera {
   }
 
   get worldWidth(): number {
-    return this.bounds.width * TILE * this.scale;
+    return this.bounds.width * this.tile * this.scale;
   }
 
   get worldHeight(): number {
-    return this.bounds.height * TILE * this.scale;
+    return this.bounds.height * this.tile * this.scale;
   }
 
   /** The scale at which the whole grid fits inside the viewport with a margin. */
   fitScale(margin = 12): number {
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
-    const scaleX = usableWidth / (this.bounds.width * TILE);
-    const scaleY = usableHeight / (this.bounds.height * TILE);
+    const scaleX = usableWidth / (this.bounds.width * this.tile);
+    const scaleY = usableHeight / (this.bounds.height * this.tile);
     return Math.max(this.minScale, Math.min(this.maxScale, Math.min(scaleX, scaleY)));
   }
 
@@ -404,7 +441,7 @@ export class Camera {
    */
   fit(margin = 12): void {
     const fitScale = this.fitScale(margin);
-    const tappable = MIN_TILE_PX / TILE;
+    const tappable = MIN_TILE_PX / this.tile;
     this.zoomIntent = null;
     if (this.integerZoom) {
       // The whole device scale at or under the fit, so the board still fits,
@@ -425,12 +462,12 @@ export class Camera {
    * larger than the viewport, then clamps. Used for explore maps.
    */
   fitExplore(preferredTilePx = 48, margin = 12, snap: ScaleSnap = 'nearest'): void {
-    const wanted = preferredTilePx / TILE;
+    const wanted = preferredTilePx / this.tile;
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
     const fitScale = Math.min(
-      usableWidth / (this.bounds.width * TILE),
-      usableHeight / (this.bounds.height * TILE),
+      usableWidth / (this.bounds.width * this.tile),
+      usableHeight / (this.bounds.height * this.tile),
     );
     this.zoomIntent = null;
     if (this.integerZoom) {
@@ -483,7 +520,7 @@ export class Camera {
       this.clampToExtent();
       return;
     }
-    const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
+    const pixels = (tiles: number) => Math.max(0, tiles) * this.tile * this.scale;
     this.rawX =
       slackX <= 0
         ? slackX / 2
@@ -605,7 +642,7 @@ export class Camera {
       emitBreakCrossings('x', this.viewport.width / (2 * this.scale), 0);
       emitBreakCrossings(
         'x',
-        this.bounds.width * TILE - this.viewport.width / (2 * this.scale),
+        this.bounds.width * this.tile - this.viewport.width / (2 * this.scale),
         slackX,
       );
     }
@@ -613,7 +650,7 @@ export class Camera {
       emitBreakCrossings('y', this.viewport.height / (2 * this.scale), 0);
       emitBreakCrossings(
         'y',
-        this.bounds.height * TILE - this.viewport.height / (2 * this.scale),
+        this.bounds.height * this.tile - this.viewport.height / (2 * this.scale),
         slackY,
       );
     }
@@ -626,14 +663,14 @@ export class Camera {
       slackX > 0
         ? [
             this.viewport.width / (2 * this.scale),
-            this.bounds.width * TILE - this.viewport.width / (2 * this.scale),
+            this.bounds.width * this.tile - this.viewport.width / (2 * this.scale),
           ]
         : [];
     const yBreaks =
       slackY > 0
         ? [
             this.viewport.height / (2 * this.scale),
-            this.bounds.height * TILE - this.viewport.height / (2 * this.scale),
+            this.bounds.height * this.tile - this.viewport.height / (2 * this.scale),
           ]
         : [];
     for (const x of xBreaks)
@@ -705,6 +742,7 @@ export class Camera {
       Math.max(
         wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
         this.extentDeviceScale,
+        this.floorDeviceScale,
       ) / dpr;
     const high = Math.max(low, this.maxDeviceScale / dpr);
     const from =
@@ -735,7 +773,8 @@ export class Camera {
 
   /** A point already in board units (projected tiles) -> unscaled world pixels. */
   boardPoint(point: Vec2): ScreenPoint {
-    return { x: (point.x - this.bounds.minX) * TILE, y: (point.y - this.bounds.minY) * TILE };
+    const tile = this.tile;
+    return { x: (point.x - this.bounds.minX) * tile, y: (point.y - this.bounds.minY) * tile };
   }
 
   /** The single forward transform shared by rendering, markers and pointer tests. */
@@ -747,8 +786,8 @@ export class Camera {
   unproject(pos: ScreenPoint): Vec2 {
     return unprojectGround(
       {
-        x: (pos.x + this.offsetX) / (TILE * this.scale) + this.bounds.minX,
-        y: (pos.y + this.offsetY) / (TILE * this.scale) + this.bounds.minY,
+        x: (pos.x + this.offsetX) / (this.tile * this.scale) + this.bounds.minX,
+        y: (pos.y + this.offsetY) / (this.tile * this.scale) + this.bounds.minY,
       },
       this.projection,
     );
@@ -765,7 +804,7 @@ export class Camera {
 
   /** A centre-compatible box. For ground geometry use project(), not its square bounds. */
   toScreen(pos: Vec2): { x: number; y: number; size: number } {
-    const size = TILE * this.scale;
+    const size = this.tile * this.scale;
     const center = this.project({ x: pos.x + 0.5, y: pos.y + 0.5 });
     return { x: center.x - size / 2, y: center.y - size / 2, size };
   }
@@ -776,12 +815,12 @@ export class Camera {
     footprint: 1 | 2 = 1,
     square = SQUARE_FOOTPRINTS,
   ): { x: number; y: number; size: number } {
-    if (this.projection === 'orthographic') {
+    if (this.projection !== 'oblique') {
       return this.toScreen(
         square ? { x: pos.x, y: footprintFoot(pos, footprint, true).y - 0.5 } : pos,
       );
     }
-    const size = TILE * this.scale;
+    const size = this.tile * this.scale;
     const foot = this.project(renderFoot(pos, footprint, square, this.projection));
     return { x: foot.x - (size * footprint) / 2, y: foot.y - size * 0.86, size };
   }

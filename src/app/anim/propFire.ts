@@ -17,13 +17,16 @@ const particleDefs = (): ParticleEmitterDef[] =>
  * is a ground diagonal and a ground unit along it is short on screen. A flat
  * map rises along its own up, at approximately half the authored ground speed.
  */
+const FLAT_FLAMES: readonly ParticleEmitterDef[] = particleDefs().map((def) => ({
+  ...def,
+  spread: ORTHOGRAPHIC_UP,
+  speed: [def.speed[0] * 0.5, def.speed[1] * 0.5],
+}));
+/** The top-down ground is flat too (ADR 0104), so it takes the flat recipe until T4 draws its own fire. */
 const FLAMES: Readonly<Record<Projection, readonly ParticleEmitterDef[]>> = {
   oblique: particleDefs().map((def) => ({ ...def, spread: OBLIQUE_UP })),
-  orthographic: particleDefs().map((def) => ({
-    ...def,
-    spread: ORTHOGRAPHIC_UP,
-    speed: [def.speed[0] * 0.5, def.speed[1] * 0.5],
-  })),
+  orthographic: FLAT_FLAMES,
+  topdown: FLAT_FLAMES,
 };
 
 /** Loops run at once per emitter, spaced evenly through the period, so the flame never gutters. */
@@ -39,6 +42,7 @@ const HEARTH = 0.08;
 const LIFT: Readonly<Record<Projection, { readonly x: number; readonly y: number }>> = {
   oblique: { x: -0.22, y: -0.22 },
   orthographic: { x: 0, y: -0.22 },
+  topdown: { x: 0, y: -0.22 },
 };
 
 /**

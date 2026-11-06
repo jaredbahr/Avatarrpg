@@ -50,6 +50,8 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      // Claude Code agent worktrees (full repo copies) live here.
+      '.claude/worktrees/**',
       'dev-dist/**',
       'node_modules/**',
       '.vite/**',
@@ -58,6 +60,7 @@ export default tseslint.config(
       'test-results/**',
       '.shots/**',
       'gallery/**',
+      'prototypes/**',
     ],
   },
   js.configs.recommended,

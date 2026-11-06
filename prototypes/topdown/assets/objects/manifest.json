@@ -1,0 +1,92 @@
+{
+ "house_cream": {
+  "w": 72,
+  "h": 84,
+  "src": "raw/house_anchor/00.png"
+ },
+ "house_green": {
+  "w": 72,
+  "h": 85,
+  "src": "raw/houses_styled/frame_0.png"
+ },
+ "house_ochre": {
+  "w": 71,
+  "h": 88,
+  "src": "raw/houses_styled/frame_1.png"
+ },
+ "teahouse": {
+  "w": 90,
+  "h": 76,
+  "src": "raw/houses_styled/frame_2.png"
+ },
+ "stall": {
+  "w": 83,
+  "h": 64,
+  "src": "raw/houses_styled/frame_3.png"
+ },
+ "lamp": {
+  "w": 10,
+  "h": 54,
+  "src": "raw/prop_lamp/00.png"
+ },
+ "barrels": {
+  "w": 21,
+  "h": 14,
+  "src": "raw/prop_barrels/00.png"
+ },
+ "crates": {
+  "w": 24,
+  "h": 20,
+  "src": "raw/prop_crates/00.png"
+ },
+ "well": {
+  "w": 48,
+  "h": 62,
+  "src": "raw/prop_well/00.png"
+ },
+ "tree": {
+  "w": 59,
+  "h": 69,
+  "src": "raw/prop2_tree_77/00.png"
+ },
+ "tree_blossom": {
+  "w": 32,
+  "h": 51,
+  "src": "raw/prop2_tree2_77/00.png"
+ },
+ "bush": {
+  "w": 24,
+  "h": 28,
+  "src": "raw/prop_bush/00.png"
+ },
+ "flowers": {
+  "w": 46,
+  "h": 28,
+  "src": "raw/prop4_flowers_5/00.png"
+ },
+ "bridge": {
+  "w": 26,
+  "h": 67,
+  "src": "raw/prop5_bridge_8/00.png"
+ },
+ "bench": {
+  "w": 24,
+  "h": 17,
+  "src": "raw/prop2_bench_31/00.png"
+ },
+ "sign": {
+  "w": 18,
+  "h": 37,
+  "src": "raw/prop_sign/00.png"
+ },
+ "pots": {
+  "w": 17,
+  "h": 11,
+  "src": "raw/prop2_pots_77/00.png"
+ },
+ "tuft": {
+  "w": 26,
+  "h": 14,
+  "src": "raw/prop3_grass_tuft/00.png"
+ }
+}

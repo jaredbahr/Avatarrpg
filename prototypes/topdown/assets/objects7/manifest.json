@@ -1,0 +1,157 @@
+{
+ "house_cream": {
+  "w": 151,
+  "h": 178,
+  "src": "raw/v2_house_cream_s300/00.png"
+ },
+ "house_green": {
+  "w": 151,
+  "h": 178,
+  "src": "raw/v2_house_green/00.png"
+ },
+ "house_ochre": {
+  "w": 149,
+  "h": 185,
+  "src": "raw/v2_house_ochre/00.png"
+ },
+ "teahouse": {
+  "w": 183,
+  "h": 160,
+  "src": "raw/v2_teahouse/00.png"
+ },
+ "stall": {
+  "w": 125,
+  "h": 104,
+  "src": "raw/v2_stall_b/00.png"
+ },
+ "lamp": {
+  "w": 15,
+  "h": 81,
+  "src": "raw/v2_lamp/00.png"
+ },
+ "barrels": {
+  "w": 32,
+  "h": 21,
+  "src": "raw/v2_barrels/00.png"
+ },
+ "crates": {
+  "w": 34,
+  "h": 24,
+  "src": "raw/v2_crates/00.png"
+ },
+ "well": {
+  "w": 74,
+  "h": 93,
+  "src": "raw/v2_well/00.png"
+ },
+ "tree": {
+  "w": 101,
+  "h": 121,
+  "src": "raw/v2_tree/00.png"
+ },
+ "tree_blossom": {
+  "w": 56,
+  "h": 89,
+  "src": "raw/v2_tree_blossom/00.png"
+ },
+ "bush": {
+  "w": 36,
+  "h": 42,
+  "src": "raw/v2_bush/00.png"
+ },
+ "flowers": {
+  "w": 70,
+  "h": 43,
+  "src": "raw/v2_flowers/00.png"
+ },
+ "bridge": {
+  "w": 42,
+  "h": 107,
+  "src": "raw/v2_bridge_b/00.png"
+ },
+ "bench": {
+  "w": 36,
+  "h": 26,
+  "src": "raw/v2_bench/00.png"
+ },
+ "sign": {
+  "w": 27,
+  "h": 56,
+  "src": "raw/v2_sign/00.png"
+ },
+ "pots": {
+  "w": 26,
+  "h": 16,
+  "src": "raw/v2_pots/00.png"
+ },
+ "tuft": {
+  "w": 39,
+  "h": 20,
+  "src": "raw/v2_tuft/00.png"
+ },
+ "dummy": {
+  "w": 34,
+  "h": 70,
+  "src": "raw/v3_dummy_5/00.png"
+ },
+ "mira_table": {
+  "w": 73,
+  "h": 30,
+  "src": "raw/v7_prop_mira_table_9/00.png"
+ },
+ "market_a": {
+  "w": 64,
+  "h": 37,
+  "src": "raw/v7_prop_market_a_9/00.png"
+ },
+ "market_b": {
+  "w": 57,
+  "h": 44,
+  "src": "raw/v7_prop_market_b_5/00.png"
+ },
+ "garden": {
+  "w": 96,
+  "h": 53,
+  "src": "raw/v7_prop_garden2_13/00.png"
+ },
+ "notice_board": {
+  "w": 36,
+  "h": 56,
+  "src": "raw/v7_prop_notice_board_9/00.png"
+ },
+ "handcart": {
+  "w": 74,
+  "h": 48,
+  "src": "raw/v7_prop_handcart_9/00.png"
+ },
+ "laundry_line": {
+  "w": 67,
+  "h": 46,
+  "src": "raw/v7_prop_laundry_line_9/00.png"
+ },
+ "fence": {
+  "w": 56,
+  "h": 18,
+  "src": "raw/v7_prop_fence_9/00.png"
+ },
+ "stone_lantern": {
+  "w": 24,
+  "h": 42,
+  "src": "raw/v7_prop_stone_lantern_9/00.png"
+ },
+ "trough": {
+  "w": 54,
+  "h": 36,
+  "src": "raw/v7_prop_trough_5/00.png"
+ },
+ "planter": {
+  "w": 56,
+  "h": 32,
+  "src": "raw/v7_prop_planter_9/00.png"
+ },
+ "banner_pole": {
+  "w": 21,
+  "h": 92,
+  "src": "raw/v7_prop_banner_pole_9/00.png"
+ }
+}

@@ -1,0 +1,55 @@
+{
+ "id": "474d00ae-5329-4954-912c-1a1ad240b9b1",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "seated-on-belly-idle@870177": {
+   "south-west": [
+    "seated-on-belly-idle_870177_south-west_0.png",
+    "seated-on-belly-idle_870177_south-west_1.png",
+    "seated-on-belly-idle_870177_south-west_2.png",
+    "seated-on-belly-idle_870177_south-west_3.png",
+    "seated-on-belly-idle_870177_south-west_4.png",
+    "seated-on-belly-idle_870177_south-west_5.png",
+    "seated-on-belly-idle_870177_south-west_6.png",
+    "seated-on-belly-idle_870177_south-west_7.png",
+    "seated-on-belly-idle_870177_south-west_8.png",
+    "seated-on-belly-idle_870177_south-west_9.png"
+   ]
+  },
+  "walk-8-frames@9a1e34": {
+   "east": [
+    "walk-8-frames_9a1e34_east_0.png",
+    "walk-8-frames_9a1e34_east_1.png",
+    "walk-8-frames_9a1e34_east_2.png",
+    "walk-8-frames_9a1e34_east_3.png",
+    "walk-8-frames_9a1e34_east_4.png",
+    "walk-8-frames_9a1e34_east_5.png",
+    "walk-8-frames_9a1e34_east_6.png",
+    "walk-8-frames_9a1e34_east_7.png"
+   ],
+   "west": [
+    "walk-8-frames_9a1e34_west_0.png",
+    "walk-8-frames_9a1e34_west_1.png",
+    "walk-8-frames_9a1e34_west_2.png",
+    "walk-8-frames_9a1e34_west_3.png",
+    "walk-8-frames_9a1e34_west_4.png",
+    "walk-8-frames_9a1e34_west_5.png",
+    "walk-8-frames_9a1e34_west_6.png",
+    "walk-8-frames_9a1e34_west_7.png"
+   ]
+  }
+ }
+}

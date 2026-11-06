@@ -1,0 +1,137 @@
+{
+ "brazier": {
+  "w": 25,
+  "h": 30,
+  "src": "t13/obj/brazier_3.png"
+ },
+ "cabbage_cart": {
+  "w": 41,
+  "h": 47,
+  "src": "t13/obj/cabbage_cart_3.png"
+ },
+ "dead_shrub": {
+  "w": 25,
+  "h": 34,
+  "src": "t13/obj/dead_shrub_3.png"
+ },
+ "drill_junk": {
+  "w": 44,
+  "h": 30,
+  "src": "t13/obj/drill_junk_3.png"
+ },
+ "driller_east": {
+  "w": 105,
+  "h": 101,
+  "src": "assets/driller/rotations__east.png"
+ },
+ "driller_north": {
+  "w": 80,
+  "h": 87,
+  "src": "assets/driller/rotations__north.png"
+ },
+ "driller_northeast": {
+  "w": 101,
+  "h": 98,
+  "src": "assets/driller/rotations__north-east.png"
+ },
+ "driller_northwest": {
+  "w": 94,
+  "h": 87,
+  "src": "assets/driller/rotations__north-west.png"
+ },
+ "driller_south": {
+  "w": 80,
+  "h": 91,
+  "src": "assets/driller/rotations__south.png"
+ },
+ "driller_southeast": {
+  "w": 91,
+  "h": 104,
+  "src": "assets/driller/rotations__south-east.png"
+ },
+ "driller_southwest": {
+  "w": 103,
+  "h": 92,
+  "src": "assets/driller/rotations__south-west.png"
+ },
+ "driller_west": {
+  "w": 100,
+  "h": 88,
+  "src": "assets/driller/rotations__west.png"
+ },
+ "gallery_door": {
+  "w": 52,
+  "h": 46,
+  "src": "t13/obj/gallery_door_3.png"
+ },
+ "gatehouse": {
+  "w": 85,
+  "h": 55,
+  "src": "t13/obj/gatehouse_3.png"
+ },
+ "headframe": {
+  "w": 54,
+  "h": 83,
+  "src": "t13/obj/headframe_3.png"
+ },
+ "lean_to": {
+  "w": 48,
+  "h": 38,
+  "src": "t13/obj/lean_to_3.png"
+ },
+ "lime_boulder": {
+  "w": 40,
+  "h": 36,
+  "src": "t13/obj/lime_boulder_3.png"
+ },
+ "lime_rubble": {
+  "w": 40,
+  "h": 21,
+  "src": "t13/obj/lime_rubble_3.png"
+ },
+ "minecart": {
+  "w": 28,
+  "h": 36,
+  "src": "t13/obj/minecart_3.png"
+ },
+ "oil_barrels": {
+  "w": 36,
+  "h": 32,
+  "src": "t13/obj/oil_barrels_3.png"
+ },
+ "qwall": {
+  "w": 67,
+  "h": 43,
+  "src": "t13/obj/qwall_3.png"
+ },
+ "qwall_b": {
+  "w": 64,
+  "h": 38,
+  "src": "t13/obj/qwall_b_3.png"
+ },
+ "rails": {
+  "w": 71,
+  "h": 19,
+  "src": "t13/obj/rails_3.png"
+ },
+ "scaffold": {
+  "w": 43,
+  "h": 64,
+  "src": "t13/obj/scaffold_3.png"
+ },
+ "scree": {
+  "w": 33,
+  "h": 14,
+  "src": "t13/obj/scree_3.png"
+ },
+ "stone_blocks": {
+  "w": 28,
+  "h": 30,
+  "src": "t13/obj/stone_blocks_3.png"
+ },
+ "tool_rack": {
+  "w": 34,
+  "h": 38,
+  "src": "t13/obj/tool_rack_3.png"
+ }
+}

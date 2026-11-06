@@ -1,0 +1,477 @@
+{
+ "id": "a0ef8769-5b78-4a25-b402-d7910d07582e",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "custom-an earth-bending strike: lifts@fcd2f3": {
+   "north": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north_9.png"
+   ],
+   "south": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south_9.png"
+   ],
+   "east": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_east_9.png"
+   ],
+   "west": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_west_9.png"
+   ],
+   "south-east": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-east_9.png"
+   ],
+   "north-east": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-east_9.png"
+   ],
+   "north-west": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_north-west_9.png"
+   ],
+   "south-west": [
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_0.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_1.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_2.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_3.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_4.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_5.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_6.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_7.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_8.png",
+    "custom-an_earth-bending_strike_lifts_fcd2f3_south-west_9.png"
+   ]
+  },
+  "custom-standing at rest in a ready st@2ea427": {
+   "west": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_west_7.png"
+   ],
+   "south": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south_7.png"
+   ],
+   "east": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_east_7.png"
+   ],
+   "north": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north_7.png"
+   ],
+   "north-west": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-west_7.png"
+   ],
+   "south-east": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-east_7.png"
+   ],
+   "north-east": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_north-east_7.png"
+   ],
+   "south-west": [
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_0.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_1.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_2.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_3.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_4.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_5.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_6.png",
+    "custom-standing_at_rest_in_a_ready_st_2ea427_south-west_7.png"
+   ]
+  },
+  "walking-8-frames@554d11": {
+   "north": [
+    "walking-8-frames_554d11_north_0.png",
+    "walking-8-frames_554d11_north_1.png",
+    "walking-8-frames_554d11_north_2.png",
+    "walking-8-frames_554d11_north_3.png",
+    "walking-8-frames_554d11_north_4.png",
+    "walking-8-frames_554d11_north_5.png",
+    "walking-8-frames_554d11_north_6.png",
+    "walking-8-frames_554d11_north_7.png"
+   ],
+   "east": [
+    "walking-8-frames_554d11_east_0.png",
+    "walking-8-frames_554d11_east_1.png",
+    "walking-8-frames_554d11_east_2.png",
+    "walking-8-frames_554d11_east_3.png",
+    "walking-8-frames_554d11_east_4.png",
+    "walking-8-frames_554d11_east_5.png",
+    "walking-8-frames_554d11_east_6.png",
+    "walking-8-frames_554d11_east_7.png"
+   ],
+   "west": [
+    "walking-8-frames_554d11_west_0.png",
+    "walking-8-frames_554d11_west_1.png",
+    "walking-8-frames_554d11_west_2.png",
+    "walking-8-frames_554d11_west_3.png",
+    "walking-8-frames_554d11_west_4.png",
+    "walking-8-frames_554d11_west_5.png",
+    "walking-8-frames_554d11_west_6.png",
+    "walking-8-frames_554d11_west_7.png"
+   ],
+   "south": [
+    "walking-8-frames_554d11_south_0.png",
+    "walking-8-frames_554d11_south_1.png",
+    "walking-8-frames_554d11_south_2.png",
+    "walking-8-frames_554d11_south_3.png",
+    "walking-8-frames_554d11_south_4.png",
+    "walking-8-frames_554d11_south_5.png",
+    "walking-8-frames_554d11_south_6.png",
+    "walking-8-frames_554d11_south_7.png"
+   ],
+   "south-east": [
+    "walking-8-frames_554d11_south-east_0.png",
+    "walking-8-frames_554d11_south-east_1.png",
+    "walking-8-frames_554d11_south-east_2.png",
+    "walking-8-frames_554d11_south-east_3.png",
+    "walking-8-frames_554d11_south-east_4.png",
+    "walking-8-frames_554d11_south-east_5.png",
+    "walking-8-frames_554d11_south-east_6.png",
+    "walking-8-frames_554d11_south-east_7.png"
+   ],
+   "north-west": [
+    "walking-8-frames_554d11_north-west_0.png",
+    "walking-8-frames_554d11_north-west_1.png",
+    "walking-8-frames_554d11_north-west_2.png",
+    "walking-8-frames_554d11_north-west_3.png",
+    "walking-8-frames_554d11_north-west_4.png",
+    "walking-8-frames_554d11_north-west_5.png",
+    "walking-8-frames_554d11_north-west_6.png",
+    "walking-8-frames_554d11_north-west_7.png"
+   ],
+   "north-east": [
+    "walking-8-frames_554d11_north-east_0.png",
+    "walking-8-frames_554d11_north-east_1.png",
+    "walking-8-frames_554d11_north-east_2.png",
+    "walking-8-frames_554d11_north-east_3.png",
+    "walking-8-frames_554d11_north-east_4.png",
+    "walking-8-frames_554d11_north-east_5.png",
+    "walking-8-frames_554d11_north-east_6.png",
+    "walking-8-frames_554d11_north-east_7.png"
+   ],
+   "south-west": [
+    "walking-8-frames_554d11_south-west_0.png",
+    "walking-8-frames_554d11_south-west_1.png",
+    "walking-8-frames_554d11_south-west_2.png",
+    "walking-8-frames_554d11_south-west_3.png",
+    "walking-8-frames_554d11_south-west_4.png",
+    "walking-8-frames_554d11_south-west_5.png",
+    "walking-8-frames_554d11_south-west_6.png",
+    "walking-8-frames_554d11_south-west_7.png"
+   ]
+  },
+  "custom-a defensive stance: plants bot@62ab50": {
+   "south-east": [
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-east_9.png"
+   ],
+   "south-west": [
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south-west_9.png"
+   ],
+   "north-west": [
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-west_9.png"
+   ],
+   "west": [
+    "custom-a_defensive_stance_plants_bot_62ab50_west_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_west_9.png"
+   ],
+   "north": [
+    "custom-a_defensive_stance_plants_bot_62ab50_north_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north_9.png"
+   ],
+   "north-east": [
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_north-east_9.png"
+   ],
+   "south": [
+    "custom-a_defensive_stance_plants_bot_62ab50_south_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_south_9.png"
+   ],
+   "east": [
+    "custom-a_defensive_stance_plants_bot_62ab50_east_0.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_1.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_2.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_3.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_4.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_5.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_6.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_7.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_8.png",
+    "custom-a_defensive_stance_plants_bot_62ab50_east_9.png"
+   ]
+  },
+  "custom-an earth-bending wall raise: d@e797f6": {
+   "north-east": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-east_9.png"
+   ],
+   "east": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_east_9.png"
+   ],
+   "west": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_west_9.png"
+   ],
+   "south-west": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-west_9.png"
+   ],
+   "south": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south_9.png"
+   ],
+   "north-west": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north-west_9.png"
+   ],
+   "north": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_north_9.png"
+   ],
+   "south-east": [
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_0.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_1.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_2.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_3.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_4.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_5.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_6.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_7.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_8.png",
+    "custom-an_earth-bending_wall_raise_d_e797f6_south-east_9.png"
+   ]
+  }
+ }
+}

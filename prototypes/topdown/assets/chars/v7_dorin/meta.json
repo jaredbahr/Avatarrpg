@@ -1,0 +1,215 @@
+{
+ "id": "b752a8f9-a904-49f9-b290-ff82388dbe57",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "custom-standing at rest: the chest an@bb588c": {
+   "north": [
+    "custom-standing_at_rest_the_chest_an_bb588c_north_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north_11.png"
+   ],
+   "south": [
+    "custom-standing_at_rest_the_chest_an_bb588c_south_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south_11.png"
+   ],
+   "west": [
+    "custom-standing_at_rest_the_chest_an_bb588c_west_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_west_11.png"
+   ],
+   "south-west": [
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-west_11.png"
+   ],
+   "east": [
+    "custom-standing_at_rest_the_chest_an_bb588c_east_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_east_11.png"
+   ],
+   "north-west": [
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-west_11.png"
+   ],
+   "south-east": [
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_south-east_11.png"
+   ],
+   "north-east": [
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_0.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_1.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_2.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_3.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_4.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_5.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_6.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_7.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_8.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_9.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_10.png",
+    "custom-standing_at_rest_the_chest_an_bb588c_north-east_11.png"
+   ]
+  },
+  "walking-8-frames@234afa": {
+   "west": [
+    "walking-8-frames_234afa_west_0.png",
+    "walking-8-frames_234afa_west_1.png",
+    "walking-8-frames_234afa_west_2.png",
+    "walking-8-frames_234afa_west_3.png",
+    "walking-8-frames_234afa_west_4.png",
+    "walking-8-frames_234afa_west_5.png",
+    "walking-8-frames_234afa_west_6.png",
+    "walking-8-frames_234afa_west_7.png"
+   ],
+   "north-west": [
+    "walking-8-frames_234afa_north-west_0.png",
+    "walking-8-frames_234afa_north-west_1.png",
+    "walking-8-frames_234afa_north-west_2.png",
+    "walking-8-frames_234afa_north-west_3.png",
+    "walking-8-frames_234afa_north-west_4.png",
+    "walking-8-frames_234afa_north-west_5.png",
+    "walking-8-frames_234afa_north-west_6.png",
+    "walking-8-frames_234afa_north-west_7.png"
+   ],
+   "north-east": [
+    "walking-8-frames_234afa_north-east_0.png",
+    "walking-8-frames_234afa_north-east_1.png",
+    "walking-8-frames_234afa_north-east_2.png",
+    "walking-8-frames_234afa_north-east_3.png",
+    "walking-8-frames_234afa_north-east_4.png",
+    "walking-8-frames_234afa_north-east_5.png",
+    "walking-8-frames_234afa_north-east_6.png",
+    "walking-8-frames_234afa_north-east_7.png"
+   ],
+   "south-west": [
+    "walking-8-frames_234afa_south-west_0.png",
+    "walking-8-frames_234afa_south-west_1.png",
+    "walking-8-frames_234afa_south-west_2.png",
+    "walking-8-frames_234afa_south-west_3.png",
+    "walking-8-frames_234afa_south-west_4.png",
+    "walking-8-frames_234afa_south-west_5.png",
+    "walking-8-frames_234afa_south-west_6.png",
+    "walking-8-frames_234afa_south-west_7.png"
+   ],
+   "east": [
+    "walking-8-frames_234afa_east_0.png",
+    "walking-8-frames_234afa_east_1.png",
+    "walking-8-frames_234afa_east_2.png",
+    "walking-8-frames_234afa_east_3.png",
+    "walking-8-frames_234afa_east_4.png",
+    "walking-8-frames_234afa_east_5.png",
+    "walking-8-frames_234afa_east_6.png",
+    "walking-8-frames_234afa_east_7.png"
+   ],
+   "north": [
+    "walking-8-frames_234afa_north_0.png",
+    "walking-8-frames_234afa_north_1.png",
+    "walking-8-frames_234afa_north_2.png",
+    "walking-8-frames_234afa_north_3.png",
+    "walking-8-frames_234afa_north_4.png",
+    "walking-8-frames_234afa_north_5.png",
+    "walking-8-frames_234afa_north_6.png",
+    "walking-8-frames_234afa_north_7.png"
+   ],
+   "south": [
+    "walking-8-frames_234afa_south_0.png",
+    "walking-8-frames_234afa_south_1.png",
+    "walking-8-frames_234afa_south_2.png",
+    "walking-8-frames_234afa_south_3.png",
+    "walking-8-frames_234afa_south_4.png",
+    "walking-8-frames_234afa_south_5.png",
+    "walking-8-frames_234afa_south_6.png",
+    "walking-8-frames_234afa_south_7.png"
+   ],
+   "south-east": [
+    "walking-8-frames_234afa_south-east_0.png",
+    "walking-8-frames_234afa_south-east_1.png",
+    "walking-8-frames_234afa_south-east_2.png",
+    "walking-8-frames_234afa_south-east_3.png",
+    "walking-8-frames_234afa_south-east_4.png",
+    "walking-8-frames_234afa_south-east_5.png",
+    "walking-8-frames_234afa_south-east_6.png",
+    "walking-8-frames_234afa_south-east_7.png"
+   ]
+  }
+ }
+}

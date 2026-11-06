@@ -1,0 +1,69 @@
+{
+ "id": "0f26a0be-dc3d-44ac-83df-4ece186de99e",
+ "size": {
+  "width": 32,
+  "height": 32
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "breathing-idle@98f2f4": {
+   "west": [
+    "breathing-idle_98f2f4_west_0.png",
+    "breathing-idle_98f2f4_west_1.png",
+    "breathing-idle_98f2f4_west_2.png",
+    "breathing-idle_98f2f4_west_3.png"
+   ],
+   "south": [
+    "breathing-idle_98f2f4_south_0.png",
+    "breathing-idle_98f2f4_south_1.png",
+    "breathing-idle_98f2f4_south_2.png",
+    "breathing-idle_98f2f4_south_3.png"
+   ],
+   "east": [
+    "breathing-idle_98f2f4_east_0.png",
+    "breathing-idle_98f2f4_east_1.png",
+    "breathing-idle_98f2f4_east_2.png",
+    "breathing-idle_98f2f4_east_3.png"
+   ],
+   "south-west": [
+    "breathing-idle_98f2f4_south-west_0.png",
+    "breathing-idle_98f2f4_south-west_1.png",
+    "breathing-idle_98f2f4_south-west_2.png",
+    "breathing-idle_98f2f4_south-west_3.png"
+   ],
+   "north-east": [
+    "breathing-idle_98f2f4_north-east_0.png",
+    "breathing-idle_98f2f4_north-east_1.png",
+    "breathing-idle_98f2f4_north-east_2.png",
+    "breathing-idle_98f2f4_north-east_3.png"
+   ],
+   "south-east": [
+    "breathing-idle_98f2f4_south-east_0.png",
+    "breathing-idle_98f2f4_south-east_1.png",
+    "breathing-idle_98f2f4_south-east_2.png",
+    "breathing-idle_98f2f4_south-east_3.png"
+   ],
+   "north": [
+    "breathing-idle_98f2f4_north_0.png",
+    "breathing-idle_98f2f4_north_1.png",
+    "breathing-idle_98f2f4_north_2.png",
+    "breathing-idle_98f2f4_north_3.png"
+   ],
+   "north-west": [
+    "breathing-idle_98f2f4_north-west_0.png",
+    "breathing-idle_98f2f4_north-west_1.png",
+    "breathing-idle_98f2f4_north-west_2.png",
+    "breathing-idle_98f2f4_north-west_3.png"
+   ]
+  }
+ }
+}

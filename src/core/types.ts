@@ -785,8 +785,11 @@ export interface MapEdge {
 }
 
 export interface MapDef {
-  /** Draw-time projection; rule coordinates and saves stay on the logical grid. */
-  readonly projection?: 'oblique';
+  /**
+   * Draw-time projection; rule coordinates and saves stay on the logical grid.
+   * Unset is the orthographic board; `'topdown'` is ADR 0104's (40 px tiles, no lift).
+   */
+  readonly projection?: 'oblique' | 'topdown';
   readonly scene?: MapScene;
   readonly id: string;
   readonly name: string;
