@@ -506,6 +506,7 @@ export function previewAbility(
             origin,
             squareFootprints,
             battle.units,
+            !ability.requiresLineOfSight,
           );
           chance = breakdown.chance;
           break;
@@ -731,6 +732,7 @@ function applyEffect(
           origin,
           squareFootprints,
           screens,
+          !ability.requiresLineOfSight,
         );
         if (!rng.chance(breakdown.chance / 100)) {
           draft.emit({

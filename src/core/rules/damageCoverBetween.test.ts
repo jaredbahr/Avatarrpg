@@ -287,6 +287,23 @@ describe('what cover-between leaves alone', () => {
   });
 });
 
+describe('an ability that needs no line of sight', () => {
+  it('arcs over every kind of cover, own ground and between, and so loses no plunging bonus', () => {
+    const attacker = shooter({ x: 0, y: 2 });
+    const defender = target({ x: 4, y: 2 });
+    const grid = place(
+      place(place(openGrid(), { x: 0, y: 2 }, { elevation: 1 }), { x: 4, y: 2 }, { cover: true }),
+      { x: 3, y: 2 },
+      { cover: true },
+    );
+    const units = [attacker, defender, bystander({ x: 3, y: 1 })];
+    const aimed = hitBreakdown(CONTENT, grid, attacker, defender, 0, null, true, units);
+    expect(aimed).toMatchObject({ cover: -20, plunging: 10 });
+    const lobbed = hitBreakdown(CONTENT, grid, attacker, defender, 0, null, true, units, true);
+    expect(lobbed).toMatchObject({ chance: 99, elevation: 10, cover: 0, plunging: 0 });
+  });
+});
+
 describe('the preview and the roll', () => {
   const throwRock = CONTENT.abilities.get('rock_throw') as Ability;
 
@@ -308,7 +325,12 @@ describe('the preview and the roll', () => {
     };
   }
 
-  function rolled(battle: BattleState, caster: Unit, victim: Unit): number | undefined {
+  function rolled(
+    battle: BattleState,
+    caster: Unit,
+    victim: Unit,
+    ability: Ability = throwRock,
+  ): number | undefined {
     const draft = new BattleDraft(CONTENT, battle, new RngCursor(1));
     const probabilities: number[] = [];
     const spy = {
@@ -320,7 +342,7 @@ describe('the preview and the roll', () => {
     } as unknown as RngCursor;
     const live = draft.unit(caster.id);
     if (!live) throw new Error('caster missing from draft');
-    resolveAbility(draft, live, throwRock, victim.pos, spy);
+    resolveAbility(draft, live, ability, victim.pos, spy);
     return probabilities[0];
   }
 
@@ -332,6 +354,17 @@ describe('the preview and the roll', () => {
     expect(row?.hitBreakdown?.cover).toBe(-20);
     expect(row?.hitChance).toBe(70);
     expect(rolled(battle, caster, victim)).toBe(0.7);
+  });
+
+  it('drops cover in both the preview and the roll for an ability that needs no sight', () => {
+    const { battle, caster, victim } = scene(20);
+    const lobbed: Ability = { ...throwRock, requiresLineOfSight: false };
+    const row = previewAbility(CONTENT, battle, caster, lobbed, victim.pos).targets.find(
+      (t) => t.unitId === victim.id,
+    );
+    expect(row?.hitBreakdown?.cover).toBe(0);
+    expect(row?.hitChance).toBe(90);
+    expect(rolled(battle, caster, victim, lobbed)).toBe(0.9);
   });
 
   it('agrees when the character between has fallen', () => {

@@ -631,6 +631,7 @@ export function scoreAbility(
           origin,
           squareFootprints,
           draft.units,
+          !ability.requiresLineOfSight,
         );
       }
       fallCap = Math.max(0, victim.hp - expectedDamage - 1);
@@ -653,6 +654,7 @@ export function scoreAbility(
             origin,
             squareFootprints,
             draft.units,
+            !ability.requiresLineOfSight,
           );
           if (friendly) {
             score -= expected * weights.friendlyFire;
@@ -1523,6 +1525,7 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
         origin,
         square,
         draft.units,
+        !ability.requiresLineOfSight,
       );
       threat += damage * (hit / 100);
     }

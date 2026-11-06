@@ -211,8 +211,10 @@ export interface HitBreakdown {
 }
 
 /**
- * Melee (range 1) attacks ignore cover — you are standing next to them. Every
- * other modifier applies the same way to everyone.
+ * Melee (range 1) attacks ignore cover — you are standing next to them — and
+ * so does an ability that needs no line of sight (`ignoresCover`, from
+ * `!ability.requiresLineOfSight`): it arcs over whatever stands between, and its
+ * card says "Ignores cover". Every other modifier applies the same way to everyone.
  *
  * Cover is the defender's own tile or anything between it and the firing cell
  * (ADR 0105), characters included. `units` is the board's roster; the preview,
@@ -232,6 +234,7 @@ export function hitBreakdown(
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
   units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): HitBreakdown {
   const tuning = content.tuning;
   /*
@@ -251,6 +254,7 @@ export function hitBreakdown(
   const adjacent = distanceBetweenUnits(attacker, defender, squareFootprints) <= 1;
   const covered =
     !adjacent &&
+    !ignoresCover &&
     hasCover(content, grid, defender, squareFootprints, {
       origin: origin ?? attacker.pos,
       attacker,
@@ -286,6 +290,7 @@ export function hitChance(
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
   units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): number {
   const breakdown = hitBreakdown(
     content,
@@ -296,6 +301,7 @@ export function hitChance(
     origin,
     squareFootprints,
     units,
+    ignoresCover,
   );
   return breakdown.chance;
 }
@@ -354,6 +360,7 @@ export function averageDamage(
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
   units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): number {
   const chance = hitChance(
     content,
@@ -364,6 +371,7 @@ export function averageDamage(
     origin,
     squareFootprints,
     units,
+    ignoresCover,
   );
   const hit = chance / 100;
   const crit = critChance(content, attacker) / 100;
@@ -394,9 +402,20 @@ export function rollHit(
   origin: Vec2 | null = null,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
   units: readonly Unit[] = [],
+  ignoresCover: boolean = false,
 ): boolean {
   return rng.chance(
-    hitChance(content, grid, attacker, defender, weather, origin, squareFootprints, units) / 100,
+    hitChance(
+      content,
+      grid,
+      attacker,
+      defender,
+      weather,
+      origin,
+      squareFootprints,
+      units,
+      ignoresCover,
+    ) / 100,
   );
 }
 
