@@ -1,6 +1,6 @@
 # ADR 0104: Porting the top-down PixelLab direction into the game
 
-**Status:** proposed, 2026-11-06 (draft for the owner; nothing in `src/` changes until he signs off the open questions).
+**Status:** accepted, 2026-11-06. The owner answered the open questions the same day (recorded under "The owner's answers" below).
 
 Follows ADR 0103 (the top-down direction, accepted for the prototype), which asked for "its own ADR covering the camera,
 tile size, renderers and the save format". Supersedes, once the default switches (phase T6): ADR 0065 (lifted tiers),
@@ -189,24 +189,25 @@ especially), changing it is a separate rules change under the usual tests and ba
 Each phase is one issue and one PR per concern, with `npm run ci:local` green. Art PRs (T2–T5) wait for the owner's
 yes, after the orchestrator has checked 3× crops and the measurable rules; code PRs (T1, T7) auto-merge.
 
-## Open questions for the owner
+## The owner's answers (2026-11-06)
 
-1. **Combat camera.** N = 2 with a follow camera that scrolls (the prototype; recommended), or N = 1 so the whole
-   board fits (40 px tiles, art at 1×, which the README calls "quiet at 1×")?
-2. **Exploration movement.** Grid paths drawn smoothly, with whole-cell saves and no save change (recommended), or the
-   prototype's free pixel walk, which needs a sub-cell position in `GameState` and a save migration?
-3. **Missing clips.** The prototype has idle, walk and per-ability strikes. The game's contract also has hit
-   reactions, knockouts (ADR 0059, 0078–0080), bend sets with sockets (ADR 0055) and rest. Generate them with
-   `skeleton-v3` (credits; recommended for hits and knockouts), or drop them from the contract for top-down sheets
-   (the prototype's knockout is a code fade)?
-4. **Palette.** Amend ADR 0102 to hard alpha plus a per-asset colour count (recommended), or palette-lock PixelLab
-   output (a recorded failure)?
-5. **The Switchbacks.** The board was made for the demo; the game walks that road in free-roam. Make it a real
-   explore map (a story-graph change, so `progression.test.ts` applies), or keep it out (recommended for the slice)?
-6. **Prototype rules you liked.** If the prototype's "something between us" cover read better than the game's
-   standing-in-cover rule, should that be a separate rules issue after T4? Recommended: decide after playing T4.
-7. **Pacing.** Adopt the prototype's measured timings (130 px/s walk, the blow timings, the camera hold; about 40 %
-   less dead time) and its 1×/2×/3× speed toggle as the starting point? Recommended: yes, keeping the hit-stops.
+The questions were put with a recommendation each; his answers, verbatim where short:
+
+1. **Combat camera: zoom.** N = 2 with the hold-then-ease follow camera; combat scrolls. The camera header's "combat
+   never scrolls" rule changes in T1, with Recentre zooming out to the whole board.
+2. **Exploration movement: "grid is fine for now."** Grid paths drawn smoothly; whole-cell saves; no save change.
+3. **Missing clips: "make them."** Hit reactions and knockouts (and the rest of the contract the port needs) are
+   generated with `create-character-v3` / `skeleton-v3` in T2, booked in the ledger.
+4. **Palette: "dropping the palette is fine."** ADR 0102 is amended in T2: the style contract keeps hard alpha and
+   replaces the single palette with a per-asset colour count.
+5. **The Switchbacks: "leave it out for now."**
+6. **Cover: "yes items, characters, walls, etc provide cover. It's important because it creates the complexity of
+   the gameplay."** The prototype's "something between us" cover, extended to characters standing between, becomes
+   a rules change in `src/core/rules/` under its own issue, with the usual tests, the balance report and the
+   forecast running the real rule. It is not part of the port, and it lands before T4 so the forest fight is judged
+   with it.
+7. **Pacing: "carry them over."** The prototype's measured timings and the 1×/2×/3× speed toggle are the
+   starting point; the hit-stops stay.
 
 ## Consequences
 
