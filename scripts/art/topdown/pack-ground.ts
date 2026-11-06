@@ -1122,8 +1122,55 @@ export async function packBaDanGround(baked = bake()): Promise<Map<string, Uint8
         height: r.height,
       };
     });
-  files.set(DATA, await dataModule(uprights, ATLAS_WIDTH, height));
+  files.set(DATA, await dataModule(uprights, ATLAS_WIDTH, height, chimneys(baked)));
   return files;
+}
+
+/**
+ * Where smoke leaves each house's drawn chimney, in fractional cells (the prototype's
+ * `findChimneys`): a narrow run of columns standing well above the roof line beside it, away from
+ * the ridge in the middle.
+ */
+export function chimneys(baked: Baked): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (const p of baked.placed) {
+    if (p.o.kind !== 'house') continue;
+    const A = alphaOf(p.img),
+      W = p.w,
+      H = p.h,
+      top: number[] = new Array<number>(W).fill(H);
+    for (let x = 0; x < W; x++)
+      for (let y = 0; y < H; y++)
+        if (at(A, y * W + x)) {
+          top[x] = y;
+          break;
+        }
+    // the plateau of columns 4 to 40 wide that stands furthest above the roof just outside it on both
+    // sides, at least 6 px (the redrawn houses' chimneys are wider than the prototype's 16 px test
+    // allowed, and the ridge's peak stands only a little above its slopes)
+    let best: [number, number] | null = null,
+      bestLift = 0;
+    for (let x0 = 1; x0 < W - 1;) {
+      let x1 = x0;
+      while (x1 + 1 < W && Math.abs(at(top, x1 + 1) - at(top, x0)) <= 3) x1++;
+      const w = x1 - x0 + 1,
+        t = Math.min(...top.slice(x0, x1 + 1));
+      const left = at(top, Math.max(0, x0 - 6)),
+        right = at(top, Math.min(W - 1, x1 + 6));
+      const lift = Math.min(left, right) - t;
+      if (w >= 4 && w <= 40 && lift >= 6 && lift > bestLift) {
+        best = [Math.round((x0 + x1) / 2), t];
+        bestLift = lift;
+      }
+      x0 = x1 + 1;
+    }
+    if (best)
+      out.push({
+        x: +((p.x + best[0] + ORIGIN.x) / 40).toFixed(3),
+        y: +((p.y + best[1] + ORIGIN.y) / 40).toFixed(3),
+      });
+  }
+  return out;
 }
 
 interface UprightData {
@@ -1135,7 +1182,12 @@ interface UprightData {
   height: number;
 }
 
-async function dataModule(uprights: UprightData[], w: number, h: number): Promise<string> {
+async function dataModule(
+  uprights: UprightData[],
+  w: number,
+  h: number,
+  smoke: { x: number; y: number }[],
+): Promise<string> {
   const ground = {
     url: `${URL_ROOT}/ground.webp`,
     x: ORIGIN.x,
@@ -1162,6 +1214,9 @@ async function dataModule(uprights: UprightData[], w: number, h: number): Promis
     '',
     '/** The rectangle the plate covers, for the camera (`MapScene.paintExtent`). */',
     `export const BA_DAN_TOPDOWN_EXTENT = ${JSON.stringify({ x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H })} as const;`,
+    '',
+    "/** Where smoke leaves each house's drawn chimney, in fractional cells (`MapScene.chimneys`). */",
+    `export const BA_DAN_TOPDOWN_CHIMNEYS: readonly { readonly x: number; readonly y: number }[] = ${JSON.stringify(smoke)};`,
     '',
   ].join('\n');
   return format(text, { ...(await resolveConfig(DATA)), filepath: DATA });

@@ -564,3 +564,12 @@ export const BA_DAN_TOPDOWN_UPRIGHTS: Readonly<
 
 /** The rectangle the plate covers, for the camera (`MapScene.paintExtent`). */
 export const BA_DAN_TOPDOWN_EXTENT = { x: -128, y: -192, width: 1248, height: 992 } as const;
+
+/** Where smoke leaves each house's drawn chimney, in fractional cells (`MapScene.chimneys`). */
+export const BA_DAN_TOPDOWN_CHIMNEYS: readonly { readonly x: number; readonly y: number }[] = [
+  { x: 9.125, y: -1.1 },
+  { x: 15.075, y: -2.325 },
+  { x: 8.025, y: 8.075 },
+  { x: 16.025, y: 8.15 },
+  { x: 22.1, y: -3.95 },
+];
