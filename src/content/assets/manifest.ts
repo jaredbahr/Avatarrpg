@@ -578,6 +578,22 @@ export function useWorldStyleTest(): void {
   ]);
 }
 
+let topDownStyle = false;
+
+/**
+ * `?style=topdown`: the top-down PixelLab direction (ADR 0104), beside `?style=world`. Plumbing only
+ * for now (phase T1): it records the choice and nothing draws differently yet. T2 hangs the
+ * `topdownSheet` figures on it and T3 onwards the maps; it switches to the default at T6.
+ */
+export function useTopDownStyle(): void {
+  topDownStyle = true;
+}
+
+/** Whether `?style=topdown` is on for this page (`useTopDownStyle`). */
+export function topDownStyleActive(): boolean {
+  return topDownStyle;
+}
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* ------------------------------------------------------ Party sprites */
   'unit.fire.kaya': gSheet('unit.fire.kaya', 'kaya', 'fire'),

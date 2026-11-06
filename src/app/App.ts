@@ -68,11 +68,12 @@ import { loadBendFx } from '../render/fx/bendFx';
 import type { BendFxIndex } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
 import { liftAt } from '../render/geometry/elevation';
+import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
-  readonly projection: 'orthographic' | 'oblique';
+  readonly projection: Projection;
   readonly groundTransform: {
     readonly a: number;
     readonly b: number;
@@ -82,6 +83,8 @@ export interface CameraInfo {
     readonly ty: number;
   };
   readonly tilePx: number;
+  /** World px a tile (`Camera.tile`): what `groundTransform` multiplies after the tile coordinate. */
+  readonly tile: number;
   readonly offsetX: number;
   readonly offsetY: number;
   readonly fitted: boolean;

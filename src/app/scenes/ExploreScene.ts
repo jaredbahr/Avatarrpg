@@ -24,7 +24,8 @@ import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
-import { Renderer, TILE } from '../../render/renderer';
+import { Renderer } from '../../render/renderer';
+import { usesIntegerZoom } from '../../render/projection';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
 import { idlePhase } from '../../render/sheets/store';
@@ -303,7 +304,7 @@ export class ExploreScene implements Scene {
       this.renderer?.resize({ width: map.width, height: map.height });
       if (this.renderer) {
         this.renderer.camera.projection = map.projection ?? 'orthographic';
-        this.renderer.camera.integerZoom = map.projection === 'oblique';
+        this.renderer.camera.integerZoom = usesIntegerZoom(map.projection ?? 'orthographic');
         this.renderer.camera.centreMargin = map.cameraCentreMargin;
         this.renderer.camera.viewExtent = map.scene?.paintExtent;
       }
@@ -459,7 +460,8 @@ export class ExploreScene implements Scene {
     return {
       projection: camera.projection,
       groundTransform: camera.groundMatrix(),
-      tilePx: TILE * camera.scale,
+      tilePx: camera.tile * camera.scale,
+      tile: camera.tile,
       offsetX: camera.offsetX,
       offsetY: camera.offsetY,
       fitted: camera.fitted,
@@ -958,8 +960,8 @@ export class ExploreScene implements Scene {
     this.renderer = new Renderer(canvas, { width: map.width, height: map.height });
     this.renderer.resize({ width: map.width, height: map.height });
     this.renderer.camera.projection = map.projection ?? 'orthographic';
-    // The oblique maps are pixel art: whole device pixels per world pixel (ADR 0088).
-    this.renderer.camera.integerZoom = map.projection === 'oblique';
+    // The oblique and top-down maps are pixel art: whole device pixels per world pixel (ADR 0088, 0104).
+    this.renderer.camera.integerZoom = usesIntegerZoom(map.projection ?? 'orthographic');
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
     this.app.animator.setProjection(this.renderer.camera.projection);

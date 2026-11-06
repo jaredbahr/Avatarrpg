@@ -20,8 +20,11 @@ export function elevationAt(grid: Grid, pos: Vec2): number {
 /**
  * Screen lift of a cell's top in tiles. A blocked mass (a rock face, a wall)
  * is drawn upright by its scenery, not lifted, so its ground stays flat.
+ * The top-down board lifts nothing (ADR 0104): a tier's top stays on its own
+ * cells and its cut face hangs over the cell below, which it picks.
  */
 export function liftAt(grid: Grid, pos: Vec2, projection: Projection): number {
+  if (projection === 'topdown') return 0;
   if (pos.x < 0 || pos.y < 0 || pos.x >= grid.width || pos.y >= grid.height) return 0;
   const tile = grid.tiles[pos.y * grid.width + pos.x];
   if (!tile || tile.elevation <= 0) return 0;
@@ -56,7 +59,8 @@ export function liftAlong(grid: Grid, at: Vec2, projection: Projection): number 
  * from `ground` to `ground + (L, L)` crosses c, L being c's lift. Of the cells
  * it crosses, the one drawn last wins: the board is painted in rising x + y,
  * the same order the renderers' lift pass uses. No lift is more than half a
- * tile, so a flat tile centre still picks its own cell.
+ * tile, so a flat tile centre still picks its own cell. Every other
+ * projection lifts nothing it picks by, so it gets the flat cell.
  */
 export function pickCell(grid: Grid, ground: Vec2, projection: Projection): Vec2 {
   const flat = { x: Math.floor(ground.x), y: Math.floor(ground.y) };

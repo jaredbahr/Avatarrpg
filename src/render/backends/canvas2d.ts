@@ -15,6 +15,7 @@ import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera, TILE } from '../camera';
+import { tileSize } from '../projection';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
@@ -98,7 +99,7 @@ import {
   type RenderUnit,
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
-import { compareRenderedDepth } from './depthOrder';
+import { boardDepth, compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
@@ -128,7 +129,10 @@ export function canvasActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return camera.groundPoint(renderFoot(pos, size, square, camera.projection)).y;
+  return boardDepth(
+    camera.groundPoint(renderFoot(pos, size, square, camera.projection)),
+    camera.projection,
+  );
 }
 
 /** How far in from the board's edge the shading reaches, in tiles. */
@@ -469,7 +473,10 @@ export class Canvas2DBackend implements RenderBackend {
           draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
         })),
       ].sort((a, b) =>
-        compareRenderedDepth(camera.groundPoint(a.pos).y, camera.groundPoint(b.pos).y),
+        compareRenderedDepth(
+          boardDepth(camera.groundPoint(a.pos), camera.projection),
+          boardDepth(camera.groundPoint(b.pos), camera.projection),
+        ),
       );
       this.revealFigures = [];
       for (const occupant of occupants) occupant.draw();
@@ -611,7 +618,7 @@ export class Canvas2DBackend implements RenderBackend {
     liftCost.heldPx = width * height;
 
     // The board canvas holds the flat ground, shaken; the layer is not.
-    const tilePx = TILE * camera.scale;
+    const tilePx = tileSize(camera.projection) * camera.scale;
     const nudge = { x: view.cameraNudge.x * tilePx, y: view.cameraNudge.y * tilePx };
     for (const cell of plan.cells)
       for (const op of cell.ops) {
@@ -1528,7 +1535,7 @@ export class Canvas2DBackend implements RenderBackend {
       (x, y) => tileShadowCell(view.grid.tiles[y * view.grid.width + x]),
       (point) => camera.project(point),
       authored,
-      TILE * camera.scale,
+      tileSize(camera.projection) * camera.scale,
     );
     if (polygons.length === 0) return;
     // Opaque and level: the polygons overlap, and the union is one caster.
@@ -1584,6 +1591,8 @@ export class Canvas2DBackend implements RenderBackend {
     cels?: FigureCels,
   ): void {
     if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
+    // A figure tile of the shipped sheets: the swept pool is the oblique and orthographic
+    // boards' grounding, which `feetBlob` replaces on the top-down board (ADR 0104, T4).
     const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
     if (!art) return;
     // The pool centres on the resting soles; one figure tile is `tile` CSS px.
