@@ -41,7 +41,7 @@ import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/s
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
-import { Renderer, TILE } from '../../render/renderer';
+import { Renderer } from '../../render/renderer';
 import type { Camera } from '../../render/camera';
 import { renderFoot } from '../../render/renderFoot';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
@@ -888,7 +888,8 @@ export class CombatScene implements Scene {
     return {
       projection: camera.projection,
       groundTransform: camera.groundMatrix(),
-      tilePx: TILE * camera.scale,
+      tilePx: camera.tile * camera.scale,
+      tile: camera.tile,
       offsetX: camera.offsetX,
       offsetY: camera.offsetY,
       fitted: camera.fitted,

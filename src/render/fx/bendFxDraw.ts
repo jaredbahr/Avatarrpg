@@ -9,7 +9,7 @@
 
 import { BackdropStore } from '../backdrops';
 import type { Camera } from '../camera';
-import { TILE } from '../camera';
+import { tileSize } from '../projection';
 import type { BendFxSprite } from '../view';
 import { flashedCel } from './bendFlash';
 
@@ -24,11 +24,12 @@ export const bendFxPages = new BackdropStore(4, 'Bend effect page', 'drawing wit
  */
 export function bendFxPlacement(sprite: BendFxSprite, camera: Camera) {
   const at = camera.boardPoint(sprite.at);
+  const tile = tileSize(camera.projection);
   return {
     x: at.x,
     y: at.y,
-    w: sprite.width * TILE,
-    h: sprite.height * TILE,
+    w: sprite.width * tile,
+    h: sprite.height * tile,
     ax: sprite.pivot.x / sprite.frame.w,
     ay: sprite.pivot.y / sprite.frame.h,
     rotation: (sprite.turn * Math.PI) / 180,

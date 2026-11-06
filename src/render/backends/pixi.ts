@@ -66,6 +66,7 @@ import {
   surfaceTexel,
 } from '../sceneSurfaces';
 import { TILE } from '../camera';
+import { tileSize } from '../projection';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
@@ -318,10 +319,29 @@ function gradientCanvas(kind: 'n' | 's' | 'w' | 'e' | 'radial', alpha: number): 
   return canvas;
 }
 
-/** Tile-unit points to the flat pixel list Graphics wants. */
-function flatten(points: readonly Vec2[]): number[] {
+/**
+ * The ground shader's camera uniforms for a ground transform (the camera's
+ * `groundMatrix`, shaken) at `tileSize` world px a tile. The shader takes a
+ * fragment's CSS-pixel position back through `inverse` from `origin` and
+ * divides by `tileSize` to find its cell, so this is the Pixi half of
+ * "picking is the exact inverse of drawing".
+ */
+export function groundShaderFrame(
+  m: { a: number; b: number; c: number; d: number; tx: number; ty: number },
+  tileSize: number,
+): { origin: [number, number]; inverse: [number, number, number, number]; tileSize: number } {
+  const det = m.a * m.d - m.b * m.c;
+  return {
+    origin: [m.tx, m.ty],
+    inverse: [m.d / det, -m.c / det, -m.b / det, m.a / det],
+    tileSize,
+  };
+}
+
+/** Tile-unit points to the flat pixel list Graphics wants, at `tile` world px a tile. */
+function flatten(points: readonly Vec2[], tile: number): number[] {
   const out: number[] = [];
-  for (const p of points) out.push(p.x * TILE, p.y * TILE);
+  for (const p of points) out.push(p.x * tile, p.y * tile);
   return out;
 }
 
@@ -382,10 +402,14 @@ export class PixiBackend implements RenderBackend {
   private marksKey = '';
   /** The oblique board, where raised ground is lifted rather than banded. */
   private lifted = false;
+  /** World px a tile on the board being drawn (`tileSize`): 40 top-down, 64 otherwise. */
+  private tile = TILE;
   /** Projected world pixels; actors and labels remain upright. */
   private upright = new Container();
   private labels = new Container();
   private groundTransform = new Matrix();
+  /** The ground transform with the effects' tile ratio folded in (`draw`). */
+  private fxTransform = new Matrix();
   private sceneGround = new Container();
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
@@ -817,6 +841,7 @@ export class PixiBackend implements RenderBackend {
     this.pixelMarkDrawables.beginFrame();
 
     this.lifted = camera.projection === 'oblique';
+    this.tile = tileSize(camera.projection);
     this.marginGfx.clear();
     const marginTone = view.scene?.marginTone;
     if (marginTone && !view.crispOverlays) {
@@ -825,7 +850,7 @@ export class PixiBackend implements RenderBackend {
         .fill({ color: MAP_MARGIN_COLORS[marginTone] });
     }
     // The shake moves the world: a knocked camera shows the margin, as a fit does.
-    const nudge = TILE * camera.scale;
+    const nudge = this.tile * camera.scale;
     const m = camera.groundMatrix();
     this.groundTransform.set(
       m.a,
@@ -838,7 +863,13 @@ export class PixiBackend implements RenderBackend {
     this.root.setFromMatrix(this.groundTransform);
     this.positionPixelGroundLayers(camera);
     this.elevationBaseLayer.setFromMatrix(this.groundTransform);
-    this.fxOver.container.setFromMatrix(this.groundTransform);
+    // The effects are authored in 64 px tiles (fx/atlas.ts); the top-down world is 40 px a tile,
+    // so their layers carry the ratio. On the other boards it is 1 and the transform is unchanged.
+    const fxScale = this.tile / TILE;
+    const g = this.groundTransform;
+    this.fxTransform.set(g.a * fxScale, g.b * fxScale, g.c * fxScale, g.d * fxScale, g.tx, g.ty);
+    this.fxOver.container.setFromMatrix(this.fxTransform);
+    this.fxUnder.container.scale.set(fxScale);
     for (const layer of [
       this.sceneGround,
       this.shadowMaskSources,
@@ -919,7 +950,7 @@ export class PixiBackend implements RenderBackend {
       view.emitters,
       view.grid,
       camera.projection,
-      TILE * camera.scale * camera.viewport.dpr,
+      this.tile * camera.scale * camera.viewport.dpr,
     );
     const oblique = camera.projection === 'oblique';
     this.fxUnder.draw(emitters, oblique);
@@ -1009,7 +1040,7 @@ export class PixiBackend implements RenderBackend {
       return;
     }
     liftCost.frames++;
-    const tilePx = TILE * camera.scale;
+    const tilePx = this.tile * camera.scale;
     // The stack is drawn shaken; the layer and the marks target are not.
     const nx = view.cameraNudge.x * tilePx;
     const ny = view.cameraNudge.y * tilePx;
@@ -1538,8 +1569,8 @@ export class PixiBackend implements RenderBackend {
     this.castUniforms.update();
 
     // One texel per world pixel, its edges on the world-pixel grid (ADR 0093).
-    const nx = view.cameraNudge.x * TILE * camera.scale;
-    const ny = view.cameraNudge.y * TILE * camera.scale;
+    const nx = view.cameraNudge.x * this.tile * camera.scale;
+    const ny = view.cameraNudge.y * this.tile * camera.scale;
     const grid = shadowGrid(this.viewport, camera.scale, camera.offsetX - nx, camera.offsetY - ny);
     this.shadowMask = (this.shadowMask ?? RenderTexture.create({ dynamic: true })).resize(
       grid.width * grid.texel,
@@ -1678,7 +1709,7 @@ export class PixiBackend implements RenderBackend {
       this.backdrop = { image, texture };
       this.backdropSprite.texture = texture;
     }
-    const size = TILE * camera.scale;
+    const size = this.tile * camera.scale;
     this.backdropSprite.visible = true;
     const padding = view.backdrop?.padding;
     const left = padding?.left ?? 0;
@@ -1977,12 +2008,10 @@ export class PixiBackend implements RenderBackend {
     };
     uniforms.uGrid[0] = grid.width;
     uniforms.uGrid[1] = grid.height;
-    const m = this.groundTransform;
-    const det = m.a * m.d - m.b * m.c;
-    uniforms.uGroundOrigin[0] = m.tx;
-    uniforms.uGroundOrigin[1] = m.ty;
-    uniforms.uGroundInverse.set([m.d / det, -m.c / det, -m.b / det, m.a / det]);
-    uniforms.uTileSize = TILE;
+    const frame = groundShaderFrame(this.groundTransform, this.tile);
+    uniforms.uGroundOrigin.set(frame.origin);
+    uniforms.uGroundInverse.set(frame.inverse);
+    uniforms.uTileSize = frame.tileSize;
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
     uniforms.uSteamRegion = view.obscuringTiles !== undefined ? 1 : 0;
@@ -2003,10 +2032,9 @@ export class PixiBackend implements RenderBackend {
     const overlay = this.groundOverlayUniforms.uniforms as typeof uniforms;
     overlay.uGrid[0] = grid.width;
     overlay.uGrid[1] = grid.height;
-    overlay.uGroundOrigin[0] = m.tx;
-    overlay.uGroundOrigin[1] = m.ty;
-    overlay.uGroundInverse.set([m.d / det, -m.c / det, -m.b / det, m.a / det]);
-    overlay.uTileSize = TILE;
+    overlay.uGroundOrigin.set(frame.origin);
+    overlay.uGroundInverse.set(frame.inverse);
+    overlay.uTileSize = frame.tileSize;
     overlay.uTime = view.time / 1000;
     overlay.uHatch = view.hatch ? 1 : 0;
     overlay.uSteamRegion = uniforms.uSteamRegion;
@@ -2119,9 +2147,9 @@ export class PixiBackend implements RenderBackend {
           this.elevationBaseSprites.set(key, sprite);
         }
         sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, 'elevation'));
-        sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
-        sprite.width = DECOR_CHUNK * TILE;
-        sprite.height = DECOR_CHUNK * TILE;
+        sprite.position.set(cx * DECOR_CHUNK * this.tile, cy * DECOR_CHUNK * this.tile);
+        sprite.width = DECOR_CHUNK * this.tile;
+        sprite.height = DECOR_CHUNK * this.tile;
         sprite.visible = true;
       }
     }
@@ -2161,9 +2189,9 @@ export class PixiBackend implements RenderBackend {
           this.decorSprites.set(key, sprite);
         }
         sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, mode, view, ready));
-        sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
-        sprite.width = DECOR_CHUNK * TILE;
-        sprite.height = DECOR_CHUNK * TILE;
+        sprite.position.set(cx * DECOR_CHUNK * this.tile, cy * DECOR_CHUNK * this.tile);
+        sprite.width = DECOR_CHUNK * this.tile;
+        sprite.height = DECOR_CHUNK * this.tile;
         sprite.visible = true;
       }
     }
@@ -2184,9 +2212,9 @@ export class PixiBackend implements RenderBackend {
     if (!this.shadeLayer.visible) return;
     const [n, s, w, e, vignette] = this.shadeSprites;
     if (!n || !s || !w || !e || !vignette) return;
-    const width = view.grid.width * TILE;
-    const height = view.grid.height * TILE;
-    const reach = EDGE_SHADE_TILES * TILE;
+    const width = view.grid.width * this.tile;
+    const height = view.grid.height * this.tile;
+    const reach = EDGE_SHADE_TILES * this.tile;
     n.position.set(0, 0);
     n.width = width;
     n.height = reach;
@@ -2263,24 +2291,24 @@ export class PixiBackend implements RenderBackend {
       const edge = view.crispOverlays ? OVERLAY.obscurementEdgeContrast : OVERLAY.obscurementEdge;
       const holes = loops.filter(isHole);
       for (const outer of loops.filter((loop) => !isHole(loop))) {
-        g.poly(flatten(outer), true);
+        g.poly(flatten(outer, this.tile), true);
         for (const hole of holes) {
           const probe = hole[0];
-          if (probe && insideLoop(probe, outer)) g.poly(flatten(hole), true).cut();
+          if (probe && insideLoop(probe, outer)) g.poly(flatten(hole, this.tile), true).cut();
         }
         g.fill({ color: fill });
       }
       for (const loop of loops) {
         for (let band = 3; band >= 1; band--) {
-          g.poly(flatten(loop), true).stroke({
-            width: TILE * band * 0.04,
+          g.poly(flatten(loop, this.tile), true).stroke({
+            width: this.tile * band * 0.04,
             color: edge,
             alpha: 0.12,
             join: 'round',
           });
         }
-        g.poly(flatten(loop), true).stroke({
-          width: Math.max(1, TILE * (view.crispOverlays ? 0.032 : 0.018)),
+        g.poly(flatten(loop, this.tile), true).stroke({
+          width: Math.max(1, this.tile * (view.crispOverlays ? 0.032 : 0.018)),
           color: edge,
           join: 'round',
         });
@@ -2289,8 +2317,8 @@ export class PixiBackend implements RenderBackend {
     const moving = view.reducedMotion ? 0 : view.time * 0.000018;
     const weather = view.weatherIntensity ?? 0;
     if (weather > 0) {
-      const width = view.grid.width * TILE;
-      const height = view.grid.height * TILE;
+      const width = view.grid.width * this.tile;
+      const height = view.grid.height * this.tile;
       g.rect(0, 0, width, height).fill({
         color: OVERLAY.sandHaze,
         alpha: weather === 2 ? 1 : 0.58,
@@ -2298,16 +2326,20 @@ export class PixiBackend implements RenderBackend {
       const count = weather === 2 ? 96 : 52;
       for (let i = 0; i < count; i++) {
         const phase = i * 0.754877666;
-        const x = ((((phase + moving * (weather + 1)) % 1) + 1) % 1) * (width - TILE * 0.32);
+        const x = ((((phase + moving * (weather + 1)) % 1) + 1) % 1) * (width - this.tile * 0.32);
         const travel = (moving * (weather + 1) * width * 0.22) / height;
         const y =
-          TILE * 0.08 + ((((i * 0.56984029 - travel) % 1) + 1) % 1) * (height - TILE * 0.16);
-        const length = TILE * (0.11 + ((i * 7) % 5) * 0.018);
+          this.tile * 0.08 +
+          ((((i * 0.56984029 - travel) % 1) + 1) % 1) * (height - this.tile * 0.16);
+        const length = this.tile * (0.11 + ((i * 7) % 5) * 0.018);
         g.moveTo(x, y).lineTo(x + length, y - length * 0.22);
-        g.moveTo(x + length * 0.3, y + TILE * 0.035).lineTo(x + length * 0.4, y + TILE * 0.032);
+        g.moveTo(x + length * 0.3, y + this.tile * 0.035).lineTo(
+          x + length * 0.4,
+          y + this.tile * 0.032,
+        );
       }
       g.stroke({
-        width: Math.max(1, TILE * 0.022),
+        width: Math.max(1, this.tile * 0.022),
         color: OVERLAY.sandWisp,
         alpha: weather === 2 ? 1 : 0.66,
       });
@@ -2338,22 +2370,22 @@ export class PixiBackend implements RenderBackend {
       const phase = (seed + clock) % 1;
       // Same footprint projection as Camera, without temporary points per puff.
       const oblique = camera.projection === 'oblique';
-      const cx = (oblique ? tile.x - tile.y + view.grid.height : tile.x + 0.5) * TILE;
-      const cy = (oblique ? (tile.x + tile.y + 1) / 2 : tile.y + 0.5) * TILE;
+      const cx = (oblique ? tile.x - tile.y + view.grid.height : tile.x + 0.5) * this.tile;
+      const cy = (oblique ? (tile.x + tile.y + 1) / 2 : tile.y + 0.5) * this.tile;
       const rise = 0.02 + (j % 2) * 0.08 + seed * 0.05;
-      const drift = view.reducedMotion ? 0 : (phase - 0.5) * TILE * 0.12;
-      const size = TILE * (0.66 + seed * 0.24);
+      const drift = view.reducedMotion ? 0 : (phase - 0.5) * this.tile * 0.12;
+      const size = this.tile * (0.66 + seed * 0.24);
       const height = size * (0.9 + seed * 0.15);
       // The soft base sits on this cell; only the upper billows rise above it.
       sprite.texture = texture;
       sprite.position.set(
-        cx + TILE * (-0.26 + j * 0.17 + (seed - 0.5) * 0.16) + drift,
+        cx + this.tile * (-0.26 + j * 0.17 + (seed - 0.5) * 0.16) + drift,
         cy +
-          TILE * 0.28 -
-          liftAt(view.grid, tile, camera.projection) * TILE -
+          this.tile * 0.28 -
+          liftAt(view.grid, tile, camera.projection) * this.tile -
           height * 0.38 -
-          rise * TILE -
-          (view.reducedMotion ? 0 : (phase - 0.5) * TILE * 0.16),
+          rise * this.tile -
+          (view.reducedMotion ? 0 : (phase - 0.5) * this.tile * 0.16),
       );
       sprite.width = size;
       sprite.height = height;
@@ -2367,32 +2399,32 @@ export class PixiBackend implements RenderBackend {
   }
 
   private drawCliffCues(view: MapView, g: Graphics): void {
-    const tangent = TILE * 0.08;
-    const normal = TILE * 0.1;
-    const inset = TILE * 0.03;
+    const tangent = this.tile * 0.08;
+    const normal = this.tile * 0.1;
+    const inset = this.tile * 0.03;
     for (const edge of view.cliffEdges ?? []) {
       const horizontal = edge.side === 'north' || edge.side === 'south';
-      const x = edge.pos.x * TILE + (edge.side === 'east' ? TILE : 0);
-      const y = edge.pos.y * TILE + (edge.side === 'south' ? TILE : 0);
+      const x = edge.pos.x * this.tile + (edge.side === 'east' ? this.tile : 0);
+      const y = edge.pos.y * this.tile + (edge.side === 'south' ? this.tile : 0);
       for (let step = 0.1; step < 1; step += 0.2) {
         if (horizontal) {
           // The hatch belongs to the higher tile's lip. Keep its normal
           // component on that tile instead of spilling onto the lower ground.
           const inward = edge.side === 'south' ? -1 : 1;
-          g.moveTo(x + TILE * step - tangent, y + inward * inset).lineTo(
-            x + TILE * step + tangent,
+          g.moveTo(x + this.tile * step - tangent, y + inward * inset).lineTo(
+            x + this.tile * step + tangent,
             y + inward * (inset + normal),
           );
         } else {
           const inward = edge.side === 'east' ? -1 : 1;
-          g.moveTo(x + inward * inset, y + TILE * step - tangent).lineTo(
+          g.moveTo(x + inward * inset, y + this.tile * step - tangent).lineTo(
             x + inward * (inset + normal),
-            y + TILE * step + tangent,
+            y + this.tile * step + tangent,
           );
         }
       }
     }
-    g.stroke({ width: Math.max(2, TILE * 0.045), color: OVERLAY.cliffHatch });
+    g.stroke({ width: Math.max(2, this.tile * 0.045), color: OVERLAY.cliffHatch });
   }
 
   /** Upright ground cues, projected but never ground-skewed. */
@@ -2408,26 +2440,27 @@ export class PixiBackend implements RenderBackend {
         x: (top.x + camera.offsetX) / camera.scale,
         y: (top.y + camera.offsetY) / camera.scale,
       };
-      const cx = box.x + TILE * 0.4;
-      const cy = box.y - liftAt(view.grid, marker.pos, camera.projection) * TILE + TILE * 0.72;
+      const cx = box.x + this.tile * 0.4;
+      const cy =
+        box.y - liftAt(view.grid, marker.pos, camera.projection) * this.tile + this.tile * 0.72;
       const arrow = [
-        cx - TILE * 0.1,
-        cy + TILE * 0.07,
+        cx - this.tile * 0.1,
+        cy + this.tile * 0.07,
         cx,
-        cy - TILE * 0.1,
-        cx + TILE * 0.1,
-        cy + TILE * 0.07,
+        cy - this.tile * 0.1,
+        cx + this.tile * 0.1,
+        cy + this.tile * 0.07,
       ];
       g.poly(arrow, true)
         .stroke({
-          width: Math.max(3 / camera.scale, TILE * 0.065),
+          width: Math.max(3 / camera.scale, this.tile * 0.065),
           color: OVERLAY.pathUnder,
         })
         .fill({ color: OVERLAY.climb });
       const label = this.climbLabel(index);
       const text = `+${marker.surcharge}`;
       if (label.text !== text) label.text = text;
-      label.position.set(cx + TILE * 0.2, cy);
+      label.position.set(cx + this.tile * 0.2, cy);
       label.visible = true;
     });
     for (let i = climbMarkers.length; i < this.climbLabels.length; i++) {
@@ -2470,18 +2503,20 @@ export class PixiBackend implements RenderBackend {
       y: (screen.y + camera.offsetY) / camera.scale,
     };
     const cx = actorReticleX(
-      { ...box, size: TILE, width: (target?.size ?? 1) * TILE },
+      { ...box, size: this.tile, width: (target?.size ?? 1) * this.tile },
       scale,
       target?.size ?? 1,
     );
     const lift = liftAlong(view.grid, pos, camera.projection);
     const silhouette = actorSilhouetteGeometry(
-      { x: box.x, y: box.y - lift * TILE, size: TILE },
+      { x: box.x, y: box.y - lift * this.tile, size: this.tile },
       heightTiles,
       this.squareFootprints ? (frame?.headroom ?? null) : null,
       scale,
     );
-    const cy = this.squareFootprints ? silhouette.reticleY : box.y - lift * TILE - TILE * 0.04;
+    const cy = this.squareFootprints
+      ? silhouette.reticleY
+      : box.y - lift * this.tile - this.tile * 0.04;
     const anchor = snapWorldPoints([{ x: cx, y: cy }])[0];
     if (anchor) {
       this.appendPixelMarks(
@@ -2638,12 +2673,12 @@ export class PixiBackend implements RenderBackend {
 
   /**
    * Device pixels per tile to rasterise sprites at for the current zoom. The
-   * sprite itself stays TILE wide in world units; only the texture behind it
+   * sprite itself stays a tile wide in world units; only the texture behind it
    * gains pixels, which is what keeps a zoomed-in board crisp on a retina
    * display instead of magnifying a 64px painting.
    */
   private spritePx(camera: Camera): number {
-    const wanted = TILE * camera.scale * this.viewport.dpr;
+    const wanted = this.tile * camera.scale * this.viewport.dpr;
     const bucketed = Math.max(SPRITE_BUCKET, Math.ceil(wanted / SPRITE_BUCKET) * SPRITE_BUCKET);
     return Math.min(MAX_SPRITE_PX, bucketed);
   }
@@ -2707,27 +2742,27 @@ export class PixiBackend implements RenderBackend {
         y: (screen.y + camera.offsetY) / camera.scale,
       };
       const x = anchor.x;
-      const ground = anchor.y - liftAlong(view.grid, at, camera.projection) * TILE;
+      const ground = anchor.y - liftAlong(view.grid, at, camera.projection) * this.tile;
       // The walk bob lifts the figure; its contact shadow stays on the ground.
-      const rawLift = (npc.offset?.y ?? 0) * TILE;
+      const rawLift = (npc.offset?.y ?? 0) * this.tile;
       const liftScale = camera.scale * this.viewport.dpr;
       const y = ground + Math.round(rawLift * liftScale) / liftScale;
-      const footX = x + (width * TILE) / 2;
+      const footX = x + (width * this.tile) / 2;
       sprite.zIndex = depth(at, width, false);
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
-        sprite.position.set(footX, y + FOOT_LINE * TILE);
-        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale * poseScale;
-        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale * poseScale;
+        sprite.position.set(footX, y + FOOT_LINE * this.tile);
+        sprite.width = (frame.frame.w / frame.pixelsPerTile) * this.tile * scale * poseScale;
+        sprite.height = (frame.frame.h / frame.pixelsPerTile) * this.tile * scale * poseScale;
         this.sampleArt(sprite, camera.scale);
       } else {
         const art = sprites.get(npc.sprite, px * scale, npcPose(npc), width);
         sprite.texture = this.texture(art);
         sprite.anchor.set(0.5, FOOT_LINE);
-        sprite.position.set(footX, y + FOOT_LINE * TILE);
-        sprite.width = width * TILE * scale * poseScale;
-        sprite.height = TILE * scale * poseScale;
+        sprite.position.set(footX, y + FOOT_LINE * this.tile);
+        sprite.width = width * this.tile * scale * poseScale;
+        sprite.height = this.tile * scale * poseScale;
       }
       sprite.scale.x = Math.abs(sprite.scale.x) * facing;
       sprite.rotation = npc.lean ?? 0;
@@ -2736,7 +2771,7 @@ export class PixiBackend implements RenderBackend {
       // A resident's pool is steady at its feet; its contact follows the soles it draws (ADR 0093).
       this.projectFigureShadow(
         `npc:${npc.id}`,
-        { x: footX, y: ground + FOOT_LINE * TILE },
+        { x: footX, y: ground + FOOT_LINE * this.tile },
         scale,
         1,
         alpha,
@@ -2755,8 +2790,8 @@ export class PixiBackend implements RenderBackend {
         this.drawTalkPip(
           camera,
           {
-            x: x + TILE * width * 0.5,
-            y: y + TILE * (FOOT_LINE - npcPipLift(npc.sprite, scale)),
+            x: x + this.tile * width * 0.5,
+            y: y + this.tile * (FOOT_LINE - npcPipLift(npc.sprite, scale)),
           },
           cueOpacity(view.time, 500, view.reducedMotion, alpha),
           view.cameraNudge,
@@ -2781,11 +2816,11 @@ export class PixiBackend implements RenderBackend {
       sprite.anchor.set(0, 0);
       sprite.position.set(
         anchor.x,
-        anchor.y - liftAt(view.grid, prop.pos, camera.projection) * TILE,
+        anchor.y - liftAt(view.grid, prop.pos, camera.projection) * this.tile,
       );
       sprite.zIndex = depth(prop.pos);
-      sprite.width = TILE;
-      sprite.height = TILE;
+      sprite.width = this.tile;
+      sprite.height = this.tile;
       sprite.alpha = 1;
       sprite.visible = true;
       const propStrength = castShadowStrength(prop.castShadow);
@@ -2800,10 +2835,10 @@ export class PixiBackend implements RenderBackend {
        * nearly open", which is the only thing worth communicating.
        */
       if (prop.hp >= prop.maxHp || prop.maxHp <= 0) continue;
-      const w = TILE * 0.6;
-      const x = anchor.x + (TILE - w) / 2;
-      const y = sprite.y + TILE * 0.9;
-      const h = Math.max(2, TILE * 0.05);
+      const w = this.tile * 0.6;
+      const x = anchor.x + (this.tile - w) / 2;
+      const y = sprite.y + this.tile * 0.9;
+      const h = Math.max(2, this.tile * 0.05);
       g.rect(x, y, w, h).fill({ color: 'rgba(0,0,0,0.55)' });
       g.rect(x, y, (w * prop.hp) / prop.maxHp, h).fill({ color: '#d9a441' });
     }
@@ -2815,15 +2850,15 @@ export class PixiBackend implements RenderBackend {
       // So does the ground: a unit on a ledge stands a little higher on screen.
       const lift = liftAlong(view.grid, pos, camera.projection);
       const anchor = box(pos, unit.size);
-      const x = anchor.x + (unit.offset?.x ?? 0) * TILE;
-      const y = anchor.y + ((unit.offset?.y ?? 0) - lift) * TILE;
+      const x = anchor.x + (unit.offset?.x ?? 0) * this.tile;
+      const y = anchor.y + ((unit.offset?.y ?? 0) - lift) * this.tile;
       const marker = unitMarkerGroundPoint(
         anchor,
-        TILE,
+        this.tile,
         lift,
         unit.meleeDirection ? unit.offset : undefined,
       );
-      const width = unit.size === 2 ? TILE * 2 : TILE;
+      const width = unit.size === 2 ? this.tile * 2 : this.tile;
       const heightTiles = this.squareFootprints ? unit.size : 1;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
       const asset = resolveAsset(unit.sprite);
@@ -2855,7 +2890,7 @@ export class PixiBackend implements RenderBackend {
           heightTiles,
         );
       const silhouette = combatActorSilhouetteGeometry(
-        { x, y, size: TILE, width },
+        { x, y, size: this.tile, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
@@ -2865,8 +2900,8 @@ export class PixiBackend implements RenderBackend {
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
-        sprite.position.set(x + width / 2, y + FOOT_LINE * TILE);
-        const placed = placeFrame(frame, 0, 0, TILE * scale);
+        sprite.position.set(x + width / 2, y + FOOT_LINE * this.tile);
+        const placed = placeFrame(frame, 0, 0, this.tile * scale);
         sprite.width = placed.w;
         sprite.height = placed.h;
         sprite.scale.x = Math.abs(sprite.scale.x) * (bend ? 1 : drawFacing);
@@ -2877,7 +2912,11 @@ export class PixiBackend implements RenderBackend {
           revealFigures.push({
             source: frame.source,
             rect: frame.frame,
-            ...revealBox(placeFrame(frame, footX, y + FOOT_LINE * TILE, TILE * scale), footX, flip),
+            ...revealBox(
+              placeFrame(frame, footX, y + FOOT_LINE * this.tile, this.tile * scale),
+              footX,
+              flip,
+            ),
             flip,
             foot: camera.groundPoint(renderFoot(pos, unit.size, this.squareFootprints, 'oblique'))
               .y,
@@ -2888,8 +2927,8 @@ export class PixiBackend implements RenderBackend {
         sprite.texture = this.texture(art);
         sprite.anchor.set(0, 0);
         const drawWidth = width * scale;
-        const drawHeight = TILE * heightTiles * scale;
-        sprite.position.set(x + (width - drawWidth) / 2, y + FOOT_LINE * (TILE - drawHeight));
+        const drawHeight = this.tile * heightTiles * scale;
+        sprite.position.set(x + (width - drawWidth) / 2, y + FOOT_LINE * (this.tile - drawHeight));
         sprite.width = drawWidth;
         sprite.height = drawHeight;
         sprite.scale.x = Math.abs(sprite.scale.x);
@@ -2901,7 +2940,7 @@ export class PixiBackend implements RenderBackend {
       // foot is the tile's ground, so the walk bob lifts the figure off its shadow.
       this.projectFigureShadow(
         `unit:${unit.id}`,
-        { x: x + width / 2, y: anchor.y - lift * TILE + FOOT_LINE * TILE },
+        { x: x + width / 2, y: anchor.y - lift * this.tile + FOOT_LINE * this.tile },
         scale,
         unit.size === 2 ? 2 : 1,
         castShadowStrength(unit.castShadow) *
@@ -2946,9 +2985,9 @@ export class PixiBackend implements RenderBackend {
       if (unit.id === view.activeUnitId) {
         const cue = activeGroundCue(
           marker.x + width / 2,
-          marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
+          marker.y + (0.86 - (heightTiles - 1) * 0.5) * this.tile,
           width,
-          TILE,
+          this.tile,
           heightTiles,
           1,
           view.crispOverlays ? 4 : 3,
@@ -2961,14 +3000,14 @@ export class PixiBackend implements RenderBackend {
         const centre = snapWorldPoints([
           {
             x: marker.x + width / 2,
-            y: marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
+            y: marker.y + (0.86 - (heightTiles - 1) * 0.5) * this.tile,
           },
         ])[0];
         if (centre) {
           this.appendPixelMarks(
             this.pixelRingLayer,
             camera,
-            [selectedRingMark(centre, width * 0.4, TILE * heightTiles * 0.12)],
+            [selectedRingMark(centre, width * 0.4, this.tile * heightTiles * 0.12)],
             view.cameraNudge,
           );
         }
@@ -2976,7 +3015,7 @@ export class PixiBackend implements RenderBackend {
 
       if (unit.fallen) {
         // A fallen unit gets a clear cross rather than just fading out.
-        const centre = snapWorldPoints([{ x: x + width / 2, y: y + TILE * 0.55 }])[0];
+        const centre = snapWorldPoints([{ x: x + width / 2, y: y + this.tile * 0.55 }])[0];
         if (centre) {
           this.appendPixelMarks(
             this.pixelForegroundLayer,
@@ -3233,7 +3272,7 @@ export class PixiBackend implements RenderBackend {
     badgeY: number,
   ): number {
     if (unit.statuses.length === 0) return startIndex;
-    const radius = Math.max(4, TILE * 0.09);
+    const radius = Math.max(4, this.tile * 0.09);
     const shown = unit.statuses.slice(0, 4);
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
@@ -3289,7 +3328,7 @@ export class PixiBackend implements RenderBackend {
           style: new TextStyle({
             fontFamily: 'system-ui, sans-serif',
             fontWeight: '700',
-            fontSize: Math.round(TILE * 0.34 * FLOATER_TEXT_SCALE),
+            fontSize: Math.round(this.tile * 0.34 * FLOATER_TEXT_SCALE),
             fill: 0xffffff,
             stroke: { color: FLOATING_NUMBER.outline, width: 2 },
           }),
@@ -3310,19 +3349,23 @@ export class PixiBackend implements RenderBackend {
       const owner = floaterOwner(view.units, floater.pos, this.squareFootprints);
       const barTop =
         (owner && this.barTops.get(owner.id)) ??
-        fallbackBarTop({ x: center.x - TILE / 2, y: center.y - TILE / 2, size: TILE });
+        fallbackBarTop({
+          x: center.x - this.tile / 2,
+          y: center.y - this.tile / 2,
+          size: this.tile,
+        });
       text.position.set(
-        center.x + (floater.offsetX ?? 0) * TILE,
+        center.x + (floater.offsetX ?? 0) * this.tile,
         floaterVisibleY(
-          floaterStartY(barTop, TILE, textScale) - floater.progress * TILE * 0.7,
+          floaterStartY(barTop, this.tile, textScale) - floater.progress * this.tile * 0.7,
           camera.offsetY / camera.scale,
-          floaterFontPx(TILE, textScale),
+          floaterFontPx(this.tile, textScale),
         ),
       );
       text.alpha = 1 - floater.progress;
       // Resize the glyphs so Pixi's 2px outline stays 2px, matching Canvas at
       // every pop, crit emphasis and accessibility text size.
-      text.style.fontSize = floaterFontPx(TILE, textScale);
+      text.style.fontSize = floaterFontPx(this.tile, textScale);
       text.scale.set(1);
       const strokeWidth = floaterOutlineWidth(camera.scale, text.scale.x);
       if (this.floatersStrokeWidth(text) !== strokeWidth) {

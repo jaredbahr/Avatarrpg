@@ -24,7 +24,7 @@ import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
-import { Renderer, TILE } from '../../render/renderer';
+import { Renderer } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
 import { idlePhase } from '../../render/sheets/store';
@@ -459,7 +459,8 @@ export class ExploreScene implements Scene {
     return {
       projection: camera.projection,
       groundTransform: camera.groundMatrix(),
-      tilePx: TILE * camera.scale,
+      tilePx: camera.tile * camera.scale,
+      tile: camera.tile,
       offsetX: camera.offsetX,
       offsetY: camera.offsetY,
       fitted: camera.fitted,
