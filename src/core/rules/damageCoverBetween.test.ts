@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
+import { LEGEND } from '../../content/maps/legend';
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
@@ -150,6 +151,14 @@ describe('cover from props and walls between', () => {
     const draft = new BattleDraft(CONTENT, battle, new RngCursor(2));
     expect(draft.placeProp('water_barrel', { x: 3, y: 2 })).toBeDefined();
     expect(cover(draft.grid, shooter(from), target(to))).toBe(-20);
+  });
+
+  it('counts a fence between: low timber you can see over but not cross', () => {
+    const fence = LEGEND.F;
+    if (!fence) throw new Error('legend has no fence');
+    const grid = place(openGrid(), { x: 3, y: 2 }, { ...fence });
+    expect(tileAt(grid, { x: 3, y: 2 })?.blocksSight).toBe(false);
+    expect(cover(grid, shooter(from), target(to))).toBe(-20);
   });
 
   it('does not count a screen standing lower than the defender', () => {
