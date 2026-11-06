@@ -5,7 +5,8 @@ import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Ability, BattleState, Grid, Unit, UnitSize, Vec2 } from '../types';
 import { previewAbility, resolveAbility } from './abilities';
-import { hasCover, hitBreakdown, hitChance, screenCellFor } from './damage';
+import { positionScore, weightsFor } from './ai';
+import { averageDamage, hasCover, hitBreakdown, hitChance, screenCellFor } from './damage';
 import { DEFAULT_TILE, distance, lineBetween, tileAt, withSurface, withTile } from './grid';
 
 /**
@@ -347,5 +348,49 @@ describe('the preview and the roll', () => {
     const before = JSON.stringify(battle);
     previewAbility(CONTENT, battle, caster, throwRock, victim.pos);
     expect(JSON.stringify(battle)).toBe(before);
+  });
+});
+
+describe('the AI', () => {
+  const effect = { kind: 'damage', base: 5, scale: 0.6, damageType: 'earth' } as const;
+
+  it('prices a shot at a screened target with the same rule', () => {
+    const attacker = shooter({ x: 0, y: 2 });
+    const defender = target({ x: 4, y: 2 });
+    const clear = averageDamage(CONTENT, openGrid(), attacker, defender, effect, 0, null, true, [
+      attacker,
+      defender,
+    ]);
+    const screenedShot = averageDamage(
+      CONTENT,
+      openGrid(),
+      attacker,
+      defender,
+      effect,
+      0,
+      null,
+      true,
+      [attacker, defender, bystander({ x: 3, y: 2 })],
+    );
+    expect(screenedShot).toBeCloseTo((clear * 70) / 90, 10);
+  });
+
+  it('values standing behind a character as cover from the nearest opponent', () => {
+    const hero = shooter({ x: 0, y: 2 });
+    const self = { ...target({ x: 5, y: 5 }), ai: 'cautious' as const };
+    const score = (friendAt: Vec2) => {
+      const friend = foeBystander(friendAt);
+      const units = [self, hero, friend];
+      const draft = new BattleDraft(
+        CONTENT,
+        { ...baseBattle, grid: openGrid(), props: [], units, order: units.map((u) => u.id) },
+        new RngCursor(3),
+      );
+      const live = draft.unit(self.id);
+      if (!live) throw new Error('AI fixture unit missing');
+      return positionScore(draft, live, { x: 3, y: 2 }, weightsFor('cautious'), 6, true);
+    };
+    // A friend on the hero's line in front of the tile is cover; one off it is not.
+    expect(score({ x: 2, y: 2 }) - score({ x: 2, y: 5 })).toBe(weightsFor('cautious').cover);
   });
 });
