@@ -99,7 +99,7 @@ function render() {
   for (const [o, kit] of FRINGE) if (!o.gone) list.push({ y: o.base + 0.5, f: () => ctx.drawImage(kit.fringe, o.x - kit.m - cam.rx, o.y - kit.m - cam.ry) });
   for (const w of WALLS) { const c = cellOf(BOARD, w.x, w.y); if (!c || c.wall <= 0) continue; const im = IMG['ob:earth_wall'], rise = Math.min(1, w.t / 260), h = Math.round(im.height * rise);
     list.push({ y: cellY(w.y) + 4, f: () => { ctx.fillStyle = 'rgba(50,33,37,0.5)'; ctx.fillRect(Math.round(cellX(w.x) - im.width / 2) + 3 - cam.rx, cellY(w.y) + 1 - cam.ry, im.width - 2, 4); ctx.drawImage(im, 0, 0, im.width, h, Math.round(cellX(w.x) - im.width / 2) - cam.rx, cellY(w.y) + 4 - h - cam.ry, im.width, h); } }); }
-  for (const u of UNITS) list.push({ y: u.y + 0.2, f: () => { unitDraw(u); if (u.st && has(u, 'burning') && u.hp > 0) drawFx('fx:embers', MV.vfx.embers, u.x + 2, u.y - 12, (clock + u.phase) % MV.vfx.embers.ms.reduce((a, b) => a + b, 0)); } });
+  for (const u of UNITS) list.push({ y: u.y + 0.2, f: () => { unitDraw(u); if (u.glow > 0) levelGlow(u); if (u.st && has(u, 'burning') && u.hp > 0) drawFx('fx:embers', MV.vfx.embers, u.x + 2, u.y - 12, (clock + u.phase) % MV.vfx.embers.ms.reduce((a, b) => a + b, 0)); } });
   for (const s of shots) list.push({ y: s.g, f: () => drawFx('fx:ball:' + s.d, MV.vfx.ball[s.d], s.x, s.g - s.h, s.t) });
   for (const a of arcs) list.push({ y: a.sort, f: () => drawFx('fx:whip:' + a.d, MV.vfx.whip[a.d], a.x, a.y, a.t) });
   if (BOARD) flameList(list);
@@ -150,7 +150,7 @@ Promise.all(loads).then(() => {
     tapCell(Math.floor((wx - GX) / CS), Math.floor((wy - GY) / CS));
   });
   setTop('');
-  { const b = document.getElementById('spd'); if (b && !OVERVIEW && MODE !== 'explore') { b.style.display = 'block'; b.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); setSpeed(SPEEDX % 3 + 1); }; } setSpeed(SPEEDX); }
+  { const b = document.getElementById('spd'); if (b && !OVERVIEW && !REC && MODE !== 'explore') { b.style.display = 'block'; b.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); setSpeed(SPEEDX % 3 + 1); }; } setSpeed(SPEEDX); }
   addEventListener('keydown', e => { if (e.key === '1' || e.key === '2' || e.key === '3') setSpeed(+e.key); });
   const begin = auto => { if (MODE === 'explore') runExplore(auto); else runBattle(auto); };
   // the tutorial shell holds a board until its dialogue is done (the gate's parley), then starts it
@@ -161,6 +161,9 @@ Promise.all(loads).then(() => {
     window.__advReal = ms => { advance(ms); render(); };   // wall time the way the real loop plays it: scaled by the speed toggle and a skip
     window.__setSpeed = n => setSpeed(n); window.__skip = () => skipAnim();
     window.__auto = () => begin(true);
+    window.__jabTest = (k, dir, onStrike) => { const u = UNITS.find(q => q.k === 'kaya'); const [ux, uy] = VEC8[dir]; startBend(u, k, dir, () => { if (k === 'jab') fireJab(u, u.x + ux * 90, u.y + uy * 90, () => {}); onStrike && onStrike(); }, () => {}); return { x: u.x - cam.rx, y: u.y - cam.ry, z: cam.z || null }; };
+    window.__slamTest = dir => { const u = UNITS.find(q => q.k === 'grumbler'); u.dir = dir; u.anim = 'attack'; u.clip = null; u.at = 0; u.struck = false; u.done = () => { u.anim = 'idle'; }; u.onStrike = () => { window.__slamHit = true; }; };
+    window.__unitPos = k => { const u = UNITS.find(q => q.k === (k || 'kaya')); return { x: u.x, y: u.y, rx: cam.rx, ry: cam.ry }; };
     window.__zoom = z => { zoomOverride = z; resize(); };
     window.__focus = (x, y) => { focus = x == null ? null : { x, y }; };
     window.__state = () => ({ names: NAMES.join('|'), over: S.over, result: S.result, round: S.round, exited, hp: UNITS.map(u => [u.k, u.hp, u.cx, u.cy, u.st.map(s => s.id).join('+')]), surf: BOARD.cells.filter(c => c.surface && c.c !== '~' && c.c !== 'r').map(c => c.surface.id[0]).join('') });

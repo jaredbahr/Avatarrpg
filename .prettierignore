@@ -46,3 +46,6 @@ art/source/style-test-world-chars/**/*.json
 
 # Standalone art-direction prototypes (own build tools; not part of the game bundle).
 prototypes/
+
+# Claude Code agent worktrees (full repo copies).
+.claude/worktrees/

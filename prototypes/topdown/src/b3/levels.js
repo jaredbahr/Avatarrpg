@@ -70,6 +70,7 @@ const LEVELS = {
       bluffed: [['bruiser', 16, 3, 'west'], ['qbender', 17, 6, 'west'], ['bruiser', 16, 8, 'west']],
     },
     props: [['brazier', 10, 5], ['water_barrel', 14, 3], ['water_barrel', 14, 8], ['oil_flask', 12, 4], ['hay_bale', 13, 7], ['cabbage_cart', 6, 6]],
+    levelUp: 2,   // leftovers pass: a visible level-up moment (the stats themselves come from rules.js levelUp, unchanged)
     intro: ['THE QUARRY GATE', 'Barrels stand against the gatehouse, and a dark stripe of spilled oil runs through the gate'], win: 'The gate is open',
   },
   cutting: {
@@ -92,6 +93,7 @@ const LEVELS = {
     allies: [['ruon', 5, 5, 'east']],
     foes: { base: [['merc', 17, 5, 'west'], ['merc', 17, 6, 'west'], ['xbow', 16, 3, 'west']] },
     props: [],
+    levelUp: 3,
     intro: ['THE CUTTING', "Jin's people are already in the cutting. They have come for Ruon"], win: 'The cutting is clear',
   },
   floor: {

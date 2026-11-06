@@ -43,7 +43,7 @@ async function say(speaker, lines) {
   $('dlg').style.display = 'block'; catcher.style.display = 'block'; $('dlg').querySelector('b').textContent = speaker;
   for (const s of lines) {
     typing = { s, n: 0 };
-    if (AUTO) { await wait(s.length * 20 + 700); typing.n = s.length; await wait(1200 + s.length * 22); }
+    if (AUTO) { await wait(s.length * 20 + 400); typing.n = s.length; await wait(350 + s.length * 10); }   // leftovers: the self-playing run reads a little faster (was +700 / 1200+22/char)
     else { await new Promise(r => { tapR = r; }); }
   }
   typing = null; $('dlg').style.display = 'none'; catcher.style.display = 'none';
@@ -63,7 +63,7 @@ async function choose(prompt, options, footer, autoPick) {
 }
 async function title(name, sub, ms = 2200) {
   $('title').innerHTML = `${name}${sub ? `<small>${sub}</small>` : ''}`;
-  await tween('title', 1, 500); await wait(ms); await tween('title', 0, 500);
+  await tween('title', 1, 350); await wait(ms); await tween('title', 0, 350);   // leftovers: the fight cards hold 1.1 s (was 1.6), fades 350 ms (was 500)
 }
 async function card(head, lines, teaser, small) {
   const c = $('card'); c.innerHTML = `<h1>${head}</h1>` + lines.map(l => `<p>${l}</p>`).join('') + (teaser ? `<p class="teaser">${teaser}</p>` : '') + (small ? `<p class="small">${small}</p>` : '');
@@ -89,7 +89,7 @@ const fadeIn = () => tween('fade', 0, 700), fadeOut = () => tween('fade', 1, 700
 async function fight(level, opts = {}) {
   window.__shell.phase = 'fight-intro';
   let w = await loadArea('board', Object.assign({ level, hold: true }, opts)); await fadeIn();
-  await title(LEVEL_NAMES[level][0], LEVEL_NAMES[level][1], 1600);
+  await title(LEVEL_NAMES[level][0], LEVEL_NAMES[level][1], 1100);
   if (opts.before) { const nv = await opts.before(); if (nv && nv !== opts.variant) { await fadeOut(); w = await loadArea('board', Object.assign({ level, hold: true }, opts, { variant: nv })); await fadeIn(); } }
   window.__shell.phase = 'fight';
   if (REC) w.__auto(); else w.AREA_API.start({ auto: AUTO });
@@ -109,10 +109,22 @@ async function badanAuto(w) {
 }
 // ---------- the story
 const flags = {};
+async function walkHome() {
+  // the walk home: Ba Dan at dusk, the party in along the east road to Mira
+  const w = await loadArea('badan', { mode: 'home' }); op.tint = +(Q.get('tint') || 0); await fadeIn();   // leftovers: the dusk is graded inside Ba Dan itself now, so the dialogue box is not tinted
+  await title('Home', 'Ba Dan, at dusk', 1300);
+  window.__shell.phase = 'walk';
+  if (REC) { const g = w.__g; g.talkTo('mira'); await until(() => g.state().dlg, 100); while (g.state().dlg) { await wait(2800); g.advance(); await wait(60); if (g.state().dlg) g.advance(); } }
+  else await waitMsg('done');
+  await wait(800); await fadeOut();
+  await card('The Quarry of Ba Dan', ['Bo-shan and all four messengers are home.'], 'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.', 'End of the tutorial demo. Four Nations Tactics is a non-commercial fan work with original characters.');
+  window.__shell.phase = 'end'; window.__shell.done = true;
+}
 async function story() {
   await wait(400);
+  if (Q.get('start') === 'home') { window.__shell.phase = 'talk'; await walkHome(); return; }   // test hook: straight to the walk home
   await card('Ba Dan to the Driller', ['A playable demo of the Four Nations Tactics tutorial, in the top-down PixelLab style.'], null, 'A non-commercial fan work with original characters.');
-  await wait(AUTO ? 2600 : 1800); $('card').style.display = 'none';
+  await wait(AUTO ? 2000 : 1800); $('card').style.display = 'none';
   window.__shell.phase = 'talk';
   await say('Ba Dan', ['Ba Dan lies below a limestone quarry, its houses built from the same pale stone as the hill.',
     'The cart has not come for a month. Elder Mira has asked you to find out why her messengers have not come home.']);
@@ -132,7 +144,7 @@ async function story() {
     'I thought we were going up there to get these people home. Why are they guarding the road?']);
   await fadeOut();
   // the road to the quarry: a short walk up the switchbacks
-  w = await loadArea('board', { level: 'road', flags }); await fadeIn(); await title(...LEVEL_NAMES.road, 1300);
+  w = await loadArea('board', { level: 'road', flags }); await fadeIn(); await title(...LEVEL_NAMES.road, 1100);
   window.__shell.phase = 'walk'; if (REC) w.__auto(); else w.AREA_API.start({ auto: AUTO });
   await waitMsg('exit'); await fadeOut();
   // the gate: the parley (the speaker choice), then the fight or the talk
@@ -190,14 +202,7 @@ async function story() {
   await card('The Quarry of Ba Dan', ['The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
     'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
     'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.']);
-  await wait(AUTO ? 11000 : 9000); $('card').style.display = 'none';   // the card stands on the dark (the board stays faded out)
-  // the walk home: Ba Dan at dusk, the party in along the east road to Mira
-  w = await loadArea('badan', { mode: 'home' }); op.tint = 0.55; await fadeIn(); await title('Home', 'Ba Dan, at dusk', 1300);
-  window.__shell.phase = 'walk';
-  if (REC) { const g = w.__g; g.talkTo('mira'); await until(() => g.state().dlg, 100); while (g.state().dlg) { await wait(2800); g.advance(); await wait(60); if (g.state().dlg) g.advance(); } }
-  else await waitMsg('done');
-  await wait(800); await fadeOut();
-  await card('The Quarry of Ba Dan', ['Bo-shan and all four messengers are home.'], 'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.', 'End of the tutorial demo. Four Nations Tactics is a non-commercial fan work with original characters.');
-  window.__shell.phase = 'end'; window.__shell.done = true;
+  await wait(AUTO ? 5500 : 9000); $('card').style.display = 'none';   // the card stands on the dark (the board stays faded out)
+  await walkHome();
 }
 story();

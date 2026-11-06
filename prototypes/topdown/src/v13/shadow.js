@@ -2,6 +2,8 @@
 // One shadow colour, hard edge, light from the upper left: an occlusion seam where the base meets the floor, a contact band
 // on the lower and right sides, and a short cast to the lower right that never runs further than one tile.
 const SHADOW = '#322125', SHADOW_RGB = [0x32, 0x21, 0x25];
+// leftovers pass: the walk home is at dusk (AREA.mode 'home'): the low sun throws every cast about 1.7x as far, still the one hard shadow colour
+const DUSK = !!(window.AREA && window.AREA.mode === 'home'), DUSK_K = DUSK ? 1.7 : 1;
 const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
 // v10: Jared's own grounding, ported verbatim (its `put` is `gput` here: objects.js owns `put`) from Imagination src/game/grounding.js (hardShadowMask, closeHoles,
 // crownShadowMask; only `export` dropped). Defaults give the original short lower-right run: every column stands on its
@@ -34,7 +36,7 @@ function hardShadowMask(alpha, width, height, o = {}) {
   }
   const foot = Math.max(6, Math.round(o.foot ?? height * 0.1));
   const band = clamp(Math.round(o.band ?? 3 + Math.min(3, height / 80)), 3, 6);
-  const reach = clamp(Math.round(o.reach ?? height * 0.3), 12, 24);
+  const reach = clamp(Math.round(o.reach ?? height * 0.3 * DUSK_K), 12, Math.round(24 * DUSK_K));
   let base = Number.isFinite(o.base) ? clamp(Math.round(o.base), 0, height - 1) : -1;
   if (base < 0) for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (alpha[y * width + x]) base = y;
   // Optional sun direction `o.dir = {x, y}`: floor pixels moved per pixel of height (x > 0 falls right, y > 0 toward the
