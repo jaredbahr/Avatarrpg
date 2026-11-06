@@ -77,7 +77,8 @@ describe("Ba Dan's top-down ground", () => {
 
   it('strips the dark disc a sprite bakes under itself, and nothing else', () => {
     // v12's banner pole stands on a black ellipse; the bake grounds it instead.
-    const pole = readPng(`${ASSETS}/objects12/banner_pole.png`);
+    const raw = readPng(`${ASSETS}/objects12/banner_pole.png`);
+    const pole = { width: raw.width, height: raw.height, data: new Uint8ClampedArray(raw.data) };
     expect(bakedDisc(pole).length).toBeGreaterThan(100);
     const discs = baked.placed
       .map((p) => [p.o.id, bakedDisc(p.img).length] as const)
