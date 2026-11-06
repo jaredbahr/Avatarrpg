@@ -31,6 +31,7 @@ import type { Projection } from '../../render/projection';
 import { renderFoot } from '../../render/renderFoot';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
+import { sheetLocomotion } from '../../content/assets/manifest';
 import type { BendSources } from './bendHandoff';
 import { planBendCast } from './bendHandoff';
 
@@ -210,6 +211,20 @@ function timedSpan(clips: SheetClips | undefined, names: readonly ClipName[]): n
     if (def?.frameMs) span = Math.max(span, clipDurationMs(def));
   }
   return span;
+}
+
+/**
+ * How long an exploration walk takes a tile. The top-down sheets (ADR 0104) walk at their own fitted
+ * pace (606 ms a tile), so each walk cel plays at the rate it was drawn for and the planted foot
+ * holds; every other board cruises at `TIMING.strollStep` (ADR 0095's amendment).
+ */
+function explorePace(input: ChoreographyInput, unitId: string): number {
+  if (input.projection !== 'topdown') return TIMING.strollStep;
+  const sprite = input.unitsBefore.find((u) => u.id === unitId)?.sprite;
+  const gait = sheetLocomotion(sprite);
+  if (!gait || gait.walkCelMs) return TIMING.strollStep;
+  const paces = Object.values(gait.walkMsPerTile);
+  return paces.reduce((a, b) => a + b, 0) / paces.length / partyScale(input.projection);
 }
 
 export function choreograph(input: ChoreographyInput): Choreography {
@@ -422,7 +437,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const curve = smoothPath(event.from, event.path);
         const timing = strollTiming(
           curve.length,
-          input.amble ? STROLL_REFERENCE_MS : TIMING.strollStep,
+          input.amble ? STROLL_REFERENCE_MS : explorePace(input, event.unitId),
         );
         // Reduced motion retains the same abbreviated, pace-independent action
         // lock as combat movement. A long village route must not become slow
