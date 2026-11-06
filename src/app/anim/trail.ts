@@ -152,8 +152,17 @@ export class PartyTrail {
    * retain every other member's current seat; a crowded pocket simply keeps
    * its existing formation. Routes use the rules' diagonal/collision checks.
    * The caller must animate these routes before accepting another walk.
+   *
+   * With `beside` (the top-down board, ADR 0104), a member also leaves a seat in the leader's own
+   * column, or one in the column of a member already seated, for a free one beside the leader:
+   * there a figure taller than its tile hides the head or the feet of the one in front of it, so
+   * the line gathers into a loose cluster rather than standing as a column.
    */
-  settle(grid: Grid, avoid: readonly Vec2[] = []): FollowerRoute[] {
+  settle(
+    grid: Grid,
+    avoid: readonly Vec2[] = [],
+    options: { readonly beside?: boolean } = {},
+  ): FollowerRoute[] {
     const head = this.head;
     if (!head || this.line.length < 2) return [];
     const seats = [...this.line];
@@ -162,6 +171,10 @@ export class PartyTrail {
       const from = seats[index];
       if (!from) continue;
       const blocked = new Set([...avoid, ...seats.filter((_, i) => i !== index)].map(posKey));
+      // A seat stacked under or over a member already placed (the leader included), one row apart.
+      const stacked = (pos: Vec2) =>
+        seats.slice(0, index).some((s) => s.x === pos.x && Math.abs(s.y - pos.y) === 1);
+      if (options.beside && !stacked(from) && distance(from, head) <= 2) continue;
       const choices = [
         ...reachable(
           { grid, blocked, surfaces: new Map(), size: 1, climbCost: this.climbCost },
@@ -170,9 +183,17 @@ export class PartyTrail {
         ).values(),
       ]
         .filter(
-          ({ pos }) => distance(pos, head) <= 2 && !blocked.has(posKey(pos)) && drySeat(grid, pos),
+          ({ pos }) =>
+            distance(pos, head) <= 2 &&
+            !blocked.has(posKey(pos)) &&
+            drySeat(grid, pos) &&
+            !(options.beside && stacked(pos)),
         )
-        .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
+        .sort((a, b) =>
+          options.beside
+            ? distance(a.pos, head) - distance(b.pos, head) || a.cost - b.cost
+            : a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head),
+        );
       const choice = choices[0];
       if (!choice || choice.path.length === 0) continue;
       seats[index] = choice.pos;

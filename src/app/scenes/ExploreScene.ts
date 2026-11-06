@@ -1223,13 +1223,15 @@ export class ExploreScene implements Scene {
       }
       if (
         this.needsSettle &&
-        map.projection === 'oblique' &&
+        (map.projection === 'oblique' || map.projection === 'topdown') &&
         !this.departing &&
         !document.querySelector('[role="dialog"]')
       ) {
         this.needsSettle = false;
         const trail = this.ensureTrail(state, grid);
-        const routes = trail.settle(grid, this.standing(state));
+        const routes = trail.settle(grid, this.standing(state), {
+          beside: map.projection === 'topdown',
+        });
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
         this.animatePartyBatches(batches, state, now);
