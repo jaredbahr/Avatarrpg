@@ -5,8 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { MapDef } from '../core/types';
-import { CONTENT_BUNDLE } from './index';
-import { BA_DAN_VILLAGE } from './maps/village';
+import { CONTENT, CONTENT_BUNDLE } from './index';
 import { validateContent, validateTopDownLayout } from './schemas';
 import type { TopDownLayout, TopDownObject } from './topdownLayout';
 import { BA_DAN_TOPDOWN_LAYOUT, TOPDOWN_LAYOUTS } from './topdownLayouts';
@@ -17,6 +16,13 @@ import {
   type Terrain,
   type TopDownTerrainLayer,
 } from './scenes/baDan.topdown.terrain';
+
+/** The village as the game runs it, with the exits `connectAct1` adds (the riverside path). */
+function village(): MapDef {
+  const map = CONTENT.maps.get('ba_dan_village');
+  if (!map) throw new Error('no village');
+  return map;
+}
 
 describe("Ba Dan's top-down layout", () => {
   it('passes the content validation with its map', () => {
@@ -221,9 +227,7 @@ describe('the top-down layout rules', () => {
 
   it('catches the same faults on the real village', () => {
     const noOak = BA_DAN_TOPDOWN_LAYOUT.objects.filter((o) => o.id !== 'e-oak-10');
-    expect(
-      validateTopDownLayout(BA_DAN_VILLAGE, { ...BA_DAN_TOPDOWN_LAYOUT, objects: noOak }),
-    ).toEqual([
+    expect(validateTopDownLayout(village(), { ...BA_DAN_TOPDOWN_LAYOUT, objects: noOak })).toEqual([
       'map "ba_dan_village" top-down layout blocked (23,10) is neither a solid object\'s footprint nor blocked terrain',
       'map "ba_dan_village" top-down layout blocked (23,11) is neither a solid object\'s footprint nor blocked terrain',
     ]);

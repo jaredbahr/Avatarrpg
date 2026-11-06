@@ -277,6 +277,17 @@ export const RIVER_PATH: Road & { readonly wander: number } = {
   wander: 0.7,
 };
 
+/** The landing at the top of the steps: the riverside exit is three cells wide, (18..20, 15). */
+export const RIVER_LANDING: Road = {
+  id: 'riverside-landing',
+  points: [
+    [28.3, 24.9],
+    [28.6, 27.2],
+    [28.5, 30],
+  ],
+  halfWidth: 1.85,
+};
+
 const segD = (x: number, y: number, a: readonly number[], b: readonly number[]): number => {
   const ax = a[0] ?? 0,
     ay = a[1] ?? 0,
@@ -314,6 +325,11 @@ function vtRaw(vx: number, vy: number): Terrain {
   if (vx >= CANAL.from && vx <= CANAL.kerbTo && (vy === CANAL.row - 1 || vy === CANAL.row + 1))
     return 'C';
   if (vx >= FORD.x0 - 1 && vx <= FORD.x1 + 1 && vy === FORD.lipRow) return 'C';
+  if (
+    lineD(vx, vy, RIVER_LANDING.points) <=
+    RIVER_LANDING.halfWidth + vnoise(vx, vy, NOISE.pathSpill[0], NOISE.pathSpill[1]) * 0.4
+  )
+    return 'D';
   if (
     lineD(vx, vy, RIVER_PATH.points) <=
     RIVER_PATH.halfWidth +
@@ -425,10 +441,14 @@ export const MOUTHS: readonly RimMouth[] = [
     ],
   },
   {
-    // The rules' river path is (18..20, 15); the track and its steps leave through the middle cell.
+    // The riverside exit's three cells: the track widens to a trodden landing over the steps.
     id: 'riverside-steps',
     side: 'south',
-    cells: [{ x: 19, y: 15 }],
+    cells: [
+      { x: 18, y: 15 },
+      { x: 19, y: 15 },
+      { x: 20, y: 15 },
+    ],
   },
 ];
 
