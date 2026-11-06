@@ -346,7 +346,7 @@ export class ExploreScene implements Scene {
       const trail = this.ensureTrail(state, grid, event.from);
       const before = trail.positions(state.party.length);
       const plan =
-        this.map?.projection === 'oblique'
+        this.map?.projection === 'oblique' || this.map?.projection === 'topdown'
           ? trail.planWalk(event.path, state.party.length, grid, this.standing(state))
           : null;
       if (plan) {

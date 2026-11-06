@@ -114,6 +114,9 @@ function nearestFree(grid: Grid, tail: Vec2, taken: ReadonlySet<string>): Vec2 |
  * place: through the very tiles the line held between the two, so followers
  * walk the leader's footsteps and stay one tile apart while everyone moves.
  */
+/** The furthest a follower walks (movement cost, about tiles) to stand beside the leader. */
+const BESIDE_MAX_COST = 3;
+
 export class PartyTrail {
   private line: Vec2[];
   /** Once clustered, seats are no longer an adjacent breadcrumb path. */
@@ -183,17 +186,14 @@ export class PartyTrail {
         ).values(),
       ]
         .filter(
-          ({ pos }) =>
+          ({ pos, cost }) =>
             distance(pos, head) <= 2 &&
             !blocked.has(posKey(pos)) &&
             drySeat(grid, pos) &&
-            !(options.beside && stacked(pos)),
+            // beside the leader, a short step: never a walk round a house to get there
+            !(options.beside && (stacked(pos) || cost > BESIDE_MAX_COST)),
         )
-        .sort((a, b) =>
-          options.beside
-            ? distance(a.pos, head) - distance(b.pos, head) || a.cost - b.cost
-            : a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head),
-        );
+        .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
       const choice = choices[0];
       if (!choice || choice.path.length === 0) continue;
       seats[index] = choice.pos;
