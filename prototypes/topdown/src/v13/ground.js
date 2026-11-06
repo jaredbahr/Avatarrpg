@@ -128,11 +128,8 @@ function bakeGround() {
     // with the width (a round well's seam follows its curve); houses the heavy contact band
     const ow8 = Math.max(8, Math.round(img.width * 0.15)), bushy = o.k === 'bush';
     const opts = o.kind === 'house' ? { overhang: ow8, band: 6 } : o.kind === 'tree' && !bushy ? { dir: { x: 0.42, y: 0.3 }, foot: 8, sweep: 1, reach: Math.min(52, Math.max(12, Math.round(img.height * 0.32))) } : { overhang: ow8 };
-    if (o.kind === 'house') {   // (C) the wall foot: a worn, ragged band of trodden earth along the plinth, a little wider than the house
-      for (let x = o.x - 7; x < o.x + o.w + 7; x++) { const h = 3 + Math.round(vnoise(x, o.base, 41, 3) * 1.5), edge = x < o.x || x >= o.x + o.w;
-        for (let k = -1; k < h - (edge ? 2 : 0); k++) { g.fillStyle = k < 1 ? 'rgba(50,33,37,0.55)' : 'rgba(58,46,44,0.38)'; g.fillRect(x, o.base + k, 1, 1); } }
-    }
-    if (o.kind === 'house') { houseDoorstep(g, o); houseSideShadow(g, o, img); }
+    if (o.kind === 'house') houseApron(g, o, img);   // v15: a packed-earth apron along the front, so no grass touches the footing
+    if (o.kind === 'house') { houseDoorstep(g, o); houseSideShadow(g, o, img, under === 'G' || under === 'D' ? 0.6 : 0.78); }
     const m = hardShadowMask(alphaOf(img), img.width, img.height, opts); SHADOW_LOG.push({ o, m, dx: o.x - m.pad, dy: o.y });
     if (under === 'G' || under === 'D') {
       const kit = groundKit(img, o.x * 7 + o.base, { tall: o.kind === 'tree' ? 7 : 5, density: o.kind === 'house' ? 0.6 : 1 });
@@ -145,16 +142,30 @@ function bakeGround() {
 // v12 (item 3): a house is grounded like Imagination's buildings. The doorstep is a flat slab that runs on over the lane; the skirt is the
 // ground's own texture (trodden earth, pebbles, grass, moss) lying over the plinth's bottom rows, so the base is never a clean traceable line
 const mkCanvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+function houseApron(g, o, img) {
+  // the sprite's foundation spans [x0, x1] on its bottom rows; the apron runs 5 px past it each side and 8-10 px down from the base line:
+  // a dark seam on the base (occlusion), trodden earth in three tones with a ragged lower edge, small stones, a lit pebble or two.
+  const A = alphaOf(img), W = img.width, Hh = img.height; let x0 = W, x1 = 0;
+  for (let y = Hh - 6; y < Hh; y++) for (let x = 0; x < W; x++) if (A[y * W + x]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); }
+  for (let x = x0 - 6; x <= x1 + 6; x++) {
+    const wx = o.x + x, edge = x < x0 || x > x1, d = (edge ? 6 : 12) + Math.round(vnoise(wx, o.base, 41, 3) * 2.2);
+    for (let k = -1; k < d; k++) {
+      if (k < 0 && edge) continue;
+      const t = vnoise(wx, o.base + k, 43, 2.5);
+      g.fillStyle = k < 1 ? 'rgba(50,33,37,0.8)' : k < 2 ? DIRT[0] : k < d - 2 ? (t > 0.15 ? DIRT[2] : DIRT[1]) : DIRT[1];
+      if (k >= d - 2 && ((wx + k) & 1)) continue;   // the lower edge breaks into the ground
+      g.fillRect(wx, o.base + k, 1, 1);
+    }
+  }
+  for (let i = 0, n = Math.round((x1 - x0) / 9); i < n; i++) { const sx = o.x + x0 - 3 + Math.floor(hash2(i, o.base, 47) * (x1 - x0 + 6)), sy = o.base + 3 + (i % 4); g.fillStyle = STONE[1]; g.fillRect(sx, sy, 2, 1); g.fillStyle = STONE[2]; g.fillRect(sx, sy, 1, 1); }
+}
 function houseDoorstep(g, o) {
-  if (o.k === 'house_merchant') return;     // its own broad steps are in the art
-  const cx = o.x + (o.w >> 1), w = 36, x0 = cx - (w >> 1), b = o.base;
-  g.fillStyle = 'rgba(50,33,37,0.6)'; g.fillRect(x0 + 3, b + 6, w, 2);                      // the slab's cast, to the lower right
-  g.fillStyle = '#3e3d47'; g.fillRect(x0 - 1, b - 3, w + 2, 10);                              // outline in the stone's dark tone
-  g.fillStyle = '#85807f'; g.fillRect(x0, b - 2, w, 5); g.fillStyle = '#aea89c'; g.fillRect(x0, b - 2, w, 1); g.fillRect(x0, b - 2, 1, 5);   // lit top
-  g.fillStyle = '#5d5b63'; g.fillRect(x0, b + 3, w, 3); g.fillStyle = '#3e3d47'; g.fillRect(x0, b + 5, w, 1);                                 // front face
-  for (let x = x0 + 5; x < x0 + w - 3; x += 11) { g.fillStyle = '#3e3d47'; g.fillRect(x, b - 1, 1, 4); }
-  g.fillStyle = 'rgba(50,33,37,0.5)'; g.fillRect(x0, b - 2, w, 1);                            // the wall's contact on the slab
-  for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? DIRT[1] : GR[2]; g.fillRect(x0 - 3 + Math.floor(hash2(i, b, 61) * (w + 6)), b + 4 + (i % 3), 2, 1); }   // earth tracked on
+  // v15: the doorstep sits on the path: two flagstones lead out from the art's own step slab over the apron (the lane's edge).
+  const cx = o.x + (o.w >> 1), w = o.k === 'house_merchant' ? 44 : 22, x0 = cx - (w >> 1), b = o.base;
+  for (let r = 0; r < 2; r++) {
+    const y = b + 2 + r * 6, xo = r ? 3 : 0, ww = w - 4 - r * 4;
+    g.fillStyle = '#3e3d47'; g.fillRect(x0 + xo + 2, y - 1, ww, 7); g.fillStyle = '#85807f'; g.fillRect(x0 + xo + 3, y, ww - 2, 4); g.fillStyle = '#aea89c'; g.fillRect(x0 + xo + 3, y, ww - 2, 1); g.fillStyle = '#5d5b63'; g.fillRect(x0 + xo + 3, y + 4, ww - 2, 1);
+  }
 }
 function houseSkirt(o, kit) {
   const f = kit.fringe.getContext('2d'), M = kit.m, b = o.base - o.y;
@@ -226,15 +237,19 @@ function bridgeShadow(g, o, img) {
   }
   g.putImageData(id, x0, y0);
 }
-// v13: a house has a body behind its front. Its right side (in shade) throws a short band of shadow onto the ground beside it, from
-// the plinth back along the side, skewed down to the right and never longer than ART_DIRECTION's one tile; hard edged.
-function houseSideShadow(g, o, img) {
-  const A = alphaOf(img), W = img.width, Hh = img.height; let xr = -1;
-  for (let y = Hh - 10; y < Hh; y++) for (let x = W - 1; x >= 0; x--) if (A[y * W + x]) { xr = Math.max(xr, x); break; }
-  if (xr < 0) return;
-  const X = o.x + xr + 1, depth = 38;
-  for (let k = 0; k <= depth; k++) {
-    const y = o.base - depth + k, reach = 4 + Math.round(12 * k / depth) + Math.round(vnoise(X, y, 91, 4) * 1.5);
-    for (let x = 0; x < reach; x++) { const edge = x >= reach - 1; g.fillStyle = edge ? 'rgba(50,33,37,0.3)' : 'rgba(50,33,37,0.42)'; g.fillRect(X + x + Math.round(k * 0.25), y, 1, 1); }
+// v14: the redrawn houses show their side wall in the art (receding up and to the right in shade), so the ground beside it follows the
+// wall's own foot line: per column from the front corner out to the far end, a hard 6 px band under the foot (contact, then a lighter
+// cast), and past the far end a short tail to the lower right. Light from the upper left, so it falls on the right and never past ~9 px.
+// v15: the houses are straight-on, so the sun (upper left) throws the wall's shadow to the right of it and onto the lane in front: a hard
+// parallelogram 18 px wide beside the foundation (rising 24 px up the picture, skewed down to the right) and a 7 px strip under the apron that
+// runs from just inside the left foot to 18 px past the right one. #322125, alpha .55; drawn under the sprite, so only the cast shows.
+function houseSideShadow(g, o, img, alpha) {
+  const A = alphaOf(img), W = img.width, Hh = img.height; let x0 = W, x1 = 0;
+  for (let y = Hh - 6; y < Hh; y++) for (let x = 0; x < W; x++) if (A[y * W + x]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); }
+  g.fillStyle = `rgba(50,33,37,${alpha})`;
+  for (let k = 1; k <= 22; k++) {
+    const wx = o.x + x1 + k, top = o.base - 30 + Math.floor(k * 0.6), bot = o.base + 9 + Math.floor(k * 0.4) + Math.round(vnoise(wx, o.base, 93, 3) * 0.8);
+    g.fillRect(wx, top, 1, bot - top);
   }
+  for (let x = x0 + 8; x <= x1 + 22; x++) { const wx = o.x + x, d = x > x1 ? Math.floor((x - x1) * 0.4) : 0; g.fillRect(wx, o.base + 9 + (x > x1 ? Math.floor((x - x1) * 0.3) : 0), 1, 5 + Math.round(vnoise(wx, o.base, 95, 3) * 0.7)); }
 }
