@@ -12,7 +12,7 @@
  *
  * Imported by the content validation (`schemas.ts`) and the ground packer
  * (`scripts/art/topdown/pack-ground.ts`); the shipped runtime never imports it (it draws the
- * packed plates, `baDan.topdown.art.ts`).
+ * packed plates and `public/art/topdown/ba-dan/scene.json`).
  *
  * Coordinates. The terrain lives on the prototype's vertex grid: vertex (vx, vy) is world px
  * (32 vx, 32 vy) of the prototype's 1248 x 992 board. The game's top-down world px (40 a cell,

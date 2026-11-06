@@ -2,7 +2,7 @@
  * The shape of a top-down map's layout (ADR 0104 §3, phase T3): its terrain layer and the objects
  * placed on it, beside the map's rules data, which stays the authority for collision. The content
  * validation (`validateTopDownLayout` in `schemas.ts`) and the ground packer read these; the shipped
- * runtime draws the packed result (`<map>.topdown.art.ts`) and never imports a layout.
+ * runtime draws the packed result (`public/art/topdown/<map>/scene.json`) and never imports a layout.
  */
 import type { Vec2 } from '../core/types';
 import type { TopDownTerrainLayer } from './scenes/baDan.topdown.terrain';

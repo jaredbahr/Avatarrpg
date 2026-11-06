@@ -18,7 +18,9 @@ import { liftCost } from './render/geometry/lift';
 import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
 import { useTopDownStyle, useWorldStyleTest } from './content/assets/manifest';
-import { withTopDownMaps } from './content/topdown';
+import { loadTopDownPresentations, withTopDownMaps } from './content/topdown';
+import { assetUrl } from './render/spriteCache';
+import type { ContentIndex } from './core/types';
 
 /** Gallery checks await decoded pixels, not just successful HTTP requests. */
 async function loadedFxCels() {
@@ -50,8 +52,30 @@ const style = new URLSearchParams(window.location.search).get('style');
 if (style === 'world') useWorldStyleTest();
 if (style === 'topdown') useTopDownStyle();
 
-const app = new App(style === 'topdown' ? withTopDownMaps(CONTENT) : CONTENT, root, STORY_ENTRY);
-app.start();
+function boot(content: ContentIndex): void {
+  if (!root) return;
+  const app = new App(content, root, STORY_ENTRY);
+  app.start();
+  window.fnt = { app, bakeReview, loadedFxCels, liftCost };
+}
+
+if (style === 'topdown') {
+  // The top-down scenes are assets (ADR 0104), fetched before the app boots; without them the
+  // maps keep their oblique look.
+  loadTopDownPresentations(async (url) => {
+    const response = await fetch(assetUrl(url));
+    if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+    return (await response.json()) as unknown;
+  })
+    .then(
+      (presentations) => withTopDownMaps(CONTENT, presentations),
+      (error: unknown) => {
+        console.error('The top-down scenes did not load; drawing the oblique maps.', error);
+        return CONTENT;
+      },
+    )
+    .then(boot);
+} else boot(CONTENT);
 
 // Handy from the browser console, and how the e2e suite drives setup quickly.
 // `bakeReview` is for the gallery's figure page: every placeholder sheet as a picture.
@@ -65,4 +89,3 @@ declare global {
     };
   }
 }
-window.fnt = { app, bakeReview, loadedFxCels, liftCost };

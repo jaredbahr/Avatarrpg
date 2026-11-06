@@ -12,7 +12,7 @@ import { haloPixels, rimEdge, shadowTable, straightEdge, terrainEdge } from './g
 import {
   ASSETS,
   CLASS,
-  DATA,
+  SCENE,
   OUT,
   bake,
   bakedDisc,
@@ -21,7 +21,7 @@ import {
   packBaDanGround,
   pavedCells,
 } from './pack-ground';
-import { BA_DAN_TOPDOWN_SCENE } from '../../../src/content/scenes/baDan.topdown.scene';
+import type { MapScene } from '../../../src/core/types';
 import { readPng } from '../lib/image';
 import { PLATE_W } from '../../../src/content/scenes/baDan.topdown.terrain';
 
@@ -48,7 +48,7 @@ describe("Ba Dan's top-down ground", () => {
       expect(bytes.equals(readFileSync(path)), `${path} is stale: run pack-ground.ts`).toBe(true);
     }
     const shipped = readdirSync(OUT).map((name) => `${OUT}/${name}`);
-    expect(shipped.sort()).toEqual([...files.keys()].filter((path) => path !== DATA).sort());
+    expect(shipped.sort()).toEqual([...files.keys()].sort());
   });
 
   it('ships a few lossless pages with hard alpha', async () => {
@@ -72,7 +72,8 @@ describe("Ba Dan's top-down ground", () => {
 
   it("gives the scene the paved cells the bake laid, so a feet blob's strength matches the ground", () => {
     const paved = pavedCells(baked);
-    expect(BA_DAN_TOPDOWN_SCENE.pavedCells).toEqual(paved);
+    const scene = JSON.parse(readFileSync(SCENE, 'utf8')) as MapScene;
+    expect(scene.pavedCells).toEqual(paved);
     // The lanes, the courts and the squares: a good share of the village, but not all of it.
     expect(paved.length).toBeGreaterThan(60);
     expect(paved.length).toBeLessThan(24 * 16 * 0.6);

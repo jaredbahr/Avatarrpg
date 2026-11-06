@@ -3,17 +3,22 @@
  * top-down projection and scene and drops its oblique art, and every rules field stays the very
  * same object, so the rules and saves never tell the two styles apart.
  */
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { MapDef } from '../core/types';
 import { TOPDOWN_FIXTURE_SCENE } from '../render/topdown.fixture';
 import { CONTENT } from './index';
-import { BA_DAN_TOPDOWN_SCENE } from './scenes/baDan.topdown.scene';
 import {
-  TOPDOWN_PRESENTATIONS,
+  TOPDOWN_SCENES,
+  loadTopDownPresentations,
   topDownMap,
   withTopDownMaps,
   type TopDownPresentation,
 } from './topdown';
+
+/** The shipped scenes, read as the browser fetches them. */
+const fromDisk = (url: string): Promise<unknown> =>
+  Promise.resolve(JSON.parse(readFileSync(`public/${url}`, 'utf8')) as unknown);
 
 /** The fields only the renderers and the camera read. */
 const PRESENTATION_FIELDS = new Set([
@@ -42,12 +47,22 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers Ba Dan (T3) and nothing else yet', () => {
-    expect([...TOPDOWN_PRESENTATIONS.keys()]).toEqual(['ba_dan_village']);
-    const swapped = withTopDownMaps(CONTENT);
-    expect(map('ba_dan_village', swapped).projection).toBe('topdown');
-    expect(map('ba_dan_village', swapped).scene).toBe(BA_DAN_TOPDOWN_SCENE);
+  it('registers Ba Dan (T3) and nothing else yet, its scene an asset', async () => {
+    expect([...TOPDOWN_SCENES.keys()]).toEqual(['ba_dan_village']);
+    const presentations = await loadTopDownPresentations(fromDisk);
+    const swapped = withTopDownMaps(CONTENT, presentations);
+    const badan = map('ba_dan_village', swapped);
+    expect(badan.projection).toBe('topdown');
+    expect(badan.cameraCentreMargin).toBe(1);
+    expect(badan.scene?.ground[0]?.url).toBe('art/topdown/ba-dan/ground.webp');
+    expect(badan.scene?.scenery.length).toBeGreaterThan(50);
     expect(map('forest_road', swapped)).toBe(map('forest_road'));
+  });
+
+  it('refuses a scene that is not one', async () => {
+    await expect(loadTopDownPresentations(() => Promise.resolve({ nope: 1 }))).rejects.toThrow(
+      'is not a map scene',
+    );
   });
 
   it('is the identity for an id the index does not hold', () => {

@@ -2,8 +2,8 @@
  * Ba Dan's top-down ground (ADR 0104 §3, phase T3): the prototype's ground bake
  * (`prototypes/topdown/src/v13/ground.js` `bakeGround`) re-implemented over RGBA buffers, run on the
  * game's layout (`src/content/topdownLayouts.ts`), and packed into lossless 1 px plates and an
- * upright atlas under `public/art/topdown/ba-dan/`, with the numbers the scene needs in
- * `src/content/scenes/baDan.topdown.art.ts`.
+ * upright atlas under `public/art/topdown/ba-dan/`, with the scene the runtime draws beside them
+ * (`scene.json`, a `MapScene`: an asset, so none of it is in the bundle).
  *
  *   node --import tsx scripts/art/topdown/pack-ground.ts [--check]
  *
@@ -22,7 +22,6 @@
  *   composited over its foot, trimmed, in one atlas.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { format, resolveConfig } from 'prettier';
 import { shelfPack, composeAtlas } from '../lib/atlas';
 import type { Image } from '../lib/image';
 import { readPng } from '../lib/image';
@@ -59,6 +58,7 @@ import {
   wangSet,
   type Terrain,
 } from '../../../src/content/scenes/baDan.topdown.terrain';
+import type { MapScene, SceneScenery } from '../../../src/core/types';
 import type { TopDownObject } from '../../../src/content/topdownLayout';
 import { BA_DAN_TOPDOWN_LAYOUT } from '../../../src/content/topdownLayouts';
 import cliffPatterns from './cliff-patterns.json' with { type: 'json' };
@@ -66,7 +66,11 @@ import cliffPatterns from './cliff-patterns.json' with { type: 'json' };
 export const ASSETS = 'prototypes/topdown/assets';
 export const OUT = 'public/art/topdown/ba-dan';
 export const URL_ROOT = 'art/topdown/ba-dan';
-export const DATA = 'src/content/scenes/baDan.topdown.art.ts';
+/**
+ * The scene the runtime draws (`MapScene`), as an asset beside its plates: fetched under
+ * `?style=topdown` only, so none of it is in the bundle (`src/content/topdown.ts`).
+ */
+export const SCENE = `${OUT}/scene.json`;
 /** The margin round an upright for its fringe (the grass kit's `m`). */
 const M = 10;
 const GUTTER = 1;
@@ -1353,10 +1357,7 @@ export async function packBaDanGround(baked = bake()): Promise<Map<string, Uint8
         height: r.height,
       };
     });
-  files.set(
-    DATA,
-    await dataModule(uprights, ATLAS_WIDTH, height, chimneys(baked), pavedCells(baked)),
-  );
+  files.set(SCENE, sceneJson(uprights, chimneys(baked), pavedCells(baked)));
   return files;
 }
 
@@ -1439,48 +1440,66 @@ interface UprightData {
   height: number;
 }
 
-async function dataModule(
-  uprights: UprightData[],
-  w: number,
-  h: number,
-  smoke: { x: number; y: number }[],
-  paved: { x: number; y: number }[],
-): Promise<string> {
-  const ground = {
-    url: `${URL_ROOT}/ground.webp`,
-    x: ORIGIN.x,
-    y: ORIGIN.y,
-    width: PLATE_W,
-    height: PLATE_H,
+/**
+ * Ba Dan's top-down scene (ADR 0104, T3) as the runtime reads it (`MapScene`): the baked plate
+ * (terrain, rim, every static shadow and the flat dressing) and each standing piece, cut from the
+ * upright atlas and laid out by the placed objects (`baDan.topdown.ts`), sorted by its base and
+ * faded or revealing as its kind says. Every static shadow is in the plate, so no piece asks the
+ * renderer for a runtime one, and the canal is painted.
+ */
+export function topdownScene(
+  uprights: readonly UprightData[],
+  smoke: readonly { x: number; y: number }[],
+  paved: readonly { x: number; y: number }[],
+): MapScene {
+  const byId = new Map(uprights.map((u) => [u.id, u]));
+  const scenery: SceneScenery[] = BA_DAN_TOPDOWN_LAYOUT.objects.flatMap((o) => {
+    const art = byId.get(o.id);
+    if (!art) return [];
+    return [
+      {
+        id: `badan.td.${o.id}`,
+        url: `${URL_ROOT}/uprights.webp`,
+        sourceRect: art.sourceRect,
+        x: art.x,
+        y: art.y,
+        width: art.width,
+        height: art.height,
+        footprint: o.footprint,
+        depth: o.depth,
+        ...(o.exterior && { exterior: true }),
+        ...(o.fadeWhenOccluding && { fadeWhenOccluding: true }),
+        ...(o.revealOccluded && { revealOccluded: true }),
+        contactShadow: false,
+        castShadow: false,
+      },
+    ];
+  });
+  return {
+    paintedWater: true,
+    paintExtent: { x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H },
+    chimneys: smoke,
+    // the trees' trunks, where their leaves drift from
+    canopies: BA_DAN_TOPDOWN_LAYOUT.objects
+      .filter((o) => o.kind === 'tree' && o.sprite !== 'bush')
+      .map((o) => ({ x: o.depth.x, y: o.depth.y - 1 })),
+    // The figures' feet blobs in the owner's shadow colour (ADR 0103's grounding); the union's
+    // ceiling is paving's 205 of 255 (`pavedCells`), so soft ground's 170 lands as Imagination draws it.
+    actorGrounding: { contact: 205 / 255, ink: { r: 0x32, g: 0x21, b: 0x25 } },
+    pavedCells: paved,
+    ground: [
+      { url: `${URL_ROOT}/ground.webp`, x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H },
+    ],
+    scenery,
   };
-  const text = [
-    '/**',
-    ' * Generated by `scripts/art/topdown/pack-ground.ts`; do not edit by hand.',
-    ' *',
-    " * Ba Dan's top-down ground (ADR 0104, T3): the baked plate (terrain, rim, every static shadow and",
-    ' * the flat dressing) and where each upright sits in its atlas and in top-down world px (40 a cell).',
-    ' * The upright ids are the objects of `baDan.topdown.ts`.',
-    ' */',
-    "import type { SceneImage } from '../../core/types';",
-    '',
-    `export const BA_DAN_TOPDOWN_GROUND: readonly SceneImage[] = [${JSON.stringify(ground)}];`,
-    '',
-    `export const BA_DAN_TOPDOWN_UPRIGHT_ATLAS = ${JSON.stringify({ url: `${URL_ROOT}/uprights.webp`, width: w, height: h })} as const;`,
-    '',
-    '/** Each upright: its rect in the atlas and its top-left in world px. */',
-    `export const BA_DAN_TOPDOWN_UPRIGHTS: Readonly<Record<string, { readonly sourceRect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }; readonly x: number; readonly y: number; readonly width: number; readonly height: number }>> = ${JSON.stringify(Object.fromEntries(uprights.map(({ id, ...rest }) => [id, rest])))};`,
-    '',
-    '/** The rectangle the plate covers, for the camera (`MapScene.paintExtent`). */',
-    `export const BA_DAN_TOPDOWN_EXTENT = ${JSON.stringify({ x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H })} as const;`,
-    '',
-    "/** Where smoke leaves each house's drawn chimney, in fractional cells (`MapScene.chimneys`). */",
-    `export const BA_DAN_TOPDOWN_CHIMNEYS: readonly { readonly x: number; readonly y: number }[] = ${JSON.stringify(smoke)};`,
-    '',
-    '/** The cells a figure stands on paving in, as the bake laid it (`MapScene.pavedCells`). */',
-    `export const BA_DAN_TOPDOWN_PAVED: readonly { readonly x: number; readonly y: number }[] = ${JSON.stringify(paved)};`,
-    '',
-  ].join('\n');
-  return format(text, { ...(await resolveConfig(DATA)), filepath: DATA });
+}
+
+function sceneJson(
+  uprights: readonly UprightData[],
+  smoke: readonly { x: number; y: number }[],
+  paved: readonly { x: number; y: number }[],
+): string {
+  return `${JSON.stringify(topdownScene(uprights, smoke, paved))}\n`;
 }
 
 async function main(): Promise<void> {
