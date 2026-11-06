@@ -1,5 +1,39 @@
 # Combat threat overview — issue #328
 
+## 2026-11-06: qualification outcome and portrait focus precondition
+
+Clean `967d471d` passed all nine local CI checks (285 files, 3,258 tests).
+Its complete native matrix then finished with 17 passes and four failures,
+without retries or skips, on the unchanged CI build. Both Grumbler targeting
+cases passed. The two portrait-WebGL overview cases still exhausted their
+original 360-second caps. Their stricter idle/96px camera/preference guards
+passed, as did the Recentre geometry and capture; its final pending-target
+check remained incomplete. The next-actor case reached real Ready and idle,
+but its final settling and actor/frame assertions remained incomplete. Keep
+these failures and stop protocol iterations without a new concrete finding.
+
+The other two failures exposed an independent fixture error in the existing
+portrait initiative test: Acting unit is inside the closed More menu. The
+original Canvas case also fails on retained main `3afb1405`, whose runtime
+and fixtures are byte-identical to current main `9225cd59`. This is baseline
+evidence, not a newly attributed gameplay regression.
+
+Claim6620986707 was extended and read back before editing
+`e2e/combat-focus.spec.ts`. The correction opens More with a real click, proves
+it expanded, preserves the original Acting unit click, and proves the menu
+closed. Every original assertion, input, screenshot and deadline remains.
+Production code, CSS, shared helpers, budgets and profiles are unchanged by
+this separate correction. Root reviewed SOL High's bounded implementation.
+
+Before pushing, run fresh clean committed-head `ci:local` and both corrected
+portrait focus cases on that CI build. Compare runtime/build bytes and the
+unchanged fixture bodies with the `967d471d` producer before reusing its
+retained evidence. Report the two producer identities separately; never call
+this a 21-case green run on the later head. The overview gates remain open,
+and PR357 stays draft. Final counts and exact identities belong to the PR and
+external receipts. No readiness, merge, deployment, installation or art action
+follows from this fixture repair.
+
 ## 2026-11-06: adjacent observations and handoff-settle qualification
 
 Continue the same draft PR357 and published branch
