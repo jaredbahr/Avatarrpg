@@ -39,6 +39,8 @@ loads.push(load('cliff', ASSETS.cliff.src));
 // One shadow colour, hard edge, light from the upper left: an occlusion seam where the base meets the floor, a contact band
 // on the lower and right sides, and a short cast to the lower right that never runs further than one tile.
 const SHADOW = '#322125', SHADOW_RGB = [0x32, 0x21, 0x25];
+// leftovers pass: the walk home is at dusk (AREA.mode 'home'): the low sun throws every cast about 1.7x as far, still the one hard shadow colour
+const DUSK = !!(window.AREA && window.AREA.mode === 'home'), DUSK_K = DUSK ? 1.7 : 1;
 const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
 // v10: Jared's own grounding, ported verbatim (its `put` is `gput` here: objects.js owns `put`) from Imagination src/game/grounding.js (hardShadowMask, closeHoles,
 // crownShadowMask; only `export` dropped). Defaults give the original short lower-right run: every column stands on its
@@ -71,7 +73,7 @@ function hardShadowMask(alpha, width, height, o = {}) {
   }
   const foot = Math.max(6, Math.round(o.foot ?? height * 0.1));
   const band = clamp(Math.round(o.band ?? 3 + Math.min(3, height / 80)), 3, 6);
-  const reach = clamp(Math.round(o.reach ?? height * 0.3), 12, 24);
+  const reach = clamp(Math.round(o.reach ?? height * 0.3 * DUSK_K), 12, Math.round(24 * DUSK_K));
   let base = Number.isFinite(o.base) ? clamp(Math.round(o.base), 0, height - 1) : -1;
   if (base < 0) for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (alpha[y * width + x]) base = y;
   // Optional sun direction `o.dir = {x, y}`: floor pixels moved per pixel of height (x > 0 falls right, y > 0 toward the
@@ -644,7 +646,7 @@ function bakeGround() {
     // reach a third of the height, at most 52); everything else the short floor shadow with an overhang allowance that grows
     // with the width (a round well's seam follows its curve); houses the heavy contact band
     const ow8 = Math.max(8, Math.round(img.width * 0.15)), bushy = o.k === 'bush';
-    const opts = o.kind === 'house' ? { overhang: ow8, band: 6 } : o.kind === 'tree' && !bushy ? { dir: { x: 0.42, y: 0.3 }, foot: 8, sweep: 1, reach: Math.min(52, Math.max(12, Math.round(img.height * 0.32))) } : { overhang: ow8 };
+    const opts = o.kind === 'house' ? { overhang: ow8, band: 6 } : o.kind === 'tree' && !bushy ? { dir: { x: 0.42, y: 0.3 }, foot: 8, sweep: 1, reach: Math.round(Math.min(52, Math.max(12, Math.round(img.height * 0.32))) * DUSK_K) } : { overhang: ow8 };
     if (o.kind === 'house') houseApron(g, o, img);   // v15: a packed-earth apron along the front, so no grass touches the footing
     if (o.kind === 'house') { houseDoorstep(g, o); houseSideShadow(g, o, img, under === 'G' || under === 'D' ? 0.6 : 0.78); }
     const m = hardShadowMask(alphaOf(img), img.width, img.height, opts); SHADOW_LOG.push({ o, m, dx: o.x - m.pad, dy: o.y });
@@ -1236,6 +1238,7 @@ function render() {
       return;
     }
     ctx.drawImage(IMG['ob:' + o.k], o.x - cam.rx, o.y - cam.ry);
+    if (DUSK && WINDOWS[o.k]) litWindows(o);
   } }));
   // grass growing up over the bases of everything standing on the lawn (drawn just in front of each object)
   for (const [o, kit] of FRINGE) list.push({ y: o.base + 0.5, x: o.x, f: () => { const dx = o === dummy && dummy.hit >= 0 ? 0 : 0; ctx.drawImage(kit.fringe, o.x - kit.m - cam.rx + dx, o.y - kit.m - cam.ry); } });
@@ -1246,12 +1249,14 @@ function render() {
   list.sort((a, b) => a.y - b.y || a.x - b.x).forEach(d => d.f());
   for (const b of bursts) drawFx('fx:burst:' + b.d, MV.vfx.burst[b.d], b.x, b.y, b.t);
   for (const e of embers) drawFx('fx:embers', MV.vfx.embers, e.x, e.y, e.t);
+  if (DUSK) duskGrade();
   ctx.globalCompositeOperation = 'lighter';
   lamps.forEach((l, i) => {
     const fl = 0.5 + 0.5 * Math.sin(clock / 90 + i * 2.1) * Math.sin(clock / 37 + i);
     const cx = l.x + LANTERN.x - cam.rx, cy = l.y + LANTERN.y - cam.ry;   // v12: the lantern's own glass, measured from the sprite
+    if (DUSK) { glowDisc(cx, cy, 30, `rgba(242,160,70,${0.05 + 0.03 * fl})`); glowDisc(cx, cy, 20, `rgba(250,186,92,${0.07 + 0.04 * fl})`); glowDisc(cx, cy, 11, `rgba(255,214,130,${0.10 + 0.05 * fl})`); }
     ctx.fillStyle = `rgba(242,212,122,${0.08 + 0.07 * fl})`; ctx.fillRect(cx - 8, cy - 5, 16, 10); ctx.fillRect(cx - 5, cy - 8, 10, 16);
-    ctx.fillStyle = `rgba(242,212,122,${0.14 + 0.14 * fl})`; ctx.fillRect(cx - 3, cy - 3, 6, 6);
+    ctx.fillStyle = `rgba(242,212,122,${(DUSK ? 0.3 : 0.14) + 0.14 * fl})`; ctx.fillRect(cx - 3, cy - 3, 6, 6);
   });
   ctx.globalCompositeOperation = 'source-over';
   for (const p of petals) { const k = p.age / p.life; ctx.fillStyle = k < 0.7 ? '#e09a6a' : 'rgba(224,154,106,0.5)'; ctx.fillRect(Math.round(p.x) - cam.rx, Math.round(p.y) - cam.ry, (p.age / 200 | 0) % 3 ? 2 : 1, 1); }
@@ -1323,6 +1328,50 @@ Promise.all(loads).then(() => {
   const loop = now => { update(Math.min(50, now - last)); last = now; render(); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 });
+
+// ---------- leftovers pass: the walk home at dusk (AREA.mode 'home')
+// glass panes (x, y, w, h in each house sprite) measured on the 3x grid sheet qcrops/tmp/houses_grid*.png
+const WINDOWS = {
+  house_gao: [[80, 58, 20, 22], [34, 123, 20, 25], [125, 123, 22, 25]],
+  house_mira: [[94, 63, 24, 27], [37, 157, 24, 29], [159, 157, 28, 29]],
+  house_ne: [[53, 95, 22, 20], [141, 95, 22, 20], [43, 157, 20, 17], [141, 157, 22, 17]],
+  house_pella: [[94, 61, 26, 18], [43, 146, 22, 18], [147, 146, 23, 18]],
+  house_se: [[49, 86, 23, 15], [131, 86, 19, 15], [49, 147, 23, 15], [131, 147, 19, 15]],
+  house_merchant: [[40, 73, 20, 22], [111, 73, 22, 22], [183, 73, 22, 22], [40, 134, 20, 22], [183, 134, 22, 22]],
+};
+// the pane: warm lit glass with the mullion cross kept dark, flickering a hair per window
+function litWindows(o) {
+  WINDOWS[o.k].forEach(([x, y, w, h], i) => {
+    const fl = 0.5 + 0.5 * Math.sin(clock / 700 + i * 1.9 + o.x), X = o.x + x - cam.rx, Y = o.y + y - cam.ry;
+    ctx.fillStyle = fl > 0.5 ? '#ffd98a' : '#fbc774'; ctx.fillRect(X, Y, w, h);
+    ctx.fillStyle = '#ffeab0'; ctx.fillRect(X, Y, w, 2); ctx.fillRect(X, Y, 2, h - 3);   // the sun-side pane edge brightest
+    ctx.fillStyle = '#8a5a34'; ctx.fillRect(X + (w >> 1), Y, 1, h); ctx.fillRect(X, Y + (h >> 1), w, 1);
+  });
+}
+// low warm light: multiply the world with a sunset gradient (rose-gold overhead, dusky violet at the foot of the view), then a glow
+// round every lit window. The shadows stay #322125 and hard; their length comes from DUSK_K in shadow.js.
+function duskGrade() {
+  ctx.globalCompositeOperation = 'multiply';
+  const g = ctx.createLinearGradient(0, 0, view.w * 0.35, view.h);
+  g.addColorStop(0, '#ffcc8c'); g.addColorStop(0.5, '#eaa08a'); g.addColorStop(1, '#9c6c96');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, view.w, view.h);
+  ctx.globalCompositeOperation = 'lighter';
+  for (const o of OBJ) {
+    if (!WINDOWS[o.k]) continue;
+    WINDOWS[o.k].forEach(([x, y, w, h]) => {
+      const X = o.x + x - cam.rx, Y = o.y + y - cam.ry;
+      if (X > view.w + 12 || X + w < -12 || Y > view.h + 12 || Y + h < -12) return;
+      ctx.fillStyle = 'rgba(240,150,60,0.07)'; ctx.fillRect(X - 5, Y - 4, w + 10, h + 8);
+      ctx.fillStyle = 'rgba(250,180,80,0.10)'; ctx.fillRect(X - 2, Y - 2, w + 4, h + 4);
+    });
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+// a stepped pixel disc (rows of whole pixels, no smooth gradient): each call adds one glow ring in 'lighter'
+function glowDisc(cx, cy, r, col) {
+  ctx.fillStyle = col;
+  for (let dy = -r; dy <= r; dy++) { const w = Math.round(Math.sqrt(r * r - dy * dy)); ctx.fillRect(Math.round(cx) - w, Math.round(cy) + dy, 2 * w, 1); }
+}
 
 // ---------- v13: Ba Dan inside the tutorial (tutorial-demo.html sets window.AREA = { mode: 'badan' | 'home', rec }).
 // The real hub (story/act1.ts village_explore): the objective, Mira's, Gao's, Pella's and Dorin's talk nodes (kept short), the

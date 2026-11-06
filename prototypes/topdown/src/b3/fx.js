@@ -50,6 +50,7 @@ function popNum(u, n, col = '#f6eed6') { nums.push({ x: u.x, y: u.y - 50 - (nums
 function popText(u, s, col = '#f6eed6') { nums.push({ x: u.x, y: u.y - 58 - (nums.filter(q => q.t < 400).length % 3) * 7, s, t: 0, col, life: 1300 }); }
 function popTextAt(x, y, s, col = '#f6eed6') { nums.push({ x, y, s, t: 0, col, life: 1500 }); }
 function updateFx(dt) {
+  for (const u of UNITS) if (u.glow > 0) u.glow -= dt;
   for (const s of shots) {
     const dx = s.tx - s.x, dy = s.ty - s.g, d = Math.hypot(dx, dy), st = 440 * dt / 1000; s.t += dt;
     if (d <= st) { s.done = true; embers.push({ x: s.tx, y: s.ty - s.h, t: 0 }); flashes.push({ x: s.tx, y: s.ty, t: 0, life: 260, r: 14 }); shake = 120; shakeAmp = 1; s.onHit && s.onHit(); continue; }
@@ -84,4 +85,19 @@ function drawBolts() {
     }
   }
   for (const p of dusts) { ctx.fillStyle = p.col; ctx.fillRect(Math.round(p.x) - cam.rx, Math.round(p.y) - cam.ry, 2, 2); }
+}
+
+// leftovers pass: the level-up glow. A gold pool under the feet that swells and fades, a stepped pixel aura round the body and a few
+// sparks rising (all deterministic: no rnd(), so the rules' RNG stream is untouched). Drawn additively over the figure.
+function levelGlow(u) {
+  const t = 1 - u.glow / 1250, a = Math.sin(Math.PI * Math.min(1, Math.max(0, t))), X = Math.round(u.x) - cam.rx, Y = Math.round(u.y) - cam.ry;
+  // the figure itself brightens (additive redraw: shows on pale sand as well as on dark ground)
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5 * a; unitDraw(u); ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  // a gold ring on the ground that swells and fades (stepped ellipse, 2 px wide, a darker rim outside it for the pale ground)
+  const rr = 9 + Math.round(15 * t), ry = Math.max(2, rr >> 1);
+  const ring = (rx, ryy, col) => { ctx.fillStyle = col; for (let dy = -ryy; dy <= ryy; dy++) { const w = Math.round(rx * Math.sqrt(1 - (dy * dy) / (ryy * ryy))), w2 = Math.round((rx - 2) * Math.sqrt(Math.max(0, 1 - (dy * dy) / ((ryy - 1) * (ryy - 1))))); ctx.fillRect(X - w, Y + dy, w - w2 + (dy === -ryy || dy === ryy ? w2 : 0), 1); ctx.fillRect(X + w2, Y + dy, w - w2 + (dy === -ryy || dy === ryy ? w2 : 0), 1); } };
+  ctx.globalAlpha = a; ring(rr + 1, ry + 1, '#5e3a1e'); ring(rr, ry, '#ffd98a'); ctx.globalAlpha = 1;
+  // sparks rising: a 2x2 pale-gold square with a dark 1 px outline (readable on sand and on rock)
+  for (let i = 0; i < 8; i++) { const sx = X + ((i * 7) % 17) - 8, sy = Y - 6 - Math.round(t * 40) - ((i * 5) % 12); ctx.globalAlpha = a; ctx.fillStyle = '#5e3a1e'; ctx.fillRect(sx - 1, sy - 1, 4, 4); ctx.fillStyle = i % 2 ? '#fff0b8' : '#ffd98a'; ctx.fillRect(sx, sy, 2, 2); ctx.globalAlpha = 1; }
 }

@@ -118,7 +118,7 @@ if MODE != 'forest':
     SLAM = {'south': ('the_whole_mecha-driller_winds', 8, (6, 7)), 'south-east': ('the_whole_mecha-driller_winds', 9, (7, 8)),
             'east': ('the_whole_mecha-driller_winds', 10, (6, 7)), 'north-east': ('the_whole_mecha-driller_winds', 8, (6, 7)),
             'north': ('the_whole_mecha-driller_winds', 8, (6, 7)), 'north-west': ('the_whole_mecha-driller_winds', 7, (5, 6)),
-            'west': ('the_whole_mecha-driller_winds', 8, (6, 7)), 'south-west': ('the_mecha-driller_rears', 10, (8, 9))}
+            'west': ('the_whole_mecha-driller_winds', 8, (6, 7)), 'south-west': ('the_mecha-driller_slams', 10, (6, 7))}   # leftovers: slam4 (rears high in frames 3-7, drops 8-9, lands 10)
     def slam_ms(n, hit, hold):
         return [90 if i < 3 else 230 if i in hold else 110 if i < hold[0] else 170 if i == hit else 70 if i < hit else 90 for i in range(n)]
     for clip, pre in [('idle', 'the_engine'), ('slam', None)]:
@@ -134,6 +134,7 @@ if MODE != 'forest':
                     for x in range(im.width):
                         if 0 < p[x, y][3] < 128: p[x, y] = (0, 0, 0, 0)
                         elif p[x, y][3]: p[x, y] = p[x, y][:3] + (255,)
+                        if clip == 'slam' and pr.startswith('the_mecha-driller_slams') and p[x, y][3] and p[x, y][0] > 235 and p[x, y][1] > 200 and p[x, y][2] < 150: p[x, y] = (0, 0, 0, 0)   # slam4's painted yellow crescent (an effect the prompt forbade)
             bb = [im.getbbox() for im in ims]; x0 = min(b[0] for b in bb); x1 = max(b[2] for b in bb); y0 = min(b[1] for b in bb); y1 = max(b[3] for b in bb)
             # the machine's own base row (frame 0) is the anchor: crop every frame to the union box, bottom = frame 0's lowest pixel
             base = bb[0][3]; y1 = max(y1, base)

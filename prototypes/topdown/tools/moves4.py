@@ -57,6 +57,11 @@ for d in D8:
     hot = [(x, y) for y in range(CELL) for x in range(CELL) if pxs[x, y][3] > 128 and pxs[x, y][0] > 200 and pxs[x, y][1] > 140 and pxs[x, y][2] < 120]
     if len(hot) >= 3: p = (round(sum(x for x, _ in hot) / len(hot)) - AX, round(sum(y for _, y in hot) / len(hot)) - AY); src = 'flame'
     else: src = 'reach'
+    # leftovers pass (2026-11-06): the clip no longer has painted fire, so the 'flame' test above matched the FACE's skin on most headings.
+    # Hand positions measured by eye on the strike frame at 5x (qcrops/tmp/jab_strike_markers.png), relative to the feet (AX, AY):
+    FIST_FIX = {'south': (-2, -16), 'south-east': (11, -17), 'east': (19, -22), 'north-east': (16, -28), 'north': (-6, -30),
+                'north-west': (-9, -29), 'west': (-19, -23), 'south-west': (-15, -19)}
+    p = FIST_FIX[d]; src = 'measured'
     fist[d] = p; fist_src = fist_src if 'fist_src' in dir() else {}; fist_src[d] = src
 # 5. VFX strips, turned per heading with exact 90-degree turns and flips only (no resampling)
 def _strip(name):
