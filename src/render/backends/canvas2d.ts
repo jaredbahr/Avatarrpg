@@ -99,7 +99,7 @@ import {
   type RenderUnit,
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
-import { compareRenderedDepth } from './depthOrder';
+import { boardDepth, compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
@@ -129,7 +129,10 @@ export function canvasActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return camera.groundPoint(renderFoot(pos, size, square, camera.projection)).y;
+  return boardDepth(
+    camera.groundPoint(renderFoot(pos, size, square, camera.projection)),
+    camera.projection,
+  );
 }
 
 /** How far in from the board's edge the shading reaches, in tiles. */
@@ -470,7 +473,10 @@ export class Canvas2DBackend implements RenderBackend {
           draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
         })),
       ].sort((a, b) =>
-        compareRenderedDepth(camera.groundPoint(a.pos).y, camera.groundPoint(b.pos).y),
+        compareRenderedDepth(
+          boardDepth(camera.groundPoint(a.pos), camera.projection),
+          boardDepth(camera.groundPoint(b.pos), camera.projection),
+        ),
       );
       this.revealFigures = [];
       for (const occupant of occupants) occupant.draw();

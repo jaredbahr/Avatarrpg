@@ -1,3 +1,5 @@
+import type { Projection } from '../projection';
+
 /**
  * Pixi's zIndex for everything that sorts by ground depth on the board.
  *
@@ -24,4 +26,23 @@ export function shadowZ(figure: number): number {
 /** A piece of scenery whose foot projects to ground depth `groundY`. */
 export function sceneryZ(groundY: number): number {
   return groundY + SCENERY_BIAS;
+}
+
+/**
+ * How much one world pixel of foot x weighs in the top-down depth key: small
+ * enough that the whole width of a board up to 9,000 world px (225 top-down
+ * tiles) adds under 0.001, so it never outweighs a world pixel of foot y or
+ * the shadow and scenery biases above. It only breaks ties on one row.
+ */
+export const TOPDOWN_X_WEIGHT = 1e-7;
+
+/**
+ * Ground depth of a foot already in world pixels (`camera.groundPoint`). The
+ * oblique and orthographic boards sort by the foot's screen y alone, as they
+ * always have. The top-down board (ADR 0104) sorts by the foot's screen y,
+ * then its x, so two things on one row draw in the same order on both
+ * backends whatever order they were listed in.
+ */
+export function boardDepth(foot: { x: number; y: number }, projection: Projection): number {
+  return projection === 'topdown' ? foot.y + foot.x * TOPDOWN_X_WEIGHT : foot.y;
 }

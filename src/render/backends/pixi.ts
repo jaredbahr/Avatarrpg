@@ -53,7 +53,7 @@ import {
   sway,
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
-import { sceneryZ } from './depthOrder';
+import { boardDepth, sceneryZ } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
@@ -281,7 +281,10 @@ export function pixiActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return camera.groundPoint(renderFoot(pos, size, square, camera.projection)).y;
+  return boardDepth(
+    camera.groundPoint(renderFoot(pos, size, square, camera.projection)),
+    camera.projection,
+  );
 }
 
 /**
@@ -1785,7 +1788,7 @@ export class PixiBackend implements RenderBackend {
       sprite.skew.x = item.wind && !view.reducedMotion ? -sway(view.time, item) : 0;
       // A figure level with a piece of frontage stands in front of it, as on
       // Canvas 2D (depthOrder.ts).
-      sprite.zIndex = sceneryZ(camera.groundPoint(item.depth).y);
+      sprite.zIndex = sceneryZ(boardDepth(camera.groundPoint(item.depth), camera.projection));
       sprite.alpha = opacities.get(item) ?? 1;
     }
     for (const [key, sprite] of this.groundChunks) {
