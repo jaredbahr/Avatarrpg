@@ -31,8 +31,9 @@ export const LEGEND: Readonly<Record<string, TileTemplate>> = {
   W: { terrain: 'water_deep', blocked: true, blocksSight: false },
   // A barred timber gate: wood, not a wall, but still opaque and impassable.
   G: { terrain: 'wood', blocked: true, blocksSight: true },
-  // A fence or rail: low timber you can neither cross nor see through.
-  F: { terrain: 'wood', blocked: true, blocksSight: false },
+  // A fence or rail: low timber you cannot cross but can see and shoot over. It
+  // is cover for whoever stands behind it (ADR 0105).
+  F: { terrain: 'wood', blocked: true, blocksSight: false, cover: true },
   // A thicket: dense grass that hides whatever stands behind it.
   U: { terrain: 'grass', blocked: true, blocksSight: true },
 

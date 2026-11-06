@@ -116,7 +116,9 @@ describe('hit chance', () => {
     });
   });
 
-  it('does not give cover to a defender beside a water barrel', () => {
+  // ADR 0105: a barrel on the shot's line beside the defender is cover between;
+  // the same barrel beside the defender but off the line is not.
+  it('gives cover to a defender behind a water barrel, not beside one', () => {
     const { attacker, defender } = fixture();
     const battle = createBattle(
       CONTENT,
@@ -142,6 +144,12 @@ describe('hit chance', () => {
       cover: true,
     });
     expect(hitBreakdown(CONTENT, draft.grid, draft.units[0]!, draft.units[1]!)).toEqual(
+      expect.objectContaining({ cover: -20 }),
+    );
+
+    const beside = new BattleDraft(CONTENT, field, new RngCursor(2));
+    expect(beside.placeProp('water_barrel', { x: 3, y: 2 })).toBeDefined();
+    expect(hitBreakdown(CONTENT, beside.grid, beside.units[0]!, beside.units[1]!)).toEqual(
       expect.objectContaining({ cover: 0 }),
     );
   });

@@ -24,9 +24,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: 'aeee6bd55046a40755ddb60da7d808c7f240fc65c0baa6b4c9d0be742ce058b3',
-      commands: '63c52fff9e70456ebcae022dcc1c3f764a486ad3441cd7e15d53798a5740a80c',
-      count: 149,
+      save: 'e09febf5a541fcbb4e5105441adf7c5737487ffe467942d47b6632a5c2b7ac44',
+      commands: '7d2f3de8e32439458e920ccdc5f8107dfb7ab2174a1f66ec60389290f60cbd8a',
+      count: 144,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
@@ -36,8 +36,8 @@ const PINS = {
   },
   escort: {
     gate: {
-      save: '26f85ad46094162ca9c9e62b468b23d01a0f820659f1a451dfaec4cfd349cd2a',
-      commands: '5375bcf1e3aeeff44b19c044242fdb8f2b4ecbf6633604363d7b67f0509d17bf',
+      save: 'ac07f4f2ff58b5b0aeebb17dd80c5821b266397a471c6161218113ad97a0b959',
+      commands: '31301c4a60c53252be90b80b24af3f0e9b3b589aca3b404ee662202aef465dd6',
       count: 96,
       node: 'gate_escort_explore',
       map: 'quarry_gate',
@@ -46,9 +46,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '0bb3309442bcfd15f7aab483d43ef72f96fd00d8bd20ba93292bfb79899f17d2',
-      commands: 'b29b7096c97d82af9b78e9c981504ef54691333038a4dde7a6b3dd3ee080bcc7',
-      count: 401,
+      save: '62f368d30e8a8ececfb78d7df167d41f4d3bd232f6f744854e100a05b2a233fd',
+      commands: 'aaf2d9ecb66a40f94cc4524a44d62a0bde8341955009a30bcce5d7f1fde9e176',
+      count: 392,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,

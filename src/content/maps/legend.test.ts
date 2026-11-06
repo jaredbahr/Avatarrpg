@@ -18,7 +18,7 @@ describe('map legend (M1 keys)', () => {
       surface: 'rubble',
       surfaceDuration: -1,
     });
-    expect(LEGEND.F).toEqual({ terrain: 'wood', blocked: true, blocksSight: false });
+    expect(LEGEND.F).toEqual({ terrain: 'wood', blocked: true, blocksSight: false, cover: true });
     expect(LEGEND.U).toEqual({ terrain: 'grass', blocked: true, blocksSight: true });
   });
 

@@ -50,7 +50,8 @@ import {
   usableAbilities,
   validatingOrigin,
 } from './abilities';
-import { averageDamage, hasCover, hitChance, positionHasCover } from './damage';
+import { averageDamage, hasCover, hasCoverBetween, hitChance, positionHasCover } from './damage';
+import type { CoverSource } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
   distance,
@@ -629,6 +630,8 @@ export function scoreAbility(
           weather,
           origin,
           squareFootprints,
+          draft.units,
+          !ability.requiresLineOfSight,
         );
       }
       fallCap = Math.max(0, victim.hp - expectedDamage - 1);
@@ -650,6 +653,8 @@ export function scoreAbility(
             weather,
             origin,
             squareFootprints,
+            draft.units,
+            !ability.requiresLineOfSight,
           );
           if (friendly) {
             score -= expected * weights.friendlyFire;
@@ -1196,13 +1201,15 @@ export function positionScore(
   if (opponents.length === 0) return 0;
 
   let nearest = Infinity;
+  let closest: Unit | null = null;
   for (const opponent of opponents) {
-    nearest = Math.min(
-      nearest,
-      square
-        ? distanceBetweenUnits({ ...unit, pos }, opponent, square)
-        : distanceToUnit(pos, opponent, square),
-    );
+    const gap = square
+      ? distanceBetweenUnits({ ...unit, pos }, opponent, square)
+      : distanceToUnit(pos, opponent, square);
+    if (gap < nearest) {
+      nearest = gap;
+      closest = opponent;
+    }
   }
 
   // Danger is deliberately *not* folded in here: callers weight the positional
@@ -1225,9 +1232,26 @@ export function positionScore(
    * gate-aware: with the square gate off it is the anchor alone, exactly as the
    * shipped AI scored it.
    */
+  /*
+   * Cover between (ADR 0105): something on the line from the nearest opponent's
+   * nearest cell — a cover prop, a wall, or another unit, friend or foe — read
+   * with the rule the real shot uses. Only the nearest opponent is read, and
+   * never in melee, where cover does not apply. It is the same flat
+   * `weights.cover`, never added on top of standing in cover.
+   */
+  const standing = { ...unit, pos };
+  const source: CoverSource | null =
+    closest && nearest > 1
+      ? {
+          origin: nearestOccupiedCell(closest, pos, square),
+          attacker: closest,
+          units: draft.units,
+        }
+      : null;
   const covered = square
-    ? hasCover(draft.content, draft.grid, { ...unit, pos }, true)
-    : positionHasCover(draft.content, draft.grid, pos);
+    ? hasCover(draft.content, draft.grid, standing, true, source)
+    : positionHasCover(draft.content, draft.grid, pos) ||
+      (source !== null && hasCoverBetween(draft.content, draft.grid, standing, false, source));
   if (covered) {
     score += weights.cover;
   }
@@ -1500,6 +1524,8 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
         weather,
         origin,
         square,
+        draft.units,
+        !ability.requiresLineOfSight,
       );
       threat += damage * (hit / 100);
     }
