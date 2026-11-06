@@ -331,16 +331,15 @@ export interface Placed {
 }
 
 /**
- * The ford's pool in plate px (ADR 0104, T3: owner, 2026-11-06): a noisy ellipse that covers the
- * game's ford cells (0, 7) and (0, 8) at their centres and stops short of the open cells (1, 7) and
- * (1, 8) at x 168, spilling out of the canal at its top. `box` is the stretch the ford repaints: everything
- * in it but grass is the worn, flooded road.
+ * The ford in plate px (ADR 0104, T3; owner, 2026-11-06): the east-west road runs west into water
+ * spilled from the canal. `road` is the long, shallow sheet over the road (an east-west ellipse
+ * that covers the game's ford cells (0, 7) and (0, 8) at their centres and stops short of where a
+ * figure stands in (1, 7) and (1, 8)); `mouth` is the deeper water where the canal spills over its
+ * kerb. `box` is the stretch the ford repaints.
  */
 export const FORD_POOL = {
-  cx: 124,
-  cy: 506,
-  rx: 38,
-  ry: 48,
+  road: { cx: 114, cy: 512, rx: 54, ry: 38 },
+  mouth: { cx: 112, cy: 466, rx: 30, ry: 16 },
   box: { x0: 64, y0: 464, x1: 192, y1: 584 },
 } as const;
 
@@ -809,50 +808,114 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       );
   }
 
-  // 3b. the ford: where the canal spills over the road's west end, a worn, flooded road. The
-  // terrain keeps its water vertices (the game's ford cells stay water), but the bake draws them as
-  // a shallow pool on slow noise, its edge mixed with the dirt under it and a wet, darkened rim,
-  // the road worn to dirt round it and cobble further out, never the canal's ruled channel.
+  // 3b. the ford: the east-west road runs west into water spilled over the canal's kerb. The terrain
+  // keeps its water vertices (the game's ford cells stay water); the bake draws the road going on
+  // under a long, shallow sheet, its stones showing through darkened and blued, deep only at the
+  // canal mouth. Opaque glints at two scales and an upper-left catch keep it wet rather than a
+  // shadow (art-lessons, the surfaces pass); the dry side gets a 1-2 px wet band, no ring; the
+  // canal's mossy kerb line turns down round the mouth as an end cap.
   {
     const water = src.wang.canal.get('0000'),
       cobble = src.wang.gc.get('1111'),
       dirtTile = src.wang.dirt.get('0000');
     if (!water || !cobble || !dirtTile) throw new Error('missing ford tiles');
-    const { cx, cy, rx, ry, box } = FORD_POOL;
+    const { road, mouth, box } = FORD_POOL;
+    const bw = box.x1 - box.x0,
+      bh = box.y1 - box.y0;
+    // how far into the water each pixel is: under 1 is water; the edge wanders on slow noise,
+    // drawn out east-west along the road
+    const reach = (x: number, y: number): number => {
+      const w = 1 + vnoise(x * 0.6, y, 61, 9) * 0.1 + vnoise(x, y, 63, 4) * 0.035;
+      const r = Math.hypot((x - road.cx) / road.rx, (y - road.cy) / road.ry);
+      const m = Math.hypot((x - mouth.cx) / mouth.rx, (y - mouth.cy) / mouth.ry);
+      return Math.min(r, m) / w;
+    };
+    const depth = new Float32Array(bw * bh);
+    for (let y = 0; y < bh; y++)
+      for (let x = 0; x < bw; x++) depth[y * bw + x] = reach(box.x0 + x, box.y0 + y);
+    const wet = (x: number, y: number): boolean =>
+      x >= box.x0 && y >= box.y0 && x < box.x1 && y < box.y1
+        ? at(depth, (y - box.y0) * bw + x - box.x0) < 1
+        : y < box.y0 && classes[y * PW + x] === CLASS.W;
+    // the road surface under it: the drawn cobble where there is cobble, the plain tile where the
+    // canal set drew its channel, worn to dirt in east-west ruts
+    const surface = (x: number, y: number, i: number, j: number): number[] => {
+      const t = ((y % T) * T + (x % T)) * 4;
+      const rut =
+        vnoise(x * 0.25, y, 69, 3) > 0.35 && Math.abs(y - road.cy) < 30 && reach(x, y) < 1;
+      if (rut) {
+        const k = dirtIndex(x, y);
+        return [0, 1, 2].map((ch) => at(dirtTile.data, k + ch));
+      }
+      const moss = at(d, j + 1) > at(d, j) + 10 && at(d, j + 1) > at(d, j + 2) + 4;
+      return classes[i] === CLASS.C && !moss
+        ? [0, 1, 2].map((ch) => at(d, j + ch))
+        : [0, 1, 2].map((ch) => at(cobble.data, t + ch));
+    };
+    const kerbFrom = (x: number, y: number): number => ((y * PW + x + 160) * 4) as number;
     for (let y = box.y0; y < box.y1; y++)
       for (let x = box.x0; x < box.x1; x++) {
         const i = y * PW + x,
-          j = i * 4;
-        const wobble = 1 + vnoise(x, y, 61, 14) * 0.08 + vnoise(x, y, 63, 5) * 0.03;
-        const r = Math.hypot((x - cx) / rx, (y - cy) / ry) / wobble;
+          j = i * 4,
+          r = at(depth, (y - box.y0) * bw + x - box.x0);
         const grass = classes[i] === CLASS.G;
-        const worn = r < 1.3 + vnoise(x, y, 65, 9) * 0.18;
-        // beyond the worn ground the road stays as it was, but for the old channel's water and the
-        // mossy kerb line the canal set drew round it
-        const moss = at(d, j + 1) > at(d, j) + 10 && at(d, j + 1) > at(d, j + 2) + 4;
-        if (!worn && r > 1 && classes[i] !== CLASS.W && !(moss && !grass)) continue;
-        if (grass && r > 1) {
-          // grass beside the water is wet and dark
-          if (r < 1.15) for (let ch = 0; ch < 3; ch++) d[j + ch] = at(d, j + ch) * 0.8;
-          continue;
-        }
-        const k = dirtIndex(x, y),
-          t = ((y % T) * T + (x % T)) * 4;
-        const ground = (ch: number): number =>
-          worn ? at(dirtTile.data, k + ch) : at(cobble.data, t + ch);
-        if (r <= 1) {
-          // shallow at the edge: the dirt shows through a band of uneven width
-          const a = r < 0.86 + vnoise(x, y, 67, 6) * 0.06 ? 1 : 0.6;
-          for (let ch = 0; ch < 3; ch++)
-            d[j + ch] = at(water.data, t + ch) * a + ground(ch) * (1 - a);
+        const oldWater = classes[i] === CLASS.W;
+        const t = ((y % T) * T + (x % T)) * 4;
+        if (r < 1) {
+          const ground = surface(x, y, i, j);
+          // deep at the canal mouth, shallow over the road: the stones darkened and blued
+          const deep = y < 478 + vnoise(x, y, 71, 5) * 4 && r < 0.85;
+          const a = deep ? 1 : r < 0.55 ? 0.62 : 0.45;
+          const c = [0, 1, 2].map(
+            (ch) => at(water.data, t + ch) * a + at(ground, ch) * 0.82 * (1 - a),
+          );
+          // the upper-left catch: the first wet pixel below or right of dry ground
+          const catchLight =
+            !deep && (!wet(x - 1, y) || !wet(x, y - 1)) && vnoise(x, y, 79, 3) > -0.1;
+          // glints at two scales: single pixels, and short east-west streaks
+          const glint = !deep && hash2(x, y, 73) > 0.993;
+          const streak =
+            !deep && y % 4 === 0 && vnoise(x * 0.5, y, 75, 3) > 0.55 && hash2(x >> 2, y, 77) > 0.5;
+          const out = catchLight ? [150, 170, 172] : glint || streak ? [176, 196, 196] : c;
+          for (let ch = 0; ch < 3; ch++) d[j + ch] = at(out, ch);
           d[j + 3] = 255;
           classes[i] = CLASS.W;
-        } else {
-          const wet = r < 1.15 ? 0.78 : 1;
-          for (let ch = 0; ch < 3; ch++) d[j + ch] = ground(ch) * wet;
-          d[j + 3] = 255;
-          classes[i] = worn ? CLASS.D : CLASS.C;
+          continue;
         }
+        // the dry side: the canal's kerb moss runs on and turns down round the mouth (its end cap);
+        // a 1-2 px wet band hugs the water; the old channel becomes road
+        const nearWater = [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+          [2, 0],
+          [-2, 0],
+          [0, 2],
+          [0, -2],
+        ].some(([dx, dy]) => wet(x + (dx ?? 0), y + (dy ?? 0)));
+        const kerbRow = y < box.y0 + 3;
+        if (kerbRow && !grass) {
+          const k = kerbFrom(x, y);
+          for (let ch = 0; ch < 3; ch++) d[j + ch] = at(d, k + ch);
+          classes[i] = CLASS.C;
+          continue;
+        }
+        if (nearWater && y < mouth.cy + mouth.ry + 4 && !grass) {
+          // the cap: moss down the mouth's edge, as the kerb's own line
+          const k = kerbFrom(x, box.y0 + 1);
+          for (let ch = 0; ch < 3; ch++) d[j + ch] = at(d, k + ch);
+          classes[i] = CLASS.C;
+          continue;
+        }
+        // the old channel's mossy kerb line goes too: the road runs on to the water
+        const moss = at(d, j + 1) > at(d, j) + 10 && at(d, j + 1) > at(d, j + 2) + 4;
+        if (!oldWater && !nearWater && !(moss && !grass) && r > 1.25) continue;
+        const ground = grass ? [0, 1, 2].map((ch) => at(d, j + ch)) : surface(x, y, i, j);
+        const damp = nearWater ? 0.72 : 1;
+        for (let ch = 0; ch < 3; ch++) d[j + ch] = at(ground, ch) * damp;
+        d[j + 3] = 255;
+        if (!grass) classes[i] = CLASS.C;
       }
   }
 
