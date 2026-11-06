@@ -66,7 +66,7 @@ import {
   surfaceTexel,
 } from '../sceneSurfaces';
 import { TILE } from '../camera';
-import { tileSize } from '../projection';
+import { drawsScene, groundsSceneAtRuntime, tileSize } from '../projection';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
@@ -843,7 +843,7 @@ export class PixiBackend implements RenderBackend {
 
     this.pixelMarkDrawables.beginFrame();
 
-    this.lifted = camera.projection === 'oblique';
+    this.lifted = groundsSceneAtRuntime(camera.projection);
     this.tile = tileSize(camera.projection);
     this.marginGfx.clear();
     const marginTone = view.scene?.marginTone;
@@ -894,7 +894,7 @@ export class PixiBackend implements RenderBackend {
     const backdropPainted = this.syncBackdrop(view, camera, partialScene);
     const scenePainted = this.syncScene(view, camera);
     // An incomplete authored scene must keep its collision-marking fallback.
-    const painted = camera.projection === 'oblique' && view.scene ? scenePainted : backdropPainted;
+    const painted = drawsScene(camera.projection) && view.scene ? scenePainted : backdropPainted;
     this.setPartialGroundOrder(partialScene);
     this.groundOverlaySprite.visible = partialScene;
     this.syncGround(view, painted, partialScene);
@@ -976,7 +976,9 @@ export class PixiBackend implements RenderBackend {
       this.decorGfx,
     ];
     if (painted && !partialScene) live.push(this.groundSprite);
-    this.syncLift(view, camera, oblique && scenePainted ? (view.scene?.reliefLift ?? 0) : 0, {
+    const reliefLift =
+      groundsSceneAtRuntime(camera.projection) && scenePainted ? (view.scene?.reliefLift ?? 0) : 0;
+    this.syncLift(view, camera, reliefLift, {
       static: painted ? [this.decorLayer] : [],
       live,
       // The surfaces the shader draws over art are on the live side.
@@ -1545,7 +1547,7 @@ export class PixiBackend implements RenderBackend {
     this.grounding = actorGrounding(view.scene);
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
-    if (camera.projection === 'oblique') this.syncSceneryShadows(view, camera);
+    if (groundsSceneAtRuntime(camera.projection)) this.syncSceneryShadows(view, camera);
     this.retireInactiveSprites(this.castSprites, this.castLive);
     const visible = [...this.castSprites.values()].filter((sprite) => sprite.visible);
     this.castLive.clear();
@@ -1651,7 +1653,7 @@ export class PixiBackend implements RenderBackend {
   private syncStructureShadows(view: MapView, camera: Camera): boolean {
     const g = this.structureShadowGfx;
     g.clear();
-    if (camera.projection !== 'oblique') return false;
+    if (!groundsSceneAtRuntime(camera.projection)) return false;
     const flat = (poly: readonly { x: number; y: number }[]) => poly.flatMap((p) => [p.x, p.y]);
     const local = (point: { x: number; y: number }) => ({
       x: (point.x + camera.offsetX) / camera.scale,
@@ -1729,9 +1731,13 @@ export class PixiBackend implements RenderBackend {
     return true;
   }
 
-  /** Already-projected ground chunks and upright objects use only pan/zoom. */
+  /**
+   * Already-projected ground chunks and upright objects use only pan/zoom. The top-down board
+   * (ADR 0104) draws its scene the same way, at the identity ground transform, but bakes its
+   * shadows into the plates: it gets no runtime grounding.
+   */
   private syncScene(view: MapView, camera: Camera): boolean {
-    const scene = camera.projection === 'oblique' ? view.scene : undefined;
+    const scene = drawsScene(camera.projection) ? view.scene : undefined;
     this.sceneTextures.begin();
     const groundKeys = new Set<string>();
     const sceneryKeys = new Set<string>();
@@ -1803,7 +1809,10 @@ export class PixiBackend implements RenderBackend {
         this.scenerySprites.delete(key);
       }
     }
-    this.syncGrounding(complete ? scene : undefined, camera);
+    this.syncGrounding(
+      complete && groundsSceneAtRuntime(camera.projection) ? scene : undefined,
+      camera,
+    );
     this.syncBreeze(scene?.ground ?? [], view);
     this.syncFlock(scene, view);
     this.sceneTextures.end();
@@ -2909,7 +2918,7 @@ export class PixiBackend implements RenderBackend {
         sprite.height = placed.h;
         sprite.scale.x = Math.abs(sprite.scale.x) * (bend ? 1 : drawFacing);
         this.sampleArt(sprite, camera.scale);
-        if (revealsUnit(unit) && camera.projection === 'oblique') {
+        if (revealsUnit(unit) && drawsScene(camera.projection)) {
           const footX = x + width / 2;
           const flip = !bend && drawFacing === -1;
           revealFigures.push({
@@ -2921,8 +2930,9 @@ export class PixiBackend implements RenderBackend {
               flip,
             ),
             flip,
-            foot: camera.groundPoint(renderFoot(pos, unit.size, this.squareFootprints, 'oblique'))
-              .y,
+            foot: camera.groundPoint(
+              renderFoot(pos, unit.size, this.squareFootprints, camera.projection),
+            ).y,
           });
         }
       } else {
@@ -3163,7 +3173,7 @@ export class PixiBackend implements RenderBackend {
 
   /** The covered part of each hidden party member, over every piece, as on Canvas 2D. */
   private syncReveal(view: MapView, camera: Camera, figures: readonly RevealFigure[]): void {
-    const scenery = camera.projection === 'oblique' ? (view.scene?.scenery ?? []) : [];
+    const scenery = drawsScene(camera.projection) ? (view.scene?.scenery ?? []) : [];
     if (!this.reveal && !scenery.some((piece) => piece.revealOccluded)) return;
     if (!this.reveal) {
       const sprite = new Sprite();

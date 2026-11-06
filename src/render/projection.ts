@@ -24,6 +24,31 @@ export function usesIntegerZoom(projection: Projection): boolean {
   return projection !== 'orthographic';
 }
 
+/**
+ * True for the boards that draw a map's `scene` (its ground plates and scenery) when it has one:
+ * the oblique board and the top-down one (ADR 0104). The orthographic board never does.
+ */
+export function drawsScene(projection: Projection): boolean {
+  return projection !== 'orthographic';
+}
+
+/**
+ * True where the renderers ground a scene at run time: `sceneGrounding`'s contact wash, the
+ * structure and scenery shadow masks, the lift pass and `reliefLift`. Only the oblique board; a
+ * top-down scene's shadows are baked into its plates (ADR 0104 section 2), and it lifts nothing.
+ */
+export function groundsSceneAtRuntime(projection: Projection): boolean {
+  return projection === 'oblique';
+}
+
+/**
+ * Exploration's preferred CSS px a tile: the top-down board opens at N = 3 on a 1x screen (120 px,
+ * ADR 0104), the oblique one at 96 and the orthographic one at 48.
+ */
+export function exploreTilePx(projection: Projection): number {
+  return projection === 'topdown' ? 3 * TOPDOWN_TILE : projection === 'oblique' ? 96 : 48;
+}
+
 export function projectGround(pos: Vec2, projection: Projection): Vec2 {
   return projection === 'oblique' ? { x: pos.x - pos.y, y: (pos.x + pos.y) / 2 } : pos;
 }

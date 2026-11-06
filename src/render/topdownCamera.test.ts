@@ -13,6 +13,7 @@ import type { Viewport } from './camera';
 import { liftAlong, liftAt, pickCell } from './geometry/elevation';
 import {
   TOPDOWN_TILE,
+  exploreTilePx,
   groundBounds,
   projectGround,
   tileSize,
@@ -233,5 +234,22 @@ describe('top-down integer zoom: N >= dpr', () => {
     camera.fitExplore(120);
     expect(camera.deviceScale).toBe(3);
     expect(camera.tile * camera.scale).toBe(120);
+  });
+
+  it('is what exploration asks for on a top-down map, and the oblique and flat asks are unchanged', () => {
+    expect(exploreTilePx('topdown')).toBe(120);
+    expect(exploreTilePx('oblique')).toBe(96);
+    expect(exploreTilePx('orthographic')).toBe(48);
+    for (const board of BOARDS) {
+      const camera = topdown({ width: 1368, height: 912, dpr: 1 }, board);
+      camera.fitExplore(exploreTilePx('topdown'));
+      expect(camera.deviceScale, board.name).toBe(3);
+    }
+    // Other screens still open on whole device px, never under a fingertip.
+    for (const viewport of VIEWPORTS) {
+      const camera = topdown(viewport, { width: 24, height: 16 });
+      camera.fitExplore(exploreTilePx('topdown'));
+      expectTappableAndSettled(camera, viewport.name);
+    }
   });
 });

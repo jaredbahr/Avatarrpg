@@ -18,6 +18,7 @@ import { liftCost } from './render/geometry/lift';
 import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
 import { useTopDownStyle, useWorldStyleTest } from './content/assets/manifest';
+import { withTopDownMaps } from './content/topdown';
 
 /** Gallery checks await decoded pixels, not just successful HTTP requests. */
 async function loadedFxCels() {
@@ -44,12 +45,12 @@ if (import.meta.env.DEV) {
 }
 
 // `?style=world`: the world-style figure test (art/source/style-test-world-chars), never the default.
-// `?style=topdown`: the top-down port (ADR 0104), wired to nothing visible until T2.
+// `?style=topdown`: the top-down port (ADR 0104): its sheets, and its maps for those it has drawn.
 const style = new URLSearchParams(window.location.search).get('style');
 if (style === 'world') useWorldStyleTest();
 if (style === 'topdown') useTopDownStyle();
 
-const app = new App(CONTENT, root, STORY_ENTRY);
+const app = new App(style === 'topdown' ? withTopDownMaps(CONTENT) : CONTENT, root, STORY_ENTRY);
 app.start();
 
 // Handy from the browser console, and how the e2e suite drives setup quickly.

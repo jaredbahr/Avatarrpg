@@ -10,12 +10,12 @@
  * context, they never own one.
  */
 
-import type { Grid, SceneFlock, SceneImage, SceneScenery, Vec2 } from '../../core/types';
+import type { Grid, MapScene, SceneFlock, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera, TILE } from '../camera';
-import { tileSize } from '../projection';
+import { drawsScene, groundsSceneAtRuntime, tileSize } from '../projection';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
@@ -248,7 +248,7 @@ export class Canvas2DBackend implements RenderBackend {
       ),
     };
 
-    this.lifted = camera.projection === 'oblique';
+    this.lifted = groundsSceneAtRuntime(camera.projection);
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
@@ -279,29 +279,10 @@ export class Canvas2DBackend implements RenderBackend {
     let grounding: GroundingCanvas | null = null;
     let sceneGroundPieces: { piece: SceneImage; image: HTMLImageElement | null }[] = [];
     if (camera.projection === 'oblique' && view.scene) {
-      const ground = view.scene.ground.map((piece) => ({
-        piece,
-        image: sceneImage(piece),
-      }));
+      const ground = sceneGroundImages(view.scene);
       sceneGroundPieces = ground;
-      sceneGround =
-        ground.length > 0 &&
-        ground.every(({ image }) => image !== null) &&
-        view.scene.scenery.every((piece) => sceneImage(piece) !== null);
-      if (sceneGround && !partialScene) {
-        for (const { piece, image } of ground) {
-          if (image)
-            drawSceneImage(
-              ctx,
-              image,
-              piece,
-              piece.x * camera.scale - camera.offsetX,
-              piece.y * camera.scale - camera.offsetY,
-              piece.width * camera.scale,
-              piece.height * camera.scale,
-            );
-        }
-      }
+      sceneGround = sceneArtLoaded(view.scene, ground);
+      if (sceneGround && !partialScene) this.drawScenePlates(ground, camera);
       if (sceneGround)
         grounding = sceneGrounding(view.scene, {
           toWorld: (pos) => camera.groundPoint(pos),
@@ -340,18 +321,7 @@ export class Canvas2DBackend implements RenderBackend {
           // High contrast later in the pass.
           if (sceneGround && !view.crispOverlays) this.drawElevationBase(view, ground);
         });
-        for (const { piece, image } of sceneGroundPieces) {
-          if (!image) continue;
-          drawSceneImage(
-            ctx,
-            image,
-            piece,
-            piece.x * camera.scale - camera.offsetX,
-            piece.y * camera.scale - camera.offsetY,
-            piece.width * camera.scale,
-            piece.height * camera.scale,
-          );
-        }
+        this.drawScenePlates(sceneGroundPieces, camera);
         drawGrounding(ctx, grounding, camera);
       } else if (!painted) {
         onGround(() => {
@@ -410,77 +380,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
-      // All upright occupants share depth order, including NPCs and props.
-      const opacities = sceneryOpacities(
-        view.scene?.scenery ?? [],
-        view,
-        camera,
-        this.squareFootprints,
-      );
-      const occupants = [
-        ...(view.scene?.scenery ?? []).map((piece) => ({
-          pos: piece.depth,
-          draw: () => {
-            const image = sceneImage(piece);
-            if (!image) return;
-            ctx.save();
-            ctx.globalAlpha = opacities.get(piece) ?? 1;
-            // Three held drawings of the lean, sheared about the foot.
-            const lean = piece.wind && !view.reducedMotion ? sway(view.time, piece, true) : 0;
-            ctx.transform(
-              1,
-              0,
-              -lean,
-              1,
-              piece.x * camera.scale - camera.offsetX,
-              (piece.y + piece.height) * camera.scale - camera.offsetY,
-            );
-            if (piece.flip) {
-              // Mirrored inside its own box: the right edge becomes the left.
-              ctx.translate(piece.width * camera.scale, 0);
-              ctx.scale(-1, 1);
-            }
-            drawSceneImage(
-              ctx,
-              image,
-              piece,
-              0,
-              -piece.height * camera.scale,
-              piece.width * camera.scale,
-              piece.height * camera.scale,
-            );
-            ctx.restore();
-          },
-        })),
-        ...view.npcs.map((npc) => ({
-          pos: {
-            x: (npc.renderPos ?? npc.pos).x + this.npcWidth(npc.sprite) / 2,
-            y: (npc.renderPos ?? npc.pos).y + 0.5,
-          },
-          draw: () => this.drawNpcs({ ...view, npcs: [npc] }, camera),
-        })),
-        ...view.props.map((prop) => ({
-          pos: { x: prop.pos.x + 0.5, y: prop.pos.y + 0.5 },
-          draw: () => this.drawProps({ ...view, props: [prop] }, camera),
-        })),
-        ...view.units.map((unit) => ({
-          pos: renderFoot(
-            unit.renderPos ?? unit.pos,
-            unit.size,
-            this.squareFootprints,
-            camera.projection,
-          ),
-          draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
-        })),
-      ].sort((a, b) =>
-        compareRenderedDepth(
-          boardDepth(camera.groundPoint(a.pos), camera.projection),
-          boardDepth(camera.groundPoint(b.pos), camera.projection),
-        ),
-      );
-      this.revealFigures = [];
-      for (const occupant of occupants) occupant.draw();
-      this.drawReveal(view, camera);
+      this.drawOccupants(view, camera);
       this.flushHealthBars(camera, view.cameraNudge);
       this.drawTargetReticle(view, camera);
       this.drawFlock(view, camera);
@@ -491,8 +391,18 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
     } else {
       this.dropLiftLayer();
-      this.drawGround(view, camera, painting !== null);
-      if (!painting || view.crispOverlays) this.drawDecor(view, camera);
+      // The top-down board (ADR 0104) draws its scene's plates at the identity ground transform,
+      // with no lift and no runtime grounding: its shadows are baked into the plates. Until every
+      // plate and piece has loaded, the procedural terrain stands in, as on the oblique board.
+      const scene = drawsScene(camera.projection) ? view.scene : undefined;
+      let painted = painting !== null;
+      if (scene) {
+        const ground = sceneGroundImages(scene);
+        painted = sceneArtLoaded(scene, ground);
+        if (painted) this.drawScenePlates(ground, camera);
+      }
+      this.drawGround(view, camera, painted);
+      if (!painted || view.crispOverlays) this.drawDecor(view, camera);
       if (view.atmosphere) this.drawShade(view, camera);
       this.drawOverlays(view, camera);
       this.drawSteamPuffs(view, camera);
@@ -504,11 +414,15 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
-      this.drawNpcs(view, camera);
-      this.drawProps(view, camera);
-      this.drawUnits(view, camera);
+      if (scene) this.drawOccupants(view, camera);
+      else {
+        this.drawNpcs(view, camera);
+        this.drawProps(view, camera);
+        this.drawUnits(view, camera);
+      }
       this.flushHealthBars(camera, view.cameraNudge);
       this.drawTargetReticle(view, camera);
+      if (scene) this.drawFlock(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
     }
@@ -516,6 +430,105 @@ export class Canvas2DBackend implements RenderBackend {
 
     ctx.restore();
     this.pixelMarkDrawables.endFrame();
+  }
+
+  /**
+   * Every upright occupant of a scene board in one depth order (`boardDepth`): the scene's scenery
+   * (faded where it hides a figure), NPCs, props and units, then the reveal of party members a
+   * piece covers. The oblique and top-down boards both draw through it.
+   */
+  private drawOccupants(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+    // All upright occupants share depth order, including NPCs and props.
+    const opacities = sceneryOpacities(
+      view.scene?.scenery ?? [],
+      view,
+      camera,
+      this.squareFootprints,
+    );
+    const occupants = [
+      ...(view.scene?.scenery ?? []).map((piece) => ({
+        pos: piece.depth,
+        draw: () => {
+          const image = sceneImage(piece);
+          if (!image) return;
+          ctx.save();
+          ctx.globalAlpha = opacities.get(piece) ?? 1;
+          // Three held drawings of the lean, sheared about the foot.
+          const lean = piece.wind && !view.reducedMotion ? sway(view.time, piece, true) : 0;
+          ctx.transform(
+            1,
+            0,
+            -lean,
+            1,
+            piece.x * camera.scale - camera.offsetX,
+            (piece.y + piece.height) * camera.scale - camera.offsetY,
+          );
+          if (piece.flip) {
+            // Mirrored inside its own box: the right edge becomes the left.
+            ctx.translate(piece.width * camera.scale, 0);
+            ctx.scale(-1, 1);
+          }
+          drawSceneImage(
+            ctx,
+            image,
+            piece,
+            0,
+            -piece.height * camera.scale,
+            piece.width * camera.scale,
+            piece.height * camera.scale,
+          );
+          ctx.restore();
+        },
+      })),
+      ...view.npcs.map((npc) => ({
+        pos: {
+          x: (npc.renderPos ?? npc.pos).x + this.npcWidth(npc.sprite) / 2,
+          y: (npc.renderPos ?? npc.pos).y + 0.5,
+        },
+        draw: () => this.drawNpcs({ ...view, npcs: [npc] }, camera),
+      })),
+      ...view.props.map((prop) => ({
+        pos: { x: prop.pos.x + 0.5, y: prop.pos.y + 0.5 },
+        draw: () => this.drawProps({ ...view, props: [prop] }, camera),
+      })),
+      ...view.units.map((unit) => ({
+        pos: renderFoot(
+          unit.renderPos ?? unit.pos,
+          unit.size,
+          this.squareFootprints,
+          camera.projection,
+        ),
+        draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
+      })),
+    ].sort((a, b) =>
+      compareRenderedDepth(
+        boardDepth(camera.groundPoint(a.pos), camera.projection),
+        boardDepth(camera.groundPoint(b.pos), camera.projection),
+      ),
+    );
+    this.revealFigures = [];
+    for (const occupant of occupants) occupant.draw();
+    this.drawReveal(view, camera);
+  }
+
+  /** The scene's ground plates, each at its own world-px rectangle under pan and zoom only. */
+  private drawScenePlates(
+    ground: readonly { piece: SceneImage; image: HTMLImageElement | null }[],
+    camera: Camera,
+  ): void {
+    for (const { piece, image } of ground) {
+      if (!image) continue;
+      drawSceneImage(
+        this.ctx,
+        image,
+        piece,
+        piece.x * camera.scale - camera.offsetX,
+        piece.y * camera.scale - camera.offsetY,
+        piece.width * camera.scale,
+        piece.height * camera.scale,
+      );
+    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -1311,7 +1324,7 @@ export class Canvas2DBackend implements RenderBackend {
 
     // Only scenery is cached, with the viewport and actual loaded art in its
     // key. Props and actors still rebuild into this frame's exact-max union.
-    if (view.scene && camera.projection === 'oblique') {
+    if (view.scene && groundsSceneAtRuntime(camera.projection)) {
       this.drawCachedSceneryShadowMask(layer, view, camera, grid);
       this.drawPropShadowMask(
         layer,
@@ -1522,7 +1535,7 @@ export class Canvas2DBackend implements RenderBackend {
     view: MapView,
     camera: Camera,
   ): void {
-    if (camera.projection !== 'oblique') return;
+    if (!groundsSceneAtRuntime(camera.projection)) return;
     const authored = new Set(
       (view.scene?.scenery ?? []).flatMap((piece) =>
         (piece.footprint ?? []).map((cell) => `${cell.x},${cell.y}`),
@@ -1783,7 +1796,7 @@ export class Canvas2DBackend implements RenderBackend {
     }
     this.drawPropShadowMask(
       target,
-      camera.projection === 'oblique' && view.scene
+      groundsSceneAtRuntime(camera.projection) && view.scene
         ? view.props.filter((prop) => Boolean(prop.burning))
         : view.props,
       view,
@@ -2071,7 +2084,7 @@ export class Canvas2DBackend implements RenderBackend {
           ctx.translate(-ax, 0);
         }
         const f = frame.frame;
-        if (revealsUnit(unit) && camera.projection === 'oblique') {
+        if (revealsUnit(unit) && drawsScene(camera.projection)) {
           const world = (v: number, offset: number) => (v + offset) / camera.scale;
           this.revealFigures.push({
             source: frame.source,
@@ -2087,8 +2100,9 @@ export class Canvas2DBackend implements RenderBackend {
               drawFacing === -1 && !bend,
             ),
             flip: drawFacing === -1 && !bend,
-            foot: camera.groundPoint(renderFoot(pos, unit.size, this.squareFootprints, 'oblique'))
-              .y,
+            foot: camera.groundPoint(
+              renderFoot(pos, unit.size, this.squareFootprints, camera.projection),
+            ).y,
           });
         }
         // A sheet pixel on a whole block of device pixels draws nearest (ADR 0088).
@@ -2404,6 +2418,25 @@ function copyRect(
   );
   liftCost.copies++;
   liftCost.copiedPx += (x1 - x0) * (y1 - y0);
+}
+
+/** A scene's ground plates with the image each has loaded, or null while it has not. */
+function sceneGroundImages(
+  scene: MapScene,
+): { piece: SceneImage; image: HTMLImageElement | null }[] {
+  return scene.ground.map((piece) => ({ piece, image: sceneImage(piece) }));
+}
+
+/** Whether a scene can stand in for the terrain: it has plates, and every plate and piece has loaded. */
+function sceneArtLoaded(
+  scene: MapScene,
+  ground: readonly { image: HTMLImageElement | null }[],
+): boolean {
+  return (
+    ground.length > 0 &&
+    ground.every(({ image }) => image !== null) &&
+    scene.scenery.every((piece) => sceneImage(piece) !== null)
+  );
 }
 
 /** A grounding raster at its scene rectangle, texel-sharp like the scenery it seats. */
