@@ -1752,9 +1752,14 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
         );
       }
     }
+  // A mouth is a way out: every cell of it runs over ground to the rim with nothing solid in the
+  // way, and at least one runs the whole way on its road (cobble or worn dirt). The others may
+  // cross grass, so a footpath need not be as wide as the exit it leads to.
   const mouthCells = new Map<string, MapEdgeSide>();
-  for (const mouth of layout.terrain.mouths)
+  for (const mouth of layout.terrain.mouths) {
+    const offRoad: string[] = [];
     for (const cell of mouth.cells) {
+      let leaves: string | undefined;
       mouthCells.set(key(cell.x, cell.y), mouth.side);
       const dir = outward[mouth.side];
       const reach = layout.terrain.mouthReach * TOPDOWN_CELL;
@@ -1778,18 +1783,23 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
           );
           break;
         }
-        if (at.terrain !== 'C' && at.terrain !== 'D') {
+        if (at.ground !== 'ground') {
           problems.push(
-            `${where} mouth "${mouth.id}" at (${cell.x},${cell.y}) leaves its road for ${at.ground} (${at.terrain}) ${d} px out`,
+            `${where} mouth "${mouth.id}" at (${cell.x},${cell.y}) runs into ${at.ground} ${d} px out`,
           );
           break;
         }
+        if (at.terrain !== 'C' && at.terrain !== 'D')
+          leaves ??= `${where} mouth "${mouth.id}" at (${cell.x},${cell.y}) leaves its road for ${at.ground} (${at.terrain}) ${d} px out`;
       }
+      if (leaves) offRoad.push(leaves);
       if (!open)
         problems.push(
           `${where} mouth "${mouth.id}" at (${cell.x},${cell.y}) does not reach the rim within ${layout.terrain.mouthReach} cells`,
         );
     }
+    if (offRoad.length === mouth.cells.length && offRoad[0]) problems.push(offRoad[0]);
+  }
   const exits: Vec2[] = [
     ...(map.exit ? [map.exit.pos] : []),
     ...(map.exits ?? []).flatMap((e) => e.area ?? [e.pos]),

@@ -187,6 +187,21 @@ describe('the top-down layout rules', () => {
   });
 
   it('rejects a mouth that leaves its road, runs into a solid piece or never reaches the rim', () => {
+    // one cell of a mouth on its road is enough; the others may cross grass to the rim
+    const wide = {
+      ...terrain(),
+      mouths: [
+        {
+          id: 'east',
+          side: 'east' as const,
+          cells: [
+            { x: 3, y: 1 },
+            { x: 3, y: 2 },
+          ],
+        },
+      ],
+    };
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: wide }))).toEqual([]);
     const grass = {
       ...terrain(),
       mouths: [{ id: 'east', side: 'east' as const, cells: [{ x: 3, y: 2 }] }],
