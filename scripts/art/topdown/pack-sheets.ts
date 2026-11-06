@@ -944,6 +944,22 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
   for (const name of OBJECTS) {
     const bytes = readFileSync(join(SOURCE, 'objects_t3', `${name}.png`));
     files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
+    // A one-image atlas (every cel the image), so the object stands on its cell as a figure does
+    // (`topdownObject` in the manifest).
+    const w = bytes.readUInt32BE(16),
+      h = bytes.readUInt32BE(20);
+    files.set(
+      `${OBJECTS_OUT}/${name}.json`,
+      json({
+        frames: Object.fromEntries(
+          ['idle/0', 'idle/1', 'cast/0', 'cast/1', 'cast/2'].map((cel) => [
+            `world.${name}/${cel}`,
+            { frame: { x: 0, y: 0, w, h } },
+          ]),
+        ),
+        meta: { image: `${name}.png`, size: { w, h } },
+      }),
+    );
   }
   files.set(DATA, await dataModule(data));
   return files;
