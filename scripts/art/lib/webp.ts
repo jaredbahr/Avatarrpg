@@ -50,16 +50,19 @@ export async function decodeWebp(bytes: Uint8Array): Promise<Image> {
   };
 }
 
-/** Lossless WebP, exact to the pixel; test fixtures derive from decoded atlases with it. */
-export async function encodeWebpLossless(image: Image): Promise<Uint8Array> {
+/**
+ * Lossless WebP, exact to the pixel; test fixtures derive from decoded atlases with it. A packer that
+ * ships the file (the top-down sheets) asks for the slower, smaller `method`.
+ */
+export async function encodeWebpLossless(image: Image, method = 0): Promise<Uint8Array> {
   await encoder();
   const data = new Uint8ClampedArray(image.data.length);
   data.set(image.data);
   const pixels = { data, width: image.width, height: image.height, colorSpace: 'srgb' };
   const buffer = await encode(pixels as ImageData, {
     lossless: 1,
-    quality: 0,
-    method: 0,
+    quality: method > 0 ? 100 : 0,
+    method,
     exact: 1,
   });
   return new Uint8Array(buffer);

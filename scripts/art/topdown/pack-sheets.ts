@@ -1,0 +1,984 @@
+/**
+ * The top-down figure sheets (ADR 0104 T2): the prototype's approved PixelLab takes
+ * (`prototypes/topdown/assets/`) packed into lossless atlases under `public/art/topdown/`, and the
+ * numbers the manifest's `topdownSheet` builder needs into `src/content/assets/topdownSheets.ts`.
+ *
+ *   node --import tsx scripts/art/topdown/pack-sheets.ts [--check]
+ *
+ * Deterministic: the same sources pack to the same bytes. `--check` packs in memory and fails when
+ * a shipped file differs or is missing, or `public/art/topdown/` holds a file the packer does not
+ * write. Nothing is redrawn: every cel is a PixelLab frame, alpha-thresholded to hard alpha (it
+ * already is), with the prototype's breath-vapour clean (`build8.py` `clean`) and placed on the
+ * canvas PixelLab drew it on, so each clip keeps PixelLab's own registration.
+ *
+ * - Figures (48 px characters on PixelLab's 64 or 80 px animation canvases): every canvas is
+ *   centred on an 80 px basis, whose column 40 is the anchor column. The foot line is the most
+ *   common ground row (the row under the lowest sole) of the idle's cels. Idle, walk and rest share
+ *   the sheet frame (the union of their ink about the anchor, plus a 1 px margin); every other clip
+ *   (hits, knockouts, the cast and each heading of each ability) is trimmed to its own ink with its
+ *   own anchor.
+ * - The idle keeps the prototype's calm frames (`build8.py` `calm_frames`: the head within 1 px of
+ *   the rest pose), the first three, played there and back at the prototype's 420 ms a cel.
+ * - The walk plays at the prototype's ground per loop (`CYCLE_PX`, `STATS.cycle`) and the Ba Dan
+ *   pace (66 px a second), so `walkMsPerTile` holds the planted foot.
+ * - The Driller (a PixelLab object on a 128 px canvas, 2x2) stands on each view's base, centred
+ *   under its ink; its slam per heading carries the prototype's frame times and hit frame.
+ */
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import type { Image } from '../lib/image';
+import { newImage, readPng } from '../lib/image';
+import { composeAtlas, shelfPack, type Item } from '../lib/atlas';
+import { encodeWebpLossless } from '../lib/webp';
+import { format, resolveConfig } from 'prettier';
+
+export const SOURCE = 'prototypes/topdown/assets';
+export const OUT = 'public/art/topdown';
+export const DATA = 'src/content/assets/topdownSheets.ts';
+
+/** The game's headings (`HEADINGS` order) and PixelLab's direction names for them. */
+const HEADINGS = [
+  'east',
+  'southEast',
+  'south',
+  'southWest',
+  'west',
+  'northWest',
+  'north',
+  'northEast',
+] as const;
+type Heading = (typeof HEADINGS)[number];
+const DIR: Readonly<Record<Heading, string>> = {
+  east: 'east',
+  southEast: 'south-east',
+  south: 'south',
+  southWest: 'south-west',
+  west: 'west',
+  northWest: 'north-west',
+  north: 'north',
+  northEast: 'north-east',
+};
+const DIAGONALS: readonly Heading[] = ['southEast', 'southWest', 'northEast', 'northWest'];
+/** A clip name for a heading: east is unsuffixed for the locomotion clips (`headingClip`). */
+const sided = (base: string, heading: Heading, eastBare: boolean): string =>
+  heading === 'east' && eastBare ? base : `${base}${heading[0]?.toUpperCase()}${heading.slice(1)}`;
+
+/** The 80 px basis every figure canvas is centred on, and its anchor column. */
+const BASIS = 80;
+const COLUMN = BASIS / 2;
+/** The top-down tile (ADR 0104: the prototype's 40 px cell); one art px is one world px. */
+const PIXELS_PER_TILE = 40;
+/** The prototype's idle: calm frames there and back, 420 ms a cel (`units.js`, `game13.js`). */
+const IDLE_CEL_MS = 420;
+const IDLE_CELS = 3;
+/** Ba Dan's walk (`game13.js` `WALK_SPEED`), in px a second: the pace the walk's fps is authored at. */
+const WALK_PX_PER_S = 66;
+
+/** How the prototype times a blow: Kaya's bends (`fx.js` `MOVES`) or everyone else's (`units.js` `ATK`). */
+type Timing = 'bend' | 'blow';
+
+export interface FigureSpec {
+  readonly name: string;
+  readonly key: string;
+  readonly folder: string;
+  /** Animation keys in the folder's `meta.json` (`<type>@<group>`), pinned so a later take never moves them. */
+  readonly idle: string;
+  readonly walk?: string;
+  /** Ground px one walk loop covers (`CYCLE_PX` / `STATS.cycle`). */
+  readonly stride: number;
+  readonly hit?: string;
+  readonly ko?: string;
+  /** Ability poses: pose name -> animation key, with how many frames the prototype plays (Kaya's jab: 11). */
+  readonly actions: Readonly<Record<string, { readonly anim: string; readonly frames?: number }>>;
+  /** The pose the legacy mirrored `cast` plays (its east heading). */
+  readonly cast?: string;
+  readonly timing: Timing;
+}
+
+const ROSTER: readonly FigureSpec[] = [
+  {
+    name: 'kaya',
+    key: 'unit.fire.kaya',
+    folder: 'kaya2',
+    idle: 'custom-standing at rest and breathing@6c8d43',
+    walk: 'custom-a relaxed natural walking cycl@e7f0ee',
+    stride: 30,
+
+    hit: 'custom-a hit reaction: flinches from @b53df1',
+    ko: 'custom-knocked out: staggers back one@867b24',
+    actions: {
+      jab: { anim: 'custom-a martial-arts punch: draws th@ca8c40', frames: 11 },
+      whip: { anim: 'custom-a fire-bending whip: from a lo@829e97' },
+      stomp: { anim: 'custom-a martial-arts ground stomp: s@edf577' },
+      blast: { anim: 'custom-a martial-arts double palm str@3814b6' },
+    },
+    cast: 'jab',
+    timing: 'bend',
+  },
+  {
+    name: 'sura',
+    key: 'unit.water.sura',
+    folder: 'fc_sura',
+    idle: 'custom-standing at rest in a ready st@354eb4',
+    walk: 'walking-8-frames@456697',
+    stride: 28,
+
+    hit: 'custom-a hit reaction: flinches from @365153',
+    ko: 'custom-knocked out: staggers back one@0fd501',
+    actions: {
+      attack: { anim: 'custom-a water-bending strike: sweeps@cade9a' },
+      ice: { anim: 'custom-an ice-bending sweep: bends lo@e455dd' },
+      heal: { anim: 'custom-a healing gesture: brings both@f0450e' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'bo',
+    key: 'unit.earth.bo',
+    folder: 'fc_bo',
+    idle: 'custom-standing at rest in a ready st@2ea427',
+    walk: 'walking-8-frames@554d11',
+    stride: 28,
+
+    hit: 'custom-a hit reaction: flinches from @66539e',
+    ko: 'custom-knocked out: staggers back one@ccae2f',
+    actions: {
+      attack: { anim: 'custom-an earth-bending strike: lifts@fcd2f3' },
+      wall: { anim: 'custom-an earth-bending wall raise: d@e797f6' },
+      stance: { anim: 'custom-a defensive stance: plants bot@62ab50' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'thug',
+    key: 'unit.enemy.thug',
+    folder: 'fc_thug',
+    idle: 'custom-standing at rest in a ready st@2c9c07',
+    walk: 'walking-8-frames@caf706',
+    stride: 28,
+
+    hit: 'custom-a hit reaction: flinches from @ff3c79',
+    ko: 'custom-knocked out: staggers back one@c9af84',
+    actions: { attack: { anim: 'custom-swings the wooden club in a bi@a051cd' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'slinger',
+    key: 'unit.enemy.slinger',
+    folder: 'fc_slinger',
+    idle: 'custom-standing at rest in a ready st@1f338f',
+    walk: 'walking-8-frames@08e4c0',
+    stride: 28,
+
+    hit: 'custom-a hit reaction: flinches from @c90d94',
+    ko: 'custom-knocked out: staggers back one@6293c1',
+    actions: { attack: { anim: 'custom-whirls the leather sling overh@7218e5' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'bruiser',
+    key: 'unit.enemy.bruiser',
+    folder: 'fc_bruiser',
+    idle: 'custom-standing at rest in a ready st@c13a8a',
+    walk: 'walking-8-frames@4c8a95',
+    stride: 30,
+
+    hit: 'custom-a hit reaction: flinches from @3b2327',
+    ko: 'custom-knocked out: staggers back one@65522d',
+    actions: { attack: { anim: 'custom-raises the heavy cudgel high w@2640df' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  // The Ba Dan residents (`build8.py` `CH`): idle and walk; Mira and Hanru stand (no walk was drawn).
+  {
+    name: 'mira',
+    key: 'npc.elder',
+    folder: 'v7_mira',
+    idle: 'custom-an elderly woman standing at r@cd6510',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'gao',
+    key: 'npc.shopkeeper',
+    folder: 'v7_gao',
+    idle: 'custom-standing at rest: the chest an@2297a3',
+    walk: 'walking-8-frames@dafa05',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'pella',
+    key: 'npc.kid',
+    folder: 'v7_pella',
+    idle: 'custom-standing at rest: the chest an@28a8af',
+    walk: 'walking-8-frames@45cb0d',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'dorin',
+    key: 'npc.dorin',
+    folder: 'v7_dorin',
+    idle: 'custom-standing at rest: the chest an@bb588c',
+    walk: 'walking-8-frames@234afa',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'household',
+    key: 'npc.household',
+    folder: 'v7_household',
+    idle: 'custom-standing at rest: the chest an@745345',
+    walk: 'walking-8-frames@1696e6',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'hanru',
+    key: 'npc.hanru',
+    folder: 'v7_hanru',
+    idle: 'custom-standing at rest: the chest an@265b11',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Cels                                                                */
+/* ------------------------------------------------------------------ */
+
+const alphaAt = (im: Image, x: number, y: number): number =>
+  im.data[(y * im.width + x) * 4 + 3] ?? 0;
+
+/** Every pixel fully opaque or fully clear: alpha 128 and up is the figure (`build_b3.py`). */
+function hardAlpha(im: Image): Image {
+  const out = { width: im.width, height: im.height, data: new Uint8Array(im.data) };
+  for (let i = 3; i < out.data.length; i += 4) {
+    if ((out.data[i] ?? 0) >= 128) out.data[i] = 255;
+    else out.data.fill(0, i - 3, i + 1);
+  }
+  return out;
+}
+
+/**
+ * `build8.py` `clean`: drop small grey specks apart from the figure (the breath vapour an idle prompt
+ * drew). Components are 8-connected opaque runs, found in row order; all but the largest that are at
+ * most 24 px with a mean saturation under 40 go.
+ */
+function clean(im: Image): Image {
+  const { width: w, height: h } = im;
+  const seen = new Uint8Array(w * h);
+  const comps: number[][] = [];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const start = y * w + x;
+      if (seen[start] || alphaAt(im, x, y) < 128) continue;
+      seen[start] = 1;
+      const stack = [start];
+      const comp: number[] = [];
+      while (stack.length) {
+        const p = stack.pop() ?? 0;
+        comp.push(p);
+        const cx = p % w;
+        const cy = (p - cx) / w;
+        for (let dx = -1; dx <= 1; dx++)
+          for (let dy = -1; dy <= 1; dy++) {
+            const nx = cx + dx;
+            const ny = cy + dy;
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+            const q = ny * w + nx;
+            if (!seen[q] && alphaAt(im, nx, ny) >= 128) {
+              seen[q] = 1;
+              stack.push(q);
+            }
+          }
+      }
+      comps.push(comp);
+    }
+  if (comps.length < 2) return im;
+  // Python's sort is stable: equal sizes keep their discovery order.
+  const order = comps
+    .map((c, i) => [c, i] as const)
+    .sort((a, b) => b[0].length - a[0].length || a[1] - b[1]);
+  const out = { width: w, height: h, data: new Uint8Array(im.data) };
+  for (const [comp] of order.slice(1)) {
+    if (comp.length > 24) continue;
+    let sat = 0;
+    for (const p of comp) {
+      const r = out.data[p * 4] ?? 0;
+      const g = out.data[p * 4 + 1] ?? 0;
+      const b = out.data[p * 4 + 2] ?? 0;
+      sat += Math.max(r, g, b) - Math.min(r, g, b);
+    }
+    if (sat / comp.length < 40) for (const p of comp) out.data.fill(0, p * 4, p * 4 + 4);
+  }
+  return out;
+}
+
+/** A cel placed on a basis canvas: its pixels and where its (0, 0) sits on the basis. */
+interface Placed {
+  readonly image: Image;
+  readonly ox: number;
+  readonly oy: number;
+}
+
+interface Box {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+/** The ink box of a placed cel on its basis (x1, y1 exclusive), or null when it is empty. */
+function inkBox(cel: Placed): Box | null {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (let y = 0; y < cel.image.height; y++)
+    for (let x = 0; x < cel.image.width; x++)
+      if (alphaAt(cel.image, x, y)) {
+        x0 = Math.min(x0, x + cel.ox);
+        y0 = Math.min(y0, y + cel.oy);
+        x1 = Math.max(x1, x + cel.ox + 1);
+        y1 = Math.max(y1, y + cel.oy + 1);
+      }
+  return x1 < 0 ? null : { x0, y0, x1, y1 };
+}
+
+function union(boxes: readonly (Box | null)[]): Box {
+  const out = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (const b of boxes) {
+    if (!b) continue;
+    out.x0 = Math.min(out.x0, b.x0);
+    out.y0 = Math.min(out.y0, b.y0);
+    out.x1 = Math.max(out.x1, b.x1);
+    out.y1 = Math.max(out.y1, b.y1);
+  }
+  if (out.x1 < 0) throw new Error('no ink');
+  return out;
+}
+
+/** Cut `rect` (basis coordinates) out of a placed cel. */
+function cut(cel: Placed, rect: { x: number; y: number; w: number; h: number }): Image {
+  const out = newImage(rect.w, rect.h);
+  for (let y = 0; y < rect.h; y++)
+    for (let x = 0; x < rect.w; x++) {
+      const sx = rect.x + x - cel.ox;
+      const sy = rect.y + y - cel.oy;
+      if (sx < 0 || sy < 0 || sx >= cel.image.width || sy >= cel.image.height) continue;
+      const from = (sy * cel.image.width + sx) * 4;
+      out.data.set(cel.image.data.subarray(from, from + 4), (y * rect.w + x) * 4);
+    }
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* Sources                                                             */
+/* ------------------------------------------------------------------ */
+
+interface Meta {
+  readonly rot: Readonly<Record<string, string>>;
+  readonly anims: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>>;
+}
+
+const pngCache = new Map<string, Image>();
+function png(path: string): Image {
+  let found = pngCache.get(path);
+  if (!found) {
+    found = readPng(path);
+    pngCache.set(path, found);
+  }
+  return found;
+}
+
+/** A figure frame: hard alpha, cleaned, centred on the 80 px basis. */
+function figureCel(folder: string, file: string): Placed {
+  const raw = png(join(SOURCE, 'chars', folder, file));
+  return {
+    image: clean(hardAlpha(raw)),
+    ox: Math.round((BASIS - raw.width) / 2),
+    oy: Math.round((BASIS - raw.height) / 2),
+  };
+}
+
+/** `build8.py` `calm_frames`: the frames whose head stays within 1 px of frame 0 and that barely differ from it. */
+function calmFrames(folder: string, files: readonly string[]): number[] {
+  const ims = files.map((f) => png(join(SOURCE, 'chars', folder, f)));
+  const first = ims[0];
+  if (!first) return [0];
+  const top = (im: Image): number => {
+    for (let y = 0; y < im.height; y++)
+      for (let x = 0; x < im.width; x++) if (alphaAt(im, x, y)) return y;
+    return -1;
+  };
+  const t0 = top(first);
+  const keep: number[] = [];
+  ims.forEach((im, i) => {
+    if (Math.abs(top(im) - t0) > 1) return;
+    let differ = 0;
+    for (let p = 0; p < im.data.length; p += 4) {
+      const d = (c: number) => Math.abs((im.data[p + c] ?? 0) - (first.data[p + c] ?? 0));
+      if (d(0) + d(1) + d(2) > 60 || d(3) > 100) differ++;
+    }
+    if (differ <= 140) keep.push(i);
+  });
+  return keep.length >= 2 ? keep : [0, 1];
+}
+
+/** The row under the lowest opaque pixel of a placed cel. */
+const groundOf = (cel: Placed): number => inkBox(cel)?.y1 ?? -1;
+
+function mode(values: readonly number[]): number {
+  const counts = new Map<number, number>();
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+  // Python's Counter.most_common keeps first-seen order on ties.
+  let best = values[0] ?? 0;
+  for (const [v, n] of counts) if (n > (counts.get(best) ?? 0)) best = v;
+  return best;
+}
+
+/* ------------------------------------------------------------------ */
+/* Timing                                                              */
+/* ------------------------------------------------------------------ */
+
+/** `units.js` `ATK`: 62 ms a wind-up cel, 84 on the strike, 46 a recovery cel; the strike at 55%. */
+function blowTiming(n: number): { frameMs: number[]; hit: number } {
+  const s = Math.round(n * 0.55);
+  return { frameMs: Array.from({ length: n }, (_, i) => (i < s ? 62 : i === s ? 84 : 46)), hit: s };
+}
+
+/**
+ * `fx.js` `MOVES`: Kaya's bends, 70 ms a cel and 150 on the strike (the jab its own list), then the
+ * pacing pass: the wind-up 18% and the follow-through 28% quicker, the strike untouched.
+ */
+function bendTiming(pose: string, n: number, strike: number): { frameMs: number[]; hit: number } {
+  const jab = [70, 70, 70, 80, 50, 140, 90, 70, 70, 70, 80];
+  const base = Array.from({ length: n }, (_, i) =>
+    pose === 'jab' ? (jab[i] ?? 70) : i === strike ? 150 : 70,
+  );
+  return {
+    frameMs: base.map((v, i) => Math.round(i === strike ? v : v * (i < strike ? 0.82 : 0.72))),
+    hit: strike,
+  };
+}
+
+/** The hit reaction: a quick flinch and back to guard. */
+const HIT_MS = [60, 80, 90, 80, 70, 60];
+/**
+ * The knockout: the fall gathers pace, then the body lies still on its last cel. PixelLab drew eight; the eighth
+ * drifts (a different pose, a smear or a sit-up in most headings), so the seventh, the body flat, is the one held.
+ */
+const KO_MS = [70, 80, 90, 100, 110, 140, 300];
+const KO_CELS = KO_MS.length;
+const timed = (base: readonly number[], n: number): number[] =>
+  Array.from({ length: n }, (_, i) => base[Math.min(i, base.length - 1)] ?? 80);
+
+/* ------------------------------------------------------------------ */
+/* Packing                                                             */
+/* ------------------------------------------------------------------ */
+
+interface ClipOut {
+  frames: string[];
+  fps: number;
+  loop: boolean;
+  frameMs?: number[];
+  events?: { hit: number };
+  frameSize?: { w: number; h: number };
+  anchor?: { x: number; y: number };
+}
+
+/** What the manifest's builder reads for one sheet (`topdownSheets.ts`). */
+export interface SheetData {
+  readonly pages: number;
+  readonly frame: { readonly w: number; readonly h: number };
+  readonly anchor: { readonly x: number; readonly y: number };
+  readonly footprint: 1 | 2;
+  /** Distinct idle cels per heading (`HEADINGS` order); the clip plays them there and back. */
+  readonly idleCels: readonly number[];
+  readonly idleMs: number;
+  /** Walk cels per heading (0: no walk drawn, the idle's first cel is held). */
+  readonly walkCels: readonly number[];
+  readonly walkCelMs: number;
+  readonly walkMsPerTile: number;
+  readonly cast: ClipOut | null;
+  readonly clipData: boolean;
+  readonly actions: boolean;
+}
+
+interface Sheet {
+  readonly name: string;
+  readonly key: string;
+  readonly cels: Item[];
+  readonly data: SheetData;
+  readonly clips: Record<string, ClipOut>;
+  readonly actions: Record<string, Record<string, ClipOut>>;
+}
+
+const round6 = (v: number): number => Math.round(v * 1e6) / 1e6;
+
+/** A trimmed clip: its cels cut to their ink round the anchor point, plus a 1 px margin. */
+function trimmed(
+  cels: readonly Placed[],
+  anchor: { x: number; y: number },
+): { images: Image[]; frameSize: { w: number; h: number }; anchor: { x: number; y: number } } {
+  const box = union([
+    ...cels.map(inkBox),
+    { x0: anchor.x, y0: anchor.y - 1, x1: anchor.x + 1, y1: anchor.y },
+  ]);
+  const rect = { x: box.x0 - 1, y: box.y0 - 1, w: box.x1 - box.x0 + 2, h: box.y1 - box.y0 + 2 };
+  return {
+    images: cels.map((c) => cut(c, rect)),
+    frameSize: { w: rect.w, h: rect.h },
+    anchor: { x: (anchor.x - rect.x) / rect.w, y: (anchor.y - rect.y) / rect.h },
+  };
+}
+
+function figureSheet(spec: FigureSpec): Sheet {
+  const meta = JSON.parse(
+    readFileSync(join(SOURCE, 'chars', spec.folder, 'meta.json'), 'utf8'),
+  ) as Meta;
+  const anim = (id: string): Readonly<Record<string, readonly string[]>> => {
+    const found = meta.anims[id];
+    if (!found) throw new Error(`${spec.folder}: no animation ${id}`);
+    return found;
+  };
+  const load = (files: readonly string[]) => files.map((f) => figureCel(spec.folder, f));
+  const idle = anim(spec.idle);
+  const walk = spec.walk ? anim(spec.walk) : undefined;
+
+  // Idle: the calm cels per heading, or PixelLab's own rotation where the idle has no such heading.
+  const idleCels = {} as Record<Heading, Placed[]>;
+  for (const h of HEADINGS) {
+    const files = idle[DIR[h]];
+    if (files)
+      idleCels[h] = load(
+        calmFrames(spec.folder, files)
+          .slice(0, IDLE_CELS)
+          .map((i) => files[i] ?? ''),
+      );
+    else {
+      const rot = meta.rot[DIR[h]];
+      if (!rot) throw new Error(`${spec.folder}: no ${DIR[h]} idle or rotation`);
+      idleCels[h] = load([rot]);
+    }
+  }
+  const walkCels = {} as Record<Heading, Placed[]>;
+  for (const h of HEADINGS) {
+    const files = walk?.[DIR[h]];
+    if (walk && !files) throw new Error(`${spec.folder}: walk has no ${DIR[h]}`);
+    walkCels[h] = files ? load(files) : [];
+  }
+  const ground = mode(HEADINGS.flatMap((h) => idleCels[h].map(groundOf)));
+  const anchorPoint = { x: COLUMN, y: ground };
+
+  // The sheet frame: idle, walk and rest round the anchor, symmetric about its column.
+  const loco = union(HEADINGS.flatMap((h) => [...idleCels[h], ...walkCels[h]].map(inkBox)));
+  const half = Math.max(COLUMN - loco.x0, loco.x1 - COLUMN) + 1;
+  const top = loco.y0 - 1;
+  const bottom = Math.max(loco.y1, ground) + 1;
+  const frameRect = { x: COLUMN - half, y: top, w: half * 2, h: bottom - top };
+  const anchor = { x: 0.5, y: (ground - top) / frameRect.h };
+
+  const items: Item[] = [];
+  const add = (clip: string, i: number, image: Image) =>
+    items.push({ name: `${spec.key}/${clip}/${i}`, image });
+  for (const h of HEADINGS) {
+    idleCels[h].forEach((c, i) => add(sided('idle', h, true), i, cut(c, frameRect)));
+    add(sided('rest', h, true), 0, cut(idleCels[h][0] as Placed, frameRect));
+    walkCels[h].forEach((c, i) => add(sided('walk', h, true), i, cut(c, frameRect)));
+    if (!walk) add(sided('walk', h, true), 0, cut(idleCels[h][0] as Placed, frameRect));
+  }
+
+  const clips: Record<string, ClipOut> = {};
+  const actions: Record<string, Record<string, ClipOut>> = {};
+  const trimClip = (
+    clip: string,
+    cels: readonly Placed[],
+    frameMs: number[],
+    extra: Partial<ClipOut> = {},
+  ): ClipOut => {
+    const t = trimmed(cels, anchorPoint);
+    t.images.forEach((im, i) => add(clip, i, im));
+    return {
+      frames: t.images.map((_, i) => `${spec.key}/${clip}/${i}`),
+      fps: 10,
+      loop: false,
+      frameMs,
+      ...extra,
+      frameSize: t.frameSize,
+      anchor: { x: round6(t.anchor.x), y: round6(t.anchor.y) },
+    };
+  };
+  if (spec.hit) {
+    const hit = anim(spec.hit);
+    for (const h of HEADINGS) {
+      const cels = load(hit[DIR[h]] ?? []);
+      clips[sided('hit', h, false)] = trimClip(
+        sided('hit', h, false),
+        cels,
+        timed(HIT_MS, cels.length),
+      );
+    }
+  }
+  if (spec.ko) {
+    const ko = anim(spec.ko);
+    actions.ko = {};
+    for (const h of HEADINGS) {
+      const cels = load((ko[DIR[h]] ?? []).slice(0, KO_CELS));
+      const clip = sided('ko', h, false);
+      const def = trimClip(clip, cels, timed(KO_MS, cels.length));
+      actions.ko[h] = def;
+      if (DIAGONALS.includes(h)) clips[clip] = def;
+    }
+    // The legacy one-cel KO a fall without a heading asks for: the south-east knockout's last cel.
+    const se = load((ko[DIR.southEast] ?? []).slice(0, KO_CELS));
+    const last = se[se.length - 1];
+    if (last) clips.ko = trimClip('ko', [last], [1000]);
+  }
+  for (const [pose, { anim: id, frames }] of Object.entries(spec.actions)) {
+    const a = anim(id);
+    actions[pose] = {};
+    // One shared 3D motion per move, so the strike is measured once (`moves4.py`, `build_b3.py`).
+    const reach = (h: Heading, pick: (b: Box) => number) => {
+      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      let best = 0;
+      cels.forEach((c, i) => {
+        const b = inkBox(c);
+        const bb = b && pick(b);
+        const cur = cels[best] && inkBox(cels[best] as Placed);
+        if (bb !== null && bb !== undefined && (!cur || bb > pick(cur))) best = i;
+      });
+      return best;
+    };
+    let strike: number | undefined;
+    if (spec.timing === 'bend')
+      strike =
+        pose === 'whip'
+          ? reach('south', (b) => b.x1 - b.x0)
+          : pose === 'stomp'
+            ? reach('south', (b) => b.y0)
+            : reach('east', (b) => b.x1);
+    for (const h of HEADINGS) {
+      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      const t =
+        spec.timing === 'bend'
+          ? bendTiming(pose, cels.length, strike ?? 0)
+          : blowTiming(cels.length);
+      actions[pose][h] = trimClip(`${pose}${sided('', h, false)}`, cels, t.frameMs, {
+        events: { hit: t.hit },
+      });
+    }
+  }
+  let cast: ClipOut | null = null;
+  if (spec.cast) {
+    const source = actions[spec.cast]?.east;
+    if (!source) throw new Error(`${spec.name}: no east ${spec.cast} to cast`);
+    // The legacy mirrored cast: the east heading of the pose, as its own cels.
+    const a = anim(spec.actions[spec.cast]?.anim ?? '');
+    const cels = load((a[DIR.east] ?? []).slice(0, spec.actions[spec.cast]?.frames));
+    cast = trimClip('cast', cels, source.frameMs ?? [], { events: source.events ?? { hit: 0 } });
+  }
+  const celMs =
+    Math.round((spec.stride / Math.max(1, walkCels.east.length) / WALK_PX_PER_S) * 1000 * 1000) /
+    1000;
+  return {
+    name: spec.name,
+    key: spec.key,
+    cels: items,
+    clips,
+    actions,
+    data: {
+      pages: 1,
+      frame: { w: frameRect.w, h: frameRect.h },
+      anchor: { x: 0.5, y: round6(anchor.y) },
+      footprint: 1,
+      idleCels: HEADINGS.map((h) => idleCels[h].length),
+      idleMs: IDLE_CEL_MS,
+      walkCels: HEADINGS.map((h) => walkCels[h].length),
+      walkCelMs: walk ? celMs : 1000,
+      walkMsPerTile: Math.round((PIXELS_PER_TILE / WALK_PX_PER_S) * 1000 * 10) / 10,
+      cast,
+      clipData: Object.keys(clips).length > 0,
+      actions: Object.keys(actions).length > 0,
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* The Driller                                                          */
+/* ------------------------------------------------------------------ */
+
+/** Each heading's slam: its file prefix, the frame the blow lands on and the held top frames (`build_b3.py` `SLAM`). */
+const SLAM: Readonly<Record<Heading, readonly [string, number, readonly [number, number]]>> = {
+  south: ['the_whole_mecha-driller_winds', 8, [6, 7]],
+  southEast: ['the_whole_mecha-driller_winds', 9, [7, 8]],
+  east: ['the_whole_mecha-driller_winds', 10, [6, 7]],
+  northEast: ['the_whole_mecha-driller_winds', 8, [6, 7]],
+  north: ['the_whole_mecha-driller_winds', 8, [6, 7]],
+  northWest: ['the_whole_mecha-driller_winds', 7, [5, 6]],
+  west: ['the_whole_mecha-driller_winds', 8, [6, 7]],
+  southWest: ['the_mecha-driller_rears', 10, [8, 9]],
+};
+/** `build_b3.py` `slam_ms` with the pacing pass (`units.js` `SLAM_K`): wind-up and recovery 20% shorter, the landing frame untouched. */
+function slamMs(n: number, hit: number, hold: readonly [number, number]): number[] {
+  return Array.from({ length: n }, (_, i) => {
+    const v =
+      i < 3 ? 90 : hold.includes(i) ? 230 : i < hold[0] ? 110 : i === hit ? 170 : i < hit ? 70 : 90;
+    return i === hit ? v : Math.round(v * 0.8);
+  });
+}
+
+function drillerSheet(): Sheet {
+  const key = 'unit.enemy.driller';
+  const dir = join(SOURCE, 'driller');
+  const files = readdirSync(dir).sort();
+  const hard = (path: string): Image => hardAlpha(png(path));
+  // Each heading's view (`objects13/driller_<dir>`, cropped from PixelLab's 128 px rotation) at its place on that canvas.
+  const views = {} as Record<Heading, Placed>;
+  const anchors = {} as Record<Heading, { x: number; y: number }>;
+  for (const h of HEADINGS) {
+    const rot = hard(join(dir, `rotations__${DIR[h]}.png`));
+    const box = inkBox({ image: rot, ox: 0, oy: 0 });
+    if (!box) throw new Error(`driller: empty ${h} rotation`);
+    const view = hard(join(SOURCE, 'objects13', `driller_${DIR[h].replace('-', '')}.png`));
+    if (view.width !== box.x1 - box.x0 || view.height !== box.y1 - box.y0)
+      throw new Error(`driller: the ${h} view is not its rotation's crop`);
+    views[h] = { image: view, ox: box.x0, oy: box.y0 };
+    // It stands on its base, centred under its ink.
+    anchors[h] = { x: Math.round((box.x0 + box.x1) / 2), y: box.y1 };
+  }
+  // A 2x2 sheet's frame is square: every view round its own anchor, plus a 1 px margin.
+  let half = 0;
+  let up = 0;
+  for (const h of HEADINGS) {
+    const b = inkBox(views[h]) as Box;
+    half = Math.max(half, anchors[h].x - b.x0, b.x1 - anchors[h].x);
+    up = Math.max(up, anchors[h].y - b.y0);
+  }
+  const side = Math.max(2 * (half + 1), up + 2);
+  const items: Item[] = [];
+  const add = (clip: string, i: number, image: Image) =>
+    items.push({ name: `${key}/${clip}/${i}`, image });
+  for (const h of HEADINGS) {
+    const rect = { x: anchors[h].x - side / 2, y: anchors[h].y - (side - 1), w: side, h: side };
+    const cel = cut(views[h], rect);
+    add(sided('idle', h, true), 0, cel);
+    add(sided('rest', h, true), 0, cel);
+    add(sided('walk', h, true), 0, cel);
+  }
+  const slam: Record<string, ClipOut> = {};
+  const rumbles: Record<string, ClipOut> = {};
+  const actions = { slam, rumble: rumbles };
+  const trimClip = (
+    clip: string,
+    cels: Placed[],
+    anchor: { x: number; y: number },
+    extra: Partial<ClipOut>,
+  ): ClipOut => {
+    const t = trimmed(cels, anchor);
+    t.images.forEach((im, i) => add(clip, i, im));
+    return {
+      frames: t.images.map((_, i) => `${key}/${clip}/${i}`),
+      fps: 10,
+      loop: false,
+      ...extra,
+      frameSize: t.frameSize,
+      anchor: { x: round6(t.anchor.x), y: round6(t.anchor.y) },
+    };
+  };
+  const frames = (prefix: string, h: Heading): Placed[] =>
+    files
+      .filter((f) => f.startsWith(`animations__${prefix}`) && f.includes(`__${DIR[h]}__frame_`))
+      .map((f) => ({ image: hard(join(dir, f)), ox: 0, oy: 0 }));
+  let cast: ClipOut | null = null;
+  for (const h of HEADINGS) {
+    const [prefix, hit, hold] = SLAM[h];
+    const cels = frames(prefix, h);
+    if (cels.length === 0) throw new Error(`driller: no ${h} slam`);
+    const ms = slamMs(cels.length, hit, hold);
+    slam[h] = trimClip(`slam${sided('', h, false)}`, cels, anchors[h], {
+      frameMs: ms,
+      events: { hit },
+    });
+    if (h === 'east') {
+      // The legacy mirrored cast holds 12 cels at most: the east slam without its last recovery cel.
+      cast = trimClip('cast', cels.slice(0, 12), anchors[h], {
+        frameMs: ms.slice(0, 12),
+        events: { hit },
+      });
+    }
+    // The engine's rumble, drawn in three headings only (`build_b3.py` plays it where it exists).
+    const rumble = frames('the_engine_idles', h);
+    if (rumble.length)
+      rumbles[h] = trimClip(`rumble${sided('', h, false)}`, rumble, anchors[h], {
+        frameMs: rumble.map(() => 110),
+        loop: true,
+      });
+  }
+  return {
+    name: 'driller',
+    key,
+    cels: items,
+    clips: {},
+    actions,
+    data: {
+      pages: 1,
+      frame: { w: side, h: side },
+      anchor: { x: 0.5, y: round6((side - 1) / side) },
+      footprint: 2,
+      idleCels: HEADINGS.map(() => 1),
+      idleMs: 1000,
+      walkCels: HEADINGS.map(() => 0),
+      walkCelMs: 1000,
+      walkMsPerTile: Math.round((PIXELS_PER_TILE / WALK_PX_PER_S) * 1000 * 10) / 10,
+      cast,
+      clipData: false,
+      actions: true,
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Output                                                              */
+/* ------------------------------------------------------------------ */
+
+const MAX_PAGE = 2048;
+const GUTTER = 1;
+
+/** Lossless, every pixel exact (clear pixels keep their zero RGB), the encoder's slowest, smallest search. */
+const lossless = (image: Image): Promise<Uint8Array> => encodeWebpLossless(image, 6);
+
+/** Pages no wider than they are tall where it fits, cels tallest first, split at 2048 px. */
+function pages(
+  items: readonly Item[],
+): { placed: ReturnType<typeof shelfPack>['placed']; width: number; height: number }[] {
+  for (let width = 256; width <= MAX_PAGE; width += 64) {
+    const packed = shelfPack(items, width, GUTTER);
+    if (packed.height <= width) return [{ placed: packed.placed, width, height: packed.height }];
+  }
+  // Too many for one square page: fill 2048 px pages in the same order.
+  const order = [...items].sort(
+    (a, b) => b.image.height - a.image.height || a.name.localeCompare(b.name),
+  );
+  const out: { placed: ReturnType<typeof shelfPack>['placed']; width: number; height: number }[] =
+    [];
+  let rest = order;
+  while (rest.length) {
+    let n = rest.length;
+    while (shelfPack(rest.slice(0, n), MAX_PAGE, GUTTER, false).height > MAX_PAGE)
+      n = Math.floor(n * 0.9);
+    while (
+      n < rest.length &&
+      shelfPack(rest.slice(0, n + 1), MAX_PAGE, GUTTER, false).height <= MAX_PAGE
+    )
+      n++;
+    const packed = shelfPack(rest.slice(0, n), MAX_PAGE, GUTTER, false);
+    out.push({ placed: packed.placed, width: MAX_PAGE, height: packed.height });
+    rest = rest.slice(n);
+  }
+  return out;
+}
+
+const json = (value: unknown): string => `${JSON.stringify(value)}\n`;
+
+export async function packTopdownSheets(): Promise<Map<string, Uint8Array | string>> {
+  const files = new Map<string, Uint8Array | string>();
+  const sheets = [...ROSTER.map(figureSheet), drillerSheet()];
+  const data: Record<string, SheetData> = {};
+  for (const sheet of sheets) {
+    const laid = pages(sheet.cels);
+    for (const [i, page] of laid.entries()) {
+      const base = i === 0 ? sheet.name : `${sheet.name}-${i + 1}`;
+      const image = composeAtlas(sheet.cels, page.placed, page.width, page.height, GUTTER);
+      files.set(`${OUT}/${base}.webp`, await lossless(image));
+      const frames: Record<string, { frame: { x: number; y: number; w: number; h: number } }> = {};
+      for (const p of [...page.placed].sort((a, b) => a.name.localeCompare(b.name)))
+        frames[p.name] = { frame: { x: p.x, y: p.y, w: p.width, h: p.height } };
+      files.set(
+        `${OUT}/${base}.json`,
+        json({ frames, meta: { image: `${base}.webp`, size: { w: page.width, h: page.height } } }),
+      );
+    }
+    if (sheet.data.clipData) files.set(`${OUT}/${sheet.name}-clips.json`, json(sheet.clips));
+    if (sheet.data.actions) files.set(`${OUT}/${sheet.name}-actions.json`, json(sheet.actions));
+    data[sheet.name] = { ...sheet.data, pages: laid.length };
+  }
+  files.set(DATA, await dataModule(data));
+  return files;
+}
+
+async function dataModule(data: Record<string, SheetData>): Promise<string> {
+  const names = Object.keys(data);
+  const text = [
+    '/**',
+    ' * Generated by `scripts/art/topdown/pack-sheets.ts`; do not edit by hand.',
+    ' *',
+    " * The top-down figure sheets (ADR 0104 T2): each sheet's pages, its locomotion frame and foot anchor",
+    ' * (idle, walk and rest share it), the idle and walk cels per heading (`HEADINGS` order), the walk timing',
+    " * and the legacy cast. The hits and knockouts are in each sheet's clip file, the per-heading abilities in",
+    ' * its actions file, both beside its atlas under `public/art/topdown/`.',
+    ' */',
+    "import type { ClipDef } from './clips';",
+    '',
+    `export type TopdownName = ${names.map((n) => `'${n}'`).join(' | ')};`,
+    '',
+    'export interface TopdownSheetData {',
+    '  readonly pages: number;',
+    '  readonly frame: { readonly w: number; readonly h: number };',
+    '  readonly anchor: { readonly x: number; readonly y: number };',
+    '  readonly footprint: 1 | 2;',
+    '  readonly idleCels: readonly number[];',
+    '  readonly idleMs: number;',
+    '  readonly walkCels: readonly number[];',
+    '  readonly walkCelMs: number;',
+    '  readonly walkMsPerTile: number;',
+    '  readonly cast: ClipDef | null;',
+    '  readonly clipData: boolean;',
+    '  readonly actions: boolean;',
+    '}',
+    '',
+    `export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = ${JSON.stringify(data)};`,
+    '',
+  ].join('\n');
+  // Formatted as `format:check` wants it, so the shipped file is the packer's output byte for byte.
+  return format(text, { ...(await resolveConfig(DATA)), filepath: DATA });
+}
+
+async function main(): Promise<void> {
+  const check = process.argv.includes('--check');
+  const files = await packTopdownSheets();
+  let stale = 0;
+  if (!check) mkdirSync(OUT, { recursive: true });
+  for (const [path, content] of files) {
+    const bytes = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
+    const same = existsSync(path) && Buffer.compare(readFileSync(path), bytes) === 0;
+    if (same) continue;
+    stale++;
+    if (check) console.error(`stale: ${path}`);
+    else writeFileSync(path, bytes);
+  }
+  const shipped = existsSync(OUT) ? readdirSync(OUT).map((f) => `${OUT}/${f}`) : [];
+  const extra = shipped.filter((p) => !files.has(p));
+  for (const p of extra) console.error(`not packed: ${p}`);
+  const total = [...files]
+    .filter(([p]) => p.startsWith(OUT))
+    .reduce((sum, [, c]) => sum + (typeof c === 'string' ? Buffer.byteLength(c) : c.length), 0);
+  console.log(
+    `${files.size} files, ${total} bytes under ${OUT}${check ? `, ${stale} stale` : `, ${stale} written`}`,
+  );
+  if (check && (stale > 0 || extra.length > 0)) process.exit(1);
+}
+
+if (process.argv[1]?.endsWith('pack-sheets.ts')) await main();
