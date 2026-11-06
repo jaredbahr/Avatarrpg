@@ -42,7 +42,12 @@ const rect = (x0: number, y0: number, x1: number, y1: number): Vec2[] => {
   return out;
 };
 
-const FADE: ReadonlySet<TopDownObjectKind> = new Set(['house', 'tree']);
+/**
+ * A house keeps its paint and shows a party member behind it as a see-through silhouette (ADR 0096's
+ * reveal); a tree fades mildly instead. A whole house faded to a ghost read badly (owner, 2026-11-06).
+ */
+const FADE: ReadonlySet<TopDownObjectKind> = new Set(['tree']);
+const REVEAL: ReadonlySet<TopDownObjectKind> = new Set(['house']);
 
 function put(
   id: string,
@@ -66,6 +71,7 @@ function put(
     ...(o.exterior && { exterior: true }),
     depth: { x: x / CELL, y: base / CELL },
     ...(FADE.has(kind) && { fadeWhenOccluding: true }),
+    ...(REVEAL.has(kind) && { revealOccluded: true }),
   };
 }
 

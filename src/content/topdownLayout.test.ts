@@ -45,6 +45,13 @@ describe("Ba Dan's top-down layout", () => {
     expect(BA_DAN_TOPDOWN_LAYOUT.objects.find((o) => o.id === 'bridge')?.deck).toBe(true);
   });
 
+  it('reveals a figure behind a house and fades only trees', () => {
+    for (const o of BA_DAN_TOPDOWN_LAYOUT.objects) {
+      expect(Boolean(o.revealOccluded), o.id).toBe(o.kind === 'house');
+      expect(Boolean(o.fadeWhenOccluding), o.id).toBe(o.kind === 'tree');
+    }
+  });
+
   it('opens the east road and the river steps as rim mouths', () => {
     expect(MOUTHS.map((m) => m.id)).toEqual(['east-road', 'riverside-steps']);
   });
