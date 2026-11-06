@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { MapDef } from '../core/types';
 import { TOPDOWN_FIXTURE_SCENE } from '../render/topdown.fixture';
 import { CONTENT } from './index';
+import { BA_DAN_TOPDOWN_SCENE } from './scenes/baDan.topdown.scene';
 import {
   TOPDOWN_PRESENTATIONS,
   topDownMap,
@@ -41,9 +42,12 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers nothing yet, so the shipped index is returned as it is', () => {
-    expect(TOPDOWN_PRESENTATIONS.size).toBe(0);
-    expect(withTopDownMaps(CONTENT)).toBe(CONTENT);
+  it('registers Ba Dan (T3) and nothing else yet', () => {
+    expect([...TOPDOWN_PRESENTATIONS.keys()]).toEqual(['ba_dan_village']);
+    const swapped = withTopDownMaps(CONTENT);
+    expect(map('ba_dan_village', swapped).projection).toBe('topdown');
+    expect(map('ba_dan_village', swapped).scene).toBe(BA_DAN_TOPDOWN_SCENE);
+    expect(map('forest_road', swapped)).toBe(map('forest_road'));
   });
 
   it('is the identity for an id the index does not hold', () => {

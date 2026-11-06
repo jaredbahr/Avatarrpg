@@ -8,6 +8,7 @@
  * edge contract and saves never tell the two styles apart. Positions stay whole logical cells.
  */
 import type { ContentIndex, MapDef, MapScene } from '../core/types';
+import { BA_DAN_TOPDOWN_SCENE } from './scenes/baDan.topdown.scene';
 
 /** What a map draws as in the top-down style. */
 export interface TopDownPresentation {
@@ -19,10 +20,14 @@ export interface TopDownPresentation {
 }
 
 /**
- * The maps that have a top-down presentation, by map id. Empty until the slices land (T3 Ba Dan,
- * T4 the Forest Road, T5 the quarry); a map not listed keeps its oblique (or orthographic) look.
+ * The maps that have a top-down presentation, by map id: Ba Dan (T3); the Forest Road (T4) and the
+ * quarry (T5) follow. A map not listed keeps its oblique (or orthographic) look.
  */
-export const TOPDOWN_PRESENTATIONS: ReadonlyMap<string, TopDownPresentation> = new Map();
+export const TOPDOWN_PRESENTATIONS: ReadonlyMap<string, TopDownPresentation> = new Map([
+  // The oblique margin (-0.61) was fitted to one diamond at either side; the top-down plate runs
+  // three tiles past the grid into the rim, and `paintExtent` keeps the view inside it.
+  ['ba_dan_village', { projection: 'topdown', scene: BA_DAN_TOPDOWN_SCENE, cameraCentreMargin: 1 }],
+]);
 
 /** One map in its top-down presentation: the same rules objects, a new projection and scene. */
 export function topDownMap(map: MapDef, presentation: TopDownPresentation): MapDef {
