@@ -291,9 +291,9 @@ export interface Track extends Road {
 }
 
 /**
- * The riverside footpath, worn dirt: about three cells wide at the exit mouth (18..20, 15), centred
- * on the steps over the south lip, narrowing to about a cell and a half as it bends up north-west to
- * meet the end of the cobbled south lane. Its edge wanders on slow, wide noise
+ * The riverside footpath, worn dirt: two to three cells wide at the steps over the south lip, centred
+ * on them, narrowing to about a cell and a half as it bends up north-west to meet the end of the
+ * cobbled south lane. The exit mouth (18..20, 15) is wider than the path; its outer cells cross grass. Its edge wanders on slow, wide noise
  * (`NOISE.pathSpill`), and the bake draws it with the dirt Wang set's own transition tiles.
  */
 export const RIVER_TRACK: readonly Track[] = [
@@ -301,22 +301,22 @@ export const RIVER_TRACK: readonly Track[] = [
     id: 'riverside-mouth',
     points: [
       [28.5, 30],
-      [28.6, 27.6],
-      [28.6, 24.9],
+      [28.4, 27.6],
+      [28.0, 26.3],
     ],
-    halfWidth: 1.7,
-    wander: 0.15,
+    halfWidth: 0.95,
+    wander: 0.5,
   },
   {
     id: 'riverside-footpath',
     points: [
-      [28.4, 25.2],
-      [27.5, 24.3],
-      [26.3, 23.8],
+      [28.0, 26.4],
+      [27.2, 25.0],
+      [26.2, 24.1],
       [25.2, 23.6],
     ],
-    halfWidth: 0.7,
-    wander: 0.3,
+    halfWidth: 0.75,
+    wander: 0.35,
   },
 ];
 
@@ -468,7 +468,7 @@ export const MOUTHS: readonly RimMouth[] = [
     ],
   },
   {
-    // The riverside exit's three cells: the track widens to a trodden landing over the steps.
+    // The riverside exit's three cells, the footpath down the middle one to the steps.
     id: 'riverside-steps',
     side: 'south',
     cells: [
