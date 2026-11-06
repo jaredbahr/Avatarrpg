@@ -27,3 +27,6 @@ test-results/
 __pycache__/
 *.pyc
 .review/
+
+# Claude Code agent worktrees (full repo copies).
+.claude/worktrees/
