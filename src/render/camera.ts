@@ -12,6 +12,15 @@
  *  - The player can pinch or wheel in to look closer, and pan while zoomed.
  *    "Recentre" in the HUD puts the whole board back.
  *
+ * The top-down board (ADR 0104, owner's answer 1) bends it further: combat
+ * there may scroll. Its tiles are 40 world px and it draws on integer zoom
+ * at N >= dpr device px per world px, so a tile is never under `MIN_TILE_PX`;
+ * a 20x12 fight at a readable zoom is wider than most screens, so the camera
+ * follows the action and pans. Recentre zooms out to the whole board, at the
+ * largest whole scale that shows it, and only where that would drop a tile
+ * under a fingertip does it stop at N = dpr, centre on whoever is acting and
+ * pan. The oblique and orthographic boards keep the rule above.
+ *
  * Explore maps are larger than the viewport and pan by drag, clamped so the
  * map edge never leaves the frame.
  */
@@ -281,6 +290,16 @@ export class Camera {
     return wholeDeviceScale(MIN_TILE_PX / this.tile, this.viewport.dpr, 'ceil');
   }
 
+  /**
+   * The smallest whole device scale any integer-zoom stop may take. The
+   * top-down board never goes under a fingertip (N >= dpr, ADR 0104), so a
+   * pinch out stops there and it has no smoothed overview; the oblique board
+   * may zoom out to one device pixel, or to its overview below that.
+   */
+  private get floorDeviceScale(): number {
+    return this.projection === 'topdown' ? this.tappableDeviceScale : 1;
+  }
+
   /** The smallest whole device scale that keeps the view inside `viewExtent` (1 without one). */
   private get extentDeviceScale(): number {
     return this.viewExtent
@@ -296,6 +315,7 @@ export class Camera {
    * or a painted extent stops the zoom first.
    */
   private get overviewScale(): number | null {
+    if (this.projection === 'topdown') return null;
     const fit = Math.max(Math.min(this.fitScale(), this.maxScale), this.minContinuousExtentScale);
     return fit * this.viewport.dpr < 1 - WHOLE_EPSILON ? fit : null;
   }
@@ -333,6 +353,7 @@ export class Camera {
     const low = Math.max(
       wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
       this.extentDeviceScale,
+      this.floorDeviceScale,
     );
     const high = Math.max(low, this.maxDeviceScale);
     return Math.max(low, Math.min(high, wholeDeviceScale(scale, dpr, 'nearest'))) / dpr;
@@ -361,7 +382,11 @@ export class Camera {
    */
   raiseToFit(): void {
     const fit = this.integerZoom
-      ? (this.overviewScale ?? this.snapScale(this.fitScale(), 'floor'))
+      ? (this.overviewScale ??
+        Math.max(
+          this.snapScale(this.fitScale(), 'floor'),
+          this.floorDeviceScale / this.viewport.dpr,
+        ))
       : this.fitScale();
     if (this.scale < fit) {
       this.zoomIntent = null;
@@ -717,6 +742,7 @@ export class Camera {
       Math.max(
         wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
         this.extentDeviceScale,
+        this.floorDeviceScale,
       ) / dpr;
     const high = Math.max(low, this.maxDeviceScale / dpr);
     const from =

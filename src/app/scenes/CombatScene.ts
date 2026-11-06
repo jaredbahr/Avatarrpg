@@ -42,6 +42,7 @@ import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer } from '../../render/renderer';
+import { usesIntegerZoom } from '../../render/projection';
 import type { Camera } from '../../render/camera';
 import { renderFoot } from '../../render/renderFoot';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
@@ -613,7 +614,11 @@ export class CombatScene implements Scene {
     this.lastPendingMoveReveal = null;
   }
 
-  /** Restore readable oblique framing, or the fitted orthographic board. */
+  /**
+   * Restore readable oblique framing, or the whole board otherwise: the fitted
+   * orthographic board, and on the top-down board (ADR 0104) the largest whole
+   * scale that shows all of it, never under a fingertip (`Camera.fit`).
+   */
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
@@ -847,9 +852,10 @@ export class CombatScene implements Scene {
       bottom: 0,
       left: 0,
     };
-    // The oblique boards are pixel art at one art px per world px (ADR 0085):
-    // they draw at a whole number of device pixels per world pixel (ADR 0088).
-    this.renderer.camera.integerZoom = this.renderer.camera.projection === 'oblique';
+    // The oblique and top-down boards are pixel art at one art px per world px
+    // (ADR 0085, 0104): they draw at a whole number of device pixels per world
+    // pixel (ADR 0088), at N >= dpr on the top-down board.
+    this.renderer.camera.integerZoom = usesIntegerZoom(this.renderer.camera.projection);
     this.renderer.camera.clampToProgrammaticReachableSet =
       this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull';
     this.app.animator.setProjection(this.renderer.camera.projection);
