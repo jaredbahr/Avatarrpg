@@ -127,6 +127,18 @@ animation or presentation work. Add to it when something fails.
   relative size ("more than twice as tall as a person"). For a vehicle, accept the south view and let PixelLab
   rotate it.
 
+- **The T2 hits and knockouts (2026-11-06, `skeleton-v3`, pure body motion, what the hands hold named):**
+  - A hit prompt with no effect words still painted effects: a red blood splat (Sura, west) and short brown or orange
+    motion smears beside the hand (Kaya, Bo, east and west). Retaking the heading in the same animation group (delete
+    the direction, generate it again with `animation_group_id`, 3 credits) keeps the motion and usually clears it; a
+    small smear on Kaya's east and west survived one retake.
+  - A held weapon vanishes for a frame or two when the body twists (the thug's club in the north-west and west, the
+    bruiser's cudgel in the west and south-west). Look for the prop in every frame, not just the body.
+  - The last of eight knockout frames drifts in most headings (a different pose, a sit-up, a smear or dust), even
+    when the seven before it lie still. Hold the seventh; never hold the frame PixelLab ended on without looking.
+  - Jobs for eight directions often come back split (some directions first, the rest in a second job), so a
+    download in between sees half a clip. Download once every job has finished.
+
 ### Process
 
 - **Codex drafts piled up** (24 at once, none ready). Reviewers skipped drafts; duplicate PRs and issues followed.
