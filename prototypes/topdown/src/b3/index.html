@@ -18,6 +18,8 @@
   #spd:active { background: color-mix(in srgb, var(--ember) 80%, transparent); color: var(--cream); }
   #banner { position: fixed; top: 38%; left: 50%; transform: translate(-50%, -50%); color: var(--gold); font: bold 2.2rem/1 monospace; letter-spacing: 0.2em; text-shadow: 0 0.2rem 0 var(--ink), 0 0 0.6rem var(--ink); opacity: 0; pointer-events: none; transition: opacity 0.35s; }
   #banner.show { opacity: 1; }
+  #banner.lv { background: color-mix(in srgb, var(--ink) 78%, transparent); border: 1px solid var(--gold); padding: 0.7rem 1.4rem; text-align: center; white-space: nowrap; }
+  #banner.lv small { color: var(--cream); }
   #banner small { display: block; font-size: 0.9rem; letter-spacing: 0.1em; color: var(--sand); margin-top: 0.6rem; text-align: center; }
   #name { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); color: var(--cream); font: bold 1rem/1 monospace; letter-spacing: 0.1em; text-shadow: 0 0.125rem 0 var(--ink); opacity: 0; pointer-events: none; }
   #name.show { animation: nm 0.85s steps(6) forwards; }

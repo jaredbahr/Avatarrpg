@@ -1,0 +1,235 @@
+{
+ "frames": [
+  {
+   "filename": "mud-churn 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  },
+  {
+   "filename": "mud-churn 1.png",
+   "frame": {
+    "x": 64,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  },
+  {
+   "filename": "mud-churn 2.png",
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  },
+  {
+   "filename": "mud-churn 3.png",
+   "frame": {
+    "x": 0,
+    "y": 32,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  },
+  {
+   "filename": "mud-churn 4.png",
+   "frame": {
+    "x": 64,
+    "y": 32,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  },
+  {
+   "filename": "mud-churn 5.png",
+   "frame": {
+    "x": 128,
+    "y": 32,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  },
+  {
+   "filename": "mud-churn 6.png",
+   "frame": {
+    "x": 0,
+    "y": 64,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  },
+  {
+   "filename": "mud-churn 7.png",
+   "frame": {
+    "x": 64,
+    "y": 64,
+    "w": 64,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.6875
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "mud-churn.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 192,
+   "h": 96
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 32,
+   "y": 22
+  },
+  "frameTags": [
+   {
+    "name": "mud-churn",
+    "from": 0,
+    "to": 7,
+    "direction": "forward"
+   }
+  ]
+ }
+}

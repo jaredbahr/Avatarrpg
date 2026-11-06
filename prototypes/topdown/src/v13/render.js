@@ -86,6 +86,7 @@ function render() {
       return;
     }
     ctx.drawImage(IMG['ob:' + o.k], o.x - cam.rx, o.y - cam.ry);
+    if (DUSK && WINDOWS[o.k]) litWindows(o);
   } }));
   // grass growing up over the bases of everything standing on the lawn (drawn just in front of each object)
   for (const [o, kit] of FRINGE) list.push({ y: o.base + 0.5, x: o.x, f: () => { const dx = o === dummy && dummy.hit >= 0 ? 0 : 0; ctx.drawImage(kit.fringe, o.x - kit.m - cam.rx + dx, o.y - kit.m - cam.ry); } });
@@ -96,12 +97,14 @@ function render() {
   list.sort((a, b) => a.y - b.y || a.x - b.x).forEach(d => d.f());
   for (const b of bursts) drawFx('fx:burst:' + b.d, MV.vfx.burst[b.d], b.x, b.y, b.t);
   for (const e of embers) drawFx('fx:embers', MV.vfx.embers, e.x, e.y, e.t);
+  if (DUSK) duskGrade();
   ctx.globalCompositeOperation = 'lighter';
   lamps.forEach((l, i) => {
     const fl = 0.5 + 0.5 * Math.sin(clock / 90 + i * 2.1) * Math.sin(clock / 37 + i);
     const cx = l.x + LANTERN.x - cam.rx, cy = l.y + LANTERN.y - cam.ry;   // v12: the lantern's own glass, measured from the sprite
+    if (DUSK) { glowDisc(cx, cy, 30, `rgba(242,160,70,${0.05 + 0.03 * fl})`); glowDisc(cx, cy, 20, `rgba(250,186,92,${0.07 + 0.04 * fl})`); glowDisc(cx, cy, 11, `rgba(255,214,130,${0.10 + 0.05 * fl})`); }
     ctx.fillStyle = `rgba(242,212,122,${0.08 + 0.07 * fl})`; ctx.fillRect(cx - 8, cy - 5, 16, 10); ctx.fillRect(cx - 5, cy - 8, 10, 16);
-    ctx.fillStyle = `rgba(242,212,122,${0.14 + 0.14 * fl})`; ctx.fillRect(cx - 3, cy - 3, 6, 6);
+    ctx.fillStyle = `rgba(242,212,122,${(DUSK ? 0.3 : 0.14) + 0.14 * fl})`; ctx.fillRect(cx - 3, cy - 3, 6, 6);
   });
   ctx.globalCompositeOperation = 'source-over';
   for (const p of petals) { const k = p.age / p.life; ctx.fillStyle = k < 0.7 ? '#e09a6a' : 'rgba(224,154,106,0.5)'; ctx.fillRect(Math.round(p.x) - cam.rx, Math.round(p.y) - cam.ry, (p.age / 200 | 0) % 3 ? 2 : 1, 1); }
@@ -173,3 +176,47 @@ Promise.all(loads).then(() => {
   const loop = now => { update(Math.min(50, now - last)); last = now; render(); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 });
+
+// ---------- leftovers pass: the walk home at dusk (AREA.mode 'home')
+// glass panes (x, y, w, h in each house sprite) measured on the 3x grid sheet qcrops/tmp/houses_grid*.png
+const WINDOWS = {
+  house_gao: [[80, 58, 20, 22], [34, 123, 20, 25], [125, 123, 22, 25]],
+  house_mira: [[94, 63, 24, 27], [37, 157, 24, 29], [159, 157, 28, 29]],
+  house_ne: [[53, 95, 22, 20], [141, 95, 22, 20], [43, 157, 20, 17], [141, 157, 22, 17]],
+  house_pella: [[94, 61, 26, 18], [43, 146, 22, 18], [147, 146, 23, 18]],
+  house_se: [[49, 86, 23, 15], [131, 86, 19, 15], [49, 147, 23, 15], [131, 147, 19, 15]],
+  house_merchant: [[40, 73, 20, 22], [111, 73, 22, 22], [183, 73, 22, 22], [40, 134, 20, 22], [183, 134, 22, 22]],
+};
+// the pane: warm lit glass with the mullion cross kept dark, flickering a hair per window
+function litWindows(o) {
+  WINDOWS[o.k].forEach(([x, y, w, h], i) => {
+    const fl = 0.5 + 0.5 * Math.sin(clock / 700 + i * 1.9 + o.x), X = o.x + x - cam.rx, Y = o.y + y - cam.ry;
+    ctx.fillStyle = fl > 0.5 ? '#ffd98a' : '#fbc774'; ctx.fillRect(X, Y, w, h);
+    ctx.fillStyle = '#ffeab0'; ctx.fillRect(X, Y, w, 2); ctx.fillRect(X, Y, 2, h - 3);   // the sun-side pane edge brightest
+    ctx.fillStyle = '#8a5a34'; ctx.fillRect(X + (w >> 1), Y, 1, h); ctx.fillRect(X, Y + (h >> 1), w, 1);
+  });
+}
+// low warm light: multiply the world with a sunset gradient (rose-gold overhead, dusky violet at the foot of the view), then a glow
+// round every lit window. The shadows stay #322125 and hard; their length comes from DUSK_K in shadow.js.
+function duskGrade() {
+  ctx.globalCompositeOperation = 'multiply';
+  const g = ctx.createLinearGradient(0, 0, view.w * 0.35, view.h);
+  g.addColorStop(0, '#ffcc8c'); g.addColorStop(0.5, '#eaa08a'); g.addColorStop(1, '#9c6c96');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, view.w, view.h);
+  ctx.globalCompositeOperation = 'lighter';
+  for (const o of OBJ) {
+    if (!WINDOWS[o.k]) continue;
+    WINDOWS[o.k].forEach(([x, y, w, h]) => {
+      const X = o.x + x - cam.rx, Y = o.y + y - cam.ry;
+      if (X > view.w + 12 || X + w < -12 || Y > view.h + 12 || Y + h < -12) return;
+      ctx.fillStyle = 'rgba(240,150,60,0.07)'; ctx.fillRect(X - 5, Y - 4, w + 10, h + 8);
+      ctx.fillStyle = 'rgba(250,180,80,0.10)'; ctx.fillRect(X - 2, Y - 2, w + 4, h + 4);
+    });
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+// a stepped pixel disc (rows of whole pixels, no smooth gradient): each call adds one glow ring in 'lighter'
+function glowDisc(cx, cy, r, col) {
+  ctx.fillStyle = col;
+  for (let dy = -r; dy <= r; dy++) { const w = Math.round(Math.sqrt(r * r - dy * dy)); ctx.fillRect(Math.round(cx) - w, Math.round(cy) + dy, 2 * w, 1); }
+}

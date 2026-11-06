@@ -147,6 +147,7 @@ let MODE = LV.mode;
 async function runBattle(auto) {
   S.phase = 'fight'; await wait(250);
   if (LV.intro) { banner(LV.intro[0], LV.intro[1]); await wait(2000); banner(''); }
+  if (LV.levelUp) { for (const u of UNITS) if (u.side === 'party' && ['kaya', 'sura', 'bo'].includes(u.k)) u.glow = 1250; banner('LEVEL UP', `Kaya, Sura and Bo reach level ${LV.levelUp} · +5 HP · +1 Power`, 'lv'); await wait(1250); banner(''); }   // 1.25 s, no rule touched
   while (!S.over) {
     S.round++;
     S.order = UNITS.filter(u => u.hp > 0).sort((a, b) => eff(b).speed - eff(a).speed || (a.side === 'party' ? -1 : 1));
@@ -266,7 +267,7 @@ function afterPlayerAction(u) {
   const anyAb = KITS[u.k].some(ab => u.ap >= ABIL[ab].ap && !u.cd[ab] && validTargets(BOARD, u, ab).length);
   if (!anyAb && u.mv <= 0) { const r = playerDone; playerDone = null; r && r(); }
 }
-function banner(s, sub) { const b = document.getElementById('banner'); b.innerHTML = s ? `${s}<small>${sub || ''}</small>` : ''; b.classList.toggle('show', !!s); }
+function banner(s, sub, cls) { const b = document.getElementById('banner'); b.classList.toggle('lv', !!cls); b.innerHTML = s ? `${s}<small>${sub || ''}</small>` : ''; b.classList.toggle('show', !!s); }
 function setTop(s) { const t = document.getElementById('top'); t.textContent = s; t.style.display = s ? '' : 'none'; }
 // ---------- explore (the road up to the quarry): Kaya walks where you tap; Sura and Bo follow two and four steps behind her
 const trail = [];

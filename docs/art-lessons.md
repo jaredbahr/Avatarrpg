@@ -96,6 +96,14 @@ animation or presentation work. Add to it when something fails.
   promise continuations never ran inside the loop. Tag each wait with its caller to find the dead time.
 - **A speed toggle scales the clock, not the logic.** Prove it by comparing the event log and the RNG state at 1×,
   2×, 3× and with skips, not just the final HP.
+- **Re-measure anchors after any regeneration.** Kaya's fire jab found her fist by "bright yellow pixels"; once
+  the painted fire was gone it matched her face, and the burst sat on her cheek. Measure anchors on the real frame
+  at 5×.
+- **Grade a scene inside it, not over the page.** A multiply tint over the whole shell dimmed the dialogue box and
+  barely showed. Dusk reads when the world is graded and the windows and lamps light up with it.
+- **A recorder must not cut the game's own timing.** Shortened auto-advance waits cut dialogue mid-line, and the
+  game's 1× toggle showed beside the recorder's 3× badge. Keep waits at least the typing time and hide the toggle
+  while recording.
 - **Portraits and sprites can disagree.** Ruon's shipped bust is a grey-haired man in a brown coat; his top-down
   sprite is a bearded man in a green hooded cloak. Compare bust and sprite side by side, and settle one canonical
   design before more art depends on it.

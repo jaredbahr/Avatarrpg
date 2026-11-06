@@ -127,7 +127,7 @@ function bakeGround() {
     // reach a third of the height, at most 52); everything else the short floor shadow with an overhang allowance that grows
     // with the width (a round well's seam follows its curve); houses the heavy contact band
     const ow8 = Math.max(8, Math.round(img.width * 0.15)), bushy = o.k === 'bush';
-    const opts = o.kind === 'house' ? { overhang: ow8, band: 6 } : o.kind === 'tree' && !bushy ? { dir: { x: 0.42, y: 0.3 }, foot: 8, sweep: 1, reach: Math.min(52, Math.max(12, Math.round(img.height * 0.32))) } : { overhang: ow8 };
+    const opts = o.kind === 'house' ? { overhang: ow8, band: 6 } : o.kind === 'tree' && !bushy ? { dir: { x: 0.42, y: 0.3 }, foot: 8, sweep: 1, reach: Math.round(Math.min(52, Math.max(12, Math.round(img.height * 0.32))) * DUSK_K) } : { overhang: ow8 };
     if (o.kind === 'house') houseApron(g, o, img);   // v15: a packed-earth apron along the front, so no grass touches the footing
     if (o.kind === 'house') { houseDoorstep(g, o); houseSideShadow(g, o, img, under === 'G' || under === 'D' ? 0.6 : 0.78); }
     const m = hardShadowMask(alphaOf(img), img.width, img.height, opts); SHADOW_LOG.push({ o, m, dx: o.x - m.pad, dy: o.y });

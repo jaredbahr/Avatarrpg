@@ -18494,6 +18494,33 @@
     "background_job_id": "fe79796d-ecbe-4490-aac3-56b061ae7d77",
     "object_id": "db2a7f79-f907-44c8-89f9-c03b062ea148"
    }
+  },
+  {
+   "name": "t13_driller_slam4_southwest",
+   "endpoint": "/objects/b0cc7559-12db-4011-aac0-82a7a3d4fb9b/animations",
+   "job": null,
+   "status": "completed",
+   "settings": {
+    "mode": "v3",
+    "animation_description": "the mecha-driller slams in three clear steps: (1) the whole front end tips UP, t...",
+    "directions": [
+     "south-west"
+    ],
+    "frame_count": 12,
+    "display_name": "slam4"
+   },
+   "credits": 0.0,
+   "credit_source": "balance_diff (another consumer shares this key; may be inflated)",
+   "balance_diff": 0.0,
+   "usage": null,
+   "balance_before": 12259.965464062501,
+   "balance_after": 12259.965464062501,
+   "secs": 3,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "81df729c-e6b3-4c13-b340-bcddd979d0a4",
+    "object_id": "b0cc7559-12db-4011-aac0-82a7a3d4fb9b"
+   }
   }
  ],
  "end_balance": 16728.0,
