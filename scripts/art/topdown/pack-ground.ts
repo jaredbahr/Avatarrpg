@@ -293,6 +293,26 @@ export interface Baked {
   readonly placed: readonly Placed[];
 }
 
+/**
+ * Where a dirt pixel samples the one plain dirt tile: quilted (`art-lessons.md`: one Wang tile sampled
+ * by modulo is wallpaper) over wide, warped regions, each with its own offset and some mirrored, so its
+ * streaks never line up in a grid. The plain tile is seamless, so only the regions' wandering borders
+ * can show a join.
+ */
+const QUILT = [
+  [0, 0, false],
+  [11, 19, true],
+  [23, 5, false],
+  [6, 27, true],
+] as const;
+export function dirtIndex(wx: number, wy: number): number {
+  const r = Math.max(0, Math.min(3, Math.floor((vnoise(wx, wy, 61, 48) + 1) * 2)));
+  const [ox, oy, flip] = QUILT[r] ?? QUILT[0];
+  const u = (wx + ox) % T,
+    v = (wy + oy) % T;
+  return (v * T + (flip ? T - 1 - u : u)) * 4;
+}
+
 /** Cliff tile index for tile (x, y): exact pattern first, else the nearest (the prototype's `cliffTile`). */
 const CLIFF = cliffPatterns.tiles
   .map((t, i) => ({ i, pat: t.pat, spec: t.pat.filter((v) => v !== 255).length }))
@@ -426,7 +446,14 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       }
       if (!drawn) {
         const tile = src.wang[set].get(bits);
-        if (tile) draw(g, tile, x * T, y * T);
+        if (tile && pure && c[0] === 'D')
+          for (let py = 0; py < T; py++)
+            for (let px = 0; px < T; px++) {
+              const o = ((y * T + py) * PW + x * T + px) * 4,
+                k = dirtIndex(x * T + px, y * T + py);
+              for (let ch = 0; ch < 4; ch++) d[o + ch] = at(tile.data, k + ch);
+            }
+        else if (tile) draw(g, tile, x * T, y * T);
       }
       if (pure) setClass(x * T, y * T, T, T, classOf(c[0] ?? 'G'));
       else
@@ -481,7 +508,7 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
           const paving = f > 0.5,
             isDirt = paving && fd > 0.5,
             s = paving ? (isDirt ? pureD : cobble) : gt,
-            j = (py * T + px) * 4,
+            j = isDirt ? dirtIndex(wx, wy) : (py * T + px) * 4,
             o = (wy * PW + wx) * 4;
           d[o] = at(s.data, j);
           d[o + 1] = at(s.data, j + 1);
@@ -628,7 +655,7 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
           half = 30 - yy * 0.3 + vnoise(wx, wy, 51, 4) * 4;
         if (Math.abs(wx - cx) > half || wy > B * T + 17 + vnoise(wx, 0, 53, 3) * 2) continue;
         const j = (wy * PW + wx) * 4,
-          k = ((wy % T) * T + (wx % T)) * 4;
+          k = dirtIndex(wx, wy);
         d[j] = at(dirtTile.data, k);
         d[j + 1] = at(dirtTile.data, k + 1);
         d[j + 2] = at(dirtTile.data, k + 2);
