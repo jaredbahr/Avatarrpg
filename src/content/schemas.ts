@@ -30,6 +30,7 @@ import {
 } from './assets/clips';
 import type { ClipDef, ClipName } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
+import type { TopDownLayout } from './topdownLayout';
 import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../core/story/conditions';
 import { exitCells } from '../core/story/world';
 import { DAY_PHASES, RESIDENT_PROFILES, RESIDENT_TIERS } from '../core/types';
@@ -1221,6 +1222,11 @@ export interface ContentBundle {
   readonly anchors: readonly WorldAnchor[];
   readonly residents: readonly ResidentDef[];
   readonly backgroundRoles: readonly BackgroundRole[];
+  /**
+   * The top-down layouts (ADR 0104 §3), checked against their maps' rows. Optional and kept out of
+   * `CONTENT_BUNDLE`, which ships: the terrain classifier stays out of the bundle (`topdownLayouts.ts`).
+   */
+  readonly topdownLayouts?: readonly TopDownLayout[];
 }
 
 /**
@@ -1637,6 +1643,162 @@ export function npcStandTiles(bundle: ContentBundle, mapId: string, npc: NpcDef)
  * `validateContent(CONTENT_BUNDLE)` uses the 2x2 checks; explicit false retains
  * the injectable legacy validation path.
  */
+/* ------------------------------------------------------------------ */
+/* Top-down layouts (ADR 0104 §3)                                      */
+/* ------------------------------------------------------------------ */
+
+const topDownObjectSchema = z
+  .object({
+    id: z.string().min(1),
+    sprite: z.string().min(1),
+    kind: z.enum(['house', 'tree', 'prop', 'flat', 'bridge', 'walkway', 'steps']),
+    x: z.number().finite(),
+    base: z.number().finite(),
+    footprint: z.array(z.object({ x: z.number().int(), y: z.number().int() })).min(1),
+    solid: z.boolean(),
+    deck: z.boolean().optional(),
+    exterior: z.boolean().optional(),
+    depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
+    fadeWhenOccluding: z.boolean().optional(),
+    revealOccluded: z.boolean().optional(),
+  })
+  .strict();
+
+/** The top-down cell, in world px. */
+const TOPDOWN_CELL = 40;
+/** How far apart the mouth check samples its walk to the rim, in world px. */
+const MOUTH_STEP = 4;
+
+const outward: Readonly<Record<MapEdgeSide, Vec2>> = {
+  north: { x: 0, y: -1 },
+  south: { x: 0, y: 1 },
+  east: { x: 1, y: 0 },
+  west: { x: -1, y: 0 },
+};
+
+/**
+ * What is wrong with one map's top-down layout against its rows. Rules, each held by a fixture:
+ * - an object's footprint is on the map unless the object is `exterior`;
+ * - a solid object stands only on blocked cells, and every blocked cell is a solid object's
+ *   footprint or blocked terrain (its centre is water, cliff or void), so what reads blocked is;
+ * - no walkable cell's centre is void, cliff or water, unless a deck carries it;
+ * - every exit cell (the map's exit, each exit's cells, every `exit` edge) is a cell of a rim mouth,
+ *   and every mouth cell runs on a road or path, with nothing solid on it, out to the rim within
+ *   the layout's reach;
+ * - a slot sits on its NPC's cell, and no solid object covers it.
+ */
+export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): string[] {
+  const problems: string[] = [];
+  const where = `map "${map.id}" top-down layout`;
+  const key = (x: number, y: number): string => `${x},${y}`;
+  const onMap = (c: Vec2): boolean => c.x >= 0 && c.y >= 0 && c.x < map.width && c.y < map.height;
+  const solidCells = new Set<string>();
+  const deckCells = new Set<string>();
+  const ids = new Set<string>();
+  for (const object of layout.objects) {
+    const parsed = topDownObjectSchema.safeParse(object);
+    if (!parsed.success) {
+      const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
+      problems.push(`${where} object "${object.id}": ${issues.join('; ')}`);
+      continue;
+    }
+    if (ids.has(object.id)) problems.push(`${where} repeats object "${object.id}"`);
+    ids.add(object.id);
+    for (const cell of object.footprint) {
+      if (!onMap(cell)) {
+        if (!object.exterior)
+          problems.push(
+            `${where} object "${object.id}" has footprint (${cell.x},${cell.y}) off the map and is not exterior`,
+          );
+        continue;
+      }
+      if (object.solid) {
+        solidCells.add(key(cell.x, cell.y));
+        if (isWalkable(map, cell.x, cell.y))
+          problems.push(
+            `${where} solid object "${object.id}" stands on open cell (${cell.x},${cell.y})`,
+          );
+      }
+      if (object.deck) deckCells.add(key(cell.x, cell.y));
+    }
+  }
+  const centre = (x: number, y: number) =>
+    layout.terrain.classify((x + 0.5) * TOPDOWN_CELL, (y + 0.5) * TOPDOWN_CELL);
+  for (let y = 0; y < map.height; y++)
+    for (let x = 0; x < map.width; x++) {
+      const { ground } = centre(x, y);
+      if (isWalkable(map, x, y)) {
+        if (ground !== 'ground' && !deckCells.has(key(x, y)))
+          problems.push(`${where} walkable (${x},${y}) has its centre on ${ground}`);
+      } else if (ground === 'ground' && !solidCells.has(key(x, y))) {
+        problems.push(
+          `${where} blocked (${x},${y}) is neither a solid object's footprint nor blocked terrain`,
+        );
+      }
+    }
+  const mouthCells = new Map<string, MapEdgeSide>();
+  for (const mouth of layout.terrain.mouths)
+    for (const cell of mouth.cells) {
+      mouthCells.set(key(cell.x, cell.y), mouth.side);
+      const dir = outward[mouth.side];
+      const reach = layout.terrain.mouthReach * TOPDOWN_CELL;
+      let open = false;
+      for (let d = 0; d <= reach; d += MOUTH_STEP) {
+        const px = (cell.x + 0.5) * TOPDOWN_CELL + dir.x * d,
+          py = (cell.y + 0.5) * TOPDOWN_CELL + dir.y * d;
+        const at = layout.terrain.classify(px, py);
+        if (at.ground === 'cliff' || at.ground === 'void') {
+          open = true;
+          break;
+        }
+        const cx = Math.floor(px / TOPDOWN_CELL),
+          cy = Math.floor(py / TOPDOWN_CELL);
+        const blocker = layout.objects.find(
+          (o) => o.solid && o.footprint.some((c) => c.x === cx && c.y === cy),
+        );
+        if (blocker) {
+          problems.push(
+            `${where} mouth "${mouth.id}" at (${cell.x},${cell.y}) runs into "${blocker.id}"`,
+          );
+          break;
+        }
+        if (at.terrain !== 'C' && at.terrain !== 'D') {
+          problems.push(
+            `${where} mouth "${mouth.id}" at (${cell.x},${cell.y}) leaves its road for ${at.ground} (${at.terrain}) ${d} px out`,
+          );
+          break;
+        }
+      }
+      if (!open)
+        problems.push(
+          `${where} mouth "${mouth.id}" at (${cell.x},${cell.y}) does not reach the rim within ${layout.terrain.mouthReach} cells`,
+        );
+    }
+  const exits: Vec2[] = [
+    ...(map.exit ? [map.exit.pos] : []),
+    ...(map.exits ?? []).flatMap((e) => e.area ?? [e.pos]),
+  ];
+  for (const edge of map.edges ?? []) {
+    if (edge.treatment !== 'exit') continue;
+    for (let i = edge.span[0]; i <= edge.span[1]; i++) {
+      const x = edge.side === 'east' ? map.width - 1 : edge.side === 'west' ? 0 : i;
+      const y = edge.side === 'south' ? map.height - 1 : edge.side === 'north' ? 0 : i;
+      exits.push({ x, y });
+    }
+  }
+  for (const cell of exits)
+    if (!mouthCells.has(key(cell.x, cell.y)))
+      problems.push(`${where} exit (${cell.x},${cell.y}) is not on a rim mouth`);
+  for (const slot of layout.slots) {
+    const npc = map.npcs.find((n) => n.id === slot.npc);
+    if (!npc || !npc.pos || npc.pos.x !== slot.cell.x || npc.pos.y !== slot.cell.y)
+      problems.push(`${where} slot "${slot.id}" is not on npc "${slot.npc}"'s cell`);
+    if (solidCells.has(key(slot.cell.x, slot.cell.y)))
+      problems.push(`${where} slot "${slot.id}" is under a solid object`);
+  }
+  return problems;
+}
+
 export interface ValidateContentOptions {
   readonly squareFootprints?: boolean;
 }
@@ -2124,6 +2286,13 @@ export function validateContent(
   // malformed edge span is an error.
   for (const issue of validateMapContracts(bundle.maps)) {
     if (issue.severity === 'error') problems.push(issue.message);
+  }
+
+  /* --- top-down layouts (ADR 0104 §3) -------------------------------- */
+  for (const layout of bundle.topdownLayouts ?? []) {
+    const map = bundle.maps.find((m) => m.id === layout.mapId);
+    if (!map) problems.push(`top-down layout names unknown map "${layout.mapId}"`);
+    else problems.push(...validateTopDownLayout(map, layout));
   }
 
   /* --- encounters --------------------------------------------------- */
