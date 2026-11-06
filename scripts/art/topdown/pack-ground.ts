@@ -330,6 +330,20 @@ export interface Placed {
   readonly base: number;
 }
 
+/**
+ * The ford's pool in plate px (ADR 0104, T3: owner, 2026-11-06): a noisy ellipse that covers the
+ * game's ford cells (0, 7) and (0, 8) at their centres and stops short of the open cells (1, 7) and
+ * (1, 8) at x 168, spilling out of the canal at its top. `box` is the stretch the ford repaints: everything
+ * in it but grass is the worn, flooded road.
+ */
+export const FORD_POOL = {
+  cx: 124,
+  cy: 506,
+  rx: 38,
+  ry: 48,
+  box: { x0: 64, y0: 464, x1: 192, y1: 584 },
+} as const;
+
 /** Each pixel's terrain class as the bake laid it, for the edge checks. */
 export const CLASS = { G: 0, C: 1, W: 2, D: 3, face: 4, void: 5 } as const;
 
@@ -793,6 +807,53 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
         [20, 15, 17],
         0.16 + k * 0.2,
       );
+  }
+
+  // 3b. the ford: where the canal spills over the road's west end, a worn, flooded road. The
+  // terrain keeps its water vertices (the game's ford cells stay water), but the bake draws them as
+  // a shallow pool on slow noise, its edge mixed with the dirt under it and a wet, darkened rim,
+  // the road worn to dirt round it and cobble further out, never the canal's ruled channel.
+  {
+    const water = src.wang.canal.get('0000'),
+      cobble = src.wang.gc.get('1111'),
+      dirtTile = src.wang.dirt.get('0000');
+    if (!water || !cobble || !dirtTile) throw new Error('missing ford tiles');
+    const { cx, cy, rx, ry, box } = FORD_POOL;
+    for (let y = box.y0; y < box.y1; y++)
+      for (let x = box.x0; x < box.x1; x++) {
+        const i = y * PW + x,
+          j = i * 4;
+        const wobble = 1 + vnoise(x, y, 61, 14) * 0.08 + vnoise(x, y, 63, 5) * 0.03;
+        const r = Math.hypot((x - cx) / rx, (y - cy) / ry) / wobble;
+        const grass = classes[i] === CLASS.G;
+        const worn = r < 1.3 + vnoise(x, y, 65, 9) * 0.18;
+        // beyond the worn ground the road stays as it was, but for the old channel's water and the
+        // mossy kerb line the canal set drew round it
+        const moss = at(d, j + 1) > at(d, j) + 10 && at(d, j + 1) > at(d, j + 2) + 4;
+        if (!worn && r > 1 && classes[i] !== CLASS.W && !(moss && !grass)) continue;
+        if (grass && r > 1) {
+          // grass beside the water is wet and dark
+          if (r < 1.15) for (let ch = 0; ch < 3; ch++) d[j + ch] = at(d, j + ch) * 0.8;
+          continue;
+        }
+        const k = dirtIndex(x, y),
+          t = ((y % T) * T + (x % T)) * 4;
+        const ground = (ch: number): number =>
+          worn ? at(dirtTile.data, k + ch) : at(cobble.data, t + ch);
+        if (r <= 1) {
+          // shallow at the edge: the dirt shows through a band of uneven width
+          const a = r < 0.86 + vnoise(x, y, 67, 6) * 0.06 ? 1 : 0.6;
+          for (let ch = 0; ch < 3; ch++)
+            d[j + ch] = at(water.data, t + ch) * a + ground(ch) * (1 - a);
+          d[j + 3] = 255;
+          classes[i] = CLASS.W;
+        } else {
+          const wet = r < 1.15 ? 0.78 : 1;
+          for (let ch = 0; ch < 3; ch++) d[j + ch] = ground(ch) * wet;
+          d[j + 3] = 255;
+          classes[i] = worn ? CLASS.D : CLASS.C;
+        }
+      }
   }
 
   // 4. the void: deeper toward the world's edge, in hard steps

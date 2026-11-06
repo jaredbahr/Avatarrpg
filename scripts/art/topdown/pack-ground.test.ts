@@ -78,6 +78,22 @@ describe("Ba Dan's top-down ground", () => {
     expect(paved.length).toBeLessThan(24 * 16 * 0.6);
   });
 
+  it("draws the ford as a pool over the game's ford cells, clear of the open road beside it", () => {
+    const at = (x: number, y: number) => baked.classes[(y + 192) * PLATE_W + x + 128];
+    // (0, 7) and (0, 8), at their centres, are water; (1, 7) and (1, 8), where a figure stands, are not
+    for (const cy of [7, 8]) {
+      expect(at(20, cy * 40 + 20)).toBe(CLASS.W);
+      for (const [dx, dy] of [
+        [0, 0],
+        [-12, 0],
+        [12, 0],
+        [0, -8],
+        [0, 8],
+      ] as const)
+        expect(at(60 + dx, cy * 40 + 20 + dy)).not.toBe(CLASS.W);
+    }
+  });
+
   it('leaves no halo pixel on any object', () => {
     const halos = baked.placed
       .map((p) => [p.o.id, haloPixels(p.img)] as const)
