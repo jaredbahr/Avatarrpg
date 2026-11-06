@@ -84,6 +84,23 @@ animation or presentation work. Add to it when something fails.
   - Notching a patch around a prop's foot leaves holes. Let the prop stand on the patch.
   - A `//` comment inserted mid-line in an inlined build silently killed the page. Check `pageerror` first.
 
+- **The Ba Dan port (T3, 2026-11-06):**
+  - The prototype's bridge was an oblique 3/4 drawing that sat off-centre over the canal, so the owner saw it was
+    "visually off" at once. Generate structures straight on, sized from the plate (kerb to kerb), and seat them by
+    measurement.
+  - A PixelLab banner pole came with a baked dark ground disc that read as "a black hole". Strip baked discs on load,
+    and test every placed sprite for one.
+  - Casting each column on its own striped a stall's legs and left thin lamp posts with no shadow at all. Cast the
+    whole silhouette, then close the gaps.
+  - A dirt patch sized to a 3-cell exit became a flat blob with a cut-out edge. Draw a path with the Wang set's own
+    transitions; two dirt vertices is the narrowest a 32 px set draws cleanly.
+  - A ford drawn as a round pool read as a punched hole with a ring. A flooded road keeps its stones under the water,
+    so draw the paving darkened and blued, with glints at two scales and no ring.
+  - Fading a whole house for a figure behind it made a pale ghost. Houses take the figure-shaped reveal; only trees
+    fade, and only to 0.6.
+  - Playwright's built-in video smeared integer-zoom pixels, so a crisp game looked blurred. Capture frames
+    losslessly (CDP screencast PNGs), scale ×2 nearest, and encode at a high quality.
+
 ### Characters and objects
 
 - **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;
