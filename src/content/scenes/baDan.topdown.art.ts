@@ -36,18 +36,18 @@ export const BA_DAN_TOPDOWN_UPRIGHTS: Readonly<
   >
 > = {
   'banner-north': {
-    sourceRect: { x: 79, y: 556, width: 39, height: 82 },
+    sourceRect: { x: 79, y: 556, width: 39, height: 77 },
     x: 433,
     y: 36,
     width: 39,
-    height: 82,
+    height: 77,
   },
   'banner-south': {
-    sourceRect: { x: 119, y: 556, width: 39, height: 82 },
+    sourceRect: { x: 166, y: 556, width: 39, height: 76 },
     x: 721,
     y: 354,
     width: 39,
-    height: 82,
+    height: 76,
   },
   'court-blossom-east': {
     sourceRect: { x: 763, y: 434, width: 56, height: 90 },
@@ -400,7 +400,7 @@ export const BA_DAN_TOPDOWN_UPRIGHTS: Readonly<
     height: 43,
   },
   shrine: {
-    sourceRect: { x: 159, y: 556, width: 46, height: 77 },
+    sourceRect: { x: 119, y: 556, width: 46, height: 77 },
     x: 565,
     y: 197,
     width: 46,

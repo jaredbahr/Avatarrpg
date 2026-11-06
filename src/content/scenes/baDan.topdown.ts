@@ -176,7 +176,7 @@ const DRESSING: readonly TopDownObject[] = [
 
 /** Structures the ground carries a way over, and what lies flat on it. */
 const FLATS: readonly TopDownObject[] = [
-  put('bridge', 'bridge', 'bridge', 380, 284, cells([9, 6]), { deck: true }),
+  put('bridge', 'bridge', 'bridge', 380, 285, cells([9, 6]), { deck: true }),
   put('walkway', 'walkway', 'walkway', 1066, 348, cells([26, 7], [26, 8]), {
     deck: true,
     exterior: true,

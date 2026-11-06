@@ -33,12 +33,12 @@ import {
   groundKit,
   hardShadowMask,
   paintMask,
+  SHADOW,
   type HardShadowOptions,
   type RgbaImage,
   type ShadowMask,
 } from '../../../src/render/shadow/hardShadowMask';
 import {
-  CANAL,
   COLS,
   ORIGIN,
   PLATE_H,
@@ -193,8 +193,13 @@ function loadSources(objects: readonly TopDownObject[]): Sources {
   const sprites = new Map<string, RgbaImage>();
   for (const o of objects) {
     if (sprites.has(o.sprite)) continue;
-    const dir = o.sprite.startsWith('house_') ? 'objects_bd13' : 'objects12';
-    sprites.set(o.sprite, dehalo(load(`${ASSETS}/${dir}/${o.sprite}.png`)));
+    // T3's redraws (the straight-on bridge) take precedence over the v12 objects
+    const dir = existsSync(`${ASSETS}/objects_t3/${o.sprite}.png`)
+      ? 'objects_t3'
+      : o.sprite.startsWith('house_')
+        ? 'objects_bd13'
+        : 'objects12';
+    sprites.set(o.sprite, dehalo(stripDisc(load(`${ASSETS}/${dir}/${o.sprite}.png`))));
   }
   return {
     wang,
@@ -247,12 +252,74 @@ export function dehalo(img: RgbaImage): RgbaImage {
   return { width: W, height: H, data: p };
 }
 
+/**
+ * The pixels of a dark ground disc baked under a sprite (v12's banner pole stands on a black
+ * ellipse): in the lowest rows, the near-black, unsaturated pixels outside the columns of the stem
+ * that comes down into them, and below the stem's own last coloured pixel. Under a dozen such
+ * pixels is an outline, not a disc, and nothing is returned. The grounding is the bake's, so the
+ * sprite must not bring its own.
+ */
+export function bakedDisc(img: RgbaImage): number[] {
+  const W = img.width,
+    H = img.height,
+    d = img.data;
+  const op = (x: number, y: number): boolean => at(d, (y * W + x) * 4 + 3) > 0;
+  const dark = (x: number, y: number): boolean => {
+    const i = (y * W + x) * 4,
+      hi = Math.max(at(d, i), at(d, i + 1), at(d, i + 2)),
+      lo = Math.min(at(d, i), at(d, i + 1), at(d, i + 2));
+    return op(x, y) && hi < 60 && hi - lo < 25;
+  };
+  let bottom = -1;
+  for (let y = H - 1; y >= 0 && bottom < 0; y--)
+    for (let x = 0; x < W; x++) if (op(x, y)) bottom = y;
+  if (bottom < 0) return [];
+  const span = (y: number): [number, number] => {
+    let l = W,
+      r = -1;
+    for (let x = 0; x < W; x++)
+      if (op(x, y)) {
+        l = Math.min(l, x);
+        r = Math.max(r, x);
+      }
+    return [l, r];
+  };
+  // the disc's top: the highest row, within the lowest 15 %, where dark pixels run wider than the row above
+  const zone = Math.max(6, Math.round(H * 0.15));
+  let top = -1;
+  for (let y = Math.max(1, bottom - zone + 1); y <= bottom && top < 0; y++) {
+    const [l, r] = span(y),
+      [la, ra] = span(y - 1);
+    if (ra < 0 || r < 0) continue;
+    let wide = 0;
+    for (let x = l; x <= r; x++) if ((x < la - 1 || x > ra + 1) && dark(x, y)) wide++;
+    if (wide >= 4) top = y;
+  }
+  if (top < 0) return [];
+  const [lo, hi] = span(top - 1);
+  let stemEnd = top - 1;
+  for (let y = top; y <= bottom; y++)
+    for (let x = lo; x <= hi; x++) if (op(x, y) && !dark(x, y)) stemEnd = y;
+  const out: number[] = [];
+  for (let y = top; y <= bottom; y++)
+    for (let x = 0; x < W; x++)
+      if (dark(x, y) && (x < lo || x > hi || y > stemEnd)) out.push(y * W + x);
+  return out.length >= 12 ? out : [];
+}
+
+/** The sprite without its baked ground disc (`bakedDisc`). */
+export function stripDisc(img: RgbaImage): RgbaImage {
+  const p = new Uint8ClampedArray(img.data);
+  for (const i of bakedDisc(img)) p[i * 4 + 3] = 0;
+  return { width: img.width, height: img.height, data: p };
+}
+
 /* ------------------------------------------------------------------ */
 /* The bake                                                            */
 /* ------------------------------------------------------------------ */
 
 /** A placed object in the prototype's plate px: its sprite's top-left, size and base. */
-interface Placed {
+export interface Placed {
   readonly o: TopDownObject;
   readonly img: RgbaImage;
   readonly x: number;
@@ -745,8 +812,6 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
   // 5. the shadows and contact kits of every static object (flat dressing first: every shadow lands on it)
   for (const p of placed) if (isFlat(p)) draw(g, p.img, p.x, p.y);
   const fringes = new Map<Placed, RgbaImage>();
-  const canalTop = CANAL.row * T - 18,
-    canalBot = CANAL.row * T + 22;
   for (const p of placed) {
     const { o, img } = p;
     if (o.kind === 'walkway') {
@@ -755,13 +820,10 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
     }
     if (isFlat(p) || o.kind === 'steps') continue;
     if (o.kind === 'bridge') {
-      const bm = hardShadowMask(alphaOf(img), img.width, img.height, {
-        flat: true,
-        band: 4,
-        base: 34,
-      });
+      // the seam and contact where the south abutment meets the bank, then the deck's own cast on the water
+      const bm = hardShadowMask(alphaOf(img), img.width, img.height, { flat: true, band: 3 });
       paintMask(g, bm, p.x - bm.pad, p.y);
-      bridgeShadow(g, p, canalTop, canalBot);
+      paintMask(g, bridgeCast(p, classes), p.x, p.y);
       draw(g, img, p.x, p.y);
       continue;
     }
@@ -778,7 +840,16 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
               sweep: 1,
               reach: Math.min(52, Math.max(12, Math.round(img.height * 0.32))),
             }
-          : { overhang: ow8 };
+          : o.kind === 'prop'
+            ? // a prop's whole silhouette laid down the light, one shape (the column cast of v12
+              // left a stall's posts as separate streaks and a lamp or a pole with next to none)
+              {
+                overhang: ow8,
+                dir: { x: 0.42, y: 0.3 },
+                sweep: 1,
+                reach: Math.min(24, Math.max(10, Math.round(img.height * 0.3))),
+              }
+            : { overhang: ow8 };
     const soft = under === 'G' || under === 'D';
     if (o.kind === 'house') {
       houseApron(g, p);
@@ -786,6 +857,7 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       houseSideShadow(g, p, soft ? 0.6 : 0.78);
     }
     const m = hardShadowMask(alphaOf(img), img.width, img.height, opts);
+    if (o.kind === 'prop') coherentCast(m);
     shadows.push({ id: o.id, m, dx: p.x - m.pad, dy: p.y });
     if (soft) {
       const kit = groundKit(img, p.x * 7 + p.base, {
@@ -796,7 +868,7 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
         draw(g, kit.contact, p.x - kit.m, p.y - kit.m);
         fringes.set(p, kit.fringe);
       }
-      paintMask(g, m, p.x - m.pad, p.y);
+      paintByGround(g, m, p.x - m.pad, p.y, classes);
     } else {
       paintMask(g, m, p.x - m.pad, p.y, 1.3);
       floorReaction(g, m, p.x - m.pad, p.y, p.x * 31 + p.base);
@@ -990,53 +1062,87 @@ function houseSkirt(f: RgbaImage, o: Placed): void {
   }
 }
 
-/** The bridge's own silhouette laid on the water to its lower right (v13 `bridgeShadow`). */
-function bridgeShadow(g: RgbaImage, o: Placed, top: number, bot: number): void {
-  const A = alphaOf(o.img),
-    W = o.w,
-    Hh = o.h,
-    x0 = o.x - 2,
-    y0 = top - 4,
-    w = W + 26,
-    h = bot - top + 12;
-  const reg = crop(g, x0, y0, w, h),
-    dd = reg.data,
-    m = new Uint8Array(w * h);
-  for (let y = 0; y < Hh; y++) {
-    const wy = o.y + y;
-    if (wy < top - 3 || wy > bot + 2) continue;
-    const off = 8 + Math.round(vnoise(3, wy, 77, 2.5) * 1.4);
-    for (let x = 0; x < W; x++) {
+/**
+ * `paintMask` for an object on soft ground whose cast runs on to the paving beside it: the pixels
+ * on paving take the paving's stronger scale (1.3, as an object standing on paving does), so a
+ * lamp at a lane's edge shows its cast on the cobbles as clearly as on the grass.
+ */
+function paintByGround(
+  g: RgbaImage,
+  m: ShadowMask,
+  dx: number,
+  dy: number,
+  classes: Uint8Array,
+): void {
+  const d = g.data;
+  for (let y = 0; y < m.height; y++)
+    for (let x = 0; x < m.width; x++) {
+      const X = dx + x,
+        Y = dy + y,
+        v = at(m.alpha, y * m.width + x);
+      if (!v || X < 0 || Y < 0 || X >= g.width || Y >= g.height) continue;
+      const a = (v * (classes[Y * g.width + X] === CLASS.C ? 1.3 : 1)) / 255,
+        j = (Y * g.width + X) * 4;
+      for (let c = 0; c < 3; c++) d[j + c] = at(d, j + c) * (1 - a) + at(SHADOW_RGB, c) * a;
+    }
+}
+
+/**
+ * Closes the gaps inside a cast so it reads as one shape: along each row, a run of at most `gap`
+ * clear pixels between two shaded ones takes the cast tone, after the same down each column for
+ * at most 3. A prop on legs (a stall, a notice board) projects each leg and its top separately.
+ */
+export function coherentCast(m: ShadowMask, gap = 10): void {
+  const { width: W, height: H, alpha: A } = m;
+  for (let x = 0; x < W; x++) {
+    let last = -1;
+    for (let y = 0; y < H; y++) {
       if (!at(A, y * W + x)) continue;
-      const sx = o.x + x + off - x0,
-        sy = wy + 4 - y0;
-      if (sx >= 0 && sy >= 0 && sx < w && sy < h) m[sy * w + sx] = 1;
+      if (last >= 0 && y - last > 1 && y - last - 1 <= 3)
+        for (let k = last + 1; k < y; k++) A[k * W + x] = 125;
+      last = y;
     }
   }
-  const water = (j: number): boolean =>
-    at(dd, j + 2) > at(dd, j) + 18 && at(dd, j + 1) > at(dd, j) + 10;
-  for (let y = 1; y < h - 1; y++)
-    for (let x = 1; x < w - 1; x++) {
-      const i = y * w + x,
-        j = i * 4;
-      if (!m[i] || !water(j)) continue;
-      const rim = !m[i + 1] || !m[i + w] || !m[i - w],
-        core = m[i - 3] && m[i - 6];
-      if (rim && (x + y) % 2) continue;
-      const a = rim ? 0.32 : core ? 0.5 : 0.42;
-      dd[j] = at(dd, j) * (1 - a) + 0x32 * a;
-      dd[j + 1] = at(dd, j + 1) * (1 - a) + 0x21 * a;
-      dd[j + 2] = at(dd, j + 2) * (1 - a) + 0x25 * a;
+  for (let y = 0; y < H; y++) {
+    let last = -1;
+    for (let x = 0; x < W; x++) {
+      if (!at(A, y * W + x)) continue;
+      if (last >= 0 && x - last > 1 && x - last - 1 <= gap)
+        for (let k = last + 1; k < x; k++) A[y * W + k] = 125;
+      last = x;
     }
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      const X = x0 + x,
-        Y = y0 + y;
-      if (X < 0 || Y < 0 || X >= g.width || Y >= g.height) continue;
-      const s = (y * w + x) * 4,
-        t = (Y * g.width + X) * 4;
-      for (let c = 0; c < 3; c++) g.data[t + c] = at(dd, s + c);
+  }
+}
+
+/**
+ * The bridge's cast: its own silhouette moved to the lower right (the light is top left), kept only
+ * where it lands on open water, at the cast tone. One hard shape, no dither, so the deck reads as
+ * standing over the channel, never as a flat plate on it. Drawn at the sprite's top-left.
+ */
+export function bridgeCast(p: Placed, classes: Uint8Array, off = { x: 6, y: 4 }): ShadowMask {
+  const A = alphaOf(p.img),
+    W = p.w + off.x,
+    H = p.h + off.y,
+    alpha = new Uint8ClampedArray(W * H);
+  for (let y = 0; y < p.h; y++)
+    for (let x = 0; x < p.w; x++) {
+      if (!at(A, y * p.w + x)) continue;
+      const sx = x + off.x,
+        sy = y + off.y,
+        wx = p.x + sx,
+        wy = p.y + sy;
+      if (
+        wx < 0 ||
+        wy < 0 ||
+        wx >= PLATE_W ||
+        wy >= PLATE_H ||
+        classes[wy * PLATE_W + wx] !== CLASS.W
+      )
+        continue;
+      if (sx < p.w && sy < p.h && at(A, sy * p.w + sx)) continue;
+      alpha[sy * W + sx] = 125;
     }
+  return { width: W, height: H, alpha, pad: 0, base: p.h - 1, reach: undefined, color: SHADOW };
 }
 
 /** The east road's cobbles run on over the lip to the walkway's deck, which goes out into the dark. */

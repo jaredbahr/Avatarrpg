@@ -9,7 +9,19 @@ import { describe, expect, it, vi } from 'vitest';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import { measureStyle } from '../lib/colours';
 import { haloPixels, rimEdge, shadowTable, straightEdge, terrainEdge } from './ground-checks';
-import { DATA, OUT, bake, dehalo, packBaDanGround } from './pack-ground';
+import {
+  ASSETS,
+  CLASS,
+  DATA,
+  OUT,
+  bake,
+  bakedDisc,
+  bridgeCast,
+  dehalo,
+  packBaDanGround,
+} from './pack-ground';
+import { readPng } from '../lib/image';
+import { PLATE_W } from '../../../src/content/scenes/baDan.topdown.terrain';
 
 vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 });
 
@@ -61,6 +73,63 @@ describe("Ba Dan's top-down ground", () => {
       .map((p) => [p.o.id, haloPixels(p.img)] as const)
       .filter(([, n]) => n);
     expect(halos).toEqual([]);
+  });
+
+  it('strips the dark disc a sprite bakes under itself, and nothing else', () => {
+    // v12's banner pole stands on a black ellipse; the bake grounds it instead.
+    const pole = readPng(`${ASSETS}/objects12/banner_pole.png`);
+    expect(bakedDisc(pole).length).toBeGreaterThan(100);
+    const discs = baked.placed
+      .map((p) => [p.o.id, bakedDisc(p.img).length] as const)
+      .filter(([, n]) => n);
+    expect(discs).toEqual([]);
+    // the pole keeps its own pixels: only the ring round it went
+    const kept = baked.placed.find((p) => p.o.id === 'banner-north')?.img;
+    let opaque = 0;
+    for (let i = 3; i < (kept?.data.length ?? 0); i += 4) if (kept?.data[i]) opaque++;
+    let before = 0;
+    for (let i = 3; i < pole.data.length; i += 4) if (pole.data[i]) before++;
+    expect(before - opaque).toBe(bakedDisc(pole).length);
+  });
+
+  it('casts the bridge on the water to its lower right, as one hard shape', () => {
+    const p = baked.placed.find((q) => q.o.kind === 'bridge');
+    if (!p) throw new Error('no bridge');
+    const m = bridgeCast(p, baked.classes);
+    let n = 0,
+      east = 0;
+    for (let y = 0; y < m.height; y++)
+      for (let x = 0; x < m.width; x++) {
+        const v = m.alpha[y * m.width + x];
+        if (!v) continue;
+        n++;
+        expect(v).toBe(125);
+        expect(baked.classes[(p.y + y) * PLATE_W + p.x + x]).toBe(CLASS.W);
+        if (x >= p.w) east++;
+      }
+    expect(n).toBeGreaterThan(100);
+    expect(east).toBeGreaterThan(n / 3);
+  });
+
+  it("lays each prop's cast down as one shape, without streaks", () => {
+    // a gap of up to 10 px between two shaded pixels in a row is a streak; the cast closes it
+    for (const r of baked.shadows) {
+      const p = baked.placed.find((q) => q.o.id === r.id);
+      if (p?.o.kind !== 'prop') continue;
+      const { width: W, height: H, alpha: A } = r.m;
+      for (let y = 0; y < H; y++) {
+        let last = -1;
+        for (let x = 0; x < W; x++) {
+          if (!A[y * W + x]) continue;
+          const gap = last < 0 ? 0 : x - last - 1;
+          expect(gap > 0 && gap <= 10, `${r.id} row ${y}`).toBe(false);
+          last = x;
+        }
+      }
+      let cast = 0;
+      for (const v of A) if (v === 125) cast++;
+      expect(cast, r.id).toBeGreaterThan(20);
+    }
   });
 
   it('recolours a pale outline pixel on a foot, and only the outline', () => {
