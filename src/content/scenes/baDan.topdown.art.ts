@@ -141,10 +141,10 @@ export const BA_DAN_TOPDOWN_UPRIGHTS: Readonly<
     height: 48,
   },
   'gao-house': {
-    sourceRect: { x: 686, y: 1, width: 195, height: 193 },
+    sourceRect: { x: 686, y: 1, width: 193, height: 193 },
     x: 222,
     y: -46,
-    width: 195,
+    width: 193,
     height: 193,
   },
   garden: {
@@ -567,7 +567,7 @@ export const BA_DAN_TOPDOWN_EXTENT = { x: -128, y: -192, width: 1248, height: 99
 
 /** Where smoke leaves each house's drawn chimney, in fractional cells (`MapScene.chimneys`). */
 export const BA_DAN_TOPDOWN_CHIMNEYS: readonly { readonly x: number; readonly y: number }[] = [
-  { x: 9.125, y: -1.1 },
+  { x: 9.075, y: -1.1 },
   { x: 15.075, y: -2.325 },
   { x: 8.025, y: 8.075 },
   { x: 16.025, y: 8.15 },

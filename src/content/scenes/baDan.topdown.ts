@@ -14,8 +14,9 @@
  *   columns 6-9 and 13-16): Pella's, and the south-east house. The prototype's extra north-east house
  *   stands past the north edge at columns 18-23 (the merchant's house, the only front wide enough for
  *   the six tree cells of row 0 it covers); its south-east one is left out (see `LEFT_OUT`).
- * - **Doors** stay where `residents/baDan.ts` has them for now: PixelLab's houses are front views
- *   with the door in the middle of the south face, and the scene change moves the door cells.
+ * - **Doors**: PixelLab's houses are front views with the door in the middle of the south face, so
+ *   the residents' door cells (`residents/baDan.ts`) are the cells under them: Gao (7, 4), Mira
+ *   (13, 4), Pella's household (8, 14).
  * - **Dressing**: each piece of the oblique scene's dressing (`BA_DAN_DRESSING`, the courtyard props)
  *   is played by the prototype piece that does the same job, on the same cells.
  * - **Slots**: the route sign at (18, 12) and the school notice at (12, 11) are drawn by another change.
@@ -73,7 +74,8 @@ const NORTH = 4 * CELL - 16;
 const SOUTH = 14 * CELL - 16;
 
 const HOUSES: readonly TopDownObject[] = [
-  put('gao-house', 'house_gao', 'house', 320, NORTH, rect(6, 1, 9, 3)),
+  // 2 px west of the footprint's middle, so the door (its centre at x 316) is on its step cell (7, 4).
+  put('gao-house', 'house_gao', 'house', 318, NORTH, rect(6, 1, 9, 3)),
   put('mira-house', 'house_mira', 'house', 560, NORTH, rect(12, 1, 15, 3)),
   put('pella-house', 'house_pella', 'house', 320, SOUTH, rect(6, 10, 9, 13)),
   put('southeast-house', 'house_se', 'house', 590, SOUTH, rect(13, 10, 16, 13)),
