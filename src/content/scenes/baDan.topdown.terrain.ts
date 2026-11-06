@@ -227,7 +227,7 @@ export const ROADS: readonly Road[] = [
       [11, 24.1],
       [17, 23.8],
       [23, 24.2],
-      [27.5, 24],
+      [25.4, 23.9],
     ],
     halfWidth: 1.05,
   },
@@ -253,40 +253,71 @@ export const NOISE = {
   pavedLow: [7, 2.2, 0.6],
   pavedHigh: [11, 1.0, 0.55],
   quay: [5, 1.8, 0.05],
-  pathSpill: [3, 2.6],
+  pathSpill: [3, 5.5],
 } as const;
 
 /** The canal: water on one vertex row from the west lip to the dry crossing, stone kerbs either side. */
 export const CANAL = { row: 14, from: 2, to: 20, kerbTo: 21 } as const;
-/** The flooded ford where the east road ends at the west: cells (0, 7) and (0, 8). */
-export const FORD = { x0: 4, x1: 5, y0: 15, y1: 17, lipRow: 18 } as const;
 /**
- * The riverside path, a trodden dirt track (a polyline in vertices, its half width, and how much its
- * edge wanders) from below the sign at (18, 12) down through (19, 15) to the steps over the south lip.
+ * The flooded ford where the east road ends at the west, cells (0, 7) and (0, 8): water on these
+ * vertices, an uneven spread rather than a ruled channel, with a stone lip along its south side.
  */
-export const RIVER_PATH: Road & { readonly wander: number } = {
-  id: 'riverside-path',
-  points: [
-    [27.9, 22.6],
-    [29.0, 24.5],
-    [28.0, 26.6],
-    [28.9, 28.4],
-    [28.5, 30],
+export const FORD = {
+  water: [
+    [4, 15],
+    [5, 15],
+    [3, 16],
+    [4, 16],
+    [5, 16],
+    [6, 16],
+    [4, 17],
+    [5, 17],
+    [3, 17],
   ],
-  halfWidth: 1.15,
-  wander: 0.7,
-};
+  lip: [
+    [2, 18],
+    [3, 18],
+    [4, 18],
+    [5, 18],
+    [6, 18],
+  ],
+} as const;
+const FORD_WATER = new Set<number>(FORD.water.map(([x, y]) => y * 1000 + x));
+const FORD_LIP = new Set<number>(FORD.lip.map(([x, y]) => y * 1000 + x));
+/** A stretch of worn footpath: a polyline, its half width, and how far its edge wanders. */
+export interface Track extends Road {
+  readonly wander: number;
+}
 
-/** The landing at the top of the steps: the riverside exit is three cells wide, (18..20, 15). */
-export const RIVER_LANDING: Road = {
-  id: 'riverside-landing',
-  points: [
-    [28.3, 24.9],
-    [28.6, 27.2],
-    [28.5, 30],
-  ],
-  halfWidth: 1.85,
-};
+/**
+ * The riverside footpath, worn dirt: about three cells wide at the exit mouth (18..20, 15), centred
+ * on the steps over the south lip, narrowing to about a cell and a half as it bends up north-west to
+ * meet the end of the cobbled south lane. Its edge wanders on slow, wide noise
+ * (`NOISE.pathSpill`), and the bake draws it with the dirt Wang set's own transition tiles.
+ */
+export const RIVER_TRACK: readonly Track[] = [
+  {
+    id: 'riverside-mouth',
+    points: [
+      [28.5, 30],
+      [28.6, 27.6],
+      [28.6, 24.9],
+    ],
+    halfWidth: 1.7,
+    wander: 0.15,
+  },
+  {
+    id: 'riverside-footpath',
+    points: [
+      [28.4, 25.2],
+      [27.5, 24.3],
+      [26.3, 23.8],
+      [25.2, 23.6],
+    ],
+    halfWidth: 0.7,
+    wander: 0.3,
+  },
+];
 
 const segD = (x: number, y: number, a: readonly number[], b: readonly number[]): number => {
   const ax = a[0] ?? 0,
@@ -321,21 +352,16 @@ export type Terrain = 'G' | 'C' | 'W' | 'D' | 'V';
 function vtRaw(vx: number, vy: number): Terrain {
   if (!inMass(vx, vy)) return 'V';
   if (vy === CANAL.row && vx >= CANAL.from && vx <= CANAL.to) return 'W';
-  if (vx >= FORD.x0 && vx <= FORD.x1 && vy >= FORD.y0 && vy <= FORD.y1) return 'W';
+  if (FORD_WATER.has(vy * 1000 + vx)) return 'W';
   if (vx >= CANAL.from && vx <= CANAL.kerbTo && (vy === CANAL.row - 1 || vy === CANAL.row + 1))
     return 'C';
-  if (vx >= FORD.x0 - 1 && vx <= FORD.x1 + 1 && vy === FORD.lipRow) return 'C';
-  if (
-    lineD(vx, vy, RIVER_LANDING.points) <=
-    RIVER_LANDING.halfWidth + vnoise(vx, vy, NOISE.pathSpill[0], NOISE.pathSpill[1]) * 0.4
-  )
-    return 'D';
-  if (
-    lineD(vx, vy, RIVER_PATH.points) <=
-    RIVER_PATH.halfWidth +
-      vnoise(vx, vy, NOISE.pathSpill[0], NOISE.pathSpill[1]) * RIVER_PATH.wander
-  )
-    return 'D';
+  if (FORD_LIP.has(vy * 1000 + vx)) return 'C';
+  for (const t of RIVER_TRACK)
+    if (
+      lineD(vx, vy, t.points) <=
+      t.halfWidth + vnoise(vx, vy, NOISE.pathSpill[0], NOISE.pathSpill[1]) * t.wander
+    )
+      return 'D';
   if (paved(vx, vy)) return 'C';
   if (
     vx >= 4 &&
