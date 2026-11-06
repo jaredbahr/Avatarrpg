@@ -29,7 +29,8 @@ on the defender's side, in addition to the defender's own ground.
   shot that does not need sight reaches a defender behind one), or holds a living character other than the
   attacker and the defender, friend or foe. A character gives exactly the penalty a cover prop does
   (`tuning.coverPenalty`, 20); the balance report gave no reason to differ. A downed character does not
-  screen. Fences, pits, deep water and braziers do not: they carry no cover flag and do not block sight.
+  screen. A fence (`F`) is cover: low timber you can see and shoot over but not cross. Pits, deep water
+  and braziers do not screen: they carry no cover flag and do not block sight.
 - **Never screens.** The attacker's own cells, so a size-2 attacker firing from its far cell is not behind
   itself, and the defender's own cells, so a boss's near column does not shelter its far one. A screen on a
   lower tier than the defender's cell does not count, unless it blocks sight: a rock at the foot of a bench
@@ -39,6 +40,9 @@ on the defender's side, in addition to the defender's own ground.
   of its `occupiedCells` screens.
 - **One penalty, never two.** Own ground and the screen are a union per cell, so a defender standing in
   cover behind cover is covered once.
+- **Lobbed.** An ability that does not need line of sight (`requiresLineOfSight: false`) ignores cover
+  entirely, its own ground and between, as its card's "Ignores cover" chip says. It arcs over the screen,
+  so it gets no plunging bonus either. Every caller passes `!ability.requiresLineOfSight`.
 - **Unchanged.** Melee (adjacent) attacks ignore cover. Plunging fire still halves the penalty; elevation
   still applies. The numbers in `content/tuning.ts` do not move.
 
@@ -68,5 +72,13 @@ on the defender's side, in addition to the defender's own ground.
   while B is not screened from A. That is the same line sight uses, and the preview always shows it.
 - The quarry checkpoint pins (`scripts/e2e/quarry-checkpoints.test.ts`) move, because the AI now plays
   differently; every route still arrives at the same node, level and XP.
-- An ability that does not need line of sight is labelled "Ignores cover" on its card, but neither the old
-  rule nor this one exempts it. That is a separate question for the owner.
+- The Grumbler fight moved out of its win-rate band at 3 and 6 players (78.8% to 87.5%, 81.3% to 93.8%).
+  The owner chose to retune it as its own balance issue rather than here.
+
+## The owner's answers (2026-11-06)
+
+1. Lobbed attacks ignore cover, so the "Ignores cover" chip is true. Today only Air Scooter, a dash, needs
+   no sight; the rule is in place for the first lobbed attack.
+2. Fences give cover.
+3. Retune the Grumbler separately.
+4. Characters give the same cover as props, with no half cover.
