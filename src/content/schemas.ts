@@ -1666,6 +1666,13 @@ const topDownObjectSchema = z
 
 /** The top-down cell, in world px. */
 const TOPDOWN_CELL = 40;
+/** Where a figure stands in a cell, about the centre (world px): a figure's half width each way. */
+const STANDING: readonly (readonly [number, number])[] = [
+  [-12, 0],
+  [12, 0],
+  [0, -8],
+  [0, 8],
+];
 /** How far apart the mouth check samples its walk to the rim, in world px. */
 const MOUTH_STEP = 4;
 
@@ -1681,7 +1688,8 @@ const outward: Readonly<Record<MapEdgeSide, Vec2>> = {
  * - an object's footprint is on the map unless the object is `exterior`;
  * - a solid object stands only on blocked cells, and every blocked cell is a solid object's
  *   footprint or blocked terrain (its centre is water, cliff or void), so what reads blocked is;
- * - no walkable cell's centre is void, cliff or water, unless a deck carries it;
+ * - no walkable cell's centre, nor where a figure stands about it, is void, cliff or water, unless
+ *   a deck carries it;
  * - every exit cell (the map's exit, each exit's cells, every `exit` edge) is a cell of a rim mouth,
  *   and every mouth cell runs on a road or path, with nothing solid on it, out to the rim within
  *   the layout's reach;
@@ -1730,6 +1738,14 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
       if (isWalkable(map, x, y)) {
         if (ground !== 'ground' && !deckCells.has(key(x, y)))
           problems.push(`${where} walkable (${x},${y}) has its centre on ${ground}`);
+        // Where a figure stands is ground too: the cell's middle, a figure's width each way.
+        else if (!deckCells.has(key(x, y))) {
+          const wet = STANDING.map(([dx, dy]) =>
+            layout.terrain.classify((x + 0.5) * TOPDOWN_CELL + dx, (y + 0.5) * TOPDOWN_CELL + dy),
+          ).find((at) => at.ground !== 'ground');
+          if (wet)
+            problems.push(`${where} walkable (${x},${y}) has ${wet.ground} where a figure stands`);
+        }
       } else if (ground === 'ground' && !solidCells.has(key(x, y))) {
         problems.push(
           `${where} blocked (${x},${y}) is neither a solid object's footprint nor blocked terrain`,

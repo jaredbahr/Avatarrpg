@@ -172,6 +172,13 @@ describe('the top-down layout rules', () => {
     ).toEqual([]);
   });
 
+  it('rejects water reaching into where a figure stands, though the centre is dry', () => {
+    const lapping = terrain((x, y) => (x >= 80 && x < 92 && y < 40 ? 'water' : null));
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: lapping }))).toEqual([
+      'map "fixture.topdown-layout" top-down layout walkable (2,0) has water where a figure stands',
+    ]);
+  });
+
   it('rejects an exit that is not on a rim mouth', () => {
     const closed = { ...terrain(), mouths: [] };
     expect(validateTopDownLayout(FIXTURE, layout({ terrain: closed }))).toEqual([
