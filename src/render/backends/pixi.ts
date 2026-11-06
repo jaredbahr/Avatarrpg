@@ -158,12 +158,12 @@ import {
 import type { PixelOverlayCue } from '../pixelOverlayGeometry';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import {
-  TOPDOWN_FEET_LEVEL,
   TOPDOWN_FEET_WIDTH,
   feetBlobArt,
   figureShadowArt,
   poolOffset,
   soleContactArt,
+  topdownFeetLevel,
 } from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
 import {
@@ -504,6 +504,8 @@ export class PixiBackend implements RenderBackend {
   private grounding = DEFAULT_ACTOR_GROUNDING;
   /** True on the top-down board, whose figures stand on `feetBlob` rather than the swept pool. */
   private topdownFigures = false;
+  /** The scene's paved cells, where a top-down feet blob is drawn at paving's strength. */
+  private pavedCells: readonly Vec2[] | undefined;
   private castSprites = new Map<string, Sprite>();
   private castLive = new Set<string>();
   /** Painted bend effects under and over the actors (ADR 0055). */
@@ -1367,6 +1369,7 @@ export class PixiBackend implements RenderBackend {
     scale: number,
     widthTiles: number,
     strength: number,
+    at: Vec2,
     cels?: FigureCels,
   ): void {
     if (strength <= 0 || !contactBand(this.grounding, 1)) return;
@@ -1397,7 +1400,7 @@ export class PixiBackend implements RenderBackend {
       // The top-down board grounds a figure on Imagination's feet blob, centred on its resting soles.
       const blob = feetBlobArt(TOPDOWN_FEET_WIDTH * scale * widthTiles);
       if (!blob) return;
-      const feet = place(key, blob, TOPDOWN_FEET_LEVEL);
+      const feet = place(key, blob, topdownFeetLevel(this.pavedCells, at));
       feet.position.set(
         Math.round(foot.x + offset.x * tile - blob.width / 2),
         Math.round(foot.y + offset.y * tile - blob.height / 2),
@@ -1568,6 +1571,7 @@ export class PixiBackend implements RenderBackend {
     if (!app) return;
     this.grounding = actorGrounding(view.scene);
     this.topdownFigures = camera.projection === 'topdown';
+    this.pavedCells = view.scene?.pavedCells;
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
     if (groundsSceneAtRuntime(camera.projection)) this.syncSceneryShadows(view, camera);
@@ -2726,6 +2730,7 @@ export class PixiBackend implements RenderBackend {
     const px = this.spritePx(camera);
     this.grounding = actorGrounding(view.scene);
     this.topdownFigures = camera.projection === 'topdown';
+    this.pavedCells = view.scene?.pavedCells;
     this.pixelTalkUsed = 0;
 
     const live = new Set<string>();
@@ -2811,6 +2816,7 @@ export class PixiBackend implements RenderBackend {
         scale,
         1,
         alpha,
+        at,
         frame
           ? {
               drawn: frame,
@@ -2983,6 +2989,7 @@ export class PixiBackend implements RenderBackend {
         castShadowStrength(unit.castShadow) *
           (unit.alpha ?? 1) *
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1),
+        pos,
         frame && !bend && asset.kind === 'sheet'
           ? {
               drawn: frame,

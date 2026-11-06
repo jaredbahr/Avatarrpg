@@ -19,7 +19,9 @@ import {
   bridgeCast,
   dehalo,
   packBaDanGround,
+  pavedCells,
 } from './pack-ground';
+import { BA_DAN_TOPDOWN_SCENE } from '../../../src/content/scenes/baDan.topdown.scene';
 import { readPng } from '../lib/image';
 import { PLATE_W } from '../../../src/content/scenes/baDan.topdown.terrain';
 
@@ -66,6 +68,14 @@ describe("Ba Dan's top-down ground", () => {
     expect(weak, JSON.stringify(weak)).toEqual([]);
     // Most of the village's ground allows the full 25 %; the floor only bends on dark ground.
     expect(rows.filter((r) => r.needed >= 0.25).length).toBeGreaterThan(rows.length / 2);
+  });
+
+  it("gives the scene the paved cells the bake laid, so a feet blob's strength matches the ground", () => {
+    const paved = pavedCells(baked);
+    expect(BA_DAN_TOPDOWN_SCENE.pavedCells).toEqual(paved);
+    // The lanes, the courts and the squares: a good share of the village, but not all of it.
+    expect(paved.length).toBeGreaterThan(60);
+    expect(paved.length).toBeLessThan(24 * 16 * 0.6);
   });
 
   it('leaves no halo pixel on any object', () => {

@@ -103,12 +103,12 @@ import { boardDepth, compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import {
-  TOPDOWN_FEET_LEVEL,
   TOPDOWN_FEET_WIDTH,
   feetBlobArt,
   figureShadowArt,
   poolOffset,
   soleContactArt,
+  topdownFeetLevel,
 } from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
 import type { ResolvedFrame } from '../sheets/store';
@@ -194,6 +194,8 @@ export class Canvas2DBackend implements RenderBackend {
   private grounding = DEFAULT_ACTOR_GROUNDING;
   /** True on the top-down board, whose figures stand on `feetBlob` rather than the swept pool. */
   private topdownFigures = false;
+  /** The scene's paved cells, where a top-down feet blob is drawn at paving's strength. */
+  private pavedCells: readonly Vec2[] | undefined;
   /** One caster at a time, in the exact-max path (see `castInto`). */
   private castScratch: HTMLCanvasElement | null = null;
   /** One viewport's static scenery union; live actors and props never enter it. */
@@ -1313,6 +1315,7 @@ export class Canvas2DBackend implements RenderBackend {
     if (!layer) return;
     this.grounding = actorGrounding(view.scene);
     this.topdownFigures = camera.projection === 'topdown';
+    this.pavedCells = view.scene?.pavedCells;
     // The union is a grey level per pixel on opaque black; see `castInto`.
     if (
       !this.castScratch ||
@@ -1611,6 +1614,7 @@ export class Canvas2DBackend implements RenderBackend {
     widthTiles: number,
     alpha: number,
     worldPixel: number,
+    at: Vec2,
     cels?: FigureCels,
   ): void {
     if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
@@ -1624,7 +1628,8 @@ export class Canvas2DBackend implements RenderBackend {
         h = blob.height * worldPixel;
       const x = foot.x + offset.x * tile - w / 2,
         y = foot.y + offset.y * tile - h / 2;
-      this.castInto(target, TOPDOWN_FEET_LEVEL, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
+      const level = topdownFeetLevel(this.pavedCells, at);
+      this.castInto(target, level, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
         t.save();
         t.globalAlpha = alpha;
         t.drawImage(blob, x, y, w, h);
@@ -1810,6 +1815,7 @@ export class Canvas2DBackend implements RenderBackend {
         1,
         npc.alpha ?? 1,
         worldPixel,
+        at,
         sheet
           ? {
               drawn: sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px, width),
@@ -1891,6 +1897,7 @@ export class Canvas2DBackend implements RenderBackend {
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
           castShadowStrength(unit.castShadow),
         worldPixel,
+        pos,
         cels,
       );
     }

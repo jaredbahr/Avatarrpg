@@ -9,6 +9,7 @@ import {
   BA_DAN_TOPDOWN_CHIMNEYS,
   BA_DAN_TOPDOWN_EXTENT,
   BA_DAN_TOPDOWN_GROUND,
+  BA_DAN_TOPDOWN_PAVED,
   BA_DAN_TOPDOWN_UPRIGHT_ATLAS,
   BA_DAN_TOPDOWN_UPRIGHTS,
 } from './baDan.topdown.art';
@@ -47,8 +48,10 @@ export const BA_DAN_TOPDOWN_SCENE: MapScene = {
     (o) => ({ x: o.depth.x, y: o.depth.y - 1 }),
   ),
   // The figures' feet blobs are drawn in the owner's shadow colour (ADR 0103's grounding); the
-  // union's ceiling is paving's 205 of 255, so the blob's 170 lands as Imagination draws it.
+  // union's ceiling is paving's 205 of 255 (`pavedCells`), so soft ground's 170 lands as Imagination
+  // draws it.
   actorGrounding: { contact: 205 / 255, ink: { r: 0x32, g: 0x21, b: 0x25 } },
+  pavedCells: BA_DAN_TOPDOWN_PAVED,
   ground: BA_DAN_TOPDOWN_GROUND,
   scenery: SCENERY,
 };

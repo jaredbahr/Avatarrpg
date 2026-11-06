@@ -988,6 +988,11 @@ export interface MapScene {
   };
   /** Where smoke leaves a painted roof, in ground tiles (fractional, may lie off the grid). */
   readonly chimneys?: readonly Vec2[];
+  /**
+   * The cells a figure stands on paving in, as a baked top-down scene laid its ground (ADR 0104): a
+   * figure's feet blob there is drawn darker (205 of 255) than on soft ground (170). Presentation only.
+   */
+  readonly pavedCells?: readonly Vec2[];
   /** The trees whose leaves drift off in the ambience, in ground tiles at the trunk. */
   readonly canopies?: readonly Vec2[];
   /** Painted vessel mouths and lantern glass, in fractional ground tiles (ADR 0101). */

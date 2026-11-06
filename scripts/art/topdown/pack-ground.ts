@@ -26,6 +26,7 @@ import { format, resolveConfig } from 'prettier';
 import { shelfPack, composeAtlas } from '../lib/atlas';
 import type { Image } from '../lib/image';
 import { readPng } from '../lib/image';
+import { BA_DAN_VILLAGE } from '../../../src/content/maps/village';
 import { encodeWebpLossless } from '../lib/webp';
 import {
   alphaOf,
@@ -1228,7 +1229,10 @@ export async function packBaDanGround(baked = bake()): Promise<Map<string, Uint8
         height: r.height,
       };
     });
-  files.set(DATA, await dataModule(uprights, ATLAS_WIDTH, height, chimneys(baked)));
+  files.set(
+    DATA,
+    await dataModule(uprights, ATLAS_WIDTH, height, chimneys(baked), pavedCells(baked)),
+  );
   return files;
 }
 
@@ -1237,6 +1241,29 @@ export async function packBaDanGround(baked = bake()): Promise<Map<string, Uint8
  * `findChimneys`): a narrow run of columns standing well above the roof line beside it, away from
  * the ridge in the middle.
  */
+/**
+ * The village's cells a figure stands on paving in, as the bake laid the ground: more than half the
+ * pixels of the standing box (the cell's centre +-12 by +-8 px, where the feet blob lands) are
+ * cobble. Their feet blob is drawn at paving's strength (`MapScene.pavedCells`).
+ */
+export function pavedCells(baked: Baked): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (let cy = 0; cy < BA_DAN_VILLAGE.height; cy++)
+    for (let cx = 0; cx < BA_DAN_VILLAGE.width; cx++) {
+      const X = cx * 40 + 20 - ORIGIN.x,
+        Y = cy * 40 + 20 - ORIGIN.y;
+      let paved = 0,
+        all = 0;
+      for (let y = Y - 8; y <= Y + 8; y++)
+        for (let x = X - 12; x <= X + 12; x++) {
+          all++;
+          if (baked.classes[y * PLATE_W + x] === CLASS.C) paved++;
+        }
+      if (paved * 2 > all) out.push({ x: cx, y: cy });
+    }
+  return out;
+}
+
 export function chimneys(baked: Baked): { x: number; y: number }[] {
   const out: { x: number; y: number }[] = [];
   for (const p of baked.placed) {
@@ -1293,6 +1320,7 @@ async function dataModule(
   w: number,
   h: number,
   smoke: { x: number; y: number }[],
+  paved: { x: number; y: number }[],
 ): Promise<string> {
   const ground = {
     url: `${URL_ROOT}/ground.webp`,
@@ -1323,6 +1351,9 @@ async function dataModule(
     '',
     "/** Where smoke leaves each house's drawn chimney, in fractional cells (`MapScene.chimneys`). */",
     `export const BA_DAN_TOPDOWN_CHIMNEYS: readonly { readonly x: number; readonly y: number }[] = ${JSON.stringify(smoke)};`,
+    '',
+    '/** The cells a figure stands on paving in, as the bake laid it (`MapScene.pavedCells`). */',
+    `export const BA_DAN_TOPDOWN_PAVED: readonly { readonly x: number; readonly y: number }[] = ${JSON.stringify(paved)};`,
     '',
   ].join('\n');
   return format(text, { ...(await resolveConfig(DATA)), filepath: DATA });
