@@ -823,7 +823,7 @@ export class CombatScene implements Scene {
       actorId: unit.id,
       round: battle.round,
       turnIndex: battle.turnIndex,
-      returnTilePx: TILE * camera.scale,
+      returnTilePx: camera.tile * camera.scale,
       returnActor: { pos: unit.pos, size: unit.size },
     };
     this.manualCamera = true;
