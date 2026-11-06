@@ -240,6 +240,13 @@ describe('top-down integer zoom: N >= dpr', () => {
     expect(exploreTilePx('topdown')).toBe(120);
     expect(exploreTilePx('oblique')).toBe(96);
     expect(exploreTilePx('orthographic')).toBe(48);
+    // An upright phone steps down to N = 2 so it shows more than three tiles across.
+    expect(exploreTilePx('topdown', 390)).toBe(80);
+    expect(exploreTilePx('topdown', 1180)).toBe(120);
+    expect(exploreTilePx('oblique', 390)).toBe(96);
+    const phone = topdown({ width: 390, height: 844, dpr: 1 }, { width: 24, height: 16 });
+    phone.fitExplore(exploreTilePx('topdown', 390));
+    expect(phone.deviceScale).toBe(2);
     for (const board of BOARDS) {
       const camera = topdown({ width: 1368, height: 912, dpr: 1 }, board);
       camera.fitExplore(exploreTilePx('topdown'));

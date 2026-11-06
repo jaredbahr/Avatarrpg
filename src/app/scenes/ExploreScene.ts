@@ -308,7 +308,9 @@ export class ExploreScene implements Scene {
         this.renderer.camera.centreMargin = map.cameraCentreMargin;
         this.renderer.camera.viewExtent = map.scene?.paintExtent;
       }
-      this.renderer?.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
+      this.renderer?.camera.fitExplore(
+        exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
+      );
       this.renderer?.camera.centreOn(state.location.pos);
       this.rememberViewSize();
     }
@@ -965,7 +967,9 @@ export class ExploreScene implements Scene {
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
     this.app.animator.setProjection(this.renderer.camera.projection);
-    this.renderer.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
+    this.renderer.camera.fitExplore(
+      exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
+    );
     this.renderer.camera.centreOn(state.location.pos);
     this.rememberViewSize();
 
