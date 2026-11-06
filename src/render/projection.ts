@@ -41,6 +41,14 @@ export function groundsSceneAtRuntime(projection: Projection): boolean {
   return projection === 'oblique';
 }
 
+/**
+ * Exploration's preferred CSS px a tile: the top-down board opens at N = 3 on a 1x screen (120 px,
+ * ADR 0104), the oblique one at 96 and the orthographic one at 48.
+ */
+export function exploreTilePx(projection: Projection): number {
+  return projection === 'topdown' ? 3 * TOPDOWN_TILE : projection === 'oblique' ? 96 : 48;
+}
+
 export function projectGround(pos: Vec2, projection: Projection): Vec2 {
   return projection === 'oblique' ? { x: pos.x - pos.y, y: (pos.x + pos.y) / 2 } : pos;
 }

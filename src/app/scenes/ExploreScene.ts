@@ -25,7 +25,7 @@ import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
 import { Renderer } from '../../render/renderer';
-import { usesIntegerZoom } from '../../render/projection';
+import { exploreTilePx, usesIntegerZoom } from '../../render/projection';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
 import { idlePhase } from '../../render/sheets/store';
@@ -308,7 +308,7 @@ export class ExploreScene implements Scene {
         this.renderer.camera.centreMargin = map.cameraCentreMargin;
         this.renderer.camera.viewExtent = map.scene?.paintExtent;
       }
-      this.renderer?.camera.fitExplore(map.projection ? 96 : 48);
+      this.renderer?.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
       this.renderer?.camera.centreOn(state.location.pos);
       this.rememberViewSize();
     }
@@ -965,7 +965,7 @@ export class ExploreScene implements Scene {
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
     this.app.animator.setProjection(this.renderer.camera.projection);
-    this.renderer.camera.fitExplore(map.projection ? 96 : 48);
+    this.renderer.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
     this.renderer.camera.centreOn(state.location.pos);
     this.rememberViewSize();
 
