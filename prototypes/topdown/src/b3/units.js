@@ -56,8 +56,9 @@ function drawSprite(u, img, sx, sy, sw, sh, x, y, alpha = 1) {
 }
 // the Driller: its PixelLab view for the heading (nearest of its eight), the rumbling idle and the slam where animated
 // fixes pass: the slam has per-frame times (a long hold at the top of the wind-up, a short drop onto the hit frame)
-function slamFrame(v, at) { if (!v.ms) return Math.min(v.n - 1, Math.floor(at / 70)); let t = 0; for (let i = 0; i < v.n; i++) { t += v.ms[i]; if (at < t) return i; } return v.n - 1; }
-function slamTimes(v) { if (!v.ms) return { hit: 70 * Math.round(v.n * 0.55), end: 70 * v.n }; let t = 0, h = 0; for (let i = 0; i < v.n; i++) { if (i === v.hit) h = t; t += v.ms[i]; } return { hit: h, end: t }; }
+const SLAM_K = 0.8, slamMs = (v, i) => (i === v.hit ? v.ms[i] : v.ms[i] * SLAM_K);   // pacing pass: wind-up and recovery 20% shorter, the landing frame (and its hit-stop) untouched
+function slamFrame(v, at) { if (!v.ms) return Math.min(v.n - 1, Math.floor(at / 56)); let t = 0; for (let i = 0; i < v.n; i++) { t += slamMs(v, i); if (at < t) return i; } return v.n - 1; }
+function slamTimes(v) { if (!v.ms) return { hit: 56 * Math.round(v.n * 0.55), end: 56 * v.n }; let t = 0, h = 0; for (let i = 0; i < v.n; i++) { if (i === v.hit) h = t; t += slamMs(v, i); } return { hit: h, end: t }; }
 function drillerDraw(u) {
   const D = ASSETS.driller, d = D.rot[u.dir] ? u.dir : 'west';
   let img = IMG[`dr:rot:${d}`], v = D.rot[d], f = 0;
@@ -75,12 +76,17 @@ function unitDraw(u) {
     return drawClip(u, 'idle', 0, u.dir, a, Math.min(6, Math.round(t / 110)));
   }
   if (u.anim === 'bend') return drawClip(u, MOVES[u.move.k].clip, Math.max(0, moveFrame(u)), u.move.dir);
-  if (u.anim === 'attack' && ch[u.clip || 'attack']) { const c = ch[u.clip || 'attack']; return drawClip(u, u.clip || 'attack', Math.min(c.frames - 1, Math.floor(u.at / ATK_MS)), u.dir); }
+  if (u.anim === 'attack' && ch[u.clip || 'attack']) { const c = ch[u.clip || 'attack']; return drawClip(u, u.clip || 'attack', atkFrame(u.at, c.frames), u.dir); }
   if (u.path.length && ch.walk) return drawClip(u, 'walk', Math.floor(u.dist / (STATS[u.k].cycle / ch.walk.frames)), u.dir);
   if (ch.idle) { const calm = (ch.idle.calm || {})[u.dir] || [0]; const n = calm.length, k = Math.floor((clock + u.phase) / 420) % (2 * n - 2 || 1); return drawClip(u, 'idle', calm[k < n ? k : 2 * n - 2 - k], u.dir); }
   drawClip(u, 'rot', 0, u.dir);
 }
-const ATK_MS = 80, WALK_PX = 92;
+// pacing pass (2026-11-06): the same clips, tighter holds. Anticipation frames 62 ms (was 80), the strike frame 84 (was 80, so the blow
+// still lands on a held frame), recovery frames 46 (was 80). Heavy blows keep their hit-stop (hitStop below). Walking 130 px/s (was 92).
+const ATK = { pre: 62, hit: 84, post: 46 }, WALK_PX = 130;
+const atkStrike = n => Math.round(n * 0.55);
+function atkTimes(n) { const s = atkStrike(n); return { strike: ATK.pre * s, end: ATK.pre * s + ATK.hit + ATK.post * Math.max(0, n - s - 1) }; }
+function atkFrame(at, n) { const s = atkStrike(n); if (at < ATK.pre * s) return Math.floor(at / ATK.pre); const a = at - ATK.pre * s; if (a < ATK.hit) return Math.min(n - 1, s); return Math.min(n - 1, s + 1 + Math.floor((a - ATK.hit) / ATK.post)); }
 let hitStop = 0;   // heavy blows freeze the action for a few frames (the slam, the club, the driller)
 function updateUnits(dt) {
   if (hitStop > 0) { hitStop -= dt; for (const u of UNITS) if (u.flash >= 0) u.flash = Math.min(u.flash, 40); return; }
@@ -96,9 +102,9 @@ function updateUnits(dt) {
     }
     if (u.anim === 'attack') {
       u.at += dt; if (u.k === 'grumbler' && ASSETS.driller.slam && ASSETS.driller.slam[u.dir]) { const T = slamTimes(ASSETS.driller.slam[u.dir]); if (!u.struck && u.at >= T.hit) { u.struck = true; u.onStrike && u.onStrike(); } if (u.at >= T.end) { u.anim = 'idle'; u.clip = null; u.done && u.done(); } continue; }
-      const n = u.k === 'grumbler' ? (ASSETS.driller.slam && ASSETS.driller.slam[u.dir] ? ASSETS.driller.slam[u.dir].n : 8) : ((ASSETS.chars[u.k] || {})[u.clip || 'attack'] || { frames: 8 }).frames, per = u.k === 'grumbler' ? 70 : ATK_MS;
-      if (!u.struck && u.at >= per * Math.round(n * 0.55)) { u.struck = true; u.onStrike && u.onStrike(); }
-      if (u.at >= per * n) { u.anim = 'idle'; u.clip = null; u.done && u.done(); }
+      const n = u.k === 'grumbler' ? (ASSETS.driller.slam && ASSETS.driller.slam[u.dir] ? ASSETS.driller.slam[u.dir].n : 8) : ((ASSETS.chars[u.k] || {})[u.clip || 'attack'] || { frames: 8 }).frames, T = atkTimes(n);
+      if (!u.struck && u.at >= T.strike) { u.struck = true; u.onStrike && u.onStrike(); }
+      if (u.at >= T.end) { u.anim = 'idle'; u.clip = null; u.done && u.done(); }
     }
     if (u.anim === 'bend') updateBend(u, dt);
   }

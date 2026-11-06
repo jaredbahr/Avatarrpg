@@ -31,7 +31,7 @@ function standScore(u, x, y) {
   return s;
 }
 async function autoTurn(u) {
-  await wait(750);   // the move preview: where they can walk, as a warm tint
+  await wait(320);   // the move preview: where they can walk, as a warm tint
   let moved = false;
   for (let guard = 0; guard < 2 && u.hp > 0 && !S.over; guard++) {
     const here = { x: u.cx, y: u.cy }, R = moved ? new Map([[u.cx + ',' + u.cy, { d: 0 }]]) : reach(u);
@@ -47,13 +47,13 @@ async function autoTurn(u) {
     }
     if (!best) {   // nothing worth doing from anywhere: close in (or hold) and end the turn
       if (!moved) { let tgt = null, bs = -1e9; for (const [k, v] of R) { if (v.ally) continue; const [x, y] = k.split(',').map(Number); const s = standScore(u, x, y) - Math.min(...alive('foe').map(o => udist(o, { x, y }))) * (u.k === 'bo' ? 2 : 1); if (s > bs) { bs = s; tgt = [x, y]; } }
-        if (tgt && (tgt[0] !== u.cx || tgt[1] !== u.cy)) await moveUnit(u, tgt[0], tgt[1], 500); }
+        if (tgt && (tgt[0] !== u.cx || tgt[1] !== u.cy)) await moveUnit(u, tgt[0], tgt[1], 220); }
       break;
     }
-    if (best.x !== here.x || best.y !== here.y) { await moveUnit(u, best.x, best.y, 550); moved = true; await wait(120); if (u.cx !== best.x || u.cy !== best.y) continue; }
+    if (best.x !== here.x || best.y !== here.y) { await moveUnit(u, best.x, best.y, 240); moved = true; if (u.cx !== best.x || u.cy !== best.y) continue; }
     // the forecast as the player sees it: the area on the ground, the ring on the target, the plaque, then the blow
-    S.ab = best.ab; S.aim = best.t; S.preview = forecast(u, best.ab, best.t); focus = { x: (u.x + cellX(best.t[0])) / 2, y: (u.y + cellY(best.t[1])) / 2 };
-    await wait(1100);
+    S.ab = best.ab; S.aim = best.t; S.preview = forecast(u, best.ab, best.t); focus = { x: (u.x + cellX(best.t[0])) / 2, y: (u.y + cellY(best.t[1])) / 2, pts: [u, { x: cellX(best.t[0]), y: cellY(best.t[1]) }] };
+    await wait(540);
     for (const t of best.f.tips) used.add(t);
     if (best.ab === 'earth_wall') used.add('Raises a Wall');
     await useAbility(u, best.ab, best.t);

@@ -10,6 +10,8 @@ const MOVES = {
 for (const k of ['whip', 'stomp', 'blast']) { if (!ASSETS.chars.kaya[k]) continue; const n = ASSETS.chars.kaya[k].frames; MOVES[k].ms = Array.from({ length: n }, (_, i) => (i === MV[k].strike ? 150 : 70)); }
 if (!ASSETS.chars.kaya.blast) MOVES.blast = MOVES.jab;
 for (const k in MOVES) MOVES[k].strike = MV[k].strike;
+// pacing pass: Kaya's bends keep their strike frame; the wind-up frames run 18% and the follow-through 28% faster
+for (const k in MOVES) { const m = MOVES[k]; if (m.paced) continue; m.ms = m.ms.map((v, i) => (i === m.strike ? v : v * (i < m.strike ? 0.82 : 0.72))); m.paced = true; }
 const shots = [], bursts = [], embers = [], flashes = [], arcs = [], rings = [], bolts = [], dusts = [], nums = [];
 let shake = 0, shakeAmp = 2;
 function moveFrame(u) { let t = u.move.t; const ms = MOVES[u.move.k].ms; for (let i = 0; i < ms.length; i++) { if (t < ms[i]) return i; t -= ms[i]; } return -1; }
@@ -30,7 +32,7 @@ function fireJab(u, tx, ty, onHit) {
 function fireWhip(u) { const d = u.move.dir, [ux, uy] = VEC8[d]; arcs.push({ d, x: u.x + ux * 12, y: u.y - 22 + uy * 12, t: 0, sort: u.y + (uy < 0 ? -6 : 6) }); for (let i = -1; i <= 1; i++) flashes.push({ x: u.x + ux * 36 - uy * 22 * i, y: u.y + uy * 30 + ux * 10 * i, t: -60 * (i + 1), life: 260, r: 12 }); shake = 140; shakeAmp = 1; }
 function fireStomp(u) { rings.push({ x: u.x, y: u.y, t: 0 }); flashes.push({ x: u.x, y: u.y, t: 0, life: 360, r: 26 }); shake = 260; shakeAmp = 2; }
 // a thrown thing (a sling stone, a water lash): a short arc from hand to target, then an impact
-function throwBolt(kind, fromU, to, onHit, look) { const d = Math.hypot(to.x - fromU.x, to.y - fromU.y); bolts.push({ kind, look, x0: fromU.x, y0: fromU.y - 24, x1: to.x, y1: to.y - 16, t: 0, life: kind === 'water' ? 360 : kind === 'bolt' ? Math.max(160, d * 1.1) : Math.max(260, d * 2), onHit }); }
+function throwBolt(kind, fromU, to, onHit, look) { const d = Math.hypot(to.x - fromU.x, to.y - fromU.y); bolts.push({ kind, look, x0: fromU.x, y0: fromU.y - 24, x1: to.x, y1: to.y - 16, t: 0, life: kind === 'water' ? 290 : kind === 'bolt' ? Math.max(140, d * 0.9) : Math.max(210, d * 1.5), onHit }); }
 // v3: the painted effects (PixelLab /vfx, lite artist): one-shots placed by their own pivot; flipped (never rotated) to face west
 const vfxs = [];
 function vfxAt(k, x, y, o = {}) { if (ASSETS.vfx13 && ASSETS.vfx13[k]) vfxs.push({ k, x, y, t: 0, flip: !!o.flip }); }
@@ -49,7 +51,7 @@ function popText(u, s, col = '#f6eed6') { nums.push({ x: u.x, y: u.y - 58 - (num
 function popTextAt(x, y, s, col = '#f6eed6') { nums.push({ x, y, s, t: 0, col, life: 1500 }); }
 function updateFx(dt) {
   for (const s of shots) {
-    const dx = s.tx - s.x, dy = s.ty - s.g, d = Math.hypot(dx, dy), st = 320 * dt / 1000; s.t += dt;
+    const dx = s.tx - s.x, dy = s.ty - s.g, d = Math.hypot(dx, dy), st = 440 * dt / 1000; s.t += dt;
     if (d <= st) { s.done = true; embers.push({ x: s.tx, y: s.ty - s.h, t: 0 }); flashes.push({ x: s.tx, y: s.ty, t: 0, life: 260, r: 14 }); shake = 120; shakeAmp = 1; s.onHit && s.onHit(); continue; }
     s.x += dx / d * st; s.g += dy / d * st; s.h = Math.max(8, s.h - 6 * dt / 1000); flashes.push({ x: s.x, y: s.g, t: 0, life: 90, r: 7 });
   }

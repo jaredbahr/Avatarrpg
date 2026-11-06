@@ -142,8 +142,11 @@ if MODE != 'forest':
             dr[clip][d] = {'src': uri(s), 'w': w, 'h': h, 'n': len(ims)}
             if clip == 'slam': dr[clip][d].update({'ms': slam_ms(len(ims), SLAM[d][1], SLAM[d][2]), 'hit': SLAM[d][1]})
     out['driller'] = dr
-js = '\n'.join(open(H / 'src' / 'b3' / f).read() for f in ['levels.js', 'head.js']) + '\n' + open(H / 'src' / 'v8' / 'shadow.js').read() + '\n' + \
-     '\n'.join(open(H / 'src' / 'b3' / f).read() for f in ['world_forest.js', 'world_quarry.js', 'units.js', 'rules.js', 'surfvis.js', 'fx.js', 'combat.js', 'auto.js', 'draw.js'])
-html = open(H / 'src' / 'b3' / 'index.html').read().replace('/*ASSETS*/', 'const ASSETS = ' + json.dumps(out) + ';').replace('/*GAME*/', js)
-dst = H / ('forest-combat.html' if MODE == 'forest' else 't13/board.html')
+import os
+SRCD = H / 'src' / os.environ.get('B3SRC', 'b3'); PROF = os.environ.get('B3PROF') == '1'   # B3PROF=1: add the measuring hooks (src/b3tools/prof.js), never shipped
+js = '\n'.join(open(SRCD / f).read() for f in ['levels.js', 'head.js']) + '\n' + open(H / 'src' / 'v8' / 'shadow.js').read() + '\n' + \
+     '\n'.join(open(SRCD / f).read() for f in ['world_forest.js', 'world_quarry.js', 'units.js', 'rules.js', 'surfvis.js', 'fx.js', 'combat.js', 'auto.js', 'draw.js'])
+if PROF: js = js.replace('const wait = ', 'let wait = ', 1) + '\n' + open(H / 'src' / 'b3tools' / 'prof.js').read()
+html = open(SRCD / 'index.html').read().replace('/*ASSETS*/', 'const ASSETS = ' + json.dumps(out) + ';').replace('/*GAME*/', js)
+dst = H / (os.environ.get('B3OUT') or ('forest-combat.html' if MODE == 'forest' else 't13/board.html'))
 dst.write_text(html); print('wrote', dst.name, len(html) // 1024, 'KiB', {c: list(v) for c, v in out['chars'].items()})
