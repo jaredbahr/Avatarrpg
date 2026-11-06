@@ -36,7 +36,25 @@ aim/confirmation preference locking, manual-camera guards and DPR rounding.
 Only the oblique branch changes; top-down Recentre and the T1 projection stay as
 merged. No CSS, art, rule, helper, test expectation or budget changes.
 
-Root claimed this old-oblique scope in issue #423 comment 6621758035 before edits.
+The first candidate's full native run passed 16 of 17 cases, including all three
+framing profiles. Its forced software-WebGL manual-pan case opened the Water
+Barrel inspector during the multi-second native press/drag and then timed out
+trying to click Fire Jab through that modal. The unchanged main `3afb1405` trace
+independently shows the same dialog before mouse release. This predates the
+compact guard; it is an accidental inspection precondition in the pan fixture.
+Original reports and traces are retained, including setup attempts that ran no
+tests. No failed run is relabelled as a pass.
+
+The claimed fixture correction selects the nearest of nine canvas points whose
+actual inspect resolution has no unit body, living/fallen footprint or prop.
+Both the origin and endpoint must remain inside the canvas, and the origin must
+resolve inside the battle grid. The target-centred drag delta, real mouse
+down/two-step move/up, original assertions and budgets stay unchanged. A new
+post-drag zero-dialog assertion reports any future contamination at its cause.
+The game still honours long presses; the test never suppresses or closes a modal.
+
+Root claimed the old-oblique scope and, after the diagnosed native failure, the
+narrow default-pan fixture scope in issue #423 comment 6621758035 before edits.
 The earlier handoff request is #436/6676531278. T1 subsequently closed as completed
 and PR437 merged; current open-PR file scopes show no other active owner of this
 hunk. Root's existing PR357 has a separate camera feature hunk and must integrate
