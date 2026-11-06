@@ -1,5 +1,55 @@
 # Ba Dan Lane — top-down PixelLab test
 
+## Houses redrawn with volume (v15 page; previous page kept as `badan-topdown-v14.html`, `badan-overview-v14.png`)
+Jared: "Some houses don't feel like they're 3D, almost as if they are placed on top of the world." v13's code cues (eave band, side strip,
+plinth) were quiet at 1x, so the six houses were regenerated.
+- **Art:** `tools/v14gen.py` (create-object-pro-flash, low top-down, oven as the ONE reference, size in px against Kaya, 256 px canvas, prompt in the file),
+  raw in `v14/raw/`, picks in `v14/pick.json`, door x in `v14/door.json`. `tools/v14proc.py`: 1-bit alpha, largest component, outline recoloured
+  (PixelLab's #1c1719 -> a darker tone of the neighbouring material), sprite padded so the door stays on the sprite's centre (so `put()` keeps every
+  door, route and talk point). Result in `assets/objects_bd13/`; the v13 houses are `assets/objects_bd13-v1/` and `src/v13-v1/`.
+- **Seeds:** gao 4, mira 4, ne 4, se 4, merchant 5, pella 8 (retaken for a darker side wall).
+- **Code:** `src/v13/ground.js` `houseSideShadow` now follows the side wall's own foot line (hard 5 px band under it, short tail past the far end);
+  `houseDoorstep` no longer paints a 36 px slab (the art has its steps), only earth tracked onto the step's foot and a contact line. Wall-foot band,
+  skirt, the ported hardShadowMask (band 6, overhang) unchanged. `src/v13/objects.js`: the blossom tree at (790, 236) removed (it poked out of
+  Mira's new roof as a red blob). v13's eave/side-strip/plinth code is not used (`tools/v13houses.py` is no longer in `v13build.sh`).
+- **Build:** `sh tools/v13build.sh` (now runs `v14proc.py`), `python3 tools/build_tut.py`. Checks: `tools/v14crops.js` + `tools/v14combine.py`
+  (qcrops/houses-<name>-{1x,3x}.png, before | after), `tools/v14shadow.js`, `tools/v14video.js` (badan-houses.mp4).
+
+## Fixes pass (2026-11-05): Driller slam, painted effects, quarry bender, Ruon, Sura's south eyes
+- **Driller slam:** `t13driller.py anim slam2|slam3`: all eight headings now wind up (drill arm hauled high, 2 held frames, one fast drop, dust),
+  per-frame times and the hit frame in `build_b3.py` (`SLAM`, `slam_ms`) and `units.js` (`slamFrame`, `slamTimes`). Hit-stop kept (170 ms).
+- **Painted effects removed:** Kaya jab/blast/stomp and the deserter's punch regenerated as "martial-arts" clips (`t13chars.py`, the `*2` clips); no element words in the prompt.
+- **Quarry bender:** `throw2` (empty hands, headcloth named in the prompt). **Ruon:** new character `t13_ruon` (old one `t13_ruon-v1`) from the portrait.
+- **Sura:** only the SOUTH heading's eyes (blank white pair) got an inner iris pixel (`tools/t13sura_south.py`); every other file byte-identical to `fc_sura-v1`.
+- Previous versions: `*-v1` folders, `forest-combat-v4.html`, `tutorial-demo-v4.html`, `t13/board-v4.html`, `badan-topdown-v13.html`. Video: `fixes-tour.mp4`. Crops: `qcrops/*-before-after.png`, `qcrops/sura-headings.png`.
+
+## Combat pacing pass (2026-11-06): same rules, about 40% less wall-clock at 1x
+
+Jared: "go ahead and do it" (fights are long at real HP). **No HP, damage, roster or rule changed**; only presentation and flow.
+- **Measured first** (`tools/pacerun.js` on a `B3PROF=1` build: `src/b3tools/prof.js` classifies every 33 ms tick and logs every
+  move, blow, hurt, status and the rules RNG state). Before, at 1x, auto-played: forest 62.6 s, gate 102.8, cutting 108.3, floor 161.5.
+  The time went to: idle waits 38-42% (the demo player's 750 + 1100 ms preview/forecast holds alone were 13-26 s per fight, enemy
+  300+250+80 ms gaps, 300 ms after every blow, 500-900 ms turn gaps), walking 17-30%, blow poses 18-26%, banners 5 s, camera
+  easing never settling (moving 53-60% of the time).
+- **After:** forest 37.6 s (-40%), gate 61.1 (-41%), cutting 62.1 (-43%), floor 97.3 (-40%). Event logs (every move, blow, hurt,
+  status, final HP, positions, surfaces and the RNG state) are identical to v6 in all four fights, and identical at 2x, 3x and with
+  skip taps (`w2/cmp.js`).
+- **What changed:** walking 130 px/s (was 92; stride cycle unchanged so feet do not slide more); blow poses 62 ms anticipation / 84 ms
+  strike frame / 46 ms recovery (was 80 flat); Kaya's bends 18% / 28% shorter around an untouched strike frame; the Driller's slam
+  wind-up and recovery 20% shorter, landing frame and **hit-stops untouched**; projectiles 440 px/s (was 320), bolts about 25% shorter;
+  a blow resolves at its strike and the turn passes after a 110 ms tail (was the whole pose + 300 ms), so the next unit starts while
+  the last one recovers (`settle(u)` keeps a unit from walking out of its own pose); enemy turn gaps 390 -> 200 ms; the demo player's
+  holds 750/1100 -> 320/540 ms; intro banner 2.6 -> 2.0 s, victory 2.6 -> 1.7 s; the camera holds while the focus (or either end of a
+  blow) is inside the middle of the view and otherwise eases at 6.5/s (was 3.2/s, always chasing).
+- **Speed toggle** (top-right, 48 px, cycles 1x/2x/3x, keys 1/2/3, remembered per session in `sessionStorage` and the top window).
+  It scales the game clock only (`advance()` in `draw.js`). **Tap the board while nothing waits for you to skip**: x6 until the
+  playing action resolves (max 1.4 s). Hooks for tests: `__advReal(ms)`, `__setSpeed(n)`, `__skip()`.
+- **Checks:** `node tools/pacerun.js t13/prof-new-board.html <forest|gate|cutting|floor> [variant|-] [speed] [skip]` then `node w2/cmp.js a.json b.json`.
+  Builds: `B3SRC=b3-v6 B3PROF=1 B3OUT=t13/prof-v6-board.html python3 tools/build_b3.py tutorial` is the before build. Previous builds
+  kept: `forest-combat-v6.html`, `tutorial-demo-v6.html`, `t13/board-v6.html`, sources `src/b3-v6/`.
+- **Not done:** enemies do not walk at the same time (resolution order and the per-step contact rolls must stay sequential for the RNG
+  stream; only recovery overlaps the next turn). The shell's title cards before a fight (1.6 s) are untouched.
+
 ## v13 / tutorial pass: both areas polished, and the whole tutorial from Ba Dan to the Driller (2026-11-05)
 
 Jared: "This is great. Write all this work to GitHub. Let's polish both these areas. Then run the demo from Ba Dan to the

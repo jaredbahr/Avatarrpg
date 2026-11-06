@@ -9,6 +9,15 @@ function resize() {
   cv.width = view.w; cv.height = view.h; cv.style.width = (view.w * zd / dpr) + 'px'; cv.style.height = (view.h * zd / dpr) + 'px'; ctx.imageSmoothingEnabled = false;
 }
 addEventListener('resize', resize);
+// pacing pass: in a fight the camera holds still while whatever it is following is comfortably on screen, and eases (time constant
+// ~150 ms, was ~310) only when the focus, or either end of a blow (focus.pts), leaves the middle of the view. Exploring keeps the follow cam.
+let camGoal = null;
+function camNeedsMove(f, cx, cy) {
+  if (!camGoal || MODE === 'explore' || OVERVIEW) return true;
+  const mx = Math.min(64, view.w * 0.18), my = Math.min(56, view.h * 0.2);
+  for (const p of f.pts || [f]) { const sx = p.x - cam.x, sy = p.y - 20 - cam.y; if (sx < mx || sx > view.w - mx || sy < my + 24 || sy > view.h - my) return true; }
+  return false;
+}
 function updateCamera(dt) {
   const f = focus || { x: GX + 10 * CS, y: GY + 6 * CS };
   const tx = f.x - view.w / 2, ty = f.y - 20 - view.h / 2;
@@ -24,8 +33,10 @@ function updateCamera(dt) {
       cx = Math.max(0, Math.min(PW - view.w, cx)); cy = Math.max(0, Math.min(PH - view.h, cy));
     }
   }
-  if (!cam.init) { cam.x = cx; cam.y = cy; cam.init = true; }
-  const k = 1 - Math.exp(-3.2 * dt / 1000); cam.x += (cx - cam.x) * k; cam.y += (cy - cam.y) * k;
+  let boss = false; for (const u of typeof UNITS !== 'undefined' ? UNITS : []) if (u.k === 'grumbler' && u.ko < 0) { const bt = u.y - 106, bb = u.y + 12; boss = bb > cam.y && bt < cam.y + view.h && (bb > cam.y + view.h || bt < cam.y); }   // part of the machine cut off: re-aim
+  if (!cam.init) { cam.x = cx; cam.y = cy; cam.init = true; camGoal = { x: cx, y: cy }; }
+  else if (boss || camNeedsMove(f, cx, cy)) camGoal = { x: cx, y: cy };
+  const k = 1 - Math.exp(-(MODE === 'explore' ? 3.2 : 6.5) * dt / 1000); cam.x += (camGoal.x - cam.x) * k; cam.y += (camGoal.y - cam.y) * k;
   cam.rx = Math.round(cam.x); cam.ry = Math.round(cam.y);
   if (shake > 0) { cam.rx += Math.round((rnd() * 2 - 1) * shakeAmp); cam.ry += Math.round((rnd() * 2 - 1) * shakeAmp); }
 }
@@ -111,6 +122,19 @@ function update(dt) {
   for (const w of WALLS) w.t += dt;
   updateUnits(dt); updateFx(dt); updateCamera(dt);
 }
+// ---------- speed and skip (pacing pass). The toggle scales the game clock only: every wait, walk, pose and effect runs the same code on a
+// longer step, and the rules never read a clock, so the event log is the same at 1x, 2x and 3x (and with a skip). A tap on the board
+// while nothing waits for the player fast-forwards (x6) until the action that is playing resolves.
+let SPEEDX = 1, FAST = 1, fastLeft = 0;
+try { const s = +(sessionStorage.getItem('fnt.speed') || (window.top && window.top.__fntSpeed) || 1); if (s === 2 || s === 3) SPEEDX = s; } catch (e) { try { const s = +(window.top.__fntSpeed || 1); if (s === 2 || s === 3) SPEEDX = s; } catch (e2) { /* no storage */ } }
+function setSpeed(n) { SPEEDX = n === 2 || n === 3 ? n : 1; try { sessionStorage.setItem('fnt.speed', String(SPEEDX)); } catch (e) { /* private mode */ } try { window.top.__fntSpeed = SPEEDX; } catch (e) { /* cross-origin */ } const b = document.getElementById('spd'); if (b) { b.textContent = SPEEDX + 'x'; b.setAttribute('aria-label', 'Combat speed ' + SPEEDX + 'x, tap to change'); } }
+function skipAnim() { if (S.over || MODE === 'explore') return; FAST = 6; fastLeft = 1400; }
+function skipEnd() { FAST = 1; fastLeft = 0; }
+function advance(ms) {
+  if (FAST > 1) { fastLeft -= ms; if (fastLeft <= 0) skipEnd(); }
+  ms *= SPEEDX * FAST;
+  while (ms > 0) { const d = Math.min(1000 / 30, ms); update(d); ms -= d; }
+}
 let PARLEY = null;
 Promise.all(loads).then(() => {
   if (LV.ground === 'forest') placeForest(); else placeQuarry();
@@ -126,12 +150,16 @@ Promise.all(loads).then(() => {
     tapCell(Math.floor((wx - GX) / CS), Math.floor((wy - GY) / CS));
   });
   setTop('');
+  { const b = document.getElementById('spd'); if (b && !OVERVIEW && MODE !== 'explore') { b.style.display = 'block'; b.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); setSpeed(SPEEDX % 3 + 1); }; } setSpeed(SPEEDX); }
+  addEventListener('keydown', e => { if (e.key === '1' || e.key === '2' || e.key === '3') setSpeed(+e.key); });
   const begin = auto => { if (MODE === 'explore') runExplore(auto); else runBattle(auto); };
   // the tutorial shell holds a board until its dialogue is done (the gate's parley), then starts it
   window.AREA_API = { start: o => { PARLEY = null; begin(REC || (o && o.auto)); }, state: () => ({ over: S.over, result: S.result, round: S.round, exited }) };
   if (OVERVIEW) { cam.rx = cam.ry = 0; render(); window.__ready = true; return; }
   if (REC) {
-    window.__adv = ms => { while (ms > 0) { const d = Math.min(1000 / 30, ms); update(d); ms -= d; } render(); };
+    window.__adv = ms => { while (ms > 0) { const d = Math.min(1000 / 30, ms); update(d); ms -= d; } render(); };   // game time, unscaled (the shell and the recorder step it)
+    window.__advReal = ms => { advance(ms); render(); };   // wall time the way the real loop plays it: scaled by the speed toggle and a skip
+    window.__setSpeed = n => setSpeed(n); window.__skip = () => skipAnim();
     window.__auto = () => begin(true);
     window.__zoom = z => { zoomOverride = z; resize(); };
     window.__focus = (x, y) => { focus = x == null ? null : { x, y }; };
@@ -139,6 +167,6 @@ Promise.all(loads).then(() => {
     window.__ready = true; tellShell({ type: 'ready' }); return;
   }
   if (!(AREA && AREA.hold)) begin(Q.get('auto') === '1');
-  const loop = now => { const dt = last ? Math.min(50, now - last) : 16; last = now; update(dt); render(); requestAnimationFrame(loop); };
+  const loop = now => { const dt = last ? Math.min(50, now - last) : 16; last = now; advance(dt); render(); requestAnimationFrame(loop); };
   requestAnimationFrame(loop); tellShell({ type: 'ready' });
 });
