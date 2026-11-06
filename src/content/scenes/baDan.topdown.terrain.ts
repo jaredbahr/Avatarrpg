@@ -316,7 +316,8 @@ function vtRaw(vx: number, vy: number): Terrain {
   if (vx >= FORD.x0 - 1 && vx <= FORD.x1 + 1 && vy === FORD.lipRow) return 'C';
   if (
     lineD(vx, vy, RIVER_PATH.points) <=
-    RIVER_PATH.halfWidth + vnoise(vx, vy, NOISE.pathSpill[0], NOISE.pathSpill[1]) * RIVER_PATH.wander
+    RIVER_PATH.halfWidth +
+      vnoise(vx, vy, NOISE.pathSpill[0], NOISE.pathSpill[1]) * RIVER_PATH.wander
   )
     return 'D';
   if (paved(vx, vy)) return 'C';
