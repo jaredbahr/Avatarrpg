@@ -379,6 +379,43 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
   const VOID = cliffPatterns.void as unknown as Rgb;
   fill(g, 0, 0, PW, PH, VOID);
 
+  /**
+   * A grass/dirt tile from the dirt Wang set. Its dirt pixels are re-sampled from the plain dirt
+   * tile by the quilt wherever they match the plain tile's own colours, so the streaks keep breaking
+   * up to the drawn edge, which (and its rim) is the Wang tile's.
+   */
+  const pureDirt = src.wang.dirt.get('0000');
+  const dirtColours = new Set<number>();
+  if (pureDirt)
+    for (let i = 0; i < T * T; i++)
+      dirtColours.add(
+        (at(pureDirt.data, i * 4) << 16) |
+          (at(pureDirt.data, i * 4 + 1) << 8) |
+          at(pureDirt.data, i * 4 + 2),
+      );
+  const dirtEdge = (x: number, y: number, c: readonly Terrain[]): void => {
+    const bits = c.map((v) => (TILE_KEY.dirt === v ? '1' : '0')).join('');
+    const tile = src.wang.dirt.get(bits);
+    if (!tile || !pureDirt) throw new Error(`missing dirt tile ${bits}`);
+    for (let py = 0; py < T; py++)
+      for (let px = 0; px < T; px++) {
+        const j = (py * T + px) * 4,
+          wx = x * T + px,
+          wy = y * T + py,
+          o = (wy * PW + wx) * 4;
+        const r = at(tile.data, j),
+          gg = at(tile.data, j + 1),
+          b = at(tile.data, j + 2);
+        const plain = dirtColours.has((r << 16) | (gg << 8) | b);
+        const k = dirtIndex(wx, wy);
+        d[o] = plain ? at(pureDirt.data, k) : r;
+        d[o + 1] = plain ? at(pureDirt.data, k + 1) : gg;
+        d[o + 2] = plain ? at(pureDirt.data, k + 2) : b;
+        d[o + 3] = 255;
+        classes[wy * PW + wx] = gg > r + 8 && gg > b + 8 ? CLASS.G : CLASS.D;
+      }
+  };
+
   // 1. terrain: the Wang pairs inside the mass, the cliff set at its rim
   const MIXED: [number, number, Terrain[]][] = [];
   for (let y = 0; y < ROWS; y++)
@@ -411,10 +448,16 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
         }
         continue;
       }
-      // grass, cobble and dirt meet per pixel (the prototype's G/C and G/D pairs, and here also
-      // where the south lane's cobbles meet the river path's dirt)
+      // grass and dirt meet on the dirt Wang set's own transition tiles (their drawn, dark-rimmed
+      // edge), quilted on the dirt side; grass and cobble (and cobble and dirt) meet per pixel, as the
+      // prototype's grass/cobble pairs do
+      const uniform = c.every((v) => v === c[0]);
+      if (!uniform && c.every((v) => v === 'G' || v === 'D')) {
+        dirtEdge(x, y, c);
+        continue;
+      }
       const soft = c.every((v) => v === 'G' || v === 'C' || v === 'D');
-      if (soft && !c.every((v) => v === c[0])) {
+      if (soft && !uniform) {
         MIXED.push([x, y, c]);
         continue;
       }
@@ -519,40 +562,47 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
     }
   }
 
-  // 1c. where a road or court reaches the rim, its paving runs on over the grass lip to a ragged end,
-  // so it never stops on the tile line beside the lip (a straight edge the eye reads as a ruler)
+  // 1c. where a road, court or path reaches the rim, its cobble or dirt runs on over the grass lip to
+  // a ragged end, so it never stops on the tile line beside the lip (a straight edge the eye reads as
+  // a ruler)
   {
-    const pureC = src.wang.gc.get('1111');
-    if (!pureC) throw new Error('missing cobble');
-    const paint = (x: number, y: number): void => {
+    const pureC = src.wang.gc.get('1111'),
+      pureD = src.wang.dirt.get('0000');
+    if (!pureC || !pureD) throw new Error('missing pure tiles');
+    const paint = (x: number, y: number, cls: number): void => {
       const i = y * PW + x,
-        k = (((y % T) * T + (x % T)) * 4) as number;
-      d[i * 4] = at(pureC.data, k);
-      d[i * 4 + 1] = at(pureC.data, k + 1);
-      d[i * 4 + 2] = at(pureC.data, k + 2);
-      classes[i] = CLASS.C;
+        k = cls === CLASS.D ? dirtIndex(x, y) : ((y % T) * T + (x % T)) * 4,
+        t = cls === CLASS.D ? pureD : pureC;
+      d[i * 4] = at(t.data, k);
+      d[i * 4 + 1] = at(t.data, k + 1);
+      d[i * 4 + 2] = at(t.data, k + 2);
+      classes[i] = cls;
     };
-    // along each side: (start, step) for a run from the last ground pixel out over the lip
-    const runs: [number, number, number, number][] = [];
-    for (let y = 0; y < PH; y++) {
-      for (let x = 1; x < PW; x++)
-        if (classes[y * PW + x - 1] === CLASS.G && classes[y * PW + x] === CLASS.C && x % T === 0)
-          runs.push([x - 1, y, -1, 0]);
-      for (let x = 0; x < PW - 1; x++)
-        if (
-          classes[y * PW + x] === CLASS.C &&
-          classes[y * PW + x + 1] === CLASS.G &&
-          (x + 1) % T === 0
-        )
-          runs.push([x + 1, y, 1, 0]);
-    }
-    for (const [x0, y, dx] of runs) {
-      const tx = Math.floor(x0 / T),
-        ty = Math.floor(y / T);
-      if (!tileCorners(tx, ty).includes('V')) continue; // only over the rim's lip tile
-      const reach = 10 + Math.round(vnoise(x0, y, 39, 3) * 6);
-      for (let k = 0, x = x0; k < reach && classes[y * PW + x] === CLASS.G; k++, x += dx)
-        paint(x, y);
+    const paving = (c: number | undefined): boolean => c === CLASS.C || c === CLASS.D;
+    // (first lip pixel x, y, step x, step y, the paving's class), across every tile line
+    const runs: [number, number, number, number, number][] = [];
+    for (let y = 0; y < PH; y++)
+      for (let x = 0; x < PW; x++) {
+        const here = classes[y * PW + x];
+        if (!paving(here) || here === undefined) continue;
+        if (x % T === 0 && x > 0 && classes[y * PW + x - 1] === CLASS.G)
+          runs.push([x - 1, y, -1, 0, here]);
+        if ((x + 1) % T === 0 && x + 1 < PW && classes[y * PW + x + 1] === CLASS.G)
+          runs.push([x + 1, y, 1, 0, here]);
+        if (y % T === 0 && y > 0 && classes[(y - 1) * PW + x] === CLASS.G)
+          runs.push([x, y - 1, 0, -1, here]);
+        if ((y + 1) % T === 0 && y + 1 < PH && classes[(y + 1) * PW + x] === CLASS.G)
+          runs.push([x, y + 1, 0, 1, here]);
+      }
+    for (const [x0, y0, dx, dy, cls] of runs) {
+      if (!tileCorners(Math.floor(x0 / T), Math.floor(y0 / T)).includes('V')) continue; // the lip tile only
+      const reach = 10 + Math.round(vnoise(x0, y0, 39, 3) * 6);
+      for (
+        let k = 0, x = x0, y = y0;
+        k < reach && classes[y * PW + x] === CLASS.G;
+        k++, x += dx, y += dy
+      )
+        paint(x, y, cls);
     }
   }
 
