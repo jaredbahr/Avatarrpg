@@ -24,6 +24,29 @@ export interface TopDownPresentation {
  */
 export const TOPDOWN_PRESENTATIONS: ReadonlyMap<string, TopDownPresentation> = new Map();
 
+/**
+ * Scene fields read by core rules must survive a presentation swap. Keep this list in sync with
+ * `map.scene` reads under `src/core/`; `paintedRubble` is read by
+ * `battleReturnTile` (`src/core/story/battleReturn.ts`) when seating the party after a fight.
+ */
+export const TOPDOWN_RULE_SCENE_FIELDS = [
+  'paintedRubble',
+] as const satisfies readonly (keyof MapScene)[];
+
+function topDownScene(mapScene: MapScene | undefined, presentationScene: MapScene): MapScene {
+  const carried = Object.fromEntries(
+    TOPDOWN_RULE_SCENE_FIELDS.flatMap((field) => {
+      const source = mapScene?.[field];
+      return presentationScene[field] === undefined && source !== undefined
+        ? [[field, source]]
+        : [];
+    }),
+  ) as Pick<MapScene, (typeof TOPDOWN_RULE_SCENE_FIELDS)[number]>;
+  return Object.keys(carried).length === 0
+    ? presentationScene
+    : { ...presentationScene, ...carried };
+}
+
 /** One map in its top-down presentation: the same rules objects, a new projection and scene. */
 export function topDownMap(map: MapDef, presentation: TopDownPresentation): MapDef {
   const {
@@ -36,7 +59,7 @@ export function topDownMap(map: MapDef, presentation: TopDownPresentation): MapD
   return {
     ...rules,
     projection: presentation.projection,
-    scene: presentation.scene,
+    scene: topDownScene(map.scene, presentation.scene),
     ...(presentation.cameraCentreMargin !== undefined && {
       cameraCentreMargin: presentation.cameraCentreMargin,
     }),
