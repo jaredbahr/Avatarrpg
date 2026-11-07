@@ -1676,6 +1676,10 @@ const STANDING: readonly (readonly [number, number])[] = [
 /** How far apart the mouth check samples its walk to the rim, in world px. */
 const MOUTH_STEP = 4;
 
+/** How far apart the foot and root checks sample, and how far either side of the trunk the root reads. */
+const FOOT_STEP = 4;
+const ROOT_REACH = 4;
+
 const outward: Readonly<Record<MapEdgeSide, Vec2>> = {
   north: { x: 0, y: -1 },
   south: { x: 0, y: 1 },
@@ -1693,7 +1697,12 @@ const outward: Readonly<Record<MapEdgeSide, Vec2>> = {
  * - every exit cell (the map's exit, each exit's cells, every `exit` edge) is a cell of a rim mouth,
  *   and every mouth cell runs on a road or path, with nothing solid on it, out to the rim within
  *   the layout's reach;
- * - a slot sits on its NPC's cell, and no solid object covers it.
+ * - a slot sits on its NPC's cell, and no solid object covers it;
+ * - no standing object (a house, a tree, a prop) has its foot on the water's edge, the canal's kerb
+ *   or the ford's lip, or in the water, unless it is a deck (owner, 2026-11-07: "this wall on the
+ *   canal is off");
+ * - a tree or a bush is rooted in soil, grass or worn dirt, never on paving or a kerb ("the tree is
+ *   growing out of cobblestone").
  */
 export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): string[] {
   const problems: string[] = [];
@@ -1728,6 +1737,42 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
           );
       }
       if (object.deck) deckCells.add(key(cell.x, cell.y));
+    }
+  }
+  // The foot: the object's base line (the row above `base`) across its footprint's columns, a few
+  // px in from either side, the way the bake stands the sprite there.
+  const rootOn = (at: { ground: string; terrain: string; kerb?: boolean }): string =>
+    at.ground !== 'ground' ? at.ground : at.kerb ? 'the kerb' : at.terrain === 'C' ? 'paving' : '';
+  for (const object of layout.objects) {
+    if (
+      object.deck ||
+      (object.kind !== 'house' && object.kind !== 'tree' && object.kind !== 'prop')
+    )
+      continue;
+    const xs = object.footprint.map((c) => c.x);
+    const y = object.base - 1;
+    for (
+      let x = Math.min(...xs) * TOPDOWN_CELL + FOOT_STEP;
+      x <= (Math.max(...xs) + 1) * TOPDOWN_CELL - FOOT_STEP;
+      x += FOOT_STEP
+    ) {
+      const at = layout.terrain.classify(x, y);
+      if (at.ground === 'water' || at.kerb) {
+        problems.push(
+          `${where} object "${object.id}" stands ${at.kerb ? 'on the kerb' : 'in the water'} at (${x},${y})`,
+        );
+        break;
+      }
+    }
+    if (object.kind !== 'tree') continue;
+    for (let dx = -ROOT_REACH; dx <= ROOT_REACH; dx += 2) {
+      const what = rootOn(layout.terrain.classify(object.x + dx, y));
+      if (what) {
+        problems.push(
+          `${where} tree "${object.id}" is rooted on ${what} at (${object.x + dx},${y}), not soil`,
+        );
+        break;
+      }
     }
   }
   const centre = (x: number, y: number) =>

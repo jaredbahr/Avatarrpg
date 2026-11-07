@@ -242,6 +242,73 @@ describe('the top-down layout rules', () => {
     );
   });
 
+  it('rejects a standing piece with its foot on a kerb or in the water, unless it is a deck', () => {
+    // a canal along the bottom of row 0: kerb stones from y 28, water from y 36 (columns 0-2)
+    const bank = (x: number, y: number) => {
+      const t = terrain().classify(x, y);
+      if (x >= 120 || y >= 40) return t;
+      if (y >= 36) return { ground: 'water' as const, terrain: 'W' as const };
+      return y >= 28 ? { ...t, kerb: true } : t;
+    };
+    const canal = { ...terrain(), classify: bank };
+    const post = { ...rock, id: 'post', footprint: [{ x: 1, y: 1 }] };
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: canal, objects: [post] }))).toEqual([]);
+    const onKerb = { ...post, base: 32 };
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: canal, objects: [onKerb] }))).toEqual([
+      'map "fixture.topdown-layout" top-down layout object "post" stands on the kerb at (44,31)',
+    ]);
+    const inWater = { ...post, base: 39 };
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: canal, objects: [inWater] }))).toEqual([
+      'map "fixture.topdown-layout" top-down layout object "post" stands in the water at (44,38)',
+    ]);
+    // the bridge's deck spans the water: its foot is on the kerb by design
+    const deck = { ...inWater, id: 'deck', kind: 'bridge' as const, solid: false, deck: true };
+    expect(
+      validateTopDownLayout(FIXTURE, layout({ terrain: canal, objects: [rock, deck] })),
+    ).toEqual([]);
+  });
+
+  it('rejects a tree or a bush rooted on paving or a kerb, not soil', () => {
+    // the fixture's road (row 1) is cobble; row 2 is grass
+    const tree: TopDownObject = { ...rock, kind: 'tree', id: 'oak' };
+    expect(validateTopDownLayout(FIXTURE, layout({ objects: [tree] }))).toEqual([
+      'map "fixture.topdown-layout" top-down layout tree "oak" is rooted on paving at (56,75), not soil',
+    ]);
+    // the same piece as a prop (a barrel stack) may stand on the road
+    expect(validateTopDownLayout(FIXTURE, layout({ objects: [rock] }))).toEqual([]);
+    const kerbed = terrain();
+    const onKerb = {
+      ...kerbed,
+      classify: (x: number, y: number) =>
+        y < 40 ? { ...kerbed.classify(x, y), kerb: true } : kerbed.classify(x, y),
+    };
+    const rooted = { ...tree, base: 30 };
+    expect(
+      validateTopDownLayout(FIXTURE, layout({ terrain: onKerb, objects: [rock, rooted] })),
+    ).toContain(
+      'map "fixture.topdown-layout" top-down layout tree "oak" is rooted on the kerb at (56,29), not soil',
+    );
+    // rooted in the grass of row 2, it is sound
+    const grown = { ...tree, base: 116, footprint: [{ x: 1, y: 1 }] };
+    expect(validateTopDownLayout(FIXTURE, layout({ objects: [grown] }))).toEqual([]);
+  });
+
+  it("roots every tree of the real village in soil and keeps every piece off the canal's kerb", () => {
+    const tree = BA_DAN_TOPDOWN_LAYOUT.objects.find((o) => o.id === 'court-blossom-west');
+    const fence = BA_DAN_TOPDOWN_LAYOUT.objects.find((o) => o.id === 'west-fence');
+    if (!tree || !fence) throw new Error('missing');
+    // where the owner saw them (2026-11-07): the tree in the quay's cobble, the fence on the kerb
+    const back = BA_DAN_TOPDOWN_LAYOUT.objects.map((o) =>
+      o === tree ? { ...o, x: 228, base: 236 } : o === fence ? { ...o, base: 236 } : o,
+    );
+    const problems = validateTopDownLayout(village(), { ...BA_DAN_TOPDOWN_LAYOUT, objects: back });
+    expect(problems.some((p) => p.includes('object "west-fence" stands on the kerb'))).toBe(true);
+    expect(
+      problems.some((p) => p.includes('tree "court-blossom-west" is rooted on the kerb')),
+    ).toBe(true);
+    expect(classifyPoint(220, 201)).toEqual({ ground: 'ground', terrain: 'G' });
+  });
+
   it('rejects a slot off its NPC or under a solid piece', () => {
     expect(
       validateTopDownLayout(

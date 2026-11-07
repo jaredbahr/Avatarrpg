@@ -284,6 +284,13 @@ export const FORD = {
   ],
 } as const;
 const FORD_WATER = new Set<number>(FORD.water.map(([x, y]) => y * 1000 + x));
+/**
+ * Soil beds: vertices kept grass whatever the paving or the quay would lay there, so a tree the
+ * rows put on the bank grows from soil, never from stone (owner, 2026-11-07: "the tree is growing
+ * out of cobblestone"). (11, 12) is the bed of the court tree at (5, 5), on the north bank.
+ */
+export const BEDS: readonly (readonly [number, number])[] = [[11, 12]];
+const BED = new Set<number>(BEDS.map(([x, y]) => y * 1000 + x));
 const FORD_LIP = new Set<number>(FORD.lip.map(([x, y]) => y * 1000 + x));
 /** A stretch of worn footpath: a polyline, its half width, and how far its edge wanders. */
 export interface Track extends Road {
@@ -357,6 +364,7 @@ function vtRaw(vx: number, vy: number): Terrain {
   if (vx >= CANAL.from && vx <= CANAL.kerbTo && (vy === CANAL.row - 1 || vy === CANAL.row + 1))
     return 'C';
   if (FORD_LIP.has(vy * 1000 + vx)) return 'C';
+  if (BED.has(vy * 1000 + vx)) return 'G';
   for (const t of RIVER_TRACK)
     if (
       lineD(vx, vy, t.points) <=
@@ -424,21 +432,36 @@ export function tileCorners(tx: number, ty: number): [Terrain, Terrain, Terrain,
 /** What the baked ground is at a point: walkable ground, water, the cliff tile at the lip, or void. */
 export type GroundClass = 'ground' | 'water' | 'cliff' | 'void';
 
+/** What the ground is at a point; `kerb` marks ground on the water's edge. */
+export interface PointClass {
+  readonly ground: GroundClass;
+  readonly terrain: Terrain;
+  /**
+   * Ground in a tile with a water corner: the canal's stone kerbs and the ford's lip, where the
+   * Wang tile draws the edge down to the water. Nothing stands there (`validateTopDownLayout`).
+   */
+  readonly kerb?: boolean;
+}
+
 /**
  * The ground at game world px (x, y), as the bake draws it. A point in a tile with any void corner
  * is on the cliff tile (the lip runs through it), or the void itself where its nearest vertex is
  * void; otherwise its nearest vertex's terrain decides (each quarter of a Wang tile follows its
- * corner), and water is water.
+ * corner), and water is water. Ground in a tile with a water corner is kerb.
  */
-export function classifyPoint(x: number, y: number): { ground: GroundClass; terrain: Terrain } {
+export function classifyPoint(x: number, y: number): PointClass {
   const px = x - ORIGIN.x,
     py = y - ORIGIN.y;
   const tx = Math.floor(px / TILE),
     ty = Math.floor(py / TILE);
   const near = vt(Math.round(px / TILE), Math.round(py / TILE));
   if (near === 'V') return { ground: 'void', terrain: 'V' };
-  if (tileCorners(tx, ty).includes('V')) return { ground: 'cliff', terrain: near };
-  return { ground: near === 'W' ? 'water' : 'ground', terrain: near };
+  const corners = tileCorners(tx, ty);
+  if (corners.includes('V')) return { ground: 'cliff', terrain: near };
+  if (near === 'W') return { ground: 'water', terrain: near };
+  return corners.includes('W')
+    ? { ground: 'ground', terrain: near, kerb: true }
+    : { ground: 'ground', terrain: near };
 }
 
 /* ------------------------------------------------------------------ */
@@ -481,7 +504,7 @@ export const MOUTHS: readonly RimMouth[] = [
 
 /** The terrain layer as the content validation reads it. */
 export interface TopDownTerrainLayer {
-  readonly classify: (x: number, y: number) => { ground: GroundClass; terrain: Terrain };
+  readonly classify: (x: number, y: number) => PointClass;
   readonly mouths: readonly RimMouth[];
   readonly mouthReach: number;
 }
