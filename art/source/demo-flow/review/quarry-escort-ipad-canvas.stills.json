@@ -1,0 +1,122 @@
+[
+  {
+    "beat": "title",
+    "atMs": 4198,
+    "rawStill": "01-title.png",
+    "reviewStill": "quarry-escort-ipad-canvas-01-title.webp"
+  },
+  {
+    "beat": "setup-party",
+    "atMs": 16258,
+    "rawStill": "06-setup-party.png",
+    "reviewStill": "quarry-escort-ipad-canvas-06-setup-party.webp"
+  },
+  {
+    "beat": "practice-bending",
+    "atMs": 52550,
+    "rawStill": "13-practice-bending.png",
+    "reviewStill": "quarry-escort-ipad-canvas-13-practice-bending.webp"
+  },
+  {
+    "beat": "mira-conversation",
+    "atMs": 68012,
+    "rawStill": "16-mira-conversation.png",
+    "reviewStill": "quarry-escort-ipad-canvas-16-mira-conversation.webp"
+  },
+  {
+    "beat": "forest-transition",
+    "atMs": 102872,
+    "rawStill": "19-forest-transition.png",
+    "reviewStill": "quarry-escort-ipad-canvas-19-forest-transition.webp"
+  },
+  {
+    "beat": "combat-first-turn",
+    "atMs": 142617,
+    "rawStill": "25-combat-first-turn.png",
+    "reviewStill": "quarry-escort-ipad-canvas-25-combat-first-turn.webp"
+  },
+  {
+    "beat": "quarry-gate-arrival",
+    "atMs": 780534,
+    "rawStill": "32-quarry-gate-arrival.png",
+    "reviewStill": "quarry-escort-ipad-canvas-32-quarry-gate-arrival.webp"
+  },
+  {
+    "beat": "ruon-custody-choice",
+    "atMs": 828557,
+    "rawStill": "42-ruon-custody-choice.png",
+    "reviewStill": "quarry-escort-ipad-canvas-42-ruon-custody-choice.webp"
+  },
+  {
+    "beat": "cutting-arrival",
+    "atMs": 851958,
+    "rawStill": "47-cutting-arrival.png",
+    "reviewStill": "quarry-escort-ipad-canvas-47-cutting-arrival.webp"
+  },
+  {
+    "beat": "quarry-floor-arrival",
+    "atMs": 962151,
+    "rawStill": "53-quarry-floor-arrival.png",
+    "reviewStill": "quarry-escort-ipad-canvas-53-quarry-floor-arrival.webp"
+  },
+  {
+    "beat": "driller-first-turn",
+    "atMs": 1011211,
+    "rawStill": "61-driller-first-turn.png",
+    "reviewStill": "quarry-escort-ipad-canvas-61-driller-first-turn.webp"
+  },
+  {
+    "beat": "driller-boss-focus",
+    "atMs": 1013183,
+    "rawStill": "62-driller-boss-focus.png",
+    "reviewStill": "quarry-escort-ipad-canvas-62-driller-boss-focus.webp"
+  },
+  {
+    "beat": "driller-victory",
+    "atMs": 1057158,
+    "rawStill": "64-driller-victory.png",
+    "reviewStill": "quarry-escort-ipad-canvas-64-driller-victory.webp"
+  },
+  {
+    "beat": "driller-outcome",
+    "atMs": 1061435,
+    "rawStill": "65-driller-outcome.png",
+    "reviewStill": "quarry-escort-ipad-canvas-65-driller-outcome.webp"
+  },
+  {
+    "beat": "driller-ending-summary",
+    "atMs": 1076033,
+    "rawStill": "70-driller-ending-summary.png",
+    "reviewStill": "quarry-escort-ipad-canvas-70-driller-ending-summary.webp"
+  },
+  {
+    "beat": "ba-dan-return",
+    "atMs": 1152997,
+    "rawStill": "77-ba-dan-return.png",
+    "reviewStill": "quarry-escort-ipad-canvas-77-ba-dan-return.webp"
+  },
+  {
+    "beat": "dorin-homecoming",
+    "atMs": 1170261,
+    "rawStill": "78-dorin-homecoming.png",
+    "reviewStill": "quarry-escort-ipad-canvas-78-dorin-homecoming.webp"
+  },
+  {
+    "beat": "mira-homecoming",
+    "atMs": 1210486,
+    "rawStill": "81-mira-homecoming.png",
+    "reviewStill": "quarry-escort-ipad-canvas-81-mira-homecoming.webp"
+  },
+  {
+    "beat": "gao-homecoming",
+    "atMs": 1230742,
+    "rawStill": "84-gao-homecoming.png",
+    "reviewStill": "quarry-escort-ipad-canvas-84-gao-homecoming.webp"
+  },
+  {
+    "beat": "ba-dan-custody-response",
+    "atMs": 1241813,
+    "rawStill": "87-ba-dan-custody-response.png",
+    "reviewStill": "quarry-escort-ipad-canvas-87-ba-dan-custody-response.webp"
+  }
+]
