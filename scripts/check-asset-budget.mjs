@@ -21,10 +21,13 @@ const UNIT_BUDGET_MB = 8.5;
 // forest's uprights ship at 1 px per world px (27 October 2026), the family measures 5.48 MiB, and the budget comes down to
 // the next half MiB over it, so the freed space goes to the precache total rather than to this family.
 const MAPS_BUDGET_MB = 6;
+// ADR 0104 amendment (owner, 2026-11-07, permanent): the top-down port's sheets, boards, objects and effects.
+const TOPDOWN_BUDGET_MB = 6;
 /** A family's budget; any family not named here has `FAMILY_BUDGET_MB`. */
 const FAMILY_BUDGETS_MB = new Map([
   ['units', UNIT_BUDGET_MB],
   ['maps', MAPS_BUDGET_MB],
+  ['topdown', TOPDOWN_BUDGET_MB],
 ]);
 const PRECACHE_BUDGET_MB = 25;
 
