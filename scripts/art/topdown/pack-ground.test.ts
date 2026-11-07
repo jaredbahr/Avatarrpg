@@ -10,6 +10,7 @@ import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import { measureStyle } from '../lib/colours';
 import {
   haloPixels,
+  moundPixels,
   rimEdge,
   seatingTable,
   shadowTable,
@@ -156,6 +157,34 @@ describe("Ba Dan's top-down ground", () => {
     ).not.toBeNull();
     const mounds = baked.placed.filter((p) => bakedMound(p.img)).map((p) => p.o.id);
     expect(mounds).toEqual([]);
+  });
+
+  it('leaves no pixel of a baked mound or stump plate under any plant (owner, 2026-11-07)', () => {
+    // the first strip kept the mound inside the root flare's columns: a brown plate with tan in it
+    const raw = readPng(`${ASSETS}/objects12/bush.png`);
+    expect(
+      moundPixels({ width: raw.width, height: raw.height, data: new Uint8ClampedArray(raw.data) }),
+    ).toBeGreaterThan(100);
+    const plants = baked.placed.filter((p) => p.o.kind === 'tree');
+    expect(new Set(plants.map((p) => p.o.sprite))).toEqual(
+      new Set(['tree', 'tree_blossom', 'bush']),
+    );
+    const kept = plants.map((p) => [p.o.id, moundPixels(p.img)] as const).filter(([, n]) => n);
+    expect(kept).toEqual([]);
+    // and the stripped bush stands on its trunk alone: its foot is no wider than the trunk above it
+    const bush = baked.placed.find((p) => p.o.sprite === 'bush')?.img;
+    if (!bush) throw new Error('no bush');
+    const span = (y: number): number => {
+      let l = bush.width,
+        r = -1;
+      for (let x = 0; x < bush.width; x++)
+        if ((bush.data[(y * bush.width + x) * 4 + 3] ?? 0) >= 128) {
+          l = Math.min(l, x);
+          r = Math.max(r, x);
+        }
+      return r - l + 1;
+    };
+    expect(span(bush.height - 1)).toBeLessThanOrEqual(span(bush.height - 4));
   });
 
   it('casts the bridge on the water to its lower right, as one hard shape', () => {

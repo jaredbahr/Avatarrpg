@@ -108,6 +108,29 @@ export function shadowTable(b: Baked): ShadowRow[] {
   return rows;
 }
 
+/**
+ * The light earth of a baked mound or stump plate (v12's bush stood on a tan root plate): opaque,
+ * warm (red over blue by more than 40, red over green) pixels lighter than {@link PLATE_LUM} in the
+ * lowest third of a plant. The trees' lit bark stays under 125; the plate's tan runs 130 to 205.
+ */
+export const PLATE_LUM = 130;
+export function moundPixels(img: RgbaImage): number {
+  const W = img.width,
+    H = img.height,
+    p = img.data;
+  let n = 0;
+  for (let y = Math.floor((H * 2) / 3); y < H; y++)
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      if (at(p, i + 3) < 128) continue;
+      const r = at(p, i),
+        g = at(p, i + 1),
+        b = at(p, i + 2);
+      if (r - b > 40 && r > g && lum(p, i / 4) > PLATE_LUM) n++;
+    }
+  return n;
+}
+
 /** Light, near-grey outline pixels in the lowest 35 % of a sprite. */
 export function haloPixels(img: RgbaImage): number {
   const W = img.width,

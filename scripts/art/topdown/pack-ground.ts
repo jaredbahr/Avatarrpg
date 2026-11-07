@@ -372,17 +372,54 @@ export function bakedMound(img: RgbaImage): { top: number; lo: number; hi: numbe
   return null;
 }
 
+/** How many rows of trunk run on below a stripped mound's top: the trunk's own foot. */
+export const MOUND_FOOT = 2;
+
 /**
- * The sprite without its baked mound (`bakedMound`): below the mound's top only the stem's columns
- * stay (one px of flare either side), and the mound's light earth inside them takes the stem's own
- * darkest tone from the row above, so the trunk runs down to its foot instead of ending in a hole.
+ * The sprite without its baked mound (`bakedMound`). The trunk's span is its narrowest opaque run in
+ * the eight rows above the mound's top (the stem, not the root flare that spreads into the mound),
+ * and the mound starts at the first row below it that spreads past the trunk; below that only those columns stay, for {@link MOUND_FOOT} rows, and every pixel of light earth
+ * among them takes the trunk's darkest tone. Everything else of the mound goes: its outline and its
+ * dark underside too, which the first strip kept inside the flare's columns and left a brown plate
+ * under the bush (owner, 2026-11-07).
  */
 export function stripMound(img: RgbaImage): RgbaImage {
   const mound = bakedMound(img);
   if (!mound) return img;
-  const { top, lo, hi } = mound,
-    W = img.width,
+  const W = img.width,
     p = new Uint8ClampedArray(img.data);
+  const span = (y: number): [number, number] => {
+    let l = W,
+      r = -1;
+    for (let x = 0; x < W; x++)
+      if (at(p, (y * W + x) * 4 + 3) >= 128) {
+        l = Math.min(l, x);
+        r = Math.max(r, x);
+      }
+    return [l, r];
+  };
+  // the trunk: the narrowest run in the eight rows above the mound's top
+  let lo = mound.lo,
+    hi = mound.hi,
+    stem = mound.top - 1;
+  for (let y = Math.max(0, mound.top - 8); y < mound.top; y++) {
+    const [l, r] = span(y);
+    if (r - l >= 1 && r - l < hi - lo) {
+      lo = l;
+      hi = r;
+      stem = y;
+    }
+  }
+  // the mound starts where the run first spreads past the trunk below it: its outline and the
+  // flare into it are the mound's
+  let top = mound.top;
+  for (let y = stem + 1; y < mound.top; y++) {
+    const [l, r] = span(y);
+    if (l < lo - 1 || r > hi + 1) {
+      top = y;
+      break;
+    }
+  }
   let dark: [number, number, number] = [0, 0, 0],
     best = 1e9;
   for (let x = lo; x <= hi; x++) {
@@ -397,17 +434,22 @@ export function stripMound(img: RgbaImage): RgbaImage {
   for (let y = top; y < img.height; y++)
     for (let x = 0; x < W; x++) {
       const i = (y * W + x) * 4;
-      if (at(p, i + 3) < 128) continue;
-      if (x < lo - 1 || x > hi + 1) {
+      if (at(p, i + 3) === 0) continue;
+      if (x < lo || x > hi || y >= top + MOUND_FOOT) {
         p[i + 3] = 0;
         continue;
       }
-      const r = at(p, i),
-        g = at(p, i + 1),
-        b = at(p, i + 2);
-      if (r - b > 40 && r > g && 0.299 * r + 0.587 * g + 0.114 * b > 110) p.set(dark, i);
+      if (isEarth(p, i)) p.set(dark, i);
     }
   return { width: W, height: img.height, data: p };
+}
+
+/** Light earth: the tan of a baked mound or stump plate (warm, lit, red over blue by 40 or more). */
+export function isEarth(d: ArrayLike<number>, i: number): boolean {
+  const r = at(d, i),
+    g = at(d, i + 1),
+    b = at(d, i + 2);
+  return r - b > 40 && r > g && 0.299 * r + 0.587 * g + 0.114 * b > 110;
 }
 
 /** The sprite without its baked ground disc (`bakedDisc`). */
@@ -1093,12 +1135,11 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       continue;
     }
     const under = vt(Math.floor((p.x + p.w / 2) / T), Math.floor((p.base - 2) / T));
-    const ow8 = Math.max(8, Math.round(img.width * 0.15)),
-      bushy = o.sprite === 'bush';
+    const ow8 = Math.max(8, Math.round(img.width * 0.15));
     const opts: HardShadowOptions =
       o.kind === 'house'
         ? { overhang: ow8, band: 6 }
-        : o.kind === 'tree' && !bushy
+        : o.kind === 'tree'
           ? {
               dir: { x: 0.42, y: 0.3 },
               foot: 8,
