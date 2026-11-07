@@ -91,22 +91,28 @@ const HOUSES: readonly TopDownObject[] = [
   }),
 ];
 
-/** The rim's trees and bushes on the border tree cells, and the court trees at (5, 5) and (21, 2). */
+/**
+ * The rim's trees and bushes on the border tree cells, and the court trees at (5, 5) and (21, 2).
+ * Every one is rooted in grass or soil, never on paving or a kerb (owner, 2026-11-07: "the tree is
+ * growing out of cobblestone"; `validateTopDownLayout`): the north bank's two stand at the back of
+ * row 5, clear of the canal's kerb, the court tree on its soil bed (`BEDS`). The rim cell (0, 9) at
+ * the ford's paved end takes a barrel stack, a solid that belongs on stone, in place of a bush.
+ */
 const TREES: readonly TopDownObject[] = [
   put('nw-oak', 'tree', 'tree', 34, 70, rect(0, 0, 1, 1)),
   put('nw-blossom', 'tree_blossom', 'tree', 112, 34, cells([2, 0], [3, 0])),
   put('w-bush-2', 'bush', 'tree', 14, 114, cells([0, 2])),
   put('w-blossom-3', 'tree_blossom', 'tree', 18, 156, cells([0, 3])),
   put('w-target', 'target', 'prop', 22, 192, cells([0, 4])),
-  put('w-bush-5', 'bush', 'tree', 16, 236, cells([0, 5])),
-  put('w-bush-9', 'bush', 'tree', 14, 394, cells([0, 9])),
+  put('w-bush-5', 'bush', 'tree', 16, 202, cells([0, 5])),
+  put('w-barrels-9', 'barrels', 'prop', 18, 394, cells([0, 9])),
   put('w-blossom-10', 'tree_blossom', 'tree', 16, 470, cells([0, 10], [0, 11])),
   put('w-beehive', 'beehive', 'prop', 22, 508, cells([0, 12])),
   put('sw-oak', 'tree', 'tree', 26, 588, cells([0, 13], [0, 14], [1, 14])),
   put('sw-oak-2', 'tree', 'tree', 48, 636, cells([0, 15], [1, 15])),
   put('sw-bush', 'bush', 'tree', 98, 634, cells([2, 15])),
   put('sw-blossom', 'tree_blossom', 'tree', 138, 636, cells([3, 15])),
-  put('court-blossom-west', 'tree_blossom', 'tree', 220, 236, cells([5, 5])),
+  put('court-blossom-west', 'tree_blossom', 'tree', 220, 202, cells([5, 5])),
   put('court-blossom-east', 'tree_blossom', 'tree', 878, 116, cells([21, 2])),
   put('ne-bush', 'bush', 'tree', 896, 74, cells([22, 1])),
   put('ne-oak', 'tree', 'tree', 944, 116, cells([23, 1], [23, 2])),
@@ -149,13 +155,15 @@ const DRESSING: readonly TopDownObject[] = [
   put('handcart', 'handcart', 'prop', 778, 196, cells([19, 4])),
   put('haystack', 'haystack', 'prop', 820, 196, cells([20, 4])),
   put('firewood', 'firewood', 'prop', 860, 194, cells([21, 4])),
-  // Row 5: Dorin's fence and bench on the west bank, Gao's display, the north market.
-  put('west-fence', 'fence', 'prop', 80, 236, cells([1, 5], [2, 5])),
-  put('west-bench', 'bench', 'prop', 160, 234, cells([3, 5], [4, 5])),
-  put('gao-display', 'market_jars', 'prop', 280, 234, cells([6, 5], [7, 5])),
+  // Row 5: Dorin's fence and bench on the west bank, Gao's display, the north market. The bank's
+  // pieces stand at y 220, on the quay's paving behind the canal's kerb (which starts at 224): the
+  // fence once stood on the kerb itself, its foot along the water ("this wall on the canal is off").
+  put('west-fence', 'fence', 'prop', 80, 220, cells([1, 5], [2, 5])),
+  put('west-bench', 'bench', 'prop', 160, 220, cells([3, 5], [4, 5])),
+  put('gao-display', 'market_jars', 'prop', 280, 220, cells([6, 5], [7, 5])),
   put('north-market', 'market_veg', 'prop', 600, 234, cells([14, 5], [15, 5])),
   // Mira's table at the rest spot (10, 5): a table the party sits at, so it never stops feet.
-  put('mira-table', 'mira_table', 'prop', 420, 226, cells([10, 5]), { solid: false }),
+  put('mira-table', 'mira_table', 'prop', 420, 220, cells([10, 5]), { solid: false }),
   // Row 6: the shrine at the dry crossing, the watch post's notice board and lamp.
   put('shrine', 'shrine', 'prop', 588, 274, cells([14, 6])),
   put('notice-board', 'notice_board', 'prop', 740, 274, cells([18, 6])),
@@ -191,7 +199,8 @@ const FLATS: readonly TopDownObject[] = [
   put('flowers-west', 'flowers', 'flat', 52, 528, cells([1, 13])),
   put('flowers-east', 'flowers', 'flat', 832, 508, cells([20, 12])),
   put('tuft-1', 'tuft', 'flat', 432, 638, cells([10, 15])),
-  put('tuft-2', 'tuft', 'flat', 342, 668, cells([8, 16]), { exterior: true }),
+  // clear of s-bush-1: its pale flower under the bush's edge read as the bush's old mound
+  put('tuft-2', 'tuft', 'flat', 300, 672, cells([7, 16]), { exterior: true }),
   put('tuft-3', 'tuft', 'flat', 572, -72, cells([14, -2]), { exterior: true }),
   put('tuft-4', 'tuft', 'flat', 192, -62, cells([4, -2]), { exterior: true }),
   put('tuft-5', 'tuft', 'flat', 632, 658, cells([15, 16]), { exterior: true }),
