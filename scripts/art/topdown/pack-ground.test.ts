@@ -8,7 +8,14 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import { measureStyle } from '../lib/colours';
-import { haloPixels, rimEdge, shadowTable, straightEdge, terrainEdge } from './ground-checks';
+import {
+  haloPixels,
+  rimEdge,
+  seatingTable,
+  shadowTable,
+  straightEdge,
+  terrainEdge,
+} from './ground-checks';
 import {
   ASSETS,
   CLASS,
@@ -16,6 +23,7 @@ import {
   OUT,
   bake,
   bakedDisc,
+  bakedMound,
   bridgeCast,
   dehalo,
   packBaDanGround,
@@ -118,6 +126,36 @@ describe("Ba Dan's top-down ground", () => {
     let before = 0;
     for (let i = 3; i < pole.data.length; i += 4) if (pole.data[i]) before++;
     expect(before - opaque).toBe(bakedDisc(pole).length);
+  });
+
+  it('seats every object: no gap, a full contact, a joined cast and no hover (owner, 2026-11-07)', () => {
+    // "Shadows need to be seated so that objects look like they're a part of the world, not floating."
+    const rows = seatingTable(baked);
+    const kinds = new Set(rows.map((r) => r.kind));
+    for (const k of ['house', 'tree', 'prop', 'bridge']) expect(kinds.has(k), k).toBe(true);
+    expect(rows.length).toBeGreaterThan(70);
+    // most feet show; one hidden whole behind a piece in front (a rim bush behind a tree, the crate
+    // under the south-east roof) is not seen, so not measured
+    expect(rows.filter((r) => r.foot > 0).length).toBeGreaterThan(rows.length * 0.85);
+    const failures = rows
+      .filter((r) => r.gap.length || r.weak.length || r.loose || r.hover > 1)
+      .map((r) => ({
+        id: r.id,
+        gap: r.gap,
+        weak: r.weak,
+        loose: r.loose,
+        hover: r.hover,
+      }));
+    expect(failures, JSON.stringify(failures)).toEqual([]);
+  });
+
+  it('strips the light mound a plant bakes under itself, and nothing else', () => {
+    const raw = readPng(`${ASSETS}/objects12/bush.png`);
+    expect(
+      bakedMound({ width: raw.width, height: raw.height, data: new Uint8ClampedArray(raw.data) }),
+    ).not.toBeNull();
+    const mounds = baked.placed.filter((p) => bakedMound(p.img)).map((p) => p.o.id);
+    expect(mounds).toEqual([]);
   });
 
   it('casts the bridge on the water to its lower right, as one hard shape', () => {

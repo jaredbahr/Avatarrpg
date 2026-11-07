@@ -204,7 +204,10 @@ function loadSources(objects: readonly TopDownObject[]): Sources {
       : o.sprite.startsWith('house_')
         ? 'objects_bd13'
         : 'objects12';
-    sprites.set(o.sprite, dehalo(stripDisc(load(`${ASSETS}/${dir}/${o.sprite}.png`))));
+    sprites.set(
+      o.sprite,
+      standOnBase(dehalo(stripMound(stripDisc(load(`${ASSETS}/${dir}/${o.sprite}.png`))))),
+    );
   }
   return {
     wang,
@@ -312,6 +315,101 @@ export function bakedDisc(img: RgbaImage): number[] {
   return out.length >= 12 ? out : [];
 }
 
+/**
+ * The sprite cut at its lowest opaque row, so it stands on its base line: a sprite with clear rows
+ * under its foot (the banner pole once its baked disc is stripped) hovers that far above its shadow.
+ */
+export function standOnBase(img: RgbaImage): RgbaImage {
+  let bottom = -1;
+  for (let i = 3; i < img.data.length; i += 4)
+    if (at(img.data, i)) bottom = Math.floor((i - 3) / 4 / img.width);
+  return bottom < 0 || bottom === img.height - 1 ? img : crop(img, 0, 0, img.width, bottom + 1);
+}
+
+/**
+ * A light earth mound baked under a plant (v12's bush stands on a tan root plate): in the lowest
+ * third, the first row whose opaque span runs past the stem's by 2 px or more on both sides and 6 in
+ * all, with at least a third of the pixels outside the stem below it light earth. Returns that row and the stem's span above it, or
+ * null. The bake grounds every object itself, so a sprite must not bring its own patch of ground,
+ * and a light one reads as lit soil between the trunk and its shadow.
+ */
+export function bakedMound(img: RgbaImage): { top: number; lo: number; hi: number } | null {
+  const W = img.width,
+    H = img.height,
+    d = img.data;
+  const op = (x: number, y: number): boolean => at(d, (y * W + x) * 4 + 3) >= 128;
+  const earth = (x: number, y: number): boolean => {
+    const i = (y * W + x) * 4,
+      r = at(d, i),
+      g = at(d, i + 1),
+      b = at(d, i + 2);
+    return r - b > 40 && r > g && 0.299 * r + 0.587 * g + 0.114 * b > 110;
+  };
+  const span = (y: number): [number, number] => {
+    let l = W,
+      r = -1;
+    for (let x = 0; x < W; x++)
+      if (op(x, y)) {
+        l = Math.min(l, x);
+        r = Math.max(r, x);
+      }
+    return [l, r];
+  };
+  for (let y = Math.max(1, Math.floor(H * 0.66)); y < H; y++) {
+    const [l, r] = span(y),
+      [la, ra] = span(y - 1);
+    if (r < 0 || ra < 0 || l > la - 2 || r < ra + 2 || la - l + r - ra < 6) continue;
+    let out = 0,
+      light = 0;
+    for (let yy = y; yy < H; yy++)
+      for (let x = 0; x < W; x++)
+        if ((x < la - 1 || x > ra + 1) && op(x, yy)) {
+          out++;
+          if (earth(x, yy)) light++;
+        }
+    if (out && light * 3 >= out) return { top: y, lo: la, hi: ra };
+  }
+  return null;
+}
+
+/**
+ * The sprite without its baked mound (`bakedMound`): below the mound's top only the stem's columns
+ * stay (one px of flare either side), and the mound's light earth inside them takes the stem's own
+ * darkest tone from the row above, so the trunk runs down to its foot instead of ending in a hole.
+ */
+export function stripMound(img: RgbaImage): RgbaImage {
+  const mound = bakedMound(img);
+  if (!mound) return img;
+  const { top, lo, hi } = mound,
+    W = img.width,
+    p = new Uint8ClampedArray(img.data);
+  let dark: [number, number, number] = [0, 0, 0],
+    best = 1e9;
+  for (let x = lo; x <= hi; x++) {
+    const i = ((top - 1) * W + x) * 4;
+    if (at(p, i + 3) < 128) continue;
+    const l = lum(p, i);
+    if (l < best) {
+      best = l;
+      dark = [at(p, i), at(p, i + 1), at(p, i + 2)];
+    }
+  }
+  for (let y = top; y < img.height; y++)
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      if (at(p, i + 3) < 128) continue;
+      if (x < lo - 1 || x > hi + 1) {
+        p[i + 3] = 0;
+        continue;
+      }
+      const r = at(p, i),
+        g = at(p, i + 1),
+        b = at(p, i + 2);
+      if (r - b > 40 && r > g && 0.299 * r + 0.587 * g + 0.114 * b > 110) p.set(dark, i);
+    }
+  return { width: W, height: img.height, data: p };
+}
+
 /** The sprite without its baked ground disc (`bakedDisc`). */
 export function stripDisc(img: RgbaImage): RgbaImage {
   const p = new Uint8ClampedArray(img.data);
@@ -347,6 +445,22 @@ export const FORD_POOL = {
   box: { x0: 64, y0: 464, x1: 192, y1: 584 },
 } as const;
 
+/**
+ * Props whose shadow needs more than the defaults. Drawn a little oblique, the stall's lower edge
+ * stands well above its nearest leg: its
+ * counter sits 15-20 px above its front-right leg, so the default foot (a sixth of the height) left
+ * the counter ungrounded and its cast laid from the leg's line, a lit band of grass under it. Here
+ * every column within the counter's reach stands on its own lowest pixel, and the awning's edge
+ * (nothing under it on the ground) casts with the counter rather than as a sliver from the base line.
+ */
+const PROP_FOOT: Readonly<Record<string, HardShadowOptions>> = {
+  stall: { foot: 24, overhang: 24, groundedOnly: true },
+  // a seat or a top on legs: every column stands on the legs' line, and `under` shades the floor
+  // from the edge down to it
+  mira_table: { overhang: 0 },
+  bench: { overhang: 0 },
+};
+
 /** Each pixel's terrain class as the bake laid it, for the edge checks. */
 export const CLASS = { G: 0, C: 1, W: 2, D: 3, face: 4, void: 5 } as const;
 
@@ -369,11 +483,19 @@ export interface Baked {
   readonly ground: RgbaImage;
   /** The plate before any object was grounded on it (no cast, apron or kit): clean ground. */
   readonly clean: RgbaImage;
+  /**
+   * The ground each object stands on, unshaded: the clean plate with the flat dressing, the bridge,
+   * the house aprons' earth and the doorsteps, and no seam, contact, cast or kit. What a seat's
+   * shadow tone is measured against.
+   */
+  readonly bare: RgbaImage;
   /** Terrain class per plate pixel (`CLASS`), before any object or shadow. */
   readonly classes: Uint8Array;
   /** Plate pixels any object's sprite covers (uprights and flats). */
   readonly cover: Uint8Array;
   readonly shadows: readonly ShadowRecord[];
+  /** The bridge's grounding (its abutment's seam and its cast on the water), for the seating check. */
+  readonly bridgeShadows: readonly ShadowRecord[];
   readonly uprights: readonly Upright[];
   readonly placed: readonly Placed[];
 }
@@ -771,6 +893,7 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
 
   const sprite = (p: Placed): RgbaImage => p.img;
   const shadows: ShadowRecord[] = [];
+  const bridgeShadows: ShadowRecord[] = [];
 
   // 3. the river path carried over the south lip and down the face as steps
   const steps = placed.find((p) => p.o.kind === 'steps');
@@ -938,8 +1061,14 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
   // the clean ground, before any object is grounded: what a cast is measured against
   const clean: RgbaImage = { width: PW, height: PH, data: new Uint8ClampedArray(d) };
 
+  const bare: RgbaImage = { width: PW, height: PH, data: new Uint8ClampedArray(d) };
+
   // 5. the shadows and contact kits of every static object (flat dressing first: every shadow lands on it)
-  for (const p of placed) if (isFlat(p)) draw(g, p.img, p.x, p.y);
+  for (const p of placed)
+    if (isFlat(p)) {
+      draw(g, p.img, p.x, p.y);
+      draw(bare, p.img, p.x, p.y);
+    }
   const fringes = new Map<Placed, RgbaImage>();
   for (const p of placed) {
     const { o, img } = p;
@@ -950,10 +1079,17 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
     if (isFlat(p) || o.kind === 'steps') continue;
     if (o.kind === 'bridge') {
       // the seam and contact where the south abutment meets the bank, then the deck's own cast on the water
+      // on the bank's paving the seam takes paving's stronger scale, as a prop's does
       const bm = hardShadowMask(alphaOf(img), img.width, img.height, { flat: true, band: 3 });
-      paintMask(g, bm, p.x - bm.pad, p.y);
-      paintMask(g, bridgeCast(p, classes), p.x, p.y);
+      paintByGround(g, bm, p.x - bm.pad, p.y, classes);
+      const bc = bridgeCast(p, classes);
+      paintMask(g, bc, p.x, p.y);
+      bridgeShadows.push(
+        { id: o.id, m: bm, dx: p.x - bm.pad, dy: p.y },
+        { id: o.id, m: bc, dx: p.x, dy: p.y },
+      );
       draw(g, img, p.x, p.y);
+      draw(bare, img, p.x, p.y);
       continue;
     }
     const under = vt(Math.floor((p.x + p.w / 2) / T), Math.floor((p.base - 2) / T));
@@ -972,21 +1108,30 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
           : o.kind === 'prop'
             ? // a prop's whole silhouette laid down the light, one shape (the column cast of v12
               // left a stall's posts as separate streaks and a lamp or a pole with next to none)
+              // `under` shades the floor beneath a raised edge (a bench's seat, a table's top) down
+              // to its legs' feet, so no lit ground shows between the edge and the cast
               {
                 overhang: ow8,
                 dir: { x: 0.42, y: 0.3 },
                 sweep: 1,
+                under: true,
                 reach: Math.min(24, Math.max(10, Math.round(img.height * 0.3))),
+                ...PROP_FOOT[o.sprite],
               }
             : { overhang: ow8 };
     const soft = under === 'G' || under === 'D';
     if (o.kind === 'house') {
       houseApron(g, p);
+      houseApron(bare, p, false);
       houseDoorstep(g, p);
+      houseDoorstep(bare, p);
       houseSideShadow(g, p, soft ? 0.6 : 0.78);
     }
     const m = hardShadowMask(alphaOf(img), img.width, img.height, opts);
-    if (o.kind === 'prop') coherentCast(m);
+    if (o.kind === 'prop') {
+      seamUnderFoot(m, img);
+      coherentCast(m);
+    }
     shadows.push({ id: o.id, m, dx: p.x - m.pad, dy: p.y });
     if (soft) {
       const kit = groundKit(img, p.x * 7 + p.base, {
@@ -1000,13 +1145,15 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       paintByGround(g, m, p.x - m.pad, p.y, classes);
     } else {
       paintMask(g, m, p.x - m.pad, p.y, 1.3);
-      floorReaction(g, m, p.x - m.pad, p.y, p.x * 31 + p.base);
+      reactBesideSeam(g, m, p.x - m.pad, p.y, p.x * 31 + p.base);
     }
     if (o.kind === 'house') {
       const f = fringes.get(p) ?? blank(p.w + 2 * M, p.h + 2 * M);
       fringes.set(p, f);
       houseSkirt(f, p);
     }
+    const f = fringes.get(p);
+    if (f) seatFringe(f, p, m, classes, soft ? 1 : 1.3);
   }
 
   // the uprights: each standing object with its fringe over its foot, trimmed
@@ -1039,7 +1186,7 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       y: p.y + ORIGIN.y - M + t.y,
     });
   }
-  return { ground: g, clean, classes, cover, shadows, uprights, placed };
+  return { ground: g, clean, bare, classes, cover, shadows, bridgeShadows, uprights, placed };
 }
 
 function trim(img: RgbaImage): { image: RgbaImage; x: number; y: number } {
@@ -1073,7 +1220,7 @@ function foundation(p: Placed): [number, number] {
 }
 
 /** A packed-earth apron along a house's front, so no grass touches the footing (v15 `houseApron`). */
-function houseApron(g: RgbaImage, o: Placed): void {
+function houseApron(g: RgbaImage, o: Placed, seam = true): void {
   const [x0, x1] = foundation(o);
   for (let x = x0 - 6; x <= x1 + 6; x++) {
     const wx = o.x + x,
@@ -1083,8 +1230,9 @@ function houseApron(g: RgbaImage, o: Placed): void {
       if (k < 0 && edge) continue;
       const t = vnoise(wx, o.base + k, 43, 2.5);
       if (k >= dd - 2 && (wx + k) & 1) continue;
-      if (k < 1) fill(g, wx, o.base + k, 1, 1, SHADOW_RGB, 0.8);
-      else
+      if (k < 1) {
+        if (seam) fill(g, wx, o.base + k, 1, 1, SHADOW_RGB, 0.8);
+      } else
         fill(
           g,
           wx,
@@ -1192,6 +1340,85 @@ function houseSkirt(f: RgbaImage, o: Placed): void {
 }
 
 /**
+ * Seats an object's fringe (the kit's tufts, pebbles and clods, a house's skirt) in its shadow: a
+ * fringe pixel that lies on the ground below the sprite (under a column's lowest pixel, or beside
+ * the sprite) takes the shadow the mask lays there, as the ground under it does, so no lit blade or
+ * stone shows between a footing and its shadow. In the seam's two rows under a column only grass
+ * blades stay, at the seam's strength; a stone or a clod there would read as a lit gap, so it goes.
+ */
+function seatFringe(
+  f: RgbaImage,
+  p: Placed,
+  m: ShadowMask,
+  classes: Uint8Array,
+  scale: number,
+): void {
+  const A = alphaOf(p.img),
+    low = new Int32Array(p.w).fill(-1);
+  for (let x = 0; x < p.w; x++)
+    for (let y = p.h - 1; y >= 0; y--)
+      if (at(A, y * p.w + x)) {
+        low[x] = y;
+        break;
+      }
+  const d = f.data;
+  for (let fy = 0; fy < f.height; fy++)
+    for (let fx = 0; fx < f.width; fx++) {
+      const j = (fy * f.width + fx) * 4;
+      if (!at(d, j + 3)) continue;
+      const sx = fx - M,
+        sy = fy - M,
+        ly = sx >= 0 && sx < p.w ? at(low, sx) : -1;
+      if (ly >= 0 && sy <= ly) continue;
+      const mx = sx + m.pad,
+        v =
+          mx >= 0 && sy >= 0 && mx < m.width && sy < m.height ? at(m.alpha, sy * m.width + mx) : 0;
+      if (!v) continue;
+      const r = at(d, j),
+        g = at(d, j + 1),
+        b = at(d, j + 2);
+      const seam = ly >= 0 && sy - ly <= 2;
+      if (seam && !(g > r + 10 && g > b + 4)) {
+        d[j + 3] = 0;
+        continue;
+      }
+      const X = p.x + sx,
+        Y = p.y + sy,
+        paved =
+          X >= 0 && Y >= 0 && X < PLATE_W && Y < PLATE_H && classes[Y * PLATE_W + X] === CLASS.C;
+      // a blade in the seam takes the seam at paving's strength (a lit blade top shaded at soft
+      // ground's 175 still read as an olive fleck), so it reads as grass growing out of the shadow
+      const a = Math.min(1, (seam ? Math.max(v, 175) * 1.3 : v * (paved ? 1.3 : scale)) / 255);
+      for (let c = 0; c < 3; c++) d[j + c] = at(d, j + c) * (1 - a) + at(SHADOW_RGB, c) * a;
+    }
+}
+
+/**
+ * The owner's `floorReaction` (grout darkening and a little brown grit under a heavy base on
+ * paving), kept off the seam itself: the reaction reaches 2-5 rows under each column's seam and
+ * three columns aside, so under a stepped foot its grit landed on a higher neighbour's seam, a lit
+ * brown fleck between the footing and its shadow. The seam's pixels keep what they were.
+ */
+function reactBesideSeam(g: RgbaImage, m: ShadowMask, dx: number, dy: number, seed: number): void {
+  const keep: [number, number, number, number][] = [];
+  for (let y = 0; y < m.height; y++)
+    for (let x = 0; x < m.width; x++) {
+      const X = dx + x,
+        Y = dy + y;
+      if (at(m.alpha, y * m.width + x) < 150 || X < 0 || Y < 0 || X >= g.width || Y >= g.height)
+        continue;
+      const j = (Y * g.width + X) * 4;
+      keep.push([j, at(g.data, j), at(g.data, j + 1), at(g.data, j + 2)]);
+    }
+  floorReaction(g, m, dx, dy, seed);
+  for (const [j, r, gg, b] of keep) {
+    g.data[j] = r;
+    g.data[j + 1] = gg;
+    g.data[j + 2] = b;
+  }
+}
+
+/**
  * `paintMask` for an object on soft ground whose cast runs on to the paving beside it: the pixels
  * on paving take the paving's stronger scale (1.3, as an object standing on paving does), so a
  * lamp at a lane's edge shows its cast on the cobbles as clearly as on the grass.
@@ -1214,6 +1441,39 @@ function paintByGround(
         j = (Y * g.width + X) * 4;
       for (let c = 0; c < 3; c++) d[j + c] = at(d, j + c) * (1 - a) + at(SHADOW_RGB, c) * a;
     }
+}
+
+/**
+ * The occlusion seam (175, then 150) under every column of a prop's foot, at that column's own
+ * lowest pixel: a seat or a table top (overhang 0, standing on its legs' line) gets the seam under
+ * its edge as well as under its feet, where `under` alone lays only the cast's tone.
+ */
+export function seamUnderFoot(m: ShadowMask, img: RgbaImage, rows = 8): void {
+  const A = alphaOf(img),
+    W = img.width,
+    H = img.height,
+    low = new Int32Array(W).fill(-1);
+  let bl = -1;
+  for (let x = 0; x < W; x++)
+    for (let y = H - 1; y >= 0; y--)
+      if (at(A, y * W + x)) {
+        low[x] = y;
+        bl = Math.max(bl, y);
+        break;
+      }
+  for (let x = 0; x < W; x++) {
+    const ly = at(low, x);
+    if (ly < 0 || ly < bl - rows) continue;
+    for (const [k, v] of [
+      [1, 175],
+      [2, 150],
+    ] as const) {
+      const y = ly + k;
+      if (y >= m.height) continue;
+      const i = y * m.width + x + m.pad;
+      if (at(m.alpha, i) < v) m.alpha[i] = v;
+    }
+  }
 }
 
 /**
