@@ -518,6 +518,12 @@ export interface SheetData {
   readonly cast: ClipOut | null;
   readonly clipData: boolean;
   readonly actions: boolean;
+  /** Driller tread geometry measured from alpha>=128 in the bottom 16 ink rows of each static heading. */
+  readonly treadGrounding?: readonly {
+    readonly spanPx: number;
+    readonly centerXFromAnchorPx: number;
+    readonly baselineYFromAnchorPx: number;
+  }[];
 }
 
 interface Sheet {
@@ -751,6 +757,14 @@ function drillerSheet(): Sheet {
   // Each heading's view (`objects13/driller_<dir>`, cropped from PixelLab's 128 px rotation) at its place on that canvas.
   const views = {} as Record<Heading, Placed>;
   const anchors = {} as Record<Heading, { x: number; y: number }>;
+  const treadGrounding = {} as Record<
+    Heading,
+    {
+      spanPx: number;
+      centerXFromAnchorPx: number;
+      baselineYFromAnchorPx: number;
+    }
+  >;
   for (const h of HEADINGS) {
     const rot = hard(join(dir, `rotations__${DIR[h]}.png`));
     const box = inkBox({ image: rot, ox: 0, oy: 0 });
@@ -761,6 +775,29 @@ function drillerSheet(): Sheet {
     views[h] = { image: view, ox: box.x0, oy: box.y0 };
     // It stands on its base, centred under its ink.
     anchors[h] = { x: Math.round((box.x0 + box.x1) / 2), y: box.y1 };
+    // The static object view is the source of truth for a grounded footprint.
+    // Inspect only its bottom 16 ink rows, which retain both treads in diagonal views
+    // without including upper body and weapon rows in the measured span.
+    const viewBox = inkBox({ image: view, ox: 0, oy: 0 });
+    if (!viewBox) throw new Error(`driller: empty ${h} static view`);
+    const lowest = viewBox.y1 - 1;
+    const bandTop = Math.max(viewBox.y0, lowest - 15);
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    for (let y = bandTop; y <= lowest; y++) {
+      for (let x = viewBox.x0; x < viewBox.x1; x++) {
+        if ((view.data[(y * view.width + x) * 4 + 3] ?? 0) < 128) continue;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+      }
+    }
+    if (!Number.isFinite(minX) || !Number.isFinite(maxX))
+      throw new Error(`driller: empty ${h} tread band`);
+    treadGrounding[h] = {
+      spanPx: maxX - minX + 1,
+      centerXFromAnchorPx: round6((minX + maxX + 1) / 2 + box.x0 - anchors[h].x),
+      baselineYFromAnchorPx: lowest + 1 + box.y0 - anchors[h].y,
+    };
   }
   // A 2x2 sheet's frame is square: every view round its own anchor, plus a 1 px margin.
   let half = 0;
@@ -849,6 +886,7 @@ function drillerSheet(): Sheet {
       cast,
       clipData: false,
       actions: true,
+      treadGrounding: HEADINGS.map((h) => treadGrounding[h]),
     },
   };
 }
@@ -950,6 +988,7 @@ async function dataModule(data: Record<string, SheetData>): Promise<string> {
     '  readonly cast: ClipDef | null;',
     '  readonly clipData: boolean;',
     '  readonly actions: boolean;',
+    '  readonly treadGrounding?: readonly { readonly spanPx: number; readonly centerXFromAnchorPx: number; readonly baselineYFromAnchorPx: number }[];',
     '}',
     '',
     `export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = ${JSON.stringify(data)};`,
