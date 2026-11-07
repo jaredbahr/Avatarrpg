@@ -12,7 +12,7 @@
 
 import type { Grid, MapScene, SceneFlock, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
-import { authoredForBothSides } from '../../content/assets/clips';
+import { authoredForBothSides, headingClip, type Heading } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera, TILE } from '../camera';
 import { drawsScene, groundsSceneAtRuntime, tileSize } from '../projection';
@@ -103,6 +103,11 @@ import { boardDepth, compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
 import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import {
+  drillerGroundingArt,
+  drillerGroundingGeometry,
+  drillerGroundingPose,
+} from '../drillerGrounding';
 import { restingClip } from '../sheets/feet';
 import type { ResolvedFrame } from '../sheets/store';
 import {
@@ -148,6 +153,11 @@ interface FigureCels {
   readonly flip: boolean;
   /** The figure's drawn scale (with any pose scale). */
   readonly scale: number;
+  readonly driller?: {
+    readonly frame: ResolvedFrame | null;
+    readonly heading: Heading;
+    readonly mirror: boolean;
+  };
 }
 
 export class Canvas2DBackend implements RenderBackend {
@@ -1603,6 +1613,38 @@ export class Canvas2DBackend implements RenderBackend {
     worldPixel: number,
     cels?: FigureCels,
   ): void {
+    if (cels?.driller) {
+      if (alpha <= 0 || !contactBand(this.grounding, 1) || !cels.driller.frame) return;
+      const art = drillerGroundingArt(
+        cels.driller.frame,
+        cels.driller.heading,
+        this.grounding.castKey,
+        cels.driller.mirror,
+      );
+      if (!art) return;
+      const geometry = drillerGroundingGeometry(
+        foot,
+        cels.driller.frame,
+        art,
+        cels.scale,
+        worldPixel,
+      );
+      const draw = (canvas: HTMLCanvasElement, level: number, box: typeof geometry.cast) =>
+        this.castInto(
+          target,
+          level,
+          { x0: box.x, y0: box.y, x1: box.x + box.w, y1: box.y + box.h },
+          (context) => {
+            context.save();
+            context.globalAlpha = alpha;
+            context.drawImage(canvas, box.x, box.y, box.w, box.h);
+            context.restore();
+          },
+        );
+      draw(art.cast, this.grounding.cast, geometry.cast);
+      draw(art.blob, this.grounding.contact, geometry.blob);
+      return;
+    }
     if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
     // A figure tile of the shipped sheets: the swept pool is the oblique and orthographic
     // boards' grounding, which `feetBlob` replaces on the top-down board (ADR 0104, T4).
@@ -1853,6 +1895,34 @@ export class Canvas2DBackend implements RenderBackend {
               scale,
             }
           : undefined;
+      const driller =
+        camera.projection === 'topdown' &&
+        unit.sprite === 'unit.enemy.driller' &&
+        asset.kind === 'sheet' &&
+        asset.atlas.startsWith('art/topdown/')
+          ? drillerGroundingPose(
+              cels?.drawn?.clip ?? clip,
+              cels?.flip ?? (unit.facing ?? -1) === -1,
+            )
+          : undefined;
+      const groundingCels = driller
+        ? {
+            ...(cels ?? { drawn: null, resting: null, flip: driller.mirror, scale }),
+            driller: {
+              ...driller,
+              frame: sheets.frame(
+                unit.sprite,
+                headingClip('idle', driller.heading),
+                0,
+                0,
+                px,
+                unit.size,
+                undefined,
+                heightTiles,
+              ),
+            },
+          }
+        : cels;
       // Its pool is steady at its feet, its contact under the soles it draws (ADR 0093).
       this.projectFigureShadow(
         target,
@@ -1863,7 +1933,7 @@ export class Canvas2DBackend implements RenderBackend {
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
           castShadowStrength(unit.castShadow),
         worldPixel,
-        cels,
+        groundingCels,
       );
     }
   }
