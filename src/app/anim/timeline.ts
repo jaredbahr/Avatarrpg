@@ -117,6 +117,7 @@ export type TrackOf<K extends TrackKind> = Extract<AnyTrack, { kind: K }>;
 export class Timeline {
   private tracks: AnyTrack[] = [];
   private endsAt = 0;
+  private actionEndsAt = 0;
 
   add(track: AnyTrack): void {
     this.tracks.push(track);
@@ -129,17 +130,44 @@ export class Timeline {
     this.endsAt = Math.max(this.endsAt, at);
   }
 
+  /** Scene-ready horizon; visual-only tracks can continue beyond this time. */
+  holdActionUntil(at: number): void {
+    this.actionEndsAt = Math.max(this.actionEndsAt, at);
+  }
+
   get finishesAt(): number {
     return this.endsAt;
+  }
+
+  get actionReadyAt(): number {
+    return this.actionEndsAt;
   }
 
   busy(now: number): boolean {
     return now < this.endsAt;
   }
 
+  actionBusy(now: number): boolean {
+    return now < this.actionEndsAt;
+  }
+
+  /** End of an actor's voluntary pose or movement, excluding informational FX. */
+  actorFinishesAt(unitId: string): number {
+    let end = 0;
+    for (const track of this.tracks) {
+      if (
+        (track.kind === 'pose' || track.kind === 'move' || track.kind === 'bend') &&
+        track.unitId === unitId
+      )
+        end = Math.max(end, track.start + track.duration);
+    }
+    return end;
+  }
+
   clear(): void {
     this.tracks = [];
     this.endsAt = 0;
+    this.actionEndsAt = 0;
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */

@@ -18,6 +18,7 @@ import type {
   GameState,
   MapBackdrop,
   StoryNode,
+  Unit,
   Vec2,
 } from '../core/types';
 import { apply } from '../core/state/reducer';
@@ -26,6 +27,7 @@ import type { PartySlot } from '../core/state/createGame';
 import { backdrops } from '../render/backdrops';
 import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
+import type { AnimatorOptions } from './animator';
 import { Session } from './session';
 import type { Player } from './session';
 import type { Settings, SlotId } from './storage/localSaves';
@@ -127,7 +129,11 @@ export interface Scene {
    * one the new state calls for. Return true when the scene schedules the
    * full playback itself (including the leader and its sound cues).
    */
-  onEvents?(events: readonly GameEvent[], now: number): boolean | void;
+  onEvents?(
+    events: readonly GameEvent[],
+    now: number,
+    unitsBefore: readonly Unit[],
+  ): boolean | void;
 }
 
 export type DialogueBackdropOwner =
@@ -305,27 +311,7 @@ export class App {
     // `button()` cannot see the app, so the bus is registered rather than
     // passed; a control asks for a click without knowing what makes one.
     setUiSink((key) => this.audio.play([{ key, at: 0, seed: 0 }], 0));
-    this.animator = new Animator(content, {
-      onSounds: (cues, now) => this.audio.play(cues, now),
-      // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
-      sheetClips: (sprite) => sheets.clips(sprite),
-      bends: () => {
-        const fx = this.bendFx;
-        return fx
-          ? {
-              fx,
-              // Asking a bend that has not been preloaded must not load it.
-              setOf: (sprite) =>
-                sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
-              frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
-            }
-          : undefined;
-      },
-      liftOf: (pos) => {
-        const grid = this.state?.battle?.grid;
-        return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
-      },
-    });
+    this.animator = this.createPresentationAnimator();
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);
 
@@ -397,6 +383,35 @@ export class App {
     window.addEventListener('pointerdown', unlock, { passive: true });
     window.addEventListener('keydown', unlock, { passive: true });
     this.showScene(new TitleScene(this));
+  }
+
+  /** Builds a scene-owned Animator with the same asset and grounding sources. */
+  createPresentationAnimator(
+    overrides: Pick<AnimatorOptions, 'actionQueue' | 'onSounds' | 'timingProfile'> = {},
+  ): Animator {
+    return new Animator(this.content, {
+      onSounds: overrides.onSounds ?? ((cues, now) => this.audio.play(cues, now)),
+      ...(overrides.actionQueue ? { actionQueue: true } : {}),
+      ...(overrides.timingProfile ? { timingProfile: overrides.timingProfile } : {}),
+      // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
+      sheetClips: (sprite) => sheets.clips(sprite),
+      bends: () => {
+        const fx = this.bendFx;
+        return fx
+          ? {
+              fx,
+              // Asking a bend that has not been preloaded must not load it.
+              setOf: (sprite) =>
+                sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
+              frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
+            }
+          : undefined;
+      },
+      liftOf: (pos) => {
+        const grid = this.state?.battle?.grid;
+        return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
+      },
+    });
   }
 
   showScene(scene: Scene, replaceRetained = false): void {
@@ -734,7 +749,7 @@ export class App {
 
     const now = performance.now();
     if (result.events.length > 0) {
-      if (this.scene?.onEvents?.(result.events, now) !== true)
+      if (this.scene?.onEvents?.(result.events, now, unitsBefore) !== true)
         this.animator.push(now, result.events, unitsBefore);
     }
 

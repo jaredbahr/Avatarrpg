@@ -6,6 +6,7 @@ import type { BattleState, GameState, StoryNode } from '../../core/types';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
+import { PresentationClock } from './presentationClock';
 
 interface LifecycleHarness {
   frame: number;
@@ -21,6 +22,7 @@ interface LifecycleHarness {
     audio: { clearEnvironment: ReturnType<typeof vi.fn> };
     residents: { tick: ReturnType<typeof vi.fn> };
   };
+  presentationClock: PresentationClock | null;
   suspend(): void;
   resume(): void;
 }
@@ -33,6 +35,7 @@ function harness(kind: 'explore' | 'combat'): LifecycleHarness {
   scene.paintingStill = false;
   scene.aiTimer = null;
   scene.aiScheduled = false;
+  scene.presentationClock = null;
   scene.renderer = null;
   scene.life = null;
   scene.app = {
@@ -75,6 +78,26 @@ describe.each(['explore', 'combat'] as const)('%s retained-scene lifecycle', (ki
     expect(request).toHaveBeenCalledOnce();
     expect(scene.frame).toBe(42);
   });
+});
+
+it('freezes and resumes a top-down combat presentation clock behind dialogue', () => {
+  let wallNow = 300;
+  vi.stubGlobal('performance', { now: () => wallNow });
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  const scene = harness('combat');
+  scene.frame = 0;
+  scene.loop = vi.fn();
+  scene.presentationClock = new PresentationClock(100);
+  scene.presentationClock.setRate(3, 200);
+  expect(scene.presentationClock.now(300)).toBe(500);
+
+  scene.suspend();
+  wallNow = 10_000;
+  const frozen = scene.presentationClock.now(10_000);
+  expect(frozen).toBe(500);
+
+  scene.resume();
+  expect(scene.presentationClock.now(10_100)).toBe(800);
 });
 
 class FakeElement {

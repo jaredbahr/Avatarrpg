@@ -21,15 +21,15 @@ export function groundTile(camera: CameraInfo, point: Point): Point {
   };
 }
 
-/** Painted tile center in page CSS coordinates, including backing-store stretch. */
-export async function paintedTileCentre(page: Page, pos: Point): Promise<Point | null> {
+/** A continuous ground coordinate through the canvas's actual CSS/backing stretch. */
+export async function paintedGroundPoint(page: Page, pos: Point): Promise<Point | null> {
   return page.evaluate((p) => {
     const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
     const camera = window.fnt?.app.rendererCamera();
     if (!canvas || !camera) return null;
     const m = camera.groundTransform;
-    const x = (p.x + 0.5) * camera.tile,
-      y = (p.y + 0.5) * camera.tile;
+    const x = p.x * camera.tile;
+    const y = p.y * camera.tile;
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     return {
@@ -37,4 +37,9 @@ export async function paintedTileCentre(page: Page, pos: Point): Promise<Point |
       y: rect.top + ((m.b * x + m.d * y + m.ty) * rect.height) / (canvas.height / dpr),
     };
   }, pos);
+}
+
+/** Painted tile center in page CSS coordinates, including backing-store stretch. */
+export async function paintedTileCentre(page: Page, pos: Point): Promise<Point | null> {
+  return paintedGroundPoint(page, { x: pos.x + 0.5, y: pos.y + 0.5 });
 }

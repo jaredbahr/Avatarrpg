@@ -19,11 +19,16 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
-import { choreograph, STROLL_REFERENCE_MS, TIMING } from './anim/choreography';
+import {
+  choreograph,
+  DEFAULT_PRESENTATION_TIMING,
+  STROLL_REFERENCE_MS,
+  TIMING,
+} from './anim/choreography';
 import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
-import type { HealthChange, SoundCue } from './anim/choreography';
+import type { HealthChange, PresentationTimingProfile, SoundCue } from './anim/choreography';
 import { partyScale } from './anim/actorScale';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
@@ -104,6 +109,10 @@ export interface UnitHealthPresentation {
 }
 
 export interface AnimatorOptions {
+  /** Scene-specific timings; the default is unchanged for shared App playback. */
+  readonly timingProfile?: PresentationTimingProfile;
+  /** Opt in to action-ready queueing for the private top-down combat Animator. */
+  readonly actionQueue?: boolean;
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
   /**
@@ -235,6 +244,19 @@ export class Animator {
     return this.timeline.finishesAt;
   }
 
+  /** Action horizon; visual-only tracks may remain live after this. */
+  get actionReadyAt(): number {
+    return this.timeline.actionReadyAt;
+  }
+
+  actionBusy(now: number): boolean {
+    return this.timeline.actionBusy(now);
+  }
+
+  actorFinishesAt(unitId: string): number {
+    return this.timeline.actorFinishesAt(unitId);
+  }
+
   /**
    * Schedules playback for a batch of events.
    *
@@ -259,9 +281,23 @@ export class Animator {
       waterSources?: Readonly<Record<string, Vec2>>;
     } = {},
   ): void {
+    const actionActors = this.options.actionQueue
+      ? events.flatMap((event) =>
+          event.type === 'unitMoved' || event.type === 'partyWalked' || event.type === 'abilityUsed'
+            ? [event.unitId]
+            : [],
+        )
+      : [];
+    const actorSettle = actionActors.reduce(
+      (end, unitId) => Math.max(end, this.timeline.actorFinishesAt(unitId)),
+      0,
+    );
+    const queueEnd = this.options.actionQueue
+      ? Math.max(this.timeline.actionReadyAt, actorSettle)
+      : this.timeline.finishesAt;
     const base = options.alongside
       ? Math.max(now, this.lastCursor)
-      : Math.max(now, this.timeline.finishesAt);
+      : Math.max(now, queueEnd);
     // Followers each delay from the same batch anchor, never from the previous delay.
     this.lastCursor = base;
     const rate = this.rate;
@@ -273,6 +309,7 @@ export class Animator {
       unitsBefore,
       cursor,
       rate,
+      timingProfile: this.options.timingProfile ?? DEFAULT_PRESENTATION_TIMING,
       pushIndex: this.pushes++,
       silentSteps: options.silentSteps ?? options.alongside,
       amble: this.options.amble,
@@ -341,6 +378,7 @@ export class Animator {
         });
     }
     this.pendingHeadings.sort((a, b) => a.at - b.at);
+    this.timeline.holdActionUntil(result.actionReadyAt);
     this.timeline.holdUntil(result.cursor);
     // The cues carry animator-clock times; `now` lets the sink convert them to
     // its own clock, which for Web Audio is the only one that schedules exactly.

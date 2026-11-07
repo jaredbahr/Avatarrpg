@@ -3,7 +3,15 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
-import { HIT_SETTLE_MS, TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
+import {
+  DEFAULT_PRESENTATION_TIMING,
+  HIT_SETTLE_MS,
+  TIMING,
+  TOPDOWN_PRESENTATION_TIMING,
+  choreograph,
+  hitSpan,
+  knockoutSpan,
+} from './choreography';
 import { HEADINGS, hitClip } from '../../content/assets/clips';
 import { attackMotion } from './attackMotion';
 import { enemyScale, partyScale } from './actorScale';
@@ -62,6 +70,31 @@ const roster = [unit('p0', 1, 3), unit('e0', 5, 3)];
 function run(events: GameEvent[], rate = 1) {
   return choreograph({ content, events, unitsBefore: roster, cursor: 1000, rate, pushIndex: 0 });
 }
+
+describe('presentation timing profiles', () => {
+  it('keeps event spacing separate from the top-down enemy wait', () => {
+    expect(DEFAULT_PRESENTATION_TIMING).toMatchObject(TIMING);
+    expect(DEFAULT_PRESENTATION_TIMING.tail).toBe(0);
+    expect(DEFAULT_PRESENTATION_TIMING.enemyGap).toBe(260);
+    expect(DEFAULT_PRESENTATION_TIMING).toMatchObject({
+      openingHold: 700,
+      openingFocus: 320,
+      victoryBeat: 1000,
+    });
+    expect(TOPDOWN_PRESENTATION_TIMING).toMatchObject({
+      windUp: 62,
+      release: 84,
+      recover: 46,
+      gap: 60,
+      tail: 110,
+      enemyGap: 200,
+      openingHold: 700,
+      openingFocus: 320,
+      victoryBeat: 1000,
+    });
+    expect(TIMING.windUp).not.toBe(TOPDOWN_PRESENTATION_TIMING.windUp);
+  });
+});
 
 describe('timed bare legacy clips', () => {
   const holds = {
@@ -678,6 +711,33 @@ describe('choreograph', () => {
     expect(move.duration).toBe(TIMING.strollStep * 2 + STROLL_RAMP_MS);
     expect(cursor).toBe(1000 + move.duration);
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
+  });
+
+  it('marks a top-down party walk ready at the end of the walk without a strike tail', () => {
+    const out = choreograph({
+      content,
+      events: [
+        {
+          type: 'partyWalked',
+          unitId: 'leader',
+          from: { x: 3, y: 7 },
+          path: [
+            { x: 4, y: 7 },
+            { x: 5, y: 7 },
+          ],
+        },
+      ],
+      unitsBefore: roster,
+      cursor: 1000,
+      rate: 1,
+      timingProfile: TOPDOWN_PRESENTATION_TIMING,
+      pushIndex: 0,
+    });
+    const move = out.tracks.find((track) => track.kind === 'move');
+
+    if (move?.kind !== 'move') throw new Error('expected a party walk track');
+    expect(out.actionReadyAt).toBe(1000 + move.duration);
+    expect(out.actionReadyAt).toBe(out.cursor);
   });
 
   it('keeps reduced-motion party footsteps inside the abbreviated walk', () => {
@@ -1297,6 +1357,33 @@ describe('G hit timing', () => {
       (track): track is PoseTrack =>
         track.kind === 'pose' && track.unitId === kaya.id && track.clip === clip,
     );
+
+  it('adds one strike tail before the separate exact enemy-turn deadline', () => {
+    const out = choreograph({
+      content,
+      events: [attack(), damage(4)],
+      unitsBefore: [kaya, attacker],
+      cursor: 1000,
+      rate: 1,
+      timingProfile: TOPDOWN_PRESENTATION_TIMING,
+      pushIndex: 0,
+      clipsOf: loaded,
+    });
+    const impactAt = 1000 + 62 + 84 * 0.75 * 0.45 + (4 / 26) * 1000;
+    const recoverAt = Math.max(1000 + 62 + 84 * 0.75, impactAt + 30);
+    const afterAbility = Math.max(recoverAt + 46 * 1.1, impactAt + 30) + 60;
+    const afterDamage = Math.max(afterAbility, impactAt + 30) + 60;
+    const expectedFinish = afterDamage + 110;
+
+    expect(out.cursor).toBeCloseTo(expectedFinish, 8);
+    expect(out.cursor).toBeCloseTo(1554.7961538461539, 8);
+    const actionReadyAt = impactAt + 30 + TOPDOWN_PRESENTATION_TIMING.tail;
+    expect(out.actionReadyAt).toBeCloseTo(actionReadyAt, 8);
+    expect(out.actionReadyAt + TOPDOWN_PRESENTATION_TIMING.enemyGap).toBeCloseTo(
+      1584.1961538461537,
+      8,
+    );
+  });
 
   it('pre-rolls a pending lethal G hit after the attack wind-up and starts KO at the hit end', () => {
     const out = play([attack(), damage(20), { type: 'unitDied', unitId: kaya.id }]);
