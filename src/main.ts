@@ -19,6 +19,7 @@ import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
 import { useTopDownStyle, useWorldStyleTest } from './content/assets/manifest';
 import { withTopDownMaps } from './content/topdown';
+import { loadTopdownVfx } from './content/assets/topdownVfx';
 
 /** Gallery checks await decoded pixels, not just successful HTTP requests. */
 async function loadedFxCels() {
@@ -49,6 +50,7 @@ if (import.meta.env.DEV) {
 const style = new URLSearchParams(window.location.search).get('style');
 if (style === 'world') useWorldStyleTest();
 if (style === 'topdown') useTopDownStyle();
+if (style === 'topdown') void loadTopdownVfx(style, import.meta.env.BASE_URL);
 
 const app = new App(style === 'topdown' ? withTopDownMaps(CONTENT) : CONTENT, root, STORY_ENTRY);
 app.start();

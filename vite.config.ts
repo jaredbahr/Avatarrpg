@@ -355,6 +355,9 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
+        // ADR 0104 VFX recipes are fetched only by the opted-in ?style=topdown loader.
+        // Keep the JSON in dist for that request, but don't precache it eagerly.
+        globIgnores: ['art/topdown/vfx.json'],
         /*
          * The precache manifest is inlined in sw.js, which the JavaScript gate
          * counts (ADR 0048), and two hundred 32-digit md5 revisions do not

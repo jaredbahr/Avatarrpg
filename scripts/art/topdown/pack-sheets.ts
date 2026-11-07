@@ -36,6 +36,9 @@ export const SOURCE = 'prototypes/topdown/assets';
 export const OUT = 'public/art/topdown';
 export const DATA = 'src/content/assets/topdownSheets.ts';
 
+/** The VFX packer owns exactly these two shared-directory outputs. */
+export const VFX_OUTPUTS = [`${OUT}/vfx.webp`, `${OUT}/vfx.json`] as const;
+
 /** The game's headings (`HEADINGS` order) and PixelLab's direction names for them. */
 const HEADINGS = [
   'east',
@@ -970,7 +973,11 @@ async function main(): Promise<void> {
     else writeFileSync(path, bytes);
   }
   const shipped = existsSync(OUT) ? readdirSync(OUT).map((f) => `${OUT}/${f}`) : [];
-  const extra = shipped.filter((p) => !files.has(p));
+  // Keep the figure packer's ownership strict: only the VFX packer's two
+  // explicit outputs may share this directory. Every other foreign file fails.
+  const extra = shipped.filter(
+    (p) => !files.has(p) && !VFX_OUTPUTS.includes(p as (typeof VFX_OUTPUTS)[number]),
+  );
   for (const p of extra) console.error(`not packed: ${p}`);
   const total = [...files]
     .filter(([p]) => p.startsWith(OUT))
