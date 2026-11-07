@@ -85,7 +85,12 @@ describe('PixelLab ledger audit CLI', () => {
       unmapped_jobs: string[];
       unmapped_metadata_keys: string[];
       missing_phase_evidence: Array<{ prefix: string; no_jobs: boolean }>;
-      exceptions: Record<string, Array<string | { name: string }>>;
+      exceptions: {
+        zero_credit_jobs: string[];
+        noncompleted_jobs: string[];
+        missing_balance_diff_jobs: string[];
+        job_booked_vs_delta_over_20_percent: Array<{ name: string }>;
+      };
     };
 
     expect(report.input.sha256).toBe(createHash('sha256').update(fixtureBytes).digest('hex'));
