@@ -24,17 +24,17 @@ function run(args: string[], cwd = repo) {
 function withTemporaryLedger(content: string, runTest: (path: string) => void) {
   const directory = mkdtempSync(join(tmpdir(), 'avatar-ledger-audit-'));
   const path = join(directory, 'ledger.json');
+  const tempRoot = resolve(tmpdir());
+  const ownedDirectory = resolve(directory);
+  if (
+    dirname(ownedDirectory) !== tempRoot ||
+    !basename(ownedDirectory).startsWith('avatar-ledger-audit-')
+  )
+    throw new Error(`Refusing to clean unexpected test path: ${directory}`);
   try {
     writeFileSync(path, content, 'utf8');
     runTest(path);
   } finally {
-    const tempRoot = resolve(tmpdir());
-    const ownedDirectory = resolve(directory);
-    if (
-      dirname(ownedDirectory) !== tempRoot ||
-      !basename(ownedDirectory).startsWith('avatar-ledger-audit-')
-    )
-      throw new Error(`Refusing to clean unexpected test path: ${directory}`);
     rmSync(ownedDirectory, { recursive: true, force: true });
   }
 }
