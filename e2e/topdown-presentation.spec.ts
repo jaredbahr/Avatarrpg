@@ -110,11 +110,9 @@ async function canvasCorners(page: Page) {
 
 test('top-down Recentre fits the whole 20x12 board and speed/skip stay presentation-only', async ({
   page,
-}, testInfo) => {
+}) => {
   test.setTimeout(90_000);
-  const tablet = testInfo.project.name === 'ipad-landscape';
-  await page.setViewportSize(tablet ? { width: 1194, height: 834 } : { width: 1368, height: 912 });
-  await resetStorage(page, '?renderer=canvas');
+  await resetStorage(page, '?style=topdown&renderer=canvas');
   await startGame(page, ['Kaya'], ['kaya'], 'avatar456-topdown-short-fight', {
     reduceMotion: false,
   });
@@ -122,6 +120,22 @@ test('top-down Recentre fits the whole 20x12 board and speed/skip stay presentat
   expect(await takeTurn(page)).toBe(true);
   await waitForIdle(page);
   await stageTopdownEncounter(page);
+  const topDownAssetsLoaded = await page.waitForFunction(() => {
+    const style = new URLSearchParams(location.search).get('style');
+    const resources = performance.getEntriesByType('resource').map((entry) => {
+      try {
+        return new URL(entry.name).pathname;
+      } catch {
+        return '';
+      }
+    });
+    return (
+      style === 'topdown' &&
+      resources.some((path) => path.endsWith('/art/topdown/kaya.json')) &&
+      resources.some((path) => path.endsWith('/art/topdown/kaya.webp'))
+    );
+  });
+  expect(await topDownAssetsLoaded.jsonValue()).toBe(true);
 
   const staged = await page.evaluate(() => {
     const app = window.fnt!.app;
@@ -130,11 +144,13 @@ test('top-down Recentre fits the whole 20x12 board and speed/skip stay presentat
     const camera = app.rendererCamera()!;
     return {
       projection: camera.projection,
+      backend: app.rendererBackend(),
       grid: { width: battle.grid.width, height: battle.grid.height },
       paintExtent: map.scene?.paintExtent,
       tilePx: camera.tilePx,
     };
   });
+  expect(staged.backend).toBe('canvas');
   expect(staged.projection).toBe('topdown');
   expect(staged.grid).toEqual({ width: WIDTH, height: HEIGHT });
   expect(staged.paintExtent).toEqual({ x: 0, y: 0, width: WIDTH * 40, height: HEIGHT * 40 });
