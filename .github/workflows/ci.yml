@@ -100,6 +100,10 @@ jobs:
       - name: Check bundle budget (380 KB gzipped)
         run: node scripts/check-bundle-size.mjs
 
+      - name: Informational bundle attribution
+        continue-on-error: true
+        run: npm run bundle:report
+
       - name: Check every sheet in the manifest against its files
         run: npm run art:validate
 
