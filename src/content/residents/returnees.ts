@@ -158,7 +158,7 @@ export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
   tile('recovery.hesra', 'BD14-CONTACT', VILLAGE, 17, 9),
   tile('recovery.senn', 'BD15-RIVER', RIVERSIDE, 18, 14),
   // Bo-shan shares the BD04 household door while keeping his own saved identity.
-  door('home.bo_shan', 'BD04', 10, 13),
+  door('home.bo_shan', 'BD04', 8, 14),
   door('home.amri', 'BD12', 12, 15),
   door('home.leto', 'BD13', 13, 15),
   door('home.hesra', 'BD14', 14, 15),

@@ -3,10 +3,10 @@
  * `pack-sheets.ts --check` asserts: every atlas, clip file, actions file and the manifest's data module, byte for
  * byte, and nothing else under `public/art/topdown/`.
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { expect, it, vi } from 'vitest';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
-import { DATA, OUT, packTopdownSheets } from './pack-sheets';
+import { DATA, packTopdownSheets, shippedFiles } from './pack-sheets';
 
 // Reading some 3,000 frames and the encoder's slowest lossless search take a minute or more on a busy machine.
 vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
@@ -18,7 +18,7 @@ it('ships exactly what the committed sources pack to', () => {
     const bytes = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
     expect(bytes.equals(readFileSync(path)), `${path} is stale: run pack-sheets.ts`).toBe(true);
   }
-  const shipped = readdirSync(OUT).map((name) => `${OUT}/${name}`);
+  const shipped = shippedFiles();
   expect(shipped.sort()).toEqual([...files.keys()].filter((path) => path !== DATA).sort());
 });
 

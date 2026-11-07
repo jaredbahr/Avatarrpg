@@ -19506,6 +19506,595 @@
    "ids": {
     "animation_group_id": "ff3c794d-17cb-4ee6-8b37-aa32d1eb5086"
    }
+  },
+  {
+   "name": "t3_char_guard",
+   "endpoint": "/create-character-v3",
+   "job": "dfc539bb-eef6-4a51-a6c5-35b5c29a491c",
+   "status": "completed",
+   "settings": {
+    "description": "a stocky village watchman in his thirties, square clean-shaven jaw, short black ...",
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "view": "low top-down",
+    "outline": "single color black outline",
+    "detail": "medium detail",
+    "template_id": "mannequin",
+    "seed": 11,
+    "name": "BaDan t3 guard"
+   },
+   "credits": 2.0,
+   "credit_source": "usage",
+   "balance_diff": 80.0,
+   "usage": {
+    "type": "generations",
+    "generations": 2.0
+   },
+   "balance_before": 11206.9654640625,
+   "balance_after": 11126.9654640625,
+   "secs": 180,
+   "notes": "",
+   "ids": {
+    "background_job_id": "dfc539bb-eef6-4a51-a6c5-35b5c29a491c",
+    "character_id": "412e6c73-3951-4dc8-9a5a-17716e29c112"
+   }
+  },
+  {
+   "name": "t3_obj_route_sign_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "fd2282b7-b017-467c-a395-d7415a72d16a",
+   "status": "completed",
+   "settings": {
+    "description": "a wooden signpost on a single stout post with two weathered plank arrows nailed ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 35.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 11126.9654640625,
+   "balance_after": 11091.9654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "fd2282b7-b017-467c-a395-d7415a72d16a",
+    "object_id": "8e787e37-229e-4e7b-84ea-85b557ed5d24"
+   }
+  },
+  {
+   "name": "t3_obj_school_notice_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "666d6f59-202e-46af-80b0-ee3b2142d918",
+   "status": "completed",
+   "settings": {
+    "description": "a small wooden notice board on two short posts with a narrow shingle cap, one la...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 56
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 20.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 11091.9654640625,
+   "balance_after": 11071.9654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "666d6f59-202e-46af-80b0-ee3b2142d918",
+    "object_id": "2a7368f6-fc06-48b7-9b73-06705902ef63"
+   }
+  },
+  {
+   "name": "t3_obj_route_sign_4",
+   "endpoint": "/create-object-pro-flash",
+   "job": "4e6521a9-a253-48a2-ae0e-4ca8191919e8",
+   "status": "completed",
+   "settings": {
+    "description": "a wooden signpost on a single stout post with two weathered plank arrows nailed ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 11056.9654640625,
+   "balance_after": 11051.9654640625,
+   "secs": 47,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4e6521a9-a253-48a2-ae0e-4ca8191919e8",
+    "object_id": "35672ce4-02ab-415c-8d21-e5f451cd20a5"
+   }
+  },
+  {
+   "name": "t3_guard_idle",
+   "endpoint": "/characters/animations",
+   "job": [
+    "0aecf602-0f9b-4a69-9f46-a85da063c8bf",
+    "61ca320f-e4ca-4dc0-ab5f-a2724c909d9a",
+    "66fb07a9-4984-4b32-8ab3-72203b3f8dbb",
+    "cc9d1a7a-078d-40f6-aff5-866fc5d05992",
+    "9824e3e3-82bd-4277-8125-c80a53aeddc0",
+    "12e314ac-e728-4ace-9532-218db5aa9467",
+    "f6fec875-f189-433c-8ee9-22b945cc89fe",
+    "0885a6a4-d19e-42fc-ac76-4b99e901dd8b"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "412e6c73-3951-4dc8-9a5a-17716e29c112",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest: the chest and shoulders rise and fall slowly and clearly, a gentle weight shift from one hip to the other, arms relaxed at the sides; no vapour, no effects",
+    "frame_count": 12,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 11051.9654640625,
+   "balance_after": 11027.9654640625,
+   "secs": 177,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "e13bd658-eff0-4377-b66d-4e54676a66a4"
+   }
+  },
+  {
+   "name": "t3_guard_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9fcda93e-300c-4d94-8ab3-75feaba4a600",
+    "df5d0872-2842-43ad-ac1e-1875d3ff5445",
+    "05ab67ee-6e61-40de-8087-491112b4cf22",
+    "e6fee3e8-451d-4301-9730-d01f899c0807",
+    "7e0198ce-ca40-4bf3-a007-70d0d78fc91d",
+    "392fafbf-6f77-40c1-93e5-0d79f2c23b71",
+    "e5ff7264-c0d3-4323-aadf-d97c19ccf2f7",
+    "05efc554-af59-4cda-a7a0-702968f5e233"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "412e6c73-3951-4dc8-9a5a-17716e29c112",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 11027.9654640625,
+   "balance_after": 11003.9654640625,
+   "secs": 199,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "9bfadcfe-5574-4f1f-8b32-530483b8d3cc"
+   }
+  },
+  {
+   "name": "t3_obj_bridge_low_5",
+   "endpoint": "/create-object-pro-flash",
+   "job": "e5adfe9b-dd9c-412c-b03a-b2c44847f443",
+   "status": "completed",
+   "settings": {
+    "description": "straight top-down view, horizontal base, no perspective; a short wooden footbrid...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 5
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 11003.9654640625,
+   "balance_after": 10998.9654640625,
+   "secs": 25,
+   "notes": "T3 bridge redraw (owner: visually off)",
+   "ids": {
+    "background_job_id": "e5adfe9b-dd9c-412c-b03a-b2c44847f443",
+    "object_id": "c40c03ae-d4a0-4749-8221-76bdd4b2e36e"
+   }
+  },
+  {
+   "name": "t3_obj_bridge_high_7",
+   "endpoint": "/create-object-pro-flash",
+   "job": "4b6a8b59-dba3-47dc-acce-565718ea25e6",
+   "status": "completed",
+   "settings": {
+    "description": "straight top-down view, horizontal base, no perspective; a short wooden footbrid...",
+    "view": "high top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 7
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 10998.9654640625,
+   "balance_after": 10993.9654640625,
+   "secs": 31,
+   "notes": "T3 bridge redraw (owner: visually off)",
+   "ids": {
+    "background_job_id": "4b6a8b59-dba3-47dc-acce-565718ea25e6",
+    "object_id": "76e8db8c-4010-4dc3-b108-8dc36d58f805"
+   }
+  },
+  {
+   "name": "t3_obj_bridge_high_7_wide",
+   "endpoint": "/create-object-pro-flash",
+   "job": "62f29cfe-d72f-4002-8ab0-c1d566297a14",
+   "status": "completed",
+   "settings": {
+    "description": "straight top-down view, horizontal base, no perspective; a short wooden footbrid...",
+    "view": "high top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 80,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 7
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 10993.9654640625,
+   "balance_after": 10988.9654640625,
+   "secs": 31,
+   "notes": "T3 bridge redraw (owner: visually off)",
+   "ids": {
+    "background_job_id": "62f29cfe-d72f-4002-8ab0-c1d566297a14",
+    "object_id": "7ffb5d61-665e-43c6-a44c-e5fb831443e3"
+   }
   }
  ],
  "end_balance": 16728.0,
@@ -19533,5 +20122,9 @@
  "t2_start_balance": 12148.965464062501,
  "t2_ledger_spent": 315.0,
  "t2_end_balance": 11833.965464062501,
- "t2_note": "ADR 0104 T2 (2026-11-06): hits and knockouts for Kaya, Sura, Bo, the thug, the slinger and the bruiser (skeleton-v3, 8 headings) and 6 retakes; cap 400. The balance fell exactly the booked usage (315); balance_diff per job overlaps because the jobs ran in parallel."
+ "t2_note": "ADR 0104 T2 (2026-11-06): hits and knockouts for Kaya, Sura, Bo, the thug, the slinger and the bruiser (skeleton-v3, 8 headings) and 6 retakes; cap 400. The balance fell exactly the booked usage (315); balance_diff per job overlaps because the jobs ran in parallel.",
+ "t3_start_balance": 11206.9654640625,
+ "t3_ledger_spent": 65.0,
+ "t3_end_balance": 11003.9654640625,
+ "t3_note": "T3 (guard, route sign, school notice). Booked usage 65.0; summed per-job balance deltas 188.0; start-to-end balance delta 203.0 (the key is shared, so the delta can include other consumers; object jobs under-report)."
 }

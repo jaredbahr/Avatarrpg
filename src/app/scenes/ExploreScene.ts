@@ -308,7 +308,9 @@ export class ExploreScene implements Scene {
         this.renderer.camera.centreMargin = map.cameraCentreMargin;
         this.renderer.camera.viewExtent = map.scene?.paintExtent;
       }
-      this.renderer?.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
+      this.renderer?.camera.fitExplore(
+        exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
+      );
       this.renderer?.camera.centreOn(state.location.pos);
       this.rememberViewSize();
     }
@@ -344,7 +346,7 @@ export class ExploreScene implements Scene {
       const trail = this.ensureTrail(state, grid, event.from);
       const before = trail.positions(state.party.length);
       const plan =
-        this.map?.projection === 'oblique'
+        this.map?.projection === 'oblique' || this.map?.projection === 'topdown'
           ? trail.planWalk(event.path, state.party.length, grid, this.standing(state))
           : null;
       if (plan) {
@@ -965,7 +967,9 @@ export class ExploreScene implements Scene {
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
     this.app.animator.setProjection(this.renderer.camera.projection);
-    this.renderer.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
+    this.renderer.camera.fitExplore(
+      exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
+    );
     this.renderer.camera.centreOn(state.location.pos);
     this.rememberViewSize();
 
@@ -1219,13 +1223,15 @@ export class ExploreScene implements Scene {
       }
       if (
         this.needsSettle &&
-        map.projection === 'oblique' &&
+        (map.projection === 'oblique' || map.projection === 'topdown') &&
         !this.departing &&
         !document.querySelector('[role="dialog"]')
       ) {
         this.needsSettle = false;
         const trail = this.ensureTrail(state, grid);
-        const routes = trail.settle(grid, this.standing(state));
+        const routes = trail.settle(grid, this.standing(state), {
+          beside: map.projection === 'topdown',
+        });
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
         this.animatePartyBatches(batches, state, now);

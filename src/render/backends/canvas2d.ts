@@ -102,7 +102,14 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { boardDepth, compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
-import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import {
+  TOPDOWN_FEET_WIDTH,
+  feetBlobArt,
+  figureShadowArt,
+  poolOffset,
+  soleContactArt,
+  topdownFeetLevel,
+} from '../figureShadowArt';
 import { restingClip } from '../sheets/feet';
 import type { ResolvedFrame } from '../sheets/store';
 import {
@@ -185,6 +192,10 @@ export class Canvas2DBackend implements RenderBackend {
   private shadowGridNow: ShadowGrid | null = null;
   /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
   private grounding = DEFAULT_ACTOR_GROUNDING;
+  /** True on the top-down board, whose figures stand on `feetBlob` rather than the swept pool. */
+  private topdownFigures = false;
+  /** The scene's paved cells, where a top-down feet blob is drawn at paving's strength. */
+  private pavedCells: readonly Vec2[] | undefined;
   /** One caster at a time, in the exact-max path (see `castInto`). */
   private castScratch: HTMLCanvasElement | null = null;
   /** One viewport's static scenery union; live actors and props never enter it. */
@@ -1303,6 +1314,8 @@ export class Canvas2DBackend implements RenderBackend {
     const layer = this.shadowLayer.getContext('2d');
     if (!layer) return;
     this.grounding = actorGrounding(view.scene);
+    this.topdownFigures = camera.projection === 'topdown';
+    this.pavedCells = view.scene?.pavedCells;
     // The union is a grey level per pixel on opaque black; see `castInto`.
     if (
       !this.castScratch ||
@@ -1601,9 +1614,29 @@ export class Canvas2DBackend implements RenderBackend {
     widthTiles: number,
     alpha: number,
     worldPixel: number,
+    at: Vec2,
     cels?: FigureCels,
   ): void {
     if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
+    if (this.topdownFigures) {
+      // The top-down board grounds a figure on Imagination's feet blob, centred on its resting soles.
+      const blob = feetBlobArt(TOPDOWN_FEET_WIDTH * scale * widthTiles);
+      if (!blob) return;
+      const tile = TILE * worldPixel * (cels?.scale ?? scale);
+      const offset = poolOffset(cels?.resting, cels?.flip ?? false);
+      const w = blob.width * worldPixel,
+        h = blob.height * worldPixel;
+      const x = foot.x + offset.x * tile - w / 2,
+        y = foot.y + offset.y * tile - h / 2;
+      const level = topdownFeetLevel(this.pavedCells, at);
+      this.castInto(target, level, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
+        t.save();
+        t.globalAlpha = alpha;
+        t.drawImage(blob, x, y, w, h);
+        t.restore();
+      });
+      return;
+    }
     // A figure tile of the shipped sheets: the swept pool is the oblique and orthographic
     // boards' grounding, which `feetBlob` replaces on the top-down board (ADR 0104, T4).
     const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
@@ -1782,6 +1815,7 @@ export class Canvas2DBackend implements RenderBackend {
         1,
         npc.alpha ?? 1,
         worldPixel,
+        at,
         sheet
           ? {
               drawn: sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px, width),
@@ -1863,6 +1897,7 @@ export class Canvas2DBackend implements RenderBackend {
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
           castShadowStrength(unit.castShadow),
         worldPixel,
+        pos,
         cels,
       );
     }
