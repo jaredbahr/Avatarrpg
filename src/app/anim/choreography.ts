@@ -1216,15 +1216,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         if (pos) {
           const { recipe, palette } = effect(`fx.status.${event.status}`);
           const centre = unitEffectCentre(event.unitId, pos);
-          emit(
-            recipe.impact,
-            at,
-            centre,
-            centre,
-            palette,
-            eventIndex,
-            6,
-          );
+          emit(recipe.impact, at, centre, centre, palette, eventIndex, 6);
         }
         break;
       }
@@ -1237,15 +1229,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // One sound however many tiles change together: the bus coalesces a key.
         cue(key, at, 15, eventIndex);
         const { recipe, palette } = effect(key);
-        emit(
-          recipe.impact,
-          at,
-          centre(event.pos),
-          centre(event.pos),
-          palette,
-          eventIndex,
-          8,
-        );
+        emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 8);
         break;
       }
 

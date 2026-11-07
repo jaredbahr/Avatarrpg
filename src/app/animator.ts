@@ -295,9 +295,7 @@ export class Animator {
     const queueEnd = this.options.actionQueue
       ? Math.max(this.timeline.actionReadyAt, actorSettle)
       : this.timeline.finishesAt;
-    const base = options.alongside
-      ? Math.max(now, this.lastCursor)
-      : Math.max(now, queueEnd);
+    const base = options.alongside ? Math.max(now, this.lastCursor) : Math.max(now, queueEnd);
     // Followers each delay from the same batch anchor, never from the previous delay.
     this.lastCursor = base;
     const rate = this.rate;

@@ -145,10 +145,7 @@ async function replay(rate: CombatSpeed, skip: boolean): Promise<ReplayResult> {
     const animator = (scene as unknown as { sceneAnimator: Animator }).sceneAnimator;
     const currentNow = clock.now(wallNow);
     const actorEnd = animator.actorFinishesAt(active.id);
-    if (
-      active.faction === 'party' &&
-      (animator.actionBusy(currentNow) || actorEnd > currentNow)
-    ) {
+    if (active.faction === 'party' && (animator.actionBusy(currentNow) || actorEnd > currentNow)) {
       wallNow += 16;
       frames += 1;
       if (skip && (animator.actionBusy(clock.now(wallNow)) || actorEnd > clock.now(wallNow))) {
@@ -172,7 +169,12 @@ async function replay(rate: CombatSpeed, skip: boolean): Promise<ReplayResult> {
           )
         : undefined;
       if (attack && target)
-        dispatch({ type: 'useAbility', unitId: active.id, abilityId: attack.id, target: target.pos });
+        dispatch({
+          type: 'useAbility',
+          unitId: active.id,
+          abilityId: attack.id,
+          target: target.pos,
+        });
       else dispatch({ type: 'endTurn', unitId: active.id });
       await Promise.resolve();
     } else {

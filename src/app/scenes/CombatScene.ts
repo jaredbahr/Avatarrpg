@@ -373,8 +373,7 @@ export class CombatScene implements Scene {
     const animator = this.animatorForBoard;
     if (!this.presentationClock) return animator.busy(now);
     return (
-      animator.actionBusy(now) ||
-      (unitId !== undefined && animator.actorFinishesAt(unitId) > now)
+      animator.actionBusy(now) || (unitId !== undefined && animator.actorFinishesAt(unitId) > now)
     );
   }
 
@@ -2976,7 +2975,8 @@ export class CombatScene implements Scene {
         projection === 'topdown'
           ? this.animatorForBoard.unitPose(now, unit.id, unit.sprite)
           : undefined;
-      if (!movingPos && !activePose && !(projection === 'topdown' && unit.id === activeId)) continue;
+      if (!movingPos && !activePose && !(projection === 'topdown' && unit.id === activeId))
+        continue;
       const pos = movingPos ?? unit.pos;
       const health = this.animatorForBoard.unitHealth(now, unit);
       const pose = this.poseFields(
@@ -2991,7 +2991,9 @@ export class CombatScene implements Scene {
       if (projection === 'topdown') {
         const candidate = { unit, pos, scale, pose };
         if (movingPos || activePose) {
-          animatedPoints.push(camera.project({ x: pos.x + unit.size / 2, y: pos.y + unit.size / 2 }));
+          animatedPoints.push(
+            camera.project({ x: pos.x + unit.size / 2, y: pos.y + unit.size / 2 }),
+          );
           topdownCandidates.push(candidate);
         } else activeFallback = candidate;
       } else if (

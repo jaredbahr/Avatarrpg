@@ -713,7 +713,7 @@ describe('choreograph', () => {
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
   });
 
-  it('marks a top-down party walk ready at the end of the walk without a strike tail', () => {
+  it('marks a top-down party walk action-ready at its end while visual tail remains', () => {
     const out = choreograph({
       content,
       events: [
@@ -737,7 +737,7 @@ describe('choreograph', () => {
 
     if (move?.kind !== 'move') throw new Error('expected a party walk track');
     expect(out.actionReadyAt).toBe(1000 + move.duration);
-    expect(out.actionReadyAt).toBe(out.cursor);
+    expect(out.cursor).toBe(out.actionReadyAt + TOPDOWN_PRESENTATION_TIMING.tail);
   });
 
   it('keeps reduced-motion party footsteps inside the abbreviated walk', () => {

@@ -212,7 +212,7 @@ describe('scene-owned top-down playback', () => {
 
   it('holds both attacker and target focus through a blow, including wind-up', () => {
     const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
-      sceneAnimator: { push: vi.fn(), finishesAt: 900 },
+      sceneAnimator: { push: vi.fn(), actionReadyAt: 900, finishesAt: 1200 },
       presentationClock: new PresentationClock(100),
       battle: () => ({ phase: 'active' }),
       topdownBlowPoints: [],
@@ -221,6 +221,7 @@ describe('scene-owned top-down playback', () => {
       onEvents: CombatScene['onEvents'];
       topdownBlowPoints: Vec2[];
       topdownBlowEndsAt: number;
+      sceneAnimator: { actionReadyAt: number; finishesAt: number };
     };
     const attacker = unit('attacker', { x: 2, y: 3 }, { size: 2 });
     const target = unit('target', { x: 7, y: 4 });
@@ -244,10 +245,16 @@ describe('scene-owned top-down playback', () => {
       { x: 7.5, y: 4.5 },
     ]);
     expect(scene.topdownBlowEndsAt).toBe(900);
+    expect(scene.sceneAnimator.finishesAt).toBe(1200);
   });
 
   it('sets one 200 ms enemy deadline after the top-down strike tail', () => {
-    const attacker = unit('attacker', { x: 5, y: 3 }, { faction: 'enemy', sprite: 'unit.enemy.thug' });
+    vi.stubGlobal('performance', { now: () => 1000 });
+    const attacker = unit(
+      'attacker',
+      { x: 5, y: 3 },
+      { faction: 'enemy', sprite: 'unit.enemy.thug' },
+    );
     const target = unit('target', { x: 1, y: 3 }, { sprite: 'unit.fire.kaya' });
     const animator = new Animator(CONTENT, {
       motionReduced: () => false,
@@ -305,7 +312,11 @@ describe('scene-owned top-down playback', () => {
   });
 
   it('keeps floaters visual-only and settles only the same actor before its next move', () => {
-    const attacker = unit('attacker', { x: 5, y: 3 }, { faction: 'enemy', sprite: 'unit.enemy.thug' });
+    const attacker = unit(
+      'attacker',
+      { x: 5, y: 3 },
+      { faction: 'enemy', sprite: 'unit.enemy.thug' },
+    );
     const target = unit('target', { x: 1, y: 3 }, { sprite: 'unit.fire.kaya' });
     const other = unit('other', { x: 3, y: 8 });
     const longHit = {
@@ -543,15 +554,23 @@ describe('scene-owned top-down playback', () => {
 
     scene.resume();
     expect(scene.aiDueAt).toBe(450);
-    scene.advanceTopdownAi(649);
+    wallNow = 449;
+    scene.advanceTopdownAi(clock.now(wallNow));
     expect(dispatch).not.toHaveBeenCalled();
-    scene.advanceTopdownAi(650);
+    expect(scene.aiDueAt).toBe(450);
+    wallNow = 450;
+    scene.advanceTopdownAi(clock.now(wallNow));
     expect(dispatch).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
   });
 });
 
 describe('top-down follow for stationary turn arrivals', () => {
+  beforeEach(() => {
+    vi.stubGlobal('document', { documentElement: { dataset: {} } });
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
+  });
+
   function sceneAt(pos: Vec2) {
     const actor = unit('incoming', pos, { faction: 'enemy' });
     const grid = {
