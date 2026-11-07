@@ -2,7 +2,7 @@
 
 Issue #467 is a documentation-only map for the future T7 cleanup. It records the state at `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07). No source or art is deleted by this issue.
 
-**Measurement status:** the complete T7 before/after build measurement is not currently possible. T4–T6 replacement runtime paths are not all present. Do not remove those call sites, add stubs, or interpret a build that cannot run as a savings figure. The same-head baseline and a create-only source-exclusion control are recorded below, as are the exhaustive path-string grep and a bounded TypeScript `findReferences` pass. Full `npm run ci:local` remains pending. Until then, savings for complete retirement are **unavailable**. Static source/output sizes below are inventory, not freed-space claims.
+**Measurement status:** the complete T7 before/after build measurement is not currently possible because T4–T6 replacement runtime paths are not all present. Do not remove those call sites, add stubs, or interpret a build that cannot run as a savings figure. The same-head baseline and a create-only source-exclusion control are recorded below, as are the exhaustive path-string grep and a bounded TypeScript `findReferences` pass. Full-retirement savings remain **unavailable pending those runtime replacements**, independent of CI status. The required `npm run ci:local` result must be recorded in PR evidence; this inventory does not claim a result. Static source/output sizes below are inventory, not freed-space claims.
 
 ## Retirement items and present footprint
 
