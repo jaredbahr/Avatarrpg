@@ -21,6 +21,7 @@ export type TopdownName =
   | 'dorin'
   | 'household'
   | 'hanru'
+  | 'guard'
   | 'driller';
 
 export interface TopdownSheetData {
@@ -317,6 +318,20 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleMs: 420,
     walkCels: [0, 0, 0, 0, 0, 0, 0, 0],
     walkCelMs: 1000,
+    walkMsPerTile: 606.1,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  guard: {
+    pages: 1,
+    frame: { w: 46, h: 52 },
+    anchor: { x: 0.5, y: 0.923077 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 2, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 56.818,
     walkMsPerTile: 606.1,
     cast: null,
     clipData: false,

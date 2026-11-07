@@ -35,6 +35,19 @@ import { format, resolveConfig } from 'prettier';
 export const SOURCE = 'prototypes/topdown/assets';
 export const OUT = 'public/art/topdown';
 export const DATA = 'src/content/assets/topdownSheets.ts';
+/** The T3 objects (`world.route_sign`, `world.school_notice`): plain trimmed PNGs under `objects/`. */
+export const OBJECTS = ['route_sign', 'school_notice'] as const;
+export const OBJECTS_OUT = `${OUT}/objects`;
+
+/** Every file shipped under `public/art/topdown/`, the objects folder included. */
+export function shippedFiles(): string[] {
+  const top = existsSync(OUT) ? readdirSync(OUT) : [];
+  const objects = existsSync(OBJECTS_OUT) ? readdirSync(OBJECTS_OUT) : [];
+  return [
+    ...top.filter((f) => f !== 'objects').map((f) => `${OUT}/${f}`),
+    ...objects.map((f) => `${OBJECTS_OUT}/${f}`),
+  ];
+}
 
 /** The game's headings (`HEADINGS` order) and PixelLab's direction names for them. */
 const HEADINGS = [
@@ -248,6 +261,17 @@ const ROSTER: readonly FigureSpec[] = [
     key: 'npc.hanru',
     folder: 'v7_hanru',
     idle: 'custom-standing at rest: the chest an@265b11',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  // T3: the town guard (the relief watch and a returnee), made like the residents: idle and walk, eight headings.
+  {
+    name: 'guard',
+    key: 'npc.guard',
+    folder: 't3_guard',
+    idle: 'custom-standing at rest: the chest an@e13bd6',
+    walk: 'walking-8-frames@9bfadc',
     stride: 30,
     actions: {},
     timing: 'blow',
@@ -915,6 +939,11 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
     if (sheet.data.actions) files.set(`${OUT}/${sheet.name}-actions.json`, json(sheet.actions));
     data[sheet.name] = { ...sheet.data, pages: laid.length };
   }
+  // T3: the Ba Dan objects, trimmed hard-alpha PNGs the scene loads by name (`prototypes/topdown/tools/t3objproc.py`).
+  for (const name of OBJECTS) {
+    const bytes = readFileSync(join(SOURCE, 'objects_t3', `${name}.png`));
+    files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
+  }
   files.set(DATA, await dataModule(data));
   return files;
 }
@@ -960,7 +989,7 @@ async function main(): Promise<void> {
   const check = process.argv.includes('--check');
   const files = await packTopdownSheets();
   let stale = 0;
-  if (!check) mkdirSync(OUT, { recursive: true });
+  if (!check) mkdirSync(OBJECTS_OUT, { recursive: true });
   for (const [path, content] of files) {
     const bytes = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
     const same = existsSync(path) && Buffer.compare(readFileSync(path), bytes) === 0;
@@ -969,7 +998,7 @@ async function main(): Promise<void> {
     if (check) console.error(`stale: ${path}`);
     else writeFileSync(path, bytes);
   }
-  const shipped = existsSync(OUT) ? readdirSync(OUT).map((f) => `${OUT}/${f}`) : [];
+  const shipped = shippedFiles();
   const extra = shipped.filter((p) => !files.has(p));
   for (const p of extra) console.error(`not packed: ${p}`);
   const total = [...files]

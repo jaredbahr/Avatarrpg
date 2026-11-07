@@ -675,6 +675,7 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'npc.dorin': ['dorin', 'earth'],
   'npc.household': ['household', 'earth'],
   'npc.hanru': ['hanru', 'nonbender'],
+  'npc.guard': ['guard', 'earth'],
 };
 
 let topDownStyle: Readonly<Record<string, AssetEntry>> | undefined;
