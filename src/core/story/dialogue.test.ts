@@ -54,6 +54,24 @@ const QUARTERMASTER: StoryNode = {
 };
 
 describe('dialogue variants', () => {
+  it('inherits a node expression unless the matching variant overrides it', () => {
+    const node: StoryNode = {
+      id: 'expression_inheritance',
+      kind: 'dialogue',
+      speaker: 'Kaya',
+      portrait: 'portrait.kaya',
+      expression: 'warm',
+      lines: ['I am glad we are safe.'],
+      next: 'act1_open',
+      variants: [
+        { when: HAS_WATER, expression: 'worried', lines: ['Are you hurt?'] },
+        { when: HAS_FIRE, lines: ['I knew we would make it.'] },
+      ],
+    };
+    expect(resolveDialogue(game(['nilak']), node).expression).toBe('worried');
+    expect(resolveDialogue(game(['kaya']), node).expression).toBe('warm');
+  });
+
   it('falls back to the base lines when nothing matches', () => {
     // bo is an earthbender: neither variant applies.
     const said = resolveDialogue(game(['bo']), QUARTERMASTER);
@@ -195,6 +213,10 @@ describe('act 1 content', () => {
     for (const said of [victory, defeat]) {
       expect(said.speaker).toBe(speaker);
       expect(said.portrait).toBe(portrait);
+    }
+    if (hero === 'kaya') {
+      expect(victory.expression).toBe('worried');
+      expect(defeat.expression).toBe('angry');
     }
     expect(defeat.lines).not.toEqual(victory.lines);
   });

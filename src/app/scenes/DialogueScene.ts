@@ -12,13 +12,14 @@
  */
 
 import type { App, Mood, Scene } from '../App';
-import type { StoryNode } from '../../core/types';
+import type { PortraitExpression, StoryNode } from '../../core/types';
 import { ELEMENT_IDS } from '../../core/types';
 import { resolveDialogue } from '../../core/story/storyEngine';
 import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { conversationPanel, resolveConversation } from '../ui/ConversationPanel';
+import { portraitExpressionKey } from '../ui/portraitExpression';
 import {
   INTERLUDES,
   INTERLUDE_ART,
@@ -164,7 +165,12 @@ export class DialogueScene implements Scene {
    */
   private stage(
     kind: 'dialogue' | 'choice' | 'end',
-    speaker: { name: string; portrait: string; note?: HTMLElement | null } | null,
+    speaker: {
+      name: string;
+      portrait: string;
+      expression?: PortraitExpression;
+      note?: HTMLElement | null;
+    } | null,
     panel: HTMLElement,
   ): HTMLElement {
     let head: HTMLElement | null = null;
@@ -177,7 +183,11 @@ export class DialogueScene implements Scene {
         el(
           'div',
           { class: `stage-portrait element-${mood}`, attrs: { 'aria-hidden': 'true' } },
-          this.portrait(speaker.portrait, STAGE_PORTRAIT_REM),
+          this.portrait(
+            portraitExpressionKey(speaker.portrait, speaker.expression),
+            STAGE_PORTRAIT_REM,
+            speaker.portrait,
+          ),
         ),
         el(
           'div',
@@ -217,8 +227,8 @@ export class DialogueScene implements Scene {
     );
   }
 
-  private portrait(key: string, size = 6): HTMLElement {
-    return assetCanvas(key, size);
+  private portrait(key: string, size = 6, fallbackKey?: string): HTMLElement {
+    return assetCanvas(key, size, '', fallbackKey);
   }
 
   private clearTimer(): void {
@@ -362,6 +372,7 @@ export class DialogueScene implements Scene {
         {
           name: resolved.speaker,
           portrait: resolved.portrait,
+          expression: resolved.expression,
           note: el('span', {
             class: 'muted tiny line-count',
             text: `${index + 1} of ${resolved.lines.length}`,
@@ -375,7 +386,7 @@ export class DialogueScene implements Scene {
     // malformed state instead of reviving a second copy of the panel logic.
     return this.stage(
       'dialogue',
-      { name: node.speaker, portrait: node.portrait },
+      { name: node.speaker, portrait: node.portrait, expression: node.expression },
       el('div', { class: 'panel dialogue-panel' }, el('p', { text: 'Loading…' })),
     );
   }
@@ -384,11 +395,19 @@ export class DialogueScene implements Scene {
     const shared = conversationPanel(this.app);
     const resolved = resolveConversation(this.app);
     if (shared && resolved)
-      return this.stage('choice', { name: resolved.speaker, portrait: resolved.portrait }, shared);
+      return this.stage(
+        'choice',
+        {
+          name: resolved.speaker,
+          portrait: resolved.portrait,
+          expression: resolved.expression,
+        },
+        shared,
+      );
 
     return this.stage(
       'choice',
-      { name: node.speaker, portrait: node.portrait },
+      { name: node.speaker, portrait: node.portrait, expression: node.expression },
       el('div', { class: 'panel dialogue-panel choice-panel' }, el('p', { text: 'Loading…' })),
     );
   }

@@ -355,6 +355,8 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
+        // Optional dialogue expressions load when selected; offline keeps neutral.
+        globIgnores: ['**/art/portraits/expressions/**'],
         /*
          * The precache manifest is inlined in sw.js, which the JavaScript gate
          * counts (ADR 0048), and two hundred 32-digit md5 revisions do not

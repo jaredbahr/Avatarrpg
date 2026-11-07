@@ -371,6 +371,46 @@ describe('content', () => {
     ).toBe(false);
   });
 
+  it('accepts expressions on dialogue nodes and their variants, and rejects unknown moods', () => {
+    const node = {
+      id: 'expression_schema',
+      kind: 'dialogue',
+      speaker: 'Kaya',
+      portrait: 'portrait.kaya',
+      expression: 'warm',
+      lines: ['That went better than I expected.'],
+      next: STORY_ENTRY,
+      variants: [
+        {
+          when: { kind: 'flag', key: 'example', op: 'set' },
+          expression: 'worried',
+          lines: ['I hope everyone made it back.'],
+        },
+      ],
+    };
+    expect(storyNodeSchema.safeParse(node).success).toBe(true);
+    expect(
+      storyNodeSchema.safeParse({
+        ...node,
+        variants: [{ ...node.variants[0], expression: 'surprised' }],
+      }).success,
+    ).toBe(false);
+    expect(
+      storyNodeSchema.safeParse({
+        id: 'expression_choice_schema',
+        kind: 'choice',
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        expression: 'angry',
+        prompt: 'What now?',
+        options: [
+          { label: 'Wait', detail: 'Give it a moment.', next: STORY_ENTRY },
+          { label: 'Go', detail: 'Move on.', next: STORY_ENTRY },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
   it('rejects a profile assignment to an unknown resident', () => {
     const problems = validateContent({
       ...CONTENT_BUNDLE,

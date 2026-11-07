@@ -8,12 +8,19 @@
  */
 
 import type { App } from '../App';
-import type { ElementId, GameState, StoryNode, StoryOption } from '../../core/types';
+import type {
+  ElementId,
+  GameState,
+  PortraitExpression,
+  StoryNode,
+  StoryOption,
+} from '../../core/types';
 import { ELEMENT_IDS } from '../../core/types';
 import { describe as describeCondition } from '../../core/story/conditions';
 import { optionAvailable, resolveDialogue } from '../../core/story/storyEngine';
 import { resolveAsset } from '../../content/assets/manifest';
 import { assetCanvas } from './assetCanvas';
+import { portraitExpressionKey } from './portraitExpression';
 import { button, el } from './dom';
 
 /** What to call a bender the party does not have. */
@@ -31,6 +38,7 @@ const COMPACT_PORTRAIT_REM = 9;
 export interface ResolvedConversation {
   readonly speaker: string;
   readonly portrait: string;
+  readonly expression?: PortraitExpression;
   readonly lines: readonly string[];
 }
 
@@ -104,7 +112,12 @@ function compactHeader(
           text: lineIndex + 1 + ' of ' + speaker.lines.length,
         })
       : null;
-  const portrait = assetCanvas(speaker.portrait, COMPACT_PORTRAIT_REM);
+  const portrait = assetCanvas(
+    portraitExpressionKey(speaker.portrait, speaker.expression),
+    COMPACT_PORTRAIT_REM,
+    '',
+    speaker.portrait,
+  );
   portrait.style.width = '100%';
   portrait.style.height = '100%';
   return el(

@@ -845,10 +845,13 @@ export const encounterSchema = z.object({
 /* Story                                                               */
 /* ------------------------------------------------------------------ */
 
+const portraitExpression = z.enum(['angry', 'worried', 'warm']);
+
 const dialogueVariant = z.object({
   when: conditionSchema,
   speaker: z.string().min(1).optional(),
   portrait: z.string().min(1).optional(),
+  expression: portraitExpression.optional(),
   lines: z.array(z.string().min(1)).min(1),
 });
 
@@ -869,6 +872,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('dialogue'),
     speaker: z.string().min(1),
     portrait: z.string().min(1),
+    expression: portraitExpression.optional(),
     lines: z.array(z.string().min(1)).min(1),
     next: id,
     variants: z.array(dialogueVariant).optional(),
@@ -878,6 +882,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('choice'),
     speaker: z.string().min(1),
     portrait: z.string().min(1),
+    expression: portraitExpression.optional(),
     prompt: z.string().min(1),
     options: z
       .array(

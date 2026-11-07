@@ -1,0 +1,50 @@
+[
+  {
+    "character": "sura",
+    "reference": "art/source/portraits-variants/references/sura-neutral.png",
+    "source": "art/raw/portraits-variants/neutral-originals/sura.png",
+    "sha256": "7598fd92a450a711b76a2ca52be43856f97751aad71dc3b2f80c037287edde60",
+    "size": [512, 512],
+    "status": "reference prepared; no expression jobs submitted"
+  },
+  {
+    "character": "bo",
+    "reference": "art/source/portraits-variants/references/bo-neutral.png",
+    "source": "art/raw/portraits-variants/neutral-originals/bo.png",
+    "sha256": "e5fb38479f8bc35a7c679f5e540ccaad90e0f65eaeca1749cf3f404240c967db",
+    "size": [512, 512],
+    "status": "reference prepared; no expression jobs submitted"
+  },
+  {
+    "character": "mira",
+    "reference": "art/source/portraits-variants/references/mira-neutral.png",
+    "source": "public/art/portraits/mira.png",
+    "sha256": "1f59486e5a728a8f7034e1e7fd21735119d33cf5c4f7ad28a51796a18c767e67",
+    "size": [512, 512],
+    "status": "reference prepared; no expression jobs submitted"
+  },
+  {
+    "character": "gao",
+    "reference": "art/source/portraits-variants/references/gao-neutral.png",
+    "source": "public/art/portraits/gao.png",
+    "sha256": "df1d64fde62004741249f02d3835b010159e61a8b7e48df7ba16885316f6484d",
+    "size": [512, 512],
+    "status": "reference prepared; no expression jobs submitted"
+  },
+  {
+    "character": "pella",
+    "reference": "art/source/portraits-variants/references/pella-neutral.png",
+    "source": "public/art/portraits/pella.png",
+    "sha256": "1d34036a3507c6cd1f3d2f579d186b095c324fc3a34d2cac1499a77167ff3451",
+    "size": [512, 512],
+    "status": "reference prepared; no expression jobs submitted"
+  },
+  {
+    "character": "dorin",
+    "reference": "art/source/portraits-variants/references/dorin-neutral.png",
+    "source": "public/art/portraits/dorin.png",
+    "sha256": "b12fd52bd26090098fa75baaa2e2b71e8b6091354645c3321977cb77f84f3968",
+    "size": [512, 512],
+    "status": "reference prepared; no expression jobs submitted"
+  }
+]
