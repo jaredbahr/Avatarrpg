@@ -1529,7 +1529,9 @@ export class CombatScene implements Scene {
           undefined;
       // Establish the initial actor immediately so the first settled HUD
       // measurement can choose compact framing before later turns glide.
-      if (battle.phase === 'active' && !followedStillMoving)
+      // Top-down turn changes hand ownership to the per-frame margin follow;
+      // the legacy centring glide is reserved for oblique combat.
+      if (battle.phase === 'active' && !followedStillMoving && camera?.projection !== 'topdown')
         this.centreOnActiveUnit(unit, camera, this.layoutMeasuredAfterSync);
     }
 
@@ -1628,6 +1630,9 @@ export class CombatScene implements Scene {
       this.presentationHeld
     )
       return;
+    // If a future explicit top-down reveal glide is introduced, keep the
+    // existing due deadline parked until that camera motion has completed.
+    if (this.cameraGlide) return;
     const battle = this.battle();
     const unit = this.active();
     if (!battle || battle.phase !== 'active' || !unit || unit.faction === 'party') {
@@ -2962,6 +2967,8 @@ export class CombatScene implements Scene {
     };
     const topdownCandidates: FollowCandidate[] = [];
     const animatedPoints: Vec2[] = [];
+    let activeFallback: FollowCandidate | null = null;
+    const activeId = this.active()?.id;
     for (const unit of battle.units) {
       const movingPos = this.animatorForBoard.renderPos(now, unit.id);
       if (projection !== 'topdown' && !movingPos) continue;
@@ -2969,7 +2976,7 @@ export class CombatScene implements Scene {
         projection === 'topdown'
           ? this.animatorForBoard.unitPose(now, unit.id, unit.sprite)
           : undefined;
-      if (!movingPos && !activePose) continue;
+      if (!movingPos && !activePose && !(projection === 'topdown' && unit.id === activeId)) continue;
       const pos = movingPos ?? unit.pos;
       const health = this.animatorForBoard.unitHealth(now, unit);
       const pose = this.poseFields(
@@ -2982,8 +2989,11 @@ export class CombatScene implements Scene {
       );
       const scale = pose.scale ?? 1;
       if (projection === 'topdown') {
-        animatedPoints.push(camera.project({ x: pos.x + unit.size / 2, y: pos.y + unit.size / 2 }));
-        topdownCandidates.push({ unit, pos, scale, pose });
+        const candidate = { unit, pos, scale, pose };
+        if (movingPos || activePose) {
+          animatedPoints.push(camera.project({ x: pos.x + unit.size / 2, y: pos.y + unit.size / 2 }));
+          topdownCandidates.push(candidate);
+        } else activeFallback = candidate;
       } else if (
         !shouldFollowAnimatedLargeActor({
           size: unit.size,
@@ -3001,20 +3011,33 @@ export class CombatScene implements Scene {
       followed =
         topdownCandidates.find((candidate) => candidate.unit.size === 2) ??
         topdownCandidates[0] ??
-        null;
+        activeFallback;
+    const reducedMotion = motionReduced();
     const decision = combatCameraFollowDecision(this.cameraFollow, {
       animatedUnitId: followed?.unit.id ?? null,
       activeUnitId: this.active()?.id ?? null,
       followSuspended: this.followSuspended,
-      reducedMotion: motionReduced(),
+      // Top-down reduce-motion still reveals an off-frame actor, but does it
+      // in one device-snapped correction rather than easing toward margins.
+      reducedMotion: projection === 'topdown' ? false : reducedMotion,
     });
     this.cameraFollow = decision.state;
-    if (decision.owner === 'follow') this.cancelCameraGlide();
-    if (decision.owner === 'recentre') {
+    let owner = decision.owner;
+    if (projection === 'topdown' && owner === 'recentre') {
+      if (followed && !this.followSuspended) {
+        this.cameraFollow = { kind: 'following', unitId: followed.unit.id };
+        owner = 'follow';
+      } else {
+        this.cameraFollow = { kind: 'idle' };
+        owner = 'idle';
+      }
+    }
+    if (owner === 'follow') this.cancelCameraGlide();
+    if (owner === 'recentre') {
       this.centreOnActiveUnit(this.active(), camera, true);
       return;
     }
-    if (decision.owner !== 'follow' || !followed) {
+    if (owner !== 'follow' || !followed) {
       this.updateCameraGlide(now, camera);
       return;
     }
@@ -3054,7 +3077,7 @@ export class CombatScene implements Scene {
             : animatedPoints,
         body,
         viewport: camera.viewport,
-        deltaMs,
+        deltaMs: reducedMotion ? Number.POSITIVE_INFINITY : deltaMs,
       });
       if (now > this.topdownBlowEndsAt) this.topdownBlowPoints = [];
       applyTopdownFollow(camera, body, result);

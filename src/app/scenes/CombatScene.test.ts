@@ -3,7 +3,7 @@ import type { PropInstance, Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
 import { CONTENT } from '../../content';
 import { Camera } from '../../render/camera';
-import type { SheetClips } from '../../render/sheets/store';
+import { sheets, type SheetClips } from '../../render/sheets/store';
 import { Animator } from '../animator';
 import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
 import {
@@ -448,6 +448,49 @@ describe('scene-owned top-down playback', () => {
     expect(scene.startVictoryBeat).toHaveBeenCalledOnce();
   });
 
+  it('keeps the top-down AI deadline unchanged while an explicit camera glide remains', () => {
+    const enemy = unit('enemy', { x: 3, y: 3 }, { faction: 'enemy' });
+    const dispatch = vi.fn();
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      presentationClock: new PresentationClock(0),
+      aiDueAt: 200,
+      aiDueUnitId: enemy.id,
+      aiScheduled: true,
+      cameraGlide: {
+        from: { x: 0, y: 0 },
+        to: { x: 100, y: 0 },
+        startedAt: 0,
+        duration: 420,
+      },
+      paintingStill: false,
+      suspended: false,
+      aiHeld: false,
+      battleOpening: null,
+      presentationHeld: false,
+      battle: () => ({ phase: 'active' }),
+      active: () => enemy,
+      stopAiTimer: vi.fn(),
+      maybeRunAi: vi.fn(),
+      app: { dispatch },
+    }) as unknown as {
+      aiDueAt: number | null;
+      cameraGlide: CombatCameraGlide | null;
+      advanceTopdownAi: (now: number) => void;
+    };
+
+    scene.advanceTopdownAi(500);
+    expect(scene.aiDueAt).toBe(200);
+    expect(dispatch).not.toHaveBeenCalled();
+
+    scene.cameraGlide = null;
+    scene.advanceTopdownAi(500);
+    expect(scene.aiDueAt).toBeNull();
+    expect(dispatch).toHaveBeenCalledWith({ type: 'runAiTurn' });
+    expect(dispatch).toHaveBeenCalledOnce();
+    scene.advanceTopdownAi(516);
+    expect(dispatch).toHaveBeenCalledOnce();
+  });
+
   it('does not dispatch from suspend() forced still paint and rearms once on resume', () => {
     let wallNow = 0;
     vi.stubGlobal('performance', { now: () => wallNow });
@@ -505,6 +548,97 @@ describe('scene-owned top-down playback', () => {
     scene.advanceTopdownAi(650);
     expect(dispatch).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
+  });
+});
+
+describe('top-down follow for stationary turn arrivals', () => {
+  function sceneAt(pos: Vec2) {
+    const actor = unit('incoming', pos, { faction: 'enemy' });
+    const grid = {
+      width: 20,
+      height: 12,
+      tiles: Array.from({ length: 20 * 12 }, () => ({ elevation: 0 })),
+    };
+    const battle = { phase: 'active', grid, units: [actor] };
+    const camera = new Camera({ width: 600, height: 400, dpr: 1.5 }, grid, 'topdown');
+    camera.integerZoom = true;
+    camera.scale = 1;
+    camera.offsetX = 0;
+    camera.offsetY = 0;
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      renderer: { camera, viewport: { dpr: 1.5 } },
+      sceneAnimator: {
+        renderPos: () => undefined,
+        unitPose: () => undefined,
+        unitHealth: () => ({ hp: actor.hp, fallen: false }),
+      },
+      battle: () => battle,
+      active: () => actor,
+      poseFields: () => ({ scale: 1, clip: 'idle', clipTime: 0 }),
+      cameraFollow: { kind: 'following', unitId: 'previous-actor' },
+      followSuspended: false,
+      battleOpening: null,
+      cameraGlide: null,
+      topdownBlowEndsAt: 0,
+      topdownBlowPoints: [],
+      syncRecentre: vi.fn(),
+    }) as unknown as {
+      cameraFollow: { kind: 'idle' } | { kind: 'following'; unitId: string };
+      followSuspended: boolean;
+      keepAnimatedLargeActorInView: (now: number, battle: unknown, deltaMs: number) => void;
+      syncRecentre: ReturnType<typeof vi.fn>;
+    };
+    return { scene, camera, actor, battle };
+  }
+
+  it('eases a stationary incoming actor into the margins when the previous animation releases', () => {
+    const { scene, camera, battle } = sceneAt({ x: 19, y: 6 });
+    const frame = vi.spyOn(sheets, 'frame').mockReturnValue(null);
+    try {
+      scene.keepAnimatedLargeActorInView(1000, battle, 16);
+      expect(scene.cameraFollow).toEqual({ kind: 'following', unitId: 'incoming' });
+      expect(camera.offsetX).toBeGreaterThan(0);
+      expect(camera.offsetX * camera.viewport.dpr).toBeCloseTo(
+        Math.round(camera.offsetX * camera.viewport.dpr),
+      );
+    } finally {
+      frame.mockRestore();
+    }
+  });
+
+  it('holds a stationary actor already inside the margins and honors overview suspension', () => {
+    const frame = vi.spyOn(sheets, 'frame').mockReturnValue(null);
+    try {
+      const inside = sceneAt({ x: 9, y: 6 });
+      inside.scene.keepAnimatedLargeActorInView(1000, inside.battle, 16);
+      expect(inside.camera.offsetX).toBe(0);
+      expect(inside.camera.offsetY).toBe(0);
+
+      const overview = sceneAt({ x: 19, y: 6 });
+      overview.scene.followSuspended = true;
+      overview.scene.keepAnimatedLargeActorInView(1000, overview.battle, 16);
+      expect(overview.camera.offsetX).toBe(0);
+      expect(overview.camera.offsetY).toBe(0);
+      expect(overview.scene.cameraFollow).toEqual({ kind: 'idle' });
+    } finally {
+      frame.mockRestore();
+    }
+  });
+
+  it('snaps an off-frame stationary actor into view under reduced motion', () => {
+    vi.stubGlobal('document', { documentElement: { dataset: { reduceMotion: 'on' } } });
+    const { scene, camera, battle } = sceneAt({ x: 19, y: 6 });
+    const frame = vi.spyOn(sheets, 'frame').mockReturnValue(null);
+    try {
+      scene.keepAnimatedLargeActorInView(1000, battle, 16);
+      expect(camera.offsetX).toBe(200);
+      expect(camera.offsetX * camera.viewport.dpr).toBeCloseTo(
+        Math.round(camera.offsetX * camera.viewport.dpr),
+      );
+      expect(scene.cameraFollow).toEqual({ kind: 'following', unitId: 'incoming' });
+    } finally {
+      frame.mockRestore();
+    }
   });
 });
 
