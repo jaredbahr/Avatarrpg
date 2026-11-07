@@ -112,6 +112,7 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   const onWheel = (event: WheelEvent) => {
     if (!handlers.onWheel) return;
     event.preventDefault();
+    if (event.deltaY === 0) return;
     // deltaMode 1 is lines, 2 is pages; both are rare but real on Windows.
     const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 240 : 1;
     handlers.onWheel({ point: local(event), deltaY: event.deltaY * unit, ctrl: event.ctrlKey });
