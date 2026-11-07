@@ -130,6 +130,8 @@ export class PauseMenu extends Dialog {
 
   private quit(): void {
     this.close();
+    this.app.animator.clear();
+    this.app.audio.close();
     this.app.state = null;
     this.app.start();
   }
