@@ -227,9 +227,7 @@ test('top-down Recentre fits the whole 20x12 board and speed/skip stay presentat
     return JSON.stringify({ rng: state!.rng, log: state!.log, battle: state!.battle });
   });
   const cycleSpeed = async (from: number, to: number) => {
-    await page.getByRole('button', { name: 'More', exact: true }).click();
     await page.getByRole('button', { name: `Combat speed ${from} times` }).click();
-    await page.getByRole('button', { name: 'More', exact: true }).click();
     await expect(page.getByRole('button', { name: `Combat speed ${to} times` })).toBeVisible();
   };
   await cycleSpeed(1, 2);
@@ -255,7 +253,6 @@ test('top-down Recentre fits the whole 20x12 board and speed/skip stay presentat
     return JSON.stringify({ rng: state!.rng, log: state!.log, battle: state!.battle });
   });
   expect(afterFightCommand).not.toBe(stateBeforeControls);
-  await page.getByRole('button', { name: 'More', exact: true }).click();
   await page.getByRole('button', { name: 'Skip animation', exact: true }).click();
   expect(
     await page.evaluate(() => {
