@@ -100,6 +100,12 @@ animation or presentation work. Add to it when something fails.
     fade, and only to 0.6.
   - Playwright's built-in video smeared integer-zoom pixels, so a crisp game looked blurred. Capture frames
     losslessly (CDP screencast PNGs), scale ×2 nearest, and encode at a high quality.
+  - A blossom tree on the quay's cobble and a fence standing on the canal's kerb, its foot along the water: "the tree
+    is growing out of cobblestone", "this wall on the canal is off". Trees and bushes grow from soil, never stone (a
+    tree the rows put on paving gets a soil bed, or a stone-born solid such as a barrel stack takes its cell), and
+    nothing stands on a kerb or a lip. `validateTopDownLayout` now rejects both.
+  - Stripping a bush's baked mound inside the root flare's columns left a brown stump plate with tan in it. Cut to
+    the trunk's own width, and test every plant for plate pixels.
 
 ### Characters and objects
 
