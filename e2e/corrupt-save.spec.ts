@@ -97,18 +97,77 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
   expect(await takeTurn(page)).toBe(true);
   await waitForIdle(page);
   const turn = await page.evaluate(() => {
-    const battle = window.fnt?.app.state?.battle;
-    if (!battle) throw new Error('The imported battle is missing');
+    const app = window.fnt?.app;
+    const battle = app?.state?.battle;
+    if (!app || !battle) throw new Error('The imported battle is missing');
     const active = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
     if (active?.faction !== 'party') throw new Error('The imported turn has no player actor');
-    return { round: battle.round, index: battle.turnIndex, activeId: active.id };
+    return {
+      round: battle.round,
+      index: battle.turnIndex,
+      activeId: active.id,
+      name: active.name,
+      ap: active.ap,
+      backend: app.rendererBackend(),
+    };
   });
+  expect(turn.backend).toBe(backend);
+  expect(turn.ap).toBeGreaterThan(0);
   const end = page.getByRole('button', { name: /^End turn(?: \d+ AP left)?$/ });
   await expect(end).toBeEnabled();
   await page.screenshot({ path: testInfo.outputPath('valid-import.png') });
-  await press(end, touch);
-  await expect(page.locator('.toast').last()).toContainText('Tap End turn again');
-  await press(end, touch);
+  await end.scrollIntoViewIfNeeded();
+  const probe = await end.evaluateHandle((button) => {
+    const rect = button.getBoundingClientRect();
+    const point = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    if (!button.contains(document.elementFromPoint(point.x, point.y)))
+      throw new Error('The rendered End turn action is covered');
+    const seen = new Set(document.querySelectorAll('.toast'));
+    const events: Array<{
+      trusted: boolean;
+      round: number | undefined;
+      index: number | undefined;
+      newToasts: string[];
+    }> = [];
+    // Observe after the button handler. This records the real first warning
+    // and its unchanged turn without a browser round trip between inputs.
+    const observe = (event: MouseEvent) => {
+      if (!(event.target instanceof Node) || !button.contains(event.target)) return;
+      const battle = window.fnt?.app.state?.battle;
+      const added = [...document.querySelectorAll('.toast')].filter((node) => !seen.has(node));
+      added.forEach((node) => seen.add(node));
+      events.push({
+        trusted: event.isTrusted,
+        round: battle?.round,
+        index: battle?.turnIndex,
+        newToasts: added.map((node) => node.textContent ?? ''),
+      });
+    };
+    document.addEventListener('click', observe, { passive: true });
+    return { point, events, stop: () => document.removeEventListener('click', observe) };
+  });
+  try {
+    const point = await probe.evaluate(({ point }) => point);
+    // Repeating locator actionability on software GL took 7.7 seconds and
+    // expired the real confirmation. Keep the game's original clocks and
+    // send the two genuine inputs together after the target checks above.
+    if (touch) {
+      await page.touchscreen.tap(point.x, point.y);
+      await page.touchscreen.tap(point.x, point.y);
+    } else await page.mouse.dblclick(point.x, point.y);
+    const events = await probe.evaluate(({ events }) => events);
+    await testInfo.attach('native-end-turn-observations', {
+      body: Buffer.from(JSON.stringify(events, null, 2)),
+      contentType: 'application/json',
+    });
+    expect(events.map((event) => event.trusted)).toEqual([true, true]);
+    expect(events[0]).toMatchObject({ round: turn.round, index: turn.index });
+    expect(events[0]?.newToasts).toContain(
+      `${turn.name} still has ${turn.ap} AP. Tap End turn again to finish anyway.`,
+    );
+  } finally {
+    await probe.evaluate(({ stop }) => stop());
+  }
   await expect
     .poll(() =>
       page.evaluate(() => {
