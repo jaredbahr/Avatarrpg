@@ -1,0 +1,17 @@
+# Exploration keyboard focus — #491 partial
+
+Updated 2026-11-08 UTC. Codex root session `exploration-focus491-20261108` owns integration; SOL High supplied and independently reviewed the scene-local implementation.
+
+Opening Continue now hands focus to a usable exploration action. When movement replaces the HUD, the corresponding action regains focus. Conversation transitions and retained-world resume preserve a usable control while connected outside dialogs and inert backdrops retain their own ownership. Existing movement, camera, rendering, routes, styling and art are unchanged.
+
+Scope is `ExploreScene.ts` (60 added / 5 removed lines), `e2e/exploration-keyboard-focus.spec.ts`, and this handoff. Base is main `94cac3a038ce80d5c17e0cda468a41bbf95d9c62`. Branch: `codex/exploration-focus-491`. Claim: [6721240107](https://github.com/jaredbahr/Avatarrpg/issues/491#issuecomment-6721240107). PR450's [explicit focus handoff](https://github.com/jaredbahr/Avatarrpg/pull/450#issuecomment-6721322987) resolves the overlapping ExploreScene ownership. No other shared files are claimed.
+
+The focused tests use existing fixture APIs to skip setup, opening mount and battle rules. Actual actions under test use `page.keyboard`; no DOM focus or pointer injection repairs a loss. They assert focus, visibility, viewport placement, enabled controls and a visible `:focus-visible` outline before recovery Tab. They cover opening → exploration, actual Map → Mira walk/conversation/return, Settings during conversation sync, normal animated movement's HUD rebuild, and a retained staged conversation → world conversation → exploration. The latter deliberately uses `defeat_forest`; illustrated interludes replace the world instead of retaining it.
+
+The recovered clean-main build passed. Its rendered baseline reproduced actual focus loss at exploration entry and movement completion; Mira and Settings remained positive controls. Original incorrect selectors, unit-position readback, interlude-retention and parent-inert fixture assumptions are retained as driver failures, not accepted gameplay evidence. A workspace reset erased the first local candidate and interrupted logs; no earlier result is transferred to the recovered tree.
+
+Exact clean final-head `npm run ci:local` and the focused rendered tests on its resulting production build are required before branch publication. The PR and same claim record the exact final SHA/tree, outcomes, original failures and actual hosted leaf-job skips. External manifests/logs/captures are under `/workspace/avatarrpg-env/exploration-focus491/`; evidence is not committed.
+
+This does **not** complete #491's title → first party turn acceptance. Setup child [#510 / draft #511](https://github.com/jaredbahr/Avatarrpg/pull/511) remains independent; its source is not included. DialogueScene's [PR310 handoff request](https://github.com/jaredbahr/Avatarrpg/pull/310#issuecomment-6721306659) is still pending. Board targeting is not fabricated or declared physically verified. Hosted browser/gallery execution, WebKit, physical keyboard/devices, Safari/PWA and hardware performance remain separate gates. Draft only; no merge, deployment, dispatch, installation, asset generation or security change.
+
+Continue any correction on the same branch/PR after fresh ownership/head checks and a new exact final-head gate. The bounded footer-overlap finding under #492 is queued separately and grants no CSS ownership by itself.
