@@ -751,6 +751,10 @@ html[data-contrast='high'] .title-card .tagline {
   flex-direction: column;
   gap: var(--sp-3);
   padding: var(--sp-5);
+  /* Focus clears the footer's control floor, padding/border, and the panel inset. */
+  scroll-padding-bottom: calc(
+    var(--tap) + var(--sp-2) + var(--sp-3) + var(--hairline) + var(--sp-5)
+  );
   border-color: var(--c-gold-soft);
   box-shadow: var(--inset-edge), var(--shadow-title-plate);
 }
