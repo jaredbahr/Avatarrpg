@@ -16,7 +16,7 @@ import { BattleDraft } from './battleDraft';
 import { createGame } from './createGame';
 import { apply } from './reducer';
 import { disciplineUnlocked } from '../rules/leveling';
-import { evaluate } from '../story/conditions';
+import { optionAvailable } from '../story/storyEngine';
 import { STANDARD_PARTY } from '../sim/runCombat';
 
 const TABLE_SIZES = [1, 2, 3, 4, 5, 6] as const;
@@ -312,7 +312,7 @@ function advanceStory(state: GameState, context: string, counts: PhaseCounts): G
     const node = CONTENT.story.get(state.story.nodeId ?? '');
     let command: Command = { type: 'advanceDialogue' };
     if (node?.kind === 'choice') {
-      const optionIndex = node.options.findIndex((option) => evaluate(state, option.when));
+      const optionIndex = node.options.findIndex((option) => optionAvailable(state, option));
       if (optionIndex < 0) throw new Error(`${context}: story choice has no available option`);
       command = { type: 'chooseOption', optionIndex };
     }
