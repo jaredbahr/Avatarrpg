@@ -5,13 +5,7 @@ import { CONTENT } from '../../content';
 import { backgroundFigures, exitCells, visibleNpcs } from '../story/world';
 import { RngCursor, seedFromString } from '../rng';
 import type { Command, GameState, MapDef, Vec2 } from '../types';
-import {
-  canUseAbility,
-  isValidTarget,
-  resolveAim,
-  targetableTiles,
-  usableAbilities,
-} from '../rules/abilities';
+import { isValidTarget, resolveAim, targetableTiles, usableAbilities } from '../rules/abilities';
 import { buildGrid, posKey, reachable, type MoveContext } from '../rules/grid';
 import { isAlive, canMove } from '../rules/stats';
 import { BattleDraft } from './battleDraft';
@@ -53,8 +47,12 @@ function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object
 
   if (object instanceof Map) {
     for (const [key, entry] of object.entries()) {
-      deepFreezeStateGraph(key, `${path}<map-key>`, seen);
-      deepFreezeStateGraph(entry, `${path}<map-value>`, seen);
+      if (key !== null && typeof key === 'object') {
+        deepFreezeStateGraph(key, `${path}<map-key>`, seen);
+      }
+      if (entry !== null && typeof entry === 'object') {
+        deepFreezeStateGraph(entry, `${path}<map-value>`, seen);
+      }
     }
     Object.defineProperties(object, {
       set: {
@@ -83,7 +81,11 @@ function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object
       },
     });
   } else if (object instanceof Set) {
-    for (const entry of object.values()) deepFreezeStateGraph(entry, `${path}<set-value>`, seen);
+    for (const entry of object.values()) {
+      if (entry !== null && typeof entry === 'object') {
+        deepFreezeStateGraph(entry, `${path}<set-value>`, seen);
+      }
+    }
     Object.defineProperties(object, {
       add: {
         configurable: false,
@@ -114,7 +116,10 @@ function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object
     for (const key of Reflect.ownKeys(object)) {
       const descriptor = Object.getOwnPropertyDescriptor(object, key);
       if (descriptor && 'value' in descriptor) {
-        deepFreezeStateGraph(descriptor.value, `${path}${pathPart(key)}`, seen);
+        const child = descriptor.value;
+        if (child !== null && typeof child === 'object') {
+          deepFreezeStateGraph(child, `${path}${pathPart(key)}`, seen);
+        }
       }
     }
   }
@@ -273,7 +278,6 @@ function chooseBattleCommand(state: GameState, chooser: RngCursor): Command {
 
   const abilities: Command[] = [];
   for (const ability of usableAbilities(CONTENT, unit)) {
-    if (!canUseAbility(CONTENT, unit, ability).ok) continue;
     const targets = new Map<string, Vec2>();
     for (const tapped of targetableTiles(CONTENT, battle, unit, ability)) {
       const target = resolveAim(CONTENT, battle, unit, ability, tapped);
@@ -599,8 +603,45 @@ describe('reducer input immutability', () => {
   });
 
   it('rejects unsupported binary views with their graph path', () => {
-    expect(() => deepFreezeStateGraph({ nested: { bytes: new Uint8Array([1, 2]) } })).toThrow(
-      /Unsupported binary state value at \$\.nested\.bytes/,
-    );
+    const fixtures = [
+      {
+        label: 'nested object',
+        value: { nested: { bytes: new Uint8Array([1, 2]) } },
+        path: '$.nested.bytes',
+      },
+      {
+        label: 'array member object',
+        value: [{ bytes: new Uint8Array([1, 2]) }],
+        path: '$.0.bytes',
+      },
+      {
+        label: 'Map key object',
+        value: new Map([[{ bytes: new Uint8Array([1, 2]) }, 'value']]),
+        path: '$<map-key>.bytes',
+      },
+      {
+        label: 'Map value object',
+        value: new Map([['key', { bytes: new Uint8Array([1, 2]) }]]),
+        path: '$<map-value>.bytes',
+      },
+      {
+        label: 'Set value object',
+        value: new Set([{ bytes: new Uint8Array([1, 2]) }]),
+        path: '$<set-value>.bytes',
+      },
+    ] as const;
+
+    for (const fixture of fixtures) {
+      let thrown: unknown;
+      try {
+        deepFreezeStateGraph(fixture.value);
+      } catch (error) {
+        thrown = error;
+      }
+      expect(thrown, fixture.label).toBeInstanceOf(TypeError);
+      expect(thrown, fixture.label).toMatchObject({
+        message: `Unsupported binary state value at ${fixture.path}`,
+      });
+    }
   });
 });
