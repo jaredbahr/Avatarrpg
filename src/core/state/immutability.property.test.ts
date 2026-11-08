@@ -1,3 +1,5 @@
+import { deepStrictEqual } from 'node:assert';
+import { performance } from 'node:perf_hooks';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { backgroundFigures, exitCells, visibleNpcs } from '../story/world';
@@ -125,6 +127,14 @@ function describeError(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}` : String(error);
 }
 
+function assertInputUnchanged(actual: unknown, before: unknown, context: string): void {
+  try {
+    deepStrictEqual(actual, before);
+  } catch (error) {
+    throw new Error(`${context}: input differs from its pre-call snapshot`, { cause: error });
+  }
+}
+
 function hasEventType(result: ReturnType<typeof apply>, types: readonly string[]): boolean {
   return result.events.some((event) => types.includes(event.type));
 }
@@ -216,11 +226,7 @@ function applyWithoutMutation(
     thrown = error;
   }
 
-  try {
-    expect(protectedInput, `${context}: apply mutated its frozen input`).toEqual(before);
-  } catch (error) {
-    throw new Error(`${context}: input differs from its pre-call snapshot`, { cause: error });
-  }
+  assertInputUnchanged(protectedInput, before, context);
   if (thrown !== undefined) {
     throw new Error(`${context}: apply threw for a legal command: ${describeError(thrown)}`, {
       cause: thrown,
@@ -483,6 +489,7 @@ function runSequence(tableSize: (typeof TABLE_SIZES)[number], trial: number): Ph
 
 describe('reducer input immutability', () => {
   it('preserves every frozen state across mixed exploration and combat sequences', () => {
+    const startedAt = performance.now();
     let sequenceCount = 0;
     let acceptedCount = 0;
     let resolvedBattleCount = 0;
@@ -517,6 +524,10 @@ describe('reducer input immutability', () => {
       continuedExploreCount,
       'corpus includes post-resolution exploration walks',
     ).toBeGreaterThan(0);
+    expect(
+      performance.now() - startedAt,
+      'the full 204-sequence property must complete in under 20 seconds',
+    ).toBeLessThan(20_000);
   }, 20_000);
 
   it('guards nested objects, arrays, Maps, Sets, and their contents', () => {
@@ -560,23 +571,31 @@ describe('reducer input immutability', () => {
   });
 
   it('uses the structural oracle to catch an intrinsic Map.set bypass', () => {
+    const context = 'intrinsic Map.set bypass';
     const state = { lookup: new Map([['key', { value: 1 }]]) };
     const before = structuredClone(state);
     deepFreezeStateGraph(state);
+    assertInputUnchanged(state, before, context);
 
     Map.prototype.set.call(state.lookup, 'bypassed', { value: 2 });
 
-    expect(state).not.toEqual(before);
+    expect(() => assertInputUnchanged(state, before, context)).toThrow(
+      `${context}: input differs from its pre-call snapshot`,
+    );
   });
 
   it('uses the structural oracle to catch an intrinsic Set.add bypass', () => {
+    const context = 'intrinsic Set.add bypass';
     const state = { tags: new Set([{ label: 'original' }]) };
     const before = structuredClone(state);
     deepFreezeStateGraph(state);
+    assertInputUnchanged(state, before, context);
 
     Set.prototype.add.call(state.tags, { label: 'bypassed' });
 
-    expect(state).not.toEqual(before);
+    expect(() => assertInputUnchanged(state, before, context)).toThrow(
+      `${context}: input differs from its pre-call snapshot`,
+    );
   });
 
   it('rejects unsupported binary views with their graph path', () => {
