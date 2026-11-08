@@ -22,6 +22,7 @@ export class TitleScene implements Scene {
   private host: HTMLElement | null = null;
   private art: TitleArtRotator | null = null;
   private scene: HTMLElement | null = null;
+  private settingsButton: HTMLButtonElement | null = null;
   private swap: number | undefined;
 
   constructor(private app: App) {}
@@ -45,6 +46,7 @@ export class TitleScene implements Scene {
     this.art = null;
     window.clearTimeout(this.swap);
     this.scene = null;
+    this.settingsButton = null;
     this.host = null;
   }
 
@@ -82,6 +84,7 @@ export class TitleScene implements Scene {
       attrs: { 'aria-hidden': 'true' },
     });
 
+    this.settingsButton = button('Settings', () => this.openSettings());
     const actions = el(
       'div',
       { class: 'stack title-actions' },
@@ -93,7 +96,7 @@ export class TitleScene implements Scene {
       }),
       button('Explore the riverside', () => this.app.startVillagePreview(), { class: 'btn-large' }),
       button('Load a save', () => this.openLoad()),
-      button('Settings', () => this.openSettings()),
+      this.settingsButton,
     );
 
     if (hasAuto && auto) {
@@ -155,7 +158,18 @@ export class TitleScene implements Scene {
   }
 
   private openSettings(): void {
-    const panel = new SettingsPanel(this.app);
+    const panel = new SettingsPanel(this.app, () => {
+      // A setting re-renders the title, replacing the dialog's original opener.
+      // Restore its live replacement only when normal close left focus on the body.
+      if (
+        this.host?.isConnected &&
+        this.settingsButton?.isConnected &&
+        document.activeElement === document.body &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        this.settingsButton.focus();
+      }
+    });
     panel.open(document.querySelector('.overlay-host') ?? document.body);
   }
 }
