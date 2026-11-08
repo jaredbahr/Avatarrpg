@@ -20,7 +20,7 @@
 .dialogue-layer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-overlay);
 }
 
 .overlay-host {
@@ -2669,8 +2669,8 @@ html[data-contrast='high'] .hud-panel::after {
     font-size: var(--fs-lg);
   }
 
-  .dialogue-panel {
-    max-height: min(58vh, 34rem);
+  .stage .dialogue-panel {
+    max-height: min(58vh, 34rem, 100%);
     padding: var(--sp-3) var(--sp-4);
   }
 }
