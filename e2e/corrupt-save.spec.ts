@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 
 async function game(page: Page) {
@@ -10,9 +10,14 @@ async function game(page: Page) {
   });
 }
 
-async function importFile(page: Page, json: string) {
+async function press(control: Locator, touch: boolean) {
+  if (touch) await control.tap();
+  else await control.click();
+}
+
+async function importFile(page: Page, json: string, touch: boolean) {
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Import from file', exact: true }).click();
+  await press(page.getByRole('button', { name: 'Import from file', exact: true }), touch);
   await (
     await chooser
   ).setFiles({
@@ -26,6 +31,7 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
   page,
 }, testInfo) => {
   const backend = testInfo.project.name.includes('webgl') ? 'webgl' : 'canvas';
+  const touch = Boolean(testInfo.project.use.hasTouch);
   await resetStorage(page, `?renderer=${backend}`);
   await startGame(page, ['Older', 'Partner'], ['kaya', 'bo'], 'cursor-save-older', {
     reduceMotion: false,
@@ -50,13 +56,15 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
   await waitForIdle(page);
   const before = await game(page);
   expect(before.state.seed).not.toBe(saved.seed);
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  await page
-    .getByRole('dialog', { name: 'Paused', exact: true })
-    .getByRole('button', { name: 'Load game', exact: true })
-    .click();
+  await press(page.getByRole('button', { name: 'Pause', exact: true }), touch);
+  await press(
+    page
+      .getByRole('dialog', { name: 'Paused', exact: true })
+      .getByRole('button', { name: 'Load game', exact: true }),
+    touch,
+  );
   const menu = page.getByRole('dialog', { name: 'Load game', exact: true });
-  await importFile(page, saved.corrupt);
+  await importFile(page, saved.corrupt, touch);
   await expect(page.locator('.toast').last()).toHaveText(/This save looks damaged|Game loaded\./);
   const observed = await page.evaluate(() => {
     const app = window.fnt?.app;
@@ -74,15 +82,15 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
     body: Buffer.from(JSON.stringify(observed, null, 2)),
     contentType: 'application/json',
   });
-  await page.screenshot({ path: testInfo.outputPath('corrupt-import.png') });
   await expect(page.locator('.toast').last()).toContainText(
     'This save looks damaged (state.battle.turnIndex).',
   );
   await expect(menu).toBeVisible();
   expect(await game(page)).toEqual(before);
+  await page.screenshot({ path: testInfo.outputPath('corrupt-import.png') });
 
   // The same FileReader/import/adoption path must still accept the untouched save.
-  await importFile(page, saved.json);
+  await importFile(page, saved.json, touch);
   await expect(menu).toHaveCount(0);
   await expect(page.locator('.toast').last()).toHaveText('Game loaded.');
   expect(await page.evaluate(() => window.fnt?.app.state?.seed)).toBe(saved.seed);
@@ -98,9 +106,9 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
   const end = page.getByRole('button', { name: 'End turn', exact: true });
   await expect(end).toBeEnabled();
   await page.screenshot({ path: testInfo.outputPath('valid-import.png') });
-  await end.click();
+  await press(end, touch);
   await expect(page.locator('.toast').last()).toContainText('Tap End turn again');
-  await end.click();
+  await press(end, touch);
   await expect
     .poll(() =>
       page.evaluate(() => {
