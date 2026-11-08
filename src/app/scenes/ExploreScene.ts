@@ -575,6 +575,7 @@ export class ExploreScene implements Scene {
 
   private preserveFocus(entry = false): () => void {
     const scene = this.host?.querySelector<HTMLElement>('.explore-scene');
+    if (!scene) return () => undefined;
     const previous = document.activeElement;
     const owned = previous && scene?.contains(previous) && !previous.closest('[hidden], [inert]');
     const key = (control: Element) =>
