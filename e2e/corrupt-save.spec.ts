@@ -103,7 +103,7 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
     if (active?.faction !== 'party') throw new Error('The imported turn has no player actor');
     return { round: battle.round, index: battle.turnIndex, activeId: active.id };
   });
-  const end = page.getByRole('button', { name: 'End turn', exact: true });
+  const end = page.getByRole('button', { name: /^End turn(?: \d+ AP left)?$/ });
   await expect(end).toBeEnabled();
   await page.screenshot({ path: testInfo.outputPath('valid-import.png') });
   await press(end, touch);
