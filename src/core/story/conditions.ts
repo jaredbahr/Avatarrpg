@@ -196,7 +196,7 @@ const BENDER_WORD: Record<ElementId, string> = {
   nonbender: 'someone who does not bend',
 };
 
-const NATION_WORD: Record<ElementId, string> = {
+export const NATION_WORD: Readonly<Record<ElementId, string>> = {
   fire: 'the Fire Nation',
   water: 'the Water Tribes',
   earth: 'the Earth Kingdom',
