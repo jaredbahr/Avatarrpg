@@ -1,0 +1,2427 @@
+{
+  "magic": "four-nations-tactics",
+  "format": 5,
+  "savedAt": 1700000000000,
+  "label": "Golden 1: driller-mid",
+  "summary": "driller-mid; walk-up/escort route; forced victories for compatibility fixtures",
+  "state": {
+    "version": 5,
+    "seed": 4077800745,
+    "rng": 286786725,
+    "screen": "combat",
+    "party": [
+      {
+        "id": "p0",
+        "name": "Kaya",
+        "faction": "party",
+        "element": "fire",
+        "characterId": "kaya",
+        "enemyId": null,
+        "disciplineId": null,
+        "level": 3,
+        "xp": 400,
+        "pos": { "x": 0, "y": 0 },
+        "size": 1,
+        "hp": 34,
+        "ap": 4,
+        "move": 4,
+        "bankedAp": 0,
+        "pendingAp": 0,
+        "base": {
+          "maxHp": 34,
+          "maxAp": 4,
+          "maxMove": 4,
+          "power": 10,
+          "defense": 2,
+          "speed": 7,
+          "focus": 10
+        },
+        "abilities": ["fire_jab", "flame_arc", "fire_blast"],
+        "cooldowns": {},
+        "statuses": [],
+        "ai": "none",
+        "temporary": false,
+        "sprite": "unit.fire.kaya"
+      }
+    ],
+    "battle": {
+      "encounterId": "enc_grumbler",
+      "variantId": null,
+      "mapId": "quarry_floor",
+      "grid": {
+        "width": 20,
+        "height": 12,
+        "tiles": [
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 2,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "sand",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "rubble", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "sand",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "rubble", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 2,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "sand",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "rubble", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": true,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "road",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "road",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "road",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "mud", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "mud", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "road",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "road",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "road",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "mud", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "mud", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": true,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "sand",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "rubble", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": true,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "pit",
+            "elevation": 0,
+            "blocked": true,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "oil", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 2,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "sand",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "rubble", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "sand",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": { "id": "rubble", "duration": -1, "spread": 0 }
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 1,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": true,
+            "surface": null
+          },
+          {
+            "terrain": "stone",
+            "elevation": 2,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          },
+          {
+            "terrain": "wall",
+            "elevation": 2,
+            "blocked": true,
+            "blocksSight": true,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          }
+        ]
+      },
+      "units": [
+        {
+          "id": "p0",
+          "name": "Kaya",
+          "faction": "party",
+          "element": "fire",
+          "characterId": "kaya",
+          "enemyId": null,
+          "disciplineId": null,
+          "level": 3,
+          "xp": 400,
+          "pos": { "x": 1, "y": 3 },
+          "size": 1,
+          "hp": 34,
+          "ap": 0,
+          "move": 0,
+          "bankedAp": 1,
+          "pendingAp": 0,
+          "base": {
+            "maxHp": 34,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 10,
+            "defense": 2,
+            "speed": 7,
+            "focus": 10
+          },
+          "abilities": ["fire_jab", "flame_arc", "fire_blast"],
+          "cooldowns": {},
+          "statuses": [],
+          "ai": "none",
+          "temporary": false,
+          "sprite": "unit.fire.kaya"
+        },
+        {
+          "id": "e5",
+          "name": "Grumbler",
+          "faction": "enemy",
+          "element": "earth",
+          "characterId": null,
+          "enemyId": "grumbler",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 0,
+          "pos": { "x": 12, "y": 7 },
+          "size": 2,
+          "hp": 69,
+          "ap": 6,
+          "move": 4,
+          "bankedAp": 0,
+          "pendingAp": 0,
+          "base": {
+            "maxHp": 69,
+            "maxAp": 5,
+            "maxMove": 4,
+            "power": 9,
+            "defense": 6,
+            "speed": 4,
+            "focus": 5
+          },
+          "abilities": [
+            "driller_slam",
+            "driller_debris",
+            "driller_spray",
+            "driller_churn",
+            "raise_rubble"
+          ],
+          "cooldowns": {},
+          "statuses": [],
+          "ai": "boss",
+          "temporary": false,
+          "sprite": "unit.enemy.driller"
+        }
+      ],
+      "order": ["p0", "e5"],
+      "turnIndex": 1,
+      "round": 2,
+      "phase": "active",
+      "temporaryWalls": [],
+      "props": [
+        {
+          "id": "prop1",
+          "propId": "rubble_pile",
+          "pos": { "x": 6, "y": 7 },
+          "hp": 12,
+          "previous": {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          }
+        },
+        {
+          "id": "prop2",
+          "propId": "rubble_pile",
+          "pos": { "x": 13, "y": 4 },
+          "hp": 12,
+          "previous": {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          }
+        },
+        {
+          "id": "prop3",
+          "propId": "water_barrel",
+          "pos": { "x": 12, "y": 6 },
+          "hp": 6,
+          "previous": {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          }
+        },
+        {
+          "id": "prop4",
+          "propId": "brazier",
+          "pos": { "x": 10, "y": 3 },
+          "hp": 8,
+          "previous": {
+            "terrain": "dirt",
+            "elevation": 0,
+            "blocked": false,
+            "blocksSight": false,
+            "cover": false,
+            "ramp": false,
+            "surface": null
+          }
+        }
+      ],
+      "nextUnitSerial": 6
+    },
+    "story": {
+      "nodeId": "battle_grumbler",
+      "deciderIndex": 2,
+      "visited": [
+        "act1_open",
+        "village_explore",
+        "road_depart",
+        "forest_explore",
+        "battle_forest_road",
+        "after_forest",
+        "forest_after_explore",
+        "gate_parley",
+        "battle_quarry_gate",
+        "ruon_surrender",
+        "ruon_choice",
+        "escort_chosen",
+        "gate_escort_explore",
+        "cutting_explore",
+        "battle_ambush",
+        "after_ambush",
+        "cutting_after_explore",
+        "quarry_descent",
+        "quarry_assessment",
+        "battle_grumbler"
+      ],
+      "lineIndex": 0
+    },
+    "flags": { "ruon_spared": true, "standing.earth": 2 },
+    "pendingChoices": [],
+    "location": { "mapId": "quarry_floor", "pos": { "x": 9, "y": 5 } },
+    "world": {
+      "returnPos": {
+        "ba_dan_village": { "x": 23, "y": 7 },
+        "forest_road": { "x": 19, "y": 4 },
+        "quarry_gate": { "x": 19, "y": 5 },
+        "ambush_road": { "x": 19, "y": 4 },
+        "quarry_floor": { "x": 9, "y": 5 }
+      },
+      "fired": [
+        "forest_road:road_depart",
+        "forest_road:battle_forest_road",
+        "quarry_gate:gate_parley",
+        "ambush_road:battle_ambush",
+        "quarry_floor:quarry_descent"
+      ],
+      "cleared": ["enc_forest_road", "enc_quarry_gate", "enc_ambush"],
+      "clock": { "day": 1, "phase": "midday" },
+      "talk": null,
+      "residentProfiles": {},
+      "runoff": "unresolved"
+    },
+    "log": [
+      "— Round 1 —",
+      "Kaya reaches level 2! Learned Flame Arc.",
+      "— Round 1 —",
+      "Kaya reaches level 3!",
+      "Kaya has a new technique to choose.",
+      "Kaya learns Fire Blast.",
+      "— Round 1 —",
+      "— Round 1 —",
+      "Grumbler's turn.",
+      "— Round 2 —",
+      "Kaya's turn.",
+      "Grumbler's turn."
+    ]
+  },
+  "session": { "players": [{ "name": "Kaya", "unitId": "p0" }], "soloPlay": true }
+}

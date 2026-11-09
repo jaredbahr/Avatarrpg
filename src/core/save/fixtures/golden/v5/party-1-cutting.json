@@ -1,0 +1,100 @@
+{
+  "magic": "four-nations-tactics",
+  "format": 5,
+  "savedAt": 1700000000000,
+  "label": "Golden 1: cutting",
+  "summary": "cutting; walk-up/escort route; forced victories for compatibility fixtures",
+  "state": {
+    "version": 5,
+    "seed": 4077800745,
+    "rng": 350727922,
+    "screen": "explore",
+    "party": [
+      {
+        "id": "p0",
+        "name": "Kaya",
+        "faction": "party",
+        "element": "fire",
+        "characterId": "kaya",
+        "enemyId": null,
+        "disciplineId": null,
+        "level": 3,
+        "xp": 250,
+        "pos": { "x": 0, "y": 0 },
+        "size": 1,
+        "hp": 34,
+        "ap": 4,
+        "move": 4,
+        "bankedAp": 0,
+        "pendingAp": 0,
+        "base": {
+          "maxHp": 34,
+          "maxAp": 4,
+          "maxMove": 4,
+          "power": 10,
+          "defense": 2,
+          "speed": 7,
+          "focus": 10
+        },
+        "abilities": ["fire_jab", "flame_arc", "fire_blast"],
+        "cooldowns": {},
+        "statuses": [],
+        "ai": "none",
+        "temporary": false,
+        "sprite": "unit.fire.kaya"
+      }
+    ],
+    "battle": null,
+    "story": {
+      "nodeId": "cutting_explore",
+      "deciderIndex": 2,
+      "visited": [
+        "act1_open",
+        "village_explore",
+        "road_depart",
+        "forest_explore",
+        "battle_forest_road",
+        "after_forest",
+        "forest_after_explore",
+        "gate_parley",
+        "battle_quarry_gate",
+        "ruon_surrender",
+        "ruon_choice",
+        "escort_chosen",
+        "gate_escort_explore",
+        "cutting_explore"
+      ],
+      "lineIndex": 0
+    },
+    "flags": { "ruon_spared": true, "standing.earth": 2 },
+    "pendingChoices": [],
+    "location": { "mapId": "ambush_road", "pos": { "x": 1, "y": 4 } },
+    "world": {
+      "returnPos": {
+        "ba_dan_village": { "x": 23, "y": 7 },
+        "forest_road": { "x": 19, "y": 4 },
+        "quarry_gate": { "x": 19, "y": 5 },
+        "ambush_road": { "x": 1, "y": 4 }
+      },
+      "fired": [
+        "forest_road:road_depart",
+        "forest_road:battle_forest_road",
+        "quarry_gate:gate_parley"
+      ],
+      "cleared": ["enc_forest_road", "enc_quarry_gate"],
+      "clock": { "day": 1, "phase": "midday" },
+      "talk": null,
+      "residentProfiles": {},
+      "runoff": "unresolved"
+    },
+    "log": [
+      "— Round 1 —",
+      "Kaya reaches level 2! Learned Flame Arc.",
+      "— Round 1 —",
+      "Kaya reaches level 3!",
+      "Kaya has a new technique to choose.",
+      "Kaya learns Fire Blast."
+    ]
+  },
+  "session": { "players": [{ "name": "Kaya", "unitId": "p0" }], "soloPlay": true }
+}
