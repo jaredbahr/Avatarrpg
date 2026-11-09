@@ -7,13 +7,13 @@ Codex root owns `codex/save-export-import-522` at
 and its source-scope amendment were verified before their respective edits.
 
 The Save menu now presents a plain damaged-file warning instead of exposing a
-schema path such as `state.party.0.hp`. Only `SaveMenu.importSave()` warning
-presentation changes. Parser diagnostics, validation, lifecycle/version guards,
+schema path such as `state.party.0.hp`. The import warning and damaged local-slot
+row summary presentation change. Parser diagnostics, validation, lifecycle/version guards,
 slots and successful adoption remain unchanged; #413, #504 and #509 files are
 read-only. The other additions are `e2e/save-export-import.spec.ts` and this file.
 No art, settings, schema, helper, dependency or CI configuration changes.
 
-Seven new cases cover actual visible Export/download and title Load/Import in a
+Eight new cases cover actual visible Export/download and title Load/Import in a
 new browser context with empty storage: exploration after a real pointer walk,
 and a battle after actual legal damage/status activity. Full state/session and
 a following RNG-consuming action's events and state must match. Empty,
@@ -42,7 +42,7 @@ Evidence is retained under `/workspace/avatarrpg-env/save-export-import522/`:
   Independent SOL and root review found no remaining material issue.
 
 Root freezes the final clean head before required `npm run ci:local`, then runs
-all **17** browser cases on that exact CI production build: seven new cases on
+all **19** browser cases on that exact CI production build: eight new cases on
 desktop and compact touch profiles plus three unchanged save-import lifecycle
 checks. The PR and same claim record final head/tree, receipts, rendered capture
 review and actual hosted leaf jobs/skips. The original 60 s test and 10 s expect
@@ -55,3 +55,42 @@ Publish as DRAFT only after those gates pass. No merge, Ready, deployment,
 installation, art generation/replacement, security or credential change.
 DeepSeek runner/shared accounting is unverified: no requests. Corrections stay
 on this task's branch; preserve all failures and evidence at handoff.
+
+Related local-slot warning follow-up, 2026-11-09: published PR534 head
+`ed4dc2c65edfd0b0b5605990ba1cc62bc70baba2`, tree
+`9d19b29a7d77e75846ac73c08d561cde72c720fd`, remains the untouched baseline.
+The original revision passed local CI10/10, own-build native17/17 and four
+steady-state import checks. Its hosted verification passed; actual E2E/gallery
+leaves skipped, so hosted runtime acceptance remains open. These results do not
+validate the new follow-up revision.
+
+Root reused that exact CI production build for the external slot-row probe:
+**two failures**, desktop 1368×912 and compact 390×844, both only at the expected
+plain-warning assertion. The actual row exposed
+`This save looks damaged (state.party.0.hp).`; future-format warning, disabled
+Load/available Erase, unchanged raw slots on opening Load, and actual valid-slot
+adoption with matching state/session passed first. Baseline wrapper 10.803 s;
+log SHA256 `756882778274774f284600fb0d5414eba3b477870fb9bc8b18753243b2017be2`.
+Original probe source SHA256
+`bdd3bae9bfa7da4094814f7071e7ebc2eaee8d4d2911c7fd0c48b30f09706853`;
+receipt, JSON/PNG and traces remain under the external evidence directory.
+
+The verified claim amendment extends the same three owned files only. The new
+source hunk maps the same known damaged-schema prefix in an errored slot row to
+`This save looks damaged. Try another slot or import a save file.`. Import
+normalization, parser/raw bytes, future-format warnings, Load eligibility,
+Erase and successful adoption stay unchanged. The permanent regression checks
+the actual DOM warning before valid loading, excludes `state.party`, preserves
+all raw slot bytes, and verifies future and valid controls. It adds one case per
+desktop/compact profile; the seven prior cases and three lifecycle controls
+retain their original assertions and budgets.
+
+Candidate build passed in 32.321 s; the two permanent slot-row cases passed
+in 11.462 s wrapper with no retries. Candidate log SHA256
+`fc2e910261f08a1832fc3575f8d22103cd4faa5b578e1a3f2297f9b06c342fa1`.
+Independent SOL and root review found no material issue. Root freezes a clean
+canonical child of published `ed4dc2c6`, runs full local CI, then all 19 checks
+and four steady-state import checks on its own CI production build. Only then
+may this SAME PR/branch advance with the expected old remote head. Previous
+publication metadata is archived externally; original failures remain intact.
+No new PR, rebase, force push, readiness, merge or deployment is allowed.

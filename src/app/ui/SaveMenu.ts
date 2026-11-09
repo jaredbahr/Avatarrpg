@@ -76,6 +76,9 @@ export class SaveMenu extends Dialog {
       const slotName = isAuto ? 'Autosave' : `Slot ${slot.id.slice(-1)}`;
       // The place once, then the level and party size: the summary repeats the place.
       const lines = slot.error ? null : slotLines(slot.summary);
+      const summary = slot.error?.startsWith('This save looks damaged (')
+        ? 'This save looks damaged. Try another slot or import a save file.'
+        : slot.summary;
       const place =
         lines?.place ?? (slot.occupied && !isAuto && slot.label !== slotName ? slot.label : null);
 
@@ -87,7 +90,7 @@ export class SaveMenu extends Dialog {
           { class: 'slot-text' },
           el('strong', { text: slotName }),
           place ? el('span', { class: 'slot-place', text: place }) : null,
-          el('span', { class: 'muted tiny', text: lines?.detail ?? slot.summary }),
+          el('span', { class: 'muted tiny', text: lines?.detail ?? summary }),
           slot.savedAt > 0
             ? el('span', { class: 'muted tiny', text: savedWhen(slot.savedAt) })
             : null,

@@ -454,3 +454,111 @@ for (const invalid of invalidCases) {
     });
   });
 }
+
+test('damaged local slots show a plain warning while future and valid saves keep their behavior', async ({
+  page,
+}, testInfo) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await resetStorage(page, '?renderer=canvas');
+  // Public game/route fixtures skip unrelated setup only. The App's real slot
+  // writer produces every save; Load, parsing and adoption remain untouched.
+  await startGame(page, ['Keeper', 'Scout'], ['bo', 'nilak'], 'slot-warning-522');
+  await enterNode(page, 'village_explore');
+  await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
+  await settleLayout(page);
+  const expectedGame = await currentGame(page);
+  const seeded = await page.evaluate(() => {
+    const app = window.fnt!.app;
+    for (const slot of ['slot1', 'slot2', 'slot3', 'auto'] as const) {
+      if (!app.saveTo(slot, `Keep ${slot}`)) throw new Error(`Could not seed ${slot}`);
+    }
+    const read = () =>
+      Object.fromEntries(
+        ['slot1', 'slot2', 'slot3', 'auto'].map((slot) => [
+          slot,
+          localStorage.getItem(`fnt.save.${slot}`),
+        ]),
+      );
+    const good = read();
+    if (Object.values(good).some((value) => value === null))
+      throw new Error('A seeded slot is empty');
+    // Labelled persisted-byte fixtures: only slot1's nested HP is malformed;
+    // only slot2's format header is newer. Slot3 and autosave remain intact.
+    const damaged = JSON.parse(good.slot1!) as { state: { party: { hp: unknown }[] } };
+    if (!damaged.state.party[0]) throw new Error('No party member in saved slot1');
+    damaged.state.party[0].hp = 'not-a-number';
+    localStorage.setItem('fnt.save.slot1', JSON.stringify(damaged));
+    const future = JSON.parse(good.slot2!) as { format: number };
+    future.format += 1;
+    localStorage.setItem('fnt.save.slot2', JSON.stringify(future));
+    return { good, fixture: read() };
+  });
+  expect(seeded.fixture.slot3).toBe(seeded.good.slot3);
+  expect(seeded.fixture.auto).toBe(seeded.good.auto);
+  const damagedBlob = JSON.parse(seeded.good.slot1!);
+  damagedBlob.state.party[0].hp = 'not-a-number';
+  expect(JSON.parse(seeded.fixture.slot1!)).toEqual(damagedBlob);
+  const futureBlob = JSON.parse(seeded.good.slot2!);
+  futureBlob.format += 1;
+  expect(JSON.parse(seeded.fixture.slot2!)).toEqual(futureBlob);
+
+  await page.reload();
+  await page.waitForFunction(() => Boolean(window.fnt?.app));
+  await expect(page.locator('.title-card')).toBeVisible();
+  expect(await page.evaluate(() => window.fnt!.app.state)).toBeNull();
+  expect(await rawSlots(page)).toEqual(seeded.fixture);
+  await page.getByRole('button', { name: 'Load a save', exact: true }).click();
+  const menu = page.getByRole('dialog', { name: 'Load game', exact: true });
+  await expect(menu).toBeVisible();
+  const row = (name: string) =>
+    menu.locator('.slot').filter({ has: page.getByText(name, { exact: true }) });
+  const damaged = row('Slot 1');
+  const future = row('Slot 2');
+  const valid = row('Slot 3');
+  for (const slot of [damaged, future, valid]) await expect(slot).toHaveCount(1);
+  const damagedSummary = damaged.locator('.slot-text > span.muted.tiny').first();
+  const futureSummary = future.locator('.slot-text > span.muted.tiny').first();
+  const observed = {
+    damaged: await damagedSummary.innerText(),
+    future: await futureSummary.innerText(),
+    damagedLoadDisabled: await damaged
+      .getByRole('button', { name: 'Load', exact: true })
+      .isDisabled(),
+    damagedEraseEnabled: await damaged
+      .getByRole('button', { name: 'Erase', exact: true })
+      .isEnabled(),
+    futureLoadDisabled: await future
+      .getByRole('button', { name: 'Load', exact: true })
+      .isDisabled(),
+    validLoadEnabled: await valid.getByRole('button', { name: 'Load', exact: true }).isEnabled(),
+    rawAfterOpen: await rawSlots(page),
+    stateAfterOpen: await page.evaluate(() => window.fnt!.app.state),
+  };
+  await attachEvidence(page, testInfo, 'local-slot-warning', { observed, seeded });
+  expect(observed.rawAfterOpen).toEqual(seeded.fixture);
+  expect(observed.stateAfterOpen).toBeNull();
+  await expect(damagedSummary).toHaveText(
+    'This save looks damaged. Try another slot or import a save file.',
+  );
+  await expect(damaged).not.toContainText('state.party');
+  await expect(damaged.getByRole('button', { name: 'Load', exact: true })).toBeDisabled();
+  await expect(damaged.getByRole('button', { name: 'Erase', exact: true })).toBeEnabled();
+  await expect(futureSummary).toHaveText(
+    invalidCases.find((invalid) => invalid.id === 'future-version')!.warning,
+  );
+  await expect(future.getByRole('button', { name: 'Load', exact: true })).toBeDisabled();
+  await expect(valid.getByRole('button', { name: 'Load', exact: true })).toBeEnabled();
+  await valid.getByRole('button', { name: 'Load', exact: true }).click();
+  await expect(menu).toBeHidden();
+  await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
+  const adopted = await currentGame(page);
+  await attachEvidence(page, testInfo, 'local-slot-valid-load', {
+    adopted,
+    expectedGame,
+    rawSlots: await rawSlots(page),
+    pageErrors,
+  });
+  expect(adopted).toEqual(expectedGame);
+  expect(pageErrors).toEqual([]);
+});
