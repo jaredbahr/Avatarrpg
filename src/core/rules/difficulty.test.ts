@@ -157,7 +157,8 @@ describe('difficulty scaling across authored content', () => {
         for (let index = 0; index < authoredRosters.length; index += 1) {
           const authored = authoredRosters[index]!;
           const variant = index === 0 ? null : encounter.variants[index - 1]!;
-          const spawned = encounterRoster(encounter, {}, partySize, variant).enemies;
+          const flags: Record<string, boolean> = {};
+          const spawned = encounterRoster(encounter, flags, partySize, variant).enemies;
           const friendlyCount = partySize + encounter.allies.length;
           const expectedKept = authored.slice(
             0,
@@ -167,16 +168,32 @@ describe('difficulty scaling across authored content', () => {
             ),
           );
 
-          if (partySize + encounter.allies.length < encounter.baselinePartySize) {
+          const expectedConditional = encounter.conditionalEnemies
+            .filter((group) => Boolean(flags[group.flag]) === group.whenSet)
+            .flatMap((group) => group.placements);
+          const expectedReinforcements = encounter.reinforcements.slice(
+            0,
+            Math.max(0, friendlyCount - encounter.baselinePartySize),
+          );
+          const expectedRoster = [
+            ...expectedKept,
+            ...expectedConditional,
+            ...expectedReinforcements,
+          ];
+
+          if (friendlyCount < encounter.baselinePartySize) {
             expect(expectedKept.length).toBeLessThan(authored.length);
+            expect(spawned.length).toBeLessThan(authored.length + expectedConditional.length);
             trimmedRosterCases += 1;
           }
-          if (partySize + encounter.allies.length > encounter.baselinePartySize) {
-            expect(spawned.length).toBeGreaterThan(expectedKept.length);
+          if (friendlyCount > encounter.baselinePartySize) {
+            expect(spawned.length).toBeGreaterThan(
+              expectedKept.length + expectedConditional.length,
+            );
             reinforcedRosterCases += 1;
           }
 
-          expect(spawned.slice(0, expectedKept.length)).toEqual(expectedKept);
+          expect(spawned).toEqual(expectedRoster);
           expect(spawned.length).toBeGreaterThan(0);
 
           const bossPlacements = authored.filter(
