@@ -363,7 +363,14 @@ for (const renderer of ['canvas', 'webgl']) {
     expect(enemyPoint.y).toBeGreaterThan(box.y + 20);
     expect(enemyPoint.y).toBeLessThan(box.y + box.height - 20);
     await page.screenshot({ path: `.shots/forest-${renderer}-focus-enemy.png` });
+    // Portrait view controls are folded into More; use the same real menu as a player.
+    const more = page.getByRole('button', { name: 'More', exact: true });
+    await expect(more).toBeVisible();
+    await expect(more).toBeEnabled();
+    await more.click();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
     await page.getByRole('button', { name: 'Acting unit', exact: true }).click();
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
     const actorPoint = await paintedTileCentre(page, before.actor);
     if (!actorPoint) throw new Error('Missing camera');
     expect(actorPoint.x).toBeGreaterThan(box.x + 20);

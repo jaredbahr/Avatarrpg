@@ -234,3 +234,72 @@ describe('pointer adapter capture loss', () => {
     detach();
   });
 });
+
+describe('pointer adapter wheel zoom', () => {
+  function wheel(
+    target: PointerTarget,
+    values: { deltaX: number; deltaY: number; deltaMode: number; ctrlKey: boolean },
+  ): Event {
+    const event = Object.assign(new Event('wheel', { bubbles: true, cancelable: true }), {
+      clientX: 130,
+      clientY: 240,
+      ...values,
+    });
+    target.dispatchEvent(event);
+    return event;
+  }
+
+  it.each([
+    { label: 'horizontal pixels', deltaX: 160, deltaMode: 0, ctrlKey: false },
+    { label: 'horizontal ctrl+wheel lines', deltaX: -160, deltaMode: 1, ctrlKey: true },
+    { label: 'zero page delta', deltaX: 0, deltaMode: 2, ctrlKey: false },
+  ])('prevents $label without delivering a zoom request', ({ deltaX, deltaMode, ctrlKey }) => {
+    const target = new PointerTarget();
+    const onWheel = vi.fn();
+    const detach = attachPointer(target as unknown as HTMLElement, { onWheel });
+    try {
+      const event = wheel(target, { deltaX, deltaY: 0, deltaMode, ctrlKey });
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(onWheel).not.toHaveBeenCalled();
+    } finally {
+      detach();
+    }
+  });
+
+  it.each([
+    { label: 'pixel zoom out', deltaY: 120, deltaMode: 0, ctrlKey: false, expected: 120 },
+    { label: 'ctrl pixel zoom in', deltaY: -40, deltaMode: 0, ctrlKey: true, expected: -40 },
+    { label: 'line zoom out', deltaY: 3, deltaMode: 1, ctrlKey: false, expected: 48 },
+    { label: 'ctrl page zoom in', deltaY: -1, deltaMode: 2, ctrlKey: true, expected: -240 },
+  ])('forwards $label in canvas-local pixels', ({ deltaY, deltaMode, ctrlKey, expected }) => {
+    const target = new PointerTarget();
+    const onWheel = vi.fn();
+    const detach = attachPointer(target as unknown as HTMLElement, { onWheel });
+    try {
+      const event = wheel(target, { deltaX: 160, deltaY, deltaMode, ctrlKey });
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(onWheel).toHaveBeenCalledTimes(1);
+      expect(onWheel).toHaveBeenCalledWith({
+        point: { x: 30, y: 40 },
+        deltaY: expected,
+        ctrl: ctrlKey,
+      });
+    } finally {
+      detach();
+    }
+  });
+
+  it('leaves the browser default alone when there is no zoom handler', () => {
+    const target = new PointerTarget();
+    const detach = attachPointer(target as unknown as HTMLElement, {});
+    try {
+      const event = wheel(target, { deltaX: 0, deltaY: 120, deltaMode: 0, ctrlKey: false });
+
+      expect(event.defaultPrevented).toBe(false);
+    } finally {
+      detach();
+    }
+  });
+});
