@@ -91,6 +91,9 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      - name: Check generated content reference
+        run: npm run docs:content -- --check
+
       - name: Unit + content-validation + simulator tests
         run: npm test
 
