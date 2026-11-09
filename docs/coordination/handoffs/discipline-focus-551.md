@@ -11,22 +11,30 @@ Enter/Space stopped continuing the conversation. The existing technique-reward
 fix (#394/PR395) explicitly left DisciplineDialog outside its scope.
 
 DisciplineDialog now uses that established post-close guard: restore the live
-dialogue Next only when BODY is focused and no dialog remains. Dispatch, close,
+dialogue Next or, when there is no Next, the first enabled response option, only
+when BODY is focused and no dialog remains. Focusing never selects a response.
+Dispatch, close,
 the synchronous next-reward callback and autosave order stay unchanged. The next
 reward's heading or any other live focused control keeps focus. No shared Dialog,
 App, DialogueScene, renderer, styles, progression, content, assets or save code
 changed.
 
-The new eight-case Canvas regression covers single/chained discipline choices,
-Enter/Space and retained-world/plain dialogue. Each real keyboard pick is compared
+The sixteen-case Canvas regression covers single/chained discipline choices,
+Enter/Space and retained-world/plain narration and response panels. Each real keyboard pick is compared
 with the complete reducer result, exact session and real autosave. The test checks
 the discipline/kit, pending queue, intermediate modal heading, unchanged story,
-location and flags, final live Next focus, and exactly one advance on the next key.
+location and flags, final live Next/response focus, and exactly one advance or
+response selection on the next key. Response cases compare the complete resulting
+state, decider, flags and autosave after that separate key. All eight original
+narration test-loop bytes remain identical. No authored first-disabled response
+exists in current content; the selector excludes disabled options, but no runtime
+case for that exclusion is claimed.
 Captures are written to the external Playwright output, never committed.
 
 These are explicit supported level-5 save fixtures, not earned level-5 campaigns.
 Retained-world fixtures replay the existing earned Ruon checkpoint, consume its
-real technique rewards, then add fixture XP through `awardXp`. Plain fixtures use
+real technique rewards, and, for responses, advance his actual lines to
+`ruon_choice` before adding fixture XP through `awardXp`. Plain fixtures use
 canonical level-5/700-XP members. Existing reconciliation supplies discipline debt;
 the current main serializer validates both before browser adoption. No gameplay
 progression, roster or story rule is changed to make the fixtures possible.
@@ -48,8 +56,25 @@ Preserved validation before the final publication commit:
   technique-reward keyboard controls: 10/10, zero skips/retries/flaky results,
   20.641s wrapper. Log
   `f4bb61e71f937dfe0893b020aa53dde721167d238d4634266be6f16563815f77`.
-  This preliminary run used an uncommitted source tree; final exact-head evidence
-  is recorded separately in the PR and receipt, with its own CI-produced build.
+  This preliminary run qualified the earlier narration source only.
+- Published narration head `2e27edf13c3da4dc2705082bf0cb8846a2a00814` passed
+  clean CI11/11 (307 files / 3,991 tests) and its own-build phone/tablet20/20.
+  Its actual hosted verification passed; E2E/gallery leaves were skipped. That
+  source, build and evidence remain under `published-2e27/`, with their original
+  identities. A later supported save at `ruon_choice` exposed the same focus
+  loss because this head queried only Next. The response correction continues
+  on the SAME branch/PR; earlier passes are not relabelled as its qualification.
+- All eight added response cases failed on that preserved published CI build at
+  the intended response-focus assertion, after all prior discipline/state/session/
+  autosave/intermediate-modal checks passed. No skips/retries; 108.343s wrapper,
+  log `17e149abcaa7d0ea17858a919c89e6d4c46dd6752cc201fcab1e34d8b07d15eb`.
+  All353 producer files stayed unchanged; manifest
+  `6a3a3b02521e9a03d2bc35b203992f4ff66ccd692616cbbc77254e388001567d`.
+- Corrected preliminary build passed; expanded tablet Canvas18/18 passed in
+  34.853s wrapper (16 discipline cases plus two unchanged technique controls),
+  log `a1cbe2f051fc43f1250d8337d9612c16708870752b04835e78272ce53d608d39`.
+  This is dirty-source preliminary evidence. Final exact-head CI and own-CI-build
+  phone/tablet36-case evidence are recorded separately in the PR and receipt.
 - Independent SOL High source/evidence review found no blocker. Root reviewed
   the production hunk, spec and representative preliminary captures.
 

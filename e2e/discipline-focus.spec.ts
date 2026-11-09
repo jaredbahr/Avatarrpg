@@ -5,10 +5,15 @@ import { reconcileDisciplines } from '../src/core/save/reconcile';
 import { deserialize, serialize, stateFromBlob } from '../src/core/save/serialize';
 import { createGame } from '../src/core/state/createGame';
 import { apply } from '../src/core/state/reducer';
+import { optionAvailable } from '../src/core/story/storyEngine';
 import { earnedRewardFixture } from './earnedRewardFixture';
 import { resetStorage } from './helpers';
 
-function disciplineFixture(presentation: 'retained world' | 'plain fallback', chained: boolean) {
+function disciplineFixture(
+  presentation: 'retained world' | 'plain fallback',
+  chained: boolean,
+  responses = false,
+) {
   const earned = earnedRewardFixture();
   let state = earned.state;
   let session = earned.session;
@@ -24,6 +29,14 @@ function disciplineFixture(presentation: 'retained world' | 'plain fallback', ch
         abilityId,
       }).state;
     }
+    if (responses) {
+      // Reach the real response boundary through Ruon's original lines before
+      // staging any extra XP. Do not replace the cursor or invent a choice UI.
+      for (let line = 0; line < 8 && state.story.nodeId === 'ruon_surrender'; line++) {
+        state = apply(CONTENT, state, { type: 'advanceDialogue' }).state;
+      }
+      expect(state.story.nodeId).toBe('ruon_choice');
+    }
     state = {
       ...state,
       party: state.party.map((unit, index) => {
@@ -35,8 +48,8 @@ function disciplineFixture(presentation: 'retained world' | 'plain fallback', ch
   } else {
     const characters = chained ? ['nilak', 'sura'] : ['nilak'];
     state = createGame(CONTENT, {
-      seed: `discipline-focus-plain-${chained}`,
-      startNode: 'ruon_surrender',
+      seed: `discipline-focus-plain-${chained}${responses ? '-choice' : ''}`,
+      startNode: responses ? 'ruon_choice' : 'ruon_surrender',
       party: characters.map((characterId) => {
         const character = CONTENT.characters.get(characterId);
         if (!character) throw new Error(`Missing ${characterId}`);
@@ -74,6 +87,134 @@ function disciplineFixture(presentation: 'retained world' | 'plain fallback', ch
   const loaded = stateFromBlob(parsed.blob);
   expect(loaded).toEqual(state);
   return { state: loaded, session: parsed.blob.session };
+}
+
+for (const presentation of ['retained world', 'plain fallback'] as const) {
+  for (const chained of [false, true]) {
+    for (const key of ['Enter', 'Space'] as const) {
+      test(`${chained ? 'chained' : 'single'} discipline picks return ${key} to ${presentation} responses`, async ({
+        page,
+      }, info) => {
+        const errors: string[] = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        const fixture = disciplineFixture(presentation, chained, true);
+        expect(fixture.state.story.nodeId).toBe('ruon_choice');
+        await resetStorage(page, '?renderer=canvas');
+        await page.evaluate(({ state, session }) => {
+          const app = window.fnt!.app;
+          app.updateSettings({ reduceMotion: true });
+          app.adoptSave(state, session);
+        }, fixture);
+        expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
+        if (presentation === 'retained world') {
+          await expect(page.locator('.dialogue-layer .stage[data-kind="choice"]')).toBeVisible();
+          await expect(page.locator('canvas.map-canvas')).toBeVisible();
+        } else {
+          await expect(page.locator('.dialogue-scene .stage[data-kind="choice"]')).toBeVisible();
+          await expect(page.locator('.dialogue-layer')).toHaveCount(0);
+        }
+        await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toBeFocused();
+        const initialCapture = info.outputPath('initial-discipline-response-modal.png');
+        await page.screenshot({ path: initialCapture });
+        await info.attach('initial-discipline-response-modal', {
+          path: initialCapture,
+          contentType: 'image/png',
+        });
+
+        let expected = fixture.state;
+        for (const choice of fixture.state.pendingChoices) {
+          const dialog = page.getByRole('dialog');
+          await expect(dialog).toHaveCount(1);
+          await expect(dialog.getByRole('heading', { level: 2 })).toBeFocused();
+          const discipline = choice.options
+            .map((id) => CONTENT.disciplines.get(id))
+            .find((path) => path && disciplineUnlocked(path, expected.flags));
+          if (!discipline) throw new Error('No unlocked discipline in the fixture');
+          expected = apply(CONTENT, expected, {
+            type: 'chooseDiscipline',
+            unitId: choice.unitId,
+            disciplineId: discipline.id,
+          }).state;
+          const pick = dialog.getByRole('button', {
+            name: `Take up ${discipline.name}`,
+            exact: true,
+          });
+          await pick.focus();
+          await page.keyboard.press(key);
+
+          const after = await page.evaluate(() => ({
+            state: window.fnt!.app.state!,
+            session: window.fnt!.app.session.toMeta(),
+            autosave: localStorage.getItem('fnt.save.auto'),
+          }));
+          // A discipline keystroke must consume only its own debt, never the
+          // response beneath it; compare the complete real reducer result.
+          expect(after.state).toEqual(expected);
+          expect(after.session).toEqual(fixture.session);
+          expect(after.state.story).toEqual(fixture.state.story);
+          expect(after.state.location).toEqual(fixture.state.location);
+          expect(after.state.flags).toEqual(fixture.state.flags);
+          expect(after.state.party.find((unit) => unit.id === choice.unitId)?.disciplineId).toBe(
+            discipline.id,
+          );
+          expect(after.autosave).not.toBeNull();
+          const saved = deserialize(after.autosave!);
+          if (!saved.ok) throw new Error(saved.error);
+          expect(stateFromBlob(saved.blob)).toEqual(expected);
+          expect(saved.blob.session).toEqual(fixture.session);
+          if (expected.pendingChoices.length) {
+            await expect(page.getByRole('dialog')).toHaveCount(1);
+            await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toBeFocused();
+          }
+        }
+
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(
+          page.locator('.dialogue-scene [data-conversation-control="next"]'),
+        ).toHaveCount(0);
+        const node = CONTENT.story.get(expected.story.nodeId ?? '');
+        if (node?.kind !== 'choice') throw new Error('Expected the real Ruon response choice');
+        const optionIndex = node.options.findIndex((option) => optionAvailable(expected, option));
+        const option = node.options[optionIndex];
+        if (!option) throw new Error('The real response choice has no enabled option');
+        const response = page.locator('.dialogue-scene .choice-option:not(:disabled)').first();
+        await expect(response).toBeVisible();
+        await expect(response).toBeEnabled();
+        await expect(response).toContainText(option.label);
+        // No focus workaround or automatic choice: the original choice cursor,
+        // flags and decider remain unchanged until this next separate keypress.
+        await expect(response).toBeFocused();
+        expect(await page.evaluate(() => window.fnt!.app.state?.story)).toEqual(
+          fixture.state.story,
+        );
+        const finalCapture = info.outputPath('final-focused-response.png');
+        await page.screenshot({ path: finalCapture });
+        await info.attach('discipline-response-focus', {
+          path: finalCapture,
+          contentType: 'image/png',
+        });
+        const selected = apply(CONTENT, expected, { type: 'chooseOption', optionIndex }).state;
+        await page.keyboard.press(key);
+        await expect.poll(() => page.evaluate(() => window.fnt!.app.state)).toEqual(selected);
+        expect(selected.story.deciderIndex).toBe(fixture.state.story.deciderIndex + 1);
+        expect(selected.story.nodeId).toBe('escort_chosen');
+        expect(selected.story.lineIndex).toBe(0);
+        expect(selected.flags.ruon_spared).toBe(true);
+        expect(selected.flags.ruon_traded).toBeUndefined();
+        const afterSelection = await page.evaluate(() => ({
+          session: window.fnt!.app.session.toMeta(),
+          autosave: localStorage.getItem('fnt.save.auto'),
+        }));
+        expect(afterSelection.session).toEqual(fixture.session);
+        expect(afterSelection.autosave).not.toBeNull();
+        const saved = deserialize(afterSelection.autosave!);
+        if (!saved.ok) throw new Error(saved.error);
+        expect(stateFromBlob(saved.blob)).toEqual(selected);
+        expect(saved.blob.session).toEqual(fixture.session);
+        expect(errors).toEqual([]);
+      });
+    }
+  }
 }
 
 for (const presentation of ['retained world', 'plain fallback'] as const) {
