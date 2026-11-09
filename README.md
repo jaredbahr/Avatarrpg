@@ -22,16 +22,17 @@ npm run dev        # http://localhost:5173
 
 Other scripts:
 
-| Command            | What it does                                                                   |
-| ------------------ | ------------------------------------------------------------------------------ |
-| `npm run verify`   | typecheck + lint + format + unit/content/sim tests (before a PR)               |
-| `npm run ci:local` | full CI verify job (adds build, budgets, art, balance) — green before any push |
-| `npm test`         | vitest: rules, content validation, deterministic combat sim                    |
-| `npm run balance`  | headless AI-vs-AI win-rate report per encounter                                |
-| `npm run build`    | production build into `dist/` (includes service worker + manifest)             |
-| `npm run e2e`      | Playwright touch-mode end-to-end suite against the built site                  |
-| `npm run lint:fix` | autofix lint + layering violations where possible                              |
-| `npm run format`   | Prettier over the repo                                                         |
+| Command                | What it does                                                                      |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `npm run verify`       | typecheck + lint + format + unit/content/sim tests (before a PR)                  |
+| `npm run ci:local`     | full CI verify job (adds build, budgets, art, balance) — green before any push    |
+| `npm test`             | vitest: rules, content validation, deterministic combat sim                       |
+| `npm run balance`      | headless AI-vs-AI win-rate report per encounter                                   |
+| `npm run docs:content` | regenerate the [content reference](docs/content-reference.md) from source content |
+| `npm run build`        | production build into `dist/` (includes service worker + manifest)                |
+| `npm run e2e`          | Playwright touch-mode end-to-end suite against the built site                     |
+| `npm run lint:fix`     | autofix lint + layering violations where possible                                 |
+| `npm run format`       | Prettier over the repo                                                            |
 
 ## Playing on the Surface
 
