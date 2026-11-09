@@ -39,19 +39,40 @@ const sample = (page: Page, id: string) =>
         };
       }
     ).scene;
+    const figure = app.residents.figures().find((figure) => figure.id === residentId);
+    const camera = app.rendererCamera();
+    const canvas = document.querySelector<HTMLCanvasElement>('.explore-scene .map-canvas');
+    const rect = canvas?.getBoundingClientRect();
+    const ground = camera?.groundTransform;
+    const x = figure && camera ? (figure.drawPos.x + 0.5) * camera.tile : 0;
+    const y = figure && camera ? (figure.drawPos.y + 0.5) * camera.tile : 0;
     return {
       // Browser time deliberately stays outside the equality snapshot: frames
       // must keep rendering during the hold while the resident clock stands still.
       now: performance.now(),
       renderedAt: scene.renderer.lastView?.time,
+      viewport:
+        rect && camera && ground && figure
+          ? {
+              left: rect.left,
+              top: rect.top,
+              width: rect.width,
+              height: rect.height,
+              tilePx: camera.tilePx,
+              foot: {
+                x: ground.a * x + ground.c * y + ground.tx,
+                y: ground.b * x + ground.d * y + ground.ty,
+              },
+            }
+          : null,
       frozen: {
         clock: residents.clock,
-        figure: app.residents.figures().find((figure) => figure.id === residentId),
+        figure,
         marker: scene.lastNpcs.find((marker) => marker.id === residentId),
         submitted: scene.renderer.lastView?.npcs.find((marker) => marker.id === residentId),
         game: app.state,
         session: app.session.toMeta(),
-        camera: app.rendererCamera(),
+        camera,
       },
     };
   }, id);
@@ -83,10 +104,65 @@ function expectSubmittedWalk(frame: Sample) {
   expect(submitted, "the renderer must receive this frame's resident marker").toEqual(marker);
 }
 
+function expectVisibleResident(frame: Sample) {
+  expect(frame.viewport, 'the sampled resident must have a map viewport').not.toBeNull();
+  const view = frame.viewport!;
+  expect(view.foot.x, 'leave half a tile to the left of the resident').toBeGreaterThanOrEqual(
+    view.tilePx * 0.5,
+  );
+  expect(view.foot.x, 'leave half a tile to the right of the resident').toBeLessThanOrEqual(
+    view.width - view.tilePx * 0.5,
+  );
+  expect(view.foot.y, 'leave the resident at least 1.5 tiles of headroom').toBeGreaterThanOrEqual(
+    view.tilePx * 1.5,
+  );
+  expect(view.foot.y, 'keep the resident above the bottom canvas edge').toBeLessThanOrEqual(
+    view.height - 16,
+  );
+}
+
+/** Bring the selected stride into view through the same drag input as a player. */
+async function frameResident(page: Page, id: string, initial: Sample): Promise<Sample> {
+  let frame = initial;
+  // A small canvas may need two separate vertical drags. Keep every drag
+  // inside its real bounds; do not mutate the camera or advance resident time.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    expect(frame.viewport).not.toBeNull();
+    const view = frame.viewport!;
+    const horizontal =
+      view.foot.x < view.tilePx * 0.5 || view.foot.x > view.width - view.tilePx * 0.5;
+    // Frame the feet near the lower quarter, leaving the full upright body
+    // above them. A drag smaller than the recognizer's threshold would tap.
+    const vertical = Math.abs(view.height * 0.78 - view.foot.y) > 12;
+    if (!horizontal && !vertical) break;
+    const clampDrag = (distance: number, extent: number) =>
+      Math.max(-(extent - 40), Math.min(extent - 40, distance));
+    const dx = horizontal ? clampDrag(view.width * 0.5 - view.foot.x, view.width) : 0;
+    const dy = vertical ? clampDrag(view.height * 0.78 - view.foot.y, view.height) : 0;
+    const start = {
+      x: view.left + (dx > 0 ? 20 : dx < 0 ? view.width - 20 : view.width * 0.5),
+      y: view.top + (dy > 0 ? 20 : dy < 0 ? view.height - 20 : view.height * 0.5),
+    };
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x + dx, start.y + dy, { steps: 6 });
+    await page.mouse.up();
+    frame = await sample(page, id);
+  }
+  // Render the new camera before the acceptance samples begin.
+  await page.clock.runFor(RESUME_STEP_MS);
+  frame = await sample(page, id);
+  expectSubmittedWalk(frame);
+  expectVisibleResident(frame);
+  return frame;
+}
+
 /** A paused no-op cannot satisfy either clock or submitted-position progression. */
 function expectContinuousProgress(before: Sample, after: Sample, browserStepMs: number) {
   expectSubmittedWalk(before);
   expectSubmittedWalk(after);
+  expectVisibleResident(before);
+  expectVisibleResident(after);
   const clockAdvance = after.frozen.clock - before.frozen.clock;
   expect(clockAdvance).toBeGreaterThan(0);
   expect(after.now - before.now).toBe(browserStepMs);
@@ -175,7 +251,8 @@ for (const menu of ['Pause', 'Travel journal'] as const) {
       await village(page, fixture.phase, fixture.party);
       await pauseClock(page);
       try {
-        const active = await activeWalk(page, fixture);
+        const underway = await activeWalk(page, fixture);
+        const active = await frameResident(page, fixture.id, underway);
         evidence.active = active;
         await page.clock.runFor(LIVE_STEP_MS);
         const before = await sample(page, fixture.id);
@@ -201,6 +278,7 @@ for (const menu of ['Pause', 'Travel journal'] as const) {
         const held = await sample(page, fixture.id);
         evidence.held = held;
         expectSubmittedWalk(held);
+        expectVisibleResident(held);
         expect(held.frozen).toEqual(before.frozen);
 
         // Independently witness browser rAF callbacks during this runFor window.
@@ -228,6 +306,7 @@ for (const menu of ['Pause', 'Travel journal'] as const) {
         ]);
         const afterHold = await sample(page, fixture.id);
         evidence.afterHold = afterHold;
+        expectVisibleResident(afterHold);
         expect(holdFrames, 'browser frames must continue while the menu is open').toBeGreaterThan(
           1,
         );
