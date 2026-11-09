@@ -20,6 +20,10 @@ import type { ContentIndex, FlagValue, GameEvent, GameState, Unit } from '../typ
 import { apply } from '../state/reducer';
 import type { PartySlot } from '../state/createGame';
 import { createBattle, createGame } from '../state/createGame';
+import { BattleDraft } from '../state/battleDraft';
+import { targetableTiles, usableAbilities } from '../rules/abilities';
+import { reachable } from '../rules/grid';
+import { canMove, isAlive } from '../rules/stats';
 
 export type SimOutcome = 'victory' | 'defeat' | 'stalemate';
 
@@ -39,6 +43,8 @@ export interface SimOptions {
   readonly maxRounds?: number;
   /** Retained for the determinism test; off by default to keep memory flat. */
   readonly recordEvents?: boolean;
+  /** Opt-in soak diagnostics; ordinary balance runs do no legal-action census. */
+  readonly diagnostics?: boolean;
   /**
    * Force one roster variant instead of letting the seed draw.
    *
@@ -74,6 +80,56 @@ export interface SimResult {
   /** A compact fingerprint of the run, for the determinism assertion. */
   readonly signature: string;
   readonly anomalies: readonly string[];
+  readonly diagnostics?: SimDiagnostics;
+}
+
+export interface SimIdleTurn {
+  /** Zero-based runAiTurn command index, before handing the turn on. */
+  readonly commandIndex: number;
+  readonly round: number;
+  readonly unitId: string;
+  readonly faction: Unit['faction'];
+}
+
+export interface SimDiagnostics {
+  readonly commandCount: number;
+  readonly idleTurns: readonly SimIdleTurn[];
+  readonly maxRoundsReached: boolean;
+}
+
+/** Preserve the original exception and the exact failing command for reproduction. */
+export class SimCommandError extends Error {
+  readonly commandIndex: number;
+  readonly seed: SimOptions['seed'];
+  readonly encounterId: string;
+  readonly variantId: string | null;
+
+  constructor(options: SimOptions, variantId: string | null, commandIndex: number, cause: unknown) {
+    super(
+      `Simulation ${options.encounterId}/${variantId ?? 'base'}, seed ${options.seed}, command ${commandIndex}: ${cause instanceof Error ? cause.message : String(cause)}`,
+      { cause },
+    );
+    this.name = 'SimCommandError';
+    this.commandIndex = commandIndex;
+    this.seed = options.seed;
+    this.encounterId = options.encounterId;
+    this.variantId = variantId;
+  }
+}
+
+/** Legal does not imply desirable: intentional waiting remains a diagnostic. */
+function hasLegalAction(content: ContentIndex, state: GameState, actor: Unit): boolean {
+  const battle = state.battle;
+  if (!battle || !isAlive(actor)) return false;
+  if (actor.move > 0 && canMove(content, actor)) {
+    const draft = new BattleDraft(content, battle, new RngCursor(state.rng));
+    for (const destination of reachable(draft.moveContext(actor), actor.pos, actor.move).values()) {
+      if (destination.path.length > 0) return true;
+    }
+  }
+  return usableAbilities(content, actor).some(
+    (ability) => targetableTiles(content, battle, actor, ability).length > 0,
+  );
 }
 
 export const DEFAULT_MAX_ROUNDS = 60;
@@ -133,13 +189,47 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
 
   const events: GameEvent[] = [];
   const anomalies: string[] = [];
+  const idleTurns: SimIdleTurn[] = [];
   let turns = 0;
 
   while (state.battle && state.battle.phase === 'active') {
     if (state.battle.round > maxRounds) break;
 
     const turnBudget = state.battle.order.length * (maxRounds + 4);
-    const step = apply(content, state, { type: 'runAiTurn' });
+    const before = state;
+    let step;
+    try {
+      step = apply(content, state, { type: 'runAiTurn' });
+    } catch (cause) {
+      if (!options.diagnostics) throw cause;
+      throw new SimCommandError(options, state.battle.variantId, turns, cause);
+    }
+    if (options.diagnostics) {
+      const actor = before.battle?.units.find(
+        (unit) => unit.id === before.battle?.order[before.battle.turnIndex],
+      );
+      if (actor) {
+        const ended = step.events.findIndex(
+          (event) => event.type === 'turnEnded' && event.unitId === actor.id,
+        );
+        const acted = step.events
+          .slice(0, ended < 0 ? undefined : ended)
+          .some(
+            (event) =>
+              (event.type === 'abilityUsed' ||
+                (event.type === 'unitMoved' && event.path.length > 0)) &&
+              event.unitId === actor.id,
+          );
+        if (ended >= 0 && !acted && hasLegalAction(content, before, actor)) {
+          idleTurns.push({
+            commandIndex: turns,
+            round: state.battle.round,
+            unitId: actor.id,
+            faction: actor.faction,
+          });
+        }
+      }
+    }
     state = step.state;
     turns++;
     if (options.recordEvents) events.push(...step.events);
@@ -185,6 +275,15 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
     events,
     signature: signatureOf(final.units, final.round, outcome),
     anomalies,
+    ...(options.diagnostics
+      ? {
+          diagnostics: {
+            commandCount: turns,
+            idleTurns,
+            maxRoundsReached: final.phase === 'active' && final.round > maxRounds,
+          },
+        }
+      : {}),
   };
 }
 
