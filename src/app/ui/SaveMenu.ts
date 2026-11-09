@@ -168,7 +168,10 @@ export class SaveMenu extends Dialog {
     // A file read can finish after Close or after another import was chosen.
     if (!this.isOpen || version !== this.importVersion) return;
     if (!result.ok) {
-      this.app.toasts.show(result.error, 'warn');
+      const message = result.error.startsWith('This save looks damaged (')
+        ? 'This save looks damaged. Try another save file.'
+        : result.error;
+      this.app.toasts.show(message, 'warn');
       return;
     }
     this.close();
