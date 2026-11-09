@@ -16,6 +16,7 @@ const STEPS = [
   { name: 'lint', run: 'npm run lint' },
   { name: 'format:check', run: 'npm run format:check' },
   { name: 'content reference freshness', run: 'npm run docs:content -- --check' },
+  { name: 'story graph freshness', run: 'npm run docs:story -- --check' },
   { name: 'test', run: 'npm test' },
   { name: 'build', run: 'npm run build' },
   { name: 'bundle budget', run: 'node scripts/check-bundle-size.mjs' },
