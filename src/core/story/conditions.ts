@@ -173,14 +173,14 @@ export function evaluate(state: GameState, condition: Condition | undefined): bo
 /* Description                                                         */
 /* ------------------------------------------------------------------ */
 
-/** English phrasing for each phase, for `describe()`. "at dawn", "in the evening", etc. */
+/** Time-of-day words for the complete "it is ..." clause in `describe()`. */
 const PHASE_PHRASE: Record<DayPhase, string> = {
-  dawn: 'at dawn',
-  morning: 'in the morning',
-  midday: 'at midday',
-  afternoon: 'in the afternoon',
-  evening: 'in the evening',
-  night: 'at night',
+  dawn: 'dawn',
+  morning: 'morning',
+  midday: 'midday',
+  afternoon: 'afternoon',
+  evening: 'evening',
+  night: 'night',
 };
 
 /**
@@ -259,20 +259,32 @@ function describeAt(content: ContentIndex, condition: Condition, depth: number):
         : `there are at most ${condition.value} of you`;
 
     case 'all':
-      return condition.of.map((c) => describeAt(content, c, depth + 1)).join(' and ');
-
     case 'any':
-      return condition.of.map((c) => describeAt(content, c, depth + 1)).join(' or ');
+      return condition.of
+        .map((child) => {
+          const text = describeAt(content, child, depth + 1);
+          const alternatives =
+            (child.kind === 'any' && child.of.length > 1) ||
+            ((child.kind === 'phase' || child.kind === 'residentProfile') && child.in.length > 1);
+          const group =
+            condition.kind === 'all' ? alternatives : child.kind === 'all' && child.of.length > 1;
+          return group ? `(${text})` : text;
+        })
+        .join(condition.kind === 'all' ? ' and ' : ' or ');
 
     case 'not':
-      return `not (${describeAt(content, condition.of, depth + 1)})`;
+      return `it is not true that (${describeAt(content, condition.of, depth + 1)})`;
 
     case 'phase':
-      return condition.in.map((phase) => PHASE_PHRASE[phase]).join(' or ');
+      return `it is ${condition.in.map((phase) => PHASE_PHRASE[phase]).join(' or ')}`;
 
     case 'residentProfile':
-      return `${humanise(condition.residentId)} is ${condition.in.join(' or ')}`;
+      return `${content.residents.get(condition.residentId)?.name ?? humanise(condition.residentId)} is ${condition.in.join(' or ')}`;
   }
+
+  // A new kind must receive a description rather than silently returning undefined.
+  const unhandled: never = condition;
+  return unhandled;
 }
 
 /**
