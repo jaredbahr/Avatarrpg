@@ -47,8 +47,8 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers Ba Dan (T3) and nothing else yet, its scene an asset', async () => {
-    expect([...TOPDOWN_SCENES.keys()]).toEqual(['ba_dan_village']);
+  it('registers Ba Dan (T3) and the Forest Road (T4), their scenes assets', async () => {
+    expect([...TOPDOWN_SCENES.keys()]).toEqual(['ba_dan_village', 'forest_road']);
     const presentations = await loadTopDownPresentations(fromDisk);
     const swapped = withTopDownMaps(CONTENT, presentations);
     const badan = map('ba_dan_village', swapped);
@@ -56,7 +56,13 @@ describe('withTopDownMaps', () => {
     expect(badan.cameraCentreMargin).toBe(1);
     expect(badan.scene?.ground[0]?.url).toBe('art/topdown/ba-dan/ground.webp');
     expect(badan.scene?.scenery.length).toBeGreaterThan(50);
-    expect(map('forest_road', swapped)).toBe(map('forest_road'));
+    const forest = map('forest_road', swapped);
+    expect(forest.projection).toBe('topdown');
+    expect(forest.scene?.ground[0]?.url).toBe('art/topdown/forest-road/ground.webp');
+    expect(forest.scene?.scenery.length).toBeGreaterThan(100);
+    // the rubble heaps stay the rules' painted rubble across the swap
+    expect(forest.scene?.paintedRubble).toEqual(map('forest_road').scene?.paintedRubble);
+    expect(map('quarry_gate', swapped)).toBe(map('quarry_gate'));
   });
 
   it('refuses a scene that is not one', async () => {
