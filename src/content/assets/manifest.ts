@@ -668,6 +668,11 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   // T8: the heroes the tutorial does not cast.
   'unit.fire.tenzo': ['tenzo', 'fire'],
   'unit.water.nilak': ['nilak', 'water'],
+  'unit.earth.linmei': ['linmei', 'earth'],
+  'unit.air.nima': ['nima', 'air'],
+  'unit.air.jinu': ['jinu', 'air'],
+  'unit.non.riko': ['riko', 'nonbender'],
+  'unit.non.wen': ['wen', 'nonbender'],
   'unit.enemy.thug': ['thug', 'enemy'],
   'unit.enemy.slinger': ['slinger', 'enemy'],
   'unit.enemy.bruiser': ['bruiser', 'enemy'],
