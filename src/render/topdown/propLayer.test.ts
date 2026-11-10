@@ -4,7 +4,7 @@
  * their shadow on the top-down board only. The seating rule itself is checked on the real drawings
  * in `scripts/art/topdown/props-seating.test.ts`.
  */
-import { Container, Sprite, Texture, TextureSource } from 'pixi.js';
+import { Sprite, Texture, TextureSource } from 'pixi.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildGrid } from '../../core/rules/grid';
 import { CONTENT } from '../../content';
@@ -196,7 +196,9 @@ function fakeDocument(): void {
       const canvas = { src: 'canvas', width: 0, height: 0 } as Record<string, unknown>;
       const known: Record<string, unknown> = {
         // Only the layer's canvas has computed pixels put into it.
-        putImageData: () => (canvas.src = 'prop-shadows'),
+        // (a board-sized layer is the surfaces', not the props' shadow)
+        putImageData: (image: { data: Uint8ClampedArray }) =>
+          (canvas.src = image.data.length < 360 * 240 * 4 ? 'prop-shadows' : 'board-layer'),
         createImageData: (w: number, h: number) => ({ data: new Uint8ClampedArray(w * h * 4) }),
         getImageData: (_x: number, _y: number, w: number, h: number) => ({
           data: block(w, h).data,
@@ -353,7 +355,6 @@ describe('Pixi lays the same layer', () => {
     const texture = new Texture({ source: new TextureSource({ width: 4, height: 4 }) });
     Object.assign(backend, {
       propShadowSprite: sprite,
-      topdownMarks: new Container(),
       texture: () => texture,
     });
     return {
