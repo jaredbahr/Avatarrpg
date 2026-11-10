@@ -1,0 +1,26 @@
+{
+ "driller": {
+  "hit": "03b8f232-f494-489a-8304-acccdcf80935",
+  "ko": "3f8b2e08-0171-4e55-b8e5-27ceb2aae443",
+  "rumble": "758ed1b6-fab5-488e-9249-b00bb45b217d",
+  "tread": "5152922c-759e-4cfe-8faf-6a1eddb9f7bf"
+ },
+ "groups": {
+  "deserter.hit": "72f9482b-a860-4288-b571-9da0960edf91",
+  "deserter.ko": "1ba06ed7-e1f6-4ba7-99ce-5f520a791206",
+  "merc.hit": "fca5ad5d-0933-4b5e-b3a3-9d206b11279f",
+  "merc.ko": "22478fca-aafe-4c02-90d2-83a10db81269",
+  "qbender.hit": "8a3a52c9-e951-4dd4-85c6-bb1aeda7da1b",
+  "qbender.ko": "58ab072e-7c52-4e15-8220-feac1cd8dbd3",
+  "ruon.hit": "4ece7f88-e6bb-4361-8750-13178cdda8c8",
+  "ruon.ko": "9cddb9ce-7e01-48c5-9653-ff08a1d9fe32",
+  "sergeant.attack": "3e7e729c-1bbd-4d69-ac4e-25fab4b0696b",
+  "sergeant.hit": "eac2032b-dda0-4484-a3ab-1d6eca0f6534",
+  "sergeant.idle": "8c7f048a-929f-4287-9202-f8452c9e61c9",
+  "sergeant.ko": "f4a18d42-7147-4f2a-92b9-1d77ed68de9c",
+  "sergeant.walk": "ab35a1b0-a721-4fd9-9bf6-634ec20b0fcd",
+  "xbow.hit": "37b74adc-1ef0-41ab-9dce-559ceb0d7fc6",
+  "xbow.ko": "64ab6c13-8327-4c78-af2d-a65f0fa7683c",
+  "xbow.ko2": "b609963c-89c5-4797-8791-2a15f0db391a"
+ }
+}

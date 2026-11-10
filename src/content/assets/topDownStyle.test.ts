@@ -27,7 +27,19 @@ import {
 type Frames = Record<string, { frame: { x: number; y: number; w: number; h: number } }>;
 const read = <T>(path: string): T => JSON.parse(readFileSync(`public/${path}`, 'utf8')) as T;
 const COMBAT = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo', 'unit.enemy.thug'];
-const FIGHTERS = [...COMBAT, 'unit.enemy.slinger', 'unit.enemy.bruiser'];
+const FIGHTERS = [
+  ...COMBAT,
+  'unit.enemy.slinger',
+  'unit.enemy.bruiser',
+  // T5: the quarry cast, Ruon and the Driller.
+  'unit.enemy.deserter',
+  'unit.enemy.quarrybender',
+  'unit.enemy.merc',
+  'unit.enemy.crossbow',
+  'unit.enemy.sergeant',
+  'unit.ally.ruon',
+  'unit.enemy.driller',
+];
 
 function sheet(key: string): SheetEntry {
   const entry = resolveAsset(key);
