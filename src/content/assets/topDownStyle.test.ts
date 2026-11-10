@@ -42,6 +42,11 @@ const FIGHTERS = [
   // T8: the heroes the tutorial does not cast.
   'unit.fire.tenzo',
   'unit.water.nilak',
+  'unit.earth.linmei',
+  'unit.air.nima',
+  'unit.air.jinu',
+  'unit.non.riko',
+  'unit.non.wen',
 ];
 
 function sheet(key: string): SheetEntry {

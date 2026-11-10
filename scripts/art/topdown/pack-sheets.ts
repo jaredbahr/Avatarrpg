@@ -124,8 +124,26 @@ export interface FigureSpec {
   readonly stride: number;
   readonly hit?: string;
   readonly ko?: string;
-  /** Ability poses: pose name -> animation key, with how many frames the prototype plays (Kaya's jab: 11). */
-  readonly actions: Readonly<Record<string, { readonly anim: string; readonly frames?: number }>>;
+  /**
+   * Knockout headings that end earlier than `KO_CELS`: how many cels they keep, the last one held. Jinu's south and
+   * north knockouts spread the cape into wings from the seventh cel, so they hold the sixth.
+   */
+  readonly koCels?: Partial<Record<Heading, number>>;
+  /**
+   * Ability poses: pose name -> animation key, with how many frames the prototype plays (Kaya's jab: 11). `mirror`
+   * draws a heading from another heading's cels flipped about the anchor column (the hand swaps), for a heading whose
+   * own take is unusable: Wen's gauntlet turned into a hook or a rope in the west and north-west of her punch.
+   */
+  readonly actions: Readonly<
+    Record<
+      string,
+      {
+        readonly anim: string;
+        readonly frames?: number;
+        readonly mirror?: Partial<Record<Heading, Heading>>;
+      }
+    >
+  >;
   /** The pose the legacy mirrored `cast` plays (its east heading). */
   readonly cast?: string;
   readonly timing: Timing;
@@ -406,6 +424,92 @@ const ROSTER: readonly FigureSpec[] = [
     cast: 'attack',
     timing: 'blow',
   },
+  {
+    name: 'linmei',
+    key: 'unit.earth.linmei',
+    folder: 't8_linmei',
+    idle: 'custom-standing at rest in a ready st@21cddd',
+    walk: 'walking-8-frames@66c98b',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @f714e5',
+    ko: 'custom-knocked out: staggers back one@c21184',
+    actions: {
+      attack: { anim: 'custom-a martial-arts stomp and punch@1dbef8' },
+      throw: { anim: 'custom-a heavy two-handed throw: crou@ea198c' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'nima',
+    key: 'unit.air.nima',
+    folder: 't8_nima',
+    idle: 'custom-standing at rest in a ready st@cf3549',
+    walk: 'walking-8-frames@beb4a3',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @84431d',
+    ko: 'custom-knocked out: staggers back one@616959',
+    actions: {
+      attack: { anim: 'custom-a martial-arts open palm push:@3ec356' },
+      gust: { anim: 'custom-a wide sweeping two-arm swing:@acd49d' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'jinu',
+    key: 'unit.air.jinu',
+    folder: 't8_jinu',
+    idle: 'custom-standing at rest in a ready st@a43971',
+    walk: 'walking-8-frames@60c286',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @62f5fc',
+    ko: 'custom-knocked out: staggers back one@5a0a37',
+    // The seventh and eighth cels spread her cape into wings in the south and north: those hold the sixth.
+    koCels: { south: 6, north: 6 },
+    actions: {
+      attack: { anim: 'custom-a martial-arts open palm push:@dd511a' },
+      gust: { anim: 'custom-a wide sweeping two-arm swing:@789b1a' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'riko',
+    key: 'unit.non.riko',
+    folder: 't8_riko',
+    idle: 'custom-standing at rest in a ready st@099cc8',
+    walk: 'walking-8-frames@705043',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @479af0',
+    ko: 'custom-knocked out: staggers back one@bab294',
+    actions: {
+      attack: { anim: 'custom-a quick boxing combination: st@363f04' },
+      block: { anim: 'custom-a precise finger strike: darts@5ed79c' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'wen',
+    key: 'unit.non.wen',
+    folder: 't8_wen',
+    idle: 'custom-standing at rest in a ready st@3a8ec0',
+    walk: 'walking-8-frames@655aec',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @3bbc70',
+    ko: 'custom-knocked out: staggers back one@c886be',
+    actions: {
+      // West and north-west turned the gauntlet into a hook or a rope (twice): drawn as east and north-east, mirrored.
+      attack: {
+        anim: 'custom-a heavy hook punch: winds the @0e1997',
+        mirror: { west: 'east', northWest: 'northEast' },
+      },
+      spark: { anim: 'custom-thrusts the right arm with the@c4e7db' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
   // T3: the town guard (the relief watch and a returnee), made like the residents: idle and walk, eight headings.
   {
     name: 'guard',
@@ -569,6 +673,18 @@ function png(path: string): Image {
 }
 
 /** A figure frame: hard alpha, cleaned, centred on the 80 px basis. */
+/** A placed cel flipped about the basis' anchor column: basis pixel x lands on `BASIS - 1 - x`. */
+function mirrored(cel: Placed): Placed {
+  const { width: w, height: h } = cel.image;
+  const image = newImage(w, h);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const from = (y * w + x) * 4;
+      image.data.set(cel.image.data.subarray(from, from + 4), (y * w + (w - 1 - x)) * 4);
+    }
+  return { image, ox: BASIS - cel.ox - w, oy: cel.oy };
+}
+
 function figureCel(folder: string, file: string): Placed {
   const raw = png(join(SOURCE, 'chars', folder, file));
   return {
@@ -807,9 +923,13 @@ function figureSheet(spec: FigureSpec): Sheet {
     const ko = anim(spec.ko);
     actions.ko = {};
     for (const h of HEADINGS) {
-      const cels = load((ko[DIR[h]] ?? []).slice(0, KO_CELS));
+      const cels = load((ko[DIR[h]] ?? []).slice(0, spec.koCels?.[h] ?? KO_CELS));
       const clip = sided('ko', h, false);
-      const def = trimClip(clip, cels, timed(KO_MS, cels.length));
+      // A shortened knockout still lies still on its last cel for the full hold.
+      const ms = timed(KO_MS, cels.length).map((v, i, all) =>
+        i === all.length - 1 ? (KO_MS[KO_MS.length - 1] ?? v) : v,
+      );
+      const def = trimClip(clip, cels, ms);
       actions.ko[h] = def;
       if (DIAGONALS.includes(h)) clips[clip] = def;
     }
@@ -818,12 +938,18 @@ function figureSheet(spec: FigureSpec): Sheet {
     const last = se[se.length - 1];
     if (last) clips.ko = trimClip('ko', [last], [1000]);
   }
-  for (const [pose, { anim: id, frames }] of Object.entries(spec.actions)) {
+  for (const [pose, { anim: id, frames, mirror }] of Object.entries(spec.actions)) {
     const a = anim(id);
+    /** A heading's cels: its own, or (`mirror`) another heading's flipped. */
+    const celsOf = (h: Heading): Placed[] => {
+      const from = mirror?.[h];
+      const own = load((a[DIR[from ?? h]] ?? []).slice(0, frames));
+      return from ? own.map(mirrored) : own;
+    };
     actions[pose] = {};
     // One shared 3D motion per move, so the strike is measured once (`moves4.py`, `build_b3.py`).
     const reach = (h: Heading, pick: (b: Box) => number) => {
-      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      const cels = celsOf(h);
       let best = 0;
       cels.forEach((c, i) => {
         const b = inkBox(c);
@@ -842,7 +968,7 @@ function figureSheet(spec: FigureSpec): Sheet {
             ? reach('south', (b) => b.y0)
             : reach('east', (b) => b.x1);
     for (const h of HEADINGS) {
-      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      const cels = celsOf(h);
       const t =
         spec.timing === 'bend'
           ? bendTiming(pose, cels.length, strike ?? 0)
