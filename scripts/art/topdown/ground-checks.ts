@@ -39,6 +39,9 @@ export interface ShadowRow {
 
 export function shadowTable(b: Baked): ShadowRow[] {
   const { ground: g, cover } = b;
+  // the frame's own darkening (a board's edge falling into the dark) is not ground: neither a
+  // shadow nor its reference is measured there
+  const frame = b.frame;
   const PW = g.width,
     PH = g.height,
     d = g.data,
@@ -66,6 +69,7 @@ export function shadowTable(b: Baked): ShadowRow[] {
             Y = dy + y;
           if (X < 0 || Y < 0 || X >= PW || Y >= PH) continue;
           const i = Y * PW + X;
+          if (frame?.[i]) continue;
           mine.push(i);
           if (!cover[i]) {
             s += lum(d, i);
@@ -87,7 +91,7 @@ export function shadowTable(b: Baked): ShadowRow[] {
           Y2 = Y + ey;
         if (X2 < 0 || Y2 < 0 || X2 >= PW || Y2 >= PH) continue;
         const j = Y2 * PW + X2;
-        if (!cover[j] && !shad[j]) {
+        if (!cover[j] && !shad[j] && !frame?.[j]) {
           rs += lum(c, j);
           rn++;
         }
