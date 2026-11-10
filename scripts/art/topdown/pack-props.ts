@@ -9,7 +9,8 @@
  * `objects13/`. Nothing is redrawn: each image is alpha-thresholded at 128 exactly as `build_b3.py`
  * does and cropped to its ink. `--check` packs in memory and fails when a shipped file differs, is
  * missing, or `props/` holds a file this packer does not write. The game's prop ids map to these
- * names in `src/render/topdown/props.ts` (`TOPDOWN_PROPS`).
+ * names in `src/render/topdown/props.ts` (`TOPDOWN_PROPS`, and `TOPDOWN_OBJECTS` for the raised Earth
+ * Wall and rubble).
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
@@ -25,6 +26,9 @@ export const PROP_SOURCES: Readonly<Record<string, string>> = {
   brazier: 'assets/objects13/brazier.png',
   cabbage_cart: 'assets/objects13/cabbage_cart.png',
   lime_boulder: 'assets/objects13/lime_boulder.png',
+  // #577: the raised Earth Wall and a rubble heap (`TOPDOWN_OBJECTS`), the approved forest drawings
+  earth_wall: 'fc/obj_earth_wall.png',
+  rubble: 'fc/obj_rubble.png',
 };
 
 /** `build_b3.py`: alpha under 128 clears, anything else is opaque; then crop to the ink. */
