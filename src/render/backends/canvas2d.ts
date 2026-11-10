@@ -64,6 +64,7 @@ import {
   surfaceCanvases,
 } from '../topdown/surfaceLayer';
 import { flameCel, glowAlpha, steamPuff, type SurfaceArt } from '../topdown/surfaces';
+import { withStructures } from '../topdown/structures';
 import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
 import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRendering';
 import {
@@ -427,6 +428,8 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
     } else {
       this.dropLiftLayer();
+      // The raised walls and rubble heaps stand as drawings among the figures (#577).
+      if (camera.projection === 'topdown') view = withStructures(view);
       // The top-down board (ADR 0104) draws its scene's plates at the identity ground transform,
       // with no lift and no runtime grounding: its shadows are baked into the plates. Until every
       // plate and piece has loaded, the procedural terrain stands in, as on the oblique board.
@@ -460,8 +463,8 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
-      // A top-down board's flames stand among the figures, so it sorts them even without a scene.
-      if (scene || surfaces?.flames.length) this.drawOccupants(view, camera, surfaces);
+      // A top-down board sorts its props, walls, flames and figures together even without a scene.
+      if (scene || camera.projection === 'topdown') this.drawOccupants(view, camera, surfaces);
       else {
         this.drawNpcs(view, camera);
         this.drawProps(view, camera);
@@ -1439,10 +1442,10 @@ export class Canvas2DBackend implements RenderBackend {
             at.h * camera.scale,
           ),
         );
-      } else {
+      } else if (prop.sprite) {
         const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
         ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
-      }
+      } else continue;
 
       /*
        * A damage bar only once it has been hit. Showing a full bar on every
@@ -2036,7 +2039,7 @@ export class Canvas2DBackend implements RenderBackend {
         ? view.props.filter((prop) => Boolean(prop.burning))
         : camera.projection === 'topdown'
           ? // A top-down drawing's shadow is in the props' own layer (`drawTopdownPropShadows`).
-            view.props.filter((prop) => !topdownPropArt(prop))
+            view.props.filter((prop) => prop.sprite && !topdownPropArt(prop))
           : view.props,
       view,
       camera,

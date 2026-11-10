@@ -2661,6 +2661,7 @@ export class CombatScene implements Scene {
       units,
       npcs: [],
       props,
+      raisedWalls: battle.temporaryWalls.map((wall) => wall.pos),
       overlays,
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),

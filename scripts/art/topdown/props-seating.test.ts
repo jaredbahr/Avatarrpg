@@ -12,7 +12,14 @@ import {
   PAVED_SHADOW_SCALE,
   shadowLayer,
 } from '../../../src/render/topdown/objectShadow';
-import { TOPDOWN_PROPS, topdownPropBox } from '../../../src/render/topdown/props';
+import {
+  TOPDOWN_OBJECTS,
+  TOPDOWN_PROPS as PROPS_ONLY,
+  topdownPropBox,
+} from '../../../src/render/topdown/props';
+
+/** Every runtime drawing: the props and the raised wall and rubble (#577). */
+const TOPDOWN_PROPS = { ...PROPS_ONLY, ...TOPDOWN_OBJECTS };
 import { packProps, PROP_SOURCES } from './pack-props';
 import { seatingCheck } from './ground-checks';
 

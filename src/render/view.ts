@@ -392,6 +392,8 @@ export interface MapView {
   readonly targetReticle?: TargetReticleCue | null;
   readonly npcs: readonly NpcMarker[];
   readonly props: readonly RenderProp[];
+  /** Cells the rules raised as walls this fight (`BattleState.temporaryWalls`), still standing. */
+  readonly raisedWalls?: readonly Vec2[];
   readonly path: readonly Vec2[];
   /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
   readonly pathFrom: Vec2 | null;

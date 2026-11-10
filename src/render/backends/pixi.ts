@@ -80,6 +80,7 @@ import {
   surfaceCanvases,
 } from '../topdown/surfaceLayer';
 import { flameCel, glowAlpha, steamPuff, type SurfaceArt } from '../topdown/surfaces';
+import { withStructures } from '../topdown/structures';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
@@ -900,6 +901,8 @@ export class PixiBackend implements RenderBackend {
       ...view,
       scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
     };
+    // The raised walls and rubble heaps stand as drawings among the figures (#577).
+    if (camera.projection === 'topdown') view = withStructures(view);
     if (!app) {
       // Still initialising: keep only the newest frame.
       this.pending = { view, camera };
@@ -3091,6 +3094,10 @@ export class PixiBackend implements RenderBackend {
         sprite.position.set(topdown.box.x, topdown.box.y);
         sprite.width = topdown.box.w;
         sprite.height = topdown.box.h;
+      } else if (!prop.sprite) {
+        // A wall or a heap whose drawing has not loaded: its cell already shows it.
+        sprite.visible = false;
+        continue;
       } else {
         const art = sprites.get(prop.sprite, px, { facing: 1 });
         sprite.texture = this.texture(art);

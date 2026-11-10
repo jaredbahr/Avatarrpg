@@ -29,6 +29,17 @@ export const TOPDOWN_PROPS: Readonly<Record<string, TopdownPropSprite>> = {
   rubble_pile: { name: 'lime_boulder', w: 40, h: 36, base: PROP_BASE },
 };
 
+/**
+ * The top-down drawings of what the rules raise that is not a prop (#577): a raised Earth Wall
+ * (`BattleDraft.raiseWall`, a blocked `wall` tile) and a rubble surface. They stand like props, the
+ * wall on the prototype's prop line (`draw.js`: `cellY(y) + 4`) and the heap a px higher
+ * (`world_forest.js`: `GY + y * CS + CS - 6`).
+ */
+export const TOPDOWN_OBJECTS: Readonly<Record<string, TopdownPropSprite>> = {
+  earth_wall: { name: 'earth_wall', w: 44, h: 34, base: PROP_BASE },
+  rubble: { name: 'rubble', w: 42, h: 24, base: PROP_BASE - 1 },
+};
+
 /** The site-relative url of a shipped top-down prop drawing. */
 export function topdownPropUrl(sprite: TopdownPropSprite): string {
   return `art/topdown/props/${sprite.name}.png`;
@@ -52,5 +63,5 @@ export function topdownPropBox(
 
 /** The top-down drawing for a prop, by its content id, or undefined where none is drawn. */
 export function topdownProp(kind: string | undefined): TopdownPropSprite | undefined {
-  return kind === undefined ? undefined : TOPDOWN_PROPS[kind];
+  return kind === undefined ? undefined : (TOPDOWN_PROPS[kind] ?? TOPDOWN_OBJECTS[kind]);
 }
