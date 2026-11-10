@@ -20,7 +20,7 @@
 .dialogue-layer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-overlay);
 }
 
 .overlay-host {
@@ -751,6 +751,10 @@ html[data-contrast='high'] .title-card .tagline {
   flex-direction: column;
   gap: var(--sp-3);
   padding: var(--sp-5);
+  /* Focus clears the footer's control floor, padding/border, and the panel inset. */
+  scroll-padding-bottom: calc(
+    var(--tap) + var(--sp-2) + var(--sp-3) + var(--hairline) + var(--sp-5)
+  );
   border-color: var(--c-gold-soft);
   box-shadow: var(--inset-edge), var(--shadow-title-plate);
 }
@@ -2195,7 +2199,7 @@ html[data-contrast='high'] .hud-panel::after {
 
 .choice-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
   gap: var(--sp-3);
 }
 
@@ -2665,8 +2669,8 @@ html[data-contrast='high'] .hud-panel::after {
     font-size: var(--fs-lg);
   }
 
-  .dialogue-panel {
-    max-height: min(58vh, 34rem);
+  .stage .dialogue-panel {
+    max-height: min(58vh, 34rem, 100%);
     padding: var(--sp-3) var(--sp-4);
   }
 }
