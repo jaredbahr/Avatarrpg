@@ -523,7 +523,12 @@ export interface ClassifiedTerrain extends TopDownTerrainReader {
  * A board's terrain, tagged by kind so each board's baker reads the terrain it knows and the
  * validation reads any of them through {@link TopDownTerrainReader}.
  */
-export type TopDownTerrainLayer = WangRimTerrain | ClassifiedTerrain;
+export type TopDownTerrainLayer = WangRimTerrain | ForestFloorTerrain | ClassifiedTerrain;
+
+/** The Forest Road's terrain: floor, road, creek and puddle per pixel from the rows (`forestRoad.topdown.terrain.ts`). */
+export interface ForestFloorTerrain extends TopDownTerrainReader {
+  readonly kind: 'forest-floor';
+}
 
 export const BA_DAN_TOPDOWN_TERRAIN: WangRimTerrain = {
   kind: 'wang-rim',
