@@ -13,16 +13,49 @@ import type { AtlasFrame } from './sheets/atlasJson';
 import type { ResolvedFrame } from './sheets/store';
 
 const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url));
-const atlas = JSON.parse(read('public/art/topdown/driller.json').toString()) as {
-  frames: Record<string, { frame: AtlasFrame }>;
+// The sheet spans `data.pages` atlas pages (`driller.json`, then `driller-2.json`, ...); every cel is found on its own.
+const PAGE_FILES = Array.from({ length: TOPDOWN_SHEETS.driller.pages }, (_, i) =>
+  i === 0 ? 'driller' : `driller-${i + 1}`,
+);
+const atlas = {
+  frames: Object.assign(
+    {},
+    ...PAGE_FILES.map(
+      (name) =>
+        (
+          JSON.parse(read(`public/art/topdown/${name}.json`).toString()) as {
+            frames: Record<string, { frame: AtlasFrame }>;
+          }
+        ).frames,
+    ),
+  ) as Record<string, { frame: AtlasFrame }>,
 };
+/** Which page each packed rect is on (the rect objects are the atlas's own). */
+const pageOfRect = new WeakMap<AtlasFrame, number>();
+PAGE_FILES.forEach((name) => {
+  const frames = (
+    JSON.parse(read(`public/art/topdown/${name}.json`).toString()) as {
+      frames: Record<string, { frame: AtlasFrame }>;
+    }
+  ).frames;
+  for (const [cel, { frame }] of Object.entries(frames)) {
+    const own = atlas.frames[cel]?.frame;
+    if (own && own.x === frame.x && own.y === frame.y)
+      pageOfRect.set(own, PAGE_FILES.indexOf(name));
+  }
+});
 const actions = JSON.parse(read('public/art/topdown/driller-actions.json').toString()) as {
   slam: Record<Heading, ClipDef>;
 };
 const data = TOPDOWN_SHEETS.driller;
 // The tile the boss stands on; the Driller path returns before reading it.
 const BOSS_CELL = { x: 0, y: 0 };
-let page: Image;
+let pages: Image[] = [];
+const pageOf = (rect: AtlasFrame): Image => {
+  const found = pages[pageOfRect.get(rect) ?? -1];
+  if (!found) throw new Error('a rect on no page');
+  return found;
+};
 const dirs = [
   'east',
   'south-east',
@@ -60,7 +93,9 @@ class PixelCanvas {
 }
 
 beforeAll(async () => {
-  page = await decodeWebp(read('public/art/topdown/driller.webp'));
+  pages = await Promise.all(
+    PAGE_FILES.map((name) => decodeWebp(read(`public/art/topdown/${name}.webp`))),
+  );
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -75,7 +110,7 @@ function frame(name: string, clip: ResolvedFrame['clip'] = 'idle'): ResolvedFram
   const rect = atlas.frames[name]?.frame;
   if (!rect) throw new Error(`missing ${name}`);
   return {
-    source: page as unknown as HTMLImageElement,
+    source: pageOf(rect) as unknown as HTMLImageElement,
     frame: rect,
     anchor: data.anchor,
     pixelsPerTile: 40,
@@ -89,6 +124,7 @@ function frame(name: string, clip: ResolvedFrame['clip'] = 'idle'): ResolvedFram
 const idle = (heading: Heading) => frame(`unit.enemy.driller/${headingClip('idle', heading)}/0`);
 
 function crop(rect: AtlasFrame): Image {
+  const page = pageOf(rect);
   const pixels = new Uint8Array(rect.w * rect.h * 4);
   for (let y = 0; y < rect.h; y++)
     pixels.set(

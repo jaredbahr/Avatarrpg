@@ -593,7 +593,7 @@ export function useWorldStyleTest(): void {
  * back. The hits (eight headings) and knockouts (the four diagonals the clip vocabulary asks for) arrive
  * with the clip file; every heading of every ability, and all eight knockouts, are in the actions file
  * for the combat slice (T4). The legacy mirrored `cast` is the main ability's east heading. A figure the
- * prototype never walked (Mira, Hanru, the Driller) holds its idle's first cel as its walk.
+ * prototype never walked (Mira, Hanru) holds its idle's first cel as its walk; the Driller walks on its tread loop (T5).
  */
 export function topdownSheet(name: TopdownName, key: string, palette: string): SheetEntry {
   const t = TOPDOWN_SHEETS[name];
@@ -669,6 +669,13 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'unit.enemy.slinger': ['slinger', 'enemy'],
   'unit.enemy.bruiser': ['bruiser', 'enemy'],
   'unit.enemy.driller': ['driller', 'enemy'],
+  // T5: the quarry cast (the gate, the Cutting and the floor) and Captain Ruon.
+  'unit.enemy.deserter': ['deserter', 'fire'],
+  'unit.enemy.quarrybender': ['quarrybender', 'earth'],
+  'unit.enemy.merc': ['merc', 'enemy'],
+  'unit.enemy.crossbow': ['crossbow', 'enemy'],
+  'unit.enemy.sergeant': ['sergeant', 'enemy'],
+  'unit.ally.ruon': ['ruon', 'neutral'],
   'npc.elder': ['mira', 'neutral'],
   'npc.shopkeeper': ['gao', 'earth'],
   'npc.kid': ['pella', 'air'],
