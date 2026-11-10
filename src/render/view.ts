@@ -121,6 +121,11 @@ export interface TargetReticleCue {
   readonly pos: Vec2;
   readonly elevation: 'above' | 'below' | null;
   readonly obscured: boolean;
+  /**
+   * The target is in cover from this shot (`hasCover` with the board's roster), or in cover the
+   * ability arcs over (`requiresLineOfSight: false`). The top-down board draws it as a pip.
+   */
+  readonly cover?: 'covered' | 'ignored' | null;
 }
 
 /** Two-tier breaks are the only elevation boundaries that movement cannot cross. */

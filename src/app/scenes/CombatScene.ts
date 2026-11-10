@@ -40,6 +40,7 @@ import {
 } from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
+import { coverCue } from './coverCue';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer } from '../../render/renderer';
@@ -3048,6 +3049,7 @@ export class CombatScene implements Scene {
                 elevation:
                   breakdown.elevation > 0 ? 'above' : breakdown.elevation < 0 ? 'below' : null,
                 obscured: breakdown.obscurement.total < 0,
+                cover: coverCue(this.app.content, battle.grid, unit, target, ability, battle.units),
               };
             }
           }
