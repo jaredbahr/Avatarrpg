@@ -12,6 +12,7 @@
  * of it is in the bundle.
  */
 import type { ContentIndex, MapDef, MapScene } from '../core/types';
+import { topDownSceneSchema } from './topdownSceneSchema';
 
 /** What a map draws as in the top-down style. */
 export interface TopDownPresentation {
@@ -50,24 +51,22 @@ export async function loadTopDownPresentations(
 ): Promise<Map<string, TopDownPresentation>> {
   const out = new Map<string, TopDownPresentation>();
   for (const [id, source] of scenes) {
-    const scene = await load(source.url);
-    if (!isScene(scene)) throw new Error(`${source.url} is not a map scene`);
+    const parsed = topDownSceneSchema(source.url).safeParse(await load(source.url));
+    if (!parsed.success) {
+      const details = parsed.error.issues
+        .map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)
+        .join('; ');
+      throw new Error(`${source.url} is not a map scene: ${details}`, { cause: parsed.error });
+    }
     out.set(id, {
       projection: 'topdown',
-      scene,
+      scene: parsed.data,
       ...(source.cameraCentreMargin !== undefined && {
         cameraCentreMargin: source.cameraCentreMargin,
       }),
     });
   }
   return out;
-}
-
-/** The shape check a fetched scene must pass: its ground plates and scenery are lists. */
-function isScene(value: unknown): value is MapScene {
-  if (!value || typeof value !== 'object') return false;
-  const scene = value as { ground?: unknown; scenery?: unknown };
-  return Array.isArray(scene.ground) && Array.isArray(scene.scenery);
 }
 
 /**
