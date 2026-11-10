@@ -305,8 +305,33 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await settleLayout(page);
       expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
       const first = await page.evaluate(() => window.quitAudioProbe.sources.length);
-      await walk(page, 4);
+      const freshSteps = () =>
+        page.evaluate(
+          (from) =>
+            window.quitAudioProbe.sources
+              .slice(from)
+              .filter((row) => row.url?.startsWith('audio/step-')).length,
+          first,
+        );
+      // Step buffers load on the new context after the reload; under load the
+      // first stride can finish before they decode. Keep walking until a step
+      // plays: a context left dead by Quit never schedules one and still fails.
+      let column = 4;
+      await walk(page, column);
       await waitForIdle(page);
+      await expect
+        .poll(
+          async () => {
+            const count = await freshSteps();
+            if (count > 0) return count;
+            column = column === 4 ? 3 : 4;
+            await walk(page, column);
+            await waitForIdle(page);
+            return freshSteps();
+          },
+          { timeout: 30_000, message: 'a later walk on the new context schedules step sound' },
+        )
+        .toBeGreaterThan(0);
       const fresh = await page.evaluate((from) => {
         const probe = window.quitAudioProbe;
         return probe.sources
