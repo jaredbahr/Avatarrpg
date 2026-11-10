@@ -3,12 +3,13 @@
  *
  * Two numbers: no family of art (a folder under public/art, e.g. units or
  * portraits) over 4 MB (units and maps have a larger number of their own, below), and everything the service worker precaches (the
- * built dist, minus source maps) under 25 MB, so a first load on a tablet on
+ * built dist, minus source maps and what `precache.mjs` leaves for run time) under 25 MB, so a first load on a tablet on
  * a family's wifi stays a breath and a Home Screen install stays small.
  */
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isPrecacheIgnored } from './precache.mjs';
 
 const FAMILY_BUDGET_MB = 4;
 // ADR 0051: the PixelLab G party's locomotion now, and its stance and bend
@@ -104,10 +105,16 @@ if (shipped.length === 0) {
   console.error('dist/ not found; run `npm run build` first.');
   process.exit(1);
 }
-const total = shipped.reduce((sum, f) => sum + statSync(f).size, 0);
+// What the service worker leaves for run time (`precache.mjs`: the top-down family, fetched only
+// under ?style=topdown until T6) is shipped but not precached; its family budget still holds above.
+const precached = shipped.filter((f) => !isPrecacheIgnored(relative(dist, f).split(sep).join('/')));
+const deferred = shipped.length - precached.length;
+const total = precached.reduce((sum, f) => sum + statSync(f).size, 0);
 const over = total > PRECACHE_BUDGET_MB * 1024 * 1024;
 if (over) failed = true;
-console.log(`\nPrecache: ${mb(total)} MB of ${PRECACHE_BUDGET_MB} MB${over ? '  OVER' : ''}`);
+console.log(
+  `\nPrecache: ${mb(total)} MB of ${PRECACHE_BUDGET_MB} MB${over ? '  OVER' : ''} (${deferred} files fetched at run time, not precached)`,
+);
 
 if (failed) {
   console.error('\nAsset budget exceeded.');
