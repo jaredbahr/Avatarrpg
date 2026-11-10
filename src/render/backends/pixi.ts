@@ -68,6 +68,7 @@ import {
 import { TILE } from '../camera';
 import { drawsScene, groundsSceneAtRuntime, tileSize } from '../projection';
 import { propShadows, rgbaCanvas, topdownPropArt } from '../topdown/propLayer';
+import { drawsWash, washLayer } from '../topdown/wash';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
@@ -438,6 +439,8 @@ export class PixiBackend implements RenderBackend {
    */
   private topdownMarks = new Container();
   private propShadowSprite = new Sprite();
+  /** The organic reach, area and target washes, footprints, rings and cover pip (#457). */
+  private washSprite = new Sprite();
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
   /** Contact shadow and wear under the scenery (grounding.ts), above the ground chunks. */
@@ -713,7 +716,8 @@ export class PixiBackend implements RenderBackend {
       this.groundOverlaySprite,
     );
     this.propShadowSprite.visible = false;
-    this.topdownMarks.addChild(this.propShadowSprite);
+    this.washSprite.visible = false;
+    this.topdownMarks.addChild(this.propShadowSprite, this.washSprite);
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
@@ -945,6 +949,7 @@ export class PixiBackend implements RenderBackend {
     this.syncDecor(view, camera, decorMode, painted);
     this.syncShade(view, camera, scenePainted);
     this.syncTopdownPropShadows(view, camera);
+    this.syncTopdownWash(view, camera);
     this.pixelSpriteUsed.clear();
     this.drawOverlays(view, camera);
     this.drawPath(view, camera);
@@ -2346,8 +2351,10 @@ export class PixiBackend implements RenderBackend {
     const top = this.overlayTopGfx;
     top.clear();
     this.drawObscurement(view, g);
+    // The top-down board draws its reach, targets, area and hover as the organic layer instead.
+    const cells = !drawsWash(view, camera.projection);
 
-    for (const layer of view.overlays) {
+    for (const layer of cells ? view.overlays : []) {
       if (layer.tiles.length === 0) continue;
       const cache = view.crispOverlays ? this.squareLoops : this.loops;
       let loops = cache.get(layer);
@@ -2363,7 +2370,7 @@ export class PixiBackend implements RenderBackend {
       );
     }
 
-    if (view.hoverTile) {
+    if (cells && view.hoverTile) {
       const cues =
         view.crispOverlays && view.calmPath && view.path.length > 0
           ? [hoverCalmMark(view.hoverTile, camera)]
@@ -2655,12 +2662,14 @@ export class PixiBackend implements RenderBackend {
         curve: smoothPath(view.pathFrom, view.path),
       };
     }
-    this.appendPixelMarks(
-      this.pixelPathLayer,
-      camera,
-      pathPixelMarks(view, camera, this.curve?.curve),
-      view.cameraNudge,
-    );
+    // On the top-down board the route is the organic layer's footprints.
+    if (!drawsWash(view, camera.projection))
+      this.appendPixelMarks(
+        this.pixelPathLayer,
+        camera,
+        pathPixelMarks(view, camera, this.curve?.curve),
+        view.cameraNudge,
+      );
     if (view.aimArc) {
       this.appendPixelMarks(
         this.pixelPathLayer,
@@ -2717,6 +2726,27 @@ export class PixiBackend implements RenderBackend {
     sprite.position.set(layer.x, layer.y);
     sprite.width = layer.image.width;
     sprite.height = layer.image.height;
+    sprite.visible = true;
+  }
+
+  /** The organic overlay layer, as Canvas 2D lays it: the board's world px, nearest. */
+  private syncTopdownWash(view: MapView, camera: Camera): void {
+    const sprite = this.washSprite;
+    const image = drawsWash(view, camera.projection)
+      ? washLayer(view, this.squareFootprints)
+      : null;
+    const canvas = image && rgbaCanvas(image);
+    if (!image || !canvas) {
+      sprite.visible = false;
+      sprite.texture = Texture.EMPTY;
+      return;
+    }
+    const texture = this.texture(canvas);
+    if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+    sprite.texture = texture;
+    sprite.position.set(0, 0);
+    sprite.width = image.width;
+    sprite.height = image.height;
     sprite.visible = true;
   }
 

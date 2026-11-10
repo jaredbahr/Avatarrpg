@@ -53,6 +53,7 @@ import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { drawArt } from '../pixelSampling';
 import { propShadows, rgbaCanvas, topdownPropArt } from '../topdown/propLayer';
+import { drawsWash, washLayer } from '../topdown/wash';
 import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
 import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRendering';
 import {
@@ -427,9 +428,11 @@ export class Canvas2DBackend implements RenderBackend {
       if (!painted || view.crispOverlays) this.drawDecor(view, camera);
       if (view.atmosphere) this.drawShade(view, camera);
       if (camera.projection === 'topdown') this.drawTopdownPropShadows(view, camera);
-      this.drawOverlays(view, camera);
+      const wash = drawsWash(view, camera.projection);
+      if (wash) this.drawTopdownWash(view, camera);
+      this.drawOverlays(view, camera, camera, !wash);
       this.drawSteamPuffs(view, camera);
-      this.drawPath(view, camera);
+      if (!wash) this.drawPath(view, camera);
       if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
       this.drawFxLayer(view, camera, 'under');
       this.drawExit(view, camera, view.cameraNudge);
@@ -897,9 +900,10 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  private drawOverlays(view: MapView, camera: Camera, markCamera = camera): void {
+  private drawOverlays(view: MapView, camera: Camera, markCamera = camera, cells = true): void {
     this.drawObscurement(view, camera);
-    for (const layer of view.overlays) {
+    // The top-down board draws its reach, targets, area and hover as the organic layer instead.
+    for (const layer of cells ? view.overlays : []) {
       if (layer.tiles.length === 0) continue;
       const cache = view.crispOverlays ? this.squareLoops : this.loops;
       let loops = cache.get(layer);
@@ -915,7 +919,7 @@ export class Canvas2DBackend implements RenderBackend {
       );
     }
 
-    if (view.hoverTile) {
+    if (cells && view.hoverTile) {
       const cues =
         view.crispOverlays && view.calmPath && view.path.length > 0
           ? [hoverCalmMark(view.hoverTile, markCamera)]
@@ -1291,6 +1295,22 @@ export class Canvas2DBackend implements RenderBackend {
         layer.y * camera.scale - camera.offsetY,
         layer.image.width * camera.scale,
         layer.image.height * camera.scale,
+      ),
+    );
+  }
+
+  /** The top-down board's reach, area and target washes, footprints, rings and cover pip (#457). */
+  private drawTopdownWash(view: MapView, camera: Camera): void {
+    const image = washLayer(view, this.squareFootprints);
+    const canvas = image && rgbaCanvas(image);
+    if (!image || !canvas) return;
+    drawArt(this.ctx, 1, camera.scale, () =>
+      this.ctx.drawImage(
+        canvas,
+        -camera.offsetX,
+        -camera.offsetY,
+        image.width * camera.scale,
+        image.height * camera.scale,
       ),
     );
   }
