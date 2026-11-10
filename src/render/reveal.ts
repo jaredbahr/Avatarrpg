@@ -21,8 +21,21 @@ const SOLID = 128;
  * RGBA of the silhouette's rim and its fill. The fill lets the roof through, so the figure reads as
  * behind it; an opaque or dark-rimmed silhouette read as a sticker on the roof (ADR 0096).
  */
-const RIM = [255, 238, 196, 255] as const;
-const FILL = [255, 226, 160, 120] as const;
+export interface RevealTint {
+  readonly rim: readonly [number, number, number, number];
+  readonly fill: readonly [number, number, number, number];
+}
+/** The oblique boards' tint, as ADR 0096 shipped it. */
+const OBLIQUE_TINT: RevealTint = { rim: [255, 238, 196, 255], fill: [255, 226, 160, 120] };
+/**
+ * The top-down boards' tint (ADR 0104): the same pale hue, quieter. At the top-down zoom a figure
+ * behind a roof covers more of the roof, and the full-strength rim with a 120 fill read as a ghost
+ * standing on it; a softer rim and a faint fill keep it findable and behind.
+ */
+const TOPDOWN_TINT: RevealTint = { rim: [255, 238, 196, 190], fill: [255, 226, 160, 64] };
+/** The tint each projection's boards use. */
+export const revealTint = (projection: Camera['projection']): RevealTint =>
+  projection === 'topdown' ? TOPDOWN_TINT : OBLIQUE_TINT;
 
 /** Only the party is revealed; a resident or an enemy behind a house is simply hidden. */
 export const revealsUnit = (unit: Pick<RenderUnit, 'faction' | 'fallen'>): boolean =>
@@ -78,6 +91,7 @@ export function revealPixels(
   cover: Uint8ClampedArray,
   w: number,
   h: number,
+  tint: RevealTint = OBLIQUE_TINT,
 ): Uint8ClampedArray | null {
   const solid = (x: number, y: number) =>
     x >= 0 && y >= 0 && x < w && y < h && (figure[(y * w + x) * 4 + 3] ?? 0) >= SOLID;
@@ -92,7 +106,7 @@ export function revealPixels(
       if ((cover[i + 3] ?? 0) < SOLID) continue;
       covered++;
       const rim = !solid(x - 1, y) || !solid(x + 1, y) || !solid(x, y - 1) || !solid(x, y + 1);
-      out.set(rim ? RIM : FILL, i);
+      out.set(rim ? tint.rim : tint.fill, i);
     }
   return own > 0 && covered / own >= REVEAL_MIN ? out : null;
 }
@@ -148,8 +162,9 @@ export class RevealLayer {
   draw(
     figures: readonly RevealFigure[],
     scenery: readonly SceneScenery[],
-    camera: Pick<Camera, 'groundPoint'>,
+    camera: Pick<Camera, 'groundPoint' | 'projection'>,
   ): RevealDrawn | null {
+    const tint = revealTint(camera.projection);
     const shown: { x: number; y: number; w: number; h: number; pixels: Uint8ClampedArray }[] = [];
     for (const figure of figures) {
       const occluders = revealOccluders(scenery, figure, camera);
@@ -173,7 +188,7 @@ export class RevealLayer {
             drawSceneImage(ctx, image, piece, at, 0, piece.width, piece.height),
           );
       }
-      const pixels = revealPixels(own, ctx.getImageData(0, 0, w, h).data, w, h);
+      const pixels = revealPixels(own, ctx.getImageData(0, 0, w, h).data, w, h, tint);
       if (pixels) shown.push({ x, y, w, h, pixels });
     }
     if (shown.length === 0) return null;
