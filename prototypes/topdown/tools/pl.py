@@ -7,7 +7,7 @@ API = 'https://api.pixellab.ai/v2'
 HERE = Path(__file__).resolve().parent.parent
 LEDGER = HERE / 'ledger.json'
 RAW = HERE / 'raw'
-BUDGET = 4370.0   # v13 + the tutorial pass: 1,870 spent before it, plus a 2,500 cap for this pass (orchestrator, 2026-11-05)
+BUDGET = 6120.0   # 4,370 through T5, plus T8's 1,750 for the seven heroes (owner, 2026-11-10); t8heroes.py's CAP is the real guard
 
 
 def req(method, path, body=None):

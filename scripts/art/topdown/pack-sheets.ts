@@ -372,6 +372,40 @@ const ROSTER: readonly FigureSpec[] = [
     cast: 'attack',
     timing: 'blow',
   },
+  // T8: the heroes the tutorial does not cast, made like Sura and Bo by `tools/t8heroes.py`: idle, walk, hit,
+  // knockout and a pose for each of the level-1 and level-2 abilities; the cast is the level-1 ability's.
+  {
+    name: 'tenzo',
+    key: 'unit.fire.tenzo',
+    folder: 't8_tenzo',
+    idle: 'custom-standing at rest in a ready st@c8ecc4',
+    walk: 'walking-8-frames@fc70f0',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @f0afab',
+    ko: 'custom-knocked out: staggers back one@4723e3',
+    actions: {
+      attack: { anim: 'custom-a martial-arts punch: draws th@653c55' },
+      blast: { anim: 'custom-a martial-arts double palm str@eb5022' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'nilak',
+    key: 'unit.water.nilak',
+    folder: 't8_nilak',
+    idle: 'custom-standing at rest in a ready st@56042a',
+    walk: 'walking-8-frames@3d44ae',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @844649',
+    ko: 'custom-knocked out: staggers back one@878a53',
+    actions: {
+      attack: { anim: 'custom-a whip-like arm sweep: swings @ee28e1' },
+      heal: { anim: 'custom-a calm healing gesture: brings@3b80c6' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
   // T3: the town guard (the relief watch and a returnee), made like the residents: idle and walk, eight headings.
   {
     name: 'guard',
