@@ -23304,6 +23304,2306 @@
    "ids": {
     "animation_group_id": "cf354936-27a9-4c87-9518-61226625ca62"
    }
+  },
+  {
+   "name": "t8_nima_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "eecb8357-0204-4dff-ba74-a1cc4e003abe",
+    "3d1e25ec-c9b0-41f0-b1cb-11860a729543",
+    "fefc552c-5216-499c-b232-fb1ec09968b0",
+    "79da2314-0a90-4a39-98cf-dc9c03f54efd"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 48.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9593.9654640625,
+   "balance_after": 9545.9654640625,
+   "secs": 207,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "beb4a3d5-2aac-4e87-b96a-f2d860ac79a4"
+   }
+  },
+  {
+   "name": "t8_riko_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "75bf0e66-7548-45c1-a322-fd2971ac5079",
+    "bcaffb8d-01e4-464e-8506-bc3ee75b9977",
+    "7a0f0d74-bca9-43b8-bed0-579a30a1c710"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 54.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9593.9654640625,
+   "balance_after": 9539.9654640625,
+   "secs": 211,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "70504387-9bbc-47c4-9653-e90cb9e320f2"
+   }
+  },
+  {
+   "name": "t8_wen_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "06a3b622-5547-43f3-a440-15b66e277696",
+    "e799b1ed-a1f3-4f6f-a502-a668b49315e8",
+    "9366295f-dcb7-408c-9a20-1d2e998937f7",
+    "0bc29836-ad59-466b-82c8-dab0f75f18c7",
+    "564f7e99-5002-4a16-8332-8c4530927506"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 57.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 9593.9654640625,
+   "balance_after": 9536.9654640625,
+   "secs": 217,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "655aec01-79cc-4e76-93cb-4bf3b7d6223d"
+   }
+  },
+  {
+   "name": "t8_wen_attack",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9ad0b146-f271-446c-a63f-e105e9db97fb"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy hook punch: winds the right arm with the big metal gauntlet back, then s...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 48.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 9557.9654640625,
+   "balance_after": 9509.9654640625,
+   "secs": 112,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "0e1997d3-35c5-42c2-a8bc-709372491b6a"
+   }
+  },
+  {
+   "name": "t8_linmei_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "aaab18d8-3b6d-43c7-a344-5f2897948d99",
+    "94c2ef67-556d-477f-917b-493f258e644e",
+    "d140a43d-0235-4604-95cc-e85e59c61f40",
+    "8e0cb77d-25d4-4174-94b0-3ec8967df16e",
+    "f42cbdca-cac7-44d7-8807-cf799c19c936",
+    "9ae15e08-e46f-469e-b800-cced1d3f53cf"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 93.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 9593.9654640625,
+   "balance_after": 9500.9654640625,
+   "secs": 263,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "66c98baa-6368-4d9b-9340-963cd9989979"
+   }
+  },
+  {
+   "name": "t8_riko_attack",
+   "endpoint": "/characters/animations",
+   "job": [
+    "8a73be47-5481-45ab-ab61-057db09662ce",
+    "89a10ef8-6c63-4394-a798-a40ad167a159",
+    "930f945f-36a0-4bc6-b53f-543061fa026e",
+    "29173197-076b-46c7-9372-d0abc509db05",
+    "9f511b5f-6b36-40a7-a9ec-273fb5f653ed",
+    "cf46bd85-4b43-49e1-813f-69106b0250fd",
+    "200131f7-13ac-48d5-9d3c-bd1c66da7657",
+    "3f461eea-8ef1-4f2f-a378-3d7c32fd77cb"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "mode": "skeleton-v3",
+    "action_description": "a quick boxing combination: steps in and throws two fast punches, left then right, then springs back to a light guard with both fists up. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 60.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 9557.9654640625,
+   "balance_after": 9497.9654640625,
+   "secs": 139,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "363f04e5-e28c-4224-b397-8170130d3dea"
+   }
+  },
+  {
+   "name": "t8_jinu_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "247b4eab-7350-4ab3-82e9-848c87f8029a",
+    "307745f3-69c3-4e67-87e1-27cd3d5781b1",
+    "7acd2aa8-17f3-43b5-ba37-6408fbafbbe3"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 99.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9593.9654640625,
+   "balance_after": 9494.9654640625,
+   "secs": 279,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "60c286df-d799-4dd9-bc6b-ed5c5e5d0560"
+   }
+  },
+  {
+   "name": "t8_jinu_attack",
+   "endpoint": "/characters/animations",
+   "job": [
+    "ae15b09e-51f6-41fd-a86b-d2b224f30a08",
+    "136cd0c3-f2e7-452c-a38b-ed182319db48",
+    "942f67ed-3bef-4fa0-a42f-e13ad343da97"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts open palm push: steps forward and pushes the right open palm stra...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 63.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9557.9654640625,
+   "balance_after": 9494.9654640625,
+   "secs": 146,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "dd511ac2-dfab-47b5-bb75-0a5226e169b7"
+   }
+  },
+  {
+   "name": "t8_wen_walk_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "a75cf436-3c4c-4024-a268-e6b017df568f",
+    "1df4ca5a-7ca2-43ee-906e-712d8b1cea58",
+    "73388a82-9b84-41f8-9fd6-607605b56d6c"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "655aec01-79cc-4e76-93cb-4bf3b7d6223d"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 69.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9536.9654640625,
+   "balance_after": 9467.9654640625,
+   "secs": 125,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "655aec01-79cc-4e76-93cb-4bf3b7d6223d"
+   }
+  },
+  {
+   "name": "t8_nima_walk_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "cd83bc34-f117-4b8c-819f-36d1ad6b00fa",
+    "898442af-124a-4c8c-b15a-fcbe245f68d5",
+    "ce5651e4-b63b-45ca-a609-01232e5709ea",
+    "fca839c6-f3b8-44fa-9f2e-5f1bcc20ba59"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "beb4a3d5-2aac-4e87-b96a-f2d860ac79a4"
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 81.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9545.9654640625,
+   "balance_after": 9464.9654640625,
+   "secs": 138,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "beb4a3d5-2aac-4e87-b96a-f2d860ac79a4"
+   }
+  },
+  {
+   "name": "t8_linmei_walk_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "19c11460-baea-4667-8c01-54ab8fa8094b",
+    "7c190289-8fd2-4697-b825-e35ef0ab05cd"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "66c98baa-6368-4d9b-9340-963cd9989979"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 51.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9500.9654640625,
+   "balance_after": 9449.9654640625,
+   "secs": 135,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "66c98baa-6368-4d9b-9340-963cd9989979"
+   }
+  },
+  {
+   "name": "t8_riko_walk_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "f810f137-7eb6-45d5-8519-c7842e67ddb4",
+    "a4b81de0-d51f-47ea-a78b-886f4e238ba6",
+    "cde2bb4f-8e3b-4e3f-a4b6-4ad7ee569a26",
+    "9c0b1acd-0fe4-4ac4-bccb-620d8ea09f50",
+    "5e2b3e31-90c0-45c6-95bf-b9364a0c6eeb"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "70504387-9bbc-47c4-9653-e90cb9e320f2"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 105.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 9536.9654640625,
+   "balance_after": 9431.9654640625,
+   "secs": 241,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "70504387-9bbc-47c4-9653-e90cb9e320f2"
+   }
+  },
+  {
+   "name": "t8_jinu_walk_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "a8c4fee3-26ca-4451-a1a5-6c773c444585",
+    "0f6bdc1d-3a67-4b6a-988f-ed5e399331c3",
+    "eb6886a2-a484-4938-830f-424f7b0a8fc7",
+    "a1a711b2-f2aa-416c-9488-f6b4507cf177",
+    "9d3d776f-0479-4fa5-8d97-46546187e3c2"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "60c286df-d799-4dd9-bc6b-ed5c5e5d0560"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 105.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 9494.9654640625,
+   "balance_after": 9389.9654640625,
+   "secs": 379,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "60c286df-d799-4dd9-bc6b-ed5c5e5d0560"
+   }
+  },
+  {
+   "name": "t8_nima_attack",
+   "endpoint": "/characters/animations",
+   "job": [
+    "282eb30e-eb71-4e8a-b479-2ba0ecb71aae",
+    "a156537a-2863-44a3-a415-67a2aa69c773",
+    "ada0e8c3-c516-4245-8fdc-4d73c16f32fc",
+    "6e361e79-5957-4c3e-9ead-73eb462bc531",
+    "4c1dc0e9-4a4d-4c79-84c8-b398046778a9",
+    "e242befb-255f-49b3-ad92-220c86a16e67",
+    "53a2b23a-0b52-48dd-b12e-6fecb646cec3",
+    "24a2572d-ef77-458e-bafa-5c0607f5ddf9"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts open palm push: steps forward and pushes the right open palm stra...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 186.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 9557.9654640625,
+   "balance_after": 9371.9654640625,
+   "secs": 542,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3ec3569a-a618-4997-953b-bf7be806dd50"
+   }
+  },
+  {
+   "name": "t8_linmei_attack",
+   "endpoint": "/characters/animations",
+   "job": [
+    "b450b967-d53a-4974-999b-d94b33fadae2",
+    "b712aca6-2f5b-4d37-9d7c-5105aec06ad9",
+    "05b4eca5-44de-4b31-9fed-9faa99e588bf"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts stomp and punch: lifts the left knee high, stamps the foot down hard, then punches forward with the left fist, then returns to a ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 186.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9557.9654640625,
+   "balance_after": 9371.9654640625,
+   "secs": 547,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "1dbef8f2-b871-46fb-9320-cdaf118474fd"
+   }
+  },
+  {
+   "name": "t8_wen_attack_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "2bca8399-fc2b-4819-8853-743343e9ebe3",
+    "dc2775a5-5ad0-4857-b7ff-4692df4df71b",
+    "62f2c9a5-9f3f-4eeb-a999-66c0af1f8119",
+    "62084667-eb2d-4704-9dbc-3458fae6e54f",
+    "ec16c3dd-ca16-41c8-a8d3-1f6e0c03f672",
+    "3f8b2201-ac00-46c5-84e5-e125242f87bf",
+    "f04f22f8-d8f1-4687-aa61-7c2d38f82316"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy hook punch: winds the right arm with the big metal gauntlet back, then s...",
+    "frame_count": 10,
+    "directions": [
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "0e1997d3-35c5-42c2-a8bc-709372491b6a"
+   },
+   "credits": 21.0,
+   "credit_source": "usage",
+   "balance_diff": 138.0,
+   "usage": {
+    "generations": 21.0
+   },
+   "balance_before": 9509.9654640625,
+   "balance_after": 9371.9654640625,
+   "secs": 440,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "0e1997d3-35c5-42c2-a8bc-709372491b6a"
+   }
+  },
+  {
+   "name": "t8_jinu_attack_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "3fcbb73e-f93e-4193-8a7e-5cf002342ba8",
+    "c5b438fe-0b22-48dc-8d6b-f985306572b0",
+    "9e3bda35-0212-4111-9160-dbd5df23097b",
+    "f0bc8776-d74f-4d29-aafb-82fab44de44e",
+    "0014caec-355f-4ca3-9016-028352e93e60"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts open palm push: steps forward and pushes the right open palm stra...",
+    "frame_count": 10,
+    "directions": [
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "dd511ac2-dfab-47b5-bb75-0a5226e169b7"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 126.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 9494.9654640625,
+   "balance_after": 9368.9654640625,
+   "secs": 426,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "dd511ac2-dfab-47b5-bb75-0a5226e169b7"
+   }
+  },
+  {
+   "name": "t8_riko_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "553046a7-9ee0-4a1c-b004-7c8acecf157c",
+    "ad67b143-e36c-4abe-962d-f7fd3824e849"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 54.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9389.9654640625,
+   "balance_after": 9335.9654640625,
+   "secs": 100,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "479af0ac-6b73-4c66-8dde-1d2bd96a46a4"
+   }
+  },
+  {
+   "name": "t8_wen_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "4cdf9aa5-432a-47fa-a422-f3df51f546d3",
+    "7bf5ce04-2a5e-446d-83bc-0029af5541a3",
+    "2818797a-b644-4ace-97fd-388026d0c93f",
+    "e4e792f6-d02e-4d26-90cb-30305730b879"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 54.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9389.9654640625,
+   "balance_after": 9335.9654640625,
+   "secs": 106,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
+   }
+  },
+  {
+   "name": "t8_nima_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "88c9815b-e11a-4911-b7f3-722f24e88da3",
+    "7e7745c4-7384-4326-ade4-8a0e9a112633"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 60.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9389.9654640625,
+   "balance_after": 9329.9654640625,
+   "secs": 112,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "84431dad-ac19-4498-8c76-c59923a32f2b"
+   }
+  },
+  {
+   "name": "t8_jinu_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "0ce4d8c6-e6a5-4f78-a6e6-3f8e5f55fc01",
+    "e11581e2-7ae7-44e0-b1de-375c547aa348",
+    "57570fea-d00c-4aa3-abe1-52f89398a2cb"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 66.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9389.9654640625,
+   "balance_after": 9323.9654640625,
+   "secs": 122,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "62f5fc26-deb5-4abc-95a7-9ddc1e929ac2"
+   }
+  },
+  {
+   "name": "t8_linmei_hit",
+   "endpoint": "/characters/animations",
+   "job": [
+    "f921a3bb-04ee-4594-8110-df1601605bc0",
+    "7e38ab31-c34f-45f0-a44a-d86817725e50",
+    "3d6f9332-6770-4f3c-b6c6-411b8b70c8bc",
+    "f475e9b8-2e9e-443d-9065-3988631c0700"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 69.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9389.9654640625,
+   "balance_after": 9320.9654640625,
+   "secs": 139,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "f714e509-9f2a-4fd7-83e1-1006f3a86e62"
+   }
+  },
+  {
+   "name": "t8_linmei_attack_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "4b314186-6fc2-4cff-97fa-eee5ecdb73a1",
+    "7e2d2d09-9df0-46c9-8d1b-2287fc78e85d",
+    "b47a607d-61c7-4c1a-a027-f6f9ee8ca267",
+    "b0a0e2f6-e412-4778-9906-d5d417d23c53",
+    "7a31008b-49fe-4f69-bbbc-255a55dd7cc6"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts stomp and punch: lifts the left knee high, stamps the foot down hard, then punches forward with the left fist, then returns to a ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 10,
+    "directions": [
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "1dbef8f2-b871-46fb-9320-cdaf118474fd"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 81.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 9371.9654640625,
+   "balance_after": 9290.9654640625,
+   "secs": 204,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "1dbef8f2-b871-46fb-9320-cdaf118474fd"
+   }
+  },
+  {
+   "name": "t8_nima_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "dc65129b-fe20-45e1-b9a4-acd3f84e8d44",
+    "8f906532-92e6-43b7-9980-1a5a3e0e019f",
+    "7715f463-9ed5-44b4-81c2-264910100397"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "84431dad-ac19-4498-8c76-c59923a32f2b"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 63.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9326.9654640625,
+   "balance_after": 9263.9654640625,
+   "secs": 158,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "84431dad-ac19-4498-8c76-c59923a32f2b"
+   }
+  },
+  {
+   "name": "t8_wen_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "c43cf882-465b-4097-be59-343f54894c39",
+    "a49a605a-68d0-48c3-94f2-ce55bb974b5e",
+    "54780338-f649-45c3-9350-fcca1f0d1ff7",
+    "636c0531-3321-471e-93a0-0d9bcb515ee6"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 75.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9335.9654640625,
+   "balance_after": 9260.9654640625,
+   "secs": 176,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
+   }
+  },
+  {
+   "name": "t8_linmei_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "b157030a-1184-449a-8097-0f675144061a",
+    "fd422ea7-d35e-47b5-9e21-7dcacddef8fd",
+    "a73730fd-ba9b-45d4-84a8-2c95924240ea",
+    "a87b8785-754e-436c-b15b-c0d288ee18ad"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "f714e509-9f2a-4fd7-83e1-1006f3a86e62"
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 69.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9320.9654640625,
+   "balance_after": 9251.9654640625,
+   "secs": 169,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "f714e509-9f2a-4fd7-83e1-1006f3a86e62"
+   }
+  },
+  {
+   "name": "t8_jinu_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9caf4026-48fe-4704-83c8-d82a92a7bcbe",
+    "6816dbe3-9f27-45f5-a74f-40abbb1d377b",
+    "ebb61623-4152-4785-a81e-43dc991ac3b2"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "62f5fc26-deb5-4abc-95a7-9ddc1e929ac2"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 72.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9323.9654640625,
+   "balance_after": 9251.9654640625,
+   "secs": 192,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "62f5fc26-deb5-4abc-95a7-9ddc1e929ac2"
+   }
+  },
+  {
+   "name": "t8_riko_hit_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "246ae61f-7c6a-4f97-97e8-0fd7c1afa4d4",
+    "ea681a77-42e9-4269-97bb-470275bffa99",
+    "b315f83a-f80f-4b60-a6cd-1e6fc6661fe2",
+    "e70235b2-64c7-4f07-bffb-c6d77bb6d7e8",
+    "ece303ba-763c-40b7-b138-ba427c475c14",
+    "b819afaf-0812-427d-88c4-a5e6f82ac81b"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "479af0ac-6b73-4c66-8dde-1d2bd96a46a4"
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 96.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 9335.9654640625,
+   "balance_after": 9239.9654640625,
+   "secs": 239,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "479af0ac-6b73-4c66-8dde-1d2bd96a46a4"
+   }
+  },
+  {
+   "name": "t8_wen_spark",
+   "endpoint": "/characters/animations",
+   "job": [
+    "94044460-ddbf-4d54-a7fc-f3c1d699fb3b",
+    "7d53cff3-9197-4dce-b2aa-e0eb03856313",
+    "2165e9bb-d667-4318-88b7-99959b5a868b",
+    "3560cdef-794f-4689-b675-10f4b770e750"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "thrusts the right arm with the big metal gauntlet straight forward, arm fully ex...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 87.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9290.9654640625,
+   "balance_after": 9203.9654640625,
+   "secs": 163,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c4e7db74-8b6c-4c0e-a957-21787061318c"
+   }
+  },
+  {
+   "name": "t8_riko_block",
+   "endpoint": "/characters/animations",
+   "job": [
+    "a9252eb3-44ea-4a9f-a3d4-f5e3f06a253b",
+    "7e282313-ede5-408d-ad79-906980c0a568",
+    "e97a634f-7e02-4834-86a3-73d48df2825e",
+    "9a7e7664-1ed6-4bb5-968e-da8400d24231",
+    "2d327118-59e2-48bb-99a4-1c7e7345c0e1",
+    "ee74100e-75e1-43fd-a027-7a8c50399e8f",
+    "0b6a1b4d-ae66-4a8a-b04f-bf09c3617be3",
+    "c8e08995-5600-4cfc-b41d-4a9c271aae1a"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "mode": "skeleton-v3",
+    "action_description": "a precise finger strike: darts forward and jabs the stiff extended fingers of th...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 87.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 9290.9654640625,
+   "balance_after": 9203.9654640625,
+   "secs": 169,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "5ed79cab-f60b-499e-ac46-46a7b020bb29"
+   }
+  },
+  {
+   "name": "t8_linmei_throw",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9bb325f1-adee-4dd1-8bcd-680179630bad",
+    "2381622a-a8d6-4746-b086-9ba495c611e5",
+    "463578a0-2136-423f-8258-a83117b2297c"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy two-handed throw: crouches and scoops both hands low near the ground, th...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 87.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9290.9654640625,
+   "balance_after": 9203.9654640625,
+   "secs": 171,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ea198c7f-a000-49ea-bfc7-0a8cb1784372"
+   }
+  },
+  {
+   "name": "t8_nima_gust",
+   "endpoint": "/characters/animations",
+   "job": [
+    "84f83f71-62a9-4e16-9948-ebdef3a9a425",
+    "058b23c2-9aa9-4208-8d62-020f7e0a9592"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "a wide sweeping two-arm swing: turns the waist and swings both straight arms in ...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 120.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9290.9654640625,
+   "balance_after": 9170.9654640625,
+   "secs": 237,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "acd49d78-4bd6-4319-addd-6b0bf215dda6"
+   }
+  },
+  {
+   "name": "t8_jinu_gust",
+   "endpoint": "/characters/animations",
+   "job": [
+    "3a397adb-f563-4761-a0a7-0ca77fdeac10",
+    "8828279b-2033-4151-b459-1e95a9c0c6d5",
+    "6149e46e-94ce-4151-9100-5b4e1e7024e2"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a wide sweeping two-arm swing: turns the waist and swings both straight arms in ...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 141.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9290.9654640625,
+   "balance_after": 9149.9654640625,
+   "secs": 249,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "789b1a32-9171-461f-abcd-c00196333f07"
+   }
+  },
+  {
+   "name": "t8_jinu_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "e2489700-58e2-4517-bee4-4ca5e3d0547b",
+    "875c564e-16c2-4d1c-9156-41ca7372ca9a",
+    "b1360a86-ccdd-4794-ac0e-791a6f301a17",
+    "b114a9e3-9021-4e44-b28f-483f52707bae",
+    "2e6dcb8c-6447-4edc-b9b1-7a5a76173ef5",
+    "6ded7e9a-687a-4e84-a4c9-bdcec3533ea0"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; the satchel stays at her hip; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 87.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 9236.9654640625,
+   "balance_after": 9149.9654640625,
+   "secs": 145,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "5a0a3769-9dde-4f18-8e95-c88f417d19e7"
+   }
+  },
+  {
+   "name": "t8_wen_spark_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "29ce4150-f2f2-4009-aaed-94f51bbf4614",
+    "6160c37b-3118-4e0c-9f0c-e09ecb550f45",
+    "97a7841d-23e6-4c01-bcea-e66ccc958d4a",
+    "5f2dea81-5823-49be-962b-e0f493c96e9e"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "thrusts the right arm with the big metal gauntlet straight forward, arm fully ex...",
+    "frame_count": 10,
+    "directions": [
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "c4e7db74-8b6c-4c0e-a957-21787061318c"
+   },
+   "credits": 12.0,
+   "credit_source": "usage",
+   "balance_diff": 60.0,
+   "usage": {
+    "generations": 12.0
+   },
+   "balance_before": 9203.9654640625,
+   "balance_after": 9143.9654640625,
+   "secs": 121,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c4e7db74-8b6c-4c0e-a957-21787061318c"
+   }
+  },
+  {
+   "name": "t8_linmei_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "8973330d-53e0-404c-9adb-f464c5ee88c6",
+    "2f6c3a89-dd87-48de-8e5a-e42fb19b427c",
+    "04cc7101-8573-464f-bba2-32adceb17821",
+    "92b51bbf-799d-43c1-b8c5-bb1652b210c6",
+    "6c757687-6dfc-4c45-9e72-ec1893e25f99",
+    "9212dbdf-2f6d-4786-b994-3d10f5d8eff3"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 96.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 9236.9654640625,
+   "balance_after": 9140.9654640625,
+   "secs": 239,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c2118421-3d4a-46fb-a3f0-a39e0d1e0970"
+   }
+  },
+  {
+   "name": "t8_nima_gust_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "1d7486fb-e0a0-4d06-b578-6c84e587ba9c",
+    "fed1ebdd-6378-43a4-9a95-eb8cb3198914",
+    "409d096b-d508-4b3a-8390-3cbd4ddf5e8a",
+    "e3b68563-5b1b-47a1-8113-3ad1783fc42d",
+    "22f6a012-6945-4ca0-99de-ea82378a3e0c",
+    "1ad6f337-cfdd-49d5-a71a-e55133fbe398"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "a wide sweeping two-arm swing: turns the waist and swings both straight arms in ...",
+    "frame_count": 10,
+    "directions": [
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "acd49d78-4bd6-4319-addd-6b0bf215dda6"
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 51.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 9170.9654640625,
+   "balance_after": 9119.9654640625,
+   "secs": 220,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "acd49d78-4bd6-4319-addd-6b0bf215dda6"
+   }
+  },
+  {
+   "name": "t8_jinu_gust_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "39a0d9b3-008c-4694-a7c7-9de7f4e60a1d",
+    "ba579be6-7f70-4159-9c30-12dee113c361",
+    "a4cc889b-a708-423e-b404-796da7d4ec07",
+    "7353347b-a491-42c9-83a0-88d916b042f2",
+    "e746e672-0e80-49d7-ace1-2c81aa5e6711"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a wide sweeping two-arm swing: turns the waist and swings both straight arms in ...",
+    "frame_count": 10,
+    "directions": [
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "789b1a32-9171-461f-abcd-c00196333f07"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 69.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 9149.9654640625,
+   "balance_after": 9080.9654640625,
+   "secs": 330,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "789b1a32-9171-461f-abcd-c00196333f07"
+   }
+  },
+  {
+   "name": "t8_linmei_throw_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "d5787575-ec1f-4147-9b43-dbd700c86f17",
+    "d834adf1-e6ec-4c94-b0d9-d13706384d5d",
+    "465cb603-3faa-4fed-b658-d3099118f327",
+    "f73a64bc-e201-4daa-bcb9-d503d35bea33",
+    "56626de4-bae1-459c-b77e-23f9d9e8951e"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy two-handed throw: crouches and scoops both hands low near the ground, th...",
+    "frame_count": 10,
+    "directions": [
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "ea198c7f-a000-49ea-bfc7-0a8cb1784372"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 129.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 9203.9654640625,
+   "balance_after": 9074.9654640625,
+   "secs": 416,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ea198c7f-a000-49ea-bfc7-0a8cb1784372"
+   }
+  },
+  {
+   "name": "t8_jinu_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "7d9bec02-0131-4e91-a71a-6074c3e7da15",
+    "f7d6651b-dbc6-46bf-93e8-5e877b82020e"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; the satchel stays at her hip; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "5a0a3769-9dde-4f18-8e95-c88f417d19e7"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 81.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9149.9654640625,
+   "balance_after": 9068.9654640625,
+   "secs": 350,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "5a0a3769-9dde-4f18-8e95-c88f417d19e7"
+   }
+  },
+  {
+   "name": "t8_linmei_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "c20f71ca-a9e4-4858-9e19-335a16079a3d",
+    "fce53625-a336-4489-bc03-5fbc48fe94f0"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "c2118421-3d4a-46fb-a3f0-a39e0d1e0970"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 75.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9140.9654640625,
+   "balance_after": 9065.9654640625,
+   "secs": 269,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c2118421-3d4a-46fb-a3f0-a39e0d1e0970"
+   }
+  },
+  {
+   "name": "t8_nima_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "105949d2-bbf9-4f08-a253-72c81f8b823f",
+    "7aabab75-840e-4214-90b2-d024af805e28"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 195.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9236.9654640625,
+   "balance_after": 9041.9654640625,
+   "secs": 535,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "6169592c-c47b-44e1-9462-2aab8c884619"
+   }
+  },
+  {
+   "name": "t8_wen_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "44ff541f-1048-4a29-96c6-618a6b8080f2",
+    "04a1b5de-cd19-41f6-9e1c-b44152819c70",
+    "5dc04bf1-b39e-4c79-b673-8e8d55d30162",
+    "ba61fdef-4fa6-4521-a3e9-9cb381ca6be9",
+    "024303a0-6006-48da-94bd-a5d609e8bf69",
+    "f98a775b-8f65-4f0c-a667-9e199ffc041c",
+    "a3b645ce-d579-467c-b845-281d2fc438ba",
+    "3df458df-ecb1-4d6c-855d-7e97a911fe60"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: the big metal gauntlet stays on her right hand; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 207.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 9236.9654640625,
+   "balance_after": 9029.9654640625,
+   "secs": 574,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c886be96-bf78-44e6-ab70-0ca2bae2dbfc"
+   }
+  },
+  {
+   "name": "t8_riko_ko",
+   "endpoint": "/characters/animations",
+   "job": [
+    "320b238e-50c9-4ddd-a010-f513cbab3b85",
+    "9997c4a2-ded4-430f-8324-d420bc92ed38",
+    "851a7f90-5af5-4cc3-81b8-89418fdbe537",
+    "5bac6c03-6b73-47f8-af13-1f6ba31ec3d6",
+    "80c4f9ba-e73e-476b-aea6-e7d2309ed06c",
+    "b765d729-1022-4778-88bc-d46874d9ffa9",
+    "928523d1-e100-45a3-b31c-09ffecbd4db7"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 21.0,
+   "credit_source": "usage",
+   "balance_diff": 207.0,
+   "usage": {
+    "generations": 21.0
+   },
+   "balance_before": 9236.9654640625,
+   "balance_after": 9029.9654640625,
+   "secs": 574,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "bab29451-6c21-4849-9aae-6320b3538a66"
+   }
+  },
+  {
+   "name": "t8_riko_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "03ce5ec1-9b95-44ea-beb9-c06bfcbab249"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "south-west"
+    ],
+    "animation_group_id": "bab29451-6c21-4849-9aae-6320b3538a66"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 9029.9654640625,
+   "balance_after": 9011.9654640625,
+   "secs": 125,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "bab29451-6c21-4849-9aae-6320b3538a66"
+   }
+  },
+  {
+   "name": "t8_nima_ko_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "f1783c6a-cd14-45b7-880e-912fdeccf9b0",
+    "a059bc03-fb28-4146-8b87-e1e35c2dfa3c",
+    "c14ae63c-6f37-420f-9799-bb427ee49f95",
+    "45712ab6-1053-470e-8e3a-fbd41b89705d",
+    "b2d88888-9573-44bc-8a96-b002ce0cce04",
+    "3c7e53cb-d169-44eb-8d85-dcc05d5b3e5f"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "6169592c-c47b-44e1-9462-2aab8c884619"
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 33.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 9041.9654640625,
+   "balance_after": 9008.9654640625,
+   "secs": 199,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "6169592c-c47b-44e1-9462-2aab8c884619"
+   }
+  },
+  {
+   "name": "t8_nima_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "5befb373-c031-4a13-9812-95972d845453",
+    "0d4825d9-670d-4af0-bcb2-5a152e31d4f9",
+    "5089fb2f-9606-496f-9e8f-9d24d87d9b08"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "84431dad-ac19-4498-8c76-c59923a32f2b"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9008.9654640625,
+   "balance_after": 8996.9654640625,
+   "secs": 153,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "84431dad-ac19-4498-8c76-c59923a32f2b"
+   }
+  },
+  {
+   "name": "t8_linmei_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "35c97483-027e-4a2e-8c04-043502d869d6",
+    "6585f105-16bb-4d00-aaf4-fa615ca33a6f"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk back, one short step back to keep balance, then straightens back into the same ready stance. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "west"
+    ],
+    "animation_group_id": "f714e509-9f2a-4fd7-83e1-1006f3a86e62"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 15.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 9008.9654640625,
+   "balance_after": 8993.9654640625,
+   "secs": 97,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "f714e509-9f2a-4fd7-83e1-1006f3a86e62"
+   }
+  },
+  {
+   "name": "t8_wen_spark_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "669ae1f2-c60f-4e37-ab0c-e7a3297833e4",
+    "3538beff-c619-4304-af57-47c9ffe654c4",
+    "4dac63d4-454c-4e43-aeeb-3e175968008c"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "thrusts the right arm with the big metal gauntlet straight forward, arm fully ex...",
+    "frame_count": 10,
+    "directions": [
+     "west",
+     "north",
+     "north-west"
+    ],
+    "animation_group_id": "c4e7db74-8b6c-4c0e-a957-21787061318c"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 39.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 9008.9654640625,
+   "balance_after": 8969.9654640625,
+   "secs": 137,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "c4e7db74-8b6c-4c0e-a957-21787061318c"
+   }
+  },
+  {
+   "name": "t8_riko_attack_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "79474042-87b7-447d-8499-c55476d59eef"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "b69df140-c705-4466-9e0d-a5769fd33b0c",
+    "mode": "skeleton-v3",
+    "action_description": "a quick boxing combination: steps in and throws two fast punches, left then right, then springs back to a light guard with both fists up. Pure body motion: her hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 10,
+    "directions": [
+     "south-west"
+    ],
+    "animation_group_id": "363f04e5-e28c-4224-b397-8170130d3dea"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 66.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 9008.9654640625,
+   "balance_after": 8942.9654640625,
+   "secs": 191,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "363f04e5-e28c-4224-b397-8170130d3dea"
+   }
+  },
+  {
+   "name": "t8_jinu_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "47adef2f-3d99-4fed-99a0-7aa5a84ecd64",
+    "08b80fef-54e3-465c-acd5-c72ed77a5888"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "62f5fc26-deb5-4abc-95a7-9ddc1e929ac2"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 51.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 8993.9654640625,
+   "balance_after": 8942.9654640625,
+   "secs": 98,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "62f5fc26-deb5-4abc-95a7-9ddc1e929ac2"
+   }
+  },
+  {
+   "name": "t8_linmei_throw_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "97d0ecdc-d14d-454b-bf8b-c105086e95ea",
+    "186f879a-88ca-4767-a921-49e1b83056b7",
+    "393ae401-ebb7-4e95-9729-2e50637b5213",
+    "59932fa9-27fd-4a30-9b5e-20fcaac171d0",
+    "bda4a026-6e16-413a-8744-833a88384006"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "f6f9084b-6d8f-448d-84ad-098d665a4c98",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy two-handed throw: crouches and scoops both hands low near the ground, th...",
+    "frame_count": 10,
+    "directions": [
+     "south-west",
+     "west",
+     "south-east",
+     "east",
+     "north-west"
+    ],
+    "animation_group_id": "ea198c7f-a000-49ea-bfc7-0a8cb1784372"
+   },
+   "credits": 15.0,
+   "credit_source": "usage",
+   "balance_diff": 63.0,
+   "usage": {
+    "generations": 15.0
+   },
+   "balance_before": 8987.9654640625,
+   "balance_after": 8924.9654640625,
+   "secs": 132,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ea198c7f-a000-49ea-bfc7-0a8cb1784372"
+   }
+  },
+  {
+   "name": "t8_wen_attack_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "251ec823-e4ce-4142-b1e1-2d7b5aabec51",
+    "5717440a-404b-4dc1-86e4-00a2482129b4",
+    "7f3f0511-e470-4870-a939-731e962168a6"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy hook punch: winds the right arm with the big metal gauntlet back, then s...",
+    "frame_count": 10,
+    "directions": [
+     "north",
+     "north-west",
+     "west"
+    ],
+    "animation_group_id": "0e1997d3-35c5-42c2-a8bc-709372491b6a"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 33.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 8954.9654640625,
+   "balance_after": 8921.9654640625,
+   "secs": 120,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "0e1997d3-35c5-42c2-a8bc-709372491b6a"
+   }
+  },
+  {
+   "name": "t8_nima_attack_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "8ce8b28b-b280-439b-befc-cdd6b6087ce5"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "a martial-arts open palm push: steps forward and pushes the right open palm stra...",
+    "frame_count": 10,
+    "directions": [
+     "south-west"
+    ],
+    "animation_group_id": "3ec3569a-a618-4997-953b-bf7be806dd50"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 27.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 8939.9654640625,
+   "balance_after": 8912.9654640625,
+   "secs": 103,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3ec3569a-a618-4997-953b-bf7be806dd50"
+   }
+  },
+  {
+   "name": "t8_jinu_ko_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "f8a9918a-95c0-4af6-a1af-c1bb908ce351",
+    "d030acac-90eb-4877-9604-159b7eccdf2d"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: her hands are plain and empty; the satchel stays at her hip; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "north-east",
+     "south"
+    ],
+    "animation_group_id": "5a0a3769-9dde-4f18-8e95-c88f417d19e7"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 8936.9654640625,
+   "balance_after": 8912.9654640625,
+   "secs": 103,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "5a0a3769-9dde-4f18-8e95-c88f417d19e7"
+   }
+  },
+  {
+   "name": "t8_wen_hit_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "85a8d3e5-5d11-40ae-91b1-fb952df915ed",
+    "f0a384e5-6539-48c2-b98e-c8b5fcd76734",
+    "94a1efd0-5522-4326-80a5-ad2769e46f1f"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south-east",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 23.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 8921.9654640625,
+   "balance_after": 8898.9654640625,
+   "secs": 110,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
+   }
+  },
+  {
+   "name": "t8_nima_ko_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "751ccddf-c128-4ebb-8989-211a597deabc"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "knocked out: staggers back one step, the knees give way, falls backward onto the ground and ends lying flat on the back, still. Pure body motion: his hands are plain and empty; nothing flies off, no particles, no dust, no blood, no glow, no light, no marks",
+    "frame_count": 8,
+    "directions": [
+     "north"
+    ],
+    "animation_group_id": "6169592c-c47b-44e1-9462-2aab8c884619"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 17.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 8912.9654640625,
+   "balance_after": 8895.9654640625,
+   "secs": 86,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "6169592c-c47b-44e1-9462-2aab8c884619"
+   }
+  },
+  {
+   "name": "t8_nima_idle_retake1",
+   "endpoint": "/characters/animations",
+   "job": [
+    "86a6f11d-0da8-4bb9-a67c-b700a92763e0"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "8c6e8d5f-ec7b-4209-a471-3e5c2ebec14a",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest in a ready stance: the chest rises and falls slowly, a slight weight shift, arms relaxed; no effects",
+    "frame_count": 8,
+    "directions": [
+     "north-west"
+    ],
+    "animation_group_id": "cf354936-27a9-4c87-9518-61226625ca62"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 3.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 8895.9654640625,
+   "balance_after": 8892.9654640625,
+   "secs": 86,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "cf354936-27a9-4c87-9518-61226625ca62"
+   }
+  },
+  {
+   "name": "t8_jinu_hit_retake2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "da0fa0b7-ff3f-4d98-9628-1ea30726eab4",
+    "676049c7-2760-471e-a7bf-bbebd7551b34",
+    "caf2180d-68bf-430b-b127-093e457cc587"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2dbc82e2-6a90-49ed-9a5f-a82001c295d9",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "north-east",
+     "north-west",
+     "west"
+    ],
+    "animation_group_id": "62f5fc26-deb5-4abc-95a7-9ddc1e929ac2"
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 38.0,
+   "usage": {
+    "generations": 9.0
+   },
+   "balance_before": 8892.9654640625,
+   "balance_after": 8854.9654640625,
+   "secs": 109,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "62f5fc26-deb5-4abc-95a7-9ddc1e929ac2"
+   }
+  },
+  {
+   "name": "t8_wen_attack2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "bc65c212-4e20-42ef-8aed-eed8648a6d44",
+    "0eb98f24-4f2d-4e38-945d-9c2eebc8c216",
+    "71be9bf7-d1d7-4e8f-8112-252bfb5714d8",
+    "76580963-a0bb-4345-8c80-865b9c5d6c6e",
+    "0fe24c76-c8a2-4775-96b3-6a3c37b662b7",
+    "89de3757-18dd-4de2-85b4-f2087189ce17",
+    "ae548972-a13d-4e3b-a037-46491e4764f4",
+    "fa98b371-f60c-4eb6-8d13-127da4fdde57"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a heavy straight punch: draws the right arm with the big metal gauntlet back to ...",
+    "frame_count": 10,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 38.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 8892.9654640625,
+   "balance_after": 8854.9654640625,
+   "secs": 131,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "2aeedba2-9bfc-4367-a7e5-c048b5e7473b"
+   }
+  },
+  {
+   "name": "t8_wen_hit_retake2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "9cb786e6-6c32-4d97-9e22-544b52add83a",
+    "d60d7850-b170-48b2-8bd2-26f5f7e04442"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "5ad917f5-0f23-4379-9d6d-9bcade9e5a42",
+    "mode": "skeleton-v3",
+    "action_description": "a hit reaction: flinches from a blow to the chest, the shoulders and head jerk b...",
+    "frame_count": 6,
+    "directions": [
+     "south-east",
+     "south-west"
+    ],
+    "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 8854.9654640625,
+   "balance_after": 8848.9654640625,
+   "secs": 103,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
+   }
   }
  ],
  "end_balance": 16728.0,

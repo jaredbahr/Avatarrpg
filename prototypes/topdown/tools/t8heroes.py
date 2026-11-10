@@ -95,6 +95,11 @@ ACTIONS = {
     'wen': {'attack': 'a heavy hook punch: winds the right arm with the big metal gauntlet back, then swings it round in a '
                       'wide hook across the front, stepping into the blow, then recovers to a ready stance. Pure body '
                       'motion: {hands}; ' + NOFX,
+            # the hook (`attack`) turned the gauntlet into a hook and a rope in the north-west and west, twice: a
+            # straight punch keeps the gauntlet's shape, as `spark` does
+            'attack2': 'a heavy straight punch: draws the right arm with the big metal gauntlet back to the hip, steps '
+                       'forward and drives the gauntlet straight forward at chest height, then recovers to a ready '
+                       'stance. Pure body motion: {hands}; ' + NOFX,
             'spark': 'thrusts the right arm with the big metal gauntlet straight forward, arm fully extended at chest '
                      'height, the left hand bracing the right forearm, holds it there, then recovers to a ready stance. '
                      'Pure body motion: {hands}; ' + NOFX},
