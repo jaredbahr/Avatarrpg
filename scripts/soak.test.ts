@@ -397,10 +397,20 @@ describe('opt-in simulator diagnostics', () => {
   });
 });
 
-it('runs two real seeds in every encounter/variant/size cell within 30 seconds', () => {
-  const started = performance.now();
+/*
+ * The matrix's cost guard measures this process's CPU time, not the wall clock (#584). Wall time
+ * failed whenever other jobs shared the machine (33-36 s locally beside Playwright, 30.7 s on a
+ * hosted runner) while the work itself had not changed. CPU time still catches a pathological
+ * slowdown in the rules or the AI; fine-grained regressions are the core bench's job (#566). The
+ * budget is 45 s of CPU: the matrix measured about 30 s after #570 priced AI paths like a real
+ * move, and a 50% margin keeps an ordinary runner green while a doubling still fails. The test
+ * timeout is wall time and only stops a hang, so it is generous.
+ */
+it('runs two real seeds in every encounter/variant/size cell within its CPU budget', () => {
+  const before = process.cpuUsage();
   const report = runSoakReport(CONTENT, { trials: 2 });
-  const runtimeMs = performance.now() - started;
+  const used = process.cpuUsage(before);
+  const cpuMs = (used.user + used.system) / 1000;
   expect(report.rows).toHaveLength(48);
   expect(report.summary.attempted).toBe(96);
   expect(report.summary.completed).toBe(96);
@@ -408,5 +418,5 @@ it('runs two real seeds in every encounter/variant/size cell within 30 seconds',
   expect(report.violations).toEqual([]);
   expect(report.summary.passed).toBe(true);
   expect(report.rows.every((row) => row.attempted === 2 && row.completed === 2)).toBe(true);
-  expect(runtimeMs, `96-battle matrix took ${runtimeMs.toFixed(0)}ms`).toBeLessThanOrEqual(30_000);
-}, 30_000);
+  expect(cpuMs, `96-battle matrix used ${cpuMs.toFixed(0)}ms of CPU`).toBeLessThanOrEqual(45_000);
+}, 120_000);
