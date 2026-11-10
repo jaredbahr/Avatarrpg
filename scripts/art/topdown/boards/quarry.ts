@@ -17,16 +17,24 @@
  * 5. grass tufts creeping onto the road, hairline cracks, scree chips, loose stones and dry tufts
  *    on the shelves, and pale grit on the floor, densest under the faces.
  *
- * Ground only (#470): the boards' objects are their own judged art PRs. With the terrain's guard
- * off, every step is the prototype's to the byte (`quarry-board.test.ts`).
+ * Then the objects (`quarry.topdown.ts`): the flat rails on the plate, and every standing piece
+ * grounded with the shared `hardShadowMask` grounding and seated, in one upright atlas. With the
+ * terrain's guard off, the plate's terrain is the prototype's to the byte (`quarry-board.test.ts`).
  *
  * The tiles are the page's own (`build_b3.py`): `q_floor32b`'s sand and road, `q_terrace32`'s and
  * `q_rim32`'s cut faces stacked to their foot line, `q_rock_var`'s four plain rocks, the forest's
  * creek, floor and moss.
  */
 import { readdirSync } from 'node:fs';
-import type { MapScene } from '../../../../src/core/types';
+import type { MapScene, SceneScenery } from '../../../../src/core/types';
+import type { TopDownLayout, TopDownObject } from '../../../../src/content/topdownLayout';
 import {
+  CUTTING_TOPDOWN_LAYOUT,
+  QUARRY_FLOOR_TOPDOWN_LAYOUT,
+  QUARRY_GATE_TOPDOWN_LAYOUT,
+} from '../../../../src/content/topdownLayouts';
+import {
+  CELL,
   GH,
   GRID,
   GW,
@@ -45,8 +53,23 @@ import {
   type QuarryTerrainConfig,
 } from '../../../../src/content/scenes/quarry.topdown.terrain';
 import type { RgbaImage } from '../../../../src/render/shadow/hardShadowMask';
-import { ASSETS, CLASS, type Baked, type TopDownBoard, type UprightData } from '../lib/board';
-import { at, blank, crop, draw, fill, hex, load, type Rgb } from '../lib/raster';
+import {
+  ASSETS,
+  CLASS,
+  type Baked,
+  type Placed,
+  type TopDownBoard,
+  type UprightData,
+} from '../lib/board';
+import {
+  FLAT_KINDS,
+  groundObject,
+  seatFringe,
+  shadowOptions,
+  standingUprights,
+} from '../lib/grounding';
+import { cleanSprite } from '../lib/sprites';
+import { at, blank, crop, draw, fill, hex, load, trim, type Rgb } from '../lib/raster';
 import { tileStrip } from './forestRoad';
 
 const GR = ['#243d33', '#35593f', '#4f7d4a', '#7aa05a', '#a9c46f', '#c9d98a'] as const;
@@ -514,9 +537,49 @@ export function edgeKeys(ground: QuarryGround): Uint8Array {
   return out;
 }
 
-export function bake(config: QuarryTerrainConfig): Baked {
+/* ------------------------------------------------------------------ */
+/* The objects                                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Where each sprite comes from: the quarry set (`objects13`, `tutorial-demo.html`'s board), and the
+ * Ba Dan pieces the gate's low cover borrows (`objects12`, the same page's village).
+ */
+const BORROWED: Readonly<Record<string, string>> = { sack: 'objects12', crate: 'objects12' };
+
+/**
+ * A prototype object as the page embeds it (`build_b3.py`): alpha under 128 cleared and the rest
+ * made opaque, trimmed.
+ */
+export function quarryObject(name: string): RgbaImage {
+  const img = load(`${ASSETS}/${BORROWED[name] ?? 'objects13'}/${name}.png`);
+  const d = new Uint8ClampedArray(img.data);
+  for (let i = 0; i < d.length; i += 4) {
+    if (at(d, i + 3) > 0 && at(d, i + 3) < 128) d.fill(0, i, i + 4);
+    else if (at(d, i + 3)) d[i + 3] = 255;
+  }
+  return trim({ width: img.width, height: img.height, data: d }).image;
+}
+
+/** Mirrored left to right (the prototype draws some of its dressing flipped). */
+export function mirror(img: RgbaImage): RgbaImage {
+  const out = blank(img.width, img.height);
+  for (let y = 0; y < img.height; y++)
+    for (let x = 0; x < img.width; x++)
+      for (let c = 0; c < 4; c++)
+        out.data[(y * img.width + x) * 4 + c] = at(
+          img.data,
+          (y * img.width + img.width - 1 - x) * 4 + c,
+        );
+  return out;
+}
+
+/** The shadow's strength on the quarry's grass (the prototype's 1.45: the dark moss needs it). */
+const GRASS_SCALE = 1.45;
+
+export function bake(config: QuarryTerrainConfig, objects: readonly TopDownObject[]): Baked {
   const ground = quarryGround(config);
-  const { plate } = bakePlate(ground);
+  const { plate: g } = bakePlate(ground);
   const classes = new Uint8Array(PLATE_W * PLATE_H);
   for (let i = 0; i < classes.length; i++)
     classes[i] = ground.face[i]
@@ -525,52 +588,159 @@ export function bake(config: QuarryTerrainConfig): Baked {
   const copy = (): RgbaImage => ({
     width: PLATE_W,
     height: PLATE_H,
-    data: new Uint8ClampedArray(plate.data),
+    data: new Uint8ClampedArray(g.data),
   });
+  const clean = copy(),
+    bare = copy();
+
+  const sprites = new Map<string, RgbaImage>();
+  const sprite = (o: TopDownObject): RgbaImage => {
+    const key = `${o.sprite}${o.flip ? '~' : ''}`;
+    let img = sprites.get(key);
+    if (!img) {
+      const raw = cleanSprite(quarryObject(o.sprite));
+      img = o.flip ? mirror(raw) : raw;
+      sprites.set(key, img);
+    }
+    return img;
+  };
+  const placed: Placed[] = objects.map((o) => {
+    const img = sprite(o);
+    const base = o.base - ORIGIN.y;
+    return {
+      o,
+      img,
+      x: Math.round(o.x - ORIGIN.x - img.width / 2),
+      y: base - img.height,
+      w: img.width,
+      h: img.height,
+      base,
+    };
+  });
+  // the flat pieces (the rails) lie on the ground; then each standing piece's own grounding
+  for (const p of placed)
+    if (FLAT_KINDS.has(p.o.kind)) {
+      draw(g, p.img, p.x, p.y);
+      draw(bare, p.img, p.x, p.y);
+    }
+  const shadows: Baked['shadows'][number][] = [];
+  const fringes = new Map<Placed, RgbaImage>();
+  for (const p of placed) {
+    if (FLAT_KINDS.has(p.o.kind)) continue;
+    const ux = Math.max(0, Math.min(PLATE_W - 1, p.x + (p.w >> 1))),
+      uy = Math.max(0, Math.min(PLATE_H - 1, p.base - 2));
+    const soft = classes[uy * PLATE_W + ux] === CLASS.G;
+    const { record, fringe } = groundObject(g, p, classes, soft, shadowOptions(p), {
+      softScale: GRASS_SCALE,
+    });
+    shadows.push(record);
+    if (fringe) {
+      seatFringe(fringe, p, record.m, classes, soft ? GRASS_SCALE : 1.3, g);
+      fringes.set(p, fringe);
+    }
+  }
+  const { cover, uprights } = standingUprights(placed, fringes, g, ORIGIN);
   return {
     origin: ORIGIN,
-    ground: plate,
-    clean: copy(),
-    bare: copy(),
+    ground: g,
+    clean,
+    bare,
     classes,
     edges: edgeKeys(ground),
-    cover: new Uint8Array(PLATE_W * PLATE_H),
-    shadows: [],
+    cover,
+    shadows,
     bridgeShadows: [],
-    uprights: [],
-    placed: [],
+    uprights,
+    placed,
   };
 }
 
 /**
- * A quarry board's top-down scene as the runtime will read it: the baked plate. The pool on the
- * Cutting's road is painted, so the rules' permanent water there draws no film.
+ * The cells whose foot point (a figure's feet, the prototype's `cellY`) is on hard ground: sand,
+ * road or rock. Their feet blob is drawn at the harder strength, as the prototype's is everywhere
+ * on a quarry board but its grass (`MapScene.pavedCells`).
  */
-export function quarryScene(url: string) {
-  return (_baked: Baked, _uprights: readonly UprightData[]): MapScene => ({
-    paintedWater: true,
-    paintExtent: { x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H },
-    ground: [
-      { url: `${url}/ground.webp`, x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H },
-    ],
-    scenery: [],
-  });
+export function pavedCells(baked: Baked): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (let cy = 0; cy < GH; cy++)
+    for (let cx = 0; cx < GW; cx++) {
+      const X = GRID.x + cx * CELL + CELL / 2,
+        Y = GRID.y + cy * CELL + CELL - 9;
+      if (baked.classes[Y * PLATE_W + X] === CLASS.C) out.push({ x: cx, y: cy });
+    }
+  return out;
 }
 
-function board(config: QuarryTerrainConfig, folder: string): TopDownBoard {
+/**
+ * A quarry board's top-down scene as the runtime reads it: the baked plate and each standing piece,
+ * cut from the upright atlas and laid out by the placed objects, sorted by its base. Every static
+ * shadow is in the plate, and the Cutting's pool is painted, so the rules' permanent water there
+ * draws no film. The map's own `paintedRubble` comes across with the rules' scene fields.
+ */
+export function quarryScene(url: string, objects: readonly TopDownObject[]) {
+  return (baked: Baked, uprights: readonly UprightData[]): MapScene => {
+    const byId = new Map(uprights.map((u) => [u.id, u]));
+    const scenery: SceneScenery[] = objects.flatMap((o) => {
+      const art = byId.get(o.id);
+      if (!art) return [];
+      return [
+        {
+          id: `quarry.td.${o.id}`,
+          url: `${url}/uprights.webp`,
+          sourceRect: art.sourceRect,
+          x: art.x,
+          y: art.y,
+          width: art.width,
+          height: art.height,
+          footprint: o.footprint,
+          depth: o.depth,
+          ...(o.exterior && { exterior: true }),
+          ...(o.fadeWhenOccluding && { fadeWhenOccluding: true }),
+          contactShadow: false,
+          castShadow: false,
+        },
+      ];
+    });
+    return {
+      paintedWater: true,
+      paintExtent: { x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H },
+      actorGrounding: { contact: 205 / 255, ink: { r: 0x32, g: 0x21, b: 0x25 } },
+      pavedCells: pavedCells(baked),
+      ground: [
+        { url: `${url}/ground.webp`, x: ORIGIN.x, y: ORIGIN.y, width: PLATE_W, height: PLATE_H },
+      ],
+      scenery,
+    };
+  };
+}
+
+function board(layout: TopDownLayout, config: QuarryTerrainConfig, folder: string): TopDownBoard {
   const url = `art/topdown/${folder}`;
   return {
     id: config.mapId,
     out: `public/${url}`,
     url,
-    bake: () => bake(config),
-    scene: quarryScene(url),
+    bake: () => {
+      if (layout.terrain.kind !== 'quarry-terrace')
+        throw new Error(`${config.mapId} bakes quarry-terrace terrain`);
+      return bake(config, layout.objects);
+    },
+    scene: quarryScene(url, layout.objects),
   };
 }
 
-export const QUARRY_GATE_BOARD = board(QUARRY_GATE_TERRAIN, 'quarry-gate');
-export const CUTTING_BOARD = board(CUTTING_TERRAIN, 'cutting');
-export const QUARRY_FLOOR_BOARD = board(QUARRY_FLOOR_TERRAIN, 'quarry-floor');
+export const QUARRY_GATE_BOARD = board(
+  QUARRY_GATE_TOPDOWN_LAYOUT,
+  QUARRY_GATE_TERRAIN,
+  'quarry-gate',
+);
+export const CUTTING_BOARD = board(CUTTING_TOPDOWN_LAYOUT, CUTTING_TERRAIN, 'cutting');
+export const QUARRY_FLOOR_BOARD = board(
+  QUARRY_FLOOR_TOPDOWN_LAYOUT,
+  QUARRY_FLOOR_TERRAIN,
+  'quarry-floor',
+);
+
 export const QUARRY_BOARDS: readonly TopDownBoard[] = [
   QUARRY_GATE_BOARD,
   CUTTING_BOARD,
