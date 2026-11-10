@@ -1,0 +1,21 @@
+{
+ "groups": {
+  "jinu.idle": "a4397156-211e-4c6b-bc30-32ff55826425",
+  "linmei.idle": "21cdddfd-5858-47d0-a379-c2929212b687",
+  "nilak.attack": "ee28e1db-982f-4343-a965-53049dff8f89",
+  "nilak.heal": "3b80c699-75c3-4f5e-a928-42dfacc3d64e",
+  "nilak.hit": "8446496a-bf56-4977-a9bf-4e4ba4ec0bf6",
+  "nilak.idle": "56042a4e-eec0-4bdb-918d-ac8687ac2682",
+  "nilak.ko": "878a5331-ab77-4f6c-af4c-cdacf7c59302",
+  "nilak.walk": "3d44ae8a-9d9b-49c7-9a70-dae72b839fb6",
+  "nima.idle": "cf354936-27a9-4c87-9518-61226625ca62",
+  "riko.idle": "099cc8d9-a201-43f3-9d49-386bff3beac9",
+  "tenzo.attack": "653c5560-8c5c-4620-a74a-2e66b12692a1",
+  "tenzo.blast": "eb502269-99c2-4ed8-8031-7a76daa028af",
+  "tenzo.hit": "f0afab80-a74d-4df8-b528-9a18afb5009a",
+  "tenzo.idle": "c8ecc41e-a365-4aa5-a351-2fff41802d04",
+  "tenzo.ko": "4723e3ba-ecac-41af-8b93-d315290d7ca6",
+  "tenzo.walk": "fc70f0b4-0f8a-4bb5-9b7b-b8af585a3a9c",
+  "wen.idle": "3a8ec030-9b4b-4328-80da-21f8f7f8f029"
+ }
+}
