@@ -20,7 +20,7 @@
  * - The idle keeps the prototype's calm frames (`build8.py` `calm_frames`: the head within 1 px of
  *   the rest pose), the first three, played there and back at the prototype's 420 ms a cel.
  * - The walk plays at the prototype's ground per loop (`CYCLE_PX`, `STATS.cycle`) and the Ba Dan
- *   pace (66 px a second), so `walkMsPerTile` holds the planted foot.
+ *   exploration pace (`WALK_PX_PER_S`, 130 px a second), so `walkMsPerTile` holds the planted foot.
  * - The Driller (a PixelLab object on a 128 px canvas, 2x2) stands on each view's base, centred
  *   under its ink; its slam per heading carries the prototype's frame times and hit frame.
  */
@@ -88,8 +88,12 @@ const PIXELS_PER_TILE = 40;
 /** The prototype's idle: calm frames there and back, 420 ms a cel (`units.js`, `game13.js`). */
 const IDLE_CEL_MS = 420;
 const IDLE_CELS = 3;
-/** Ba Dan's walk (`game13.js` `WALK_SPEED`), in px a second: the pace the walk's fps is authored at. */
-const WALK_PX_PER_S = 66;
+/**
+ * The exploration walk, in px a second: the prototype's 130 px/s, about 308 ms a 40 px tile (owner, 2026-11-07;
+ * ADR 0104 amendment). The walk's cel time scales with it, so the feet keep pace with the ground and never slide.
+ * Ba Dan's own prototype walk was 66 px/s (`game13.js` `WALK_SPEED`); the owner chose the brisker pace.
+ */
+const WALK_PX_PER_S = 130;
 
 /** How the prototype times a blow: Kaya's bends (`fx.js` `MOVES`) or everyone else's (`units.js` `ATK`). */
 type Timing = 'bend' | 'blow';

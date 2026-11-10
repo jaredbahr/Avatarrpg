@@ -215,7 +215,7 @@ function timedSpan(clips: SheetClips | undefined, names: readonly ClipName[]): n
 
 /**
  * How long an exploration walk takes a tile. The top-down sheets (ADR 0104) walk at their own fitted
- * pace (606 ms a tile), so each walk cel plays at the rate it was drawn for and the planted foot
+ * pace (the prototype's 130 px/s, about 308 ms a tile), so each walk cel keeps time with the ground and the planted foot
  * holds; every other board cruises at `TIMING.strollStep` (ADR 0095's amendment).
  */
 function explorePace(input: ChoreographyInput, unitId: string): number {
