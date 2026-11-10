@@ -55,6 +55,7 @@ import type { CoverSource } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
   distance,
+  allowsCasterTarget,
   distanceBetweenUnits,
   distanceToUnit,
   occupiedCells,
@@ -560,6 +561,11 @@ export function scoreAbility(
   const struck = unitsOnTiles(draft.units, tiles, squareFootprints).filter(
     (u) => u.id !== caster.id,
   );
+  // A prospective move changes the caster's occupied cells. Keep its stale
+  // stored position out, then include the actual caster only when rules allow it.
+  if (allowsCasterTarget(ability)) {
+    struck.push(...unitsOnTiles([caster], tiles, squareFootprints));
+  }
   const weather = weatherAt(content, draft.encounterId, draft.round);
 
   /*
