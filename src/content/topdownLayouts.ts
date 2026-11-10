@@ -6,6 +6,12 @@
 import type { TopDownLayout } from './topdownLayout';
 import { BA_DAN_TOPDOWN_TERRAIN } from './scenes/baDan.topdown.terrain';
 import { BA_DAN_TOPDOWN_OBJECTS, BA_DAN_TOPDOWN_SLOTS } from './scenes/baDan.topdown';
+import { FOREST_TOPDOWN_OBJECTS } from './scenes/forestRoad.topdown';
+import {
+  MOUTHS as FOREST_MOUTHS,
+  MOUTH_REACH as FOREST_MOUTH_REACH,
+  classifyPoint as classifyForest,
+} from './scenes/forestRoad.topdown.terrain';
 
 export const BA_DAN_TOPDOWN_LAYOUT: TopDownLayout = {
   mapId: 'ba_dan_village',
@@ -14,4 +20,19 @@ export const BA_DAN_TOPDOWN_LAYOUT: TopDownLayout = {
   slots: BA_DAN_TOPDOWN_SLOTS,
 };
 
-export const TOPDOWN_LAYOUTS: readonly TopDownLayout[] = [BA_DAN_TOPDOWN_LAYOUT];
+export const FOREST_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'forest_road',
+  terrain: {
+    kind: 'forest-floor',
+    classify: classifyForest,
+    mouths: FOREST_MOUTHS,
+    mouthReach: FOREST_MOUTH_REACH,
+  },
+  objects: FOREST_TOPDOWN_OBJECTS,
+  slots: [],
+};
+
+export const TOPDOWN_LAYOUTS: readonly TopDownLayout[] = [
+  BA_DAN_TOPDOWN_LAYOUT,
+  FOREST_TOPDOWN_LAYOUT,
+];

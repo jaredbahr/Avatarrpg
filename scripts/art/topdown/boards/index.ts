@@ -4,5 +4,6 @@
  */
 import type { TopDownBoard } from '../lib/board';
 import { BA_DAN_BOARD } from './baDan';
+import { FOREST_ROAD_BOARD } from './forestRoad';
 
-export const BOARDS: readonly TopDownBoard[] = [BA_DAN_BOARD];
+export const BOARDS: readonly TopDownBoard[] = [BA_DAN_BOARD, FOREST_ROAD_BOARD];

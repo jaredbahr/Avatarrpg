@@ -36,6 +36,8 @@ export const TOPDOWN_SCENES: ReadonlyMap<string, TopDownSceneSource> = new Map([
   // The oblique margin (-0.61) was fitted to one diamond at either side; the top-down plate runs
   // three tiles past the grid into the rim, and `paintExtent` keeps the view inside it.
   ['ba_dan_village', { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 }],
+  // The forest plate runs two cells past the grid either side and three above (the pine margin).
+  ['forest_road', { url: 'art/topdown/forest-road/scene.json', cameraCentreMargin: 1 }],
 ]);
 
 /**
