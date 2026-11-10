@@ -1661,6 +1661,7 @@ const topDownObjectSchema = z
     depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
     fadeWhenOccluding: z.boolean().optional(),
     revealOccluded: z.boolean().optional(),
+    flip: z.boolean().optional(),
   })
   .strict();
 
