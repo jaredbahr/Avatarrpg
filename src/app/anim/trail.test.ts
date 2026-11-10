@@ -181,6 +181,24 @@ describe('settled party formation', () => {
     expect(trail.settle(open, avoid)).toEqual([]);
   });
 
+  it('gathers a column beside the leader on the top-down board, none stacked on another', () => {
+    // A walk north leaves the line as a column under the leader.
+    const column = [4, 5, 6].map((y) => ({ x: 4, y }));
+    const trail = new PartyTrail(column);
+    const routes = trail.settle(open, [], { beside: true });
+    expect(routes.length).toBeGreaterThan(0);
+    const seats = trail.positions(3);
+    expect(seats[0]).toEqual(column[0]);
+    expect(new Set(seats.map(posKey)).size).toBe(3);
+    for (const [i, seat] of seats.entries()) {
+      expect(distance(seat, column[0] ?? { x: 4, y: 4 })).toBeLessThanOrEqual(2);
+      for (const other of seats.slice(0, i))
+        expect(other.x === seat.x && Math.abs(other.y - seat.y) === 1, posKey(seat)).toBe(false);
+    }
+    // Settled, it stays settled.
+    expect(trail.settle(open, [], { beside: true })).toEqual([]);
+  });
+
   it('prefers dry resting seats and stays put when every nearby seat is permanent water', () => {
     const pond = {
       ...open,

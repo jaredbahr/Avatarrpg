@@ -94,11 +94,11 @@ describe('planResidentMotion', () => {
         : { id: motion.who.id, fade: true },
     );
     expect(summary).toEqual([
-      // The household adult goes in at Pella's door when she leaves the court.
+      // The household adult goes in at Pella's front door when she leaves the court.
       {
         id: 'bg.pella_household',
         from: { x: 11, y: 13 },
-        to: { x: 10, y: 13 },
+        to: { x: 8, y: 14 },
         enter: false,
         leave: true,
       },
@@ -160,13 +160,14 @@ describe('planResidentMotion', () => {
       planResidentMotion({ content: CONTENT, map: VILLAGE, before: evening, after: night, party }),
     ).get('lw.npc.gao');
     expect(gao).toMatchObject({ kind: 'walk', from: { x: 9, y: 4 }, enter: false, leave: true });
-    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual({ x: 10, y: 3 });
+    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual({ x: 7, y: 4 });
   });
 
   it('retries through the party, whom the rules walk through anyway', () => {
     const evening = at('evening');
     const night = waited(evening, 'night');
-    // Surround Gao: every open tile beside him holds a member of the party.
+    // Surround Gao: every open tile beside him holds a member of the party (his front door, at
+    // (7,4), is two tiles west, so the way to it lies through them).
     const grid = buildGrid(VILLAGE);
     const ring: Vec2[] = [];
     for (let dy = -1; dy <= 1; dy++)
@@ -182,11 +183,11 @@ describe('planResidentMotion', () => {
         map: VILLAGE,
         before: evening,
         after: night,
-        party: ring.filter((p) => !(p.x === 10 && p.y === 3)),
+        party: ring,
       }),
     ).get('lw.npc.gao');
     expect(gao?.kind).toBe('walk');
-    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual({ x: 10, y: 3 });
+    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual({ x: 7, y: 4 });
   });
 
   it('fades out and in when there is no route at all, and never teleports mid-stride', () => {

@@ -20,7 +20,7 @@
  * - The idle keeps the prototype's calm frames (`build8.py` `calm_frames`: the head within 1 px of
  *   the rest pose), the first three, played there and back at the prototype's 420 ms a cel.
  * - The walk plays at the prototype's ground per loop (`CYCLE_PX`, `STATS.cycle`) and the Ba Dan
- *   pace (66 px a second), so `walkMsPerTile` holds the planted foot.
+ *   exploration pace (`WALK_PX_PER_S`, 130 px a second), so `walkMsPerTile` holds the planted foot.
  * - The Driller (a PixelLab object on a 128 px canvas, 2x2) stands on each view's base, centred
  *   under its ink; its slam per heading carries the prototype's frame times and hit frame.
  */
@@ -35,6 +35,20 @@ import { format, resolveConfig } from 'prettier';
 export const SOURCE = 'prototypes/topdown/assets';
 export const OUT = 'public/art/topdown';
 export const DATA = 'src/content/assets/topdownSheets.ts';
+/** The T3 objects (`world.route_sign`, `world.school_notice`): plain trimmed PNGs under `objects/`. */
+export const OBJECTS = ['route_sign', 'school_notice'] as const;
+export const OBJECTS_OUT = `${OUT}/objects`;
+
+/** Every file shipped under `public/art/topdown/`, the objects folder included. */
+export function shippedFiles(): string[] {
+  const top = existsSync(OUT) ? readdirSync(OUT) : [];
+  const objects = existsSync(OBJECTS_OUT) ? readdirSync(OBJECTS_OUT) : [];
+  return [
+    // `ba-dan/` is the ground packer's (`pack-ground.ts`), held by its own test.
+    ...top.filter((f) => f !== 'objects' && f !== 'ba-dan').map((f) => `${OUT}/${f}`),
+    ...objects.map((f) => `${OBJECTS_OUT}/${f}`),
+  ];
+}
 
 /** The VFX packer owns exactly these two shared-directory outputs. */
 export const VFX_OUTPUTS = [`${OUT}/vfx.webp`, `${OUT}/vfx.json`] as const;
@@ -74,8 +88,12 @@ const PIXELS_PER_TILE = 40;
 /** The prototype's idle: calm frames there and back, 420 ms a cel (`units.js`, `game13.js`). */
 const IDLE_CEL_MS = 420;
 const IDLE_CELS = 3;
-/** Ba Dan's walk (`game13.js` `WALK_SPEED`), in px a second: the pace the walk's fps is authored at. */
-const WALK_PX_PER_S = 66;
+/**
+ * The exploration walk, in px a second: the prototype's 130 px/s, about 308 ms a 40 px tile (owner, 2026-11-07;
+ * ADR 0104 amendment). The walk's cel time scales with it, so the feet keep pace with the ground and never slide.
+ * Ba Dan's own prototype walk was 66 px/s (`game13.js` `WALK_SPEED`); the owner chose the brisker pace.
+ */
+const WALK_PX_PER_S = 130;
 
 /** How the prototype times a blow: Kaya's bends (`fx.js` `MOVES`) or everyone else's (`units.js` `ATK`). */
 type Timing = 'bend' | 'blow';
@@ -251,6 +269,17 @@ const ROSTER: readonly FigureSpec[] = [
     key: 'npc.hanru',
     folder: 'v7_hanru',
     idle: 'custom-standing at rest: the chest an@265b11',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  // T3: the town guard (the relief watch and a returnee), made like the residents: idle and walk, eight headings.
+  {
+    name: 'guard',
+    key: 'npc.guard',
+    folder: 't3_guard',
+    idle: 'custom-standing at rest: the chest an@e13bd6',
+    walk: 'walking-8-frames@9bfadc',
     stride: 30,
     actions: {},
     timing: 'blow',
@@ -956,6 +985,27 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
     if (sheet.data.actions) files.set(`${OUT}/${sheet.name}-actions.json`, json(sheet.actions));
     data[sheet.name] = { ...sheet.data, pages: laid.length };
   }
+  // T3: the Ba Dan objects, trimmed hard-alpha PNGs the scene loads by name (`prototypes/topdown/tools/t3objproc.py`).
+  for (const name of OBJECTS) {
+    const bytes = readFileSync(join(SOURCE, 'objects_t3', `${name}.png`));
+    files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
+    // A one-image atlas (every cel the image), so the object stands on its cell as a figure does
+    // (`topdownObject` in the manifest).
+    const w = bytes.readUInt32BE(16),
+      h = bytes.readUInt32BE(20);
+    files.set(
+      `${OBJECTS_OUT}/${name}.json`,
+      json({
+        frames: Object.fromEntries(
+          ['idle/0', 'idle/1', 'cast/0', 'cast/1', 'cast/2'].map((cel) => [
+            `world.${name}/${cel}`,
+            { frame: { x: 0, y: 0, w, h } },
+          ]),
+        ),
+        meta: { image: `${name}.png`, size: { w, h } },
+      }),
+    );
+  }
   files.set(DATA, await dataModule(data));
   return files;
 }
@@ -1002,7 +1052,7 @@ async function main(): Promise<void> {
   const check = process.argv.includes('--check');
   const files = await packTopdownSheets();
   let stale = 0;
-  if (!check) mkdirSync(OUT, { recursive: true });
+  if (!check) mkdirSync(OBJECTS_OUT, { recursive: true });
   for (const [path, content] of files) {
     const bytes = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
     const same = existsSync(path) && Buffer.compare(readFileSync(path), bytes) === 0;
@@ -1011,7 +1061,7 @@ async function main(): Promise<void> {
     if (check) console.error(`stale: ${path}`);
     else writeFileSync(path, bytes);
   }
-  const shipped = existsSync(OUT) ? readdirSync(OUT).map((f) => `${OUT}/${f}`) : [];
+  const shipped = shippedFiles();
   // Keep the figure packer's ownership strict: only the VFX packer's two
   // explicit outputs may share this directory. Every other foreign file fails.
   const extra = shipped.filter(

@@ -6,9 +6,12 @@
  * `w` cells and the `=` notches inside the house footprints (the ADR's
  * `bd04.court` candidate at x=9, rows 10-11, and the north dwelling's (12,3))
  * are drawn inside a wall, so nobody stands there. Every house's door is on
- * its east face, and its steps come down at the tile diagonally in front of
- * the step (Gao (10,3), Mira (16,3), Pella's household (10,13)); the private
- * anchors use those tiles as their doors. See the W5c anchor table in the
+ * its front, the south face, as the top-down houses draw it (ADR 0104, T3; the
+ * owner moved them on 2026-11-06), and its step comes down on the cell below
+ * the door (Gao (7,4), Mira (13,4), Pella's household (8,14)); the private
+ * anchors use those tiles as their doors. Until the top-down style is the
+ * default (T6) the oblique painting shows its east-face steps, so a resident
+ * going home there steps from the front wall. See the W5c anchor table in the
  * slice report for the tile-by-tile reasoning.
  *
  * The schedule is the ADR's §8 table, itself the guide's §05.1 workday with
@@ -93,10 +96,10 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   tile('bd01.table', 'BD01', VILLAGE, 11, 5),
   // Gao's shopfront: the lane in front of his display, below the shop steps.
   tile('bd02.shopfront', 'BD02', VILLAGE, 9, 4),
-  // The rear room: the merchant house's steps come down at (10,3).
-  door('home.gao', 'BD02', 10, 3),
-  // D5: Mira lives in the north dwelling; its door steps come down at (16,3).
-  door('home.mira', 'BD01-HOME', 16, 3),
+  // The rear room: the merchant house's front door, its step at (7,4).
+  door('home.gao', 'BD02', 7, 4),
+  // D5: Mira lives in the north dwelling; its front door's step is at (13,4).
+  door('home.mira', 'BD01-HOME', 13, 4),
   // D6, adjusted in W8: the gate post on the north verge where the east road
   // leaves the square, off the cart track, looking down the road to the east
   // exit. The verge tree's canopy covers the road from here east, and (20,9)
@@ -106,10 +109,10 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   tile('bd03.handover', 'BD03', VILLAGE, 16, 6),
   // D5: Pella's household is the south-west dwelling. The court is the lawn
   // in front of its door, clear of both houses' walls; the household adult
-  // stands beside it, nearer the door. The door tile (10,13) stays free.
+  // stands beside it. The door tile (8,14) stays free.
   tile('bd04.court', 'BD04', VILLAGE, 11, 12),
   tile('bd04.yard', 'BD04', VILLAGE, 11, 13),
-  door('home.pella', 'BD04', 10, 13),
+  door('home.pella', 'BD04', 8, 14),
   // No school on any map (§3): Pella goes to class down the south lane.
   door('bd05.school', 'BD05', 11, 15),
   // Dorin's home is "off the gate lane" (guide NPC-04) and Hanru's is BD16:

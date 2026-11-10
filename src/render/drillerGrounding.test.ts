@@ -20,6 +20,8 @@ const actions = JSON.parse(read('public/art/topdown/driller-actions.json').toStr
   slam: Record<Heading, ClipDef>;
 };
 const data = TOPDOWN_SHEETS.driller;
+// The tile the boss stands on; the Driller path returns before reading it.
+const BOSS_CELL = { x: 0, y: 0 };
 let page: Image;
 const dirs = [
   'east',
@@ -191,7 +193,7 @@ describe('Driller static tread grounding', () => {
             draw(target);
           },
         });
-        canvas.projectFigureShadow(target, foot, scale, 2, 0.7, zoom, cels);
+        canvas.projectFigureShadow(target, foot, scale, 2, 0.7, zoom, BOSS_CELL, cels);
         expect(canvasDraws).toHaveLength(2);
         const emitted = canvasDraws[1];
         expect(emitted?.source).toBe(art.blob);
@@ -213,7 +215,7 @@ describe('Driller static tread grounding', () => {
               }),
             }),
         });
-        pixi.projectFigureShadow('boss', foot, scale, 2, 0.7, cels);
+        pixi.projectFigureShadow('boss', foot, scale, 2, 0.7, BOSS_CELL, cels);
         expect(sprites.size).toBe(2);
         const blob = sprites.get('boss:foot');
         if (!blob) throw new Error('missing emitted blob');
@@ -263,8 +265,8 @@ describe('Driller static tread grounding', () => {
         for (const name of actions.slam[heading].frames) {
           const attacking = { ...cels, drawn: frame(name, 'cast') };
           canvasDraws.length = 0;
-          canvas.projectFigureShadow(target, foot, scale, 2, 0.7, zoom, attacking);
-          pixi.projectFigureShadow('boss', foot, scale, 2, 0.7, attacking);
+          canvas.projectFigureShadow(target, foot, scale, 2, 0.7, zoom, BOSS_CELL, attacking);
+          pixi.projectFigureShadow('boss', foot, scale, 2, 0.7, BOSS_CELL, attacking);
           expect(canvasDraws[0]?.source).toBe(art.cast);
           expect(canvasDraws[0]?.box).toEqual(castBox);
           expect([pixiCast?.x, pixiCast?.y, pixiCast?.width, pixiCast?.height]).toEqual(

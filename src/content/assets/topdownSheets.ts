@@ -21,6 +21,7 @@ export type TopdownName =
   | 'dorin'
   | 'household'
   | 'hanru'
+  | 'guard'
   | 'driller';
 
 export interface TopdownSheetData {
@@ -52,8 +53,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 2, 2, 3, 3],
     idleMs: 420,
     walkCels: [12, 12, 12, 12, 12, 12, 12, 12],
-    walkCelMs: 37.879,
-    walkMsPerTile: 606.1,
+    walkCelMs: 19.231,
+    walkMsPerTile: 307.7,
     cast: {
       frames: [
         'unit.fire.kaya/cast/0',
@@ -86,8 +87,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 53.03,
-    walkMsPerTile: 606.1,
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
     cast: {
       frames: [
         'unit.water.sura/cast/0',
@@ -119,8 +120,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 53.03,
-    walkMsPerTile: 606.1,
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
     cast: {
       frames: [
         'unit.earth.bo/cast/0',
@@ -152,8 +153,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 2, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 53.03,
-    walkMsPerTile: 606.1,
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
     cast: {
       frames: [
         'unit.enemy.thug/cast/0',
@@ -185,8 +186,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 53.03,
-    walkMsPerTile: 606.1,
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
     cast: {
       frames: [
         'unit.enemy.slinger/cast/0',
@@ -218,8 +219,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 56.818,
-    walkMsPerTile: 606.1,
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
     cast: {
       frames: [
         'unit.enemy.bruiser/cast/0',
@@ -252,7 +253,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleMs: 420,
     walkCels: [0, 0, 0, 0, 0, 0, 0, 0],
     walkCelMs: 1000,
-    walkMsPerTile: 606.1,
+    walkMsPerTile: 307.7,
     cast: null,
     clipData: false,
     actions: false,
@@ -265,8 +266,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 56.818,
-    walkMsPerTile: 606.1,
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
     cast: null,
     clipData: false,
     actions: false,
@@ -279,8 +280,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 56.818,
-    walkMsPerTile: 606.1,
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
     cast: null,
     clipData: false,
     actions: false,
@@ -293,8 +294,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 56.818,
-    walkMsPerTile: 606.1,
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
     cast: null,
     clipData: false,
     actions: false,
@@ -307,8 +308,8 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleCels: [3, 1, 3, 1, 3, 1, 3, 1],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
-    walkCelMs: 56.818,
-    walkMsPerTile: 606.1,
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
     cast: null,
     clipData: false,
     actions: false,
@@ -322,7 +323,21 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleMs: 420,
     walkCels: [0, 0, 0, 0, 0, 0, 0, 0],
     walkCelMs: 1000,
-    walkMsPerTile: 606.1,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  guard: {
+    pages: 1,
+    frame: { w: 46, h: 52 },
+    anchor: { x: 0.5, y: 0.923077 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 2, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
     cast: null,
     clipData: false,
     actions: false,
@@ -336,7 +351,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     idleMs: 1000,
     walkCels: [0, 0, 0, 0, 0, 0, 0, 0],
     walkCelMs: 1000,
-    walkMsPerTile: 606.1,
+    walkMsPerTile: 307.7,
     cast: {
       frames: [
         'unit.enemy.driller/cast/0',
