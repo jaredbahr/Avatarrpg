@@ -103,6 +103,16 @@ export class PartySetupScene implements Scene {
     if (art) scene.appendChild(this.backdrop(art));
     scene.appendChild(panel);
     host.appendChild(scene);
+
+    // Replacing a step removes its focused control. Keep a selected count/card
+    // selected for keyboard users, or begin the new step at its first choice.
+    const target =
+      panel.querySelector<HTMLElement>('input') ??
+      panel.querySelector<HTMLElement>('button[aria-pressed="true"]:not([disabled])') ??
+      panel.querySelector<HTMLElement>('button.pick-card:not([disabled])') ??
+      panel.querySelector<HTMLElement>('button.btn-primary:not([disabled])') ??
+      panel.querySelector<HTMLElement>('button:not([disabled])');
+    target?.focus();
   }
 
   /** The title's last painting, held still beneath an ink scrim throughout setup. */
