@@ -14,8 +14,7 @@
  *   straight edge. Boundaries under a sprite are not seen and not counted.
  */
 import type { RgbaImage } from '../../../src/render/shadow/hardShadowMask';
-import { CLASS, type Baked } from './pack-ground';
-import { ORIGIN } from '../../../src/content/scenes/baDan.topdown.terrain';
+import { CLASS, type Baked } from './lib/board';
 
 const at = (a: ArrayLike<number>, i: number): number => a[i] ?? 0;
 const lum = (d: ArrayLike<number>, i: number): number =>
@@ -289,8 +288,8 @@ export function composite(b: Baked): Composite {
   });
   for (const u of order) {
     const k = index.get(u.id) ?? -1,
-      ox = u.x - ORIGIN.x,
-      oy = u.y - ORIGIN.y,
+      ox = u.x - b.origin.x,
+      oy = u.y - b.origin.y,
       { width: W, height: H, data: s } = u.image;
     for (let y = 0; y < H; y++)
       for (let x = 0; x < W; x++) {
