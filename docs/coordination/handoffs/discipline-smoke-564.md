@@ -84,11 +84,48 @@ scoped lint and format now pass, 17.315s, log
 Final compiled test SHA256:
 `3d7c1f5fa153fb4474033fc49acd264c528f4bf3ffe54b204a6281d5ec8ef140`.
 
-Full clean-head `ci:local`, actual under30s **in that CI run**, and publication
-remain **not run** at this source checkpoint. The PR and publication receipt
-record their exact results and producer identities separately. Hosted test-file
-timing is checked independently when that actual job completes. No previous
-dirty preflight substitutes for them. Evidence is retained under
+## Hosted timing correction on the same draft
+
+Original published head `fc11604ca1493b30bcf710ac0ea901c93d8d1a63`, tree
+`0c072a35520647468f38f171209069c20b238797`, passed all 12 local CI stages,
+315 files /4,089 tests. Its smoke file took 24.131s locally, but **35.207s**
+in actual hosted verify job `129708400013`, run `42780285916`. The unchanged
+**under 30s** acceptance therefore failed despite the green job. Actual E2E
+`129712727498` and gallery `129712774277` were skipped. Original hosted log,
+source and job identities remain in `hosted-original.*` and
+`smoke-hosted-failure-source.test.txt`; no hosted rerun was dispatched.
+
+Lazy movement searches and fresh-policy target caching preserved all 26
+complete battle result/coverage rows exactly against the published policy, but
+did not yield a useful speed gain. Both 30-test comparison probes and the
+initial probe's output-label ReferenceError are retained separately. A Node CPU
+profile then attributed about 19.4s to ordinary full-kit party AI after technique
+coverage. The matrix's purpose is legal technique execution, not repeated AI
+forecasting; the companion **builds** remain their defaults.
+
+After every preferred technique has actually executed, the test now finishes
+with each character's equipped level-1 attack, using real legal targets,
+current AP, reachable paths and affordable prefixes through the reducer.
+Finishing casts and movement must emit their actual events and consume their
+respective resource while the same activation continues; refusal or no progress
+throws immediately. Enemy/ally AI, the separate full-result default-AI parity
+controls and the simulator's production helper are unchanged. This finishing
+policy changes command sequences, so the earlier exact old/new result identity
+is claimed only for the geometry optimization, not the final policy.
+
+All **52** matrix battles, **13** builds, **33** distinct techniques, **156**
+actual repeated technique uses, both fresh repetitions, whole-result equality,
+intermediate logs, retained event formatting, anomaly/outcome assertions and
+original caps remain required. No technique exemptions, skipped cases, raised
+timeouts, budget changes, state fabrication or runtime AI edit were introduced.
+
+The basic finishing policy passed all **30 tests in 7.340s** (9.422s wrapper),
+log `89ef5e87bca9559b1ccc236031a4f928538718def45f6c49d5c5b5abc688a8d9`.
+The refusal/progress hardening followed independent review; typecheck and
+scoped lint/format passed in 17.636s. Exact corrected clean-head full CI and
+actual hosted timing are still pending at this source checkpoint; the PR and
+external receipts record their exact identities separately. No previous dirty
+preflight substitutes for them. Evidence remains under
 `/workspace/avatarrpg-env/discipline-smoke564/`.
 
 Keep DRAFT after exact clean-head CI passes. No gameplay rules, stats, content,

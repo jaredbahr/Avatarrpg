@@ -120,6 +120,31 @@ function preferredPolicy(build: Build) {
   const used = new Set<string>();
   const opportunities = new Map<string, Witness>();
   let subjectActivations = 0;
+  // Geometry is pure for these immutable inputs. Keep the cache inside each
+  // fresh policy so repetitions still reconstruct and execute every battle.
+  const targetsByContent = new WeakMap<
+    ContentIndex,
+    WeakMap<BattleState, WeakMap<Unit, Map<Ability, Vec2[]>>>
+  >();
+  const targets = (
+    content: ContentIndex,
+    battle: BattleState,
+    actor: Unit,
+    ability: Ability,
+  ): Vec2[] => {
+    let byBattle = targetsByContent.get(content);
+    if (!byBattle) targetsByContent.set(content, (byBattle = new WeakMap()));
+    let byActor = byBattle.get(battle);
+    if (!byActor) byBattle.set(battle, (byActor = new WeakMap()));
+    let byAbility = byActor.get(actor);
+    if (!byAbility) byActor.set(actor, (byAbility = new Map()));
+    let found = byAbility.get(ability);
+    if (!found) {
+      found = legalTargets(content, battle, actor, ability);
+      byAbility.set(ability, found);
+    }
+    return found;
+  };
   const definitions = build.abilities.map((id) => {
     const ability = CONTENT.abilities.get(id);
     if (!ability) throw new Error(`Missing discipline ability ${id}`);
@@ -136,8 +161,9 @@ function preferredPolicy(build: Build) {
     // Census every pending technique before selecting one. Seeing a legal
     // opportunity and then overlooking it can never become a no-target excuse.
     for (const ability of pending()) {
-      const target = legalTargets(content, battle, actor, ability)[0];
-      if (target && canUseAbility(content, actor, ability).ok) {
+      if (!canUseAbility(content, actor, ability).ok) continue;
+      const target = targets(content, battle, actor, ability)[0];
+      if (target) {
         opportunities.set(ability.id, {
           abilityId: ability.id,
           round: battle.round,
@@ -156,7 +182,7 @@ function preferredPolicy(build: Build) {
   ): Vec2 | undefined => {
     const reserve = pending().filter(needsOpponent).length;
     const enemies = battle.units.filter((unit) => unit.faction === 'enemy' && isAlive(unit));
-    const ranked = legalTargets(content, battle, actor, ability).map((target) => {
+    const ranked = targets(content, battle, actor, ability).map((target) => {
       const cells = affectedTiles(content, battle.grid, actor, ability, target);
       const affected = unitsOnTiles(battle.units, cells).filter(
         (unit) => unit.id !== actor.id || allowsCasterTarget(ability),
@@ -185,7 +211,7 @@ function preferredPolicy(build: Build) {
     let state = initial;
     const events: GameEvent[] = [];
     inspect(content, state);
-    const execute = (command: Command): void => {
+    const execute = (command: Command): StepResult => {
       const step = apply(content, state, command);
       state = step.state;
       events.push(...step.events);
@@ -195,13 +221,86 @@ function preferredPolicy(build: Build) {
         }
       }
       inspect(content, state);
+      return step;
     };
     const continuing = () => state.battle?.phase === 'active' && activeId(state) === unitId;
 
+    // Once every preferred technique has really executed, finish through the
+    // equipped level-1 attack. Full-kit party AI forecasting is tested by the
+    // parity controls below; repeating it across all builds is not this smoke's
+    // purpose. Enemy AI and every real reducer effect remain unchanged.
+    const finish = (): StepResult => {
+      while (continuing()) {
+        const battle = state.battle;
+        const actor = battle?.units.find((unit) => unit.id === unitId);
+        if (!battle || !actor || !isAlive(actor)) break;
+        const kit = actor.characterId ? content.characters.get(actor.characterId)?.kit : undefined;
+        const first = kit?.find((entry) => entry.level === 1 && 'ability' in entry);
+        const ability =
+          first && 'ability' in first ? content.abilities.get(first.ability) : undefined;
+        if (!ability || !actor.abilities.includes(ability.id)) {
+          throw new Error(`Missing equipped basic attack for ${unitId}`);
+        }
+        if (!canUseAbility(content, actor, ability).ok) break;
+        const enemyTarget = (board: BattleState, standing: Unit): Vec2 | undefined =>
+          targets(content, board, standing, ability).find((target) =>
+            unitsOnTiles(
+              board.units,
+              affectedTiles(content, board.grid, standing, ability, target),
+            ).some((unit) => unit.faction === 'enemy' && isAlive(unit)),
+          );
+        const here = enemyTarget(battle, actor);
+        if (here) {
+          const cast = execute({ type: 'useAbility', unitId, abilityId: ability.id, target: here });
+          const after = state.battle?.units.find((unit) => unit.id === unitId);
+          if (
+            !cast.events.some(
+              (event) =>
+                event.type === 'abilityUsed' &&
+                event.unitId === unitId &&
+                event.abilityId === ability.id,
+            ) ||
+            (continuing() && (!after || !(after.ap < actor.ap)))
+          ) {
+            throw new Error('Basic finishing cast was refused or consumed no AP');
+          }
+          continue;
+        }
+        if (!canMove(content, actor) || movePoints(content, actor) <= 0) break;
+        const context = new BattleDraft(content, battle, new RngCursor(state.rng)).moveContext(
+          actor,
+        );
+        const destinations = [...reachable(context, actor.pos, Infinity).values()].sort(
+          (a, b) => a.cost - b.cost || a.pos.y - b.pos.y || a.pos.x - b.pos.x,
+        );
+        const goal = destinations.find((destination) => {
+          const [projected, standing] = atPosition(battle, actor, destination.pos);
+          return enemyTarget(projected, standing) !== undefined;
+        });
+        let path: readonly Vec2[] = [];
+        for (let length = 1; goal && length <= goal.path.length; length++) {
+          const prefix = goal.path.slice(0, length);
+          const cost = pathCost(context, actor.pos, prefix);
+          if (cost === null || cost > movePoints(content, actor)) break;
+          path = prefix;
+        }
+        if (!path.length) break;
+        const walked = execute({ type: 'move', unitId, path });
+        const after = state.battle?.units.find((unit) => unit.id === unitId);
+        if (
+          !walked.events.some((event) => event.type === 'unitMoved' && event.unitId === unitId) ||
+          (continuing() && (!after || !(after.move < actor.move)))
+        ) {
+          throw new Error('Legal finishing path was refused or consumed no movement');
+        }
+      }
+      if (continuing()) execute({ type: 'endTurn', unitId });
+      return { state, events };
+    };
+
     if (unitId !== build.subjectId || used.size === definitions.length) {
-      execute(
-        used.size === definitions.length ? { type: 'runAiTurn' } : { type: 'endTurn', unitId },
-      );
+      if (used.size === definitions.length) return finish();
+      execute({ type: 'endTurn', unitId });
       return { state, events };
     }
     subjectActivations++;
@@ -213,12 +312,19 @@ function preferredPolicy(build: Build) {
       const actor = battle?.units.find((unit) => unit.id === unitId);
       if (!battle || !actor || !isAlive(actor)) break;
       const ordered = pending().sort((a, b) => Number(needsOpponent(b)) - Number(needsOpponent(a)));
-      const context = new BattleDraft(content, battle, new RngCursor(state.rng)).moveContext(actor);
-      const moves = canMove(content, actor)
-        ? [...reachable(context, actor.pos, movePoints(content, actor)).values()].sort(
-            (a, b) => a.cost - b.cost || a.pos.y - b.pos.y || a.pos.x - b.pos.x,
-          )
-        : [];
+      // Most preferred casts are already in range. Search movement only when
+      // a usable technique has no target from the current position.
+      const availableMoves = () => {
+        const context = new BattleDraft(content, battle, new RngCursor(state.rng)).moveContext(
+          actor,
+        );
+        return canMove(content, actor)
+          ? [...reachable(context, actor.pos, movePoints(content, actor)).values()].sort(
+              (a, b) => a.cost - b.cost || a.pos.y - b.pos.y || a.pos.x - b.pos.x,
+            )
+          : [];
+      };
+      let moves: ReturnType<typeof availableMoves> | undefined;
       let plan: { ability: Ability; target: Vec2; path: readonly Vec2[] } | undefined;
       for (const ability of ordered) {
         if (!canUseAbility(content, actor, ability).ok) continue;
@@ -227,7 +333,7 @@ function preferredPolicy(build: Build) {
           plan = { ability, target: here, path: [] };
           break;
         }
-        for (const move of moves) {
+        for (const move of (moves ??= availableMoves())) {
           if (!move.path.length) continue;
           const [projected, standing] = atPosition(battle, actor, move.pos);
           const target = pickTarget(content, projected, standing, ability);
@@ -270,7 +376,7 @@ function preferredPolicy(build: Build) {
         for (const ability of pending().filter(needsOpponent)) {
           const goal = destinations.find((destination) => {
             const [projected, standing] = atPosition(battle, actor, destination.pos);
-            return legalTargets(content, projected, standing, ability).length > 0;
+            return targets(content, projected, standing, ability).length > 0;
           });
           if (!goal) continue;
           for (let length = 1; length <= goal.path.length; length++) {
@@ -284,11 +390,8 @@ function preferredPolicy(build: Build) {
         if (path.length) execute({ type: 'move', unitId, path });
       }
     }
-    if (continuing()) {
-      execute(
-        used.size === definitions.length ? { type: 'runAiTurn' } : { type: 'endTurn', unitId },
-      );
-    }
+    if (used.size === definitions.length) return finish();
+    if (continuing()) execute({ type: 'endTurn', unitId });
     return { state, events };
   };
 
