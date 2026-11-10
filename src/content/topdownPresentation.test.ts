@@ -47,8 +47,14 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers Ba Dan (T3) and the Forest Road (T4), their scenes assets', async () => {
-    expect([...TOPDOWN_SCENES.keys()]).toEqual(['ba_dan_village', 'forest_road']);
+  it('registers Ba Dan (T3), the Forest Road (T4) and the quarry (T5), their scenes assets', async () => {
+    expect([...TOPDOWN_SCENES.keys()]).toEqual([
+      'ba_dan_village',
+      'forest_road',
+      'quarry_gate',
+      'ambush_road',
+      'quarry_floor',
+    ]);
     const presentations = await loadTopDownPresentations(fromDisk);
     const swapped = withTopDownMaps(CONTENT, presentations);
     const badan = map('ba_dan_village', swapped);
@@ -62,7 +68,18 @@ describe('withTopDownMaps', () => {
     expect(forest.scene?.scenery.length).toBeGreaterThan(100);
     // the rubble heaps stay the rules' painted rubble across the swap
     expect(forest.scene?.paintedRubble).toEqual(map('forest_road').scene?.paintedRubble);
-    expect(map('quarry_gate', swapped)).toBe(map('quarry_gate'));
+    for (const [id, folder] of [
+      ['quarry_gate', 'quarry-gate'],
+      ['ambush_road', 'cutting'],
+      ['quarry_floor', 'quarry-floor'],
+    ] as const) {
+      const quarry = map(id, swapped);
+      expect(quarry.projection).toBe('topdown');
+      expect(quarry.scene?.ground[0]?.url).toBe(`art/topdown/${folder}/ground.webp`);
+      expect(quarry.scene?.paintedRubble).toEqual(map(id).scene?.paintedRubble);
+      expect(quarry.rows).toBe(map(id).rows);
+    }
+    expect(map('ba_dan_riverside', swapped)).toBe(map('ba_dan_riverside'));
   });
 
   it('refuses a scene that is not one', async () => {

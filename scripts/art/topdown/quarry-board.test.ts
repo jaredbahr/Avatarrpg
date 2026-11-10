@@ -19,7 +19,20 @@ import { runInNewContext } from 'node:vm';
 import { PNG } from 'pngjs';
 import { describe, expect, it, vi } from 'vitest';
 import { validateTopDownLayout } from '../../../src/content/schemas';
-import { COMBAT_MAPS } from '../../../src/content/maps/combat';
+import {
+  AMBUSH_ROAD,
+  COMBAT_MAPS,
+  QUARRY_FLOOR,
+  QUARRY_GATE,
+} from '../../../src/content/maps/combat';
+import type { MapScene } from '../../../src/core/types';
+import { TOPDOWN_SCENES } from '../../../src/content/topdown';
+import {
+  CUTTING_TOPDOWN_LAYOUT,
+  QUARRY_FLOOR_TOPDOWN_LAYOUT,
+  QUARRY_GATE_TOPDOWN_LAYOUT,
+} from '../../../src/content/topdownLayouts';
+import { QUARRY_DEVIATIONS, QUARRY_SPRITE_SIZE } from '../../../src/content/scenes/quarry.topdown';
 import {
   CELL,
   GRID,
@@ -34,7 +47,8 @@ import {
   type QuarryTerrainConfig,
 } from '../../../src/content/scenes/quarry.topdown.terrain';
 import type { RgbaImage } from '../../../src/render/shadow/hardShadowMask';
-import { bakePlate, quarryTiles, QUARRY_BOARDS } from './boards/quarry';
+import { bakePlate, mirror, quarryObject, quarryTiles, QUARRY_BOARDS } from './boards/quarry';
+import { sceneFile } from './lib/board';
 
 vi.setConfig({ testTimeout: 300_000 });
 
@@ -220,5 +234,115 @@ describe('the quarry bake against the topdown family budget', () => {
     );
     for (const [id, n] of quarry) expect(n, id).toBeGreaterThan(0);
     expect(family).toBeLessThanOrEqual(6 * 2 ** 20);
+  });
+});
+
+/** A sprite the page embeds in its board's `objects` (escaped inside the board document's string). */
+function embeddedObject(name: string): PNG {
+  const match = new RegExp(
+    `\\\\"${name}\\\\": \\{\\\\"src\\\\": \\\\"data:image/png;base64,([A-Za-z0-9+/=]+)\\\\"`,
+  ).exec(PAGE);
+  if (!match?.[1]) throw new Error(`tutorial-demo.html embeds no object "${name}"`);
+  return PNG.sync.read(Buffer.from(match[1], 'base64'));
+}
+
+const LAYOUTS = [QUARRY_GATE_TOPDOWN_LAYOUT, CUTTING_TOPDOWN_LAYOUT, QUARRY_FLOOR_TOPDOWN_LAYOUT];
+const SPRITES = [...new Set(LAYOUTS.flatMap((l) => l.objects.map((o) => o.sprite)))].sort();
+
+describe("the quarry boards' objects", () => {
+  it.each(SPRITES)(
+    '%s is the approved page’s sprite, pixel for pixel, at its listed size',
+    (name) => {
+      const mine = quarryObject(name),
+        page = embeddedObject(name);
+      expect([mine.width, mine.height]).toEqual([page.width, page.height]);
+      // alpha everywhere, colour where opaque (a clear pixel's colour is never drawn)
+      let n = 0;
+      for (let i = 0; i < mine.data.length; i += 4) {
+        const a = mine.data[i + 3] ?? 0;
+        if (a !== (page.data[i + 3] ?? 0)) n++;
+        else if (a && [0, 1, 2].some((c) => mine.data[i + c] !== page.data[i + c])) n++;
+      }
+      expect(n).toBe(0);
+      expect(QUARRY_SPRITE_SIZE[name]).toEqual([mine.width, mine.height]);
+    },
+  );
+
+  it('mirrors a flipped piece left to right, and nothing else', () => {
+    const img = quarryObject('dead_shrub'),
+      m = mirror(img);
+    expect(mirror(m).data).toEqual(img.data);
+    expect([...m.data.slice(0, 4)]).toEqual([
+      ...img.data.slice((img.width - 1) * 4, img.width * 4),
+    ]);
+  });
+
+  it('places nothing that reads solid on an open cell: only the low cover and the rubble stand there', () => {
+    for (const layout of LAYOUTS) {
+      const map = COMBAT_MAPS.find((m) => m.id === layout.mapId);
+      if (!map) throw new Error(layout.mapId);
+      for (const o of layout.objects) {
+        if (o.exterior || o.kind === 'flat') continue;
+        for (const c of o.footprint) {
+          const ch = map.rows[c.y]?.[c.x] ?? 'X';
+          if (map.legend[ch]?.blocked) continue;
+          expect(
+            ['sack', 'crate', 'lime_rubble', 'scree'],
+            `${layout.mapId} ${o.id} on (${c.x},${c.y})`,
+          ).toContain(o.sprite);
+          expect(o.solid, o.id).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("draws the gate's `c` cells as low cover a figure stands in, not solid crates", () => {
+    const cover = QUARRY_GATE_TOPDOWN_LAYOUT.objects.filter((o) => o.id.startsWith('cover'));
+    const cells = QUARRY_GATE.rows.flatMap((row, y) =>
+      [...row].flatMap((c, x) => (c === 'c' ? [`${x},${y}`] : [])),
+    );
+    expect(cells.length).toBe(4);
+    for (const cell of cells) {
+      const here = cover.filter((o) => o.footprint.some((f) => `${f.x},${f.y}` === cell));
+      expect(here.map((o) => o.sprite).sort(), cell).toEqual(['crate', 'sack']);
+      for (const o of here) {
+        expect(o.solid).toBe(false);
+        expect(QUARRY_SPRITE_SIZE[o.sprite]?.[1] ?? 99).toBeLessThanOrEqual(28);
+      }
+    }
+    expect(QUARRY_GATE_TOPDOWN_LAYOUT.objects.some((o) => o.sprite === 'crates')).toBe(false);
+  });
+
+  it("stands a heap on every painted rubble cell, which the scene keeps as the map's", () => {
+    for (const map of [AMBUSH_ROAD, QUARRY_FLOOR]) {
+      const layout = LAYOUTS.find((l) => l.mapId === map.id);
+      expect(map.scene?.paintedRubble?.length).toBeGreaterThan(0);
+      for (const cell of map.scene?.paintedRubble ?? [])
+        expect(
+          layout?.objects.some(
+            (o) =>
+              o.sprite === 'lime_rubble' &&
+              o.footprint.some((f) => f.x === cell.x && f.y === cell.y),
+          ),
+          `${map.id} (${cell.x},${cell.y})`,
+        ).toBe(true);
+    }
+  });
+
+  it('is registered for ?style=topdown, its scene listing every standing piece', () => {
+    for (const board of QUARRY_BOARDS) {
+      expect(TOPDOWN_SCENES.get(board.id)?.url).toBe(`${board.url}/scene.json`);
+      const scene = JSON.parse(readFileSync(sceneFile(board), 'utf8')) as MapScene;
+      const layout = LAYOUTS.find((l) => l.mapId === board.id);
+      expect(scene.paintedWater).toBe(true);
+      // the map's own painted rubble comes across with the rules' scene fields (`topdown.ts`)
+      expect(scene.paintedRubble).toBeUndefined();
+      expect(scene.scenery.length).toBe(layout?.objects.filter((o) => o.kind !== 'flat').length);
+    }
+  });
+
+  it('lists every way it differs from the prototype', () => {
+    expect(QUARRY_DEVIATIONS.length).toBeGreaterThan(0);
+    for (const d of QUARRY_DEVIATIONS) expect(d.what.length, d.id).toBeGreaterThan(10);
   });
 });

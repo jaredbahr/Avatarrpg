@@ -40,6 +40,8 @@ export interface TopDownObject {
   readonly depth: Vec2;
   readonly fadeWhenOccluding?: boolean;
   readonly revealOccluded?: boolean;
+  /** Drawn mirrored left to right (the prototype flips some of its dressing). */
+  readonly flip?: boolean;
 }
 
 /** A reserved cell for art another change supplies (the route sign, the school notice). */

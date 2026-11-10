@@ -12,6 +12,17 @@ import {
   MOUTH_REACH as FOREST_MOUTH_REACH,
   classifyPoint as classifyForest,
 } from './scenes/forestRoad.topdown.terrain';
+import {
+  CUTTING_TOPDOWN_OBJECTS,
+  QUARRY_FLOOR_TOPDOWN_OBJECTS,
+  QUARRY_GATE_TOPDOWN_OBJECTS,
+} from './scenes/quarry.topdown';
+import {
+  CUTTING_TERRAIN,
+  QUARRY_FLOOR_TERRAIN,
+  QUARRY_GATE_TERRAIN,
+  quarryTerrain,
+} from './scenes/quarry.topdown.terrain';
 
 export const BA_DAN_TOPDOWN_LAYOUT: TopDownLayout = {
   mapId: 'ba_dan_village',
@@ -32,7 +43,30 @@ export const FOREST_TOPDOWN_LAYOUT: TopDownLayout = {
   slots: [],
 };
 
+/** The quarry gate, the Cutting and the Driller floor (T5): terraced terrain, the prototype's objects. */
+export const QUARRY_GATE_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'quarry_gate',
+  terrain: quarryTerrain(QUARRY_GATE_TERRAIN),
+  objects: QUARRY_GATE_TOPDOWN_OBJECTS,
+  slots: [],
+};
+export const CUTTING_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'ambush_road',
+  terrain: quarryTerrain(CUTTING_TERRAIN),
+  objects: CUTTING_TOPDOWN_OBJECTS,
+  slots: [],
+};
+export const QUARRY_FLOOR_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'quarry_floor',
+  terrain: quarryTerrain(QUARRY_FLOOR_TERRAIN),
+  objects: QUARRY_FLOOR_TOPDOWN_OBJECTS,
+  slots: [],
+};
+
 export const TOPDOWN_LAYOUTS: readonly TopDownLayout[] = [
   BA_DAN_TOPDOWN_LAYOUT,
   FOREST_TOPDOWN_LAYOUT,
+  QUARRY_GATE_TOPDOWN_LAYOUT,
+  CUTTING_TOPDOWN_LAYOUT,
+  QUARRY_FLOOR_TOPDOWN_LAYOUT,
 ];
