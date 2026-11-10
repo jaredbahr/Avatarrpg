@@ -1,8 +1,9 @@
 /**
- * Ba Dan's top-down ground (ADR 0104 T3) ships exactly what the layout bakes to, and the bake holds
- * the measurable rules of `docs/art-lessons.md`: every static shadow at least 25 % darker than the
- * clean ground beside it where that ground allows it, no halo pixel on any object's foot, and no
- * terrain or rim edge that looks straight for more than two tiles.
+ * The top-down ground packer (ADR 0104 §3): every registered board ships exactly what it bakes to,
+ * and every bake holds the measurable rules of `docs/art-lessons.md` (every static shadow at least
+ * 25 % darker than the clean ground beside it where that ground allows it, no halo pixel on any
+ * object's foot, no terrain edge that looks straight for more than two tiles, and every object
+ * seated). Ba Dan's own pieces (the ford, the bridge, the plants it strips) follow.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
@@ -17,46 +18,48 @@ import {
   straightEdge,
   terrainEdge,
 } from './ground-checks';
-import {
-  ASSETS,
-  CLASS,
-  SCENE,
-  OUT,
-  bake,
-  bakedDisc,
-  bakedMound,
-  bridgeCast,
-  dehalo,
-  packBaDanGround,
-  pavedCells,
-} from './pack-ground';
+import { BOARDS } from './boards/index';
+import { BA_DAN_BOARD, bridgeCast, pavedCells } from './boards/baDan';
+import { ASSETS, CLASS, packBoard, sceneFile, type Baked, type TopDownBoard } from './lib/board';
+import { bakedDisc, bakedMound, dehalo } from './lib/sprites';
 import type { MapScene } from '../../../src/core/types';
 import { readPng } from '../lib/image';
 import { PLATE_W } from '../../../src/content/scenes/baDan.topdown.terrain';
 
 vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 });
 
-const baked = bake();
-const files = await packBaDanGround(baked);
+interface Packed {
+  readonly board: TopDownBoard;
+  readonly baked: Baked;
+  readonly files: Map<string, Uint8Array | string>;
+}
+const PACKED: readonly Packed[] = await Promise.all(
+  BOARDS.map(async (board) => {
+    const baked = board.bake();
+    return { board, baked, files: await packBoard(board, baked) };
+  }),
+);
+const BA_DAN = PACKED.find((p) => p.board === BA_DAN_BOARD) as Packed;
+const bytesOf = (c: Uint8Array | string | undefined): Buffer =>
+  typeof c === 'string' ? Buffer.from(c) : Buffer.from(c ?? []);
 
-describe("Ba Dan's top-down ground", () => {
+describe.each(PACKED.map((p) => [p.board.id, p] as const))('the %s board', (_id, packed) => {
+  const { board, baked, files } = packed;
+
   it('bakes byte for byte the same twice', async () => {
-    const again = await packBaDanGround(bake());
+    const again = await packBoard(board, board.bake());
     expect([...again.keys()]).toEqual([...files.keys()]);
-    for (const [path, content] of files) {
-      const other = again.get(path);
-      const a = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
-      const b = typeof other === 'string' ? Buffer.from(other) : Buffer.from(other ?? []);
-      expect(a.equals(b), path).toBe(true);
-    }
+    for (const [path, content] of files)
+      expect(bytesOf(content).equals(bytesOf(again.get(path))), path).toBe(true);
   });
 
   it('ships exactly what the layout bakes to (`pack-ground.ts --check`)', () => {
-    for (const [path, content] of files) {
-      const bytes = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
-      expect(bytes.equals(readFileSync(path)), `${path} is stale: run pack-ground.ts`).toBe(true);
-    }
-    const shipped = readdirSync(OUT).map((name) => `${OUT}/${name}`);
+    for (const [path, content] of files)
+      expect(
+        bytesOf(content).equals(readFileSync(path)),
+        `${path} is stale: run pack-ground.ts`,
+      ).toBe(true);
+    const shipped = readdirSync(board.out).map((name) => `${board.out}/${name}`);
     expect(shipped.sort()).toEqual([...files.keys()].sort());
   });
 
@@ -72,16 +75,48 @@ describe("Ba Dan's top-down ground", () => {
 
   it('casts every visible static shadow at least 25 % darker where the ground allows', () => {
     const rows = shadowTable(baked).filter((r) => r.visible >= 20);
-    expect(rows.length).toBeGreaterThan(50);
+    expect(rows.length).toBeGreaterThan(0);
     const weak = rows.filter((r) => r.darker < r.needed);
     expect(weak, JSON.stringify(weak)).toEqual([]);
+  });
+
+  it('leaves no halo pixel, baked disc or baked mound on any object', () => {
+    const halos = baked.placed
+      .map((p) => [p.o.id, haloPixels(p.img)] as const)
+      .filter(([, n]) => n);
+    expect(halos).toEqual([]);
+    expect(baked.placed.filter((p) => bakedDisc(p.img).length).map((p) => p.o.id)).toEqual([]);
+    expect(baked.placed.filter((p) => bakedMound(p.img)).map((p) => p.o.id)).toEqual([]);
+  });
+
+  it('seats every object: no gap, a full contact, a joined cast and no hover (owner, 2026-11-07)', () => {
+    // "Shadows need to be seated so that objects look like they're a part of the world, not floating."
+    const rows = seatingTable(baked);
+    expect(rows.length).toBeGreaterThan(0);
+    const failures = rows
+      .filter((r) => r.gap.length || r.weak.length || r.loose || r.hover > 1)
+      .map((r) => ({ id: r.id, gap: r.gap, weak: r.weak, loose: r.loose, hover: r.hover }));
+    expect(failures, JSON.stringify(failures)).toEqual([]);
+  });
+
+  it('keeps every terrain edge under two tiles straight, as the eye sees it', () => {
+    expect(terrainEdge(baked).tiles).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("Ba Dan's top-down ground", () => {
+  const { baked } = BA_DAN;
+
+  it('shades most of the village at the full 25 %', () => {
+    const rows = shadowTable(baked).filter((r) => r.visible >= 20);
+    expect(rows.length).toBeGreaterThan(50);
     // Most of the village's ground allows the full 25 %; the floor only bends on dark ground.
     expect(rows.filter((r) => r.needed >= 0.25).length).toBeGreaterThan(rows.length / 2);
   });
 
   it("gives the scene the paved cells the bake laid, so a feet blob's strength matches the ground", () => {
     const paved = pavedCells(baked);
-    const scene = JSON.parse(readFileSync(SCENE, 'utf8')) as MapScene;
+    const scene = JSON.parse(readFileSync(sceneFile(BA_DAN_BOARD), 'utf8')) as MapScene;
     expect(scene.pavedCells).toEqual(paved);
     // The lanes, the courts and the squares: a good share of the village, but not all of it.
     expect(paved.length).toBeGreaterThan(60);
@@ -89,7 +124,8 @@ describe("Ba Dan's top-down ground", () => {
   });
 
   it("draws the ford as a pool over the game's ford cells, clear of the open road beside it", () => {
-    const at = (x: number, y: number) => baked.classes[(y + 192) * PLATE_W + x + 128];
+    const at = (x: number, y: number) =>
+      baked.classes[(y - baked.origin.y) * PLATE_W + x - baked.origin.x];
     // (0, 7) and (0, 8), at their centres, are water; (1, 7) and (1, 8), where a figure stands, are not
     for (const cy of [7, 8]) {
       expect(at(20, cy * 40 + 20)).toBe(CLASS.W);
@@ -102,13 +138,6 @@ describe("Ba Dan's top-down ground", () => {
       ] as const)
         expect(at(60 + dx, cy * 40 + 20 + dy)).not.toBe(CLASS.W);
     }
-  });
-
-  it('leaves no halo pixel on any object', () => {
-    const halos = baked.placed
-      .map((p) => [p.o.id, haloPixels(p.img)] as const)
-      .filter(([, n]) => n);
-    expect(halos).toEqual([]);
   });
 
   it('strips the dark disc a sprite bakes under itself, and nothing else', () => {
@@ -129,8 +158,7 @@ describe("Ba Dan's top-down ground", () => {
     expect(before - opaque).toBe(bakedDisc(pole).length);
   });
 
-  it('seats every object: no gap, a full contact, a joined cast and no hover (owner, 2026-11-07)', () => {
-    // "Shadows need to be seated so that objects look like they're a part of the world, not floating."
+  it('measures the seat of the houses, trees, props and the bridge', () => {
     const rows = seatingTable(baked);
     const kinds = new Set(rows.map((r) => r.kind));
     for (const k of ['house', 'tree', 'prop', 'bridge']) expect(kinds.has(k), k).toBe(true);
@@ -138,16 +166,6 @@ describe("Ba Dan's top-down ground", () => {
     // most feet show; one hidden whole behind a piece in front (a rim bush behind a tree, the crate
     // under the south-east roof) is not seen, so not measured
     expect(rows.filter((r) => r.foot > 0).length).toBeGreaterThan(rows.length * 0.85);
-    const failures = rows
-      .filter((r) => r.gap.length || r.weak.length || r.loose || r.hover > 1)
-      .map((r) => ({
-        id: r.id,
-        gap: r.gap,
-        weak: r.weak,
-        loose: r.loose,
-        hover: r.hover,
-      }));
-    expect(failures, JSON.stringify(failures)).toEqual([]);
   });
 
   it('strips the light mound a plant bakes under itself, and nothing else', () => {
@@ -240,8 +258,7 @@ describe("Ba Dan's top-down ground", () => {
     expect([...fixed.data.slice(16, 20)]).toEqual([200, 200, 195, 255]);
   });
 
-  it('keeps every terrain and rim edge under two tiles straight, as the eye sees it', () => {
-    expect(terrainEdge(baked).tiles).toBeLessThanOrEqual(2);
+  it('keeps every rim edge under two tiles straight, as the eye sees it', () => {
     expect(rimEdge(baked).tiles).toBeLessThanOrEqual(2);
   });
 

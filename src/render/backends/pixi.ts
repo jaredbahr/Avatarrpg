@@ -67,6 +67,7 @@ import {
 } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import { drawsScene, groundsSceneAtRuntime, tileSize } from '../projection';
+import { propShadows, rgbaCanvas, topdownPropArt } from '../topdown/propLayer';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
@@ -431,6 +432,12 @@ export class PixiBackend implements RenderBackend {
   /** The ground transform with the effects' tile ratio folded in (`draw`). */
   private fxTransform = new Matrix();
   private sceneGround = new Container();
+  /**
+   * The top-down board's own ground marks, in world px over the scene's plates: the props' shadow
+   * layer (#459). Unused elsewhere.
+   */
+  private topdownMarks = new Container();
+  private propShadowSprite = new Sprite();
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
   /** Contact shadow and wear under the scenery (grounding.ts), above the ground chunks. */
@@ -702,8 +709,11 @@ export class PixiBackend implements RenderBackend {
       this.groundSprite,
       this.elevationBaseLayer,
       this.sceneGround,
+      this.topdownMarks,
       this.groundOverlaySprite,
     );
+    this.propShadowSprite.visible = false;
+    this.topdownMarks.addChild(this.propShadowSprite);
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
@@ -896,6 +906,7 @@ export class PixiBackend implements RenderBackend {
     this.fxUnder.container.scale.set(fxScale);
     for (const layer of [
       this.sceneGround,
+      this.topdownMarks,
       this.shadowMaskSources,
       this.climbCues,
       this.upright,
@@ -933,6 +944,7 @@ export class PixiBackend implements RenderBackend {
         : 'none';
     this.syncDecor(view, camera, decorMode, painted);
     this.syncShade(view, camera, scenePainted);
+    this.syncTopdownPropShadows(view, camera);
     this.pixelSpriteUsed.clear();
     this.drawOverlays(view, camera);
     this.drawPath(view, camera);
@@ -2686,6 +2698,28 @@ export class PixiBackend implements RenderBackend {
    * `worldScale` is the CSS scale of the sprite's parent layer: the camera's
    * for the world layers, 1 for a sprite placed in screen space.
    */
+  /** The top-down props' shadow layer (#459), as Canvas 2D lays it: world px, nearest. */
+  private syncTopdownPropShadows(view: MapView, camera: Camera): void {
+    const sprite = this.propShadowSprite;
+    const layer =
+      camera.projection === 'topdown'
+        ? propShadows(view.props, view.scene?.pavedCells).layer
+        : null;
+    const canvas = layer && rgbaCanvas(layer.image);
+    if (!layer || !canvas) {
+      sprite.visible = false;
+      sprite.texture = Texture.EMPTY;
+      return;
+    }
+    const texture = this.texture(canvas);
+    if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+    sprite.texture = texture;
+    sprite.position.set(layer.x, layer.y);
+    sprite.width = layer.image.width;
+    sprite.height = layer.image.height;
+    sprite.visible = true;
+  }
+
   private sampleArt(sprite: Sprite, worldScale: number): void {
     const source = sprite.texture.source;
     const mode = scaleModeFor(Math.abs(sprite.scale.x) * worldScale * this.viewport.dpr);
@@ -2902,24 +2936,37 @@ export class PixiBackend implements RenderBackend {
       const key = `prop:${prop.id}`;
       live.add(key);
       const sprite = this.unitSprite(key);
-      const art = sprites.get(prop.sprite, px, { facing: 1 });
-      sprite.texture = this.texture(art);
       const anchor = box(prop.pos);
+      // A top-down board stands the prop's top-down drawing on its own box; its shadow is in the
+      // props' layer (`syncTopdownPropShadows`), so it casts nothing into the figures' union.
+      const topdown = camera.projection === 'topdown' ? topdownPropArt(prop) : null;
       sprite.anchor.set(0, 0);
-      sprite.position.set(
-        anchor.x,
-        anchor.y - liftAt(view.grid, prop.pos, camera.projection) * this.tile,
-      );
       sprite.zIndex = depth(prop.pos);
-      sprite.width = this.tile;
-      sprite.height = this.tile;
       sprite.alpha = 1;
       sprite.visible = true;
-      const propStrength = castShadowStrength(prop.castShadow);
-      // A prop casts from its own ground and meets it on its contact line (ADR 0093).
-      if (propStrength > 0) this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
-      if (contactBand(this.grounding, propStrength))
-        this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
+      if (topdown) {
+        const texture = this.texture(topdown.image);
+        if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+        sprite.texture = texture;
+        sprite.position.set(topdown.box.x, topdown.box.y);
+        sprite.width = topdown.box.w;
+        sprite.height = topdown.box.h;
+      } else {
+        const art = sprites.get(prop.sprite, px, { facing: 1 });
+        sprite.texture = this.texture(art);
+        sprite.position.set(
+          anchor.x,
+          anchor.y - liftAt(view.grid, prop.pos, camera.projection) * this.tile,
+        );
+        sprite.width = this.tile;
+        sprite.height = this.tile;
+        const propStrength = castShadowStrength(prop.castShadow);
+        // A prop casts from its own ground and meets it on its contact line (ADR 0093).
+        if (propStrength > 0)
+          this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
+        if (contactBand(this.grounding, propStrength))
+          this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
+      }
 
       /*
        * A damage bar only once it has been hit. A full bar on every barrel
@@ -2929,7 +2976,8 @@ export class PixiBackend implements RenderBackend {
       if (prop.hp >= prop.maxHp || prop.maxHp <= 0) continue;
       const w = this.tile * 0.6;
       const x = anchor.x + (this.tile - w) / 2;
-      const y = sprite.y + this.tile * 0.9;
+      const y =
+        anchor.y - liftAt(view.grid, prop.pos, camera.projection) * this.tile + this.tile * 0.9;
       const h = Math.max(2, this.tile * 0.05);
       g.rect(x, y, w, h).fill({ color: 'rgba(0,0,0,0.55)' });
       g.rect(x, y, (w * prop.hp) / prop.maxHp, h).fill({ color: '#d9a441' });

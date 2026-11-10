@@ -343,6 +343,8 @@ export function npcClip(npc: Pick<NpcMarker, 'clip' | 'walking'>): ClipName {
  */
 export interface RenderProp {
   readonly id: string;
+  /** The prop's content id (`water_barrel`), which picks its top-down drawing (`TOPDOWN_PROPS`). */
+  readonly kind?: string;
   readonly pos: Vec2;
   readonly sprite: string;
   readonly name: string;
