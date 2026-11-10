@@ -1,0 +1,78 @@
+{
+  "calibrationSource": "30815ebb817a410bae375df3c0f7ebc5473f53ce",
+  "calibrated": true,
+  "policy": {
+    "warmupBatches": 3,
+    "samples": 11,
+    "pathBatch": 32,
+    "aiBatch": 2,
+    "ceilingMultiplier": 4
+  },
+  "cases": {
+    "reachable/ambush_road": {
+      "normalizedMedian": 51.19345507814065,
+      "ceiling": 204.7738203125626
+    },
+    "findPath/ambush_road": {
+      "normalizedMedian": 41.260388010128906,
+      "ceiling": 165.04155204051563
+    },
+    "reachable/forest_road": {
+      "normalizedMedian": 44.05665834268129,
+      "ceiling": 176.22663337072515
+    },
+    "findPath/forest_road": {
+      "normalizedMedian": 48.337323076581434,
+      "ceiling": 193.34929230632574
+    },
+    "reachable/quarry_floor": {
+      "normalizedMedian": 49.0313548449687,
+      "ceiling": 196.1254193798748
+    },
+    "findPath/quarry_floor": {
+      "normalizedMedian": 48.78378325593556,
+      "ceiling": 195.13513302374224
+    },
+    "reachable/quarry_gate": {
+      "normalizedMedian": 53.705799471576675,
+      "ceiling": 214.8231978863067
+    },
+    "findPath/quarry_gate": {
+      "normalizedMedian": 49.49213679236998,
+      "ceiling": 197.96854716947993
+    },
+    "enemyTurn/enc_ambush/base/{}/e2": {
+      "normalizedMedian": 46.708201655432,
+      "ceiling": 186.832806621728
+    },
+    "enemyTurn/enc_ambush/base/{}/e4": {
+      "normalizedMedian": 90.87394493441677,
+      "ceiling": 363.4957797376671
+    },
+    "enemyTurn/enc_ambush/base/{}/e8": {
+      "normalizedMedian": 82.9181578425303,
+      "ceiling": 331.6726313701212
+    },
+    "reachable/topdown/ba_dan_village": {
+      "normalizedMedian": 9.956649267866029,
+      "ceiling": 39.826597071464114
+    },
+    "findPath/topdown/ba_dan_village": {
+      "normalizedMedian": 32.41192900675779,
+      "ceiling": 129.64771602703115
+    }
+  },
+  "calibrationReportSha256": "675690b43e7376ac68b2bc501bf91ca63588d406a69d1807bf1cc4319c6d7978",
+  "calibrationHarnessSha256": "0e07ca8e26a4d42b4ee61ecd657522c5b2489cb7cf11a3119f2ddfd40dfca015",
+  "supplementalCalibrations": [
+    {
+      "source": "25c5d611d216c4dead9ba9fae34ff7f797293e42",
+      "tree": "5754dcd4ab126b1bb06f04eb050302e4f348e9e9",
+      "caseIds": ["reachable/topdown/ba_dan_village", "findPath/topdown/ba_dan_village"],
+      "calibrationReportSha256": "881e0b05545ccdb8aef55a472ae23327e7fe1d1f8ce3a55d06f3158e91d613c9",
+      "calibrationHarnessSha256": "ae7dd67a165fd72365cfaf3570d8bc69fb76af64935c3b4b09858f04bf5d00c8",
+      "calibrationDriverSha256": "c1edb713399ff59cb5f7b3cc7938a3481cb8ed5dc201f15e8bb1a1562c253889",
+      "originalBaselineSha256": "780fe27936856fa5461d79b26ba16cd3fbd673a32e5fb5653911c40d33d4b22a"
+    }
+  ]
+}
