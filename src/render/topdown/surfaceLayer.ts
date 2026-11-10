@@ -13,7 +13,7 @@ import { CS } from './organic';
 import { rgbaCanvas } from './propLayer';
 import { TopdownSurfaces, type FlameSite, type SurfaceArt } from './surfaces';
 
-/** The surfaces the organic layer paints on a top-down board; anything else keeps its cell drawing. */
+/** The surfaces the organic layer paints on a top-down board (rubble is a sprite, `structures.ts`). */
 export const ORGANIC_SURFACES: ReadonlySet<SurfaceId> = new Set([
   'mud',
   'water',
@@ -34,9 +34,14 @@ export function drawsOrganicSurfaces(
   return projection === 'topdown' && !view.hatch && !view.crispOverlays;
 }
 
-/** Whether a tile's surface is the organic layer's to draw (the cell painters then skip it). */
+/**
+ * Whether a tile's surface is drawn by the top-down board's own art (the cell painters then skip
+ * it): the organic layer's surfaces, and rubble, which stands as a heap sprite (#577).
+ */
 export function organicOwns(organic: boolean, surface: SurfaceId | undefined): boolean {
-  return organic && surface !== undefined && ORGANIC_SURFACES.has(surface);
+  return (
+    organic && surface !== undefined && (ORGANIC_SURFACES.has(surface) || surface === 'rubble')
+  );
 }
 
 let board: TopdownSurfaces | null = null;

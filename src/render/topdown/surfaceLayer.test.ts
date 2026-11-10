@@ -173,13 +173,14 @@ function canvasFrame(projection: 'topdown' | 'oblique', v: MapView) {
 }
 
 describe('which surfaces are organic', () => {
-  it('on the top-down board, unless hatched or in High contrast; never rubble', () => {
+  it('on the top-down board, unless hatched or in High contrast; rubble as its sprite', () => {
     expect(drawsOrganicSurfaces({ hatch: false, crispOverlays: false }, 'topdown')).toBe(true);
     expect(drawsOrganicSurfaces({ hatch: true, crispOverlays: false }, 'topdown')).toBe(false);
     expect(drawsOrganicSurfaces({ hatch: false, crispOverlays: true }, 'topdown')).toBe(false);
     expect(drawsOrganicSurfaces({ hatch: false, crispOverlays: false }, 'oblique')).toBe(false);
     expect(organicOwns(true, 'water')).toBe(true);
-    expect(organicOwns(true, 'rubble')).toBe(false);
+    // rubble is not painted into the layer, but its heap sprite replaces the cell drawing (#577)
+    expect(organicOwns(true, 'rubble')).toBe(true);
     expect(organicOwns(false, 'water')).toBe(false);
   });
 
