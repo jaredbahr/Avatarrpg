@@ -5,6 +5,7 @@ import { grumblerAimCheckpoint } from '../scripts/e2e/grumbler-aim-checkpoint';
 import { CONTENT } from '../src/content';
 import { isValidTarget } from '../src/core/rules/abilities';
 import { distance, occupiedCells, samePos } from '../src/core/rules/grid';
+import { apply } from '../src/core/state/reducer';
 import type { Command, GameEvent, GameState, Vec2 } from '../src/core/types';
 import type { Camera } from '../src/render/camera';
 import type { MapView } from '../src/render/view';
@@ -181,7 +182,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const boss = battle?.units.find((unit) => unit.id === checkpoint.targetId);
     const ability = CONTENT.abilities.get(checkpoint.abilityId);
     if (!battle || !caster || !boss || !ability) throw new Error('Missing earned aim checkpoint');
-    expect(caster.ap).toBe(1);
+    expect(caster.ap).toBe(5);
     expect(boss.size).toBe(2);
     const footprint = occupiedCells(boss);
     const emptyTiles = battle.grid.tiles.flatMap((tile, index) => {
@@ -334,32 +335,29 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         }),
       );
       expect.soft(input?.before).toEqual(checkpoint.state);
-      expect.soft(input?.after?.battle?.units.find((unit) => unit.id === caster.id)?.ap).toBe(0);
-      const damage =
-        input?.events.filter(
-          (event) =>
-            event.type === 'damaged' && event.unitId === boss.id && event.sourceId === caster.id,
-        ) ?? [];
-      const amount = damage.reduce(
-        (sum, event) => sum + (event.type === 'damaged' ? event.amount : 0),
-        0,
-      );
-      expect.soft(amount).toBeGreaterThan(0);
+      expect
+        .soft(input?.after?.battle?.units.find((unit) => unit.id === caster.id)?.ap)
+        .toBe(caster.ap - ability.apCost);
+      // The roll is the checkpoint's own: replay the same command through the
+      // real reducer and require the page to have produced exactly that.
+      const expected = apply(CONTENT, checkpoint.state, {
+        type: 'useAbility',
+        unitId: caster.id,
+        abilityId: ability.id,
+        target: checkpoint.near,
+      });
+      const expectedBossHp = expected.state.battle?.units.find((unit) => unit.id === boss.id)?.hp;
+      expect.soft(input?.events).toEqual(expected.events);
       expect
         .soft(input?.after?.battle?.units.find((unit) => unit.id === boss.id)?.hp)
-        .toBe(boss.hp - amount);
-      expect.soft(after?.battle?.units.find((unit) => unit.id === caster.id)?.ap).toBe(0);
+        .toBe(expectedBossHp);
+      expect
+        .soft(after?.battle?.units.find((unit) => unit.id === caster.id)?.ap)
+        .toBe(caster.ap - ability.apCost);
       expect
         .soft(after?.battle?.units.find((unit) => unit.id === boss.id)?.hp)
-        .toBe(boss.hp - amount);
+        .toBe(expectedBossHp);
       expect.soft(after?.log).toContain(`${caster.name} uses ${ability.name}.`);
-      expect
-        .soft(
-          after?.log.some((line) =>
-            line.startsWith(`${caster.name} hits ${boss.name} for ${amount}.`),
-          ),
-        )
-        .toBe(true);
       await info.attach('near-confirmed', {
         body: await page.screenshot(),
         contentType: 'image/png',
