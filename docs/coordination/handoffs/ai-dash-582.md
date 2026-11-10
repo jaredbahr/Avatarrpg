@@ -21,8 +21,10 @@ mixed abilities that intentionally apply another effect at their own position.
 No candidate ordering, weights, ability execution, content, roster, balance,
 progression, renderer or asset change belongs here.
 
-The exact four-file scope is `ai.ts`, new `aiDash.test.ts`, new
-`e2e/ai-dash.spec.ts` and this handoff. Root owns integration, native validation
+The original four-file scope is `ai.ts`, new `aiDash.test.ts`, new
+`e2e/ai-dash.spec.ts` and this handoff. A verified amendment adds only derived
+hash/count literals in `scripts/e2e/quarry-checkpoints.test.ts` and
+`src/app/scenes/combatAim.test.ts`; all functional assertions remain unchanged. Root owns integration, native validation
 and the handoff; the retained SOL High author owns the AI and unit-test files.
 The independent reviewer owns no writes. PR580/581 presentation ownership and
 the protected #423/#443/#479 browser route remain separate.
@@ -72,6 +74,32 @@ passed/failed checks and actual hosted jobs/skips in the draft PR and receipts.
 Watch the rendered movement and inspect its collision/camera evidence. Node
 tests and software Chromium do not establish device FPS, WebKit, physical
 input or PWA acceptance. Do not change budgets or assertions to obtain green.
+
+## Derived checkpoint pins
+
+The first clean-head full CI (`00c43e07`) stopped on five existing derived pins.
+The identical two test files pass all 20 cases on exact unchanged parent main.
+Before changing references, root generated both routes and the aim checkpoint
+_twice_ on parent and candidate and replayed every public command. Helpers are
+byte-identical. All four complete route-boundary projections and sessions match;
+all progression, custody, returnee, world, clock and load assertions remain.
+
+The exact first divergent state is the same enemy command with the same input
+hash: the old history uses a stationary Rush, the repaired one advances. The
+new exact command counts are 61/157 for trade and 92/429 for escort. The earned
+aim has 78 commands instead of 79. Its round, caster position/AP, full boss,
+far/near geometry and legal targeting premise remain unchanged. The caster's
+current HP changes from 24 to 25 as combat history; no existing assertion
+requires HP24, and no base stat or meaningful HP expectation is changed.
+Do not describe the complete aim state or all participant health as identical.
+
+The owner's explicit split moved aiming out of PR357 into merged PR556;
+merged PR570 subsequently refreshed these same references under verified scope.
+PR362/344's active six-file scope is media/docs. Root verified these records
+before the six-file amendment, not by taking stale claims or inferring release.
+The old pins, failed CI, full forensic reports and unapplied proposal remain
+in the parent folder. Only strict hashes/counts are refreshed; no assertion,
+fixture producer, seed, route, cap or gameplay premise is weakened.
 
 ## Separate statistical guard
 
