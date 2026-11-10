@@ -15,6 +15,7 @@ import {
   type RgbaImage,
   type ShadowMask,
 } from '../../../../src/render/shadow/hardShadowMask';
+import { coherentCast, seamUnderFoot } from '../../../../src/render/topdown/objectShadow';
 import { at, blank, draw, SHADOW_RGB, trim } from './raster';
 import { CLASS, FRINGE_MARGIN as M, type Placed, type ShadowRecord, type Upright } from './board';
 
@@ -134,65 +135,8 @@ export function paintByGround(
     }
 }
 
-/**
- * The occlusion seam (175, then 150) under every column of a prop's foot, at that column's own
- * lowest pixel: a seat or a table top (overhang 0, standing on its legs' line) gets the seam under
- * its edge as well as under its feet, where `under` alone lays only the cast's tone.
- */
-export function seamUnderFoot(m: ShadowMask, img: RgbaImage, rows = 8): void {
-  const A = alphaOf(img),
-    W = img.width,
-    H = img.height,
-    low = new Int32Array(W).fill(-1);
-  let bl = -1;
-  for (let x = 0; x < W; x++)
-    for (let y = H - 1; y >= 0; y--)
-      if (at(A, y * W + x)) {
-        low[x] = y;
-        bl = Math.max(bl, y);
-        break;
-      }
-  for (let x = 0; x < W; x++) {
-    const ly = at(low, x);
-    if (ly < 0 || ly < bl - rows) continue;
-    for (const [k, v] of [
-      [1, 175],
-      [2, 150],
-    ] as const) {
-      const y = ly + k;
-      if (y >= m.height) continue;
-      const i = y * m.width + x + m.pad;
-      if (at(m.alpha, i) < v) m.alpha[i] = v;
-    }
-  }
-}
-
-/**
- * Closes the gaps inside a cast so it reads as one shape: along each row, a run of at most `gap`
- * clear pixels between two shaded ones takes the cast tone, after the same down each column for
- * at most 3. A prop on legs (a stall, a notice board) projects each leg and its top separately.
- */
-export function coherentCast(m: ShadowMask, gap = 10): void {
-  const { width: W, height: H, alpha: A } = m;
-  for (let x = 0; x < W; x++) {
-    let last = -1;
-    for (let y = 0; y < H; y++) {
-      if (!at(A, y * W + x)) continue;
-      if (last >= 0 && y - last > 1 && y - last - 1 <= 3)
-        for (let k = last + 1; k < y; k++) A[k * W + x] = 125;
-      last = y;
-    }
-  }
-  for (let y = 0; y < H; y++) {
-    let last = -1;
-    for (let x = 0; x < W; x++) {
-      if (!at(A, y * W + x)) continue;
-      if (last >= 0 && x - last > 1 && x - last - 1 <= gap)
-        for (let k = last + 1; k < x; k++) A[y * W + k] = 125;
-      last = x;
-    }
-  }
-}
+// The prop seam and the joined cast are shared with the runtime props (`objectShadow.ts`, #459).
+export { coherentCast, seamUnderFoot };
 
 /**
  * The shadow options a standing object's kind takes (Ba Dan's, T3): a house's wide overhang and

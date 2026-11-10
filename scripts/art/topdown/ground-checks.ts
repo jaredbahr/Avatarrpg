@@ -13,8 +13,9 @@
  *   per-column (and per-row) crossings; the longest stretch of a chain that stays within 3 px is one
  *   straight edge. Boundaries under a sprite are not seen and not counted.
  */
-import type { RgbaImage } from '../../../src/render/shadow/hardShadowMask';
-import { CLASS, type Baked } from './lib/board';
+import type { RgbaImage, ShadowMask } from '../../../src/render/shadow/hardShadowMask';
+import { paintMask } from '../../../src/render/shadow/hardShadowMask';
+import { CLASS, type Baked, type Placed } from './lib/board';
 
 const at = (a: ArrayLike<number>, i: number): number => a[i] ?? 0;
 const lum = (d: ArrayLike<number>, i: number): number =>
@@ -397,7 +398,21 @@ const seamReach = (g: number): number => (g > 0 ? (175 / 255) * (1 - SHADOW_LUM 
  * - (c) **cast**: every visible cast pixel is joined to the contact band through shade;
  * - (d) **no hover**: the sprite's lowest opaque row is at most 1 px above its base line.
  */
-export function seatingTable(b: Baked, comp: Composite = composite(b)): SeatRow[] {
+/** What the seating check reads of a bake: a whole board, or one object on a patch of ground. */
+export interface SeatingInput {
+  readonly ground: RgbaImage;
+  readonly bare: RgbaImage;
+  readonly placed: readonly (Pick<Placed, 'img' | 'x' | 'y'> & {
+    readonly o: Pick<Placed['o'], 'id' | 'kind'>;
+  })[];
+  readonly shadows: Baked['shadows'];
+  readonly bridgeShadows: Baked['bridgeShadows'];
+}
+
+export function seatingTable(b: Baked, comp?: Composite): SeatRow[];
+export function seatingTable(b: SeatingInput, comp: Composite): SeatRow[];
+export function seatingTable(b: SeatingInput, comp?: Composite): SeatRow[] {
+  comp ??= composite(b as Baked);
   const PW = b.ground.width,
     PH = b.ground.height,
     px = comp.image.data,
@@ -527,4 +542,53 @@ export function seatingTable(b: Baked, comp: Composite = composite(b)): SeatRow[
     });
   });
   return rows;
+}
+
+/**
+ * The seating rule for one runtime object (#459; ADR 0104's 2026-11-07 amendment), through the same
+ * {@link seatingTable} the baked boards answer to: `image` stands with its top-left at `drawOffset`
+ * on `ground` (one clean patch, in the same px), its `mask` laid at `drawOffset.x - mask.pad`,
+ * `drawOffset.y` (plus `maskOffset`, which a test uses to pull the shadow away from the foot) in the
+ * shadow colour at `scale`, as the runtime layer composites it. Returns the object's one row.
+ */
+export function seatingCheck(
+  image: RgbaImage,
+  mask: ShadowMask,
+  drawOffset: { readonly x: number; readonly y: number },
+  ground: RgbaImage,
+  scale = 1,
+  maskOffset: { readonly x: number; readonly y: number } = { x: 0, y: 0 },
+): SeatRow {
+  const PW = ground.width,
+    PH = ground.height;
+  const shaded: RgbaImage = { width: PW, height: PH, data: new Uint8ClampedArray(ground.data) };
+  const dx = drawOffset.x - mask.pad + maskOffset.x,
+    dy = drawOffset.y + maskOffset.y;
+  paintMask(shaded, mask, dx, dy, scale);
+  const data = new Uint8ClampedArray(shaded.data),
+    owner = new Int32Array(PW * PH).fill(-1);
+  for (let y = 0; y < image.height; y++)
+    for (let x = 0; x < image.width; x++) {
+      const s = (y * image.width + x) * 4;
+      if (at(image.data, s + 3) < 128) continue;
+      const X = drawOffset.x + x,
+        Y = drawOffset.y + y;
+      if (X < 0 || Y < 0 || X >= PW || Y >= PH) continue;
+      const i = Y * PW + X;
+      for (let c = 0; c < 3; c++) data[i * 4 + c] = at(image.data, s + c);
+      data[i * 4 + 3] = 255;
+      owner[i] = 0;
+    }
+  const [row] = seatingTable(
+    {
+      ground: shaded,
+      bare: ground,
+      placed: [{ o: { id: 'object', kind: 'prop' }, img: image, x: drawOffset.x, y: drawOffset.y }],
+      shadows: [{ id: 'object', m: mask, dx, dy }],
+      bridgeShadows: [],
+    },
+    { image: { width: PW, height: PH, data }, owner },
+  );
+  if (!row) throw new Error('seatingCheck: the object was not measured');
+  return row;
 }

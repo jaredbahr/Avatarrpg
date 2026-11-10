@@ -2632,6 +2632,7 @@ export class CombatScene implements Scene {
       const def = CONTENT.props.get(p.propId);
       return {
         id: p.id,
+        kind: p.propId,
         pos: p.pos,
         sprite: def?.sprite ?? 'prop.crate',
         name: def?.name ?? 'Something',
