@@ -52,6 +52,7 @@ import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { drawArt } from '../pixelSampling';
+import { propShadows, rgbaCanvas, topdownPropArt } from '../topdown/propLayer';
 import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
 import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRendering';
 import {
@@ -425,6 +426,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawGround(view, camera, painted);
       if (!painted || view.crispOverlays) this.drawDecor(view, camera);
       if (view.atmosphere) this.drawShade(view, camera);
+      if (camera.projection === 'topdown') this.drawTopdownPropShadows(view, camera);
       this.drawOverlays(view, camera);
       this.drawSteamPuffs(view, camera);
       this.drawPath(view, camera);
@@ -1273,6 +1275,26 @@ export class Canvas2DBackend implements RenderBackend {
       }
     }
   }
+  /**
+   * The top-down props' shadows (#459): one layer from the cached `hardShadowMask` of each loaded
+   * drawing, laid on the world-pixel grid with nearest sampling, under every mark and figure.
+   */
+  private drawTopdownPropShadows(view: MapView, camera: Camera): void {
+    const { layer } = propShadows(view.props, view.scene?.pavedCells);
+    if (!layer) return;
+    const canvas = rgbaCanvas(layer.image);
+    if (!canvas) return;
+    drawArt(this.ctx, 1, camera.scale, () =>
+      this.ctx.drawImage(
+        canvas,
+        layer.x * camera.scale - camera.offsetX,
+        layer.y * camera.scale - camera.offsetY,
+        layer.image.width * camera.scale,
+        layer.image.height * camera.scale,
+      ),
+    );
+  }
+
   private drawProps(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const { dpr } = camera.viewport;
@@ -1281,8 +1303,23 @@ export class Canvas2DBackend implements RenderBackend {
       if (!camera.isVisible(prop.pos)) continue;
       const box = camera.spriteBox(prop.pos);
       box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
-      const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
-      ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+      // A top-down board draws the prop's top-down drawing on its own box, once it has loaded.
+      const art = camera.projection === 'topdown' ? topdownPropArt(prop) : null;
+      if (art) {
+        const { box: at } = art;
+        drawArt(ctx, at.w, at.w * camera.scale, () =>
+          ctx.drawImage(
+            art.image,
+            at.x * camera.scale - camera.offsetX,
+            at.y * camera.scale - camera.offsetY,
+            at.w * camera.scale,
+            at.h * camera.scale,
+          ),
+        );
+      } else {
+        const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
+        ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+      }
 
       /*
        * A damage bar only once it has been hit. Showing a full bar on every
@@ -1874,7 +1911,10 @@ export class Canvas2DBackend implements RenderBackend {
       target,
       groundsSceneAtRuntime(camera.projection) && view.scene
         ? view.props.filter((prop) => Boolean(prop.burning))
-        : view.props,
+        : camera.projection === 'topdown'
+          ? // A top-down drawing's shadow is in the props' own layer (`drawTopdownPropShadows`).
+            view.props.filter((prop) => !topdownPropArt(prop))
+          : view.props,
       view,
       camera,
     );
