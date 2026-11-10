@@ -22,7 +22,8 @@
  * - The walk plays at the prototype's ground per loop (`CYCLE_PX`, `STATS.cycle`) and the Ba Dan
  *   exploration pace (`WALK_PX_PER_S`, 130 px a second), so `walkMsPerTile` holds the planted foot.
  * - The Driller (a PixelLab object on a 128 px canvas, 2x2) stands on each view's base, centred
- *   under its ink; its slam per heading carries the prototype's frame times and hit frame.
+ *   under its ink; its slam per heading carries the prototype's frame times and hit frame. T5 adds its
+ *   tread loop as the walk, the engine's rumble in all eight headings, a hit shudder and a jammed knockout.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -285,6 +286,90 @@ const ROSTER: readonly FigureSpec[] = [
     idle: 'custom-standing at rest: the chest an@265b11',
     stride: 30,
     actions: {},
+    timing: 'blow',
+  },
+  // T5 (#452): the quarry cast, from the prototype's approved idle, walk and blow (`build_b3.py` `T13`), with the hits
+  // and knockouts `tools/t5clips.py` posed from each one's own base, and the new mercenary sergeant.
+  {
+    name: 'deserter',
+    key: 'unit.enemy.deserter',
+    folder: 't13_deserter',
+    idle: 'custom-standing at rest in a ready st@899aa0',
+    walk: 'walking-8-frames@4fc032',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @72f948',
+    ko: 'custom-knocked out: staggers back one@1ba06e',
+    actions: {
+      attack: { anim: 'custom-a martial-arts punch: draws th@6c46fe' },
+      throw: { anim: 'custom-throws a small jar underarm to@28df8f' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'quarrybender',
+    key: 'unit.enemy.quarrybender',
+    folder: 't13_qbender',
+    idle: 'custom-standing at rest in a ready st@9368ae',
+    walk: 'walking-8-frames@984071',
+    stride: 30,
+    hit: 'custom-a hit reaction: flinches from @8a3a52',
+    ko: 'custom-knocked out: staggers back one@58ab07',
+    actions: { attack: { anim: 'custom-a heavy two-handed throw: crou@01c4bc' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'merc',
+    key: 'unit.enemy.merc',
+    folder: 't13_merc',
+    idle: 'custom-standing at rest in a ready st@99e889',
+    walk: 'walking-8-frames@6f3db0',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @fca5ad',
+    ko: 'custom-knocked out: staggers back one@22478f',
+    actions: { attack: { anim: 'custom-a quick low sword slash: steps@82fda6' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'crossbow',
+    key: 'unit.enemy.crossbow',
+    folder: 't13_xbow',
+    idle: 'custom-standing at rest in a ready st@4c219b',
+    walk: 'walking-8-frames@ed11b8',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @37b74a',
+    // The second knockout group: the first (@64ab6c) ended sitting up in every heading.
+    ko: 'custom-knocked out: staggers back one@b60996',
+    actions: { attack: { anim: 'custom-raises the crossbow to the sho@a5e4b9' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'sergeant',
+    key: 'unit.enemy.sergeant',
+    folder: 't5_sergeant',
+    idle: 'custom-standing at rest in a ready st@8c7f04',
+    walk: 'walking-8-frames@ab35a1',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @eac203',
+    ko: 'custom-knocked out: staggers back one@f4a18d',
+    actions: { attack: { anim: 'custom-a heavy overhand sword chop: r@3e7e72' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'ruon',
+    key: 'unit.ally.ruon',
+    folder: 't13_ruon',
+    idle: 'custom-standing at rest in a ready st@8f3b8e',
+    walk: 'walking-8-frames@56f096',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @4ece7f',
+    ko: 'custom-knocked out: staggers back one@9cddb9',
+    actions: { attack: { anim: 'custom-a disciplined sabre cut: draws@4d716f' } },
+    cast: 'attack',
     timing: 'blow',
   },
   // T3: the town guard (the relief watch and a returnee), made like the residents: idle and walk, eight headings.
@@ -792,6 +877,13 @@ function slamMs(n: number, hit: number, hold: readonly [number, number]): number
   });
 }
 
+/** Ground one tread loop covers: two tiles, so the eight tread cels turn over at a readable ~77 ms at 130 px/s. */
+const DRILLER_TREAD_PX = 80;
+/** The hit shudder's and the jammed knockout's cel times. */
+const DRILLER_HIT_MS = 70;
+const DRILLER_KO_MS = 110;
+const KO_PICK = [1, 2, 3, 4, 5, 6, 8, 10] as const;
+
 function drillerSheet(): Sheet {
   const key = 'unit.enemy.driller';
   const dir = join(SOURCE, 'driller');
@@ -842,13 +934,30 @@ function drillerSheet(): Sheet {
       baselineYFromAnchorPx: lowest + 1 + box.y0 - anchors[h].y,
     };
   }
-  // A 2x2 sheet's frame is square: every view round its own anchor, plus a 1 px margin.
+  // T5's object clips (`prototypes/topdown/tools/t5clips.py`), one folder a clip, `<direction>_<i>.png` on the
+  // rotations' own 128 px canvas. Frame 0 of each is the heading's rotation itself, the motion starts at 1.
+  const t5 = (clip: string, h: Heading): Placed[] => {
+    const cels: Placed[] = [];
+    for (let i = 0; ; i++) {
+      const path = join(dir, 't5', clip, `${DIR[h]}_${i}.png`);
+      if (!existsSync(path)) break;
+      cels.push({ image: hard(path), ox: 0, oy: 0 });
+    }
+    if (cels.length === 0) throw new Error(`driller: no ${h} ${clip}`);
+    return cels;
+  };
+  // The tread loop is the walk: its eight drawn cels after the rotation, sharing the idle's frame and anchor.
+  const treads = {} as Record<Heading, Placed[]>;
+  for (const h of HEADINGS) treads[h] = t5('tread', h).slice(1);
+  // A 2x2 sheet's frame is square: every view and tread cel round its own anchor, plus a 1 px margin.
   let half = 0;
   let up = 0;
   for (const h of HEADINGS) {
-    const b = inkBox(views[h]) as Box;
-    half = Math.max(half, anchors[h].x - b.x0, b.x1 - anchors[h].x);
-    up = Math.max(up, anchors[h].y - b.y0);
+    for (const b of [views[h], ...treads[h]].map(inkBox)) {
+      if (!b) continue;
+      half = Math.max(half, anchors[h].x - b.x0, b.x1 - anchors[h].x);
+      up = Math.max(up, anchors[h].y - b.y0);
+    }
   }
   const side = Math.max(2 * (half + 1), up + 2);
   const items: Item[] = [];
@@ -859,11 +968,13 @@ function drillerSheet(): Sheet {
     const cel = cut(views[h], rect);
     add(sided('idle', h, true), 0, cel);
     add(sided('rest', h, true), 0, cel);
-    add(sided('walk', h, true), 0, cel);
+    treads[h].forEach((c, i) => add(sided('walk', h, true), i, cut(c, rect)));
   }
   const slam: Record<string, ClipOut> = {};
   const rumbles: Record<string, ClipOut> = {};
-  const actions = { slam, rumble: rumbles };
+  const kos: Record<string, ClipOut> = {};
+  const actions = { slam, rumble: rumbles, ko: kos };
+  const clips: Record<string, ClipOut> = {};
   const trimClip = (
     clip: string,
     cels: Placed[],
@@ -902,19 +1013,35 @@ function drillerSheet(): Sheet {
         events: { hit },
       });
     }
-    // The engine's rumble, drawn in three headings only (`build_b3.py` plays it where it exists).
-    const rumble = frames('the_engine_idles', h);
-    if (rumble.length)
-      rumbles[h] = trimClip(`rumble${sided('', h, false)}`, rumble, anchors[h], {
-        frameMs: rumble.map(() => 110),
-        loop: true,
-      });
+    // The engine's rumble in all eight headings: the prototype's three (west, south-west, north-west) and T5's five
+    // in the same PixelLab animation group, at the prototype's 110 ms a cel.
+    const rumble = t5('rumble', h);
+    rumbles[h] = trimClip(`rumble${sided('', h, false)}`, rumble, anchors[h], {
+      frameMs: rumble.map(() => 110),
+      loop: true,
+    });
+    // The hit shudder: its eight drawn cels after the rotation (a clip holds eight at most), quick.
+    const shudder = t5('hit', h).slice(1);
+    clips[sided('hit', h, false)] = trimClip(sided('hit', h, false), shudder, anchors[h], {
+      frameMs: shudder.map(() => DRILLER_HIT_MS),
+    });
+    // The jammed knockout: the arm sags and the machine settles, its last cel held as the wreck. Ten drawn cels
+    // after the rotation; the settle keeps every other one, so the clip holds eight.
+    const ko = KO_PICK.map((i) => t5('ko', h)[i] as Placed);
+    const koClip = sided('ko', h, false);
+    kos[h] = trimClip(koClip, ko, anchors[h], {
+      frameMs: ko.map((_, i) => (i === ko.length - 1 ? 1000 : DRILLER_KO_MS)),
+    });
+    if (DIAGONALS.includes(h)) clips[koClip] = kos[h];
   }
+  // The legacy one-cel KO a fall without a heading asks for: the south-east wreck, as the figures do.
+  const wreck = KO_PICK.map((i) => t5('ko', 'southEast')[i] as Placed);
+  clips.ko = trimClip('ko', wreck.slice(-1), anchors.southEast, { frameMs: [1000] });
   return {
     name: 'driller',
     key,
     cels: items,
-    clips: {},
+    clips,
     actions,
     data: {
       pages: 1,
@@ -923,11 +1050,12 @@ function drillerSheet(): Sheet {
       footprint: 2,
       idleCels: HEADINGS.map(() => 1),
       idleMs: 1000,
-      walkCels: HEADINGS.map(() => 0),
-      walkCelMs: 1000,
+      walkCels: HEADINGS.map((h) => treads[h].length),
+      walkCelMs:
+        Math.round((DRILLER_TREAD_PX / treads.east.length / WALK_PX_PER_S) * 1000 * 1000) / 1000,
       walkMsPerTile: Math.round((PIXELS_PER_TILE / WALK_PX_PER_S) * 1000 * 10) / 10,
       cast,
-      clipData: false,
+      clipData: true,
       actions: true,
       treadGrounding: HEADINGS.map((h) => treadGrounding[h]),
     },

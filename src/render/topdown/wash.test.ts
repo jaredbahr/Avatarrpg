@@ -3,7 +3,7 @@
  * rules' 8-way reach (a diagonal step is washed, a corner cut is not), the cover cue is `hasCover`,
  * and both backends draw the layer on the top-down board only, with grid lines still on the setting.
  */
-import { Container, Sprite, Texture, TextureSource } from 'pixi.js';
+import { Sprite, Texture, TextureSource } from 'pixi.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { hasCover } from '../../core/rules/damage';
 import { buildGrid, posKey, reachable } from '../../core/rules/grid';
@@ -445,7 +445,6 @@ describe('Pixi lays the same layer', () => {
     const texture = new Texture({ source: new TextureSource({ width: 4, height: 4 }) });
     Object.assign(backend, {
       washSprite: sprite,
-      topdownMarks: new Container(),
       squareFootprints: true,
       texture: () => texture,
     });

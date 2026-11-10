@@ -170,6 +170,22 @@ animation or presentation work. Add to it when something fails.
   - Jobs for eight directions often come back split (some directions first, the rest in a second job), so a
     download in between sees half a clip. Download once every job has finished.
 
+- **The T5 quarry clips (2026-11-10, `tools/t5clips.py`):**
+  - A retake keeps its animation group's 3D motion. The crossbow's knockout ended sitting up in every heading, and an
+    eight-heading retake sat her up again. Only a new group, its prompt spelling out "flat onto her back, full length,
+    the crossbow drops beside her", laid her down.
+  - The same holds for a held weapon: the sergeant's sword vanished in the same two walk cels (west, south-west)
+    after a retake. Don't pay for a second retake of a vanishing prop; change the prompt or accept it.
+  - Blood and dust still appear in hits (a red patch on the chest, a grey puff at the feet). Most cleared in one
+    retake; a red patch on the sergeant's east hit came back twice.
+  - **Object animations are rate-limited per heading.** A request for five headings queued two and marked three
+    `rate_limited`, with no job and no charge; the old poll waited forever for them. Read `submissions`, resubmit
+    what was not queued, and re-poll each heading's own job for its usage.
+  - Objects have no heading delete: a retake passes `replace_existing: true` in the same group.
+  - An object's frame 0 is its rotation, exactly; the motion is frames 1 onwards.
+  - Object clips painted effects too: an orange spark burst in a hit, a red glow over the body, oil gushing from a
+    hose in a knockout. Check every heading of a vehicle clip as you would a character's.
+
 ### Process
 
 - **Codex drafts piled up** (24 at once, none ready). Reviewers skipped drafts; duplicate PRs and issues followed.
