@@ -39,6 +39,9 @@ const FIGHTERS = [
   'unit.enemy.sergeant',
   'unit.ally.ruon',
   'unit.enemy.driller',
+  // T8: the heroes the tutorial does not cast.
+  'unit.fire.tenzo',
+  'unit.water.nilak',
 ];
 
 function sheet(key: string): SheetEntry {

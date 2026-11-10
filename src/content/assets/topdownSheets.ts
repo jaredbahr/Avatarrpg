@@ -27,6 +27,8 @@ export type TopdownName =
   | 'crossbow'
   | 'sergeant'
   | 'ruon'
+  | 'tenzo'
+  | 'nilak'
   | 'guard'
   | 'driller';
 
@@ -528,6 +530,72 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
       events: { hit: 6 },
       frameSize: { w: 53, h: 51 },
       anchor: { x: 0.471698, y: 0.980392 },
+    },
+    clipData: true,
+    actions: true,
+  },
+  tenzo: {
+    pages: 1,
+    frame: { w: 34, h: 49 },
+    anchor: { x: 0.5, y: 0.959184 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
+    cast: {
+      frames: [
+        'unit.fire.tenzo/cast/0',
+        'unit.fire.tenzo/cast/1',
+        'unit.fire.tenzo/cast/2',
+        'unit.fire.tenzo/cast/3',
+        'unit.fire.tenzo/cast/4',
+        'unit.fire.tenzo/cast/5',
+        'unit.fire.tenzo/cast/6',
+        'unit.fire.tenzo/cast/7',
+        'unit.fire.tenzo/cast/8',
+        'unit.fire.tenzo/cast/9',
+      ],
+      fps: 10,
+      loop: false,
+      frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
+      events: { hit: 6 },
+      frameSize: { w: 45, h: 49 },
+      anchor: { x: 0.377778, y: 0.959184 },
+    },
+    clipData: true,
+    actions: true,
+  },
+  nilak: {
+    pages: 1,
+    frame: { w: 30, h: 48 },
+    anchor: { x: 0.5, y: 0.9375 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
+    cast: {
+      frames: [
+        'unit.water.nilak/cast/0',
+        'unit.water.nilak/cast/1',
+        'unit.water.nilak/cast/2',
+        'unit.water.nilak/cast/3',
+        'unit.water.nilak/cast/4',
+        'unit.water.nilak/cast/5',
+        'unit.water.nilak/cast/6',
+        'unit.water.nilak/cast/7',
+        'unit.water.nilak/cast/8',
+        'unit.water.nilak/cast/9',
+      ],
+      fps: 10,
+      loop: false,
+      frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
+      events: { hit: 6 },
+      frameSize: { w: 30, h: 46 },
+      anchor: { x: 0.366667, y: 0.978261 },
     },
     clipData: true,
     actions: true,
