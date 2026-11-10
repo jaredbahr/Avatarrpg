@@ -20,7 +20,7 @@ import { effectiveStats } from '../../core/rules/stats';
 import { describeIncoming } from '../../core/rules/status';
 import { describeFooting } from '../../core/rules/reactions';
 import { occupiedCells, tileAt } from '../../core/rules/grid';
-import { levelProgress, xpToNextLevel } from '../../core/rules/leveling';
+import { MAX_LEVEL, levelProgress, xpToNextLevel } from '../../core/rules/leveling';
 
 export function unitFootingKey(unit: Unit, grid: Grid): string {
   const ground = tileAt(grid, unit.pos);
@@ -138,7 +138,10 @@ export class UnitInspector extends Dialog {
           unit.faction === 'party'
             ? el('span', {
                 class: 'tiny muted',
-                text: `Level ${unit.level} — ${Math.round(levelProgress(unit.level, unit.xp) * 100)}% to level ${unit.level + 1} (${xpToNextLevel(unit.level, unit.xp)} XP to go)`,
+                text:
+                  unit.level >= MAX_LEVEL
+                    ? `Level ${unit.level} — Maximum level`
+                    : `Level ${unit.level} — ${Math.round(levelProgress(unit.level, unit.xp) * 100)}% to level ${unit.level + 1} (${xpToNextLevel(unit.level, unit.xp)} XP to go)`,
               })
             : null,
         ),

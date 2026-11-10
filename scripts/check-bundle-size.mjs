@@ -10,8 +10,9 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// ADR 0094 (380, owner, 2026-10-28); ADR 0074 had raised it to 360, ADR 0066 from 320 to 350.
-const BUDGET_KB = 380;
+// ADR 0104 amendment (396, owner, 2026-11-07, permanent): the top-down combat presentation (T4/T5).
+// ADR 0094 had set 380 (2026-10-28); ADR 0074 had raised it to 360, ADR 0066 from 320 to 350.
+const BUDGET_KB = 396;
 const dist = resolve(dirname(fileURLToPath(import.meta.url)), '../dist');
 
 function walk(dir) {

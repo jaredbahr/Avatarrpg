@@ -37,6 +37,11 @@ export interface TopdownSheetData {
   readonly cast: ClipDef | null;
   readonly clipData: boolean;
   readonly actions: boolean;
+  readonly treadGrounding?: readonly {
+    readonly spanPx: number;
+    readonly centerXFromAnchorPx: number;
+    readonly baselineYFromAnchorPx: number;
+  }[];
 }
 
 export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
@@ -371,5 +376,15 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: false,
     actions: true,
+    treadGrounding: [
+      { spanPx: 69, centerXFromAnchorPx: -18.5, baselineYFromAnchorPx: 0 },
+      { spanPx: 65, centerXFromAnchorPx: -4.5, baselineYFromAnchorPx: 0 },
+      { spanPx: 80, centerXFromAnchorPx: 0, baselineYFromAnchorPx: 0 },
+      { spanPx: 67, centerXFromAnchorPx: 6.5, baselineYFromAnchorPx: 0 },
+      { spanPx: 74, centerXFromAnchorPx: 13, baselineYFromAnchorPx: 0 },
+      { spanPx: 81, centerXFromAnchorPx: -2.5, baselineYFromAnchorPx: 0 },
+      { spanPx: 73, centerXFromAnchorPx: 3.5, baselineYFromAnchorPx: 0 },
+      { spanPx: 81, centerXFromAnchorPx: -1.5, baselineYFromAnchorPx: 0 },
+    ],
   },
 };

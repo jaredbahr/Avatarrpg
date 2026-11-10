@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "bundle:report": "node scripts/bundle-report.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -35,7 +36,9 @@
     "art:prop": "node --import tsx scripts/art/prop.ts",
     "art:prop-family": "node --import tsx scripts/art/prop-family.ts",
     "check:assets": "node scripts/check-asset-budget.mjs",
-    "credits": "node --import tsx scripts/credits.ts"
+    "credits": "node --import tsx scripts/credits.ts",
+    "docs:content": "node --import tsx scripts/docs/content-reference.ts",
+    "soak": "node --import tsx scripts/soak.ts"
   },
   "dependencies": {
     "pixi.js": "^8.20.1",

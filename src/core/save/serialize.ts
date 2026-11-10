@@ -102,7 +102,7 @@ const battle = z.object({
   grid,
   units: z.array(unit),
   order: z.array(z.string()),
-  turnIndex: z.number(),
+  turnIndex: z.number().int().min(0),
   round: z.number(),
   phase: z.enum(['active', 'victory', 'defeat']),
   temporaryWalls: z.array(z.object({ pos: vec2, untilRound: z.number(), previous: tile })),
@@ -408,6 +408,19 @@ export function deserialize(json: string): LoadResult {
     const first = parsed.error.issues[0];
     const where = first ? first.path.join('.') : 'the file';
     return { ok: false, error: `This save looks damaged (${where}).` };
+  }
+
+  const savedBattle = parsed.data.state.battle;
+  if (savedBattle?.phase === 'active') {
+    if (savedBattle.order.length > 0 && savedBattle.turnIndex >= savedBattle.order.length) {
+      return { ok: false, error: 'This save looks damaged (state.battle.turnIndex).' };
+    }
+    const activeId = savedBattle.order[savedBattle.turnIndex];
+    if (!activeId || !savedBattle.units.some((candidate) => candidate.id === activeId)) {
+      // Neither player controls nor AI can advance a battle without an actor.
+      // A known dead actor is still valid: reconciliation hands its turn on.
+      return { ok: false, error: 'This save looks damaged (state.battle.order).' };
+    }
   }
 
   return { ok: true, blob: parsed.data };

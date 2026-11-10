@@ -19,6 +19,7 @@ import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
 import { useTopDownStyle, useWorldStyleTest } from './content/assets/manifest';
 import { loadTopDownPresentations, withTopDownMaps } from './content/topdown';
+import { loadTopdownVfx } from './content/assets/topdownVfx';
 import { assetUrl } from './render/spriteCache';
 import type { ContentIndex } from './core/types';
 
@@ -51,6 +52,7 @@ if (import.meta.env.DEV) {
 const style = new URLSearchParams(window.location.search).get('style');
 if (style === 'world') useWorldStyleTest();
 if (style === 'topdown') useTopDownStyle();
+if (style === 'topdown') void loadTopdownVfx(style, import.meta.env.BASE_URL);
 
 function boot(content: ContentIndex): void {
   if (!root) return;

@@ -40,7 +40,7 @@ import type {
   Vec2,
 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
-import { authoredForBothSides } from '../../content/assets/clips';
+import { authoredForBothSides, headingClip, type Heading } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
 import { drawSceneImage, sceneForGrid, sceneImage, sceneryOpacities } from '../scene';
@@ -165,6 +165,11 @@ import {
   soleContactArt,
   topdownFeetLevel,
 } from '../figureShadowArt';
+import {
+  drillerGroundingArt,
+  drillerGroundingGeometry,
+  drillerGroundingPose,
+} from '../drillerGrounding';
 import { restingClip } from '../sheets/feet';
 import {
   CAST_PER_PIXEL,
@@ -376,6 +381,11 @@ interface FigureCels {
   readonly flip: boolean;
   /** The figure's drawn scale (with any pose scale). */
   readonly scale: number;
+  readonly driller?: {
+    readonly frame: ResolvedFrame | null;
+    readonly heading: Heading;
+    readonly mirror: boolean;
+  };
 }
 
 export class PixiBackend implements RenderBackend {
@@ -1372,6 +1382,46 @@ export class PixiBackend implements RenderBackend {
     at: Vec2,
     cels?: FigureCels,
   ): void {
+    if (cels?.driller) {
+      if (strength <= 0 || !contactBand(this.grounding, 1) || !cels.driller.frame) return;
+      const art = drillerGroundingArt(
+        cels.driller.frame,
+        cels.driller.heading,
+        this.grounding.castKey,
+        cels.driller.mirror,
+      );
+      if (!art) return;
+      const geometry = drillerGroundingGeometry(foot, cels.driller.frame, art, cels.scale, 1);
+      const placeGrounding = (
+        id: string,
+        canvas: HTMLCanvasElement,
+        level: number,
+        box: typeof geometry.cast,
+      ) => {
+        this.castLive.add(id);
+        let sprite = this.castSprites.get(id);
+        if (!sprite) {
+          sprite = new Sprite();
+          this.castSprites.set(id, sprite);
+          this.shadowMaskSources.addChild(sprite);
+        }
+        const texture = this.texture(canvas);
+        if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+        sprite.texture = texture;
+        sprite.anchor.set(0, 0);
+        sprite.rotation = 0;
+        sprite.scale.set(1, 1);
+        sprite.position.set(box.x, box.y);
+        sprite.width = box.w;
+        sprite.height = box.h;
+        sprite.alpha = Math.max(0, Math.min(1, (strength * level) / shadowCeiling(this.grounding)));
+        sprite.blendMode = 'max';
+        sprite.visible = sprite.alpha > 0;
+      };
+      placeGrounding(key, art.cast, this.grounding.cast, geometry.cast);
+      placeGrounding(`${key}:foot`, art.blob, this.grounding.contact, geometry.blob);
+      return;
+    }
     if (strength <= 0 || !contactBand(this.grounding, 1)) return;
     // The pool centres on the resting soles, in world px; one figure tile is `tile`.
     const tile = TILE * (cels?.scale ?? scale);
@@ -2979,6 +3029,53 @@ export class PixiBackend implements RenderBackend {
       sprite.alpha = alpha;
       sprite.visible = true;
       sprite.zIndex = depth(pos, unit.size);
+      const shadowCels =
+        camera.projection === 'topdown' &&
+        unit.sprite === 'unit.enemy.driller' &&
+        asset.kind === 'sheet' &&
+        asset.atlas.startsWith('art/topdown/')
+          ? (() => {
+              const pose = drillerGroundingPose(
+                frame && 'clip' in frame ? frame.clip : locomotion,
+                drawFacing === -1,
+              );
+              return {
+                drawn: frame && !bend && asset.kind === 'sheet' ? frame : null,
+                resting: null,
+                flip: pose.mirror,
+                scale,
+                driller: {
+                  ...pose,
+                  frame: sheets.frame(
+                    unit.sprite,
+                    headingClip('idle', pose.heading),
+                    0,
+                    0,
+                    px * scale,
+                    unit.size,
+                    undefined,
+                    heightTiles,
+                  ),
+                },
+              };
+            })()
+          : frame && !bend && asset.kind === 'sheet'
+            ? {
+                drawn: frame,
+                resting: sheets.frame(
+                  unit.sprite,
+                  restingClip(locomotion),
+                  0,
+                  undefined,
+                  px * scale,
+                  unit.size,
+                  undefined,
+                  heightTiles,
+                ),
+                flip: drawFacing === -1,
+                scale,
+              }
+            : undefined;
       // Its pool is steady at its feet, its contact under the soles it draws (ADR 0093). The
       // foot is the tile's ground, so the walk bob lifts the figure off its shadow.
       this.projectFigureShadow(
@@ -2990,23 +3087,7 @@ export class PixiBackend implements RenderBackend {
           (unit.alpha ?? 1) *
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1),
         pos,
-        frame && !bend && asset.kind === 'sheet'
-          ? {
-              drawn: frame,
-              resting: sheets.frame(
-                unit.sprite,
-                restingClip(locomotion),
-                0,
-                undefined,
-                px * scale,
-                unit.size,
-                undefined,
-                heightTiles,
-              ),
-              flip: drawFacing === -1,
-              scale,
-            }
-          : undefined,
+        shadowCels,
       );
 
       // The hit flash: the same sprite again, white and additive, over the top.

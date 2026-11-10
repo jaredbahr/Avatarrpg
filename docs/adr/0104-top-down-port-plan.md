@@ -209,6 +209,50 @@ The questions were put with a recommendation each; his answers, verbatim where s
 7. **Pacing: "carry them over."** The prototype's measured timings and the 1×/2×/3× speed toggle are the
    starting point; the hit-stops stay.
 
+## Amendment: budgets and the T4/T5 calls (owner, 2026-11-07)
+
+The owner's words: "move on to the rest of the game up until the digger and back. Do another pass for visuals.
+Shadows need to be seated so that objects look like they're a part of the world, not floating." Asked about the four
+calls the T4/T5 plan needed, he answered:
+
+1. **Budgets, raised permanently.**
+   - The JS budget goes from 380 to **396 KB** gzipped (`scripts/check-bundle-size.mjs`). T4 and T5 add about
+     13–15 KB of presentation code: organic washes, surfaces, runtime object shadows, VFX playback, and the follow
+     camera and pacing.
+   - The `topdown` art family gets **6 MiB** (`scripts/check-asset-budget.mjs`).
+   - These budgets stay after T7. The oblique code and art that T7 removes free room under them; they don't lower
+     them.
+2. **Credits:** about 650 PixelLab credits, for:
+   - the quarry cast's hit and knockout clips;
+   - a new quarry sergeant;
+   - the Driller's rumble in all eight headings, its tread loop, hit shudder and jammed knockout;
+   - a few effects.
+
+   Every job is booked in `ledger.json`.
+
+3. **The quarry gate's `c` cells** keep the rules: they are cover you stand on. They are drawn as low cover (a short
+   crate or sack line), not solid crates.
+4. **Walk speed:** exploration walks at the prototype's 130 px/s (about 308 ms a tile), with cel time scaled so the
+   feet never slide.
+
+The seating rule is measurable and applies to every board and every runtime object (`ground-checks.ts`):
+
+- no ground pixel between an object's foot and its shadow;
+- contact along the whole foot;
+- the cast joined to the contact;
+- no hover.
+
+## Driller grounding implementation (#469)
+
+The Driller packer records each static heading's tread span, center offset and baseline from
+the lowest 16 opaque rows of the placed object view. Runtime grounding uses those measurements
+for an opaque `feetBlob` covering the tread span, and caches the static view's `hardShadowMask`
+cast independently of attack cels. Both backends emit these into their existing maximum-alpha
+shadow union only on top-down boards drawing the top-down Driller atlas. Heading locomotion
+uses its authored static view; the legacy east cast and its static shadow mirror together.
+This adds no action loader or eight-heading action playback. Source pixels and action anchors
+stay unchanged: drill contact, dust and occlusion cannot establish a new tread baseline.
+
 ## Consequences
 
 - The oblique rules in CLAUDE.md stay authoritative until T6 and are rewritten there. Ba Dan "one continuous

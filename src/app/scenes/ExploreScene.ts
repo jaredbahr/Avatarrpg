@@ -223,7 +223,7 @@ export class ExploreScene implements Scene {
     document.addEventListener('visibilitychange', this.onVisibility);
 
     this.setupRenderer();
-    this.renderChrome();
+    this.renderChrome(this.preserveFocus(true));
     this.loop();
   }
 
@@ -279,11 +279,13 @@ export class ExploreScene implements Scene {
     this.app.residents.tick(now, true);
     this.life?.resync(now);
     this.loop();
+    this.preserveFocus(true)();
   }
 
   sync(): void {
     const state = this.app.state;
     if (!state) return;
+    const restoreFocus = this.preserveFocus();
     const conversation = Boolean(worldConversationFor(this.app.content, state));
     const map = this.app.content.maps.get(state.location.mapId);
     if (map && map.id !== this.map?.id) {
@@ -315,7 +317,7 @@ export class ExploreScene implements Scene {
       this.rememberViewSize();
     }
     this.setConversationMode(conversation);
-    this.renderChrome();
+    this.renderChrome(restoreFocus);
   }
 
   /**
@@ -573,12 +575,60 @@ export class ExploreScene implements Scene {
   /* Chrome: the banner, the roster, the hotbar                        */
   /* ---------------------------------------------------------------- */
 
+  private preserveFocus(entry = false): () => void {
+    const scene = this.host?.querySelector<HTMLElement>('.explore-scene');
+    if (!scene) return () => undefined;
+    const previous = document.activeElement;
+    const owned = previous && scene?.contains(previous) && !previous.closest('[hidden], [inert]');
+    const key = (control: Element) =>
+      control.getAttribute('aria-label') ??
+      control.getAttribute('data-conversation-control') ??
+      [...control.childNodes].find((node) => node.nodeType === Node.TEXT_NODE)?.textContent ??
+      control.textContent;
+    const identity = previous && key(previous);
+    const usable = (control: Element) =>
+      !control.matches(':disabled, [aria-disabled="true"]') &&
+      !control.closest('[hidden], [inert], [aria-hidden="true"]') &&
+      control.getClientRects().length > 0;
+    return () => {
+      if (
+        (!owned && !entry) ||
+        !scene?.isConnected ||
+        scene.closest('[inert]') ||
+        document.querySelector('[role="dialog"]')
+      )
+        return;
+      const active = document.activeElement;
+      if (
+        active &&
+        active !== document.body &&
+        active.isConnected &&
+        (!scene.contains(active) || usable(active))
+      )
+        return;
+      const controls = [...scene.querySelectorAll<HTMLElement>('button, [tabindex]')].filter(
+        usable,
+      );
+      const fallback = controls.find((control) =>
+        control.matches(
+          this.conversationMode
+            ? '[data-conversation-control="next"], .choice-option'
+            : '.explore-hud button',
+        ),
+      );
+      (controls.find((control) => key(control) === identity) ?? fallback ?? controls[0])?.focus({
+        preventScroll: true,
+      });
+    };
+  }
+
   /** DOM, all of it, rebuilt whenever the state changes: it is cheap and it is right. */
-  private renderChrome(): void {
+  private renderChrome(restoreFocus = this.preserveFocus()): void {
     this.renderBanner();
     this.renderRoster();
     this.renderHud();
     this.renderConversation();
+    restoreFocus();
   }
 
   private renderBanner(): void {
@@ -724,6 +774,12 @@ export class ExploreScene implements Scene {
 
   /** What the party can do out here: real actions, every one of them. */
   private renderHud(): void {
+    const restoreFocus = this.preserveFocus();
+    this.buildHud();
+    restoreFocus();
+  }
+
+  private buildHud(): void {
     const hud = this.host?.querySelector<HTMLElement>('.explore-hud');
     const state = this.app.state;
     if (!hud || !state) return;
@@ -893,7 +949,7 @@ export class ExploreScene implements Scene {
   private renderConversation(): void {
     const host = this.host?.querySelector<HTMLElement>('.explore-conversation');
     if (!host) return;
-    const focused = document.activeElement;
+    const focused = host.closest('[inert]') ? null : document.activeElement;
     const refocusNext =
       focused instanceof HTMLElement &&
       host.contains(focused) &&
@@ -926,7 +982,7 @@ export class ExploreScene implements Scene {
         : (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
           host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
           panel);
-    target?.focus({ preventScroll: true });
+    if (refocusNext || refocusPanel) target?.focus({ preventScroll: true });
   }
 
   private talkTo(npc: PlacedNpc | null): void {

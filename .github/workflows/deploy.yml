@@ -19,8 +19,6 @@ on:
 # Pages needs these; nothing else in the repo does.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # Never run two deploys at once, but let a newer commit supersede a queued one.
 concurrency:
@@ -32,11 +30,31 @@ jobs:
     name: Has main moved since yesterday?
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
     outputs:
       # `true` when HEAD is younger than the daily window; the build keys on it.
       fresh: ${{ steps.fresh.outputs.fresh }}
+      sha: ${{ steps.gate.outputs.sha }}
+      ci_run_id: ${{ steps.gate.outputs.ci_run_id }}
+      ci_run_attempt: ${{ steps.gate.outputs.ci_run_attempt }}
+      ci_workflow_id: ${{ steps.gate.outputs.ci_workflow_id }}
+      ci_workflow_path: ${{ steps.gate.outputs.ci_workflow_path }}
+      ci_event: ${{ steps.gate.outputs.ci_event }}
+      ci_url: ${{ steps.gate.outputs.ci_url }}
+      ci_job_ids: ${{ steps.gate.outputs.ci_job_ids }}
+      artifact_name: ${{ steps.gate.outputs.artifact_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Assert the immutable workflow revision
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
 
       - id: fresh
         # 25 hours, not 24: cron start times jitter by minutes, and a commit
@@ -49,14 +67,54 @@ jobs:
             echo "fresh=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Require successful exact-SHA main CI
+        id: gate
+        if: ${{ github.event_name == 'workflow_dispatch' || steps.fresh.outputs.fresh == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/deploy-gate.mjs select
+
   build:
     name: Build site
     needs: freshness
     # A manual dispatch always builds; the daily run only when `main` moved.
     if: ${{ github.event_name == 'workflow_dispatch' || needs.freshness.outputs.fresh == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    outputs:
+      tree: ${{ steps.revision.outputs.tree }}
+      artifact_id: ${{ steps.upload.outputs.artifact_id }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.freshness.outputs.sha }}
+          persist-credentials: false
+
+      - name: Assert the selected revision
+        id: revision
+        env:
+          EXPECTED_SHA: ${{ needs.freshness.outputs.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          echo "tree=$(git rev-parse HEAD^{tree})" >> "$GITHUB_OUTPUT"
+
+      - name: Revalidate main and CI before install/build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_GATE_STAGE: before-build
+          DEPLOY_SHA: ${{ needs.freshness.outputs.sha }}
+          DEPLOY_CI_RUN_ID: ${{ needs.freshness.outputs.ci_run_id }}
+          DEPLOY_CI_RUN_ATTEMPT: ${{ needs.freshness.outputs.ci_run_attempt }}
+          DEPLOY_CI_WORKFLOW_ID: ${{ needs.freshness.outputs.ci_workflow_id }}
+          DEPLOY_CI_WORKFLOW_PATH: ${{ needs.freshness.outputs.ci_workflow_path }}
+          DEPLOY_CI_EVENT: ${{ needs.freshness.outputs.ci_event }}
+          DEPLOY_CI_JOB_IDS: ${{ needs.freshness.outputs.ci_job_ids }}
+          DEPLOY_ARTIFACT_NAME: ${{ needs.freshness.outputs.artifact_name }}
+        run: node scripts/deploy-gate.mjs revalidate
 
       - uses: actions/setup-node@v4
         with:
@@ -102,17 +160,94 @@ jobs:
           # token, so nobody has to click through Settings -> Pages first.
           enablement: true
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Revalidate main and CI before artifact upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_GATE_STAGE: before-upload
+          DEPLOY_SHA: ${{ needs.freshness.outputs.sha }}
+          DEPLOY_CI_RUN_ID: ${{ needs.freshness.outputs.ci_run_id }}
+          DEPLOY_CI_RUN_ATTEMPT: ${{ needs.freshness.outputs.ci_run_attempt }}
+          DEPLOY_CI_WORKFLOW_ID: ${{ needs.freshness.outputs.ci_workflow_id }}
+          DEPLOY_CI_WORKFLOW_PATH: ${{ needs.freshness.outputs.ci_workflow_path }}
+          DEPLOY_CI_EVENT: ${{ needs.freshness.outputs.ci_event }}
+          DEPLOY_CI_JOB_IDS: ${{ needs.freshness.outputs.ci_job_ids }}
+          DEPLOY_ARTIFACT_NAME: ${{ needs.freshness.outputs.artifact_name }}
+        run: node scripts/deploy-gate.mjs revalidate
+
+      - id: upload
+        uses: actions/upload-pages-artifact@v3
         with:
+          name: ${{ needs.freshness.outputs.artifact_name }}
           path: dist
 
   deploy:
     name: Deploy
-    needs: build
+    needs: [freshness, build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.freshness.outputs.sha }}
+          persist-credentials: false
+
+      - name: Assert the selected revision
+        env:
+          EXPECTED_SHA: ${{ needs.freshness.outputs.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Final main, CI and artifact identity check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_GATE_STAGE: before-publish
+          DEPLOY_SHA: ${{ needs.freshness.outputs.sha }}
+          DEPLOY_CI_RUN_ID: ${{ needs.freshness.outputs.ci_run_id }}
+          DEPLOY_CI_RUN_ATTEMPT: ${{ needs.freshness.outputs.ci_run_attempt }}
+          DEPLOY_CI_WORKFLOW_ID: ${{ needs.freshness.outputs.ci_workflow_id }}
+          DEPLOY_CI_WORKFLOW_PATH: ${{ needs.freshness.outputs.ci_workflow_path }}
+          DEPLOY_CI_EVENT: ${{ needs.freshness.outputs.ci_event }}
+          DEPLOY_CI_JOB_IDS: ${{ needs.freshness.outputs.ci_job_ids }}
+          DEPLOY_ARTIFACT_NAME: ${{ needs.freshness.outputs.artifact_name }}
+          DEPLOY_ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+        run: node scripts/deploy-gate.mjs revalidate
+
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ needs.freshness.outputs.artifact_name }}
+
+      - name: Record deployment evidence
+        env:
+          DEPLOY_SHA: ${{ needs.freshness.outputs.sha }}
+          CI_RUN_ID: ${{ needs.freshness.outputs.ci_run_id }}
+          CI_RUN_ATTEMPT: ${{ needs.freshness.outputs.ci_run_attempt }}
+          CI_WORKFLOW_ID: ${{ needs.freshness.outputs.ci_workflow_id }}
+          CI_WORKFLOW_PATH: ${{ needs.freshness.outputs.ci_workflow_path }}
+          CI_EVENT: ${{ needs.freshness.outputs.ci_event }}
+          CI_URL: ${{ needs.freshness.outputs.ci_url }}
+          CI_JOB_IDS: ${{ needs.freshness.outputs.ci_job_ids }}
+          TREE: ${{ needs.build.outputs.tree }}
+          ARTIFACT_NAME: ${{ needs.freshness.outputs.artifact_name }}
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          {
+            echo "## Pages deployment evidence"
+            echo "- SHA: \`$DEPLOY_SHA\`"
+            echo "- Git tree: \`$TREE\`"
+            echo "- CI: [$CI_RUN_ID attempt $CI_RUN_ATTEMPT ($CI_EVENT)]($CI_URL)"
+            echo "- CI workflow: \`$CI_WORKFLOW_PATH\` (ID \`$CI_WORKFLOW_ID\`)"
+            echo "- Required CI job IDs: \`$CI_JOB_IDS\`"
+            echo "- Pages artifact: \`$ARTIFACT_NAME\` (ID \`$ARTIFACT_ID\`)"
+            echo "- Published URL: $PAGE_URL"
+            echo "- Main was rechecked immediately before publication; an advance after that read cannot substitute the frozen artifact."
+          } >> "$GITHUB_STEP_SUMMARY"

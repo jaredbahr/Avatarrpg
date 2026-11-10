@@ -15,9 +15,11 @@ const STEPS = [
   { name: 'typecheck', run: 'npm run typecheck' },
   { name: 'lint', run: 'npm run lint' },
   { name: 'format:check', run: 'npm run format:check' },
+  { name: 'content reference freshness', run: 'npm run docs:content -- --check' },
   { name: 'test', run: 'npm test' },
   { name: 'build', run: 'npm run build' },
   { name: 'bundle budget', run: 'node scripts/check-bundle-size.mjs' },
+  { name: 'bundle attribution (informational)', run: 'npm run bundle:report', optional: true },
   { name: 'art:validate', run: 'npm run art:validate' },
   { name: 'check:assets', run: 'npm run check:assets' },
   {
@@ -29,6 +31,7 @@ const STEPS = [
 ];
 
 let failed = false;
+const optionalFailures = [];
 
 for (const [index, step] of STEPS.entries()) {
   console.log(`\n=== ci:local ${index + 1}/${STEPS.length}: ${step.name} ===`);
@@ -41,11 +44,23 @@ for (const [index, step] of STEPS.entries()) {
   });
   if (error) {
     console.error(`\nci:local could not start "${step.name}": ${error.message}`);
+    if (step.optional) {
+      optionalFailures.push(step.name);
+      console.warn(
+        'Informational step failed; continuing without changing the verification result.',
+      );
+      continue;
+    }
     process.exitCode = 1;
     failed = true;
     break;
   }
   if (status !== 0) {
+    if (step.optional) {
+      optionalFailures.push(step.name);
+      console.warn(`Informational step exited ${status ?? `on signal ${signal}`}; continuing.`);
+      continue;
+    }
     console.error(
       `\nci:local failed at step ${index + 1}/${STEPS.length} "${step.name}" (${
         status === null ? `signal ${signal}` : `exit ${status}`
@@ -58,5 +73,11 @@ for (const [index, step] of STEPS.entries()) {
 }
 
 if (!failed) {
-  console.log(`\nci:local: all ${STEPS.length} steps passed.`);
+  if (optionalFailures.length) {
+    console.log(
+      `\nci:local: all required steps passed; optional informational step failed: ${optionalFailures.join(', ')}.`,
+    );
+  } else {
+    console.log(`\nci:local: all ${STEPS.length} steps passed.`);
+  }
 }

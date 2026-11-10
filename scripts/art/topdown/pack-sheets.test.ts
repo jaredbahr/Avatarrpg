@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, it, vi } from 'vitest';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
-import { DATA, packTopdownSheets, shippedFiles } from './pack-sheets';
+import { DATA, VFX_OUTPUTS, packTopdownSheets, shippedFiles } from './pack-sheets';
 
 // Reading some 3,000 frames and the encoder's slowest lossless search take a minute or more on a busy machine.
 vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
@@ -19,7 +19,12 @@ it('ships exactly what the committed sources pack to', () => {
     expect(bytes.equals(readFileSync(path)), `${path} is stale: run pack-sheets.ts`).toBe(true);
   }
   const shipped = shippedFiles();
-  expect(shipped.sort()).toEqual([...files.keys()].filter((path) => path !== DATA).sort());
+  const vfx: readonly string[] = VFX_OUTPUTS;
+  // Every shipped file is the packer's own, except the VFX packer's two outputs.
+  expect(shipped.filter((path) => !vfx.includes(path)).sort()).toEqual(
+    [...files.keys()].filter((path) => path !== DATA).sort(),
+  );
+  expect(shipped.filter((path) => !files.has(path)).sort()).toEqual([...VFX_OUTPUTS].sort());
 });
 
 it('ships lossless pages with hard alpha', async () => {

@@ -1,0 +1,70 @@
+{
+  "task": "ledger audit test fixture",
+  "t2_start_balance": 100,
+  "t2_end_balance": 90,
+  "t2_ledger_spent": 13,
+  "t2_note": "This text is deliberately not interpreted.",
+  "t3_start_balance": 200,
+  "t3_end_balance": 196,
+  "t3_ledger_spent": 4,
+  "t4_start_balance": 70,
+  "t5_start_balance": 100,
+  "t5_end_balance": 99,
+  "t5_ledger_spent": 0.95,
+  "jobs": [
+    {
+      "name": "t2_exact20",
+      "status": "completed",
+      "credits": 8,
+      "balance_diff": 10,
+      "balance_after": 90
+    },
+    {
+      "name": "T2_over20",
+      "status": "completed",
+      "credits": 5,
+      "balance_diff": 4,
+      "balance_after": 86
+    },
+    {
+      "name": "t2_zero",
+      "status": "completed",
+      "credits": 0,
+      "balance_diff": 0,
+      "balance_after": 86
+    },
+    {
+      "name": "t2_missing_delta",
+      "status": "failed",
+      "credits": 0,
+      "balance_after": 86
+    },
+    {
+      "name": "t3_overlap_a",
+      "status": "completed",
+      "credits": 2,
+      "balance_diff": 2,
+      "balance_after": 198
+    },
+    {
+      "name": "t3_overlap_b",
+      "status": "completed",
+      "credits": 3,
+      "balance_diff": 3,
+      "balance_after": 195
+    },
+    {
+      "name": "t5_under20_phase_gap",
+      "status": "completed",
+      "credits": 0.95,
+      "balance_diff": 1,
+      "balance_after": 99
+    },
+    {
+      "name": "unmapped_job",
+      "status": "failed",
+      "credits": 1,
+      "balance_diff": 0
+    }
+  ]
+}

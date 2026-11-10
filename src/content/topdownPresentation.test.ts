@@ -102,7 +102,14 @@ describe('withTopDownMaps', () => {
       expect(before.projection).toBe('oblique');
       expect(before.backdrop).toBeDefined();
       expect(after.projection).toBe('topdown');
-      expect(after.scene).toBe(TOPDOWN_FIXTURE_SCENE);
+      expect(after.scene).toMatchObject(TOPDOWN_FIXTURE_SCENE);
+      expect(after.scene?.paintedRubble).toEqual(before.scene?.paintedRubble);
+      if (before.scene?.paintedRubble === undefined) {
+        expect(after.scene).toBe(TOPDOWN_FIXTURE_SCENE);
+      } else {
+        expect(after.scene).not.toBe(TOPDOWN_FIXTURE_SCENE);
+        expect(TOPDOWN_FIXTURE_SCENE.paintedRubble).toBeUndefined();
+      }
       expect('backdrop' in after).toBe(false);
       expect('cameraPaint' in after).toBe(false);
       // The map's own centre margin stays unless the presentation sets one.
