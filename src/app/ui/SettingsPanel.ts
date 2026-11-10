@@ -135,6 +135,16 @@ export class SettingsPanel extends Dialog {
     this.overlay?.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
   }
 
+  private focusRadioChoice(label: string): void {
+    for (const group of this.overlay?.querySelectorAll<HTMLElement>('[role="radiogroup"]') ?? []) {
+      if (group.getAttribute('aria-label') !== label) continue;
+      group
+        .querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')
+        ?.focus({ preventScroll: true });
+      return;
+    }
+  }
+
   private toggleRow(
     label: string,
     hint: string,
@@ -177,7 +187,7 @@ export class SettingsPanel extends Dialog {
       class: 'row row-wrap',
       attrs: { role: 'radiogroup', 'aria-label': label },
     });
-    for (const choice of choices) {
+    for (const [index, choice] of choices.entries()) {
       const active = choice.value === value;
       const node = button(
         choice.label,
@@ -189,6 +199,21 @@ export class SettingsPanel extends Dialog {
       );
       node.setAttribute('role', 'radio');
       node.setAttribute('aria-checked', String(active));
+      node.addEventListener('keydown', (event) => {
+        const direction =
+          event.key === 'ArrowRight' || event.key === 'ArrowDown'
+            ? 1
+            : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+              ? -1
+              : 0;
+        if (direction === 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const next = (index + direction + choices.length) % choices.length;
+        // Keep the button's existing settings update, sound and heading-focus guard.
+        group.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next]?.click();
+        this.focusRadioChoice(label);
+      });
       group.appendChild(node);
     }
 
