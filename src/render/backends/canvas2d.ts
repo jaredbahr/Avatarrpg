@@ -417,14 +417,18 @@ export class Canvas2DBackend implements RenderBackend {
       // plate and piece has loaded, the procedural terrain stands in, as on the oblique board.
       const scene = drawsScene(camera.projection) ? view.scene : undefined;
       let painted = painting !== null;
+      let scenePainted = false;
       if (scene) {
         const ground = sceneGroundImages(scene);
         painted = sceneArtLoaded(scene, ground);
+        scenePainted = painted;
         if (painted) this.drawScenePlates(ground, camera);
       }
       this.drawGround(view, camera, painted);
       if (!painted || view.crispOverlays) this.drawDecor(view, camera);
-      if (view.atmosphere) this.drawShade(view, camera);
+      // A painted scene runs past the grid and carries its own light, so the board-edge falloff
+      // (clipped to the grid) would cut a straight band through it. Pixi skips it the same way.
+      if (view.atmosphere && !scenePainted) this.drawShade(view, camera);
       this.drawOverlays(view, camera);
       this.drawSteamPuffs(view, camera);
       this.drawPath(view, camera);
