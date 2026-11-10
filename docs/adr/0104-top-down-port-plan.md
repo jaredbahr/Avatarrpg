@@ -242,6 +242,14 @@ The seating rule is measurable and applies to every board and every runtime obje
 - the cast joined to the contact;
 - no hover.
 
+## Note: the top-down family is not precached (orchestrator, 2026-11-10)
+
+The quarry's three plates (#593) took the service-worker precache to 25.07 MB of 25, as §3 foresaw while the old and
+new art ship side by side. No budget is raised. The top-down family is runtime-fetched, not precached, until T6
+switches the default: it is only ever requested under `?style=topdown`. `scripts/precache.mjs` lists `art/topdown/**`;
+workbox ignores it and `check-asset-budget.mjs` leaves it out of the precache total, while the `topdown` family keeps
+its own 6 MiB budget. `scripts/precache.test.ts` pins it. T6 revisits it.
+
 ## Driller grounding implementation (#469)
 
 The Driller packer records each static heading's tread span, center offset and baseline from

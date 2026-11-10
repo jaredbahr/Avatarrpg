@@ -45,10 +45,21 @@ export function shippedFiles(): string[] {
   const top = existsSync(OUT) ? readdirSync(OUT) : [];
   const objects = existsSync(OBJECTS_OUT) ? readdirSync(OBJECTS_OUT) : [];
   return [
-    // The boards' folders (`ba-dan/`, `forest-road/`) are the ground packer's (`pack-ground.ts`) and
-    // `props/` the prop packer's (`pack-props.ts`), each held by its own test.
+    // The boards' folders (`ba-dan/`, `forest-road/`, the quarry's three) are the ground packer's
+    // (`pack-ground.ts`) and `props/` the prop packer's (`pack-props.ts`), each held by its own test.
     ...top
-      .filter((f) => f !== 'objects' && f !== 'ba-dan' && f !== 'forest-road' && f !== 'props')
+      .filter(
+        (f) =>
+          ![
+            'objects',
+            'ba-dan',
+            'forest-road',
+            'quarry-gate',
+            'cutting',
+            'quarry-floor',
+            'props',
+          ].includes(f),
+      )
       .map((f) => `${OUT}/${f}`),
     ...objects.map((f) => `${OBJECTS_OUT}/${f}`),
   ];

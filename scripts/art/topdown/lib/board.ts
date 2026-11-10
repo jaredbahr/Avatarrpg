@@ -63,6 +63,12 @@ export interface Baked {
   readonly bare: RgbaImage;
   /** Terrain class per plate pixel (`CLASS`), before any object or shadow. */
   readonly classes: Uint8Array;
+  /**
+   * A finer terrain key per plate pixel for the straight-edge check, where `classes` lumps grounds
+   * together for the shadows (the quarry's sand, road and shelf rock are all hard ground). Every
+   * boundary between two keys counts.
+   */
+  readonly edges?: Uint8Array;
   /** Plate pixels any object's sprite covers (uprights and flats). */
   readonly cover: Uint8Array;
   /** Plate pixels the board's frame darkens toward its edge, which the shadow check leaves out. */
@@ -100,7 +106,7 @@ export interface TopDownBoard {
 /** The scene file a board writes beside its plates. */
 export const sceneFile = (board: Pick<TopDownBoard, 'out'>): string => `${board.out}/scene.json`;
 
-/** Every file a board ships, by path: `ground.webp`, `uprights.webp` and `scene.json`. */
+/** Every file a board ships, by path: `ground.webp`, `uprights.webp` (when anything stands) and `scene.json`. */
 export async function packBoard(
   board: TopDownBoard,
   baked: Baked = board.bake(),
@@ -111,8 +117,11 @@ export async function packBoard(
     .sort((a, b) => a.id.localeCompare(b.id))
     .map((u) => ({ name: u.id, image: asImage(u.image) }));
   const { placed, height } = shelfPack(items, ATLAS_WIDTH, GUTTER);
-  const atlas = composeAtlas(items, placed, ATLAS_WIDTH, height, GUTTER);
-  files.set(`${board.out}/uprights.webp`, await encodeWebpLossless(atlas, 6));
+  // a board with nothing standing on it yet (its ground alone) ships no atlas
+  if (items.length > 0) {
+    const atlas = composeAtlas(items, placed, ATLAS_WIDTH, height, GUTTER);
+    files.set(`${board.out}/uprights.webp`, await encodeWebpLossless(atlas, 6));
+  }
   const rects = new Map(placed.map((p) => [p.name, p]));
   const uprights = [...baked.uprights]
     .sort((a, b) => a.id.localeCompare(b.id))

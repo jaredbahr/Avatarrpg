@@ -1673,6 +1673,12 @@ const STANDING: readonly (readonly [number, number])[] = [
   [0, -8],
   [0, 8],
 ];
+/**
+ * A shelf's cut face may hang over the top of the cell below it by this much, in world px (one
+ * tier of the quarry's `Q_FACE`, ADR 0104 §3): a figure's head there stands in front of the wall's
+ * foot. Never over the cell's centre.
+ */
+export const TOPDOWN_FACE_OVERHANG = 13;
 /** How far apart the mouth check samples its walk to the rim, in world px. */
 const MOUTH_STEP = 4;
 
@@ -1692,8 +1698,9 @@ const outward: Readonly<Record<MapEdgeSide, Vec2>> = {
  * - an object's footprint is on the map unless the object is `exterior`;
  * - a solid object stands only on blocked cells, and every blocked cell is a solid object's
  *   footprint or blocked terrain (its centre is water, cliff or void), so what reads blocked is;
- * - no walkable cell's centre, nor where a figure stands about it, is void, cliff or water, unless
- *   a deck carries it;
+ * - no walkable cell's centre, nor where a figure stands about it, is void, cliff, water, a rock
+ *   face or rock, unless a deck carries it; a face may hang over the cell's top
+ *   `TOPDOWN_FACE_OVERHANG` px, never over its centre;
  * - every exit cell (the map's exit, each exit's cells, every `exit` edge) is a cell of a rim mouth,
  *   and every mouth cell runs on a road or path, with nothing solid on it, out to the rim within
  *   the layout's reach;
@@ -1785,9 +1792,15 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
           problems.push(`${where} walkable (${x},${y}) has its centre on ${ground}`);
         // Where a figure stands is ground too: the cell's middle, a figure's width each way.
         else if (!deckCells.has(key(x, y))) {
-          const wet = STANDING.map(([dx, dy]) =>
-            layout.terrain.classify((x + 0.5) * TOPDOWN_CELL + dx, (y + 0.5) * TOPDOWN_CELL + dy),
-          ).find((at) => at.ground !== 'ground');
+          const wet = STANDING.map(([dx, dy]) => ({
+            at: layout.terrain.classify(
+              (x + 0.5) * TOPDOWN_CELL + dx,
+              (y + 0.5) * TOPDOWN_CELL + dy,
+            ),
+            top: TOPDOWN_CELL / 2 + dy < TOPDOWN_FACE_OVERHANG,
+          }))
+            .filter(({ at, top }) => at.ground !== 'ground' && !(at.ground === 'face' && top))
+            .map(({ at }) => at)[0];
           if (wet)
             problems.push(`${where} walkable (${x},${y}) has ${wet.ground} where a figure stands`);
         }

@@ -430,7 +430,12 @@ export function tileCorners(tx: number, ty: number): [Terrain, Terrain, Terrain,
 /* ------------------------------------------------------------------ */
 
 /** What the baked ground is at a point: walkable ground, water, the cliff tile at the lip, or void. */
-export type GroundClass = 'ground' | 'water' | 'cliff' | 'void';
+/**
+ * What the ground is at a point. A quarry board adds two (`quarry.topdown.terrain.ts`): `face`, a
+ * shelf's cut face hanging over the ground below it, and `rock`, the top of a rock cell the rules
+ * block.
+ */
+export type GroundClass = 'ground' | 'water' | 'cliff' | 'void' | 'face' | 'rock';
 
 /** What the ground is at a point; `kerb` marks ground on the water's edge. */
 export interface PointClass {
@@ -523,7 +528,16 @@ export interface ClassifiedTerrain extends TopDownTerrainReader {
  * A board's terrain, tagged by kind so each board's baker reads the terrain it knows and the
  * validation reads any of them through {@link TopDownTerrainReader}.
  */
-export type TopDownTerrainLayer = WangRimTerrain | ForestFloorTerrain | ClassifiedTerrain;
+export type TopDownTerrainLayer =
+  WangRimTerrain | ForestFloorTerrain | QuarryTerraceTerrain | ClassifiedTerrain;
+
+/**
+ * A quarry board's terrain: sand, road, grass and the pool on the floor, the terraced shelves with
+ * their cut faces, and the rim over the void, per pixel from the rows (`quarry.topdown.terrain.ts`).
+ */
+export interface QuarryTerraceTerrain extends TopDownTerrainReader {
+  readonly kind: 'quarry-terrace';
+}
 
 /** The Forest Road's terrain: floor, road, creek and puddle per pixel from the rows (`forestRoad.topdown.terrain.ts`). */
 export interface ForestFloorTerrain extends TopDownTerrainReader {

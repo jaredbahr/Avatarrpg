@@ -237,20 +237,24 @@ export function straightEdge(
 }
 
 /**
- * The longest straight edge between grass, cobble and dirt. The canal's water is left out on
+ * The longest straight edge between grass, cobble and dirt, or between any two of a board's own
+ * `edges` keys where it has them. The canal's water is left out on
  * purpose: it is a built stone channel, ruled straight between its kerbs as the owner approved it
  * (v12, v13), and its edges are kerb against water, not ground against ground.
  */
 const SOFT: ReadonlySet<number> = new Set([CLASS.G, CLASS.C, CLASS.D]);
 export const terrainEdge = (b: Baked): StraightEdge =>
-  straightEdge(
-    b.classes,
-    b.cover,
-    b.ground.width,
-    b.ground.height,
-    32,
-    (x, y) => SOFT.has(x) && SOFT.has(y),
-  );
+  b.edges
+    ? // a board with a finer key (the quarry's grounds and shelf levels): every boundary counts
+      straightEdge(b.edges, b.cover, b.ground.width, b.ground.height)
+    : straightEdge(
+        b.classes,
+        b.cover,
+        b.ground.width,
+        b.ground.height,
+        32,
+        (x, y) => SOFT.has(x) && SOFT.has(y),
+      );
 
 /**
  * The longest straight edge of the rim: where dry ground meets the cliff face or the void. Water is
