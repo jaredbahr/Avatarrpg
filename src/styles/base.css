@@ -311,6 +311,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.tap-tooltip {
+  display: inline-flex;
+  min-width: var(--tap);
+  min-height: var(--tap);
+}
+
 button:focus-visible,
 [tabindex]:focus-visible {
   outline: 3px solid var(--c-gold-deep);
