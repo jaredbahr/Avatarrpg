@@ -8,14 +8,14 @@ import { distance, occupiedCells, pathCost, posKey } from '../src/core/rules/gri
 import type { GameEvent, GameState, Vec2 } from '../src/core/types';
 import type { Renderer } from '../src/render/renderer';
 import type { MapView } from '../src/render/view';
-import { resetStorage, waitForIdle } from './helpers';
+import { resetStorage, settleLayout, waitForIdle } from './helpers';
 
 interface DashProbe {
   calls: { type: string; before: { pos: Vec2; ap: number }; events: readonly GameEvent[] }[];
   frames: { now: number; pos: Vec2; busy: boolean; aiCalls: number; reduced: boolean }[];
   done: boolean;
 }
-type ObservedApp = { scene: { renderer: Renderer | null; firstFrameReady(): Promise<unknown> } };
+type ObservedApp = { scene: { renderer: Renderer | null } };
 declare global {
   interface Window {
     dashProbe?: DashProbe;
@@ -41,110 +41,147 @@ function forest(): GameState {
 }
 
 async function install(page: Page, state: GameState, positive = false) {
-  return page.evaluate(
-    async ({ state, positive }) => {
-      const app = window.fnt?.app;
-      if (!app) throw new Error('App not booted');
-      app.updateSettings({ reduceMotion: false });
-      const probe: DashProbe = { calls: [], frames: [], done: false };
-      window.dashProbe = probe;
-      const dispatch = app.dispatch.bind(app);
-      app.dispatch = (command) => {
-        const actor = app.state?.battle?.units.find((unit) => unit.id === 'e5');
-        const before = actor ? { pos: { ...actor.pos }, ap: actor.ap } : null;
-        const events = dispatch(command);
-        if (before && (command.type === 'runAiTurn' || command.type === 'useAbility'))
-          probe.calls.push({ type: command.type, before, events });
-        return events;
+  const pausedState = await page.evaluate(async (state) => {
+    const app = window.fnt?.app;
+    if (!app) throw new Error('App not booted');
+    app.updateSettings({ reduceMotion: false });
+    const probe: DashProbe = { calls: [], frames: [], done: false };
+    window.dashProbe = probe;
+    const dispatch = app.dispatch.bind(app);
+    app.dispatch = (command) => {
+      const actor = app.state?.battle?.units.find((unit) => unit.id === 'e5');
+      const before = actor ? { pos: { ...actor.pos }, ap: actor.ap } : null;
+      const events = dispatch(command);
+      if (before && (command.type === 'runAiTurn' || command.type === 'useAbility'))
+        probe.calls.push({ type: command.type, before, events });
+      return events;
+    };
+    app.adoptSave(state, { players: [{ name: 'Jared', unitId: 'p0' }] });
+    // Pause through the public menu while the real scene loads, so the
+    // observer sees its first activation rather than racing renderer startup.
+    app.openPause();
+    const pausedState = JSON.stringify(app.state);
+    const scene = (app as unknown as ObservedApp).scene;
+    const renderer = scene.renderer;
+    if (!renderer) throw new Error('Combat renderer did not initialize');
+    const draw = renderer.draw.bind(renderer);
+    renderer.draw = (view: MapView) => {
+      draw(view);
+      const actor = view.units.find((unit) => unit.id === 'e5');
+      if (actor && !probe.done)
+        probe.frames.push({
+          now: view.time,
+          pos: { ...(actor.renderPos ?? actor.pos) },
+          busy: app.animator.busy(view.time),
+          aiCalls: probe.calls.filter((call) => call.type === 'runAiTurn').length,
+          reduced: Boolean(view.reducedMotion),
+        });
+    };
+    await new Promise<void>((resolve) => {
+      const ready = () => {
+        if (probe.frames.length >= 2) resolve();
+        else requestAnimationFrame(ready);
       };
-      app.adoptSave(state, { players: [{ name: 'Jared', unitId: 'p0' }] });
-      // Pause through the public menu while the real scene loads, so the
-      // observer sees its first activation rather than racing renderer startup.
-      app.openPause();
-      const scene = (app as unknown as ObservedApp).scene;
-      const renderer = scene.renderer;
-      if (!renderer) throw new Error('Combat renderer did not initialize');
-      const draw = renderer.draw.bind(renderer);
-      renderer.draw = (view: MapView) => {
-        draw(view);
-        const actor = view.units.find((unit) => unit.id === 'e5');
-        if (actor && !probe.done)
-          probe.frames.push({
-            now: view.time,
-            pos: { ...(actor.renderPos ?? actor.pos) },
-            busy: app.animator.busy(view.time),
-            aiCalls: probe.calls.filter((call) => call.type === 'runAiTurn').length,
-            reduced: Boolean(view.reducedMotion),
-          });
+      requestAnimationFrame(ready);
+    });
+    return pausedState;
+  }, state);
+  // A facade draw can queue a view while Pixi is still initializing. Keep
+  // gameplay paused while the real scene settles and presents its canvas.
+  await page.waitForFunction(() => !window.fnt?.app.curtainBusy);
+  await settleLayout(page);
+  await test.info().attach('paused-scene-warmup', {
+    body: await page.locator('.combat-scene .map-canvas').screenshot(),
+    contentType: 'image/png',
+  });
+  const warmup = await page.evaluate(async () => {
+    const probe = window.dashProbe;
+    if (!probe) throw new Error('Missing observer');
+    const nextDraw = probe.frames.length + 2;
+    await new Promise<void>((resolve) => {
+      const ready = () => {
+        if (probe.frames.length >= nextDraw) resolve();
+        else requestAnimationFrame(ready);
       };
-      await new Promise<void>((resolve) => {
-        const ready = () => {
-          if (probe.frames.length >= 2) resolve();
-          else requestAnimationFrame(ready);
-        };
-        requestAnimationFrame(ready);
-      });
-      app.closePause();
-      if (!positive) return null;
-      const battle = app.state?.battle;
-      const actor = battle?.units.find((unit) => unit.id === 'e5');
-      if (!battle || !actor) throw new Error('Authored enemy missing');
-      const before = { pos: { ...actor.pos }, ap: actor.ap, move: actor.move };
-      const blockedIndex = battle.grid.tiles.findIndex(
-        (tile, index) =>
-          tile.blocked &&
-          Math.max(
-            Math.abs((index % battle.grid.width) - actor.pos.x),
-            Math.abs(Math.floor(index / battle.grid.width) - actor.pos.y),
-          ) <= 3,
-      );
-      if (blockedIndex < 0) throw new Error('No authored nearby collision witness');
-      const blocked = {
-        x: blockedIndex % battle.grid.width,
-        y: Math.floor(blockedIndex / battle.grid.width),
-      };
-      const rejected = app.dispatch({
-        type: 'useAbility',
-        unitId: actor.id,
-        abilityId: 'bandit_rush',
-        target: blocked,
-      });
-      const afterRejected = app.state?.battle?.units.find((unit) => unit.id === actor.id);
-      const rejectedResources = afterRejected
+      requestAnimationFrame(ready);
+    });
+    return {
+      state: JSON.stringify(window.fnt?.app.state),
+      calls: probe.calls,
+      frames: probe.frames,
+      camera: window.fnt?.app.rendererCamera(),
+    };
+  });
+  await test.info().attach('paused-warmup-observer', {
+    body: JSON.stringify(warmup, null, 2),
+    contentType: 'application/json',
+  });
+  expect(warmup.state).toBe(pausedState);
+  expect(warmup.calls).toEqual([]);
+  expect(warmup.frames.every((frame) => !frame.busy && !frame.reduced)).toBe(true);
+  expect(warmup.camera).not.toBeNull();
+  return page.evaluate((positive) => {
+    const app = window.fnt?.app;
+    if (!app) throw new Error('App not booted');
+    app.closePause();
+    if (!positive) return null;
+    const battle = app.state?.battle;
+    const actor = battle?.units.find((unit) => unit.id === 'e5');
+    if (!battle || !actor) throw new Error('Authored enemy missing');
+    const before = { pos: { ...actor.pos }, ap: actor.ap, move: actor.move };
+    const blockedIndex = battle.grid.tiles.findIndex(
+      (tile, index) =>
+        tile.blocked &&
+        Math.max(
+          Math.abs((index % battle.grid.width) - actor.pos.x),
+          Math.abs(Math.floor(index / battle.grid.width) - actor.pos.y),
+        ) <= 3,
+    );
+    if (blockedIndex < 0) throw new Error('No authored nearby collision witness');
+    const blocked = {
+      x: blockedIndex % battle.grid.width,
+      y: Math.floor(blockedIndex / battle.grid.width),
+    };
+    const rejected = app.dispatch({
+      type: 'useAbility',
+      unitId: actor.id,
+      abilityId: 'bandit_rush',
+      target: blocked,
+    });
+    const afterRejected = app.state?.battle?.units.find((unit) => unit.id === actor.id);
+    const rejectedResources = afterRejected
+      ? {
+          pos: { ...afterRejected.pos },
+          ap: afterRejected.ap,
+          move: afterRejected.move,
+          cooldown: afterRejected.cooldowns.bandit_rush ?? 0,
+        }
+      : null;
+    const target = { x: 16, y: 5 };
+    const events = app.dispatch({
+      type: 'useAbility',
+      unitId: actor.id,
+      abilityId: 'bandit_rush',
+      target,
+    });
+    const after = app.state?.battle?.units.find((unit) => unit.id === actor.id);
+    return {
+      before,
+      blocked,
+      rejected,
+      rejectedResources,
+      target,
+      events,
+      after: after
         ? {
-            pos: { ...afterRejected.pos },
-            ap: afterRejected.ap,
-            move: afterRejected.move,
-            cooldown: afterRejected.cooldowns.bandit_rush ?? 0,
+            pos: { ...after.pos },
+            ap: after.ap,
+            move: after.move,
+            cooldown: after.cooldowns.bandit_rush ?? 0,
           }
-        : null;
-      const target = { x: 16, y: 5 };
-      const events = app.dispatch({
-        type: 'useAbility',
-        unitId: actor.id,
-        abilityId: 'bandit_rush',
-        target,
-      });
-      const after = app.state?.battle?.units.find((unit) => unit.id === actor.id);
-      return {
-        before,
-        blocked,
-        rejected,
-        rejectedResources,
-        target,
-        events,
-        after: after
-          ? {
-              pos: { ...after.pos },
-              ap: after.ap,
-              move: after.move,
-              cooldown: after.cooldowns.bandit_rush ?? 0,
-            }
-          : null,
-      };
-    },
-    { state, positive },
-  );
+        : null,
+    };
+  }, positive);
 }
 
 async function finish(page: Page) {

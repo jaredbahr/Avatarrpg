@@ -113,3 +113,21 @@ This fix changes no statistical margin, endpoint, seed, sample count or cap.
 Keep the eventual PR DRAFT. Corrections use that same published branch with its
 verified remote head. No Ready, merge, deployment, dispatch/rerun, installation,
 paid request, generated/replacement art or security/access change is authorized.
+
+## Native startup correction
+
+Clean head `99ba2fd7` passed all 12 local CI steps (328 files, 4,411 tests).
+Its first native candidate run passed three cases and failed the WebGL useful
+Rush animation control: only one distinct busy frame was drawn during the
+unchanged one-tile dash. Resource/collision/event checks and both authored
+net-progress cases passed. The failed receipt, observer, trace and video remain
+preserved; it is not reported as four passing cases.
+
+A facade draw can queue a pending view before Pixi finishes initialization.
+The setup now keeps public Pause through curtain completion, the existing
+layout-settling check, a paused canvas screenshot and two further idle draws.
+Full game state (including RNG) must remain identical and no observed AI or
+ability command may run during warmup. This is bounded scene warmup, not a
+promise that every asset has loaded. The one-tile target, all gameplay and
+strict motion assertions, speed, clocks and timeouts remain unchanged. A new
+clean full CI and all four native cases are required on the corrected head.
