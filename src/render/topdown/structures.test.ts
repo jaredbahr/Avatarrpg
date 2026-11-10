@@ -68,6 +68,25 @@ describe('which cells stand a wall or a heap', () => {
     expect(ids(base({ raisedWalls: [] }))).toEqual(['rubble@4,2']);
   });
 
+  it('no heap under a scenery piece (the Forest Road draws its heaps as scenery)', () => {
+    const scene = {
+      ground: [],
+      scenery: [
+        {
+          id: 'r',
+          url: 'r.png',
+          x: 0,
+          y: 0,
+          width: 40,
+          height: 40,
+          footprint: [{ x: 4, y: 2 }],
+          depth: { x: 4, y: 2 },
+        },
+      ],
+    } as unknown as MapScene;
+    expect(ids(base({ scene }))).toEqual(['earth_wall@2,1']);
+  });
+
   it('none where the scene already paints it', () => {
     const scene = {
       ground: [],

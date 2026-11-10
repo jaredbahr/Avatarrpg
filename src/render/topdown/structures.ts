@@ -8,8 +8,8 @@
  * - a **wall** stands on every cell the view lists as raised (`raisedWalls`) whose tile is still a
  *   blocked `wall`, and that no scenery piece of the scene already covers: authored masonry is never
  *   in the journal, and an expired wall has left both the journal and the tile;
- * - a **heap** stands on every `rubble` surface cell the scene does not paint itself
- *   (`paintedRubble`).
+ * - a **heap** stands on every `rubble` surface cell the scene does not paint itself: neither in
+ *   `paintedRubble` nor under a scenery piece (the Forest Road's heaps are scenery).
  *
  * Read from the view model only, as `sceneForGrid` reads the grid; nothing here touches the rules.
  */
@@ -36,7 +36,8 @@ export function topdownStructures(
   grid.tiles.forEach((tile, i) => {
     if (tile.surface?.id !== 'rubble') return;
     const pos = { x: i % grid.width, y: Math.floor(i / grid.width) };
-    if (!painted.has(key(pos))) out.push(structure(`rubble:${key(pos)}`, 'rubble', pos, 'Rubble'));
+    if (!painted.has(key(pos)) && !scenery.has(key(pos)))
+      out.push(structure(`rubble:${key(pos)}`, 'rubble', pos, 'Rubble'));
   });
   return out;
 }
