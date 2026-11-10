@@ -79,6 +79,7 @@ function terrain(
   over: (x: number, y: number) => GroundClass | null = () => null,
 ): TopDownTerrainLayer {
   return {
+    kind: 'classified',
     classify: (x, y) => {
       const forced = over(x, y);
       const ground: GroundClass = forced ?? (x >= 168 ? 'void' : 'ground');

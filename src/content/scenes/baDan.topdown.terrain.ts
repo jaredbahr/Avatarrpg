@@ -502,14 +502,31 @@ export const MOUTHS: readonly RimMouth[] = [
   },
 ];
 
-/** The terrain layer as the content validation reads it. */
-export interface TopDownTerrainLayer {
+/** The terrain layer as the content validation reads it, whatever the board's kind of terrain. */
+export interface TopDownTerrainReader {
   readonly classify: (x: number, y: number) => PointClass;
   readonly mouths: readonly RimMouth[];
   readonly mouthReach: number;
 }
 
-export const BA_DAN_TOPDOWN_TERRAIN: TopDownTerrainLayer = {
+/** Ba Dan's terrain: Wang vertices (grass, cobble, dirt, water) inside a cliff rim over the void. */
+export interface WangRimTerrain extends TopDownTerrainReader {
+  readonly kind: 'wang-rim';
+}
+
+/** A terrain known by its classifier alone: a fixture, or a stub board that brings its own ground. */
+export interface ClassifiedTerrain extends TopDownTerrainReader {
+  readonly kind: 'classified';
+}
+
+/**
+ * A board's terrain, tagged by kind so each board's baker reads the terrain it knows and the
+ * validation reads any of them through {@link TopDownTerrainReader}.
+ */
+export type TopDownTerrainLayer = WangRimTerrain | ClassifiedTerrain;
+
+export const BA_DAN_TOPDOWN_TERRAIN: WangRimTerrain = {
+  kind: 'wang-rim',
   classify: classifyPoint,
   mouths: MOUTHS,
   mouthReach: MOUTH_REACH,
