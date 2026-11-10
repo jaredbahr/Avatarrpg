@@ -55,7 +55,9 @@ export class SaveMenu extends Dialog {
       body.appendChild(
         el('p', {
           class: 'warn-note',
-          text: 'This browser is blocking site data, so slots are unavailable. Export to a file instead.',
+          text: this.app.state
+            ? 'This browser is blocking site data, so slots are unavailable. Export to a file instead.'
+            : 'This browser is blocking site data, so slots are unavailable. Import a save file instead.',
         }),
       );
     }
