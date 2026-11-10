@@ -10,7 +10,9 @@
   keep the cape (PixelLab drew it long again even when asked for a capelet) and give Nima his hair.
 - Wen's hook punch (`attack`) keeps her gauntlet in six headings; in the north-west and west, where her right hand is turned
   away, the gauntlet redraws as a hook or a rope after a retake. A straight-punch group (`attack2`) drew the same in the west and
-  dust in the north, so it is not packed.
+  dust in the north, so it is not packed. The packer draws the hook's west and north-west from its east and north-east,
+  mirrored (`mirror` in the spec), and holds Jinu's south and north knockouts on their sixth cel (`koCels`): the seventh
+  and eighth spread her cape into wings.
 - Packed by `scripts/art/topdown/pack-sheets.ts`; the heroes draw them under `?style=topdown`.
 
 ## T5 quarry clips (2026-11-10, ADR 0104 T5, #452)
