@@ -16,7 +16,15 @@
  */
 
 import { RngCursor, seedFromString } from '../rng';
-import type { ContentIndex, FlagValue, GameEvent, GameState, Unit } from '../types';
+import type {
+  BattleState,
+  ContentIndex,
+  FlagValue,
+  GameEvent,
+  GameState,
+  StepResult,
+  Unit,
+} from '../types';
 import { apply } from '../state/reducer';
 import type { PartySlot } from '../state/createGame';
 import { createBattle, createGame } from '../state/createGame';
@@ -26,6 +34,9 @@ import { reachable } from '../rules/grid';
 import { canMove, isAlive } from '../rules/stats';
 
 export type SimOutcome = 'victory' | 'defeat' | 'stalemate';
+
+/** A headless policy executes one complete party activation through the reducer. */
+export type SimPartyTurn = (content: ContentIndex, state: GameState, unitId: string) => StepResult;
 
 export interface SimOptions {
   readonly seed: number | string;
@@ -45,6 +56,12 @@ export interface SimOptions {
   readonly recordEvents?: boolean;
   /** Opt-in soak diagnostics; ordinary balance runs do no legal-action census. */
   readonly diagnostics?: boolean;
+  /**
+   * Optional mechanics-test policy for the current living party actor. Return
+   * the completed activation's real reducer state and all of its events.
+   * Unset keeps ordinary AI; enemies and story allies always use ordinary AI.
+   */
+  readonly partyTurn?: SimPartyTurn;
   /**
    * Force one roster variant instead of letting the seed draw.
    *
@@ -84,7 +101,7 @@ export interface SimResult {
 }
 
 export interface SimIdleTurn {
-  /** Zero-based runAiTurn command index, before handing the turn on. */
+  /** Zero-based activation index; each is one runAiTurn command by default. */
   readonly commandIndex: number;
   readonly round: number;
   readonly unitId: string;
@@ -92,6 +109,7 @@ export interface SimIdleTurn {
 }
 
 export interface SimDiagnostics {
+  /** Activation-driver calls; one runAiTurn command each when no policy is supplied. */
   readonly commandCount: number;
   readonly idleTurns: readonly SimIdleTurn[];
   readonly maxRoundsReached: boolean;
@@ -160,6 +178,24 @@ function pickProfile(unit: Unit): Unit['ai'] {
   }
 }
 
+/** Keep an optional policy's partial actions from consuming the turn budget. */
+function validatePartyTurn(before: BattleState, unitId: string, step: StepResult): void {
+  const after = step.state.battle;
+  if (
+    !after ||
+    after.encounterId !== before.encounterId ||
+    after.mapId !== before.mapId ||
+    after.round < before.round
+  ) {
+    throw new Error('Party turn driver must stay in the same battle and preserve round order.');
+  }
+  if (after.phase !== 'active') return;
+  const ended = step.events.some((event) => event.type === 'turnEnded' && event.unitId === unitId);
+  if (!ended || (after.round === before.round && after.order[after.turnIndex] === unitId)) {
+    throw new Error('Party turn driver must finish the current activation.');
+  }
+}
+
 export function runCombat(content: ContentIndex, options: SimOptions): SimResult {
   const encounter = content.encounters.get(options.encounterId);
   if (!encounter) throw new Error(`Unknown encounter "${options.encounterId}"`);
@@ -197,9 +233,21 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
 
     const turnBudget = state.battle.order.length * (maxRounds + 4);
     const before = state;
-    let step;
+    let step: StepResult;
     try {
-      step = apply(content, state, { type: 'runAiTurn' });
+      const driver = options.partyTurn;
+      const currentBattle = state.battle;
+      const actor = driver
+        ? currentBattle.units.find(
+            (unit) => unit.id === currentBattle.order[currentBattle.turnIndex],
+          )
+        : undefined;
+      if (driver && actor?.faction === 'party' && isAlive(actor)) {
+        step = driver(content, state, actor.id);
+        validatePartyTurn(currentBattle, actor.id, step);
+      } else {
+        step = apply(content, state, { type: 'runAiTurn' });
+      }
     } catch (cause) {
       if (!options.diagnostics) throw cause;
       throw new SimCommandError(options, state.battle.variantId, turns, cause);

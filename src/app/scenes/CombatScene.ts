@@ -21,6 +21,7 @@ import {
   isValidTarget,
   knownAbilities,
   previewAbility,
+  resolveAim,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
@@ -1122,7 +1123,11 @@ export class CombatScene implements Scene {
       return;
     }
 
-    this.pending = tile;
+    const unit = this.active();
+    const ability =
+      this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+    this.pending =
+      unit && ability ? resolveAim(this.app.content, battle, unit, ability, tile) : tile;
     this.renderHud();
   }
 

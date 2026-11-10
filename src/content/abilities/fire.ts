@@ -50,7 +50,7 @@ export const FIRE_ABILITIES: readonly Ability[] = [
     requiresLineOfSight: true,
     effects: [{ kind: 'dash' }, { kind: 'surface', surface: 'fire', duration: 2, area: 'center' }],
     description:
-      'Burst off a jet of flame to any tile you can see within 4. You land in fire that lasts 2 rounds, so you take its damage and start Burning.',
+      'Jet to an open tile you can see within 4. Bare ground catches fire for 2 rounds and can leave you Burning; water turns to steam instead.',
     flavor: 'Propulsion, not flight. Mostly.',
     fx: 'fx.fire.step',
     tags: ['mobility', 'surface'],

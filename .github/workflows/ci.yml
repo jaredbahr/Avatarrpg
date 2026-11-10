@@ -94,6 +94,9 @@ jobs:
       - name: Check generated content reference
         run: npm run docs:content -- --check
 
+      - name: Check generated story graphs
+        run: npm run docs:story -- --check
+
       - name: Unit + content-validation + simulator tests
         run: npm test
 

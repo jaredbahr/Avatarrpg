@@ -106,6 +106,23 @@ describe('toast ownership and dismissal', () => {
     expect(toasts.show('Repeated')).toBeNull();
   });
 
+  it('allows fresh identical feedback after clearing the discarded context', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('performance', { now: () => 100 });
+    const { toasts, host } = setup();
+    expect(toasts.show('Game loaded.')).not.toBeNull();
+    expect(toasts.show('Game loaded.')).toBeNull();
+
+    toasts.clear();
+
+    expect(host.childElementCount).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(toasts.show('Game loaded.')).not.toBeNull();
+    expect(host.firstElementChild?.textContent).toBe('Game loaded.');
+    expect(toasts.show('Game loaded.')).toBeNull();
+    toasts.clear();
+  });
+
   it('notifies its owner after expiry, manual dismissal, clear and stack eviction', () => {
     vi.useFakeTimers();
     const { toasts, host } = setup();

@@ -620,13 +620,20 @@ export class App {
     }
   }
 
+  /** Discard the replaced state's queued animation and audio together. */
+  private resetPlayback(): void {
+    this.animator.clear();
+    this.audio.close();
+    this.audio.unlock();
+  }
+
   startVillagePreview(): void {
     if (this.previewActive) return;
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
     this.state = villagePreviewState(this.content);
     this.session.setPlayers([]);
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: RIVERSIDE_ENTRY });
   }
@@ -638,7 +645,7 @@ export class App {
     this.previewSnapshot = null;
     this.state = previous.state;
     this.session.setPlayers(Session.fromMeta(previous.session).players);
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.closePause();
     this.dismissRewardDialog();
@@ -672,7 +679,7 @@ export class App {
     );
 
     this.state = state;
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
@@ -686,6 +693,9 @@ export class App {
     // A reward dialog belongs to the state being replaced. Drop it before the
     // swap so its close callback cannot offer a pick against the new save.
     this.dismissRewardDialog();
+    // Feedback and its dismissal callbacks belong to the game being replaced.
+    // Retire them before loading; keep feedback raised by the loaded world.
+    this.toasts.clear();
     // A save can predate a discipline gate the kits have since gained; this
     // hands back any pick the party is owed rather than swallowing it.
     // ADR 0047 §5: also clears a stale conversation pin and steps the
@@ -696,7 +706,7 @@ export class App {
     }
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
     this.session.setPlayers(Session.fromMeta(session).players);
-    this.animator.clear();
+    this.resetPlayback();
     this.residents.reset();
     this.closePause();
     // Loading is replacement, even when the screen name happens to match.
