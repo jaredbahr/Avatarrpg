@@ -65,6 +65,8 @@ export interface Baked {
   readonly classes: Uint8Array;
   /** Plate pixels any object's sprite covers (uprights and flats). */
   readonly cover: Uint8Array;
+  /** Plate pixels the board's frame darkens toward its edge, which the shadow check leaves out. */
+  readonly frame?: Uint8Array;
   readonly shadows: readonly ShadowRecord[];
   /** A bridge's grounding (its abutment's seam and its cast on the water), for the seating check. */
   readonly bridgeShadows: readonly ShadowRecord[];

@@ -120,6 +120,7 @@ export function paintByGround(
   dx: number,
   dy: number,
   classes: Uint8Array,
+  softScale = 1,
 ): void {
   const d = g.data;
   for (let y = 0; y < m.height; y++)
@@ -128,7 +129,7 @@ export function paintByGround(
         Y = dy + y,
         v = at(m.alpha, y * m.width + x);
       if (!v || X < 0 || Y < 0 || X >= g.width || Y >= g.height) continue;
-      const a = (v * (classes[Y * g.width + X] === CLASS.C ? 1.3 : 1)) / 255,
+      const a = (v * (classes[Y * g.width + X] === CLASS.C ? 1.3 : softScale)) / 255,
         j = (Y * g.width + X) * 4;
       for (let c = 0; c < 3; c++) d[j + c] = at(d, j + c) * (1 - a) + at(SHADOW_RGB, c) * a;
     }
@@ -172,6 +173,32 @@ export function shadowOptions(
         : { overhang: ow8 };
 }
 
+/** What a board may ask of {@link groundObject} beyond the defaults (Ba Dan's). */
+export interface GroundExtra {
+  /** The mask's strength on soft ground (1); paving's stays 1.3. */
+  readonly softScale?: number;
+  /** Keep the grass kit's tufts, pebbles and clods off water (a tree on a creek's bank). */
+  readonly dryKit?: boolean;
+}
+
+/** Clears the pixels of `img`, laid at (dx, dy) on the plate, that land on water. */
+function offWater(
+  img: RgbaImage,
+  dx: number,
+  dy: number,
+  classes: Uint8Array,
+  plateW: number,
+): void {
+  const plateH = classes.length / plateW;
+  for (let y = 0; y < img.height; y++)
+    for (let x = 0; x < img.width; x++) {
+      const X = dx + x,
+        Y = dy + y;
+      if (X < 0 || Y < 0 || X >= plateW || Y >= plateH) continue;
+      if (classes[Y * plateW + X] === CLASS.W) img.data[(y * img.width + x) * 4 + 3] = 0;
+    }
+}
+
 /**
  * Grounds one standing object on the plate `g`: its `hardShadowMask` (a prop's closed into one
  * shape with a seam under every foot column); on soft ground the grass kit's contact drawn and the
@@ -185,7 +212,9 @@ export function groundObject(
   classes: Uint8Array,
   soft: boolean,
   opts: HardShadowOptions,
+  extra: GroundExtra = {},
 ): { record: ShadowRecord; fringe: RgbaImage | undefined } {
+  const { softScale = 1, dryKit = false } = extra;
   const { o, img } = p;
   const m = hardShadowMask(alphaOf(img), img.width, img.height, opts);
   if (o.kind === 'prop') {
@@ -200,10 +229,14 @@ export function groundObject(
       density: o.kind === 'house' ? 0.6 : 1,
     });
     if (kit) {
+      if (dryKit) {
+        offWater(kit.contact, p.x - kit.m, p.y - kit.m, classes, g.width);
+        offWater(kit.fringe, p.x - kit.m, p.y - kit.m, classes, g.width);
+      }
       draw(g, kit.contact, p.x - kit.m, p.y - kit.m);
       fringe = kit.fringe;
     }
-    paintByGround(g, m, p.x - m.pad, p.y, classes);
+    paintByGround(g, m, p.x - m.pad, p.y, classes, softScale);
   } else {
     paintMask(g, m, p.x - m.pad, p.y, 1.3);
     reactBesideSeam(g, m, p.x - m.pad, p.y, p.x * 31 + p.base);
