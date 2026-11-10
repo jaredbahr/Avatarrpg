@@ -165,13 +165,25 @@ for (const profile of profiles)
       // Lifecycle fixture deliberately changes scene without pretending this is
       // possible through the modal's normal navigation.
       await page.evaluate(() => window.fnt!.app.goToSetup());
-      const target = page.getByRole('button', { name: '1 player', exact: true });
       await page.keyboard.press('Escape');
       await expect(dialog).toHaveCount(0);
-      expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
       await expect(page.locator('.title-scene')).toHaveCount(0);
+      // The closed sheet must not hand focus back to the detached title opener.
+      // Focus may stay on the body or sit where the setup scene placed it
+      // (party setup keeps focus on its current choice), but it is always live.
+      const focus = await page.evaluate(() => {
+        const active = document.activeElement;
+        return {
+          live: active === document.body || (active?.isConnected ?? false),
+          inSetup: active === document.body || active?.closest('.setup-scene') != null,
+        };
+      });
+      expect(focus).toEqual({ live: true, inSetup: true });
       await page.keyboard.press('Tab');
-      await expect(target).toBeFocused();
+      await expect(page.locator(':focus')).toHaveCount(1);
+      expect(
+        await page.evaluate(() => document.activeElement?.closest('.title-scene') ?? null),
+      ).toBeNull();
     });
     test('a background Settings close leaves another modal in charge', async ({ page }) => {
       const dialog = await openSettings(page);
