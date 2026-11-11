@@ -3,12 +3,16 @@ import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import {
   enterNode,
+  pinObliqueStyle,
   resetStorage,
   setLargeText,
   settleLayout,
   startGame,
   waitForIdle,
 } from './helpers';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 type Point = { x: number; y: number };
 
