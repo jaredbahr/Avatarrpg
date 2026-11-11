@@ -13,7 +13,7 @@ import { ELEMENT_IDS } from '../../core/types';
 import { describe as describeCondition } from '../../core/story/conditions';
 import { optionAvailable, resolveDialogue } from '../../core/story/storyEngine';
 import { resolveAsset } from '../../content/assets/manifest';
-import { assetCanvas } from './assetCanvas';
+import { assetCanvas, fitAssetToBox } from './assetCanvas';
 import { button, el } from './dom';
 
 /** What to call a bender the party does not have. */
@@ -105,6 +105,11 @@ function compactHeader(
         })
       : null;
   const portrait = assetCanvas(speaker.portrait, COMPACT_PORTRAIT_REM);
+  // The frame's --conversation-portrait (15rem, or 6rem/5rem on upright and phone layouts) sizes the
+  // canvas, not this inline default: an inline size overrides it and paints over the name (#651).
+  portrait.style.width = '';
+  portrait.style.height = '';
+  fitAssetToBox(portrait);
   return el(
     'div',
     { class: 'conversation-compact-head' },

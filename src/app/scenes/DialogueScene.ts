@@ -19,7 +19,7 @@ import { evaluate } from '../../core/story/conditions';
 import { CreditsDialog } from '../ui/CreditsDialog';
 import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el } from '../ui/dom';
-import { assetCanvas } from '../ui/assetCanvas';
+import { assetCanvas, fitAssetToBox } from '../ui/assetCanvas';
 import { conversationPanel, resolveConversation } from '../ui/ConversationPanel';
 import {
   INTERLUDES,
@@ -221,7 +221,8 @@ export class DialogueScene implements Scene {
   }
 
   private portrait(key: string, size = 6): HTMLElement {
-    return assetCanvas(key, size);
+    // The compact stage caps the box with max-width; redraw the store at the box it really gets.
+    return fitAssetToBox(assetCanvas(key, size));
   }
 
   private clearTimer(): void {

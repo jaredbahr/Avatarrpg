@@ -59,19 +59,22 @@ export function drawPixelPortrait(
   ctx.drawImage(big, 0, 0, px, px);
 }
 
-export function assetCanvas(assetKey: string, remSize: number, extraClass = ''): HTMLCanvasElement {
-  const draw = (ctx: CanvasRenderingContext2D, px: number): void => {
-    const image = sprites.imageFor(assetKey);
-    if (image) {
-      if (assetKey.startsWith('portrait.') && image.naturalWidth === PIXEL_PORTRAIT_PX) {
-        drawPixelPortrait(ctx, image, px);
-      } else {
-        ctx.drawImage(image, 0, 0, px, px);
-      }
+/** Draws `assetKey` into a `px`-square backing store: the bitmap when it is in, else its painter. */
+function drawAsset(ctx: CanvasRenderingContext2D, assetKey: string, px: number): void {
+  const image = sprites.imageFor(assetKey);
+  if (image) {
+    if (assetKey.startsWith('portrait.') && image.naturalWidth === PIXEL_PORTRAIT_PX) {
+      drawPixelPortrait(ctx, image, px);
     } else {
-      resolvePainter(assetKey).draw(ctx, { x: 0, y: 0, size: px });
+      ctx.drawImage(image, 0, 0, px, px);
     }
-  };
+  } else {
+    resolvePainter(assetKey).draw(ctx, { x: 0, y: 0, size: px });
+  }
+}
+
+export function assetCanvas(assetKey: string, remSize: number, extraClass = ''): HTMLCanvasElement {
+  const draw = (ctx: CanvasRenderingContext2D, px: number): void => drawAsset(ctx, assetKey, px);
 
   const canvas = painterCanvas(assetKey, remSize, draw, extraClass);
 
@@ -85,5 +88,32 @@ export function assetCanvas(assetKey: string, remSize: number, extraClass = ''):
     });
   }
 
+  return canvas;
+}
+
+/**
+ * Keeps an asset canvas's backing store matched to the box CSS gives it, so a portrait in a
+ * responsive frame (a 5rem phone frame, a capped compact stage) is redrawn on whole device
+ * pixels at that size instead of a fixed-size store being squeezed by the browser (#651).
+ * The caller decides who sizes the box: clear the inline size to let CSS own it.
+ */
+export function fitAssetToBox(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const assetKey = canvas.dataset.asset;
+  if (!assetKey || typeof ResizeObserver === 'undefined') return canvas;
+  let seen = false;
+  const observer = new ResizeObserver(() => {
+    if (!canvas.isConnected) {
+      if (seen) observer.disconnect();
+      return;
+    }
+    seen = true;
+    const px = Math.round(canvas.getBoundingClientRect().width * (window.devicePixelRatio || 1));
+    if (px <= 0 || px === canvas.width) return;
+    canvas.width = px;
+    canvas.height = px;
+    const ctx = canvas.getContext('2d');
+    if (ctx) drawAsset(ctx, assetKey, px);
+  });
+  observer.observe(canvas);
   return canvas;
 }
