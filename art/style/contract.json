@@ -27,8 +27,8 @@
       "cap": 48
     },
     "public/art/topdown/driller.webp": {
-      "colours": 308,
-      "cap": 308
+      "colours": 557,
+      "cap": 557
     },
     "public/art/topdown/gao.webp": {
       "colours": 55,
@@ -65,6 +65,34 @@
     "public/art/topdown/thug.webp": {
       "colours": 121,
       "cap": 121
+    },
+    "public/art/topdown/driller-2.webp": {
+      "colours": 342,
+      "cap": 342
+    },
+    "public/art/topdown/deserter.webp": {
+      "colours": 163,
+      "cap": 163
+    },
+    "public/art/topdown/quarrybender.webp": {
+      "colours": 73,
+      "cap": 73
+    },
+    "public/art/topdown/merc.webp": {
+      "colours": 149,
+      "cap": 149
+    },
+    "public/art/topdown/crossbow.webp": {
+      "colours": 103,
+      "cap": 103
+    },
+    "public/art/topdown/sergeant.webp": {
+      "colours": 64,
+      "cap": 64
+    },
+    "public/art/topdown/ruon.webp": {
+      "colours": 119,
+      "cap": 119
     }
   }
 }

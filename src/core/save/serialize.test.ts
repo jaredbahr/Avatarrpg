@@ -352,6 +352,31 @@ describe('save round trip', () => {
 });
 
 describe('save rejection', () => {
+  it.each([0.5, -0.5, -1, Number.MAX_SAFE_INTEGER, 'past the order'])(
+    'rejects an invalid active turn cursor: %s',
+    (cursor) => {
+      const blob = JSON.parse(serialize(midBattleState(), META));
+      blob.state.battle.turnIndex =
+        cursor === 'past the order' ? blob.state.battle.order.length : cursor;
+
+      const result = deserialize(JSON.stringify(blob));
+      expect(result.ok, 'an accepted cursor must name a turn the player can take').toBe(false);
+      if (!result.ok) expect(result.error).toContain('state.battle.turnIndex');
+    },
+  );
+
+  it.each(['empty order', 'missing unit'])('rejects an active battle with %s', (corruption) => {
+    const blob = JSON.parse(serialize(midBattleState(), META));
+    if (corruption === 'empty order') blob.state.battle.order = [];
+    else blob.state.battle.order[blob.state.battle.turnIndex] = 'missing-unit';
+
+    const result = deserialize(JSON.stringify(blob));
+    expect(result.ok, 'loading must not leave both player controls and AI without an actor').toBe(
+      false,
+    );
+    if (!result.ok) expect(result.error).toContain('state.battle.order');
+  });
+
   it('rejects a file that is not JSON', () => {
     const result = deserialize('{definitely not json');
     expect(result).toEqual({ ok: false, error: 'That file is not valid JSON.' });

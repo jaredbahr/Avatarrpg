@@ -45,6 +45,9 @@ const HORIZON_MS = 10_000;
 /** How loud everything is before the setting is applied. */
 const MASTER = 0.6;
 
+/** Match the short Off release when a live volume change replaces the old level. */
+const VOLUME_FADE_SECONDS = 0.032;
+
 type ContextCtor = typeof AudioContext;
 
 function contextCtor(): ContextCtor | undefined {
@@ -54,13 +57,16 @@ function contextCtor(): ContextCtor | undefined {
 }
 
 export interface AudioBusOptions {
-  /** 0 to 1. Read on every cue, so a slider takes effect immediately. */
+  /** 0 to 1. Gestures and cues refresh the level of queued one-shots too. */
   readonly volume: () => number;
 }
 
 export class AudioBus {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  /** One-shot volume sits after their envelopes; courtyard layers keep their own smoothing. */
+  private outputGain: GainNode | null = null;
+  private outputRamp: { from: number; to: number; start: number } | null = null;
   private buffers = new Map<string, AudioBuffer>();
   private loading = new Map<string, Promise<AudioBuffer | null>>();
   private noise = new Map<string, AudioBuffer>();
@@ -88,7 +94,8 @@ export class AudioBus {
    */
   unlock(): void {
     if (this.failed) return;
-    if (this.options.volume() <= 0) return;
+    const volume = this.options.volume();
+    if (volume <= 0) return;
     if (!this.ctx) {
       const Ctor = contextCtor();
       if (!Ctor) {
@@ -106,7 +113,36 @@ export class AudioBus {
         return;
       }
     }
+    // App.updateSettings already calls unlock, including non-zero volume changes.
+    if (this.outputGain) this.syncOutputVolume(volume);
     if (this.ctx.state === 'suspended') void this.ctx.resume().catch(() => undefined);
+  }
+
+  /** Retarget a shared stage, so sources already scheduled for later hear the change. */
+  private syncOutputVolume(volume: number): void {
+    const ctx = this.ctx;
+    const master = this.master;
+    if (!ctx || !master) return;
+    const now = ctx.currentTime;
+    if (!this.outputGain) {
+      // Lazy creation leaves environment-only startup and its existing graph untouched.
+      this.outputGain = ctx.createGain();
+      this.outputGain.gain.value = volume;
+      this.outputGain.connect(master);
+      this.outputRamp = { from: volume, to: volume, start: now };
+      return;
+    }
+    const ramp = this.outputRamp;
+    if (!ramp || ramp.to === volume) return;
+    // AudioParam.value need not describe a scheduled ramp, and cancelAndHoldAtTime
+    // is not universal. We own this linear automation, so hold its exact current level.
+    const progress = Math.max(0, Math.min(1, (now - ramp.start) / VOLUME_FADE_SECONDS));
+    const current = ramp.from + (ramp.to - ramp.from) * progress;
+    const gain = this.outputGain.gain;
+    gain.cancelScheduledValues(now);
+    gain.setValueAtTime(current, now);
+    gain.linearRampToValueAtTime(volume, now + VOLUME_FADE_SECONDS);
+    this.outputRamp = { from: current, to: volume, start: now };
   }
 
   /** True once there is a running context. The e2e spec asserts on this. */
@@ -140,6 +176,8 @@ export class AudioBus {
     const master = this.master;
     this.ctx = null;
     this.master = null;
+    this.outputGain = null;
+    this.outputRamp = null;
     this.buffers.clear();
     this.loading.clear();
     this.noise.clear();
@@ -148,7 +186,7 @@ export class AudioBus {
       // Retire ownership immediately, but release the output before closing so
       // Off never cuts a non-zero waveform. A new context cannot revive this one.
       master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
-      master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.032);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + VOLUME_FADE_SECONDS);
       setTimeout(() => void ctx.close().catch(() => undefined), 40);
     } else if (ctx) void ctx.close().catch(() => undefined);
   }
@@ -163,6 +201,7 @@ export class AudioBus {
     if (this.ctx.state !== 'running') return;
     const volume = this.options.volume();
     if (volume <= 0) return;
+    this.syncOutputVolume(volume);
     const base = this.ctx.currentTime;
     for (const cue of cues) {
       const delay = cue.at - now;
@@ -173,29 +212,29 @@ export class AudioBus {
       this.lastPlayed.set(cue.key, when);
       const def = resolveSound(cue.key);
       if (!def) continue;
-      this.schedule(def, when, volume, cue.seed);
+      this.schedule(def, when, cue.seed);
     }
   }
 
   /** One sound, at a time on the context clock. */
-  private schedule(def: SoundDef, when: number, volume: number, seed: number): void {
+  private schedule(def: SoundDef, when: number, seed: number): void {
     this.scheduled += 1;
-    if (def.kind === 'voice') this.playVoice(def, when, volume);
+    if (def.kind === 'voice') this.playVoice(def, when);
     else if (def.kind === 'layers') {
-      for (const voice of def.voices) this.playVoice(voice, when, volume);
-    } else this.playSample(def, when, volume, seed);
+      for (const voice of def.voices) this.playVoice(voice, when);
+    } else this.playSample(def, when, seed);
   }
 
   /* ---------------------------------------------------------------- */
   /* Recorded sounds                                                   */
   /* ---------------------------------------------------------------- */
 
-  private playSample(def: SampleDef, when: number, volume: number, seed: number): void {
+  private playSample(def: SampleDef, when: number, seed: number): void {
     const choices = [def.url, ...def.variants];
     const pick = choices[Math.floor(mulberry32(seed)() * choices.length)] ?? def.url;
     const buffer = this.buffers.get(pick);
     if (buffer) {
-      this.startBuffer(buffer, when, def.gain * volume, def.rate);
+      this.startBuffer(buffer, when, def.gain, def.rate);
       return;
     }
     // Keep the cue's deadline while decoding. Closing the bus cancels pending
@@ -205,21 +244,22 @@ export class AudioBus {
       if (!loaded || !ctx || this.ctx !== ctx || ctx.state !== 'running') return;
       const currentVolume = this.options.volume();
       if (currentVolume <= 0) return;
-      this.startBuffer(loaded, when, def.gain * currentVolume, def.rate);
+      this.syncOutputVolume(currentVolume);
+      this.startBuffer(loaded, when, def.gain, def.rate);
     });
   }
 
   private startBuffer(buffer: AudioBuffer, when: number, gain: number, rate: number): void {
     const ctx = this.ctx;
-    const master = this.master;
-    if (!ctx || !master) return;
+    const output = this.outputGain;
+    if (!ctx || !output) return;
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.playbackRate.value = rate;
     const amp = ctx.createGain();
     amp.gain.value = gain;
     source.connect(amp);
-    amp.connect(master);
+    amp.connect(output);
     source.start(Math.max(when, ctx.currentTime));
   }
 
@@ -292,10 +332,10 @@ export class AudioBus {
     return buffer;
   }
 
-  private playVoice(def: VoiceDef, when: number, volume: number): void {
+  private playVoice(def: VoiceDef, when: number): void {
     const ctx = this.ctx;
-    const master = this.master;
-    if (!ctx || !master) return;
+    const output = this.outputGain;
+    if (!ctx || !output) return;
     const buffer = this.noiseBuffer(def.noise);
     if (!buffer) return;
 
@@ -316,11 +356,13 @@ export class AudioBus {
     filter.frequency.exponentialRampToValueAtTime(Math.max(20, def.to), end);
 
     const amp = ctx.createGain();
+    // The tiny exponential floor now scales with the setting at the output too;
+    // recipe peaks/body, filter and timing retain their intended volume scale.
     amp.gain.setValueAtTime(0.0001, when);
-    amp.gain.exponentialRampToValueAtTime(Math.max(0.0001, def.gain * volume), when + attack);
+    amp.gain.exponentialRampToValueAtTime(Math.max(0.0001, def.gain), when + attack);
     if (def.body > 0) {
       amp.gain.exponentialRampToValueAtTime(
-        Math.max(0.0001, def.gain * volume * def.body),
+        Math.max(0.0001, def.gain * def.body),
         when + attack + decay * 0.35,
       );
     }
@@ -328,11 +370,11 @@ export class AudioBus {
 
     source.connect(filter);
     filter.connect(amp);
-    amp.connect(master);
+    amp.connect(output);
     source.start(when);
     source.stop(end + 0.02);
 
-    if (def.crack) this.playCrack(when, def.gain * volume);
+    if (def.crack) this.playCrack(when, def.gain);
   }
 
   /**
@@ -341,8 +383,8 @@ export class AudioBus {
    */
   private playCrack(when: number, gain: number): void {
     const ctx = this.ctx;
-    const master = this.master;
-    if (!ctx || !master) return;
+    const output = this.outputGain;
+    if (!ctx || !output) return;
     const buffer = this.noiseBuffer('white');
     if (!buffer) return;
     const source = ctx.createBufferSource();
@@ -351,7 +393,7 @@ export class AudioBus {
     amp.gain.setValueAtTime(gain * 0.8, when);
     amp.gain.exponentialRampToValueAtTime(0.0001, when + 0.03);
     source.connect(amp);
-    amp.connect(master);
+    amp.connect(output);
     source.start(when);
     source.stop(when + 0.05);
   }

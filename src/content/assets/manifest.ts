@@ -593,7 +593,7 @@ export function useWorldStyleTest(): void {
  * back. The hits (eight headings) and knockouts (the four diagonals the clip vocabulary asks for) arrive
  * with the clip file; every heading of every ability, and all eight knockouts, are in the actions file
  * for the combat slice (T4). The legacy mirrored `cast` is the main ability's east heading. A figure the
- * prototype never walked (Mira, Hanru, the Driller) holds its idle's first cel as its walk.
+ * prototype never walked (Mira, Hanru) holds its idle's first cel as its walk; the Driller walks on its tread loop (T5).
  */
 export function topdownSheet(name: TopdownName, key: string, palette: string): SheetEntry {
   const t = TOPDOWN_SHEETS[name];
@@ -665,17 +665,62 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'unit.fire.kaya': ['kaya', 'fire'],
   'unit.water.sura': ['sura', 'water'],
   'unit.earth.bo': ['bo', 'earth'],
+  // T8: the heroes the tutorial does not cast.
+  'unit.fire.tenzo': ['tenzo', 'fire'],
+  'unit.water.nilak': ['nilak', 'water'],
+  'unit.earth.linmei': ['linmei', 'earth'],
+  'unit.air.nima': ['nima', 'air'],
+  'unit.air.jinu': ['jinu', 'air'],
+  'unit.non.riko': ['riko', 'nonbender'],
+  'unit.non.wen': ['wen', 'nonbender'],
   'unit.enemy.thug': ['thug', 'enemy'],
   'unit.enemy.slinger': ['slinger', 'enemy'],
   'unit.enemy.bruiser': ['bruiser', 'enemy'],
   'unit.enemy.driller': ['driller', 'enemy'],
+  // T5: the quarry cast (the gate, the Cutting and the floor) and Captain Ruon.
+  'unit.enemy.deserter': ['deserter', 'fire'],
+  'unit.enemy.quarrybender': ['quarrybender', 'earth'],
+  'unit.enemy.merc': ['merc', 'enemy'],
+  'unit.enemy.crossbow': ['crossbow', 'enemy'],
+  'unit.enemy.sergeant': ['sergeant', 'enemy'],
+  'unit.ally.ruon': ['ruon', 'neutral'],
   'npc.elder': ['mira', 'neutral'],
   'npc.shopkeeper': ['gao', 'earth'],
   'npc.kid': ['pella', 'air'],
   'npc.dorin': ['dorin', 'earth'],
   'npc.household': ['household', 'earth'],
   'npc.hanru': ['hanru', 'nonbender'],
+  'npc.guard': ['guard', 'earth'],
 };
+
+/**
+ * T3's standing objects that are talked to (`world.route_sign`, `world.school_notice`): one cel each,
+ * 40 px a tile like the figures, standing on its cell's centre by its lowest row.
+ */
+export const TOPDOWN_OBJECTS: Readonly<Record<string, { readonly w: number; readonly h: number }>> =
+  {
+    'world.route_sign': { w: 40, h: 54 },
+    'world.school_notice': { w: 45, h: 47 },
+  };
+
+function topdownObject(key: string, size: { readonly w: number; readonly h: number }): SheetEntry {
+  const name = key.slice(key.indexOf('.') + 1);
+  return {
+    kind: 'sheet',
+    atlas: `art/topdown/objects/${name}.json`,
+    pixelsPerTile: 40,
+    frameSize: size,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 1 },
+    facing: 'mirror',
+    palette: 'neutral',
+    // A sheet carries an idle and a cast (`REQUIRED_CLIPS`); every cel of an object's atlas is its one image.
+    clips: {
+      idle: { frames: [0, 1].map((i) => `${key}/idle/${i}`), fps: 1, loop: true },
+      cast: { frames: [0, 1, 2].map((i) => `${key}/cast/${i}`), fps: 3, loop: false },
+    },
+  };
+}
 
 let topDownStyle: Readonly<Record<string, AssetEntry>> | undefined;
 
@@ -685,12 +730,13 @@ let topDownStyle: Readonly<Record<string, AssetEntry>> | undefined;
  * T3 onwards the maps; it switches to the default at T6.
  */
 export function useTopDownStyle(): void {
-  topDownStyle = Object.fromEntries(
-    Object.entries(TOPDOWN_KEYS).map(([key, [name, palette]]) => [
+  topDownStyle = Object.fromEntries([
+    ...Object.entries(TOPDOWN_KEYS).map(([key, [name, palette]]) => [
       key,
       topdownSheet(name, key, palette),
     ]),
-  );
+    ...Object.entries(TOPDOWN_OBJECTS).map(([key, size]) => [key, topdownObject(key, size)]),
+  ]);
 }
 
 /** Whether `?style=topdown` is on for this page (`useTopDownStyle`). */

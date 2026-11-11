@@ -16,6 +16,7 @@ import * as z from '../schema';
 import { DAY_PHASES, RESIDENT_PROFILES, RUNOFF_STATES } from '../types';
 import type { GameState } from '../types';
 import { MAX_BANKED_TOTAL_AP } from '../rules/stats';
+import type { DeepMutable, KeysMatch, RequireTrue } from './typeContract';
 
 export const SAVE_FORMAT_VERSION = 5;
 export const SAVE_MAGIC = 'four-nations-tactics';
@@ -102,7 +103,7 @@ const battle = z.object({
   grid,
   units: z.array(unit),
   order: z.array(z.string()),
-  turnIndex: z.number(),
+  turnIndex: z.number().int().min(0),
   round: z.number(),
   phase: z.enum(['active', 'victory', 'defeat']),
   temporaryWalls: z.array(z.object({ pos: vec2, untilRound: z.number(), previous: tile })),
@@ -192,6 +193,9 @@ export const saveBlobSchema = z.object({
 export type SaveBlob = z.infer<typeof saveBlobSchema>;
 export type SessionMeta = z.infer<typeof sessionMeta>;
 
+/** Adding or removing any recursive state key requires matching save coverage. */
+export type SaveStateKeyContract = RequireTrue<KeysMatch<GameState, SaveBlob['state']>>;
+
 /* ------------------------------------------------------------------ */
 /* Writing                                                             */
 /* ------------------------------------------------------------------ */
@@ -211,7 +215,7 @@ export function toBlob(state: GameState, meta: SaveMeta): SaveBlob {
     savedAt: meta.savedAt,
     label: meta.label,
     summary: meta.summary,
-    state: state as unknown as SaveBlob['state'],
+    state: state as DeepMutable<GameState>,
     session: meta.session,
   };
 }
@@ -410,12 +414,29 @@ export function deserialize(json: string): LoadResult {
     return { ok: false, error: `This save looks damaged (${where}).` };
   }
 
+  const savedBattle = parsed.data.state.battle;
+  if (savedBattle?.phase === 'active') {
+    if (savedBattle.order.length > 0 && savedBattle.turnIndex >= savedBattle.order.length) {
+      return { ok: false, error: 'This save looks damaged (state.battle.turnIndex).' };
+    }
+    const activeId = savedBattle.order[savedBattle.turnIndex];
+    if (!activeId || !savedBattle.units.some((candidate) => candidate.id === activeId)) {
+      // Neither player controls nor AI can advance a battle without an actor.
+      // A known dead actor is still valid: reconciliation hands its turn on.
+      return { ok: false, error: 'This save looks damaged (state.battle.order).' };
+    }
+  }
+
   return { ok: true, blob: parsed.data };
 }
 
 /** The rules state out of a validated blob. */
 export function stateFromBlob(blob: SaveBlob): GameState {
-  return blob.state as unknown as GameState;
+  // Existing boundary: the schema validates status/terrain/surface IDs as
+  // strings. This retains the existing string-ID assertion; it establishes no
+  // enum validation. KeysMatch protects structure, not scalar domains. The mutable
+  // view is assignable back to the core's readonly arrays without a clone.
+  return blob.state as DeepMutable<GameState>;
 }
 
 /** One-line description of where a party is up to, for the slot button. */

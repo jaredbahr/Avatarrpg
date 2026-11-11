@@ -44,8 +44,15 @@ export class SettingsPanel extends Dialog {
     subtitle: 'These apply straight away and are remembered on this device.',
   };
 
-  constructor(private app: App) {
+  constructor(
+    private app: App,
+    private afterClose?: () => void,
+  ) {
     super();
+  }
+
+  protected override onClose(): void {
+    this.afterClose?.();
   }
 
   protected build(body: HTMLElement): void {

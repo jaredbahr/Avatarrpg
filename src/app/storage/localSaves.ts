@@ -261,8 +261,10 @@ export function importFromFile(): Promise<
       reader.readAsText(file);
     });
 
-    // A cancelled picker fires no event in some browsers; the promise simply
-    // never settles, which is fine because the dialog stays open.
+    // Cancellation completes the request and releases its hidden input too.
+    input.addEventListener('cancel', () => {
+      finish({ ok: false, error: 'No file chosen.' });
+    });
     document.body.appendChild(input);
     input.click();
   });

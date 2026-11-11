@@ -30,3 +30,6 @@ __pycache__/
 
 # Claude Code agent worktrees (full repo copies).
 .claude/worktrees/
+
+# Headless combat soak report
+soak-report.json

@@ -16,6 +16,7 @@ import { HEADINGS, KO_HEADINGS, headingClip, hitClip, koClip } from './clips';
 import {
   ASSETS,
   TOPDOWN_KEYS,
+  TOPDOWN_OBJECTS,
   resolveAsset,
   topDownStyleActive,
   useTopDownStyle,
@@ -26,7 +27,27 @@ import {
 type Frames = Record<string, { frame: { x: number; y: number; w: number; h: number } }>;
 const read = <T>(path: string): T => JSON.parse(readFileSync(`public/${path}`, 'utf8')) as T;
 const COMBAT = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo', 'unit.enemy.thug'];
-const FIGHTERS = [...COMBAT, 'unit.enemy.slinger', 'unit.enemy.bruiser'];
+const FIGHTERS = [
+  ...COMBAT,
+  'unit.enemy.slinger',
+  'unit.enemy.bruiser',
+  // T5: the quarry cast, Ruon and the Driller.
+  'unit.enemy.deserter',
+  'unit.enemy.quarrybender',
+  'unit.enemy.merc',
+  'unit.enemy.crossbow',
+  'unit.enemy.sergeant',
+  'unit.ally.ruon',
+  'unit.enemy.driller',
+  // T8: the heroes the tutorial does not cast.
+  'unit.fire.tenzo',
+  'unit.water.nilak',
+  'unit.earth.linmei',
+  'unit.air.nima',
+  'unit.air.jinu',
+  'unit.non.riko',
+  'unit.non.wen',
+];
 
 function sheet(key: string): SheetEntry {
   const entry = resolveAsset(key);
@@ -56,7 +77,8 @@ describe('?style=topdown (ADR 0104)', () => {
     useTopDownStyle();
     expect(topDownStyleActive()).toBe(true);
     for (const [key, entry] of Object.entries(before)) {
-      if (key in TOPDOWN_KEYS) expect(sheet(key).atlas).toMatch(/^art\/topdown\//);
+      if (key in TOPDOWN_KEYS || key in TOPDOWN_OBJECTS)
+        expect(sheet(key).atlas).toMatch(/^art\/topdown\//);
       else expect(resolveAsset(key)).toEqual(entry);
     }
   });
@@ -64,7 +86,8 @@ describe('?style=topdown (ADR 0104)', () => {
   it('passes the content validation with every top-down sheet in the manifest', () => {
     useTopDownStyle();
     const assets: Record<string, AssetEntry> = { ...ASSETS };
-    for (const key of Object.keys(TOPDOWN_KEYS)) assets[key] = resolveAsset(key);
+    for (const key of [...Object.keys(TOPDOWN_KEYS), ...Object.keys(TOPDOWN_OBJECTS)])
+      assets[key] = resolveAsset(key);
     expect(validateContent({ ...CONTENT_BUNDLE, assets } as ContentBundle)).toEqual([]);
     for (const key of Object.keys(TOPDOWN_KEYS)) {
       const entry = sheet(key);

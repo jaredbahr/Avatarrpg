@@ -571,10 +571,12 @@ export function connectedSurface(grid: Grid, from: Vec2, surface: SurfaceId): Ve
 /* ------------------------------------------------------------------ */
 
 /**
- * The cells strictly between `from` and `to` on the symmetric Bresenham line.
+ * The cells strictly between `from` and `to` on the directional Bresenham line.
  * Neither endpoint is included, so an origin or a destination tile can never
  * block (or obscure) its own line. Obscurement walks the same path as sight so
- * the two can never disagree about which tiles a shot crosses.
+ * the two can never disagree about which tiles a shot crosses. Midpoint ties
+ * step toward the destination, so reversing endpoints can select different
+ * interior cells (the directional sight/cover contract recorded in ADR 0105).
  */
 export function lineBetween(from: Vec2, to: Vec2): Vec2[] {
   const cells: Vec2[] = [];
@@ -607,7 +609,9 @@ export function lineBetween(from: Vec2, to: Vec2): Vec2[] {
 }
 
 /**
- * Symmetric Bresenham line of sight. The origin and destination tiles never
+ * Directional Bresenham line of sight (ADR 0105): midpoint ties may cross
+ * different cells in reverse, making sight asymmetric. Elevation does not
+ * change this rule. The origin and destination tiles never
  * block; anything between them that is `blocksSight` (a wall, a solid prop or
  * a tree) does. Steam and weather never block sight — they obscure, so the
  * shot can still be taken, at a penalty the preview shows.

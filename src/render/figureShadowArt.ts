@@ -6,6 +6,64 @@
  */
 import { FIGURE_CONTACT, figureShadow, type CastKey } from './lighting';
 import type { FrameFeet } from './sheets/feet';
+import { feetBlob } from './shadow/hardShadowMask';
+import type { Vec2 } from '../core/types';
+
+/**
+ * The top-down board's figure shadow (ADR 0104, T4; ADR 0103's grounding): the owner's Imagination
+ * `feetBlob`, a hard ellipse under the feet in place of the swept pool, at this strength of the
+ * shadow ink (170 of 255 on soft ground, as Imagination draws it).
+ */
+export const TOPDOWN_FEET_LEVEL = 170 / 255;
+
+/** The feet blob's strength on paving (205 of 255): cobble is darker, so the blob is too. */
+export const TOPDOWN_FEET_PAVED_LEVEL = 205 / 255;
+
+const pavedKeys = new WeakMap<readonly Vec2[], ReadonlySet<string>>();
+
+/**
+ * The feet blob's strength for a figure at `at` (tiles, fractional mid-walk): paving's on one of
+ * the scene's `pavedCells`, soft ground's elsewhere.
+ */
+export function topdownFeetLevel(paved: readonly Vec2[] | undefined, at: Vec2): number {
+  if (!paved?.length) return TOPDOWN_FEET_LEVEL;
+  let keys = pavedKeys.get(paved);
+  if (!keys) {
+    keys = new Set(paved.map((c) => `${c.x},${c.y}`));
+    pavedKeys.set(paved, keys);
+  }
+  return keys.has(`${Math.round(at.x)},${Math.round(at.y)}`)
+    ? TOPDOWN_FEET_PAVED_LEVEL
+    : TOPDOWN_FEET_LEVEL;
+}
+
+/** How wide a figure's feet are, in world px of a one-tile figure at scale 1: the blob is 65 % of it. */
+export const TOPDOWN_FEET_WIDTH = 32;
+
+const blobCache = new Map<number, HTMLCanvasElement | null>();
+
+/** `feetBlob` for a figure `width` world px wide, white, one canvas px a world px. */
+export function feetBlobArt(width: number): HTMLCanvasElement | null {
+  const w = Math.max(4, Math.round(width));
+  const cached = blobCache.get(w);
+  if (cached !== undefined) return cached;
+  const blob = feetBlob(w, 255);
+  const canvas = document.createElement('canvas');
+  canvas.width = blob.width;
+  canvas.height = blob.height;
+  const ctx = canvas.getContext('2d');
+  let art: HTMLCanvasElement | null = null;
+  if (ctx) {
+    const image = ctx.createImageData(blob.width, blob.height);
+    for (let i = 0; i < blob.data.length; i += 4)
+      if (blob.data[i + 3]) image.data.set([255, 255, 255, 255], i);
+    ctx.putImageData(image, 0, 0);
+    art = canvas;
+  }
+  if (blobCache.size > 16) blobCache.clear();
+  blobCache.set(w, art);
+  return art;
+}
 
 export interface FigureShadowArt {
   readonly cast: HTMLCanvasElement;

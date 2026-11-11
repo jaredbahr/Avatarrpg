@@ -41,12 +41,21 @@ export function groundsSceneAtRuntime(projection: Projection): boolean {
   return projection === 'oblique';
 }
 
+/** The fewest tiles across a top-down view opens on: a phone held upright steps down a zoom for it. */
+export const TOPDOWN_MIN_TILES_ACROSS = 4.5;
+
 /**
  * Exploration's preferred CSS px a tile: the top-down board opens at N = 3 on a 1x screen (120 px,
- * ADR 0104), the oblique one at 96 and the orthographic one at 48.
+ * ADR 0104), or N = 2 (80 px) where N = 3 would show under `TOPDOWN_MIN_TILES_ACROSS` tiles across
+ * (an upright phone: 390 CSS px is 3¼ tiles at 120), the oblique one at 96 and the orthographic one
+ * at 48. `viewportWidth` is in CSS px.
  */
-export function exploreTilePx(projection: Projection): number {
-  return projection === 'topdown' ? 3 * TOPDOWN_TILE : projection === 'oblique' ? 96 : 48;
+export function exploreTilePx(projection: Projection, viewportWidth = Infinity): number {
+  if (projection === 'topdown')
+    return viewportWidth < TOPDOWN_MIN_TILES_ACROSS * 3 * TOPDOWN_TILE
+      ? 2 * TOPDOWN_TILE
+      : 3 * TOPDOWN_TILE;
+  return projection === 'oblique' ? 96 : 48;
 }
 
 export function projectGround(pos: Vec2, projection: Projection): Vec2 {

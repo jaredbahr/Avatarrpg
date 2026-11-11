@@ -8,6 +8,7 @@
 
 import type { BattleState, ContentIndex, DayPhase, GameEvent, Unit } from '../types';
 import { obscurementMissLine } from '../rules/obscurementPresentation';
+import { NATION_WORD } from '../story/conditions';
 
 export const MAX_LOG_LINES = 120;
 
@@ -113,10 +114,10 @@ export function describeEvent(
     }
 
     case 'standingChanged': {
-      const nation = content.elements.get(event.nation)?.name ?? event.nation;
+      const nation = NATION_WORD[event.nation];
       return event.delta > 0
-        ? `Word travels. ${nation} thinks a little better of you.`
-        : `Word travels. ${nation} will remember that.`;
+        ? `Word travels. Your standing with ${nation} improves.`
+        : `Word travels. Your standing with ${nation} worsens.`;
     }
 
     case 'xpGained':

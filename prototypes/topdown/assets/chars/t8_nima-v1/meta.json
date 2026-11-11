@@ -1,0 +1,18 @@
+{
+ "id": "e80e35a2-480d-45bb-a21e-b480dc9dadde",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {}
+}

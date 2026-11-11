@@ -3,6 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { version } from './package.json';
+import { PRECACHE_IGNORES } from './scripts/precache.mjs';
 
 // Stamp the code being built so even an offline cached bundle identifies itself.
 function buildRevision(): string {
@@ -355,6 +356,10 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
+        // ADR 0104: the top-down family (sheets, boards, VFX) is fetched only under
+        // ?style=topdown until T6 switches the default; it stays in dist for that request but
+        // is not precached (`scripts/precache.mjs`, which the asset budget reads too).
+        globIgnores: [...PRECACHE_IGNORES],
         /*
          * The precache manifest is inlined in sw.js, which the JavaScript gate
          * counts (ADR 0048), and two hundred 32-digit md5 revisions do not

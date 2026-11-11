@@ -3,16 +3,22 @@
  * top-down projection and scene and drops its oblique art, and every rules field stays the very
  * same object, so the rules and saves never tell the two styles apart.
  */
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { MapDef } from '../core/types';
 import { TOPDOWN_FIXTURE_SCENE } from '../render/topdown.fixture';
 import { CONTENT } from './index';
 import {
-  TOPDOWN_PRESENTATIONS,
+  TOPDOWN_SCENES,
+  loadTopDownPresentations,
   topDownMap,
   withTopDownMaps,
   type TopDownPresentation,
 } from './topdown';
+
+/** The shipped scenes, read as the browser fetches them. */
+const fromDisk = (url: string): Promise<unknown> =>
+  Promise.resolve(JSON.parse(readFileSync(`public/${url}`, 'utf8')) as unknown);
 
 /** The fields only the renderers and the camera read. */
 const PRESENTATION_FIELDS = new Set([
@@ -41,9 +47,45 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers nothing yet, so the shipped index is returned as it is', () => {
-    expect(TOPDOWN_PRESENTATIONS.size).toBe(0);
-    expect(withTopDownMaps(CONTENT)).toBe(CONTENT);
+  it('registers Ba Dan (T3), the Forest Road (T4) and the quarry (T5), their scenes assets', async () => {
+    expect([...TOPDOWN_SCENES.keys()]).toEqual([
+      'ba_dan_village',
+      'forest_road',
+      'quarry_gate',
+      'ambush_road',
+      'quarry_floor',
+    ]);
+    const presentations = await loadTopDownPresentations(fromDisk);
+    const swapped = withTopDownMaps(CONTENT, presentations);
+    const badan = map('ba_dan_village', swapped);
+    expect(badan.projection).toBe('topdown');
+    expect(badan.cameraCentreMargin).toBe(1);
+    expect(badan.scene?.ground[0]?.url).toBe('art/topdown/ba-dan/ground.webp');
+    expect(badan.scene?.scenery.length).toBeGreaterThan(50);
+    const forest = map('forest_road', swapped);
+    expect(forest.projection).toBe('topdown');
+    expect(forest.scene?.ground[0]?.url).toBe('art/topdown/forest-road/ground.webp');
+    expect(forest.scene?.scenery.length).toBeGreaterThan(100);
+    // the rubble heaps stay the rules' painted rubble across the swap
+    expect(forest.scene?.paintedRubble).toEqual(map('forest_road').scene?.paintedRubble);
+    for (const [id, folder] of [
+      ['quarry_gate', 'quarry-gate'],
+      ['ambush_road', 'cutting'],
+      ['quarry_floor', 'quarry-floor'],
+    ] as const) {
+      const quarry = map(id, swapped);
+      expect(quarry.projection).toBe('topdown');
+      expect(quarry.scene?.ground[0]?.url).toBe(`art/topdown/${folder}/ground.webp`);
+      expect(quarry.scene?.paintedRubble).toEqual(map(id).scene?.paintedRubble);
+      expect(quarry.rows).toBe(map(id).rows);
+    }
+    expect(map('ba_dan_riverside', swapped)).toBe(map('ba_dan_riverside'));
+  });
+
+  it('refuses a scene that is not one', async () => {
+    await expect(loadTopDownPresentations(() => Promise.resolve({ nope: 1 }))).rejects.toThrow(
+      'is not a map scene',
+    );
   });
 
   it('is the identity for an id the index does not hold', () => {

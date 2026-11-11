@@ -138,7 +138,18 @@ export function painterCanvas(
 export function tip(node: HTMLElement, text: string, show: (text: string) => void): void {
   if (!text) return;
   node.title = text;
+  node.classList.add('tap-tooltip');
   node.addEventListener('click', () => show(text));
+  // Native controls already translate keyboard activation into a click.
+  if (!node.matches('button, a[href], input, select, textarea, summary')) {
+    node.setAttribute('role', 'button');
+    node.tabIndex = 0;
+    node.addEventListener('keydown', (event) => {
+      if (event.target !== node || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      if (!event.repeat) node.click();
+    });
+  }
 }
 
 /** Screen-reader announcement without moving focus. */

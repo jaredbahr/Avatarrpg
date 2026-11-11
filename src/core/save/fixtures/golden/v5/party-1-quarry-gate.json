@@ -1,0 +1,86 @@
+{
+  "magic": "four-nations-tactics",
+  "format": 5,
+  "savedAt": 1700000000000,
+  "label": "Golden 1: quarry-gate",
+  "summary": "quarry-gate; walk-up/escort route; forced victories for compatibility fixtures",
+  "state": {
+    "version": 5,
+    "seed": 4077800745,
+    "rng": 982563592,
+    "screen": "dialogue",
+    "party": [
+      {
+        "id": "p0",
+        "name": "Kaya",
+        "faction": "party",
+        "element": "fire",
+        "characterId": "kaya",
+        "enemyId": null,
+        "disciplineId": null,
+        "level": 2,
+        "xp": 100,
+        "pos": { "x": 0, "y": 0 },
+        "size": 1,
+        "hp": 30,
+        "ap": 4,
+        "move": 4,
+        "bankedAp": 0,
+        "pendingAp": 0,
+        "base": {
+          "maxHp": 30,
+          "maxAp": 4,
+          "maxMove": 4,
+          "power": 9,
+          "defense": 2,
+          "speed": 7,
+          "focus": 10
+        },
+        "abilities": ["fire_jab", "flame_arc"],
+        "cooldowns": {},
+        "statuses": [],
+        "ai": "none",
+        "temporary": false,
+        "sprite": "unit.fire.kaya"
+      }
+    ],
+    "battle": null,
+    "story": {
+      "nodeId": "gate_parley",
+      "deciderIndex": 0,
+      "visited": [
+        "act1_open",
+        "village_explore",
+        "road_depart",
+        "forest_explore",
+        "battle_forest_road",
+        "after_forest",
+        "forest_after_explore",
+        "gate_parley"
+      ],
+      "lineIndex": 0
+    },
+    "flags": {},
+    "pendingChoices": [],
+    "location": { "mapId": "quarry_gate", "pos": { "x": 8, "y": 4 } },
+    "world": {
+      "returnPos": {
+        "ba_dan_village": { "x": 23, "y": 7 },
+        "forest_road": { "x": 19, "y": 4 },
+        "quarry_gate": { "x": 8, "y": 4 }
+      },
+      "fired": [
+        "forest_road:road_depart",
+        "forest_road:battle_forest_road",
+        "quarry_gate:gate_parley"
+      ],
+      "cleared": ["enc_forest_road"],
+      "clock": { "day": 1, "phase": "midday" },
+      "talk": null,
+      "residentProfiles": {},
+      "runoff": "unresolved"
+    },
+    "log": ["— Round 1 —", "Kaya reaches level 2! Learned Flame Arc."]
+  },
+  "session": { "players": [{ "name": "Kaya", "unitId": "p0" }], "soloPlay": true }
+}

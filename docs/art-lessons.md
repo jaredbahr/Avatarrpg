@@ -84,6 +84,29 @@ animation or presentation work. Add to it when something fails.
   - Notching a patch around a prop's foot leaves holes. Let the prop stand on the patch.
   - A `//` comment inserted mid-line in an inlined build silently killed the page. Check `pageerror` first.
 
+- **The Ba Dan port (T3, 2026-11-06):**
+  - The prototype's bridge was an oblique 3/4 drawing that sat off-centre over the canal, so the owner saw it was
+    "visually off" at once. Generate structures straight on, sized from the plate (kerb to kerb), and seat them by
+    measurement.
+  - A PixelLab banner pole came with a baked dark ground disc that read as "a black hole". Strip baked discs on load,
+    and test every placed sprite for one.
+  - Casting each column on its own striped a stall's legs and left thin lamp posts with no shadow at all. Cast the
+    whole silhouette, then close the gaps.
+  - A dirt patch sized to a 3-cell exit became a flat blob with a cut-out edge. Draw a path with the Wang set's own
+    transitions; two dirt vertices is the narrowest a 32 px set draws cleanly.
+  - A ford drawn as a round pool read as a punched hole with a ring. A flooded road keeps its stones under the water,
+    so draw the paving darkened and blued, with glints at two scales and no ring.
+  - Fading a whole house for a figure behind it made a pale ghost. Houses take the figure-shaped reveal; only trees
+    fade, and only to 0.6.
+  - Playwright's built-in video smeared integer-zoom pixels, so a crisp game looked blurred. Capture frames
+    losslessly (CDP screencast PNGs), scale ×2 nearest, and encode at a high quality.
+  - A blossom tree on the quay's cobble and a fence standing on the canal's kerb, its foot along the water: "the tree
+    is growing out of cobblestone", "this wall on the canal is off". Trees and bushes grow from soil, never stone (a
+    tree the rows put on paving gets a soil bed, or a stone-born solid such as a barrel stack takes its cell), and
+    nothing stands on a kerb or a lip. `validateTopDownLayout` now rejects both.
+  - Stripping a bush's baked mound inside the root flare's columns left a brown stump plate with tan in it. Cut to
+    the trunk's own width, and test every plant for plate pixels.
+
 ### Characters and objects
 
 - **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;
@@ -146,6 +169,22 @@ animation or presentation work. Add to it when something fails.
     when the seven before it lie still. Hold the seventh; never hold the frame PixelLab ended on without looking.
   - Jobs for eight directions often come back split (some directions first, the rest in a second job), so a
     download in between sees half a clip. Download once every job has finished.
+
+- **The T5 quarry clips (2026-11-10, `tools/t5clips.py`):**
+  - A retake keeps its animation group's 3D motion. The crossbow's knockout ended sitting up in every heading, and an
+    eight-heading retake sat her up again. Only a new group, its prompt spelling out "flat onto her back, full length,
+    the crossbow drops beside her", laid her down.
+  - The same holds for a held weapon: the sergeant's sword vanished in the same two walk cels (west, south-west)
+    after a retake. Don't pay for a second retake of a vanishing prop; change the prompt or accept it.
+  - Blood and dust still appear in hits (a red patch on the chest, a grey puff at the feet). Most cleared in one
+    retake; a red patch on the sergeant's east hit came back twice.
+  - **Object animations are rate-limited per heading.** A request for five headings queued two and marked three
+    `rate_limited`, with no job and no charge; the old poll waited forever for them. Read `submissions`, resubmit
+    what was not queued, and re-poll each heading's own job for its usage.
+  - Objects have no heading delete: a retake passes `replace_existing: true` in the same group.
+  - An object's frame 0 is its rotation, exactly; the motion is frames 1 onwards.
+  - Object clips painted effects too: an orange spark burst in a hit, a red glow over the body, oil gushing from a
+    hose in a knockout. Check every heading of a vehicle clip as you would a character's.
 
 ### Process
 
