@@ -22,6 +22,7 @@ import { loadTopDownPresentations, withTopDownMaps } from './content/topdown';
 import { loadTopdownVfx } from './content/assets/topdownVfx';
 import { assetUrl } from './render/spriteCache';
 import type { ContentIndex } from './core/types';
+import { pageStyle } from './app/style';
 
 /** Gallery checks await decoded pixels, not just successful HTTP requests. */
 async function loadedFxCels() {
@@ -47,9 +48,9 @@ if (import.meta.env.DEV) {
   });
 }
 
-// `?style=world`: the world-style figure test (art/source/style-test-world-chars), never the default.
-// `?style=topdown`: the top-down port (ADR 0104): its sheets, and its maps for those it has drawn.
-const style = new URLSearchParams(window.location.search).get('style');
+// Top-down is the default look (ADR 0104 T6): its sheets, and its maps for those it has drawn.
+// `?style=oblique` keeps the old look until T7; `?style=world` is the world-style figure test.
+const style = pageStyle(window.location.search);
 if (style === 'world') useWorldStyleTest();
 if (style === 'topdown') useTopDownStyle();
 if (style === 'topdown') void loadTopdownVfx(style, import.meta.env.BASE_URL);
