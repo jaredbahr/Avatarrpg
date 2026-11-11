@@ -23,6 +23,20 @@ in the top-down style under `?style=topdown`. The owner's direction for finishin
   home landing as an ending).
 - **One style:** once the route is solid, top-down becomes the default (T6) and the oblique art and code are
   deleted (T7). Don't spend effort polishing oblique-only paths.
+- **Players:** families and tactics fans, layered: easy to pick up for kids (about 7–12), with depth (combos, a
+  harder difficulty) for experienced players. Usually **3–4 players** share the iPad, so whose turn it is and the
+  hand-offs must always be clear.
+- **Tone:** a warm adventure, with humour and friendship and real stakes but nothing grim. Bandits are people with
+  reasons (`docs/writing-guide.md`).
+- **Difficulty:** forgiving by default (most first-time players win if they try), plus a harder option.
+- **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
+  "thanks for playing" card with a party summary and "play again with a different party".
+- **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
+  UI sounds.
+- **Portraits:** the owner is choosing between pixel and hand-drawn dialogue portraits. Don't make new portraits
+  until he has picked a style.
+- **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
+  new content or regions.
 
 ## Current state: top-down art direction (read first, 2026-11-05)
 
