@@ -547,8 +547,8 @@ for (const viewport of [
 
       await enterNode(page, 'act1_epilogue');
       await audit(page, 'ending-interlude', ['.interlude-scene button']);
-      await page.getByRole('button', { name: 'Read summary', exact: true }).click();
-      await expect(page.locator('.end-panel')).toContainText('The Quarry of Ba Dan');
+      await enterNode(page, 'demo_complete');
+      await expect(page.locator('.end-panel')).toContainText('Home to Ba Dan');
       await audit(page, 'ending-summary', ['.end-panel button']);
     });
   }

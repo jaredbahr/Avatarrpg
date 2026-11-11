@@ -208,7 +208,9 @@ describe('connected world traversal', () => {
       state = walk(state, 19, 4).state;
       state = finishDialogue(walk(state, 17, 5).state);
       state = resolve(state, loss === 'boss');
-      expect(state.screen).toBe('ended');
+      // A win frees the workers (a beat, then the walk home); losing the Driller ends the act.
+      if (loss !== 'boss') state = finishDialogue(state);
+      expect(state.screen).toBe(loss === 'boss' ? 'ended' : 'explore');
       expect(state.flags[loss === 'boss' ? 'act1_lost' : 'act1_complete']).toBe(true);
       expect(state.world.cleared).not.toContain(
         {
@@ -266,8 +268,10 @@ describe('connected world traversal', () => {
         expect(state.party.map((unit) => unit.xp)).toEqual(before);
         state = finishDialogue(walk(state, 17, 5).state);
         expect(state.battle?.encounterId).toBe('enc_grumbler');
-        state = resolve(state);
-        expect(state.screen).toBe('ended');
+        state = finishDialogue(resolve(state));
+        expect(state.screen).toBe('explore');
+        expect(state.location.mapId).toBe('quarry_floor');
+        expect(state.world.clock.phase).toBe('evening');
         expect(state.flags.act1_complete).toBe(true);
       });
     }
