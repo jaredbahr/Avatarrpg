@@ -3704,7 +3704,7 @@ html[data-contrast='high'] .hud-panel::after {
   /* Keep the full gold keyboard ring inside the compressed dock. */
   html[data-large-text='on'] .explore-scene:not(.riverside-scene) .action-button:focus-visible,
   html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .action-button:focus-visible {
-    outline-offset: -3px;
+    outline-offset: calc(-3 * var(--hairline));
   }
 }
 
