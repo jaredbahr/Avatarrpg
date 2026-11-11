@@ -84,9 +84,9 @@ test('a new game gets the Forest Road guide, and Skip closes it', async ({ page 
   await expect(page.locator('.turn-strip')).toHaveClass(/guidance-target/);
   await page.getByRole('button', { name: 'Skip guidance', exact: true }).click();
   await expect(page.locator('.combat-guidance')).toHaveCount(0);
-  expect(
-    await page.evaluate(() => window.fnt!.app.state!.flags['guidance.firstFightStage']),
-  ).toBe('done');
+  expect(await page.evaluate(() => window.fnt!.app.state!.flags['guidance.firstFightStage'])).toBe(
+    'done',
+  );
 });
 
 test('a loaded game past the Forest Road has no first-fight coach mark', async ({ page }) => {

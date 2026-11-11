@@ -9,8 +9,20 @@ import {
   unseenCombatTips,
 } from './combatGuidance';
 
-const party = { id: 'p0', faction: 'party', pos: { x: 0, y: 0 }, size: 1, statuses: [] } as Unit;
-const enemy = { id: 'e0', faction: 'enemy', pos: { x: 2, y: 0 }, size: 1, statuses: [] } as Unit;
+const party = {
+  id: 'p0',
+  faction: 'party',
+  pos: { x: 0, y: 0 },
+  size: 1,
+  statuses: [],
+} as unknown as Unit;
+const enemy = {
+  id: 'e0',
+  faction: 'enemy',
+  pos: { x: 2, y: 0 },
+  size: 1,
+  statuses: [],
+} as unknown as Unit;
 
 function state(overrides: Partial<GameState> = {}): GameState {
   return {
@@ -100,9 +112,11 @@ describe('first fight guidance', () => {
 
 describe('later combat tips', () => {
   it('recognizes features and only schedules unseen feature keys', () => {
-    expect(
-      combatTipFeatures(state(), new Map([['barrel', { hp: 6 } as PropDef]])),
-    ).toEqual(['cover', 'surface.oil', 'prop']);
+    expect(combatTipFeatures(state(), new Map([['barrel', { hp: 6 } as PropDef]]))).toEqual([
+      'cover',
+      'surface.oil',
+      'prop',
+    ]);
     expect(combatTipFeatures(state(), new Map([['barrel', { hp: 0 } as PropDef]]))).toEqual([
       'cover',
       'surface.oil',

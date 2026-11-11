@@ -2097,9 +2097,13 @@ export class CombatScene implements Scene {
       'div',
       { class: 'combat-guidance', attrs: { role: 'status', 'aria-live': 'polite' } },
       el('span', { text: copy }),
-      button('Skip guidance', () => {
-        this.finishFirstFightGuide();
-      }, { class: 'btn-ghost' }),
+      button(
+        'Skip guidance',
+        () => {
+          this.finishFirstFightGuide();
+        },
+        { class: 'btn-ghost' },
+      ),
     );
   }
 
@@ -2163,7 +2167,11 @@ export class CombatScene implements Scene {
   }
 
   private scheduleCombatTip(delay = 700): void {
-    if (this.guidanceTipTimer !== null || this.guidanceTipHandle || this.guidanceTipQueue.length === 0)
+    if (
+      this.guidanceTipTimer !== null ||
+      this.guidanceTipHandle ||
+      this.guidanceTipQueue.length === 0
+    )
       return;
     this.guidanceTipTimer = window.setTimeout(() => {
       this.guidanceTipTimer = null;
@@ -2192,15 +2200,10 @@ export class CombatScene implements Scene {
       this.scheduleCombatTip(200);
       return;
     }
-    this.guidanceTipHandle = this.app.toasts.show(
-      combatTipCopy(feature),
-      'info',
-      5200,
-      () => {
-        this.guidanceTipHandle = null;
-        this.scheduleCombatTip(350);
-      },
-    );
+    this.guidanceTipHandle = this.app.toasts.show(combatTipCopy(feature), 'info', 5200, () => {
+      this.guidanceTipHandle = null;
+      this.scheduleCombatTip(350);
+    });
     if (this.guidanceTipHandle) {
       this.saveGuidanceFlags({ [`guidance.tip.${feature}`]: true });
     } else {
