@@ -923,7 +923,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.enemy.quarrybender': image('art/portraits/enemy.quarrybender.png', 'earth'),
   'portrait.enemy.crossbow': image('art/portraits/enemy.crossbow.png', 'enemy'),
   'portrait.enemy.thug': image('art/portraits/enemy.thug.png', 'enemy'),
-  'portrait.enemy.deserter': image('art/portraits/enemy.deserter.webp', 'fire'),
+  'portrait.enemy.deserter': image('art/portraits/enemy.deserter.png', 'fire'),
   'portrait.enemy.driller': image('art/portraits/enemy.grumbler.png', 'enemy'),
   'portrait.kaya': image('art/portraits/kaya.png', 'fire'),
   'portrait.tenzo': image('art/portraits/tenzo.png', 'fire'),
@@ -943,6 +943,8 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.dorin': image('art/portraits/dorin.png', 'earth'),
   'portrait.ruon': image('art/portraits/ruon.png', 'neutral'),
   'portrait.jin': image('art/portraits/jin.png', 'nonbender'),
+  'portrait.dema': image('art/portraits/dema.png', 'neutral'),
+  'portrait.sen': image('art/portraits/sen.png', 'neutral'),
 
   /* ------------------------------------------------------------ Probe */
   /*

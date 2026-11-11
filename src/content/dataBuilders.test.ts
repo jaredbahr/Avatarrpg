@@ -194,7 +194,7 @@ describe('content builders preserve their authored values', () => {
       ['portrait.enemy.quarrybender', 'art/portraits/enemy.quarrybender.png', 'earth'],
       ['portrait.enemy.crossbow', 'art/portraits/enemy.crossbow.png', 'enemy'],
       ['portrait.enemy.thug', 'art/portraits/enemy.thug.png', 'enemy'],
-      ['portrait.enemy.deserter', 'art/portraits/enemy.deserter.webp', 'fire'],
+      ['portrait.enemy.deserter', 'art/portraits/enemy.deserter.png', 'fire'],
       ['portrait.enemy.driller', 'art/portraits/enemy.grumbler.png', 'enemy'],
       ['portrait.kaya', 'art/portraits/kaya.png', 'fire'],
       ['portrait.tenzo', 'art/portraits/tenzo.png', 'fire'],
@@ -212,6 +212,8 @@ describe('content builders preserve their authored values', () => {
       ['portrait.dorin', 'art/portraits/dorin.png', 'earth'],
       ['portrait.ruon', 'art/portraits/ruon.png', 'neutral'],
       ['portrait.jin', 'art/portraits/jin.png', 'nonbender'],
+      ['portrait.dema', 'art/portraits/dema.png', 'neutral'],
+      ['portrait.sen', 'art/portraits/sen.png', 'neutral'],
     ]);
     expect(ASSETS['unit.enemy.crossbow']).toEqual({
       kind: 'sheet',

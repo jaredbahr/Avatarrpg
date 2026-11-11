@@ -25693,6 +25693,876 @@
    }
   },
   {
+   "name": "t9_portrait_sura_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "facfdd11-8266-4865-8487-8738a23e75be",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young woman, in the style of...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8746.9654640625,
+   "balance_after": 8734.9654640625,
+   "secs": 48,
+   "notes": "",
+   "ids": {
+    "background_job_id": "facfdd11-8266-4865-8487-8738a23e75be",
+    "image_id": "6647b3f7-e37e-5722-92a5-f865c27e62b5",
+    "source_image_id": "6647b3f7-e37e-5722-92a5-f865c27e62b5"
+   }
+  },
+  {
+   "name": "t9_portrait_linmei_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "dd12d154-1d26-47fe-99ef-9511c6ae1d89",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young woman, in the style of...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8746.9654640625,
+   "balance_after": 8734.9654640625,
+   "secs": 48,
+   "notes": "",
+   "ids": {
+    "background_job_id": "dd12d154-1d26-47fe-99ef-9511c6ae1d89",
+    "image_id": "39cc2c01-3a55-5a9e-8cdb-27f66ead9ab7",
+    "source_image_id": "39cc2c01-3a55-5a9e-8cdb-27f66ead9ab7"
+   }
+  },
+  {
+   "name": "t9_portrait_dema_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "5646fa7b-6f3d-41d0-a333-6cd2b32045c8",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a middle-aged woman, the road keeper,...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8746.9654640625,
+   "balance_after": 8722.9654640625,
+   "secs": 54,
+   "notes": "",
+   "ids": {
+    "background_job_id": "5646fa7b-6f3d-41d0-a333-6cd2b32045c8",
+    "image_id": "d002ea3e-3cbc-5f9b-91e6-dbebb2b3188b",
+    "source_image_id": "d002ea3e-3cbc-5f9b-91e6-dbebb2b3188b"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.slinger_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "56f57dd0-4617-450b-9f62-446a88ad346b",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same bandit slinger, in the style...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8746.9654640625,
+   "balance_after": 8722.9654640625,
+   "secs": 60,
+   "notes": "",
+   "ids": {
+    "background_job_id": "56f57dd0-4617-450b-9f62-446a88ad346b",
+    "image_id": "df3a8497-5501-5e8d-8a3d-f1d8f1566264",
+    "source_image_id": "df3a8497-5501-5e8d-8a3d-f1d8f1566264"
+   }
+  },
+  {
+   "name": "t9_portrait_sen_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "66a8fe1f-072a-451f-990b-9a0bdbceccdf",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a gentle middle-aged tea keeper, in t...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8722.9654640625,
+   "balance_after": 8704.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "66a8fe1f-072a-451f-990b-9a0bdbceccdf",
+    "image_id": "2c887128-e9d8-509a-8a1b-0cc605865baa",
+    "source_image_id": "2c887128-e9d8-509a-8a1b-0cc605865baa"
+   }
+  },
+  {
+   "name": "t9_portrait_nima_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "dbcbfbf7-40cc-4893-9a8d-05695af6181f",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young man, in the style of a...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 30.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8734.9654640625,
+   "balance_after": 8704.9654640625,
+   "secs": 48,
+   "notes": "",
+   "ids": {
+    "background_job_id": "dbcbfbf7-40cc-4893-9a8d-05695af6181f",
+    "image_id": "a9b0e16e-ce00-593f-afc5-29aa1dcfc96c",
+    "source_image_id": "a9b0e16e-ce00-593f-afc5-29aa1dcfc96c"
+   }
+  },
+  {
+   "name": "t9_portrait_bo_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "bf2d92d4-327b-47bb-94c0-f9998d2d25a4",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young man, in the style of a...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 30.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8734.9654640625,
+   "balance_after": 8704.9654640625,
+   "secs": 48,
+   "notes": "",
+   "ids": {
+    "background_job_id": "bf2d92d4-327b-47bb-94c0-f9998d2d25a4",
+    "image_id": "c1f6f91c-c19d-5de4-bf13-ab700dc9a6f6",
+    "source_image_id": "c1f6f91c-c19d-5de4-bf13-ab700dc9a6f6"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.quarrybender_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "9b2b787c-0c26-49a9-bb23-30e804413885",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same quarry bandit, in the style ...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8722.9654640625,
+   "balance_after": 8698.9654640625,
+   "secs": 48,
+   "notes": "",
+   "ids": {
+    "background_job_id": "9b2b787c-0c26-49a9-bb23-30e804413885",
+    "image_id": "e3e34c2d-994c-538a-bab3-efb725710a33",
+    "source_image_id": "e3e34c2d-994c-538a-bab3-efb725710a33"
+   }
+  },
+  {
+   "name": "t9_portrait_tenzo_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "d6a22810-f733-4bd6-8193-014c4243be3d",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young man, in the style of a...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8704.9654640625,
+   "balance_after": 8692.9654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d6a22810-f733-4bd6-8193-014c4243be3d",
+    "image_id": "14ecc3ef-bf83-536d-ac16-9adcd022f02f",
+    "source_image_id": "14ecc3ef-bf83-536d-ac16-9adcd022f02f"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.deserter_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "dcde1665-071c-48b3-bc09-287182ae4666",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same man, in the style of a premi...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8704.9654640625,
+   "balance_after": 8680.9654640625,
+   "secs": 53,
+   "notes": "",
+   "ids": {
+    "background_job_id": "dcde1665-071c-48b3-bc09-287182ae4666",
+    "image_id": "5f294664-460e-5b66-85ee-f5fe9fe2310b",
+    "source_image_id": "5f294664-460e-5b66-85ee-f5fe9fe2310b"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.bruiser_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "851294fa-5012-4bfe-b21c-02f7b07489f0",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same burly bandit, in the style o...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8698.9654640625,
+   "balance_after": 8680.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "851294fa-5012-4bfe-b21c-02f7b07489f0",
+    "image_id": "4372b1c4-81a2-5de2-b99b-5afeda755264",
+    "source_image_id": "4372b1c4-81a2-5de2-b99b-5afeda755264"
+   }
+  },
+  {
+   "name": "t9_portrait_pella_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "694c4576-96b9-48ca-9de6-e1abf9fef145",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same child, in the style of a pre...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 30.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8704.9654640625,
+   "balance_after": 8674.9654640625,
+   "secs": 59,
+   "notes": "",
+   "ids": {
+    "background_job_id": "694c4576-96b9-48ca-9de6-e1abf9fef145",
+    "image_id": "4390b5ae-4686-5034-bea9-d49757c6d8e4",
+    "source_image_id": "4390b5ae-4686-5034-bea9-d49757c6d8e4"
+   }
+  },
+  {
+   "name": "t9_portrait_dorin_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "911cda25-99c1-4ee8-b7f5-26e43af476e9",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same thin young man, in the style...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8680.9654640625,
+   "balance_after": 8668.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "911cda25-99c1-4ee8-b7f5-26e43af476e9",
+    "image_id": "54e54faf-10c9-5eac-852c-b5bc0dea12cc",
+    "source_image_id": "54e54faf-10c9-5eac-852c-b5bc0dea12cc"
+   }
+  },
+  {
+   "name": "t9_portrait_riko_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "49d85b1e-a54f-4125-9fa5-91c1ce091f3f",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young woman, in the style of...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 18.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8674.9654640625,
+   "balance_after": 8656.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "49d85b1e-a54f-4125-9fa5-91c1ce091f3f",
+    "image_id": "40e8e725-2a9c-5bd5-b630-2bc8a181ae07",
+    "source_image_id": "40e8e725-2a9c-5bd5-b630-2bc8a181ae07"
+   }
+  },
+  {
+   "name": "t9_portrait_nilak_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "c18122af-837a-45bd-87b7-a521277f699a",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young man, in the style of a...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 36.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8692.9654640625,
+   "balance_after": 8656.9654640625,
+   "secs": 70,
+   "notes": "",
+   "ids": {
+    "background_job_id": "c18122af-837a-45bd-87b7-a521277f699a",
+    "image_id": "3009853e-049c-51e5-b6c4-4fa42ae48417",
+    "source_image_id": "3009853e-049c-51e5-b6c4-4fa42ae48417"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.crossbow_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "0e1d6c8c-267b-4500-b046-123eed991399",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same bandit crossbowman, in the s...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 30.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8680.9654640625,
+   "balance_after": 8650.9654640625,
+   "secs": 59,
+   "notes": "",
+   "ids": {
+    "background_job_id": "0e1d6c8c-267b-4500-b046-123eed991399",
+    "image_id": "5f588c81-e1c7-527f-8078-62b0dc3fb194",
+    "source_image_id": "5f588c81-e1c7-527f-8078-62b0dc3fb194"
+   }
+  },
+  {
+   "name": "t9_portrait_mira_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "add9df6c-91dc-4f9e-832d-3a79f624c282",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same elderly woman, in the style ...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8656.9654640625,
+   "balance_after": 8644.9654640625,
+   "secs": 37,
+   "notes": "",
+   "ids": {
+    "background_job_id": "add9df6c-91dc-4f9e-832d-3a79f624c282",
+    "image_id": "c48088a7-94dd-5b06-aa29-7e2da66cb2c6",
+    "source_image_id": "c48088a7-94dd-5b06-aa29-7e2da66cb2c6"
+   }
+  },
+  {
+   "name": "t9_portrait_jin_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "2f078f1e-d6fd-46d9-924b-65eb745dbd10",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same woman, in the style of a pre...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 36.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8668.9654640625,
+   "balance_after": 8632.9654640625,
+   "secs": 53,
+   "notes": "",
+   "ids": {
+    "background_job_id": "2f078f1e-d6fd-46d9-924b-65eb745dbd10",
+    "image_id": "ee84de4e-b472-5172-bbfd-89c94d33df68",
+    "source_image_id": "ee84de4e-b472-5172-bbfd-89c94d33df68"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.thug_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "e9156807-8f6b-4e8e-a4fb-734dc8cd0983",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same scruffy bandit, in the style...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 26.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8650.9654640625,
+   "balance_after": 8624.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "e9156807-8f6b-4e8e-a4fb-734dc8cd0983",
+    "image_id": "876f0ab4-188a-5fd2-9e53-7631f11c95f0",
+    "source_image_id": "876f0ab4-188a-5fd2-9e53-7631f11c95f0"
+   }
+  },
+  {
+   "name": "t9_portrait_ruon_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "81524630-67b4-43d5-8634-5f35aa47326a",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same older man, in the style of a...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 32.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8656.9654640625,
+   "balance_after": 8624.9654640625,
+   "secs": 53,
+   "notes": "",
+   "ids": {
+    "background_job_id": "81524630-67b4-43d5-8634-5f35aa47326a",
+    "image_id": "c5af7e1a-1b01-5d34-832a-13a35bdec261",
+    "source_image_id": "c5af7e1a-1b01-5d34-832a-13a35bdec261"
+   }
+  },
+  {
+   "name": "t9_portrait_gao_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "faaed059-c223-49d6-8e0a-a9e7222149fa",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same stout middle-aged man, in th...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 26.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8644.9654640625,
+   "balance_after": 8618.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "faaed059-c223-49d6-8e0a-a9e7222149fa",
+    "image_id": "f289e57a-25ee-5a69-b0bb-4925cf6c1ece",
+    "source_image_id": "f289e57a-25ee-5a69-b0bb-4925cf6c1ece"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.grumbler_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "f9f033dc-1d2d-4267-86dd-7d120738335f",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same steam-powered tracked drilli...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8624.9654640625,
+   "balance_after": 8612.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f9f033dc-1d2d-4267-86dd-7d120738335f",
+    "image_id": "ecf043ed-bb24-54ca-a994-49c503ad2c00",
+    "source_image_id": "ecf043ed-bb24-54ca-a994-49c503ad2c00"
+   }
+  },
+  {
+   "name": "t9_portrait_jinu_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "b663badb-ffdc-480a-91e0-c18aad0a15ba",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young woman, in the style of...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 26.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8626.9654640625,
+   "balance_after": 8600.9654640625,
+   "secs": 53,
+   "notes": "",
+   "ids": {
+    "background_job_id": "b663badb-ffdc-480a-91e0-c18aad0a15ba",
+    "image_id": "b2e5ead6-991e-5e54-b180-7815f92df456",
+    "source_image_id": "b2e5ead6-991e-5e54-b180-7815f92df456"
+   }
+  },
+  {
+   "name": "t9_portrait_wen_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "7e5e6a12-42a5-48ca-93d3-ee4be298635d",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young man, in the style of a...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8624.9654640625,
+   "balance_after": 8600.9654640625,
+   "secs": 47,
+   "notes": "",
+   "ids": {
+    "background_job_id": "7e5e6a12-42a5-48ca-93d3-ee4be298635d",
+    "image_id": "e30e3c26-7574-51d6-9e91-02725f57cf15",
+    "source_image_id": "e30e3c26-7574-51d6-9e91-02725f57cf15"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.bruiser_B_s12",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "bb9b13d6-1a35-4a21-ae95-fd9255b0dfd3",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same burly bandit, in the style o...",
+    "no_background": false,
+    "seed": 12
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8598.9654640625,
+   "balance_after": 8592.9654640625,
+   "secs": 37,
+   "notes": "",
+   "ids": {
+    "background_job_id": "bb9b13d6-1a35-4a21-ae95-fd9255b0dfd3",
+    "image_id": "602f95e7-8303-5b83-ad8f-027b977ef278",
+    "source_image_id": "602f95e7-8303-5b83-ad8f-027b977ef278"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.quarrybender_B_s12",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "736535c6-9b98-428c-8861-213e4bc13ebb",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same quarry bandit, in the style ...",
+    "no_background": false,
+    "seed": 12
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 57.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8592.9654640625,
+   "balance_after": 8535.9654640625,
+   "secs": 112,
+   "notes": "",
+   "ids": {
+    "background_job_id": "736535c6-9b98-428c-8861-213e4bc13ebb",
+    "image_id": "59d2e1d5-9381-5b66-ba70-fb45d24e5b39",
+    "source_image_id": "59d2e1d5-9381-5b66-ba70-fb45d24e5b39"
+   }
+  },
+  {
+   "name": "t9_portrait_enemy.slinger_B_s12",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "72cf0e45-1b57-47b0-965b-25b07547e257",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same bandit slinger, in the style...",
+    "no_background": false,
+    "seed": 12
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8535.9654640625,
+   "balance_after": 8523.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "72cf0e45-1b57-47b0-965b-25b07547e257",
+    "image_id": "67367b1e-2407-567e-97b8-1b4a7eec9793",
+    "source_image_id": "67367b1e-2407-567e-97b8-1b4a7eec9793"
+   }
+  },
+  {
+   "name": "t9_portrait_nima_B_s12",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "a83be0d6-adcc-41cb-a576-a5e7db2448ba",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young man, in the style of a...",
+    "no_background": false,
+    "seed": 12
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8523.9654640625,
+   "balance_after": 8514.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a83be0d6-adcc-41cb-a576-a5e7db2448ba",
+    "image_id": "c660353f-8a51-5415-ab20-65707582687f",
+    "source_image_id": "c660353f-8a51-5415-ab20-65707582687f"
+   }
+  },
+  {
+   "name": "t9_portrait_dema_B_s13",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "72dab332-22ef-49bb-a4bf-d2555047b7e6",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a weathered woman in her forties, the...",
+    "no_background": false,
+    "seed": 13
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8466.9654640625,
+   "balance_after": 8460.9654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "72dab332-22ef-49bb-a4bf-d2555047b7e6",
+    "image_id": "605eb5e9-8977-5787-b24f-6f35212e312d",
+    "source_image_id": "605eb5e9-8977-5787-b24f-6f35212e312d"
+   }
+  },
+  {
+   "name": "t9_portrait_sen_B_s13",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "67e3a018-5ac4-4eda-acc4-fed53e6719a9",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a tall lanky man in his thirties, the...",
+    "no_background": false,
+    "seed": 13
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8460.9654640625,
+   "balance_after": 8454.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "67e3a018-5ac4-4eda-acc4-fed53e6719a9",
+    "image_id": "8e897272-8985-5a4e-af18-30ca45618f6d",
+    "source_image_id": "8e897272-8985-5a4e-af18-30ca45618f6d"
+   }
+  },
+  {
    "name": "t10_dema_char",
    "endpoint": "/create-character-v3",
    "job": "7f885e47-d6cc-498e-ba91-982cba7ce8fe",

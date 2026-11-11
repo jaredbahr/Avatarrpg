@@ -1389,9 +1389,12 @@ html[data-contrast='high'] .map-wrap {
 
 .conversation-compact-portrait {
   position: relative;
-  flex: 0 0 var(--conversation-portrait);
-  width: var(--conversation-portrait);
-  height: var(--conversation-portrait);
+  /* The canvas inside is exactly --conversation-portrait, so its backing store is
+     never rescaled: the pixel portraits stay on whole device pixels. */
+  --conversation-frame: calc(var(--conversation-portrait) + 2 * var(--sp-1) + 2 * var(--hairline));
+  flex: 0 0 var(--conversation-frame);
+  width: var(--conversation-frame);
+  height: var(--conversation-frame);
   padding: var(--sp-1);
   border: var(--hairline) solid var(--c-ink-line);
   border-radius: var(--radius-lg);

@@ -47,11 +47,11 @@ it('retains the original fire-bandit bender when the deserter atlas is unavailab
   }
 });
 
-it('registers the matching face through the existing 512px portrait contract', () => {
+it('registers the matching face through the 160 px pixel portrait contract', () => {
   const key = 'portrait.enemy.deserter';
   const entry = ASSETS[key];
   if (entry?.kind !== 'image') throw new Error('Missing deserter portrait');
-  expect(entry.url).toBe('art/portraits/enemy.deserter.webp');
+  expect(entry.url).toBe('art/portraits/enemy.deserter.png');
   expect(validateImages('public', { [key]: entry })).toEqual([]);
   expect(readFileSync(`public/${entry.url}`).length).toBeLessThanOrEqual(38_228);
 });
