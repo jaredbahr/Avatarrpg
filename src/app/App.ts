@@ -502,7 +502,7 @@ export class App {
       scene.name === 'dialogue' &&
       wantedBackdrop !== null &&
       !this.dialogueBackdrop &&
-      (this.scene?.name === 'explore' || this.scene?.name === 'combat');
+      this.scene?.name === wantedBackdrop.kind;
 
     if (keepWorld && this.scene) {
       this.dialogueBackdrop = this.scene;
@@ -840,10 +840,11 @@ export class App {
 
   offerLevelUpIfPending(): void {
     const state = this.state;
-    if (!state || state.pendingChoices.length === 0) return;
-    if (this.levelUp) return;
     // Never interrupt a fight with a menu; choices wait for the story beat.
-    if (state.screen === 'combat') return;
+    if (!state || state.pendingChoices.length === 0 || this.levelUp || state.screen === 'combat') {
+      this.syncRewardDialogue();
+      return;
+    }
 
     const choice = state.pendingChoices[0];
     if (!choice) return;
@@ -855,6 +856,21 @@ export class App {
       this.levelUp = null;
       // More than one member may have levelled in the same fight.
       this.offerLevelUpIfPending();
+      if (
+        !this.levelUp &&
+        (this.state?.screen === 'dialogue' || this.state?.screen === 'ended') &&
+        !this.overlayHost.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        const dialogue =
+          this.dialogueHost ??
+          this.sceneHost.querySelector<HTMLElement>('.dialogue-scene, .explore-conversation');
+        const target =
+          dialogue?.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+          dialogue?.querySelector<HTMLElement>('.choice-option:not(:disabled)') ??
+          dialogue?.querySelector<HTMLElement>('[data-interlude-control="next"]') ??
+          dialogue?.querySelector<HTMLElement>('.end-panel button');
+        target?.focus({ preventScroll: true });
+      }
     };
 
     this.levelUp =
@@ -862,7 +878,29 @@ export class App {
         ? new DisciplineDialog(this, choice, done)
         : new LevelUpDialog(this, choice, done);
     this.levelUp.open(this.overlayHost);
+    // The modal now owns focus; its underlying story can safely leave the
+    // accessibility tree until the last pick closes the reward queue.
+    this.syncRewardDialogue();
     this.audio.play([{ key: 'levelUp', at: 0, seed: 0 }], 0);
+  }
+
+  /** Keep the next story beat out of sight and out of the tab order until its rewards are chosen. */
+  private syncRewardDialogue(): void {
+    if (!this.sceneHost) return;
+    const storyScreen = this.state?.screen === 'dialogue' || this.state?.screen === 'ended';
+    const concealed =
+      storyScreen &&
+      this.state !== null &&
+      (this.state.pendingChoices.length > 0 || this.levelUp !== null);
+    const dialogue =
+      this.dialogueHost ??
+      this.sceneHost.querySelector<HTMLElement>('.dialogue-scene, .explore-conversation');
+    if (concealed) this.sceneHost.classList.add('reward-first');
+    else this.sceneHost.classList.remove('reward-first');
+    if (!dialogue) return;
+    dialogue.inert = concealed;
+    if (concealed) dialogue.setAttribute('aria-hidden', 'true');
+    else dialogue.removeAttribute('aria-hidden');
   }
 
   /**

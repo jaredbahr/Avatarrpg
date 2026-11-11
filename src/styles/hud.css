@@ -23,6 +23,11 @@
   z-index: var(--z-overlay);
 }
 
+.scene-host.reward-first .dialogue-scene,
+.scene-host.reward-first .explore-conversation {
+  display: none;
+}
+
 .overlay-host {
   pointer-events: none;
   z-index: var(--z-overlay-host);
@@ -990,6 +995,10 @@ html[data-contrast='high'] .title-card .tagline {
   display: flex;
   flex-direction: column;
   background: color-mix(in srgb, var(--c-ink) 42%, transparent);
+}
+
+.dialogue-scene.end-scene {
+  background: var(--c-ink);
 }
 
 /*
@@ -2083,6 +2092,10 @@ html[data-contrast='high'] .hud-panel::after {
   z-index: var(--z-banner);
   padding: var(--sp-4);
   animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.handoff-banner.result-banner {
+  background: var(--c-ink);
 }
 
 .handoff-banner .panel {
