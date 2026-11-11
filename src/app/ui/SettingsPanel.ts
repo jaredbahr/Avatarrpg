@@ -1,7 +1,7 @@
 /**
  * Settings.
  *
- * Six controls, each one aimed at a specific person at the table rather than
+ * Each control is aimed at a specific person at the table rather than
  * at a spec: text too small on a 2736x1824 screen, too much going on, a room
  * where sound is not welcome, can't tell the fire from the mud, the panels
  * washing out in daylight, or a planner who counts squares.
@@ -115,6 +115,15 @@ export class SettingsPanel extends Dialog {
         'Draws the tile lines over the ground, for anyone who plans by counting squares.',
         settings.showGrid,
         (value) => this.app.updateSettings({ showGrid: value }),
+      ),
+    );
+
+    body.appendChild(
+      this.toggleRow(
+        'Combat guidance',
+        'Step-by-step help in the first fight, then a short tip when a new combat feature appears.',
+        settings.combatGuidance,
+        (value) => this.app.updateSettings({ combatGuidance: value }),
       ),
     );
 

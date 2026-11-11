@@ -14,7 +14,16 @@
  */
 
 import type { App, Scene, CameraInfo } from '../App';
-import type { Ability, BattleState, GameEvent, PropInstance, Unit, Vec2 } from '../../core/types';
+import type {
+  Ability,
+  BattleState,
+  Command,
+  GameEvent,
+  GameState,
+  PropInstance,
+  Unit,
+  Vec2,
+} from '../../core/types';
 import {
   canUseAbility,
   heightReachBonus,
@@ -112,6 +121,16 @@ import {
   type VictoryBeatClock,
   victoryActorBounds,
 } from './victoryBeat';
+import {
+  FIRST_FIGHT_GUIDANCE,
+  combatTipCopy,
+  combatTipEvents,
+  combatTipFeatures,
+  firstFightStage,
+  nextFirstFightStage,
+  unseenCombatTips,
+  type CombatTipFeature,
+} from './combatGuidance';
 
 export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
   return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
@@ -239,6 +258,10 @@ export class CombatScene implements Scene {
   private readonly sceneAnimator: Animator | null;
   private readonly presentationClock: PresentationClock | null;
   private topdownSoundQueue: SoundCue[] = [];
+  private guidanceTipQueue: CombatTipFeature[] = [];
+  private guidanceTipTimer: number | null = null;
+  private guidanceTipHandle: ToastHandle | null = null;
+  private guideReleaseTimer: number | null = null;
   private topdownBlowPoints: Vec2[] = [];
   private topdownBlowEndsAt = 0;
   private aiDueAt: number | null = null;
@@ -427,6 +450,7 @@ export class CombatScene implements Scene {
 
   /** Own top-down event playback so one Animator never mixes clock domains. */
   onEvents(events: readonly GameEvent[], wallNow: number, unitsBefore: readonly Unit[]): boolean {
+    this.queueCombatTips(combatTipEvents(events));
     if (!this.sceneAnimator || !this.battle()) return false;
     this.sceneAnimator.push(this.presentationNow(wallNow), events, unitsBefore);
     const endpoints: Vec2[] = [];
@@ -465,6 +489,8 @@ export class CombatScene implements Scene {
     this.presentationHeld = false;
     this.syncPresentationClock();
     this.host = host;
+    if (this.app.state)
+      this.queueCombatTips(combatTipFeatures(this.app.state, this.app.content.props));
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     const approach = this.freshBattleEntry
       ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
@@ -516,6 +542,13 @@ export class CombatScene implements Scene {
     this.aiDueAt = null;
     this.aiDueUnitId = null;
     this.topdownSoundQueue = [];
+    this.guidanceTipQueue = [];
+    if (this.guideReleaseTimer !== null) window.clearTimeout(this.guideReleaseTimer);
+    this.guideReleaseTimer = null;
+    if (this.guidanceTipTimer !== null) window.clearTimeout(this.guidanceTipTimer);
+    this.guidanceTipTimer = null;
+    if (this.guidanceTipHandle) this.app.toasts.dismiss(this.guidanceTipHandle);
+    this.guidanceTipHandle = null;
     this.topdownBlowPoints = [];
     this.topdownBlowEndsAt = 0;
     this.sceneAnimator?.clear();
@@ -1498,6 +1531,13 @@ export class CombatScene implements Scene {
   sync(): void {
     const battle = this.battle();
     if (!battle) return;
+    if (!this.app.settings.combatGuidance) {
+      this.guidanceTipQueue = [];
+      if (this.guidanceTipTimer !== null) window.clearTimeout(this.guidanceTipTimer);
+      this.guidanceTipTimer = null;
+      if (this.guidanceTipHandle) this.app.toasts.dismiss(this.guidanceTipHandle);
+      this.guidanceTipHandle = null;
+    }
 
     if (this.inspector instanceof PropInspector) {
       const inspector = this.inspector;
@@ -1923,6 +1963,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!strip || !battle) return;
     clear(strip);
+    strip.classList.toggle('guidance-target', this.guideStage() === 3);
 
     for (const unit of upcomingOrder(battle, battle.units.length).filter(isAlive)) {
       // Once the fight is over nobody is acting, so no chip is plated.
@@ -2015,6 +2056,8 @@ export class CombatScene implements Scene {
           el('span', { class: 'enemy-turn-copy', text: actingTurnCopy(unit) }),
         ),
       );
+      const guidance = this.guideStage() === 3 ? this.firstFightGuidance() : null;
+      if (guidance) hud.appendChild(guidance);
       if (this.logOpen) hud.appendChild(this.logPanel());
       return;
     }
@@ -2022,6 +2065,8 @@ export class CombatScene implements Scene {
     hud.appendChild(this.unitPanel(unit));
     const actions = this.actionBar(unit);
     hud.appendChild(actions);
+    const guidance = this.firstFightGuidance();
+    if (guidance) hud.appendChild(guidance);
     if (this.logOpen) hud.appendChild(this.logPanel());
 
     if (this.pending) {
@@ -2029,6 +2074,138 @@ export class CombatScene implements Scene {
     } else {
       const hint = this.aimHint(unit);
       if (hint) actions.appendChild(hint);
+    }
+  }
+
+  private guideStage(): number | null {
+    return this.app.settings.combatGuidance && this.app.state
+      ? firstFightStage(this.app.state)
+      : null;
+  }
+
+  private firstFightGuidance(): HTMLElement | null {
+    const stage = this.guideStage();
+    const copy = [
+      'Choose Move, then tap a highlighted tile.',
+      'Choose an ability, then tap an enemy.',
+      "When you're done, End turn.",
+      'The strip above shows whose turn comes next.',
+    ][stage ?? -1];
+    if (!copy) return null;
+    if (stage === 3) this.scheduleGuideRelease();
+    return el(
+      'div',
+      { class: 'combat-guidance', attrs: { role: 'status', 'aria-live': 'polite' } },
+      el('span', { text: copy }),
+      button('Skip guidance', () => {
+        this.finishFirstFightGuide();
+      }, { class: 'btn-ghost' }),
+    );
+  }
+
+  private scheduleGuideRelease(delay = 7000): void {
+    if (this.guideReleaseTimer !== null) return;
+    this.guideReleaseTimer = window.setTimeout(() => {
+      this.guideReleaseTimer = null;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+        this.scheduleGuideRelease(700);
+        return;
+      }
+      if (this.guideStage() === 3) this.finishFirstFightGuide();
+    }, delay);
+  }
+
+  private finishFirstFightGuide(): void {
+    if (this.guideReleaseTimer !== null) window.clearTimeout(this.guideReleaseTimer);
+    this.guideReleaseTimer = null;
+    this.saveGuidanceFlags({ [FIRST_FIGHT_GUIDANCE.stage]: 'done' });
+    this.renderHud();
+  }
+
+  private saveGuidanceFlags(flags: Readonly<Record<string, boolean | number | string>>): void {
+    const state = this.app.state;
+    if (!state) return;
+    // Guidance is presentation state. Preserve it in the saved GameState
+    // without sending a no-op reducer command through App's scene router.
+    this.app.state = { ...state, flags: { ...state.flags, ...flags } };
+  }
+
+  private advanceGuideForAction(
+    command: Command,
+    events: readonly GameEvent[],
+    before: GameState | null,
+  ): void {
+    if (!before || !this.app.settings.combatGuidance) return;
+    const stage = firstFightStage(before);
+    if (stage === null) return;
+    const next = nextFirstFightStage(stage, command, events, before);
+    if (next !== null) {
+      this.saveGuidanceFlags({ [FIRST_FIGHT_GUIDANCE.stage]: next });
+      this.renderHud();
+    }
+  }
+
+  private queueCombatTips(features: readonly CombatTipFeature[]): void {
+    const state = this.app.state;
+    if (
+      !state ||
+      !state.battle ||
+      !this.app.settings.combatGuidance ||
+      (state.flags[FIRST_FIGHT_GUIDANCE.eligible] === true &&
+        state.battle.encounterId === 'enc_forest_road')
+    )
+      return;
+    const unseen = unseenCombatTips(features, state.flags).filter(
+      (feature) => !this.guidanceTipQueue.includes(feature),
+    );
+    this.guidanceTipQueue.push(...unseen);
+    this.scheduleCombatTip();
+  }
+
+  private scheduleCombatTip(delay = 700): void {
+    if (this.guidanceTipTimer !== null || this.guidanceTipHandle || this.guidanceTipQueue.length === 0)
+      return;
+    this.guidanceTipTimer = window.setTimeout(() => {
+      this.guidanceTipTimer = null;
+      this.showNextCombatTip();
+    }, delay);
+  }
+
+  private showNextCombatTip(): void {
+    const state = this.app.state;
+    if (!this.host || !state?.battle || this.guidanceTipQueue.length === 0) return;
+    if (!this.app.settings.combatGuidance) {
+      this.guidanceTipQueue = [];
+      return;
+    }
+    if (this.battleOpening || this.needsHandoff()) {
+      this.scheduleCombatTip(500);
+      return;
+    }
+    if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+      this.scheduleCombatTip(500);
+      return;
+    }
+    const feature = this.guidanceTipQueue.shift();
+    if (!feature) return;
+    if (state.flags[`guidance.tip.${feature}`] === true) {
+      this.scheduleCombatTip(200);
+      return;
+    }
+    this.guidanceTipHandle = this.app.toasts.show(
+      combatTipCopy(feature),
+      'info',
+      5200,
+      () => {
+        this.guidanceTipHandle = null;
+        this.scheduleCombatTip(350);
+      },
+    );
+    if (this.guidanceTipHandle) {
+      this.saveGuidanceFlags({ [`guidance.tip.${feature}`]: true });
+    } else {
+      this.guidanceTipQueue.unshift(feature);
+      this.scheduleCombatTip(900);
     }
   }
 
@@ -2122,7 +2299,7 @@ export class CombatScene implements Scene {
     const movementReason = this.movementBlockReason(unit);
     const canMoveNow = unit.move > 0 && !movementReason;
     const moveButton = button(`Move`, () => this.selectMove(), {
-      class: `action-button${moveActive ? ' selected' : ''}`,
+      class: `action-button${moveActive ? ' selected' : ''}${this.guideStage() === 0 ? ' guidance-target' : ''}`,
       disabled: !interactive || !canMoveNow,
       title: !interactive
         ? 'Player controls are locked while another unit acts'
@@ -2141,7 +2318,7 @@ export class CombatScene implements Scene {
     }
 
     const endButton = button('End turn', () => this.endTurn(unit), {
-      class: 'action-button end-turn',
+      class: `action-button end-turn${this.guideStage() === 2 ? ' guidance-target' : ''}`,
       title: 'Finish this turn. One unused AP carries over.',
       disabled: !interactive,
     });
@@ -2149,6 +2326,7 @@ export class CombatScene implements Scene {
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
     row.appendChild(endButton);
+    if (this.guideStage() === 1) row.classList.add('guidance-target');
 
     bar.appendChild(row);
     return bar;
@@ -2280,7 +2458,10 @@ export class CombatScene implements Scene {
     this.clearEndTurnConfirmation();
     this.mode = { kind: 'idle' };
     this.clearPending();
-    this.app.dispatch({ type: 'endTurn', unitId: unit.id });
+    const command = { type: 'endTurn', unitId: unit.id } as const;
+    const before = this.app.state;
+    const events = this.app.dispatch(command);
+    this.advanceGuideForAction(command, events, before);
   }
 
   private confirmedEndTurn = false;
@@ -2343,7 +2524,10 @@ export class CombatScene implements Scene {
           }),
         ),
         () => {
-          this.app.dispatch({ type: 'move', unitId: unit.id, path: cell.path });
+          const command = { type: 'move', unitId: unit.id, path: cell.path } as const;
+          const before = this.app.state;
+          const events = this.app.dispatch(command);
+          this.advanceGuideForAction(command, events, before);
           this.clearPending();
           this.mode = { kind: 'idle' };
           this.renderHud();
@@ -2562,12 +2746,15 @@ export class CombatScene implements Scene {
     }
 
     return this.confirmShell(body, () => {
-      this.app.dispatch({
+      const command = {
         type: 'useAbility',
         unitId: unit.id,
         abilityId: ability.id,
         target,
-      });
+      } as const;
+      const before = this.app.state;
+      const events = this.app.dispatch(command);
+      this.advanceGuideForAction(command, events, before);
       this.clearPending();
       this.mode = { kind: 'idle' };
       this.renderHud();

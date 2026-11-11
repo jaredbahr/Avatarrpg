@@ -13,6 +13,7 @@ const defaults: Settings = {
   hatchSurfaces: false,
   highContrast: false,
   showGrid: false,
+  combatGuidance: true,
 };
 const inventory = [
   'Text size',
@@ -21,12 +22,14 @@ const inventory = [
   'Patterned ground',
   'Higher contrast',
   'Show grid',
+  'Combat guidance',
 ];
 const switches = [
   ['Reduce motion', 'reduceMotion'],
   ['Patterned ground', 'hatchSurfaces'],
   ['Higher contrast', 'highContrast'],
   ['Show grid', 'showGrid'],
+  ['Combat guidance', 'combatGuidance'],
 ] as const;
 const changes: { label: string; values: Partial<Settings> }[] = [
   { label: 'Text size', values: { largeText: 'huge' } },
@@ -35,6 +38,7 @@ const changes: { label: string; values: Partial<Settings> }[] = [
   { label: 'Patterned ground', values: { hatchSurfaces: true } },
   { label: 'Higher contrast', values: { highContrast: true } },
   { label: 'Show grid', values: { showGrid: true } },
+  { label: 'Combat guidance', values: { combatGuidance: false } },
 ];
 
 // Passive reads of the existing renderer's last genuinely drawn frame. This
@@ -77,10 +81,10 @@ async function closeSettings(page: Page, panel: Locator): Promise<void> {
 
 async function assertControlValues(panel: Locator, expected: Settings): Promise<void> {
   // Inventory the actual DOM, including extra input types/plain buttons, so
-  // adding a seventh setting fails loudly instead of silently escaping tests.
+  // adding another setting fails loudly instead of silently escaping tests.
   await expect(panel.locator('.setting-row .setting-text > strong')).toHaveText(inventory);
   await expect(panel.getByRole('radiogroup')).toHaveCount(2);
-  await expect(panel.getByRole('switch')).toHaveCount(4);
+  await expect(panel.getByRole('switch')).toHaveCount(5);
   expect(
     await panel
       .getByRole('radiogroup')

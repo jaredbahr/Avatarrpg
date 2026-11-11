@@ -283,6 +283,8 @@ export interface Settings {
   highContrast: boolean;
   /** Tile lines over the ground. Off by default (ADR 0007); High contrast forces them on. */
   showGrid: boolean;
+  /** First-fight guidance and later feature tips, remembered on this device. */
+  combatGuidance: boolean;
   /**
    * How loud the game is, 0 to 1. Zero opens no audio context at all, so
    * "off" costs nothing rather than running a silent graph (ADR 0012).
@@ -296,6 +298,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hatchSurfaces: false,
   highContrast: false,
   showGrid: false,
+  combatGuidance: true,
   volume: 0.7,
 };
 
@@ -313,6 +316,7 @@ export function loadSettings(): Settings {
       hatchSurfaces: parsed.hatchSurfaces === true,
       highContrast: parsed.highContrast === true,
       showGrid: parsed.showGrid === true,
+      combatGuidance: parsed.combatGuidance !== false,
       // A save written before sound existed has no volume; it gets the default
       // rather than silence, because a missing field is not a preference.
       volume:
