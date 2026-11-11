@@ -16,6 +16,7 @@ import type { Heading, MeleeDirection } from '../../content/assets/clips';
 import type { Easing } from './easing';
 import type { BendFxIndex } from '../../render/fx/bendFx';
 import type { BendPlan } from './bendChoreo';
+import type { Shot } from '../../render/topdown/shots';
 
 export type { ClipName };
 
@@ -110,8 +111,20 @@ export interface BendTrack extends Track {
   readonly fx: BendFxIndex;
 }
 
+/** A top-down projectile in flight (#588). */
+export interface ShotTrack extends Shot {
+  readonly kind: 'shot';
+}
+
 export type AnyTrack =
-  MoveTrack | PoseTrack | FlashTrack | EmitterTrack | FloaterTrack | ShakeTrack | BendTrack;
+  | MoveTrack
+  | PoseTrack
+  | FlashTrack
+  | EmitterTrack
+  | FloaterTrack
+  | ShakeTrack
+  | BendTrack
+  | ShotTrack;
 
 export type TrackKind = AnyTrack['kind'];
 export type TrackOf<K extends TrackKind> = Extract<AnyTrack, { kind: K }>;
