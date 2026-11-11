@@ -97,16 +97,27 @@ test.describe('phone reload', () => {
     await startGame(page, ['Sura'], ['sura'], 'world-portrait-reload');
     await openGao(page);
     await page.locator('[data-conversation-control="next"]').tap();
+    const conversation = page.locator('.explore-conversation .conversation-panel-compact');
+    const lineCount = conversation.locator('.line-count');
+    const line = (await lineCount.textContent())?.trim();
+    expect(line).toMatch(/^2 of \d+$/);
     let g = await portraitGeometry(page);
     expect(overlaps(g.canvas, g.name)).toBe(false);
-    await page.evaluate(() => {
-      if (!window.fnt!.app.saveTo('auto')) throw new Error('Save failed');
+    const saved = await page.evaluate(() => {
+      const app = window.fnt!.app;
+      if (!app.saveTo('auto')) throw new Error('Save failed');
+      return app.state;
     });
     await page.reload();
     await page.getByRole('button', { name: /^Continue$/ }).click();
     await waitForIdle(page);
-    const conversation = page.locator('.explore-conversation .conversation-panel-compact');
-    if (!(await conversation.isVisible())) await openGao(page);
+    // Continue must restore the open conversation itself; never reopen it here.
+    expect(await page.evaluate(() => window.fnt?.app.state)).toEqual(saved);
+    await expect(conversation).toBeVisible();
+    await expect(conversation.locator('.conversation-compact-speaker strong')).toHaveText(
+      'Gao the Shopkeeper',
+    );
+    await expect(lineCount).toHaveText(line ?? '');
     g = await portraitGeometry(page);
     expect(g.canvas.right).toBeLessThanOrEqual(g.frame.right + 0.5);
     expect(overlaps(g.canvas, g.name)).toBe(false);
