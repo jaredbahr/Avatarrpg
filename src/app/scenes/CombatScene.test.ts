@@ -413,6 +413,7 @@ describe('scene-owned top-down playback', () => {
       },
       active: () => ({ id: 'enemy' }),
       aiDueAt: 700,
+      topdownSoundQueue: [],
     }) as unknown as {
       skipPresentation: () => void;
       presentationClock: PresentationClock;
@@ -423,6 +424,60 @@ describe('scene-owned top-down playback', () => {
 
     expect(clock.now(100)).toBe(500);
     expect(scene.aiDueAt).toBe(700);
+  });
+
+  it('skip drops the passed cues but keeps the ones that say how it ended', () => {
+    vi.stubGlobal('performance', { now: () => 100 });
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      presentationClock: new PresentationClock(0),
+      sceneAnimator: {
+        busy: () => true,
+        actionBusy: () => true,
+        actionReadyAt: 500,
+        actorFinishesAt: () => 0,
+      },
+      active: () => ({ id: 'kaya' }),
+      topdownSoundQueue: [
+        { key: 'hit', at: 200, seed: 1 },
+        { key: 'ko', at: 300, seed: 2 },
+        { key: 'step', at: 450, seed: 3 },
+        { key: 'victory', at: 480, seed: 4 },
+        { key: 'turn', at: 600, seed: 5 },
+      ],
+    }) as unknown as { skipPresentation: () => void; topdownSoundQueue: { key: string }[] };
+
+    scene.skipPresentation();
+
+    expect(scene.topdownSoundQueue.map((cue) => cue.key)).toEqual(['ko', 'victory', 'turn']);
+  });
+
+  it('a tap on a busy top-down board skips the playing action', () => {
+    vi.stubGlobal('performance', { now: () => 100 });
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      renderer: {},
+      battle: () => ({ phase: 'active' }),
+      skipBattleOpening: () => false,
+      victoryBeat: null,
+      presentationClock: new PresentationClock(0),
+      sceneAnimator: {
+        busy: () => true,
+        actionBusy: () => true,
+        actionReadyAt: 500,
+        actorFinishesAt: () => 0,
+      },
+      active: () => ({ id: 'kaya' }),
+      topdownSoundQueue: [],
+      resolvePointer: vi.fn(),
+    }) as unknown as {
+      onTap: (x: number, y: number) => void;
+      presentationClock: PresentationClock;
+      resolvePointer: ReturnType<typeof vi.fn>;
+    };
+
+    scene.onTap(10, 10);
+
+    expect(scene.presentationClock.now(100)).toBe(500);
+    expect(scene.resolvePointer).not.toHaveBeenCalled();
   });
 
   it('keeps victory Continue behind visual KO completion after action-ready', () => {

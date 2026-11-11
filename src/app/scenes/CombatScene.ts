@@ -228,6 +228,8 @@ interface OverlayBuild {
   readonly targetReticle: TargetReticleCue | null;
 }
 
+/** Sound cues a top-down skip still plays: the ones that tell how a blow or the fight ended. */
+const OUTCOME_CUES: ReadonlySet<string> = new Set(['ko', 'victory', 'defeat']);
 export class CombatScene implements Scene {
   readonly name = 'combat';
 
@@ -410,8 +412,13 @@ export class CombatScene implements Scene {
     if (!clock) return;
     const wallNow = performance.now();
     const now = clock.now(wallNow);
-    if (this.boardActionBusy(now, this.active()?.id))
-      clock.skipTo(this.boardActionReadyAt(this.active()?.id), wallNow);
+    if (!this.boardActionBusy(now, this.active()?.id)) return;
+    const readyAt = this.boardActionReadyAt(this.active()?.id);
+    clock.skipTo(readyAt, wallNow);
+    // A skip must not burst every passed cue at once: keep only the ones that say how it ended.
+    this.topdownSoundQueue = this.topdownSoundQueue.filter(
+      (cue) => cue.at > readyAt || OUTCOME_CUES.has(cue.key),
+    );
   }
 
   /** Own top-down event playback so one Animator never mixes clock domains. */
@@ -1265,7 +1272,11 @@ export class CombatScene implements Scene {
     if (!renderer || !battle) return;
     if (this.skipBattleOpening()) return;
     if (this.victoryBeat || battle.phase !== 'active') return;
-    if (this.boardActionBusy(this.presentationNow(), this.active()?.id)) return;
+    if (this.boardActionBusy(this.presentationNow(), this.active()?.id)) {
+      // Top-down: a tap on a busy board skips to the end of the playing action (the prototype's x6).
+      this.skipPresentation();
+      return;
+    }
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
 
