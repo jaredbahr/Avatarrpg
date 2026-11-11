@@ -29,7 +29,7 @@ import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
 import type { AnimatorOptions } from './animator';
 import { Session } from './session';
-import type { Player } from './session';
+import type { Participant, Player } from './session';
 import type { Settings, SlotId } from './storage/localSaves';
 import {
   AUTOSAVE_ID,
@@ -666,7 +666,7 @@ export class App {
     this.cancelRoute();
     this.previewSnapshot = null;
     this.state = previous.state;
-    this.session.setPlayers(Session.fromMeta(previous.session).players);
+    this.session.restoreMeta(previous.session);
     this.resetPlayback();
     this.residents.reset();
     this.closePause();
@@ -682,7 +682,12 @@ export class App {
   /* State                                                             */
   /* ---------------------------------------------------------------- */
 
-  newGame(players: readonly Player[], slots: readonly PartySlot[], seed?: string): void {
+  newGame(
+    players: readonly Player[],
+    slots: readonly PartySlot[],
+    seed?: string,
+    participants?: readonly Participant[],
+  ): void {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -697,7 +702,9 @@ export class App {
       players.map((player, index) => ({
         name: player.name,
         unitId: state.party[index]?.id ?? `p${index}`,
+        participantId: player.participantId,
       })),
+      participants,
     );
 
     this.state = state;
@@ -727,7 +734,7 @@ export class App {
       console.warn('Battle save could not be fully reconciled.', warning);
     }
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
-    this.session.setPlayers(Session.fromMeta(session).players);
+    this.session.restoreMeta(session);
     this.resetPlayback();
     this.residents.reset();
     this.closePause();
