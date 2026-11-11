@@ -89,7 +89,13 @@ export function combatTipFeatures(
   props: ReadonlyMap<string, PropDef>,
 ): readonly CombatTipFeature[] {
   const battle = state.battle;
-  if (!battle) return [];
+  if (
+    state.screen !== 'combat' ||
+    !battle ||
+    battle.phase !== 'active' ||
+    battle.encounterId === 'enc_forest_road'
+  )
+    return [];
   const found = new Set<CombatTipFeature>();
   if (battle.grid.tiles.some((tile) => tile.cover)) found.add('cover');
   for (const tile of battle.grid.tiles) {

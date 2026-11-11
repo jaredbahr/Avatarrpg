@@ -112,12 +112,16 @@ describe('first fight guidance', () => {
 
 describe('later combat tips', () => {
   it('recognizes features and only schedules unseen feature keys', () => {
-    expect(combatTipFeatures(state(), new Map([['barrel', { hp: 6 } as PropDef]]))).toEqual([
+    const laterFight = state({
+      battle: { ...state().battle!, mapId: 'quarry_gate', encounterId: 'enc_quarry_gate' },
+    });
+    expect(combatTipFeatures(state(), new Map())).toEqual([]);
+    expect(combatTipFeatures(laterFight, new Map([['barrel', { hp: 6 } as PropDef]]))).toEqual([
       'cover',
       'surface.oil',
       'prop',
     ]);
-    expect(combatTipFeatures(state(), new Map([['barrel', { hp: 0 } as PropDef]]))).toEqual([
+    expect(combatTipFeatures(laterFight, new Map([['barrel', { hp: 0 } as PropDef]]))).toEqual([
       'cover',
       'surface.oil',
     ]);
