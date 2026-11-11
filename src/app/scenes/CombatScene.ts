@@ -543,11 +543,13 @@ export class CombatScene implements Scene {
     this.aiDueUnitId = null;
     this.topdownSoundQueue = [];
     this.guidanceTipQueue = [];
-    if (this.guideReleaseTimer !== null) window.clearTimeout(this.guideReleaseTimer);
+    if (this.guideReleaseTimer != null && typeof window !== 'undefined')
+      window.clearTimeout(this.guideReleaseTimer);
     this.guideReleaseTimer = null;
-    if (this.guidanceTipTimer !== null) window.clearTimeout(this.guidanceTipTimer);
+    if (this.guidanceTipTimer != null && typeof window !== 'undefined')
+      window.clearTimeout(this.guidanceTipTimer);
     this.guidanceTipTimer = null;
-    if (this.guidanceTipHandle) this.app.toasts.dismiss(this.guidanceTipHandle);
+    if (this.guidanceTipHandle) this.app?.toasts?.dismiss(this.guidanceTipHandle);
     this.guidanceTipHandle = null;
     this.topdownBlowPoints = [];
     this.topdownBlowEndsAt = 0;
@@ -1532,14 +1534,15 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!battle) return;
     if (
-      !this.app.settings.combatGuidance ||
+      !this.app.settings?.combatGuidance ||
       battle.phase !== 'active' ||
       battle.encounterId === 'enc_forest_road'
     ) {
       this.guidanceTipQueue = [];
-      if (this.guidanceTipTimer !== null) window.clearTimeout(this.guidanceTipTimer);
+      if (this.guidanceTipTimer != null && typeof window !== 'undefined')
+        window.clearTimeout(this.guidanceTipTimer);
       this.guidanceTipTimer = null;
-      if (this.guidanceTipHandle) this.app.toasts.dismiss(this.guidanceTipHandle);
+      if (this.guidanceTipHandle) this.app?.toasts?.dismiss(this.guidanceTipHandle);
       this.guidanceTipHandle = null;
     }
 
@@ -2082,7 +2085,7 @@ export class CombatScene implements Scene {
   }
 
   private guideStage(): number | null {
-    return this.app.settings.combatGuidance && this.app.state
+    return this.app.settings?.combatGuidance && this.app.state
       ? firstFightStage(this.app.state)
       : null;
   }
@@ -2154,13 +2157,14 @@ export class CombatScene implements Scene {
   }
 
   private queueCombatTips(features: readonly CombatTipFeature[]): void {
+    if (features.length === 0) return;
     const state = this.app.state;
     if (
       !state ||
       !state.battle ||
       state.battle.phase !== 'active' ||
       state.battle.encounterId === 'enc_forest_road' ||
-      !this.app.settings.combatGuidance
+      !this.app.settings?.combatGuidance
     )
       return;
     const unseen = unseenCombatTips(features, state.flags).filter(
