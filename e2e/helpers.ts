@@ -335,7 +335,7 @@ export async function waitForIdle(page: Page, timeout = 20_000): Promise<void> {
   try {
     await page.waitForFunction(
       () =>
-        window.fnt?.app.animator.busy(performance.now()) === false &&
+        window.fnt?.app.boardBusy() === false &&
         document.querySelector('.combat-scene')?.getAttribute('data-camera-glide') !== 'active',
       undefined,
       { timeout },
