@@ -3222,6 +3222,9 @@ html[data-contrast='high'] .hud-panel::after {
   background: var(--c-bg-deep);
   border-radius: var(--radius);
 }
+.dialog .local-map {
+  flex-shrink: 0;
+}
 .local-map-north {
   position: absolute;
   top: 0;
