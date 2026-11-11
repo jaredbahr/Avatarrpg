@@ -179,6 +179,8 @@ export interface ClipDef {
    */
   readonly frameSize?: { readonly w: number; readonly h: number };
   readonly anchor?: { readonly x: number; readonly y: number };
+  /** A top-down action's striking hand on its hit cel, in frame px (ADR 0104): where its attached effects start. */
+  readonly hand?: { readonly x: number; readonly y: number };
 }
 
 /** Poses a clip must carry to be valid, and how many it may carry. */
