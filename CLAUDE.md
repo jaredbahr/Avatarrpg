@@ -29,6 +29,11 @@ in the top-down style under `?style=topdown`. The owner's direction for finishin
 - **Tone:** a warm adventure, with humour and friendship and real stakes but nothing grim. Bandits are people with
   reasons (`docs/writing-guide.md`).
 - **Difficulty:** forgiving by default (most first-time players win if they try), plus a harder option.
+- **Losing a fight:** the players choose "Try again" (restart the fight) or "Carry on" (the story's defeat branch)
+  (#620).
+- **Story choices:** a table vote, with ties going to the rotating decider (#621).
+- **Combos:** hinted first ("something here reacts to fire"), then named and shown openly once discovered (#622).
+- **Length:** one play-through of the demo takes about 30–40 minutes; trim any fight that drags past about 6.
 - **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
   "thanks for playing" card with a party summary and "play again with a different party".
 - **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and

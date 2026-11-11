@@ -13,6 +13,8 @@ Everything below this section is history; where it disagrees, this section wins.
 3. #598: the white bars beside the quarry boards, organic oil edges, and a liquid sheen on oil (see its latest
    comment).
 4. iPad-landscape and story-presentation issues filed from the 2026-11-11 audit (labelled `codex-ready`).
+5. The owner's play-design calls: #620 (Try again or Carry on after a defeat), #621 (a table vote for story choices),
+   #622 (combos hinted, then revealed).
 
 **Parked until the demo is done:** reports, tooling and the oblique-only polish (#568, #611, #529, #528, #526, #525
 and similar). Finish the PRs already open for them only if they're small; don't start new ones.
