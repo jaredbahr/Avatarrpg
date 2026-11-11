@@ -242,6 +242,17 @@ The seating rule is measurable and applies to every board and every runtime obje
 - the cast joined to the contact;
 - no hover.
 
+## Amendment: the JS budget for the demo (owner, 2026-11-11)
+
+The follow camera and combat pacing (#500) took the shipped JavaScript to 396.7 KB, 0.7 KB over the 396 set above:
+other work landed in the room it was sized for. The rest of the demo to the quarry and back still owes code: action
+clips per heading and ability (#587), in-flight projectiles (#588) and the Earth Wall rise (#590), about 3–5 KB.
+`npm run bundle:report` shows no dead module worth that; the largest unmapped block is Pixi, which WebGL needs, and a
+lazy chunk counts against the gate anyway (ADR 0057).
+
+Asked, the owner raised the budget to **404 KB** gzipped (`scripts/check-bundle-size.mjs`). Like the 396 raise, it is
+permanent: the oblique code T7 removes frees room under it and does not lower it.
+
 ## Note: the top-down family is not precached (orchestrator, 2026-11-10)
 
 The quarry's three plates (#593) took the service-worker precache to 25.07 MB of 25, as §3 foresaw while the old and

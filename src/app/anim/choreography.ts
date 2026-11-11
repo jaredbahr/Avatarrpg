@@ -66,6 +66,42 @@ export const TIMING = {
   travelMax: 600,
 } as const;
 
+export type PresentationTimingProfile = {
+  readonly [K in keyof typeof TIMING]: number;
+} & {
+  readonly tail: number;
+  /** Delay before the next enemy command; kept separate from event spacing. */
+  readonly enemyGap: number;
+  readonly openingHold: number;
+  readonly openingFocus: number;
+  readonly victoryBeat: number;
+};
+
+/** Shared behavior remains the default; top-down timing is opt-in per Animator. */
+export const DEFAULT_PRESENTATION_TIMING: PresentationTimingProfile = {
+  ...TIMING,
+  tail: 0,
+  enemyGap: 260,
+  openingHold: 700,
+  openingFocus: 320,
+  victoryBeat: 1000,
+};
+
+export const TOPDOWN_PRESENTATION_TIMING: PresentationTimingProfile = {
+  ...TIMING,
+  windUp: 62,
+  release: 84,
+  recover: 46,
+  gap: TIMING.gap,
+  tail: 110,
+  enemyGap: 200,
+  // Prototype intro/victory holds were 2000/1700 ms; these explicit scene
+  // beats keep the current shorter 700/320/1000 ms opening/focus/result feel.
+  openingHold: 700,
+  openingFocus: 320,
+  victoryBeat: 1000,
+};
+
 /** A one-cel hit stays planted briefly after recoil, inside existing recovery time. */
 export const HIT_SETTLE_MS = 90;
 
@@ -88,6 +124,8 @@ export interface ChoreographyInput {
   readonly cursor: number;
   /** 1, or 0.02 under reduce motion. */
   readonly rate: number;
+  /** Optional scene-specific presentation timings; rules and RNG are outside this input. */
+  readonly timingProfile?: PresentationTimingProfile;
   /** Which push this is, so seeds never repeat across a fight. */
   readonly pushIndex: number;
   /** Followers share the leader's footfalls rather than multiplying the sound. */
@@ -144,6 +182,8 @@ export interface Choreography {
   readonly sounds: readonly SoundCue[];
   /** Where the next push starts. */
   readonly cursor: number;
+  /** When another action may begin; visual-only tracks can continue afterward. */
+  readonly actionReadyAt: number;
   /** Health changes at the same clock positions as their hit and heal effects. */
   readonly health: readonly HealthChange[];
 }
@@ -229,23 +269,29 @@ function timedSpan(clips: SheetClips | undefined, names: readonly ClipName[]): n
 /**
  * How long an exploration walk takes a tile. The top-down sheets (ADR 0104) walk at their own fitted
  * pace (the prototype's 130 px/s, about 308 ms a tile), so each walk cel keeps time with the ground and the planted foot
- * holds; every other board cruises at `TIMING.strollStep` (ADR 0095's amendment).
+ * holds; every other board cruises at the timing profile's `strollStep` (ADR 0095's amendment).
  */
-function explorePace(input: ChoreographyInput, unitId: string): number {
-  if (input.projection !== 'topdown') return TIMING.strollStep;
+function explorePace(input: ChoreographyInput, unitId: string, strollStep: number): number {
+  if (input.projection !== 'topdown') return strollStep;
   const sprite = input.unitsBefore.find((u) => u.id === unitId)?.sprite;
   const gait = sheetLocomotion(sprite);
-  if (!gait || gait.walkCelMs) return TIMING.strollStep;
+  if (!gait || gait.walkCelMs) return strollStep;
   const paces = Object.values(gait.walkMsPerTile);
   return paces.reduce((a, b) => a + b, 0) / paces.length / partyScale(input.projection);
 }
 
 export function choreograph(input: ChoreographyInput): Choreography {
   const { content, events, unitsBefore, rate, pushIndex } = input;
+  const timing = input.timingProfile ?? DEFAULT_PRESENTATION_TIMING;
   const tracks: AnyTrack[] = [];
   const sounds: SoundCue[] = [];
   const health: HealthChange[] = [];
   let cursor = input.cursor;
+  let actionReadyAt = input.cursor;
+  let tailRequired = false;
+  const readyBy = (at: number): void => {
+    actionReadyAt = Math.max(actionReadyAt, at);
+  };
 
   const positions = new Map<string, Vec2>();
   const sizes = new Map<string, number>();
@@ -394,7 +440,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       text,
       color,
       start: at,
-      duration: TIMING.floater * rate,
+      duration: timing.floater * rate,
       ...(emphasis ? { emphasis } : {}),
     });
   };
@@ -422,19 +468,19 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const from = positions.get(event.unitId) ?? event.path[0];
         if (!from) break;
         const curve = smoothPath(from, event.path);
-        const timing = strollTiming(curve.length, TIMING.combatWalkStep);
+        const stroll = strollTiming(curve.length, timing.combatWalkStep);
         // Reduced motion retains its existing abbreviated action lock.
-        const duration = (rate < 1 ? TIMING.step * event.path.length : timing.duration) * rate;
+        const duration = (rate < 1 ? timing.step * event.path.length : stroll.duration) * rate;
         tracks.push({
           kind: 'move',
           unitId: event.unitId,
           curve,
-          ease: timing.ease,
+          ease: stroll.ease,
           start: cursor,
           duration,
         });
         for (let d = 0; d < curve.length; d++) {
-          const at = cursor + (timing.atDistance(d) / timing.duration) * duration;
+          const at = cursor + (stroll.atDistance(d) / stroll.duration) * duration;
           if (!input.silentSteps) cue('step', at, 20 + d, eventIndex);
           // A puff where the foot comes down, trailing so it never holds the turn.
           const tile = d === 0 ? from : event.path[d - 1];
@@ -452,6 +498,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ),
         );
         cursor += duration;
+        readyBy(cursor);
         pending = null;
         break;
       }
@@ -461,19 +508,19 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // followers are the scene's, pushed onto the same timeline.
         if (event.path.length === 0) break;
         const curve = smoothPath(event.from, event.path);
-        const timing = strollTiming(
+        const stroll = strollTiming(
           curve.length,
-          input.amble ? STROLL_REFERENCE_MS : explorePace(input, event.unitId),
+          input.amble ? STROLL_REFERENCE_MS : explorePace(input, event.unitId, timing.strollStep),
         );
         // Reduced motion retains the same abbreviated, pace-independent action
         // lock as combat movement. A long village route must not become slow
         // again merely because the full-motion walking cadence was retuned.
-        const duration = (rate < 1 ? TIMING.step * event.path.length : timing.duration) * rate;
+        const duration = (rate < 1 ? timing.step * event.path.length : stroll.duration) * rate;
         tracks.push({
           kind: 'move',
           unitId: event.unitId,
           curve,
-          ease: timing.ease,
+          ease: stroll.ease,
           start: cursor,
           duration,
         });
@@ -481,22 +528,24 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // beat behind, and four sets of boots on one road is a stampede.
         if (!input.silentSteps)
           for (let d = 0; d < curve.length; d++) {
-            const at = cursor + (timing.atDistance(d) / timing.duration) * duration;
+            const at = cursor + (stroll.atDistance(d) / stroll.duration) * duration;
             cue('step', at, 20 + d, eventIndex);
           }
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
+        readyBy(cursor);
         pending = null;
         break;
       }
 
       case 'abilityUsed': {
+        tailRequired = true;
         const ability = content.abilities.get(event.abilityId);
         const casterPos = positions.get(event.unitId);
         const caster = unitCentre(event.unitId);
         if (!ability || !casterPos || !caster) {
-          cursor += TIMING.gap * rate;
+          cursor += timing.gap * rate;
           break;
         }
         const { recipe, palette } = effect(ability.fx);
@@ -522,9 +571,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
             : facingFor(screenDir);
 
         const motion = attackMotion(ability.fx, melee, self);
-        let windUp = TIMING.windUp * motion.windUp * rate;
-        let release = TIMING.release * motion.release * rate;
-        let recover = TIMING.recover * motion.recover * rate;
+        let windUp = timing.windUp * motion.windUp * rate;
+        let release = timing.release * motion.release * rate;
+        let recover = timing.recover * motion.recover * rate;
         let back = self ? { x: 0, y: -0.06 } : scaled(screenDir, -LEAN_BACK);
         let forward = self
           ? { x: 0, y: 0.04 }
@@ -638,7 +687,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
             flash: bend.flash,
             casterId: event.unitId,
           };
-          cursor += bend.plan.duration + TIMING.gap * rate;
+          readyBy(pending.at + pending.hitStop);
+          cursor += bend.plan.duration + timing.gap * rate;
           break;
         }
         const snapshot = (
@@ -796,8 +846,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
           const distance = Math.hypot(target.x - caster.x, target.y - caster.y);
           const flight =
             Math.max(
-              TIMING.travelMin,
-              Math.min(TIMING.travelMax, (distance / recipe.travel.speed) * 1000),
+              timing.travelMin,
+              Math.min(timing.travelMax, (distance / recipe.travel.speed) * 1000),
             ) * rate;
           // Travel emitters are authored for a nominal flight; stretch them to
           // the real one. A particle emitter spawns across the whole flight and
@@ -893,7 +943,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         if (recipe.area.length > 0) {
           event.tiles.slice(0, 24).forEach((tile, i) => {
             const at =
-              impactAt + hitStop * 0.5 + chebyshev(tile, event.target) * TIMING.areaStagger * rate;
+              impactAt + hitStop * 0.5 + chebyshev(tile, event.target) * timing.areaStagger * rate;
             emit(
               recipe.area,
               at,
@@ -911,7 +961,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             amplitude: recipe.shake,
             seed: hashSeed(pushIndex, eventIndex, 7),
             start: impactAt,
-            duration: TIMING.shake,
+            duration: timing.shake,
           });
         }
 
@@ -936,11 +986,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
           casterId: event.unitId,
           ...(pushIds.length ? { pushIds } : {}),
         };
-        cursor = Math.max(recoverAt + recover, impactAt + hitStop) + TIMING.gap * rate;
+        readyBy(impactAt + hitStop);
+        cursor = Math.max(recoverAt + recover, impactAt + hitStop) + timing.gap * rate;
         break;
       }
 
       case 'damaged': {
+        tailRequired = true;
         const next = events[eventIndex + 1];
         const ledgeLanding =
           event.cause === 'ledgeDrop' &&
@@ -951,11 +1003,12 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ? {
               at:
                 (pending?.pushIds?.includes(event.unitId) ? pending.at + pending.hitStop : cursor) +
-                TIMING.step * 2 * rate,
+                timing.step * 2 * rate,
               hitStop: 0,
               flash: 0.6,
             }
           : landing();
+        readyBy(hit.at + hit.hitStop);
         const before = unitHealth.get(event.unitId);
         if (before) {
           const hp = Math.max(0, before.hp - event.amount);
@@ -978,7 +1031,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
               amplitude: CRIT_KICK,
               seed: hashSeed(pushIndex, eventIndex, 12),
               start: hit.at,
-              duration: TIMING.shake,
+              duration: timing.shake,
             });
         }
         if (event.amount > 0 && pos && hit.flash > 0) {
@@ -987,7 +1040,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             unitId: event.unitId,
             strength: event.crit ? Math.min(1, hit.flash + 0.3) : hit.flash,
             start: hit.at,
-            duration: (TIMING.flash + hit.hitStop) * (rate < 1 ? rate : 1),
+            duration: (timing.flash + hit.hitStop) * (rate < 1 ? rate : 1),
           });
         }
         if (event.amount > 0 && pos) {
@@ -1037,7 +1090,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
               event.unitId,
               'hit',
               recoilAt,
-              TIMING.recoilOut * rate,
+              timing.recoilOut * rate,
               { x: 0, y: 0 },
               out,
               easeOutQuad,
@@ -1046,15 +1099,15 @@ export function choreograph(input: ChoreographyInput): Choreography {
             pose(
               event.unitId,
               'hit',
-              recoilAt + TIMING.recoilOut * rate,
-              TIMING.recoilBack * rate,
+              recoilAt + timing.recoilOut * rate,
+              timing.recoilBack * rate,
               out,
               { x: 0, y: 0 },
               easeInOutSine,
               { frame: 0 },
             );
             const sprite = unitsBefore.find((unit) => unit.id === event.unitId)?.sprite;
-            const recoilEnd = recoilAt + (TIMING.recoilOut + TIMING.recoilBack) * rate;
+            const recoilEnd = recoilAt + (timing.recoilOut + timing.recoilBack) * rate;
             const lethal = before !== undefined && before.hp - event.amount <= 0;
             const settle = Math.min(HIT_SETTLE_MS * rate, Math.max(0, cursor - recoilEnd));
             if (
@@ -1074,13 +1127,15 @@ export function choreograph(input: ChoreographyInput): Choreography {
           );
         }
         if (ledgeLanding && event.amount === 0) harmlessLedgePushes.add(eventIndex + 1);
-        if (!ledgeLanding) cursor = Math.max(cursor, hit.at + hit.hitStop) + TIMING.gap * rate;
+        if (!ledgeLanding) cursor = Math.max(cursor, hit.at + hit.hitStop) + timing.gap * rate;
         break;
       }
 
       case 'healed': {
+        tailRequired = true;
         const pos = positions.get(event.unitId);
         const at = landing().at;
+        readyBy(at + landing().hitStop);
         const before = unitHealth.get(event.unitId);
         if (before) {
           const hp = Math.min(before.maxHp, before.hp + event.amount);
@@ -1095,14 +1150,16 @@ export function choreograph(input: ChoreographyInput): Choreography {
           emit(recipe.impact, at, centre, centre, palette, eventIndex, 4);
           floater(unitFloaterPos(event.unitId, pos), `+${event.amount}`, '#8fe39b', at + 30 * rate);
         }
-        cursor = Math.max(cursor, at) + TIMING.gap * rate;
+        cursor = Math.max(cursor, at) + timing.gap * rate;
         break;
       }
 
       case 'attackMissed': {
+        tailRequired = true;
         const pos = positions.get(event.targetId);
         const attacker = unitCentre(event.unitId);
         const at = landing().at;
+        readyBy(at + landing().hitStop);
         cue('miss', at, 7, eventIndex);
         if (pos) {
           const away = attacker
@@ -1116,7 +1173,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             event.targetId,
             'idle',
             at,
-            TIMING.recoilOut * rate,
+            timing.recoilOut * rate,
             { x: 0, y: 0 },
             out,
             easeOutQuad,
@@ -1124,22 +1181,23 @@ export function choreograph(input: ChoreographyInput): Choreography {
           pose(
             event.targetId,
             'idle',
-            at + TIMING.recoilOut * rate,
-            TIMING.recoilBack * rate,
+            at + timing.recoilOut * rate,
+            timing.recoilBack * rate,
             out,
             { x: 0, y: 0 },
             easeInOutSine,
           );
           floater(unitFloaterPos(event.targetId, pos), 'miss', '#cfc3ae', at + 30 * rate);
         }
-        cursor = Math.max(cursor, at) + TIMING.gap * rate;
+        cursor = Math.max(cursor, at) + timing.gap * rate;
         break;
       }
 
       case 'unitPushed': {
+        tailRequired = true;
         const from = positions.get(event.unitId);
         if (from) {
-          const duration = TIMING.step * 2 * rate;
+          const duration = timing.step * 2 * rate;
           const start = pending?.pushIds?.includes(event.unitId)
             ? pending.at + pending.hitStop
             : cursor;
@@ -1167,6 +1225,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           }
           // The body meets the ground where the slide stops.
           cue('land', start + duration, 13, eventIndex);
+          readyBy(start + duration);
           ground('fx.move.land', start + duration, event.to, eventIndex, 14);
           positions.set(event.unitId, event.to);
           cursor = Math.max(cursor, start + duration);
@@ -1175,17 +1234,21 @@ export function choreograph(input: ChoreographyInput): Choreography {
       }
 
       case 'unitDied': {
+        tailRequired = true;
         const pos = positions.get(event.unitId);
         const hit = landing();
         // A lethal G hit owns the unit until its reaction finishes. Legacy
         // hits never enter `flinching`, so their KO timing is unchanged.
         const at = Math.max(cursor, hit.at + hit.hitStop, flinching.get(event.unitId) ?? 0);
+        // The KO begins before action-ready; its G fallen-mark cue stays at
+        // the clip end and remains queued in the visual timeline.
+        readyBy(at);
         // A G knockout (ADR 0059) falls in its own drawing, at full strength,
         // and plays out in full; the unit is marked fallen once it lies still.
         // The legacy pose has no fall of its own, so it sinks and fades under
         // the mark instead.
         const span = pos ? timed(event.unitId, knockoutSpan) : 0;
-        const duration = Math.max(TIMING.ko * rate, span);
+        const duration = Math.max(timing.ko * rate, span);
         const before = unitHealth.get(event.unitId);
         if (before) {
           unitHealth.set(event.unitId, { ...before, hp: 0, fallen: true });
@@ -1208,52 +1271,45 @@ export function choreograph(input: ChoreographyInput): Choreography {
           emit(recipe.impact, at + duration * 0.4, centre, centre, palette, eventIndex, 5);
           floater(unitFloaterPos(event.unitId, pos), 'down', '#e2584a', at + duration * 0.3);
         }
-        cursor = at + TIMING.gap * 2 * rate;
+        cursor = at + timing.gap * 2 * rate;
         break;
       }
 
       case 'statusApplied': {
+        tailRequired = true;
         const pos = positions.get(event.unitId);
-        cue(`fx.status.${event.status}`, Math.max(cursor, landing().at), 14, eventIndex);
+        const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
+        cue(`fx.status.${event.status}`, at, 14, eventIndex);
         if (pos) {
           const { recipe, palette } = effect(`fx.status.${event.status}`);
           const centre = unitEffectCentre(event.unitId, pos);
-          emit(
-            recipe.impact,
-            Math.max(cursor, landing().at),
-            centre,
-            centre,
-            palette,
-            eventIndex,
-            6,
-          );
+          emit(recipe.impact, at, centre, centre, palette, eventIndex, 6);
         }
         break;
       }
 
       case 'surfaceChanged': {
+        tailRequired = true;
         const key = event.to ? `fx.surface.${event.to}` : 'fx.surface.doused';
+        const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
         // One sound however many tiles change together: the bus coalesces a key.
-        cue(key, Math.max(cursor, landing().at), 15, eventIndex);
+        cue(key, at, 15, eventIndex);
         const { recipe, palette } = effect(key);
-        emit(
-          recipe.impact,
-          Math.max(cursor, landing().at),
-          centre(event.pos),
-          centre(event.pos),
-          palette,
-          eventIndex,
-          8,
-        );
+        emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 8);
         break;
       }
 
       case 'propDamaged': {
+        tailRequired = true;
         const { recipe, palette } = effect('fx.prop.hit');
-        cue('prop', Math.max(cursor, landing().at), 9, eventIndex);
+        const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
+        cue('prop', at, 9, eventIndex);
         emit(
           recipe.impact.slice(0, 1),
-          Math.max(cursor, landing().at),
+          at,
           centre(event.pos),
           centre(event.pos),
           palette,
@@ -1264,8 +1320,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
       }
 
       case 'propIgnited': {
+        tailRequired = true;
         const key = 'fx.surface.fire';
         const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
         const { recipe, palette } = effect(key);
         cue(key, at, 15, eventIndex);
         // Particles only: with nowhere to travel, the recipe's ribbon lies flat beside the prop.
@@ -1282,8 +1340,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
       }
 
       case 'propDoused': {
+        tailRequired = true;
         const key = 'fx.surface.doused';
         const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
         const { recipe, palette } = effect(key);
         cue(key, at, 15, eventIndex);
         emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 8);
@@ -1295,8 +1355,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
         break;
 
       case 'propDestroyed': {
+        tailRequired = true;
         const { recipe, palette } = effect(`fx.prop.${event.propId}`);
         const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
         cue('propBroke', at, 10, eventIndex);
         emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 10);
         if (recipe.shake > 0 && rate >= 1) {
@@ -1305,10 +1367,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
             amplitude: recipe.shake,
             seed: hashSeed(pushIndex, eventIndex, 11),
             start: at,
-            duration: TIMING.shake,
+            duration: timing.shake,
           });
         }
-        cursor = at + TIMING.gap * rate;
+        cursor = at + timing.gap * rate;
         break;
       }
 
@@ -1338,7 +1400,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         break;
 
       case 'battleEnded':
-        cue(event.outcome, cursor + TIMING.gap * rate, 18, eventIndex);
+        cue(event.outcome, cursor + timing.gap * rate, 18, eventIndex);
         break;
 
       default:
@@ -1347,5 +1409,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
   });
 
   sounds.sort((a, b) => a.at - b.at);
-  return { tracks, sounds, cursor, health };
+  cursor += timing.tail * rate;
+  if (tailRequired) actionReadyAt += timing.tail * rate;
+  return { tracks, sounds, cursor, actionReadyAt, health };
 }
