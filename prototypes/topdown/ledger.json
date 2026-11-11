@@ -25691,6 +25691,318 @@
     "image_id": "245bdc0f-0b47-56bf-9d6c-3c2fc607ec01",
     "source_image_id": "245bdc0f-0b47-56bf-9d6c-3c2fc607ec01"
    }
+  },
+  {
+   "name": "t10_dema_char",
+   "endpoint": "/create-character-v3",
+   "job": "7f885e47-d6cc-498e-ba91-982cba7ce8fe",
+   "status": "completed",
+   "settings": {
+    "description": "Dema, a road keeper, a sturdy weathered woman in her forties, sun-browned skin, ...",
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "view": "low top-down",
+    "outline": "single color black outline",
+    "detail": "medium detail",
+    "template_id": "mannequin",
+    "seed": 11,
+    "name": "T10 resident dema"
+   },
+   "credits": 2.0,
+   "credit_source": "usage",
+   "balance_diff": 80.0,
+   "usage": {
+    "type": "generations",
+    "generations": 2.0
+   },
+   "balance_before": 8704.9654640625,
+   "balance_after": 8624.9654640625,
+   "secs": 174,
+   "notes": "",
+   "ids": {
+    "background_job_id": "7f885e47-d6cc-498e-ba91-982cba7ce8fe",
+    "character_id": "6de8d1ed-2d50-4f7c-a6f7-fb54a087afdd"
+   }
+  },
+  {
+   "name": "t10_sen_char",
+   "endpoint": "/create-character-v3",
+   "job": "644e5edc-08e3-4696-99ce-2ab9d1f98128",
+   "status": "completed",
+   "settings": {
+    "description": "Sen, a tea keeper, a tall lanky man in his thirties, light tan skin, a long face...",
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "view": "low top-down",
+    "outline": "single color black outline",
+    "detail": "medium detail",
+    "template_id": "mannequin",
+    "seed": 11,
+    "name": "T10 resident sen"
+   },
+   "credits": 2.0,
+   "credit_source": "usage",
+   "balance_diff": 106.0,
+   "usage": {
+    "type": "generations",
+    "generations": 2.0
+   },
+   "balance_before": 8704.9654640625,
+   "balance_after": 8598.9654640625,
+   "secs": 257,
+   "notes": "",
+   "ids": {
+    "background_job_id": "644e5edc-08e3-4696-99ce-2ab9d1f98128",
+    "character_id": "2e1ea6a5-eeba-4aab-925a-f9fcee9e8737"
+   }
+  },
+  {
+   "name": "t10_dema_idle",
+   "endpoint": "/characters/animations",
+   "job": [
+    "56b99cda-ba81-477e-b332-83d45269cf99",
+    "1d5ecd92-f76d-40bd-8a3d-6423bfe93557"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "6de8d1ed-2d50-4f7c-a6f7-fb54a087afdd",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest: the chest and shoulders rise and fall slowly and clearly, a gentle weight shift from one hip to the other, arms relaxed at the sides; no vapour, no effects",
+    "frame_count": 12,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 57.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 8598.9654640625,
+   "balance_after": 8541.9654640625,
+   "secs": 121,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "571e1f12-cbfe-48c2-b8f9-3b6b4c13a6a6"
+   }
+  },
+  {
+   "name": "t10_sen_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "b272b660-db17-4160-832a-a90b819cacb0",
+    "96ebf524-19f0-4aca-a7a1-77a42dc41b81",
+    "7927ee9e-846e-45ba-873c-bda1d1c6ffca",
+    "e2fadd03-1437-448e-9da7-691b07478ced",
+    "20ad6611-08c0-4c2d-8bdd-cb59d546b859",
+    "85ed105d-446a-49ba-8a2f-c6c42c151798",
+    "4a0d4c32-4f0d-4f10-86fa-e62882b9b733",
+    "002e8dd0-213d-4e1e-8031-ffe4b5ae9f16"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2e1ea6a5-eeba-4aab-925a-f9fcee9e8737",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 63.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 8598.9654640625,
+   "balance_after": 8535.9654640625,
+   "secs": 132,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ca010fa7-d8f4-4eb1-9701-a61080890176"
+   }
+  },
+  {
+   "name": "t10_sen_idle",
+   "endpoint": "/characters/animations",
+   "job": [
+    "563a34c6-a81e-4230-a0b4-d69a0047d80a",
+    "49781c9b-6c90-427e-a52c-3f5651fea617"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2e1ea6a5-eeba-4aab-925a-f9fcee9e8737",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest: the chest and shoulders rise and fall slowly and clearly, a gentle weight shift from one hip to the other, arms relaxed at the sides; no vapour, no effects",
+    "frame_count": 12,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 69.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 8598.9654640625,
+   "balance_after": 8529.9654640625,
+   "secs": 149,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3b94f2f8-3d99-43a7-ab35-7c9f47e0f878"
+   }
+  },
+  {
+   "name": "t10_dema_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "b70a7d5f-7933-4a63-a6c0-0f19cbb96f0c",
+    "b754a6fd-2517-47a9-a372-7ddf4e4d9c57",
+    "9c7a5a82-2429-4c2c-b702-2ac1a97d46b3",
+    "f5db0c99-928a-48a5-921c-8bd298b97b03",
+    "65fcede8-4821-4f2b-a8be-f67c98f1cb3c",
+    "dffac5be-d81b-477f-a4e2-04685c786a29",
+    "6341e3fc-1a76-41e4-822e-719254388d79",
+    "b4c9d6af-3a00-417b-9de9-d77d58c61a77"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "6de8d1ed-2d50-4f7c-a6f7-fb54a087afdd",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 78.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 8598.9654640625,
+   "balance_after": 8520.9654640625,
+   "secs": 206,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "73450fb6-544d-4a83-b478-75ca275c911f"
+   }
+  },
+  {
+   "name": "t10_dema_idle_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "c1f1d045-cb2a-4e98-a44a-ca80ef4fce11",
+    "9ce49224-de12-4d6e-bfe3-9c95107d68e3",
+    "4bb3293b-deb9-46e9-9546-09815167120d",
+    "9e0143cc-5af0-42cf-8d88-29164c9b22fb",
+    "844048bc-8ff6-4c33-85de-eaa3c3a29e3e",
+    "02eb3a46-845e-4b4d-a137-484f9c7da47f"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "6de8d1ed-2d50-4f7c-a6f7-fb54a087afdd",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest: the chest and shoulders rise and fall slowly and clearly, a gentle weight shift from one hip to the other, arms relaxed at the sides; no vapour, no effects",
+    "frame_count": 12,
+    "directions": [
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "571e1f12-cbfe-48c2-b8f9-3b6b4c13a6a6"
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 42.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 8535.9654640625,
+   "balance_after": 8493.9654640625,
+   "secs": 215,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "571e1f12-cbfe-48c2-b8f9-3b6b4c13a6a6"
+   }
+  },
+  {
+   "name": "t10_sen_idle_rest",
+   "endpoint": "/characters/animations",
+   "job": [
+    "fd07117d-0aa1-4940-9fa8-d8cb3d369e2e",
+    "79373148-f155-4188-8b46-33058d45b014",
+    "4619c6b4-85f7-4fac-b66a-7327d23b2321",
+    "fc85abd9-c936-4617-b242-8f9eefa8a996",
+    "19d96d66-8ad2-4ab6-83b3-b4a83f2ac4f6",
+    "0955e0b3-ad6c-4c18-9300-9e3e3102b934"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "2e1ea6a5-eeba-4aab-925a-f9fcee9e8737",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest: the chest and shoulders rise and fall slowly and clearly, a gentle weight shift from one hip to the other, arms relaxed at the sides; no vapour, no effects",
+    "frame_count": 12,
+    "directions": [
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ],
+    "animation_group_id": "3b94f2f8-3d99-43a7-ab35-7c9f47e0f878"
+   },
+   "credits": 18.0,
+   "credit_source": "usage",
+   "balance_diff": 51.0,
+   "usage": {
+    "generations": 18.0
+   },
+   "balance_before": 8529.9654640625,
+   "balance_after": 8478.9654640625,
+   "secs": 269,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "3b94f2f8-3d99-43a7-ab35-7c9f47e0f878"
+   }
   }
  ],
  "end_balance": 16728.0,
@@ -25726,5 +26038,9 @@
  "t5_start_balance": 10629.9654640625,
  "t5_ledger_spent": 574.0,
  "t5_end_balance": 10037.9654640625,
- "t5_note": "ADR 0104 T5 (#452, 2026-11-10): hits and knockouts for the deserter, quarry bender, mercenary, crossbow and Ruon; a new mercenary sergeant (base, idle, walk, attack, hit, knockout); the Driller's rumble in its five missing headings, tread loop, hit shudder and jammed knockout; retakes. Cap 650 (tools/t5clips.py). Booked usage 574.0; summed per-job balance deltas 1269.0 (jobs ran in parallel, so they overlap); start-to-end balance delta 592.0 (the key is shared). Object jobs report no usage on the POST: each heading job was re-polled for its own usage; rate_limited headings were never queued and were resubmitted."
+ "t5_note": "ADR 0104 T5 (#452, 2026-11-10): hits and knockouts for the deserter, quarry bender, mercenary, crossbow and Ruon; a new mercenary sergeant (base, idle, walk, attack, hit, knockout); the Driller's rumble in its five missing headings, tread loop, hit shudder and jammed knockout; retakes. Cap 650 (tools/t5clips.py). Booked usage 574.0; summed per-job balance deltas 1269.0 (jobs ran in parallel, so they overlap); start-to-end balance delta 592.0 (the key is shared). Object jobs report no usage on the POST: each heading job was re-polled for its own usage; rate_limited headings were never queued and were resubmitted.",
+ "t10_start_balance": 8722.9654640625,
+ "t10_ledger_spent": 100.0,
+ "t10_end_balance": 8466.9654640625,
+ "t10_note": "T10 (2026-11-11): Dema (the road keeper) and Sen (the tea keeper) get their own top-down figures: create-character-v3 bases and skeleton-v3 idle and walk, eight headings, no retakes. Cap 200. The key is shared, so the balance delta can include other consumers."
 }
