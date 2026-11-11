@@ -131,7 +131,7 @@
   --tap: 3rem; /* 48px at --ui-scale: 1 */
   --roster-card-width: 6.25rem;
   --dialogue-portrait-compact: 4rem;
-  --conversation-portrait: 9rem;
+  --conversation-portrait: 10rem; /* 160 px: a whole multiple of the 160 px pixel portraits at dpr 1, 2 and 3 */
   --conversation-panel-max: 58rem;
   --explore-actions-width: 26rem;
 
