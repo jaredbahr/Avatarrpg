@@ -359,6 +359,8 @@ export interface RenderProp {
   readonly maxHp: number;
   /** Fuel rounds remaining; present only while this prop is burning. */
   readonly burning?: number;
+  /** How far a rising Earth Wall is out of the ground, 0..1 (#590); absent is whole. */
+  readonly rise?: number;
   /** Suppress a baked shadow, or keep only a faint runtime extension. */
   readonly castShadow?: false | 'reduced';
 }
@@ -395,7 +397,7 @@ export interface MapView {
   readonly npcs: readonly NpcMarker[];
   readonly props: readonly RenderProp[];
   /** Cells the rules raised as walls this fight (`BattleState.temporaryWalls`), still standing. */
-  readonly raisedWalls?: readonly Vec2[];
+  readonly raisedWalls?: readonly (Vec2 & { readonly rise?: number })[];
   readonly path: readonly Vec2[];
   /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
   readonly pathFrom: Vec2 | null;
