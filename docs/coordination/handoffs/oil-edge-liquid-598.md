@@ -20,8 +20,10 @@ nine-pixel repaint dependency reach, and all other materials stay unchanged.
 No backend, animator, App, core, content, schema, asset, package, workflow or
 budget edit belongs here. No generation, replacement art file or new animation.
 
-The existing readability, surfaces/layers/wash and native surface-readability
-files remain byte-identical. Preserve their pit-separation, opaque warm RGB,
+The existing readability and surfaces/layers/wash files remain byte-identical.
+The original native surface-readability test adds only actual Recentre setup
+in capture(), with fitted-camera and full-state assertions; removing that block
+restores the exact original file (including all its assertions and imports). Preserve their pit-separation, opaque warm RGB,
 one-pixel upper-left rim, <=2% interior highlight density, <=30 contrast and
 500ms recompute gates. New tests use public output and independent contour,
 connectivity, containment, core/sheens and incremental/fresh relationships.
@@ -73,7 +75,10 @@ suite produced four offscreen-sampling failures / three passes on the unchanged
 main; these remain preserved. A separate external copy uses the actual Recentre
 control before capture when needed, asserting fitted camera and unchanged full
 game state. All original visibility, sample, stillness, reducer/event/RNG and
-legal-command assertions remain intact. The repository E2E file is unchanged.
+legal-command assertions remain intact. The proven setup is now carried into the repository E2E file under an explicit
+fourth-path claim extension, so this owned native gate stays runnable. Every
+original assertion remains byte-identical. Final native evidence must run the
+original repository spec directly; the external probe is preliminary evidence.
 Earlier missing existing ffmpeg path and external-module resolution setup
 failures are retained separately, not called gameplay passes. No install.
 
@@ -93,7 +98,10 @@ remaining requirements after this partial oil delivery.
 
 The independent SOL High Standard author released the new test lease before
 root's production edits and reviewed source, harness and rendered evidence.
-Root owns integration and this handoff. Expensive jobs run serially.
+Root owns integration and this handoff. Expensive jobs run serially. The first
+frozen clean head passed all 12 CI steps (340 files / 4,645 tests), then was
+superseded to carry the owned native setup repair. Its log and source identity
+are preserved; that CI pass does not qualify the later head.
 Publication requires exact clean final-head `npm run ci:local`, a fresh native
 pass on that CI output, complete output paths/SHA256/bytes identity and final
 independent review before creating a public branch. The final exact commit/tree,
