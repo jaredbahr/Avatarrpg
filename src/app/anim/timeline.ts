@@ -111,6 +111,12 @@ export interface BendTrack extends Track {
   readonly fx: BendFxIndex;
 }
 
+/** A top-down Earth Wall rising out of the ground on one cell (#590). */
+export interface RiseTrack extends Track {
+  readonly kind: 'rise';
+  readonly pos: Vec2;
+}
+
 /** A top-down projectile in flight (#588). */
 export interface ShotTrack extends Shot {
   readonly kind: 'shot';
@@ -124,6 +130,7 @@ export type AnyTrack =
   | FloaterTrack
   | ShakeTrack
   | BendTrack
+  | RiseTrack
   | ShotTrack;
 
 export type TrackKind = AnyTrack['kind'];
@@ -199,6 +206,13 @@ export class Timeline {
       out.push(track as TrackOf<K>);
     }
     return out;
+  }
+
+  /** Tracks of one kind not yet finished at `now`, those still to start among them. */
+  unfinished<K extends TrackKind>(now: number, kind: K): TrackOf<K>[] {
+    return this.tracks.filter(
+      (track): track is TrackOf<K> => track.kind === kind && now <= track.start + track.duration,
+    );
   }
 
   /** Earliest queued movement for a unit, irrespective of insertion order. */
