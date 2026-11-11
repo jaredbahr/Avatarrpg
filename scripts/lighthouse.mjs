@@ -41,6 +41,7 @@ async function buildStep(bin, args, label, timeoutMs) {
     child.once('close', (code, signal) => resolve({ code, signal }));
   });
   let finished = false;
+  let stepError;
   try {
     const result = await Promise.race([
       done,
@@ -51,8 +52,12 @@ async function buildStep(bin, args, label, timeoutMs) {
     ]);
     if (result.code !== 0) throw new Error(`${label} exited ${result.code ?? result.signal}`);
     finished = true;
-  } finally {
-    if (!finished && child.pid) {
+  } catch (error) {
+    stepError = error;
+  }
+  let cleanupError;
+  if (!finished && child.pid) {
+    try {
       let terminationError;
       if (process.platform === 'win32') {
         const killed = spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
@@ -85,8 +90,18 @@ async function buildStep(bin, args, label, timeoutMs) {
         }),
       ]);
       if (terminationError) throw terminationError;
+    } catch (error) {
+      cleanupError = error;
     }
   }
+  if (stepError && cleanupError) {
+    throw new globalThis.AggregateError(
+      [stepError, cleanupError],
+      `${label} failed and cleanup failed`,
+    );
+  }
+  if (cleanupError) throw cleanupError;
+  if (stepError) throw stepError;
 }
 
 async function preinstalledChrome() {
@@ -137,7 +152,7 @@ try {
   const address = server.httpServer.address();
   if (!address || typeof address === 'string') throw new Error('Preview has no TCP port');
   const url = `http://127.0.0.1:${address.port}/`;
-  const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+  const response = await globalThis.fetch(url, { signal: globalThis.AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error(`Preview returned HTTP ${response.status}`);
   await response.arrayBuffer();
   checkInterrupted();
