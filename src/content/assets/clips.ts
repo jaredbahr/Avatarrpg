@@ -40,7 +40,12 @@ export const BAKED_CLIP_NAMES = [
 ] as const;
 /** Every clip a sheet can carry: a G1 sheet's jog too (ADR 0095), which no painter bakes. */
 export const CLIP_NAMES = [...BAKED_CLIP_NAMES, 'jog', .../* @__PURE__ */ sided('jog')] as const;
-export type ClipName = (typeof CLIP_NAMES)[number];
+/**
+ * A top-down action (ADR 0104): an ability pose, a knockout or an idle loop from a sheet's actions file, in one of
+ * PixelLab's eight drawn headings, never mirrored.
+ */
+export type ActionClipName = `${string}@${Heading}`;
+export type ClipName = (typeof CLIP_NAMES)[number] | ActionClipName;
 
 /** The eight screen headings an eight-way locomotion sheet authors, clockwise from east. */
 export const HEADINGS = [
@@ -54,6 +59,10 @@ export const HEADINGS = [
   'northEast',
 ] as const;
 export type Heading = (typeof HEADINGS)[number];
+
+/** The clip a top-down action plays in a heading (`ActionClipName`). */
+export const actionClip = (action: string, heading: Heading): ActionClipName =>
+  `${action}@${heading}`;
 
 /**
  * A sheet's declared locomotion capability (ADR 0050). Absent means the legacy
@@ -251,7 +260,7 @@ export function isTimedBareClip(clip: ClipName, def: ClipDef): boolean {
  * still mirrored. One test for both backends (ADR 0002).
  */
 export function authoredForBothSides(clip: ClipName): boolean {
-  return /^(idle|walk|jog|rest|stance)|^(ko|hit)[A-Z]/.test(clip);
+  return /^(idle|walk|jog|rest|stance)|^(ko|hit)[A-Z]|@/.test(clip);
 }
 
 /** The clip's length in ms when it plays once through: its frame holds, or its frames at `fps`. */
