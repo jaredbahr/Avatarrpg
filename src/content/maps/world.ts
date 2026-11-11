@@ -85,6 +85,21 @@ export function connectAct1(map: MapDef): MapDef {
             [18, 19, 20].map((x) => ({ x, y: 15 })),
           ),
         ],
+        // The demo's ending: the first step in from the east road after the walk home.
+        triggers: [
+          crossing(
+            map,
+            20,
+            7,
+            'welcome_home_mira',
+            'Ba Dan comes out to meet you',
+            'npc.household',
+            {
+              kind: 'all',
+              of: [visited('forest_return_arrival'), unvisited('demo_complete')],
+            },
+          ),
+        ],
       };
     case 'ba_dan_riverside':
       return {

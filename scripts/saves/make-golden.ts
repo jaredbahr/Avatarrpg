@@ -292,11 +292,9 @@ function generateParty(partySize: 1 | 4): readonly GoldenSave[] {
   checkpoint('driller-mid', 'battle_grumbler', 'combat');
   forceVictoryAndResolve('enc_grumbler');
   requireState(state.flags.act1_complete === true, 'Driller resolution did not complete the act');
-  checkpoint('driller-won', 'act1_epilogue', 'ended');
-  const end = CONTENT.story.get(state.story.nodeId ?? '');
-  if (!end || end.kind !== 'end' || !end.next)
-    throw new Error(`${context()}: no authored Continue exploring destination`);
-  issue({ type: 'enterNode', nodeId: end.next });
+  checkpoint('driller-won', 'act1_epilogue', 'dialogue');
+  // The workers-are-free beat reads through to the walk home on the quarry floor.
+  story();
   travel('ambush_road');
   travel('quarry_gate');
   travel('forest_road');
