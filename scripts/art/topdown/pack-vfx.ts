@@ -697,65 +697,123 @@ const rgb = (hex: string): [number, number, number, number] => [
 ];
 
 /** A cel `w` x `h` with the prototype's `fillRect` calls painted on it, in order. */
-function painted(
-  w: number,
-  h: number,
-  rects: readonly [string, number, number, number, number][],
-): Image {
+/** One painted pixel: its fill and the darker tone of its material that outlines it, or a bare trail pixel. */
+type Ink = { fill: string; line?: string; trail?: true };
+
+/**
+ * A `w` x `h` cel from `paint` (pixel centre to ink), on the world-pixel grid: every transparent pixel beside a body
+ * pixel takes that material's outline (1 px, the darker tone of the material); a trail pixel is laid only
+ * where neither is.
+ */
+function inked(w: number, h: number, paint: (x: number, y: number) => Ink | null): Image {
   const image = newImage(w, h);
-  for (const [hex, x0, y0, rw, rh] of rects)
-    for (let y = y0; y < y0 + rh; y++)
-      for (let x = x0; x < x0 + rw; x++) image.data.set(rgb(hex), (y * w + x) * 4);
+  const ink = Array.from({ length: w * h }, (_, i) => paint(i % w, Math.floor(i / w)));
+  const body = (x: number, y: number) =>
+    x >= 0 && y >= 0 && x < w && y < h ? ink[y * w + x] : undefined;
+  ink.forEach((pixel, i) => {
+    const x = i % w;
+    const y = Math.floor(i / w);
+    const near = [body(x, y - 1), body(x - 1, y), body(x + 1, y), body(x, y + 1)].find(
+      (n) => n?.line,
+    );
+    const solid = pixel?.line ? pixel.fill : !pixel?.line && near?.line;
+    if (solid) image.data.set(rgb(solid), i * 4);
+    else if (pixel?.trail) image.data.set(rgb(pixel.fill), i * 4);
+  });
   return image;
 }
 
-/**
- * The projectiles in flight (#588), drawn procedurally as the prototype draws them (`b3/fx.js` `drawBolts`), one art
- * px a world px, with their point of flight at each cel's centre. `shot/bolt/<i>` is the crossbow bolt flying along
- * heading `i` (0 east, clockwise in 45 degree steps): a 7 px line from its pale 2 px head at the centre, down a dark
- * shaft that reads on sand, to grey fletching, rounded to whole pixels (#588 asks for the dark shaft and light head
- * over the prototype's mid-brown, which faded into the quarry floor). `shot/rock` is the thrown rock, `shot/stone` the sling stone, `shot/jar` the
- * oil flask; the torch flies on its own burning cels (`vfx13/torch`).
- */
-export function shotCels(): Item[] {
-  const bolts = Array.from({ length: 8 }, (_, i) => {
-    const angle = (i * Math.PI) / 4;
-    const rects: [string, number, number, number, number][] = [];
-    for (let k = 6; k >= 0; k--)
-      rects.push([
-        k < 2 ? '#e8d8b0' : k < 6 ? '#3a2e2c' : '#aea89c',
-        6 - Math.round(Math.cos(angle) * k),
-        6 - Math.round(Math.sin(angle) * k),
-        1,
-        1,
-      ]);
-    return { name: `shot/bolt/${i}`, image: painted(13, 13, rects) };
+/** `mask` (rows of `#`) turned `quarter` right angles clockwise. */
+function turned(mask: readonly string[], quarter: number): string[] {
+  let rows = [...mask];
+  for (let q = 0; q < quarter; q++)
+    rows = Array.from({ length: rows[0]?.length ?? 0 }, (_, x) =>
+      rows
+        .map((row) => row[x] ?? '.')
+        .reverse()
+        .join(''),
+    );
+  return rows;
+}
+
+/** A body `mask`, lit from the upper left: light where its top or left edge is open, shade on its bottom or right. */
+function lit(mask: readonly string[], [light, mid, dark, line]: readonly string[]): Image {
+  const at = (x: number, y: number) => (mask[y]?.[x] ?? '.') !== '.';
+  return inked((mask[0]?.length ?? 0) + 2, mask.length + 2, (px, py) => {
+    const x = px - 1;
+    const y = py - 1;
+    if (!at(x, y)) return null;
+    const material = {
+      c: ['#c9a878', '#a88458', '#7a5c3a', '#3a2416'],
+      w: ['#c4ae84', '#9a8660', '#6a5a40', line],
+    }[mask[y]?.[x] ?? ''];
+    const [l, m, d, o] = material ?? [light, mid, dark, line];
+    const fill = !at(x, y - 1) || !at(x - 1, y) ? l : !at(x, y + 1) || !at(x + 1, y) ? d : m;
+    return { fill: fill ?? '', line: o ?? '' };
   });
+}
+
+/** The thrown rock and sling stone in `rock_hit`'s palette: light, mid, shade, outline. */
+const ROCK = ['#b8b0a4', '#8a8278', '#5e5850', '#3a3530'];
+const ROCK_BODY = ['.###..', '#####.', '######', '##w###', '.####.', '...##.'];
+const STONE_BODY = ['.##.', '#w##', '###.', '.#..'];
+/** `w` is a warm fleck from the same palette, so the tumble shows. The oil flask: cork (`c`) on a clay jar. */
+const JAR_BODY = ['..cc..', '..##..', '.####.', '######', '######', '######', '.####.'];
+
+/**
+ * The projectiles in flight (#588, readability pass), drawn procedurally one art px a world px with their point of
+ * flight at each cel's centre, each in a 1 px outline of its material's darker tone so it reads on sand, dirt, grass,
+ * water and oil. `shot/bolt/<i>` is the crossbow bolt flying along heading `i` (0 east, clockwise in 45 degree steps):
+ * a steel head, a 2 px wooden shaft and light fletching, 12 px from tail to tip, with a three-step streak thinning out
+ * behind it. `shot/rock/<q>` and `shot/stone/<q>` tumble a quarter turn a cel, always lit from the upper left;
+ * `shot/jar` is the oil flask; `shot/torch/<i>` outlines the prototype's burning torch cels; `shot/shadow` is the
+ * small hard shadow that tracks a shot across the ground.
+ */
+export function shotCels(torch: readonly Item[] = []): Item[] {
+  const bolts = Array.from({ length: 8 }, (_, i) => {
+    const [c, s] = [Math.cos((i * Math.PI) / 4), Math.sin((i * Math.PI) / 4)];
+    const image = inked(30, 30, (x, y) => {
+      const u = (x - 14.5) * c + (y - 14.5) * s;
+      const v = Math.abs((x - 14.5) * -s + (y - 14.5) * c);
+      if (u > 2.5 && u <= 6.6 && v <= Math.min(1.6, Math.max(0.5, (6.6 - u) * 0.75)))
+        return { fill: v < 0.5 && u > 4.5 ? '#f4f7fa' : '#c8d0da', line: '#2e3038' };
+      if (u > -5.6 && u <= 2.5 && v <= 0.8) return { fill: '#b07a46', line: '#4a2c18' };
+      if (u > -5.6 && u <= -3 && v <= 1.9) return { fill: '#f2ead6', line: '#6a5a40' };
+      // The streak fades in three steps by thinning on the pixel grid (the atlas is hard-alpha).
+      if (u < -6.5 && u >= -13.5 && v <= 0.6 && (x + y) % (u > -8.8 ? 1 : u > -11.1 ? 2 : 3) === 0)
+        return { fill: u > -8.8 ? '#f4ecd8' : '#e2d6bc', trail: true };
+      return null;
+    });
+    return { name: `shot/bolt/${i}`, image };
+  });
+  const tumble = (name: string, body: readonly string[]) =>
+    [0, 1, 2, 3].map((q) => ({ name: `${name}/${q}`, image: lit(turned(body, q), ROCK) }));
   return [
     ...bolts,
+    ...tumble('shot/rock', ROCK_BODY),
+    ...tumble('shot/stone', STONE_BODY),
+    { name: 'shot/jar', image: lit(JAR_BODY, ['#e09a6a', '#c4643f', '#8e4128', '#3a2016']) },
+    ...torch.map(({ name, image }) => ({
+      name: name.replace('vfx13/', 'shot/'),
+      image: inked(image.width, image.height, (x, y) => {
+        const [r = 0, g = 0, b = 0, a = 0] = image.data.slice((y * image.width + x) * 4);
+        const hex = (k: number) =>
+          '#' +
+          [r, g, b]
+            .map((n) =>
+              Math.round(n * k)
+                .toString(16)
+                .padStart(2, '0'),
+            )
+            .join('');
+        return a > 127 ? { fill: hex(1), line: hex(0.35) } : null;
+      }),
+    })),
     {
-      name: 'shot/rock',
-      image: painted(8, 6, [
-        ['#3a2e2c', 0, 0, 8, 6],
-        ['#7d5434', 1, 1, 6, 4],
-        ['#a6713f', 1, 1, 3, 2],
-      ]),
-    },
-    {
-      name: 'shot/stone',
-      image: painted(4, 3, [
-        ['#322125', 0, 0, 4, 3],
-        ['#85807f', 1, 0, 2, 2],
-      ]),
-    },
-    {
-      name: 'shot/jar',
-      image: painted(6, 9, [
-        ['#3a2e2c', 2, 0, 2, 2],
-        ['#3a2e2c', 0, 2, 6, 7],
-        ['#c4643f', 1, 3, 4, 5],
-        ['#e09a6a', 1, 3, 1, 3],
-      ]),
+      name: 'shot/shadow',
+      image: inked(7, 3, (x, y) =>
+        (x === 0 || x === 6) && y !== 1 ? null : { fill: '#322125', trail: true },
+      ),
     },
   ];
 }
@@ -781,7 +839,7 @@ export async function packTopdownVfx(): Promise<Map<string, Uint8Array | string>
     items.push(...parsed.items);
     effects[key] = parsed.recipe;
   }
-  items.push(...shotCels());
+  items.push(...shotCels(items.filter(({ name }) => name.startsWith('vfx13/torch/'))));
 
   let width = 256;
   let placed: ReturnType<typeof shelfPack>['placed'] | undefined;
