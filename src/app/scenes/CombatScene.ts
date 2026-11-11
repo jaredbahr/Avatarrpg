@@ -2724,7 +2724,7 @@ export class CombatScene implements Scene {
     const anyFell = battle.units.some((unit) => unit.faction === 'party' && !isAlive(unit));
     return el(
       'div',
-      { class: 'handoff-banner' },
+      { class: 'handoff-banner result-banner' },
       el(
         'div',
         { class: 'panel center result-panel' },
