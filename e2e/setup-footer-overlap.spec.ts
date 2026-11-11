@@ -79,13 +79,15 @@ for (const viewport of [
     test.use({ viewport: viewport.size });
     for (const size of ['off', 'on', 'huge'] satisfies LargeText[]) {
       test(`focused final path keeps its stats clear of the footer at ${size} text`, async ({
+        browserName,
+        isMobile,
         page,
       }, info) => {
         await resetStorage(page, '?renderer=canvas');
         await setLargeText(page, size);
         await activate(page, button(page, 'New game'));
         await activate(page, button(page, '1 player'));
-        await activate(page, button(page, 'Continue'));
+        await activate(page, button(page, 'Choose your own'));
         const name = page.getByRole('textbox', { name: 'Your name', exact: true });
         await tabTo(page, name);
         await page.keyboard.press('ControlOrMeta+A');
@@ -108,8 +110,14 @@ for (const viewport of [
         // Keep ordinary manual scrolling functional, including the longer selected
         // description below the cards. Intersection alone would miss an overlay.
         const panel = page.locator('.setup-panel');
-        await panel.hover();
-        await page.mouse.wheel(0, 5000);
+        if (browserName === 'webkit' && isMobile) {
+          // Mobile WebKit does not support Playwright wheel input.
+          await expect(panel).toHaveCSS('overflow-y', /^(auto|scroll)$/);
+          await panel.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+        } else {
+          await panel.hover();
+          await page.mouse.wheel(0, 5000);
+        }
         await expect
           .poll(() =>
             panel.evaluate(
@@ -138,6 +146,20 @@ for (const viewport of [
         });
         await activate(page, riko);
         await activate(page, button(page, 'Confirm'));
+        // The draft always fills three hero slots, even for one player. Keep
+        // navigating with real keyboard input after the measured first card.
+        for (const [element, hero] of [
+          ['fire', 'Kaya'],
+          ['earth', 'Bo'],
+        ] as const) {
+          await activate(page, page.locator(`.pick-card.element-${element}`));
+          await activate(page, button(page, 'Next'));
+          const character = page.locator('.character-card').filter({
+            has: page.getByRole('heading', { name: hero, exact: true }),
+          });
+          await activate(page, character);
+          await activate(page, button(page, 'Confirm'));
+        }
         await expect(button(page, 'Begin')).toBeVisible();
         await expect(button(page, 'Begin')).toBeInViewport();
         await expect(page.getByRole('heading', { name: 'The party', exact: true })).toBeVisible();

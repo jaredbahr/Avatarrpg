@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CONTENT } from '../../content';
 import type { BattleState, Unit } from '../../core/types';
+import { Session } from '../session';
 import { CombatScene } from './CombatScene';
 
 class FakeElement {
@@ -261,5 +262,38 @@ describe('non-party combat acting card', () => {
     scene.renderHud();
     expect(hud.querySelectorAll('.enemy-turn-card')).toHaveLength(1);
     expect(hud.querySelectorAll('.log-panel')).toHaveLength(0);
+  });
+});
+
+describe('combat hand-off ownership', () => {
+  it('asks only when the active hero belongs to a different human, even with duplicate names', () => {
+    const session = new Session(
+      [
+        { unitId: 'kaya', name: 'Alex', participantId: 'person-1' },
+        { unitId: 'bo', name: 'Alex', participantId: 'person-1' },
+        { unitId: 'sura', name: 'Alex', participantId: 'person-2' },
+      ],
+      [
+        { id: 'person-1', name: 'Alex' },
+        { id: 'person-2', name: 'Alex' },
+      ],
+    );
+    const scene = Object.create(CombatScene.prototype) as unknown as {
+      app: { session: Session };
+      active(): Unit;
+      handedOffTo: string | null;
+      needsHandoff(): boolean;
+    };
+    let active = actor('party', 'kaya');
+    scene.app = { session };
+    scene.active = () => active;
+    scene.handedOffTo = null;
+
+    expect(scene.needsHandoff()).toBe(true);
+    scene.handedOffTo = 'kaya';
+    active = actor('party', 'bo');
+    expect(scene.needsHandoff()).toBe(false);
+    active = actor('party', 'sura');
+    expect(scene.needsHandoff()).toBe(true);
   });
 });
