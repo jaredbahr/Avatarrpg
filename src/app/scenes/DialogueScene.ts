@@ -117,6 +117,7 @@ export class DialogueScene implements Scene {
     }
 
     const scene = el('div', { class: 'scene dialogue-scene' });
+    if (node.kind === 'end') scene.classList.add('end-scene');
     scene.appendChild(this.topBar());
 
     if (this.interludeNode !== node.id) {
