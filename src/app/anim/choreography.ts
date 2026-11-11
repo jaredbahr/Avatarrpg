@@ -18,14 +18,21 @@ import { fxPalette, openWaterDraw, resolveFx, WATERSKIN_DRAW } from '../../conte
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
-import { smoothPath } from '../../render/geometry/curve';
+import { sampleAt, smoothPath } from '../../render/geometry/curve';
 import { easeInOutSine, easeOutQuad } from './easing';
 import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
-import { screenDirection, screenMeleeDirection } from './direction';
-import type { MeleeDirection } from '../../content/assets/clips';
-import { HEADINGS, KO_HEADINGS, clipDurationMs, hitClip, koClip } from '../../content/assets/clips';
+import { screenDirection, screenMeleeDirection, walkHeading } from './direction';
+import type { Heading, MeleeDirection } from '../../content/assets/clips';
+import {
+  HEADINGS,
+  KO_HEADINGS,
+  actionClip,
+  clipDurationMs,
+  hitClip,
+  koClip,
+} from '../../content/assets/clips';
 import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
 import { renderFoot } from '../../render/renderFoot';
@@ -93,6 +100,8 @@ export interface ChoreographyInput {
    * is the legacy pose.
    */
   readonly clipsOf?: (sprite: string) => SheetClips | undefined;
+  /** The eight-way heading a unit faces as this push starts, for a top-down action aimed at itself. */
+  readonly headingOf?: (unitId: string) => Heading | undefined;
   /**
    * The loaded bends and painted effects (ADR 0055, step 7). Without them, or
    * for a cast `planBendCast` turns down, the cast is the legacy one exactly.
@@ -181,7 +190,11 @@ const chebyshev = (a: Vec2, b: Vec2): number => Math.max(Math.abs(a.x - b.x), Ma
  * longest, because which heading falls is the animator's to know.
  */
 export function knockoutSpan(clips: SheetClips | undefined): number {
-  return timedSpan(clips, ['ko', ...KO_HEADINGS.map(koClip)]);
+  return timedSpan(clips, [
+    'ko',
+    ...KO_HEADINGS.map(koClip),
+    ...HEADINGS.map((heading) => actionClip('ko', heading)),
+  ]);
 }
 
 /** The same for a sheet's G hits (ADR 0063), which share one timing per character. */
@@ -334,6 +347,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       frame?: number;
       clipTimeOffset?: number;
       meleeDirection?: MeleeDirection;
+      heading?: Heading;
     } = {},
   ): void => {
     tracks.push({
@@ -350,8 +364,11 @@ export function choreograph(input: ChoreographyInput): Choreography {
       ...(extra.frame !== undefined ? { frame: extra.frame } : {}),
       ...(extra.clipTimeOffset !== undefined ? { clipTimeOffset: extra.clipTimeOffset } : {}),
       ...(extra.meleeDirection ? { meleeDirection: extra.meleeDirection } : {}),
+      ...(extra.heading ? { heading: extra.heading } : {}),
     });
   };
+  /** Each unit's heading as this push plays out: where its last move or action left it facing. */
+  const headings = new Map<string, Heading>();
 
   /**
    * How long a unit's G knockout (ADR 0059) or hit (ADR 0063) plays, at the
@@ -425,6 +442,15 @@ export function choreograph(input: ChoreographyInput): Choreography {
         }
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
+        headings.set(
+          event.unitId,
+          walkHeading(
+            screenDirection(
+              sampleAt(curve, curve.length).tangent,
+              input.projection ?? 'orthographic',
+            ),
+          ),
+        );
         cursor += duration;
         pending = null;
         break;
@@ -503,12 +529,27 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const forward = self
           ? { x: 0, y: 0.04 }
           : scaled(screenDir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
-        const clip: ClipName = melee ? 'melee' : 'cast';
         // These directed fundamentals have calibrated cast palms. Earth,
         // area and surface techniques retain their separate ground contract.
         const casterUnit = unitsBefore.find((unit) => unit.id === event.unitId);
         const casterClips = casterUnit ? input.clipsOf?.(casterUnit.sprite) : undefined;
-        const castDef = !melee || !casterClips?.melee ? casterClips?.cast : undefined;
+        // A top-down sheet plays the ability's own pose in the heading it aims, drawn, never
+        // mirrored (ADR 0104); aimed at itself, in the heading it already faces.
+        const heading = self
+          ? (headings.get(event.unitId) ??
+            input.headingOf?.(event.unitId) ??
+            (casterUnit?.faction === 'enemy' ? 'west' : 'east'))
+          : walkHeading(screenDir);
+        const action = [actionClip(ability.id, heading), actionClip('cast', heading)].find(
+          (name) => casterClips?.[name],
+        );
+        if (action) headings.set(event.unitId, heading);
+        const clip: ClipName = action ?? (melee ? 'melee' : 'cast');
+        const castDef = action
+          ? casterClips?.[action]
+          : !melee || !casterClips?.melee
+            ? casterClips?.cast
+            : undefined;
         const castHolds = castDef?.frameMs;
         // A timed bare cast owns its whole beat. Its fourth cel, when present,
         // begins contact (the Driller's authored frame 3); up to three cels
@@ -633,6 +674,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           frame: 0,
           ...(castHolds ? { clipTimeOffset: 0 } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
+          ...(action ? { heading } : {}),
         });
         const releaseAt = cursor + windUp;
         pose(event.unitId, clip, releaseAt, release, back, forward, motion.releaseEase, {
@@ -641,6 +683,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           frame: 1,
           ...(castHolds ? { clipTimeOffset: windUp / rate } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
+          ...(action ? { heading } : {}),
         });
         // The element gathers through the wind-up and is out of the hands by the release.
         const gatherSpan = windUp * 0.6;
@@ -806,6 +849,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             frame: 1,
             ...(castHolds ? { clipTimeOffset: (windUp + release) / rate } : {}),
             ...(meleeDirection ? { meleeDirection } : {}),
+            ...(action ? { heading } : {}),
           });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
@@ -815,6 +859,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             ? { clipTimeOffset: (windUp + release + (recoverAt - holdAt)) / rate }
             : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
+          ...(action ? { heading } : {}),
         });
 
         // Contact fragments belong to the body; dust, cracks and rising earth

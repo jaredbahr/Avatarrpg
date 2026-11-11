@@ -12,7 +12,7 @@ import type { Vec2 } from '../../core/types';
 import type { EmitterDef } from '../../content/fx';
 import type { Curve } from '../../render/geometry/curve';
 import type { ClipName, EmitterAttachments } from '../../render/view';
-import type { MeleeDirection } from '../../content/assets/clips';
+import type { Heading, MeleeDirection } from '../../content/assets/clips';
 import type { Easing } from './easing';
 import type { BendFxIndex } from '../../render/fx/bendFx';
 import type { BendPlan } from './bendChoreo';
@@ -51,6 +51,8 @@ export interface PoseTrack extends Track {
   readonly frame?: number;
   /** Elapsed clip time at this track's start, for a timed clip split across motion phases. */
   readonly clipTimeOffset?: number;
+  /** The heading a top-down action is drawn in (ADR 0104); the unit keeps facing it afterwards. */
+  readonly heading?: Heading;
 }
 
 export interface FlashTrack extends Track {
