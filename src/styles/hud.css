@@ -3726,6 +3726,18 @@ html[data-contrast='high'] .hud-panel::after {
   overflow-y: auto;
 }
 
+/* Give the coach its own dock row on landscape boards. As a third column it
+   narrows the action panel, stacks its controls, and can put legal board taps
+   underneath the guidance plate. A full row lets the actor and action panels
+   keep their normal widths while the map and dock reflow around the coach. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  .combat-scene .hud > .combat-guidance {
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: none;
+  }
+}
+
 /* At Huge text on a short landscape display, keep the dock's preferred height
  * fixed across aim changes, but let it shrink below its scroll cap so the
  * header and initiative strip cannot take the board below 40dvh. */
