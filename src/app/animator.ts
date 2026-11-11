@@ -41,7 +41,7 @@ import {
   screenDirection,
 } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
-import { headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
+import { actionClip, headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
 import type { Heading, LocomotionDef, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
 import type { SheetClips } from '../render/sheets/store';
@@ -313,6 +313,7 @@ export class Animator {
       amble: this.options.amble,
       projection: this.projection,
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
+      headingOf: (unitId) => this.headingAfterCues(unitId),
       ...(bends ? { bends } : {}),
       ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
       ...(options.waterSources ? { waterSources: options.waterSources } : {}),
@@ -367,13 +368,18 @@ export class Animator {
           });
         }
       }
-      if (track.kind === 'pose' && track.facing !== undefined)
+      if (track.kind === 'pose' && (track.heading || track.facing !== undefined)) {
+        // A top-down action turns the unit to the heading it is drawn in (ADR 0104).
+        const rad = (HEADINGS.indexOf(track.heading ?? 'east') * Math.PI) / 4;
         this.pendingHeadings.push({
           unitId: track.unitId,
           at: track.start,
-          tangent: { x: track.facing, y: 0 },
+          tangent: track.heading
+            ? { x: Math.cos(rad), y: Math.sin(rad) }
+            : { x: track.facing ?? 1, y: 0 },
           screenSpace: true,
         });
+      }
     }
     this.pendingHeadings.sort((a, b) => a.at - b.at);
     this.timeline.holdActionUntil(result.actionReadyAt);
@@ -466,6 +472,15 @@ export class Animator {
       count++;
     }
     if (count > 0) this.pendingHeadings.splice(0, count);
+  }
+
+  /** The heading a unit will face once every queued turn has played: what a new push starts from. */
+  private headingAfterCues(unitId: string): Heading | undefined {
+    const cue = this.pendingHeadings.filter((each) => each.unitId === unitId).pop();
+    if (!cue) return this.headings.get(unitId);
+    return walkHeading(
+      cue.screenSpace ? cue.tangent : screenDirection(cue.tangent, this.projection),
+    );
   }
 
   private rememberDirection(unitId: string, tangent: Vec2, screenSpace = false): void {
@@ -790,8 +805,12 @@ export class Animator {
     if ((clip !== 'ko' && clip !== 'hit') || !sprite || sheetLocomotion(sprite)?.headings !== 8)
       return clip;
     const heading = this.heading(unitId, restFacing) ?? 'east';
-    const authored = clip === 'ko' ? koClip(heading) : hitClip(heading);
-    return this.options.sheetClips?.(sprite)?.[authored] ? authored : clip;
+    const clips = this.options.sheetClips?.(sprite);
+    // A top-down sheet falls in its own heading (ADR 0104); a G sheet on the diagonal `koClip` gives.
+    const authored = (
+      clip === 'ko' ? [actionClip('ko', heading), koClip(heading)] : [hitClip(heading)]
+    ).find((name) => clips?.[name]);
+    return authored ?? clip;
   }
 
   /**

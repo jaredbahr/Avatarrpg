@@ -21,7 +21,9 @@ import {
 import { TILE } from '../camera';
 import { TOPDOWN_TILE } from '../projection';
 import { poolOffset } from '../figureShadowArt';
-import { feetFromPixels, plantAnchor, restingClip, standsOnSoles } from './feet';
+import { HEADINGS, headingClip } from '../../content/assets/clips';
+import { feetFromPixels, plantAnchor, restingClip, standsOnSoles, type FrameFeet } from './feet';
+import { withActions, type SheetActions, type SheetClips } from './store';
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 
@@ -58,9 +60,11 @@ interface Cel {
   readonly data: Uint8ClampedArray;
 }
 
-/** Every idle and walk cel of a sheet, cut out of its atlas pages. */
-async function standingCels(entry: SheetEntry): Promise<Cel[]> {
-  const frames = new Map<string, { image: string; x: number; y: number; w: number; h: number }>();
+type FrameAt = { image: string; x: number; y: number; w: number; h: number };
+
+/** Every frame of a sheet's atlas pages, by name. */
+function atlasFrames(entry: SheetEntry): Map<string, FrameAt> {
+  const frames = new Map<string, FrameAt>();
   for (const json of [entry.atlas, ...(entry.atlasPages ?? [])]) {
     const atlas = JSON.parse(readFileSync(`public/${json}`, 'utf8')) as {
       frames: Record<string, { frame: { x: number; y: number; w: number; h: number } }>;
@@ -70,23 +74,30 @@ async function standingCels(entry: SheetEntry): Promise<Cel[]> {
     for (const [name, { frame }] of Object.entries(atlas.frames))
       frames.set(name, { image, ...frame });
   }
+  return frames;
+}
+
+/** One cel cut out of its atlas page. */
+async function cut(clip: string, name: string, f: FrameAt): Promise<Cel> {
+  const p = await page(f.image);
+  const data = new Uint8ClampedArray(f.w * f.h * 4);
+  for (let row = 0; row < f.h; row += 1)
+    data.set(
+      p.data.subarray(((f.y + row) * p.width + f.x) * 4, ((f.y + row) * p.width + f.x + f.w) * 4),
+      row * f.w * 4,
+    );
+  return { clip, name, w: f.w, h: f.h, data };
+}
+
+/** Every idle and walk cel of a sheet, cut out of its atlas pages. */
+async function standingCels(entry: SheetEntry): Promise<Cel[]> {
+  const frames = atlasFrames(entry);
   const cels: Cel[] = [];
   for (const [clip, def] of Object.entries(entry.clips))
     if (def && /^(idle|walk)/.test(clip))
       for (const name of def.frames) {
         const f = frames.get(name);
-        if (!f) continue;
-        const p = await page(f.image);
-        const data = new Uint8ClampedArray(f.w * f.h * 4);
-        for (let row = 0; row < f.h; row += 1)
-          data.set(
-            p.data.subarray(
-              ((f.y + row) * p.width + f.x) * 4,
-              ((f.y + row) * p.width + f.x + f.w) * 4,
-            ),
-            row * f.w * 4,
-          );
-        cels.push({ clip, name, w: f.w, h: f.h, data });
+        if (f) cels.push(await cut(clip, name, f));
       }
   return cels;
 }
@@ -158,6 +169,63 @@ describe('every figure stands on its own soles', () => {
       /^art\/topdown\//,
       TOPDOWN_TILE,
     );
+  });
+});
+
+/**
+ * Takes whose first cel does not stand where the heading's idle does, by more than a world pixel: the figure hops
+ * as the action starts. Art defects for a retake, not code: each is the world px its first cel's soles sit above
+ * (+) or below (-) the planted foot line.
+ */
+const FIRST_CEL_HOPS: Readonly<Record<string, number>> = {
+  'unit.earth.bo attack@northWest': 2,
+  'unit.earth.bo attack@southWest': 2,
+  'unit.earth.linmei attack@northWest': 2,
+  'unit.earth.linmei attack@southWest': 3,
+  'unit.earth.linmei attack@west': 3,
+};
+
+describe('every top-down action and hit starts on the ground its idle stands on', () => {
+  beforeAll(() => useTopDownStyle());
+  it('stands the first cel of every heading of every action and hit on its lowest sole', async () => {
+    const hops: Record<string, number> = {};
+    let checked = 0;
+    for (const key of Object.keys(TOPDOWN_KEYS)) {
+      const entry = resolveAsset(key);
+      if (entry.kind !== 'sheet' || !entry.actions) continue;
+      const read = <T>(path: string): T => JSON.parse(readFileSync(`public/${path}`, 'utf8')) as T;
+      const own = { ...entry.clips, ...(entry.clipData ? read<SheetClips>(entry.clipData) : {}) };
+      const frames = atlasFrames(entry);
+      const feet = new Map<string, FrameFeet>();
+      for (const heading of HEADINGS) {
+        const name = own[headingClip('idle', heading)]?.frames[0] ?? '';
+        const f = frames.get(name);
+        const cel = f && (await cut('idle', name, f));
+        const found = cel && feetFromPixels(cel.data, cel.w, cel.h, entry.pixelsPerTile);
+        if (found) feet.set(name, found);
+      }
+      const clips = withActions(entry, own, read<SheetActions>(entry.actions), feet, (name) =>
+        frames.get(name),
+      );
+      for (const [clip, def] of Object.entries(clips)) {
+        // The drawn poses, not the aliases an ability or the idle loop reach them by.
+        if (
+          !def ||
+          !/^(hit[A-Z]|[a-z]+@)/.test(clip) ||
+          !def.frames[0]?.includes(`/${clip.split('@')[0]}`)
+        )
+          continue;
+        const name = def.frames[0];
+        const f = frames.get(name);
+        if (!f || !def.anchor) continue;
+        const cel = await cut(clip, name, f);
+        const gap = Math.round(def.anchor.y * cel.h - (lowestOpaqueRow(cel) + 1));
+        if (Math.abs(gap) > 1) hops[`${key} ${clip}`] = gap;
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(500);
+    expect(hops).toEqual(FIRST_CEL_HOPS);
   });
 });
 

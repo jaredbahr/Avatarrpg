@@ -1073,6 +1073,13 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
       .string()
       .regex(/\.json$/, 'must point at the actions JSON')
       .optional(),
+    actionMap: z
+      .object({
+        cast: z.string().min(1),
+        idle: z.string().min(1).optional(),
+        abilities: z.record(z.string().min(1)).optional(),
+      })
+      .optional(),
     // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body. 64 is
     // the world's native G1 grid, one art pixel a world pixel (ADR 0089). 40 is
     // the top-down tile, one art pixel a world pixel (ADR 0104).
