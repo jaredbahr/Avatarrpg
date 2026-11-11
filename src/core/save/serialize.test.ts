@@ -93,6 +93,29 @@ function sizeTwoBattleState(): GameState {
 }
 
 describe('save round trip', () => {
+  it('retains explicit participant identity metadata while legacy session rows remain valid', () => {
+    const state = midBattleState();
+    const session = {
+      players: [
+        { name: 'Alex', unitId: 'p0', participantId: 'person-1' },
+        { name: 'Alex', unitId: 'p1', participantId: 'person-2' },
+        { name: 'Alex', unitId: 'p2', participantId: 'person-1' },
+      ],
+      participants: [
+        { id: 'person-1', name: 'Alex' },
+        { id: 'person-2', name: 'Alex' },
+      ],
+      soloPlay: false,
+    };
+    const loaded = deserialize(serialize(state, { ...META, session }));
+    if (!loaded.ok) throw new Error(loaded.error);
+    expect(loaded.blob.session).toEqual(session);
+
+    const legacy = deserialize(serialize(state, META));
+    if (!legacy.ok) throw new Error(legacy.error);
+    expect(legacy.blob.session).toEqual(META.session);
+  });
+
   it('survives a round trip unchanged', () => {
     const before = midBattleState();
     expect(before.battle?.phase, 'the fixture should still be mid-battle').toBe('active');

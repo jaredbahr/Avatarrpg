@@ -253,7 +253,7 @@ function choicePanel(
           { class: 'decider-banner' },
           el('span', { class: 'tiny muted', text: 'This one is decided by' }),
           el('strong', { text: decider?.name ?? 'the party' }),
-          nextDecider && nextDecider.name !== decider?.name
+          nextDecider && nextDecider.id !== decider?.id
             ? el('span', { class: 'tiny muted', text: 'Next choice: ' + nextDecider.name })
             : null,
         ),
