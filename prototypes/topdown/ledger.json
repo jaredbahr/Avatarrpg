@@ -25604,6 +25604,93 @@
    "ids": {
     "animation_group_id": "3bbc7097-fce6-4b20-9cc8-96221384ade5"
    }
+  },
+  {
+   "name": "t9_portrait_kaya_A",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "c374ee65-1086-4f72-b5ac-7979b9781110",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Pixel art bust portrait of the same young woman, redrawn as chunky retro game pi...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 8848.9654640625,
+   "balance_after": 8843.9654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "c374ee65-1086-4f72-b5ac-7979b9781110",
+    "image_id": "330c4cc0-d67e-573c-bb18-6583ad89f6cb",
+    "source_image_id": "330c4cc0-d67e-573c-bb18-6583ad89f6cb"
+   }
+  },
+  {
+   "name": "t9_portrait_kaya_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "0984cec0-fa16-4fe6-b14a-1a4bd0cef679",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young woman, in the style of...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8843.9654640625,
+   "balance_after": 8837.9654640625,
+   "secs": 64,
+   "notes": "",
+   "ids": {
+    "background_job_id": "0984cec0-fa16-4fe6-b14a-1a4bd0cef679",
+    "image_id": "353d5bb3-d01b-5479-809b-c22d18a90733",
+    "source_image_id": "353d5bb3-d01b-5479-809b-c22d18a90733"
+   }
+  },
+  {
+   "name": "t9_portrait_kaya_A2",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "9853b34c-8b82-477c-ace5-04d0982d0dbf",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Pixel art bust portrait of the same young woman, redrawn as chunky retro game pi...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 8837.9654640625,
+   "balance_after": 8832.9654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "9853b34c-8b82-477c-ace5-04d0982d0dbf",
+    "image_id": "245bdc0f-0b47-56bf-9d6c-3c2fc607ec01",
+    "source_image_id": "245bdc0f-0b47-56bf-9d6c-3c2fc607ec01"
+   }
   }
  ],
  "end_balance": 16728.0,
