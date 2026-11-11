@@ -407,6 +407,10 @@ export class CombatScene implements Scene {
     this.renderTopBar();
   }
 
+  presentationBusy(): boolean {
+    return this.sceneAnimator?.busy(this.presentationNow()) === true;
+  }
+
   private skipPresentation(): void {
     const clock = this.presentationClock;
     if (!clock) return;

@@ -121,6 +121,8 @@ export interface Scene {
   holdAi?(): void;
   /** Drop the pause hold; re-arm one pending enemy turn if still current. */
   releaseAi?(): void;
+  /** Whether a scene-owned (top-down) playback is still running, on its own clock. */
+  presentationBusy?(): boolean;
   /** Pause and resume timed scene presentation while the pause menu is open. */
   pausePresentation?(): void;
   resumePresentation?(): void;
@@ -412,6 +414,11 @@ export class App {
         return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
       },
     });
+  }
+
+  /** Whether anything is still playing: the shared animator or the scene's own (top-down) playback. */
+  boardBusy(now = performance.now()): boolean {
+    return this.animator.busy(now) || this.scene?.presentationBusy?.() === true;
   }
 
   showScene(scene: Scene, replaceRetained = false): void {
