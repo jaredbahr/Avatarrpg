@@ -93,6 +93,12 @@ describe('a top-down action', () => {
         expect(pose.clip).toBe(`cast@${heading}`);
         expect(pose.heading).toBe(heading);
         expect(authoredForBothSides(pose.clip)).toBe(true);
+        // The drawing carries the lunge: no code offset or squash slides it off its shadow.
+        expect([pose.offset.from, pose.offset.to]).toEqual([
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ]);
+        expect(pose.scale ?? { from: 1, to: 1 }).toEqual({ from: 1, to: 1 });
       }
     }
     expect(posesOf(play([used('kaya', 'flame_arc', { x: 5, y: 1 })]), 'kaya')[0]?.clip).toBe(

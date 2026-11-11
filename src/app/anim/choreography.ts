@@ -525,8 +525,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
         let windUp = TIMING.windUp * motion.windUp * rate;
         let release = TIMING.release * motion.release * rate;
         let recover = TIMING.recover * motion.recover * rate;
-        const back = self ? { x: 0, y: -0.06 } : scaled(screenDir, -LEAN_BACK);
-        const forward = self
+        let back = self ? { x: 0, y: -0.06 } : scaled(screenDir, -LEAN_BACK);
+        let forward = self
           ? { x: 0, y: 0.04 }
           : scaled(screenDir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
         // These directed fundamentals have calibrated cast palms. Earth,
@@ -543,7 +543,15 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const action = [actionClip(ability.id, heading), actionClip('cast', heading)].find(
           (name) => casterClips?.[name],
         );
-        if (action) headings.set(event.unitId, heading);
+        // The drawn action carries its own lean, lunge and squash; code motion on top of it slides the
+        // figure off its shadow (a north lunge lifts it straight up the screen).
+        if (action) {
+          headings.set(event.unitId, heading);
+          back = still;
+          forward = still;
+        }
+        const compression = action ? 1 : motion.compression;
+        const extension = action ? 1 : motion.extension;
         const clip: ClipName = action ?? (melee ? 'melee' : 'cast');
         const castDef = action
           ? casterClips?.[action]
@@ -661,7 +669,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
               casterUnit,
               'cast-gather',
               scaled(back, gatherT),
-              1 + (motion.compression - 1) * gatherT,
+              1 + (compression - 1) * gatherT,
               facing ?? (screenDir.x < 0 ? -1 : 1),
             )
           : undefined;
@@ -670,7 +678,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // strike for a melee, which returns to its guarded wind-up stance.
         pose(event.unitId, clip, cursor, windUp, { x: 0, y: 0 }, back, motion.gatherEase, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: 1, to: motion.compression },
+          scale: { from: 1, to: compression },
           frame: 0,
           ...(castHolds ? { clipTimeOffset: 0 } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
@@ -679,7 +687,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const releaseAt = cursor + windUp;
         pose(event.unitId, clip, releaseAt, release, back, forward, motion.releaseEase, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: motion.compression, to: motion.extension },
+          scale: { from: compression, to: extension },
           frame: 1,
           ...(castHolds ? { clipTimeOffset: windUp / rate } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
@@ -727,7 +735,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
                   x: back.x + (forward.x - back.x) * launchT,
                   y: back.y + (forward.y - back.y) * launchT,
                 },
-                motion.compression + (motion.extension - motion.compression) * launchT,
+                compression + (extension - compression) * launchT,
                 facing ?? (screenDir.x < 0 ? -1 : 1),
               )
             : undefined;
@@ -845,7 +853,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         if (recoverAt > holdAt)
           pose(event.unitId, clip, holdAt, recoverAt - holdAt, forward, forward, easeInOutSine, {
             ...(facing !== undefined ? { facing } : {}),
-            scale: { from: motion.extension, to: motion.extension },
+            scale: { from: extension, to: extension },
             frame: 1,
             ...(castHolds ? { clipTimeOffset: (windUp + release) / rate } : {}),
             ...(meleeDirection ? { meleeDirection } : {}),
@@ -853,7 +861,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: motion.extension, to: 1 },
+          scale: { from: extension, to: 1 },
           frame: melee ? 0 : 2,
           ...(castHolds
             ? { clipTimeOffset: (windUp + release + (recoverAt - holdAt)) / rate }
