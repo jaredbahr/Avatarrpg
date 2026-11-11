@@ -44,12 +44,10 @@ CAST = {
  'enemy.slinger': ('enemy.slinger.png', 'the same bandit slinger', 'his red hood and red scarf, dark hair and focused face, with the shoulders and clothes running off the bottom and side edges so the picture fills all four corners of the square'),
  'enemy.thug': ('enemy.thug.png', 'the same scruffy bandit', 'his red bandana, dark hair, short goatee, crooked grin, and torn red vest'),
  'enemy.grumbler': ('enemy.grumbler.png', 'the same steam-powered tracked drilling machine', 'its brass and rust-red boiler body, glowing amber window, caterpillar tracks and big grey drill cone, no person'),
- 'dema': ('mira.png', 'a middle-aged woman, the road keeper',
-          'her strong build and a practical, slightly exasperated but kind face; she is a new person: tan skin, dark hair with grey streaks tied back under a faded blue headscarf, '
-          'sleeves rolled to the elbow on a plain brown and green work tunic, a damp washing cloth over one shoulder, one hand on her hip, a small turtle-duck ducking behind her shoulder'),
- 'sen': ('gao.png', 'a gentle middle-aged tea keeper',
-         'his warm pose; he is a new person: clean-shaven, thin kind face with laugh lines, short grey-brown hair, plain brown apron over a rust-orange shirt with rolled sleeves, '
-         'holding out a dented tin kettle in one hand and a chipped cup with a blue handle in the other, offering company with a patient smile'),
+ 'dema': ('mira.png', 'a weathered woman in her forties, the road keeper',
+          'her strong build; she is a new person: tan weathered skin with laugh lines, a wide conical straw hat shading her face, an oatmeal-coloured tunic with the sleeves rolled to the elbow, a rust-orange sash at the waist, a warm practical expression with a small knowing smile'),
+ 'sen': ('gao.png', 'a tall lanky man in his thirties, the tea keeper',
+         'his friendly pose; he is a new person: narrow kind face with a slightly wry smile, short dark hair under a grey headband, a slate-grey quilted vest over a brick-red shirt, a white towel over one shoulder, a tan sash, holding out a dented tin kettle in one hand and a chipped cup with a blue handle in the other'),
 }
 
 

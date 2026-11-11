@@ -26503,6 +26503,64 @@
     "image_id": "c660353f-8a51-5415-ab20-65707582687f",
     "source_image_id": "c660353f-8a51-5415-ab20-65707582687f"
    }
+  },
+  {
+   "name": "t9_portrait_dema_B_s13",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "72dab332-22ef-49bb-a4bf-d2555047b7e6",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a weathered woman in her forties, the...",
+    "no_background": false,
+    "seed": 13
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8466.9654640625,
+   "balance_after": 8460.9654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "72dab332-22ef-49bb-a4bf-d2555047b7e6",
+    "image_id": "605eb5e9-8977-5787-b24f-6f35212e312d",
+    "source_image_id": "605eb5e9-8977-5787-b24f-6f35212e312d"
+   }
+  },
+  {
+   "name": "t9_portrait_sen_B_s13",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "67e3a018-5ac4-4eda-acc4-fed53e6719a9",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a tall lanky man in his thirties, the...",
+    "no_background": false,
+    "seed": 13
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8460.9654640625,
+   "balance_after": 8454.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "67e3a018-5ac4-4eda-acc4-fed53e6719a9",
+    "image_id": "8e897272-8985-5a4e-af18-30ca45618f6d",
+    "source_image_id": "8e897272-8985-5a4e-af18-30ca45618f6d"
+   }
   }
  ],
  "end_balance": 16728.0,

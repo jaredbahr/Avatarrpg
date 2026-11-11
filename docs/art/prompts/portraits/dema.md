@@ -9,18 +9,18 @@
 
 ## Who
 
-A middle-aged woman with tan skin and grey-streaked dark hair under a faded blue headscarf, a plain brown and green work tunic with the sleeves rolled, a damp washing cloth over one shoulder, one hand on her hip and a small turtle-duck behind her shoulder. Practical, slightly exasperated, kind.
+A weathered woman in her forties with tan skin, a wide conical straw hat, an oatmeal tunic with the sleeves rolled to the elbow and a rust-orange sash. Warm, practical, a small knowing smile.
 
 ## Signature
 
-The headscarf, the washing cloth and the duck.
+The straw hat and the rust-orange sash.
 
 ## Prompt
 
 Style B (ADR 0107) is made with `prototypes/topdown/tools/portraits_b.py`; the `dema` entry in its `CAST` table is the prompt of record.
 
 ```text
-A middle-aged woman with tan skin and grey-streaked dark hair under a faded blue headscarf, a plain brown and green work tunic with the sleeves rolled, a damp washing cloth over one shoulder, one hand on her hip and a small turtle-duck behind her shoulder. Practical, slightly exasperated, kind.
+A weathered woman in her forties with tan skin, a wide conical straw hat, an oatmeal tunic with the sleeves rolled to the elbow and a rust-orange sash. Warm, practical, a small knowing smile.
 ```
 
 ## Negative prompt
@@ -35,4 +35,4 @@ Re-run `portraits_b.py --seed N` and pick by the checklist.
 
 ## Check
 
-Run `checklist.md` before committing, at 3x. For this portrait in particular: The headscarf, the washing cloth and the duck.
+Run `checklist.md` before committing, at 3x. For this portrait in particular: The straw hat and the rust-orange sash.
