@@ -183,4 +183,28 @@ describe('top-down follow camera', () => {
       });
     }
   });
+
+  it('keeps the zoom when a tall figure on the edge row is clipped by the board edge', () => {
+    const width = 20;
+    const height = 12;
+    const viewport = { width: 1368, height: 700, dpr: 1 };
+    for (const row of [0, height - 1]) {
+      const camera = new Camera(viewport, { width, height }, 'topdown');
+      camera.integerZoom = true;
+      camera.fitExplore(80, 12, 'floor');
+      const scale = camera.scale;
+      const pos = { x: 10, y: row };
+      const box = camera.spriteBox(pos, 1, true);
+      // The crossbowman draws at 1.23, so his head runs past the board's top edge on row 0.
+      const tall = actorBodyBounds({ ...box, width: box.size }, 1, null, 1.25);
+      const follow = topdownFollow({
+        focus: { x: (tall.left + tall.right) / 2, y: (tall.top + tall.bottom) / 2 },
+        body: tall,
+        viewport,
+        deltaMs: 16,
+      });
+      applyTopdownFollow(camera, tall, follow);
+      expect(camera.scale, `row ${row}`).toBe(scale);
+    }
+  });
 });

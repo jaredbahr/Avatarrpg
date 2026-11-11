@@ -131,15 +131,8 @@ export function applyTopdownFollow(
     return;
   }
 
-  const before = { x: camera.offsetX, y: camera.offsetY };
+  // At a hard board edge panBy may clamp part of the correction away, so a tall figure on the
+  // first or last row stays clipped by the board's own edge. That is accepted: never refit from
+  // here, or the board drops its integer zoom for the rest of the fight (#456 review).
   if (result.pan.x !== 0 || result.pan.y !== 0) camera.panBy(result.pan.x, result.pan.y);
-  const applied = { x: before.x - camera.offsetX, y: before.y - camera.offsetY };
-  const containedAfterClamp =
-    body.left + applied.x >= 0 &&
-    body.top + applied.y >= 0 &&
-    body.right + applied.x <= camera.viewport.width &&
-    body.bottom + applied.y <= camera.viewport.height;
-  // At a board edge panBy may clamp away a sprite-only correction. Fit the
-  // board with Camera's own tappable-pixel policy as the safe fallback.
-  if (!containedAfterClamp) camera.fit();
 }
