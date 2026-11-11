@@ -21,7 +21,12 @@ type Clips = Record<string, { frames: string[] } | undefined>;
 /** The clips a sprite's loaded sheet draws, as the animator reads them. */
 function sheetClips(page: Page, sprite: string): Promise<Clips | undefined> {
   return page.evaluate((key) => {
-    const animator = window.fnt?.app.animator as unknown as {
+    // A top-down fight plays on the combat scene's own animator (#500); anything else on the app's.
+    const app = window.fnt?.app as unknown as {
+      scene?: { sceneAnimator?: unknown };
+      animator: unknown;
+    };
+    const animator = (app?.scene?.sceneAnimator ?? app?.animator) as {
       options: { sheetClips?: (sprite: string) => Clips | undefined };
     };
     return animator.options.sheetClips?.(key);
@@ -42,7 +47,11 @@ test('a party unit attacking north plays its north action', async ({ page }) => 
 
   // Every action pose the animator hands the scene, by unit.
   await page.evaluate(() => {
-    const animator = window.fnt?.app.animator;
+    const app = window.fnt?.app as unknown as {
+      scene?: { sceneAnimator?: unknown };
+    };
+    const animator = (app?.scene?.sceneAnimator ?? window.fnt?.app.animator) as
+      NonNullable<typeof window.fnt>['app']['animator'] | undefined;
     if (!animator) return;
     const seen: string[] = [];
     (window as unknown as { seenClips: string[] }).seenClips = seen;
