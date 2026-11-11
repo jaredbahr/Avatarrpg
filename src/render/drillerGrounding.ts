@@ -1,4 +1,10 @@
-import { HEADINGS, headingClip, type ClipName, type Heading } from '../content/assets/clips';
+import {
+  HEADINGS,
+  headingClip,
+  hitClip,
+  type ClipName,
+  type Heading,
+} from '../content/assets/clips';
 import { TOPDOWN_SHEETS } from '../content/assets/topdownSheets';
 import type { CastKey } from './lighting';
 import { feetBlob, hardShadowMask } from './shadow/hardShadowMask';
@@ -22,11 +28,15 @@ export function drillerGroundingPose(
   mirrored: boolean,
 ): { readonly heading: Heading; readonly mirror: boolean } {
   if (clip === 'cast') return { heading: 'east', mirror: mirrored };
+  // A top-down action (`pose@heading`, ADR 0104) and a heading's hit are drawn in that heading.
+  const action = clip.split('@')[1];
   for (const heading of HEADINGS)
     if (
+      action === heading ||
       clip === headingClip('idle', heading) ||
       clip === headingClip('walk', heading) ||
-      clip === headingClip('rest', heading)
+      clip === headingClip('rest', heading) ||
+      clip === hitClip(heading)
     )
       return { heading, mirror: false };
   // The packed legacy idle/walk/cast is the east view, mirrored for the west side.

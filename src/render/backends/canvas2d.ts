@@ -2110,9 +2110,10 @@ export class Canvas2DBackend implements RenderBackend {
             ...(cels ?? { drawn: null, resting: null, flip: driller.mirror, scale }),
             driller: {
               ...driller,
+              // The static view (its rest cel): its idle loops the rumble (ADR 0104).
               frame: sheets.frame(
                 unit.sprite,
-                headingClip('idle', driller.heading),
+                headingClip('rest', driller.heading),
                 0,
                 0,
                 px,
