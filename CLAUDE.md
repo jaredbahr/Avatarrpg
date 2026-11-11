@@ -34,6 +34,13 @@ in the top-down style under `?style=topdown`. The owner's direction for finishin
 - **Story choices:** a table vote, with ties going to the rotating decider (#621).
 - **Combos:** hinted first ("something here reacts to fire"), then named and shown openly once discovered (#622).
 - **Length:** one play-through of the demo takes about 30–40 minutes; trim any fight that drags past about 6.
+- **First ten minutes:**
+  - Party setup offers a one-tap suggested party (Kaya, Sura, Bo), with "Choose your own" for the full roster.
+  - The Forest Road ambush is a guided first fight (move, attack, end turn), then lets go. Later fights only show a
+    tip when something new appears.
+  - The game autosaves at every scene and fight start, the title shows Continue, and manual slots stay in the menu.
+- **Effects:** punchy but readable: strong impact frames, a small shake, hit-stop and bold elemental bursts, never
+  covering who got hit or the damage number.
 - **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
   "thanks for playing" card with a party summary and "play again with a different party".
 - **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
