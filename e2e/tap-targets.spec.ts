@@ -285,29 +285,45 @@ async function reachableCombatActions(page: Page): Promise<void> {
 
 async function setup(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'New game', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Who is playing?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose your party' })).toBeVisible();
   await audit(page, 'setup-count', ['.count-row button', '.setup-footer button']);
   await page.getByRole('button', { name: '2 players', exact: true }).click();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  for (const name of ['Aster', 'River']) {
+  await page.getByRole('button', { name: 'Choose your own', exact: true }).click();
+  const names = ['Aster', 'River'];
+  for (const [index, name] of names.entries()) {
     await expect(page.getByRole('heading', { name: 'Pass the tablet along' })).toBeVisible();
     await audit(page, `setup-handoff-${name}`, ['.handoff button']);
     await page.getByRole('button', { name: "I've got it", exact: true }).click();
     await audit(page, `setup-name-${name}`, ['input[aria-label="Your name"]']);
     await page.getByRole('textbox', { name: 'Your name' }).fill(name);
     await page.getByRole('button', { name: 'Next', exact: true }).click();
+    if (index + 1 < names.length)
+      await expect(page.getByRole('heading', { name: 'Pass the tablet along' })).toBeVisible();
+  }
+  const heroes = [
+    { owner: 'Aster', element: 'fire' },
+    { owner: 'River', element: 'water' },
+    { owner: 'Aster', element: 'earth' },
+  ];
+  for (const [index, hero] of heroes.entries()) {
+    await expect(page.getByRole('heading', { name: 'Pass the tablet along' })).toBeVisible();
+    await audit(page, `setup-hero-handoff-${index + 1}`, ['.handoff button']);
+    await page.getByRole('button', { name: "I've got it", exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Pick your path' })).toBeVisible();
-    await audit(page, `setup-element-${name}`, ['.pick-card', '.setup-footer button:disabled']);
-    await page.locator('.pick-card').first().click();
-    await audit(page, `setup-selected-element-${name}`, ['.pick-card.selected']);
+    await audit(page, `setup-element-${hero.owner}`, [
+      '.pick-card',
+      '.setup-footer button:disabled',
+    ]);
+    await page.locator(`.pick-card.element-${hero.element}`).click();
+    await audit(page, `setup-selected-element-${hero.owner}`, ['.pick-card.selected']);
     await page.getByRole('button', { name: 'Next', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Pick your character' })).toBeVisible();
-    await audit(page, `setup-character-${name}`, [
+    await audit(page, `setup-character-${hero.owner}`, [
       '.character-card',
       '.setup-footer button:disabled',
     ]);
     await page.locator('.character-card:not(:disabled)').first().click();
-    await audit(page, `setup-selected-character-${name}`, ['.character-card.selected']);
+    await audit(page, `setup-selected-character-${hero.owner}`, ['.character-card.selected']);
     await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   }
   await expect(page.getByRole('heading', { name: 'The party', exact: true })).toBeVisible();

@@ -25,58 +25,99 @@ import {
  * and finding the party somewhere else on Monday is the failure this catches.
  */
 test.describe('a session', () => {
-  test('creates a party through the real setup flow', async ({ page }) => {
-    await resetStorage(page);
+  for (const size of [1, 2, 4, 6]) {
+    const name =
+      size === 1
+        ? 'starts the three-hero suggested party from one tap'
+        : `starts the suggested party for ${size} players`;
+    test(name, async ({ page }) => {
+      await resetStorage(page);
+      await page.getByRole('button', { name: /new game/i }).click();
+      if (size > 1) {
+        await page.getByRole('button', { name: `${size} players`, exact: true }).click();
+      }
+      await page.getByRole('button', { name: 'Start with the suggested party', exact: true }).click();
 
-    await page.getByRole('button', { name: /new game/i }).click();
-    await page.getByRole('button', { name: '2 players' }).click();
-    await page.getByRole('button', { name: /^Continue$/ }).click();
+      const state = await snapshot(page);
+      expect(state.players).toEqual(
+        ['Player 1', 'Player 2', 'Player 3'].map((name, i) => (i < size ? name : 'Player 1')),
+      );
+      expect(state.partyPositions).toHaveLength(3);
+      const ownership = await page.evaluate(() => ({
+        participants: window.fnt?.app.session.participants,
+        players: window.fnt?.app.session.players,
+        solo: window.fnt?.app.session.solo,
+        characters: window.fnt?.app.state?.party.map((unit) => unit.characterId),
+      }));
+      expect(ownership.characters).toEqual(['kaya', 'sura', 'bo']);
+      expect(ownership.participants?.map((person) => person.name)).toEqual(
+        Array.from({ length: size }, (_, index) => `Player ${index + 1}`),
+      );
+      expect(ownership.players?.map((player) => player.participantId)).toEqual(
+        ['player-1', 'player-2', 'player-3'].map((_, index) => `player-${(index % size) + 1}`),
+      );
+      expect(ownership.solo).toBe(size === 1);
+      expect(state.screen).toBe('dialogue');
 
-    for (const name of ['Elias', 'Lorelai']) {
-      const ready = page.getByRole('button', { name: /I've got it/i });
-      if (await ready.count()) await ready.click();
-
-      await page.locator('input[type=text]').fill(name);
-      await page.getByRole('button', { name: /^Next$/ }).click();
-
-      // Element, then character.
-      await page.locator('.pick-card').first().click();
-      await page.getByRole('button', { name: /^Next$/ }).click();
-      await page.locator('.pick-card:not(.taken)').first().click();
-      await page.getByRole('button', { name: /^Confirm$/ }).click();
-    }
-
-    await expect(page.getByRole('heading', { name: /the party/i })).toBeVisible();
-    await page.getByRole('button', { name: /^Begin$/ }).click();
-
-    const state = await snapshot(page);
-    expect(state.players).toEqual(['Elias', 'Lorelai']);
-    expect(state.partyPositions).toHaveLength(2);
-    expect(state.screen).toBe('dialogue');
-  });
+      if (size === 1) {
+        await enterNode(page, 'battle_forest_road');
+        const witnessed: string[] = [];
+        for (let turn = 0; turn < 3; turn++) {
+          expect(await takeTurn(page, { settleCamera: false })).toBe(true);
+          await expect(page.locator('.handoff-banner')).toHaveCount(0);
+          const active = await page.evaluate(() => {
+            const app = window.fnt?.app;
+            const battle = app?.state?.battle;
+            if (!app || !battle) throw new Error('Expected the suggested party battle');
+            const id = battle.order[battle.turnIndex];
+            const actor = battle.units.find((unit) => unit.id === id);
+            if (!actor || actor.faction !== 'party') throw new Error('Expected a party activation');
+            return {
+              id: actor.id,
+              ap: actor.ap,
+              characterId: actor.characterId,
+              battle,
+              owner: app.session.participantForUnit(actor.id)?.id,
+            };
+          });
+          expect(active.owner).toBe('player-1');
+          witnessed.push(active.characterId ?? '');
+          const end = page.locator('.end-turn');
+          await end.click();
+          if (active.ap > 0) {
+            expect(await page.evaluate(() => window.fnt?.app.state?.battle)).toEqual(active.battle);
+            await end.click();
+          }
+        }
+        expect(new Set(witnessed)).toEqual(new Set(['kaya', 'sura', 'bo']));
+      }
+    });
+  }
 
   test('will not let two players take the same character', async ({ page }) => {
     await resetStorage(page);
 
     await page.getByRole('button', { name: /new game/i }).click();
     await page.getByRole('button', { name: '2 players' }).click();
-    await page.getByRole('button', { name: /^Continue$/ }).click();
+    await page.getByRole('button', { name: 'Choose your own', exact: true }).click();
 
-    // Two players means a hand-off card before each of them, including the first.
+    // Names are collected for every human before the three hero slots.
+    for (const name of ['Frehley', 'Violet']) {
+      await page.getByRole('button', { name: /I've got it/i }).click();
+      await page.locator('input[type=text]').fill(name);
+      await page.getByRole('button', { name: /^Next$/ }).click();
+    }
+    // First owner selects a firebender.
     await page.getByRole('button', { name: /I've got it/i }).click();
-
-    // First player takes the first firebender.
-    await page.locator('input[type=text]').fill('Frehley');
-    await page.getByRole('button', { name: /^Next$/ }).click();
-    await page.locator('.pick-card').first().click();
+    await page.locator('.pick-card.element-fire').click();
     await page.getByRole('button', { name: /^Next$/ }).click();
     const firstName = await page.locator('.pick-card h3').first().textContent();
     await page.locator('.pick-card').first().click();
     await page.getByRole('button', { name: /^Confirm$/ }).click();
 
-    // Second player, same element: that character must now be unavailable.
+    // Second owner, same element: the first character is unavailable.
     await page.getByRole('button', { name: /I've got it/i }).click();
-    await page.locator('input[type=text]').fill('Violet');
+    await page.locator('.pick-card.element-fire').click();
     await page.getByRole('button', { name: /^Next$/ }).click();
     await page.locator('.pick-card').first().click();
     await page.getByRole('button', { name: /^Next$/ }).click();

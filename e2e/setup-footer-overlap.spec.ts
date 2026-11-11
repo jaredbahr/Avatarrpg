@@ -85,7 +85,7 @@ for (const viewport of [
         await setLargeText(page, size);
         await activate(page, button(page, 'New game'));
         await activate(page, button(page, '1 player'));
-        await activate(page, button(page, 'Continue'));
+        await activate(page, button(page, 'Choose your own'));
         const name = page.getByRole('textbox', { name: 'Your name', exact: true });
         await tabTo(page, name);
         await page.keyboard.press('ControlOrMeta+A');

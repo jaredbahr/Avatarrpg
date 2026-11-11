@@ -258,8 +258,8 @@ export class CombatScene implements Scene {
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
 
-  /** Unit whose hand-off banner has been acknowledged. */
-  private handedOffTo: string | null = null;
+  /** Human whose hand-off banner has been acknowledged. */
+  private acknowledgedUnitId: string | null = null;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
@@ -1492,7 +1492,7 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!unit || unit.faction !== 'party') return false;
     if (this.app.session.solo) return false;
-    return this.handedOffTo !== unit.id;
+    return this.app.session.needsHandoff(this.acknowledgedUnitId, unit.id);
   }
 
   sync(): void {
@@ -1521,10 +1521,8 @@ export class CombatScene implements Scene {
       this.clearPending();
       this.stopAiTimer();
 
-      // A new player's turn needs the hand-off card before anything is shown.
-      if (unit && unit.faction === 'party' && !this.app.session.solo) {
-        this.handedOffTo = null;
-      }
+      // Keep the last acknowledged human across unit and enemy turns; only a
+      // change of human ownership needs another hand-off card.
       if (unit) {
         announce(
           unit.faction === 'party'
@@ -2036,7 +2034,7 @@ export class CombatScene implements Scene {
 
   private unitPanel(unit: Unit): HTMLElement {
     const stats = effectiveStats(this.app.content, unit);
-    const player = this.app.session.playerFor(unit.id);
+    const player = this.app.session.participantForUnit(unit.id);
 
     const apPips = el('div', {
       class: 'pips',
@@ -2282,7 +2280,6 @@ export class CombatScene implements Scene {
     this.clearEndTurnConfirmation();
     this.mode = { kind: 'idle' };
     this.clearPending();
-    this.handedOffTo = null;
     this.app.dispatch({ type: 'endTurn', unitId: unit.id });
   }
 
@@ -2710,7 +2707,7 @@ export class CombatScene implements Scene {
         button(
           "I'm ready",
           () => {
-            this.handedOffTo = unit.id;
+            this.acknowledgedUnitId = unit.id;
             this.renderHud();
           },
           { class: 'btn-primary btn-large' },

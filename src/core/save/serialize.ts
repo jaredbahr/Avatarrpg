@@ -175,7 +175,14 @@ const gameState = z.object({
 
 /** Anything the app wants to persist beside the rules state. */
 const sessionMeta = z.object({
-  players: z.array(z.object({ name: z.string(), unitId: z.string() })),
+  players: z.array(
+    z.object({
+      name: z.string(),
+      unitId: z.string(),
+      participantId: z.string().optional(),
+    }),
+  ),
+  participants: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
   soloPlay: z.boolean().optional(),
 });
 
