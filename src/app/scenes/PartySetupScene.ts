@@ -302,7 +302,10 @@ export class PartySetupScene implements Scene {
         draft.name = (event.target as HTMLInputElement).value;
       },
       onKeyDown: (event) => {
-        if (event.key === 'Enter' && !event.isComposing) this.finishName(input);
+        if (event.key === 'Enter' && !event.isComposing) {
+          event.preventDefault();
+          this.finishName(input);
+        }
       },
     });
     panel.appendChild(el('div', { class: 'stack' }, input));

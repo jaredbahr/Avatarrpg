@@ -205,7 +205,7 @@ async function statusTooltip(page: Page): Promise<void> {
 }
 
 /** The existing capped HUD must reveal its complete actions through real scrolling. */
-async function reachableCombatActions(page: Page): Promise<void> {
+async function reachableCombatActions(page: Page, mobileWebKit: boolean): Promise<void> {
   const observe = () =>
     page.evaluate(() => {
       const app = window.fnt!.app;
@@ -259,11 +259,16 @@ async function reachableCombatActions(page: Page): Promise<void> {
   const before = await observe();
   const needsScroll = before.targets.some((target) => target.bottom > before.hud.visibleBottom);
   if (needsScroll) {
-    await page.mouse.move(
-      (before.hud.left + before.hud.right) / 2,
-      (Math.max(before.hud.top, 0) + before.hud.visibleBottom) / 2,
-    );
-    await page.mouse.wheel(0, before.hud.scrollHeight);
+    if (mobileWebKit) {
+      // Playwright cannot send wheel input to mobile WebKit.
+      await page.locator('.combat-scene .hud').evaluate((hud) => hud.scrollTo(0, hud.scrollHeight));
+    } else {
+      await page.mouse.move(
+        (before.hud.left + before.hud.right) / 2,
+        (Math.max(before.hud.top, 0) + before.hud.visibleBottom) / 2,
+      );
+      await page.mouse.wheel(0, before.hud.scrollHeight);
+    }
   }
   await expect
     .poll(async () =>
@@ -355,6 +360,8 @@ for (const viewport of [
 ]) {
   for (const largeText of ['off', 'on'] as const) {
     test(`all screens meet --tap: ${viewport.name}, ${largeText === 'on' ? 'Large' : 'Normal'} text`, async ({
+      browserName,
+      isMobile,
       page,
     }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -474,7 +481,9 @@ for (const viewport of [
         '.map-canvas',
       ]);
       await statusTooltip(page);
-      if (viewport.width === 390 && largeText === 'on') await reachableCombatActions(page);
+      if (viewport.width === 390 && largeText === 'on') {
+        await reachableCombatActions(page, browserName === 'webkit' && isMobile);
+      }
       // Only the phone has the disclosure; viewport choice is explicit, not a skipped census.
       if (viewport.width === 390) {
         await page.getByRole('button', { name: 'More', exact: true }).click();

@@ -121,13 +121,12 @@ test.describe('a session', () => {
     await page.getByRole('button', { name: /I've got it/i }).click();
     await page.locator('.pick-card.element-fire').click();
     await page.getByRole('button', { name: /^Next$/ }).click();
-    await page.locator('.pick-card').first().click();
-    await page.getByRole('button', { name: /^Next$/ }).click();
 
     const taken = page.locator('.pick-card.taken');
     await expect(taken).toHaveCount(1);
     await expect(taken.locator('h3')).toHaveText(firstName ?? '');
     await expect(taken).toBeDisabled();
+    await expect(page.locator('.character-card:not([disabled])')).toHaveCount(1);
   });
 
   test('fights, saves, reloads, and loads back into the same position', async ({ page }) => {

@@ -138,6 +138,20 @@ for (const viewport of [
         });
         await activate(page, riko);
         await activate(page, button(page, 'Confirm'));
+        // The draft always fills three hero slots, even for one player. Keep
+        // navigating with real keyboard input after the measured first card.
+        for (const [element, hero] of [
+          ['fire', 'Kaya'],
+          ['earth', 'Bo'],
+        ] as const) {
+          await activate(page, page.locator(`.pick-card.element-${element}`));
+          await activate(page, button(page, 'Next'));
+          const character = page.locator('.character-card').filter({
+            has: page.getByRole('heading', { name: hero, exact: true }),
+          });
+          await activate(page, character);
+          await activate(page, button(page, 'Confirm'));
+        }
         await expect(button(page, 'Begin')).toBeVisible();
         await expect(button(page, 'Begin')).toBeInViewport();
         await expect(page.getByRole('heading', { name: 'The party', exact: true })).toBeVisible();
