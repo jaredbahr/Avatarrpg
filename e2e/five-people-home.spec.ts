@@ -174,8 +174,8 @@ for (const custody of ['escort', 'trade'] as const) {
     expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
       Object.fromEntries(RETURNEES.map((id) => [id, 'returning'])),
     );
-    await page.getByRole('button', { name: 'Read summary' }).click();
-    await page.getByRole('button', { name: 'Continue exploring' }).click();
+    // The workers-are-free beat is an interlude now; the demo ends in Ba Dan.
+    await page.getByRole('button', { name: 'Skip scene' }).click();
 
     await takeRoute(page, 'West → The Cutting', 'ambush_road');
     await takeRoute(page, 'West → Quarry Gate', 'quarry_gate');
