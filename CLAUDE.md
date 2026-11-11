@@ -10,6 +10,20 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
+## Current goal: a playable demo, Ba Dan to the quarry and back (owner, 2026-11-11)
+
+Everything on the route (Ba Dan, the Forest Road, the quarry gate, the Cutting, the Driller and the walk home) runs
+in the top-down style under `?style=topdown`. The owner's direction for finishing it:
+
+- **Audience:** a playable link people open on their own device (the GitHub Pages build), plus a short video. The
+  first ten minutes must hold up for a stranger: onboarding, saves and what-to-do-next are part of the demo.
+- **Device:** tuned first for **iPad, landscape**: tap targets, camera zoom, text size and the HUD.
+- **What "finished" means:** **combat juice** (an action clip per heading and ability, impact effects, projectiles,
+  hit-stop, the follow camera) and **story presentation** (dialogue, portraits, scene transitions, and the walk
+  home landing as an ending).
+- **One style:** once the route is solid, top-down becomes the default (T6) and the oblique art and code are
+  deleted (T7). Don't spend effort polishing oblique-only paths.
+
 ## Current state: top-down art direction (read first, 2026-11-05)
 
 The owner approved a new art direction in a standalone prototype: **traditional top-down PixelLab pixel art**
