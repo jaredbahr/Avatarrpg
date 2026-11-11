@@ -137,7 +137,7 @@ export function connectAct1(map: MapDef): MapDef {
     case 'forest_road':
       return {
         ...map,
-        objective: 'Explore the woodland paths. The quarry lies east; Ba Dan lies west.',
+        objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
         objectiveVariants: [
           {
             when: RETURNEES_RETURNING,
