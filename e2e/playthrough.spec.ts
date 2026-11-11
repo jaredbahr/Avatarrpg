@@ -64,8 +64,10 @@ test.describe('a session', () => {
       if (size === 1) {
         await enterNode(page, 'battle_forest_road');
         const witnessed: string[] = [];
+        const end = page.locator('.end-turn');
         for (let turn = 0; turn < 3; turn++) {
-          expect(await takeTurn(page, { settleCamera: false })).toBe(true);
+          // Wait for the next actionable turn without dismissing a handoff.
+          await expect(end).toBeEnabled({ timeout: 25_000 });
           await expect(page.locator('.handoff-banner')).toHaveCount(0);
           const active = await page.evaluate(() => {
             const app = window.fnt?.app;
@@ -84,7 +86,6 @@ test.describe('a session', () => {
           });
           expect(active.owner).toBe('player-1');
           witnessed.push(active.characterId ?? '');
-          const end = page.locator('.end-turn');
           await end.click();
           if (active.ap > 0) {
             expect(await page.evaluate(() => window.fnt?.app.state?.battle)).toEqual(active.battle);
