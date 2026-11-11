@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import { enterNode, pinObliqueStyle, resetStorage, startGame, waitForIdle } from './helpers';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 for (const scenario of [
   { name: 'Cutting', exploreNode: 'cutting_explore', mapId: 'ambush_road' },

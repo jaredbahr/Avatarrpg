@@ -356,9 +356,9 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
-        // ADR 0104: the top-down family (sheets, boards, VFX) is fetched only under
-        // ?style=topdown until T6 switches the default; it stays in dist for that request but
-        // is not precached (`scripts/precache.mjs`, which the asset budget reads too).
+        // ADR 0104 T6: top-down is the default and precached; the oblique art of the maps that
+        // draw a top-down scene is requested only under ?style=oblique, so it stays in dist for
+        // that request but is not precached (`scripts/precache.mjs`, which the asset budget reads too).
         globIgnores: [...PRECACHE_IGNORES],
         /*
          * The precache manifest is inlined in sw.js, which the JavaScript gate

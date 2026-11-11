@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   enterNode,
   pauseClock,
+  pinObliqueStyle,
   resetStorage,
   settleLayout,
   startGame,
@@ -9,6 +10,9 @@ import {
   waitForIdle,
 } from './helpers';
 import type { Page } from '@playwright/test';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 async function openReadyFight(page: Page, reduceMotion: boolean): Promise<void> {
   await resetStorage(page, '?renderer=canvas');

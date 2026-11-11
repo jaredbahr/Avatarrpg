@@ -1,30 +1,57 @@
 /**
- * The top-down family is fetched at run time, not precached, until T6 switches the default style
- * (ADR 0104 §3, 2026-11-10 note): workbox is told so, the asset budget counts the precache the same
- * way, and nothing else is left out of it.
+ * Top-down is the default style (ADR 0104 T6), so its family is precached and the game plays
+ * offline; the oblique art of the five maps that draw a top-down scene is left for run time
+ * (`?style=oblique` only). Workbox is told so, the asset budget counts the precache the same way,
+ * and nothing else is left out of it.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { CONTENT } from '../src/content';
+import { TOPDOWN_SCENES } from '../src/content/topdown';
 import { PRECACHE_IGNORES, isPrecacheIgnored } from './precache.mjs';
 
 describe('the precache', () => {
-  it('leaves the top-down family, and only it, for run time', () => {
-    expect([...PRECACHE_IGNORES]).toEqual(['art/topdown/**']);
+  it('precaches the top-down family and leaves only the swapped maps’ oblique art for run time', () => {
     for (const path of [
       'art/topdown/kaya.webp',
       'art/topdown/vfx.json',
       'art/topdown/quarry-gate/ground.webp',
       'art/topdown/props/brazier.png',
-    ])
-      expect(isPrecacheIgnored(path), path).toBe(true);
-    for (const path of [
+      'art/maps/ba_dan_riverside.webp',
       'index.html',
-      'art/maps/quarry_gate.webp',
-      'art/topdownish.webp',
       'art/units/kaya.webp',
       'sw.js',
     ])
       expect(isPrecacheIgnored(path), path).toBe(false);
+    for (const path of [
+      'art/maps/ba-dan-scene/ground-01.webp',
+      'art/maps/forest-g1/forest.webp',
+      'art/maps/quarry_gate.webp',
+      'art/maps/quarry-surround/rim.webp',
+    ])
+      expect(isPrecacheIgnored(path), path).toBe(true);
+    expect(PRECACHE_IGNORES.every((pattern) => pattern.startsWith('art/maps/'))).toBe(true);
+  });
+
+  it('leaves out only art that a top-down map no longer draws', () => {
+    const urls = (value: unknown): string[] =>
+      typeof value === 'string'
+        ? [value]
+        : Array.isArray(value)
+          ? value.flatMap(urls)
+          : value && typeof value === 'object'
+            ? Object.values(value).flatMap(urls)
+            : [];
+    const swapped = new Set<string>();
+    for (const map of CONTENT.maps.values()) {
+      const ignored = urls({ backdrop: map.backdrop, scene: map.scene })
+        .map((url) => url.replace(/^\//, ''))
+        .filter((url) => url.startsWith('art/') && isPrecacheIgnored(url));
+      // Any map that draws ignored art in the default style must be one the top-down swap replaces.
+      if (ignored.length) expect(TOPDOWN_SCENES.has(map.id), `${map.id}: ${ignored[0]}`).toBe(true);
+      if (ignored.length) swapped.add(map.id);
+    }
+    expect([...swapped].sort()).toEqual([...TOPDOWN_SCENES.keys()].sort());
   });
 
   it('is what workbox ignores and what the asset budget leaves out of its total', () => {
