@@ -167,6 +167,21 @@ describe('a top-down action', () => {
     );
   });
 
+  it("starts the effect at the drawn action's measured hand, unmirrored", () => {
+    const out = play([used('kaya', 'fire_jab', { x: 1, y: 5 })]);
+    const from = out.tracks.flatMap((t) =>
+      t.kind === 'emitter' && t.attachments?.from?.sprite === kaya.sprite
+        ? [t.attachments.from]
+        : [],
+    );
+    expect(from.length).toBeGreaterThan(0);
+    for (const actor of from) {
+      expect(actor.clip).toBe('cast@west');
+      expect(actor.facing).toBe(1);
+    }
+    expect(clipsOf(kaya.sprite)?.['cast@west']?.hand).toBeDefined();
+  });
+
   it('plays the legacy cast while the actions are not in', () => {
     const out = choreograph({
       content,

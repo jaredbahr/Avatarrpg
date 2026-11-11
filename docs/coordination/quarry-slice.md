@@ -8,19 +8,26 @@ Everything below this section is history; where it disagrees, this section wins.
 
 **Codex queue, in order.** Take the top open item that no one has claimed:
 
-1. #588: in-flight crossbow bolt and thrown-rock VFX on top-down boards.
-2. #590: the Earth Wall rises (the char half landed in #606).
-3. #598: the white bars beside the quarry boards, organic oil edges, and a liquid sheen on oil (see its latest
+1. #598: the white bars beside the quarry boards, organic oil edges, and a liquid sheen on oil (see its latest
    comment).
-4. iPad-landscape and story-presentation issues filed from the 2026-11-11 audit (labelled `codex-ready`).
-5. The owner's play-design calls: #620 (Try again or Carry on after a defeat), #621 (a table vote for story choices),
-   #622 (combos hinted, then revealed).
+2. #624: a one-tap suggested party, and one player can run several heroes.
+3. #632: shorten the Driller fight to about 6 minutes (it ran 8–11 rounds in AI play).
+4. #626: clear the result panel and combat HUD before post-fight dialogue.
+5. #625: a guided first fight on the Forest Road.
+6. #620: Try again or Carry on after a defeat (the Driller loss first).
+7. #630: a victory results card, readable captions, and names that match the story.
+8. #627: keep the speaker in view; size the dialogue panel to its text.
+9. #629: objective pointers, NPC name tags, and the exit arrows.
+10. #628: stage what the dialogue talks about (Ruon, the freed workers, the rubbing).
+11. #631: the title puts the demo first.
+12. #621: a table vote for story choices. #622: combos hinted, then revealed.
 
 **Parked until the demo is done:** reports, tooling and the oblique-only polish (#568, #611, #529, #528, #526, #525
 and similar). Finish the PRs already open for them only if they're small; don't start new ones.
 
-**Claude owns:** action clips per heading and ability (#617), hand sockets for attached effects, the follow camera
-and pacing (#500), the story-presentation audit and the art (PixelLab). Don't start overlapping work.
+**Claude owns:** projectiles in flight (#588), the Earth Wall rise (#590), the demo's ending (welcome home and the
+"Demo complete" card), portraits and other art (PixelLab), and making top-down the default (T6). Don't start
+overlapping work.
 
 Current delivery mandate: [finish the complete run through the Driller](finish-through-driller.md), including its outcome and return. v0.2.0 is an interim playable release.
 

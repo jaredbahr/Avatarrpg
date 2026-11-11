@@ -258,8 +258,8 @@ export class CombatScene implements Scene {
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
 
-  /** Human whose hand-off banner has been acknowledged. */
-  private acknowledgedUnitId: string | null = null;
+  /** Party unit whose owner last acknowledged the hand-off banner. */
+  private handedOffTo: string | null = null;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
@@ -1492,7 +1492,7 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!unit || unit.faction !== 'party') return false;
     if (this.app.session.solo) return false;
-    return this.app.session.needsHandoff(this.acknowledgedUnitId, unit.id);
+    return this.app.session.needsHandoff(this.handedOffTo, unit.id);
   }
 
   sync(): void {
@@ -2707,7 +2707,7 @@ export class CombatScene implements Scene {
         button(
           "I'm ready",
           () => {
-            this.acknowledgedUnitId = unit.id;
+            this.handedOffTo = unit.id;
             this.renderHud();
           },
           { class: 'btn-primary btn-large' },

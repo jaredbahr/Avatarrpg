@@ -281,16 +281,16 @@ describe('combat hand-off ownership', () => {
     const scene = Object.create(CombatScene.prototype) as unknown as {
       app: { session: Session };
       active(): Unit;
-      acknowledgedUnitId: string | null;
+      handedOffTo: string | null;
       needsHandoff(): boolean;
     };
     let active = actor('party', 'kaya');
     scene.app = { session };
     scene.active = () => active;
-    scene.acknowledgedUnitId = null;
+    scene.handedOffTo = null;
 
     expect(scene.needsHandoff()).toBe(true);
-    scene.acknowledgedUnitId = 'kaya';
+    scene.handedOffTo = 'kaya';
     active = actor('party', 'bo');
     expect(scene.needsHandoff()).toBe(false);
     active = actor('party', 'sura');

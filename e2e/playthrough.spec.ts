@@ -36,7 +36,9 @@ test.describe('a session', () => {
       if (size > 1) {
         await page.getByRole('button', { name: `${size} players`, exact: true }).click();
       }
-      await page.getByRole('button', { name: 'Start with the suggested party', exact: true }).click();
+      await page
+        .getByRole('button', { name: 'Start with the suggested party', exact: true })
+        .click();
 
       const state = await snapshot(page);
       expect(state.players).toEqual(
