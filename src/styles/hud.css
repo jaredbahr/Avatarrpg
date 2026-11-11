@@ -3205,6 +3205,23 @@ html[data-contrast='high'] .hud-panel::after {
   top: var(--sp-3);
   z-index: var(--z-banner);
 }
+/* A short map strip cannot contain this full tap target. Keep the dock clear;
+ * Map still opens the complete map and its Follow party action. */
+@media (max-height: 26rem) and (orientation: landscape) {
+  html[data-large-text='off'] .explore-map-corner {
+    display: none;
+  }
+}
+@media (max-height: 32rem) and (orientation: landscape) {
+  html[data-large-text='on'] .explore-map-corner {
+    display: none;
+  }
+}
+@media (max-height: 40rem) and (orientation: landscape) {
+  html[data-large-text='huge'] .explore-map-corner {
+    display: none;
+  }
+}
 .local-map-follow {
   display: flex;
   flex-direction: column;
