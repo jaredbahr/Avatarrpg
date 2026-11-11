@@ -1,5 +1,27 @@
 # Current delivery: village to quarry and back
 
+## Current priorities (orchestrator, 2026-11-11): read this first
+
+The owner's direction is in `CLAUDE.md` ("Current goal"). The demo is a **playable link** for strangers, played
+under `?style=topdown`, tuned for **iPad landscape**. "Finished" means **combat juice** and **story presentation**.
+Everything below this section is history; where it disagrees, this section wins.
+
+**Codex queue, in order.** Take the top open item that no one has claimed:
+
+1. #588: in-flight crossbow bolt and thrown-rock VFX on top-down boards.
+2. #590: the Earth Wall rises (the char half landed in #606).
+3. #598: the white bars beside the quarry boards, organic oil edges, and a liquid sheen on oil (see its latest
+   comment).
+4. iPad-landscape and story-presentation issues filed from the 2026-11-11 audit (labelled `codex-ready`).
+5. The owner's play-design calls: #620 (Try again or Carry on after a defeat), #621 (a table vote for story choices),
+   #622 (combos hinted, then revealed).
+
+**Parked until the demo is done:** reports, tooling and the oblique-only polish (#568, #611, #529, #528, #526, #525
+and similar). Finish the PRs already open for them only if they're small; don't start new ones.
+
+**Claude owns:** action clips per heading and ability (#617), hand sockets for attached effects, the follow camera
+and pacing (#500), the story-presentation audit and the art (PixelLab). Don't start overlapping work.
+
 Current delivery mandate: [finish the complete run through the Driller](finish-through-driller.md), including its outcome and return. v0.2.0 is an interim playable release.
 
 **Next steps (2026-10-29):** the phased plan (M1 art lock, M2 demo-flow polish, M3 the quarry slice through the Driller, and CI health) is in [the roadmap's next stretch](../roadmap.md#next-stretch-2026-10-29). Its issues are tracked in [#348](https://github.com/jaredbahr/Avatarrpg/issues/348). Codex takes the code issues and Claude sessions take the PixelLab art.

@@ -10,6 +10,46 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
+## Current goal: a playable demo, Ba Dan to the quarry and back (owner, 2026-11-11)
+
+Everything on the route (Ba Dan, the Forest Road, the quarry gate, the Cutting, the Driller and the walk home) runs
+in the top-down style under `?style=topdown`. The owner's direction for finishing it:
+
+- **Audience:** a playable link people open on their own device (the GitHub Pages build), plus a short video. The
+  first ten minutes must hold up for a stranger: onboarding, saves and what-to-do-next are part of the demo.
+- **Device:** tuned first for **iPad, landscape**: tap targets, camera zoom, text size and the HUD.
+- **What "finished" means:** **combat juice** (an action clip per heading and ability, impact effects, projectiles,
+  hit-stop, the follow camera) and **story presentation** (dialogue, portraits, scene transitions, and the walk
+  home landing as an ending).
+- **One style:** once the route is solid, top-down becomes the default (T6) and the oblique art and code are
+  deleted (T7). Don't spend effort polishing oblique-only paths.
+- **Players:** families and tactics fans, layered: easy to pick up for kids (about 7–12), with depth (combos, a
+  harder difficulty) for experienced players. Usually **3–4 players** share the iPad, so whose turn it is and the
+  hand-offs must always be clear.
+- **Tone:** a warm adventure, with humour and friendship and real stakes but nothing grim. Bandits are people with
+  reasons (`docs/writing-guide.md`).
+- **Difficulty:** forgiving by default (most first-time players win if they try), plus a harder option.
+- **Losing a fight:** the players choose "Try again" (restart the fight) or "Carry on" (the story's defeat branch)
+  (#620).
+- **Story choices:** a table vote, with ties going to the rotating decider (#621).
+- **Combos:** hinted first ("something here reacts to fire"), then named and shown openly once discovered (#622).
+- **Length:** one play-through of the demo takes about 30–40 minutes; trim any fight that drags past about 6.
+- **First ten minutes:**
+  - Party setup offers a one-tap suggested party (Kaya, Sura, Bo), with "Choose your own" for the full roster.
+  - The Forest Road ambush is a guided first fight (move, attack, end turn), then lets go. Later fights only show a
+    tip when something new appears.
+  - The game autosaves at every scene and fight start, the title shows Continue, and manual slots stay in the menu.
+- **Effects:** punchy but readable: strong impact frames, a small shake, hit-stop and bold elemental bursts, never
+  covering who got hit or the damage number.
+- **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
+  "thanks for playing" card with a party summary and "play again with a different party".
+- **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
+  UI sounds.
+- **Portraits:** the owner is choosing between pixel and hand-drawn dialogue portraits. Don't make new portraits
+  until he has picked a style.
+- **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
+  new content or regions.
+
 ## Current state: top-down art direction (read first, 2026-11-05)
 
 The owner approved a new art direction in a standalone prototype: **traditional top-down PixelLab pixel art**
