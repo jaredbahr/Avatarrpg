@@ -8,6 +8,7 @@ import {
   HIT_SETTLE_MS,
   TIMING,
   TOPDOWN_PRESENTATION_TIMING,
+  WALL_RISE_MS,
   choreograph,
   hitSpan,
   knockoutSpan,
@@ -1729,5 +1730,54 @@ describe('feel pass: every table beat is heard, and dust never holds the turn', 
     expect(tracks.filter((track) => track.kind === 'emitter').length).toBeGreaterThanOrEqual(2);
     expect(ignitionEmitters.some((track) => track.def.kind === 'particles')).toBe(true);
     expect(ignitionEmitters.some((track) => track.def.kind === 'strokes')).toBe(false);
+  });
+});
+
+describe('the top-down Earth Wall rise (#590)', () => {
+  const rises: GameEvent = {
+    type: 'surfaceChanged',
+    pos: { x: 3, y: 2 },
+    from: null,
+    to: null,
+    label: 'A wall of stone rises.',
+  };
+  const input = { content, unitsBefore: roster, cursor: 1000, pushIndex: 0 };
+  const riseTracks = (events: GameEvent[], projection: 'topdown' | 'oblique', rate = 1) =>
+    choreograph({ ...input, events, rate, projection }).tracks.filter((t) => t.kind === 'rise');
+
+  it('raises each cell over 260 ms on the top-down board, presentation only', () => {
+    const tracks = riseTracks([rises, { ...rises, pos: { x: 3, y: 3 } }], 'topdown');
+    expect(WALL_RISE_MS).toBe(260);
+    expect(tracks.map((t) => [t.kind === 'rise' && t.pos, t.duration])).toEqual([
+      [{ x: 3, y: 2 }, 260],
+      [{ x: 3, y: 3 }, 260],
+    ]);
+  });
+
+  it('stands the wall at once on the oblique board, under reduce motion, and when it crumbles', () => {
+    expect(riseTracks([rises], 'oblique')).toEqual([]);
+    expect(riseTracks([rises], 'topdown', 0.35)).toEqual([]);
+    expect(riseTracks([{ ...rises, label: 'The stone wall crumbles.' }], 'topdown')).toEqual([]);
+  });
+
+  it('reads 0 until the rise plays, eases out of the ground, and is whole after', () => {
+    const animator = new Animator(content, { motionReduced: () => false });
+    animator.setProjection('topdown');
+    animator.push(1000, [rises], roster);
+    const track = choreograph({
+      ...input,
+      events: [rises],
+      rate: 1,
+      projection: 'topdown',
+    }).tracks.find((t) => t.kind === 'rise');
+    if (!track) throw new Error('expected a rise');
+    const at = (ms: number) => animator.wallRise(track.start + ms, rises.pos);
+    expect(at(-1)).toBe(0);
+    expect(at(0)).toBe(0);
+    expect(at(130)).toBeGreaterThan(0.5);
+    expect(at(130)).toBeLessThan(1);
+    expect(at(260)).toBe(1);
+    expect(at(261)).toBeUndefined();
+    expect(animator.wallRise(track.start + 130, { x: 0, y: 0 })).toBeUndefined();
   });
 });

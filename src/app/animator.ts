@@ -31,6 +31,7 @@ import type { BendFxIndex } from '../render/fx/bendFx';
 import type { HealthChange, PresentationTimingProfile, SoundCue } from './anim/choreography';
 import { partyScale } from './anim/actorScale';
 import { Timeline } from './anim/timeline';
+import { easeOutQuad } from './anim/easing';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
 import {
@@ -417,6 +418,17 @@ export class Animator {
     return this.timeline
       .active(now, 'bend')
       .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start));
+  }
+
+  /**
+   * How far a top-down Earth Wall on `pos` is out of the ground at `now` (#590): 0 until its rise
+   * plays, eased to 1; undefined when no rise is queued or playing there.
+   */
+  wallRise(now: number, pos: Vec2): number | undefined {
+    const track = this.timeline
+      .unfinished(now, 'rise')
+      .find((t) => t.pos.x === pos.x && t.pos.y === pos.y);
+    return track && easeOutQuad(Math.max(0, Timeline.progress(track, now)));
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
