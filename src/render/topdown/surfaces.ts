@@ -125,7 +125,67 @@ function mudPx(
   put(i, r, g, b, 255);
 }
 
-/** Oil sits on the ground, distinct from a pit, with one lit pixel at its upper-left rim. */
+/** Removing this boundary pixel preserves all four-connected foreground paths through its ring. */
+function oilSimpleEdge(m: Uint8Array, BW: number, x: number, y: number): boolean {
+  let ring = 0;
+  for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++)
+      if ((dx || dy) && at(m, (y + dy) * BW + x + dx)) ring |= 1 << ((dy + 1) * 3 + dx + 1);
+  const sides = ring & 0b010101010;
+  // Keep the last pixel and require existing four-connected background: no new hole.
+  if (!sides || sides === 0b010101010) return false;
+  let reached = sides & -sides;
+  for (;;) {
+    const next =
+      reached |
+      (ring &
+        (((reached & ~0b001001001) >> 1) |
+          ((reached & ~0b100100100) << 1) |
+          (reached >> 3) |
+          (reached << 3)));
+    if (next === reached) return (reached & sides) === sides;
+    reached = next;
+  }
+}
+
+/**
+ * Fine oil scallops inside the canonical mask, never a change to rules coverage.
+ * World-coordinate priority maxima have no eight-adjacent pixels. Their simultaneous
+ * simple-edge deletions cannot invalidate one another's 3x3 connection witness.
+ * Three snapshot rounds trim at most three layers and preserve thin bridges.
+ * Their shrinking halos leave an exact own+6 mask for the capped-six shading
+ * distance: three local reads plus six still fit the existing nine-pixel apron.
+ */
+function oilPaintMask(canonical: Uint8Array, BW: number, BH: number, own: Region): Uint8Array {
+  let previous = canonical;
+  for (let phase = 0; phase < 3; phase++) {
+    const region = grow(own, 8 - phase, BW, BH);
+    const next = new Uint8Array(BW * BH);
+    for (let y = region.y0; y < region.y1; y++)
+      next.set(previous.subarray(y * BW + region.x0, y * BW + region.x1), y * BW + region.x0);
+    for (let y = Math.max(1, region.y0); y < Math.min(BH - 1, region.y1); y++)
+      for (let x = Math.max(1, region.x0); x < Math.min(BW - 1, region.x1); x++) {
+        const i = y * BW + x;
+        if (!previous[i]) continue;
+        const priority = hash2(x, y, 181 + phase);
+        let highest = true;
+        for (let dy = -1; dy <= 1 && highest; dy++)
+          for (let dx = -1; dx <= 1; dx++) {
+            if (!dx && !dy) continue;
+            const neighbour = hash2(x + dx, y + dy, 181 + phase);
+            if (neighbour > priority || (neighbour === priority && (dy < 0 || (!dy && dx < 0)))) {
+              highest = false;
+              break;
+            }
+          }
+        if (highest && oilSimpleEdge(previous, BW, x, y)) next[i] = 0;
+      }
+    previous = next;
+  }
+  return previous;
+}
+
+/** Oil has a darker core, a thin still catch, and one lit pixel at its upper-left rim. */
 function oilPx(
   m: Uint8Array,
   D: Uint8Array,
@@ -143,15 +203,15 @@ function oilPx(
   }
   if (
     d >= 5 &&
-    Math.abs(vnoise(x, y, 155, 26)) < 0.016 &&
-    vnoise(x, y, 159, 30) > 0.5 &&
-    vnoise(x, y, 171, 9) > 0.1
+    vnoise(x, y, 155, 26) > 0 &&
+    vnoise(x, y - 1, 155, 26) <= 0 &&
+    vnoise(x, y, 159, 30) > 0
   ) {
-    return put(i, 94, 86, 54, 255);
+    return put(i, 80, 73, 46, 255);
   }
-  const w = vnoise(x, y, 141, 18),
-    w2 = vnoise(x, y, 143, 7);
-  const [r, g, b] = w > 0.25 ? [77, 69, 43] : w2 > 0.3 ? [71, 64, 39] : [66, 59, 35];
+  const w = vnoise(x, y, 141, 18);
+  const [r, g, b] =
+    d >= 5 ? (w > 0.25 ? [61, 55, 34] : [55, 49, 30]) : w > 0.25 ? [77, 69, 43] : [71, 64, 39];
   put(i, r, g, b, 255);
 }
 
@@ -492,9 +552,13 @@ export class TopdownSurfaces {
       const reach = reachRect(this.board, this.cells.get(sid) ?? []);
       const own = reach && intersect(r, reach);
       if (!own) continue;
-      const m = this.masks.get(sid) as Uint8Array;
+      const canonical = this.masks.get(sid) as Uint8Array;
+      const m = sid === 'oil' ? oilPaintMask(canonical, BW, BH, own) : canonical;
       // the chamfer reads 8 px in, so it is measured 9 px past the region it paints
-      const D = insideDist(m, BW, BH, 8, grow(own, 9, BW, BH));
+      const D =
+        sid === 'oil'
+          ? insideDist(m, BW, BH, 6, grow(own, 6, BW, BH))
+          : insideDist(m, BW, BH, 8, grow(own, 9, BW, BH));
       for (let y = Math.max(1, own.y0); y < Math.min(BH - 1, own.y1); y++)
         for (let x = Math.max(1, own.x0); x < Math.min(BW - 1, own.x1); x++) {
           const i = y * BW + x;
