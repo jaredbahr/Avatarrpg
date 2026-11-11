@@ -27,6 +27,7 @@ const content = {
       ability('flame_arc', 'fx.fire.arc', 4, 'cone'),
       ability('stone_stance', 'fx.earth.stance', 0, 'self'),
       ability('driller_slam', 'fx.enemy.slam', 2, 'cone'),
+      ability('merc_crossbow', 'fx.enemy.crossbow', 8),
     ].map((a) => [a.id, a]),
   ),
 } as unknown as ContentIndex;
@@ -41,6 +42,7 @@ const driller = {
   hp: 80,
 } as unknown as Unit;
 const roster = [kaya, bo, driller];
+const sheetsToLoad = [...roster.map((u) => u.sprite), 'unit.enemy.crossbow'];
 
 const used = (unitId: string, abilityId: string, target: { x: number; y: number }): GameEvent => ({
   type: 'abilityUsed',
@@ -66,7 +68,7 @@ const posesOf = (out: ReturnType<typeof play>, unitId: string) =>
 
 beforeAll(() => {
   useTopDownStyle();
-  for (const { sprite } of roster) {
+  for (const sprite of sheetsToLoad) {
     const entry = resolveAsset(sprite);
     if (entry.kind !== 'sheet' || !entry.actions || !entry.clipData) throw new Error(sprite);
     const clips = { ...entry.clips, ...read<SheetClips>(entry.clipData) };
@@ -194,6 +196,57 @@ describe('a top-down action', () => {
       clipsOf: () => undefined,
     });
     expect(posesOf(out, 'kaya').every((pose) => pose.clip === 'cast' && !pose.heading)).toBe(true);
+  });
+});
+
+describe('a top-down shot (#588)', () => {
+  const crossbow = unit('xbow', 'unit.enemy.crossbow', 5, 2, 'enemy');
+  const victim = unit('victim', 'unit.fire.kaya', 5, 7);
+  const shoot = (rate = 1, projection: 'topdown' | 'oblique' = 'topdown', shots = true) =>
+    choreograph({
+      content,
+      events: [
+        used('xbow', 'merc_crossbow', victim.pos),
+        {
+          type: 'damaged',
+          unitId: 'victim',
+          amount: 5,
+          crit: false,
+          damageType: 'physical',
+          sourceId: 'xbow',
+        } as GameEvent,
+      ],
+      unitsBefore: [crossbow, victim],
+      cursor: 1000,
+      rate,
+      pushIndex: 0,
+      projection,
+      clipsOf,
+      shots,
+    });
+
+  it('flies a bolt from the hand at 440 px/s and lands the hit as it arrives', () => {
+    const out = shoot();
+    const shot = out.tracks.find((t) => t.kind === 'shot');
+    expect(shot?.kind === 'shot' && shot.look).toBe('shot/bolt');
+    if (shot?.kind !== 'shot') return;
+    const px = Math.hypot(shot.to.x - shot.from.x, shot.to.y - shot.from.y) * 40;
+    expect(shot.duration).toBeCloseTo((px / 440) * 1000);
+    // Launched from the measured hand, not the tile centre.
+    expect(shot.from.x).not.toBe(5.5);
+    const flash = out.tracks.find((t) => t.kind === 'flash' && t.unitId === 'victim');
+    expect(flash?.start).toBeCloseTo(shot.start + shot.duration);
+    // The particle head is replaced by the drawn bolt.
+    expect(
+      out.tracks.some(
+        (t) => t.kind === 'emitter' && t.def.kind === 'particles' && t.def.shape === 'projectile',
+      ),
+    ).toBe(false);
+  });
+
+  it('skips the flight under reduce motion, on the oblique board and before the cels load', () => {
+    for (const out of [shoot(0.02), shoot(1, 'oblique'), shoot(1, 'topdown', false)])
+      expect(out.tracks.some((t) => t.kind === 'shot')).toBe(false);
   });
 });
 
