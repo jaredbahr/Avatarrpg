@@ -763,6 +763,9 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'npc.household': ['household', 'earth'],
   'npc.hanru': ['hanru', 'nonbender'],
   'npc.guard': ['guard', 'earth'],
+  // T10: Dema, the road keeper, and Sen, the tea keeper, in their own clothes.
+  'npc.dema': ['dema', 'earth'],
+  'npc.sen': ['sen', 'earth'],
 };
 
 /**
@@ -884,10 +887,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
-  // The residents' G sheets (issue #284). Dema and the shrine figure share Mira's,
-  // and Sen Gao's, as they shared the old images (owner decision pending).
+  // The residents' G sheets (issue #284). The shrine figure shares Mira's.
   'npc.elder': residentGSheet('mira', 'npc.elder', 'neutral'),
   'npc.shopkeeper': residentGSheet('gao', 'npc.shopkeeper', 'earth'),
+  // Dema and Sen have their own top-down sheets (T10). A G sheet's cels carry its own key, so the oblique
+  // look, until T7 deletes it, draws them as the painted elder and shopkeeper, as they were before #284.
+  'npc.dema': painter('villager', 'earth', 'elder'),
+  'npc.sen': painter('villager', 'earth', 'shopkeeper'),
   'world.turtle_ducks': image('art/world/turtle-ducks-nest.webp', 'earth'),
   'world.runoff_marker': image('art/world/runoff-marker.png', 'neutral'),
   'world.tea_station': image('art/props/tea-station.png', 'earth'),
