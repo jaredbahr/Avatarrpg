@@ -3458,6 +3458,12 @@ html[data-contrast='high'] .hud-panel::after {
   align-items: center;
   gap: var(--sp-4);
 }
+/* Auto cross-axis margins centre fitting content without putting oversized
+ * content before the scroll origin on the supported older browsers. */
+.explore-scene:not(.riverside-scene) .explore-hud > .explore-context,
+.explore-scene:not(.riverside-scene) .explore-hud > .action-bar {
+  margin-block: auto;
+}
 .explore-context {
   display: flex;
   flex: 1 1 10rem;
@@ -3517,6 +3523,10 @@ html[data-contrast='high'] .hud-panel::after {
     flex: 0 0 auto;
     flex-direction: column;
     gap: var(--sp-1);
+  }
+  .explore-scene:not(.riverside-scene) .explore-hud > .explore-context,
+  .explore-scene:not(.riverside-scene) .explore-hud > .action-bar {
+    margin-block: 0;
   }
   .explore-context {
     flex: 0 0 auto;
@@ -3587,7 +3597,7 @@ html[data-contrast='high'] .hud-panel::after {
  * Nothing here applies at normal text, where the dock already sits near a
  * fifth of the screen, or in portrait, where the dock stacks and scrolls.
  */
-@media (min-width: 53rem) and (orientation: landscape) {
+@media (min-width: 52rem) and (orientation: landscape) {
   html[data-large-text='on'] .explore-scene:not(.riverside-scene) .roster,
   html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster {
     align-items: flex-start;
@@ -3622,8 +3632,22 @@ html[data-contrast='high'] .hud-panel::after {
   html[data-large-text='on'] .explore-scene:not(.riverside-scene) .explore-hud,
   html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .explore-hud {
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     gap: var(--sp-2);
+  }
+
+  /* Centre the whole fitting group; both outer auto margins become zero
+   * when it overflows, so its first line remains reachable by scrolling. */
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .explore-hud > .explore-context,
+  html[data-large-text='huge']
+    .explore-scene:not(.riverside-scene)
+    .explore-hud
+    > .explore-context {
+    margin-block: auto 0;
+  }
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .explore-hud > .action-bar,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .explore-hud > .action-bar {
+    margin-block: 0 auto;
   }
 
   html[data-large-text='on'] .explore-context,
@@ -3656,6 +3680,31 @@ html[data-contrast='high'] .hud-panel::after {
   html[data-large-text='on'] .explore-context > .tiny,
   html[data-large-text='huge'] .explore-context > .tiny {
     display: none;
+  }
+}
+
+/* At the narrow landscape boundary, keep the full hint and action row inside
+ * the unchanged short-phone dock budget, including after a viewport resize. */
+@media (min-width: 52rem) and (max-width: 53rem) and (max-height: 26rem) and (orientation: landscape) {
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .explore-dock,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .explore-dock {
+    padding-block: 0;
+  }
+
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .explore-hud,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .explore-hud {
+    gap: var(--sp-1);
+  }
+
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .action-row,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .action-row {
+    padding-block: 0;
+  }
+
+  /* Keep the full gold keyboard ring inside the compressed dock. */
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .action-button:focus-visible,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .action-button:focus-visible {
+    outline-offset: -3px;
   }
 }
 
