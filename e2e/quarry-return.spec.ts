@@ -457,10 +457,9 @@ for (const custody of ['trade', 'escort'] as const) {
     await continueStory(page);
     await finishBattle(page, 'enc_grumbler');
 
-    await expect(page.getByRole('button', { name: 'Read summary' })).toBeVisible();
-    await page.getByRole('button', { name: 'Read summary' }).click();
-    await expect(page.getByRole('button', { name: 'Continue exploring' })).toBeVisible();
-    await page.getByRole('button', { name: 'Continue exploring' }).click();
+    // The workers-are-free beat leads straight into the walk home.
+    await expect(page.getByRole('button', { name: 'Skip scene' })).toBeVisible();
+    await page.getByRole('button', { name: 'Skip scene' }).click();
     expect(await page.evaluate(() => window.fnt?.app.state?.flags.act1_complete)).toBe(true);
     await expect(page.locator('.title-plate-objective')).toContainText('west');
     await expectJournalObjective(page, 'Take the west path');
@@ -513,6 +512,18 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
       Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'resting'])),
     );
+    // The first step in from the east road plays the welcome home and the
+    // demo-complete card; keep exploring from it to reach the homecomings.
+    await walkTo(page, 19, 7);
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
+      'welcome_home_mira',
+    );
+    await continueStory(page);
+    await expect(page.locator('.end-panel')).toContainText('Demo complete');
+    await page.getByRole('button', { name: 'Keep exploring', exact: true }).click();
+    await expect
+      .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+      .toBe('village_return_explore');
     // Dorin and Hanru occupy adjacent handover tiles. From the east-road
     // return position, tapping Dorin must open and pin Dorin, not Hanru.
     const dorin = CONTENT.anchors.get('bd03.handover')?.site;
