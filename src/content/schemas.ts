@@ -934,6 +934,13 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     lines: z.array(z.string().min(1)).min(1),
     teaser: z.string().min(1),
     next: id.optional(),
+    recap: z
+      .object({
+        label: z.string().min(1),
+        thanks: z.string().min(1),
+        choices: z.array(z.object({ when: conditionSchema, text: z.string().min(1) })).min(1),
+      })
+      .optional(),
   }),
 ]);
 
@@ -2731,10 +2738,11 @@ export function validateContent(
         queue.push(to);
       }
     }
-    // NPC nodes are entered by tapping, not by a link, so they count as roots.
+    // NPC and trigger nodes are entered by tapping or walking, not by a link, so they count as roots.
     for (const m of bundle.maps) {
-      for (const npc of m.npcs) {
-        for (const nodeId of [npc.node, ...(npc.routes ?? []).map((r) => r.node)]) {
+      for (const npc of [...m.npcs, ...(m.triggers ?? [])]) {
+        const routes = 'routes' in npc ? (npc.routes ?? []) : [];
+        for (const nodeId of [npc.node, ...routes.map((r) => r.node)]) {
           if (!nodeId || reachable.has(nodeId)) continue;
           reachable.add(nodeId);
           queue.push(nodeId);

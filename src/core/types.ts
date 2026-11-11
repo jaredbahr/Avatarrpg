@@ -1224,7 +1224,18 @@ export type StoryNode =
       readonly teaser: string;
       /** Explore node offered after this chapter's summary; absent for a terminal ending. */
       readonly next?: string;
+      /** The demo's closing card: the party, the choices it made, and a way to play again. */
+      readonly recap?: EndRecap;
     };
+
+/** What an ending card says about the play-through it closes. */
+export interface EndRecap {
+  /** The card's kicker, above the title ("Demo complete"). */
+  readonly label: string;
+  readonly thanks: string;
+  /** Every line whose condition holds is listed, in order. */
+  readonly choices: readonly { readonly when: Condition; readonly text: string }[];
+}
 
 export interface StoryState {
   readonly nodeId: string | null;

@@ -587,21 +587,32 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'flags',
     set: { act1_complete: true },
     residentProfiles: RETURNING_PROFILES,
-    phase: 'evening',
     next: 'act1_epilogue',
   },
   {
+    /*
+     * The workers are free: a beat, not the ending. The walk home follows, and
+     * the demo closes in Ba Dan (`welcome_home_mira` in return.ts).
+     */
     id: 'act1_epilogue',
-    kind: 'end',
-    title: 'The Quarry of Ba Dan',
+    kind: 'dialogue',
+    speaker: 'The Quarry',
+    portrait: 'portrait.narrator',
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
       'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
       'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
-    teaser:
-      'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+    next: 'act1_evening',
+  },
+  {
+    // Evening falls as the walk home begins. A phase change rests at an explore
+    // node, never in a conversation, so it follows the beat rather than leading it.
+    id: 'act1_evening',
+    kind: 'flags',
+    set: {},
+    phase: 'evening',
     next: 'quarry_after_explore',
   },
 ];

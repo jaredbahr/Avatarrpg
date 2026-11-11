@@ -1238,6 +1238,41 @@ html[data-contrast='high'] .title-card .tagline {
   color: var(--c-gold-deep);
 }
 
+/* The demo's closing card (`EndRecap`): the party and the choices it made. */
+.end-kicker {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-gold-deep);
+}
+
+.end-recap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--sp-3);
+}
+
+.end-recap h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+}
+
+.end-recap-list {
+  margin: 0;
+  padding-left: var(--sp-4);
+}
+
+.end-thanks {
+  font-weight: 600;
+}
+
+/* Scrolling an action into view leaves it clear of the stage edge, not flush on a fraction of a px. */
+.end-panel button {
+  scroll-margin-block: var(--sp-3);
+}
+
 /* ------------------------------------------------------------------ */
 /* Maps                                                                */
 /* ------------------------------------------------------------------ */

@@ -430,8 +430,8 @@ describe('content', () => {
   });
 
   it('only resumes an end screen at an existing exploration node', () => {
-    const ending = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_epilogue');
-    if (ending?.kind !== 'end') throw new Error('Missing Act 1 ending');
+    const ending = CONTENT_BUNDLE.story.find((node) => node.id === 'demo_complete');
+    if (ending?.kind !== 'end') throw new Error('Missing the demo ending');
     const withNext = (next: string) =>
       validateContent({
         ...CONTENT_BUNDLE,
@@ -441,10 +441,10 @@ describe('content', () => {
       });
     expect(withNext(ending.next ?? 'village_explore')).toEqual([]);
     expect(withNext('battle_grumbler')).toContain(
-      'story node "act1_epilogue" continues to "battle_grumbler", which is not an explore node',
+      'story node "demo_complete" continues to "battle_grumbler", which is not an explore node',
     );
     expect(withNext('missing_explore')).toContain(
-      'story node "act1_epilogue" links to "missing_explore", which does not exist',
+      'story node "demo_complete" links to "missing_explore", which does not exist',
     );
   });
 
@@ -582,8 +582,8 @@ describe('content', () => {
    * hello. Both halves of that rule deserve a test.
    */
   it('refuses a phase node that reaches a conversation before a resting point', () => {
-    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_victory');
-    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 victory beat');
+    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_evening');
+    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 evening');
     const problems = validateContent({
       ...CONTENT_BUNDLE,
       story: [
@@ -600,7 +600,7 @@ describe('content', () => {
       ],
     });
     expect(
-      problems.some((p) => p.includes('act1_victory') && p.includes('dialogue or choice')),
+      problems.some((p) => p.includes('act1_evening') && p.includes('dialogue or choice')),
     ).toBe(true);
   });
 
@@ -609,17 +609,17 @@ describe('content', () => {
     if (!map) throw new Error('Missing maps to probe');
     const npc = map.npcs[0];
     if (!npc) throw new Error('Missing an NPC to probe');
-    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_victory');
-    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 victory beat');
+    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_evening');
+    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 evening');
     const problems = validateContent({
       ...CONTENT_BUNDLE,
       maps: [{ ...map, npcs: [{ ...npc, node: victory.id }, ...map.npcs.slice(1)] }, ...restMaps],
     });
-    expect(problems.some((p) => p.includes('act1_victory') && p.includes('churn'))).toBe(true);
+    expect(problems.some((p) => p.includes('act1_evening') && p.includes('churn'))).toBe(true);
   });
 
-  it('accepts the Act 1 victory beat, which rests at an ending nobody replays', () => {
-    expect(validateContent(CONTENT_BUNDLE).filter((p) => p.includes('act1_victory'))).toEqual([]);
+  it('accepts the Act 1 evening, which rests at the walk home nobody replays', () => {
+    expect(validateContent(CONTENT_BUNDLE).filter((p) => p.includes('act1_evening'))).toEqual([]);
   });
 
   it('refuses conditional enemies gated on standing', () => {
