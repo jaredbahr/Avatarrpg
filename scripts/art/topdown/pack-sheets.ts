@@ -20,9 +20,10 @@
  * - The idle keeps the prototype's calm frames (`build8.py` `calm_frames`: the head within 1 px of
  *   the rest pose), the first three, played there and back at the prototype's 420 ms a cel.
  * - The walk plays at the prototype's ground per loop (`CYCLE_PX`, `STATS.cycle`) and the Ba Dan
- *   pace (66 px a second), so `walkMsPerTile` holds the planted foot.
+ *   exploration pace (`WALK_PX_PER_S`, 130 px a second), so `walkMsPerTile` holds the planted foot.
  * - The Driller (a PixelLab object on a 128 px canvas, 2x2) stands on each view's base, centred
- *   under its ink; its slam per heading carries the prototype's frame times and hit frame.
+ *   under its ink; its slam per heading carries the prototype's frame times and hit frame. T5 adds its
+ *   tread loop as the walk, the engine's rumble in all eight headings, a hit shudder and a jammed knockout.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -35,6 +36,34 @@ import { format, resolveConfig } from 'prettier';
 export const SOURCE = 'prototypes/topdown/assets';
 export const OUT = 'public/art/topdown';
 export const DATA = 'src/content/assets/topdownSheets.ts';
+/** The T3 objects (`world.route_sign`, `world.school_notice`): plain trimmed PNGs under `objects/`. */
+export const OBJECTS = ['route_sign', 'school_notice'] as const;
+export const OBJECTS_OUT = `${OUT}/objects`;
+
+/** Every file shipped under `public/art/topdown/`, the objects folder included. */
+export function shippedFiles(): string[] {
+  const top = existsSync(OUT) ? readdirSync(OUT) : [];
+  const objects = existsSync(OBJECTS_OUT) ? readdirSync(OBJECTS_OUT) : [];
+  return [
+    // The boards' folders (`ba-dan/`, `forest-road/`, the quarry's three) are the ground packer's
+    // (`pack-ground.ts`) and `props/` the prop packer's (`pack-props.ts`), each held by its own test.
+    ...top
+      .filter(
+        (f) =>
+          ![
+            'objects',
+            'ba-dan',
+            'forest-road',
+            'quarry-gate',
+            'cutting',
+            'quarry-floor',
+            'props',
+          ].includes(f),
+      )
+      .map((f) => `${OUT}/${f}`),
+    ...objects.map((f) => `${OBJECTS_OUT}/${f}`),
+  ];
+}
 
 /** The VFX packer owns exactly these two shared-directory outputs. */
 export const VFX_OUTPUTS = [`${OUT}/vfx.webp`, `${OUT}/vfx.json`] as const;
@@ -74,8 +103,12 @@ const PIXELS_PER_TILE = 40;
 /** The prototype's idle: calm frames there and back, 420 ms a cel (`units.js`, `game13.js`). */
 const IDLE_CEL_MS = 420;
 const IDLE_CELS = 3;
-/** Ba Dan's walk (`game13.js` `WALK_SPEED`), in px a second: the pace the walk's fps is authored at. */
-const WALK_PX_PER_S = 66;
+/**
+ * The exploration walk, in px a second: the prototype's 130 px/s, about 308 ms a 40 px tile (owner, 2026-11-07;
+ * ADR 0104 amendment). The walk's cel time scales with it, so the feet keep pace with the ground and never slide.
+ * Ba Dan's own prototype walk was 66 px/s (`game13.js` `WALK_SPEED`); the owner chose the brisker pace.
+ */
+const WALK_PX_PER_S = 130;
 
 /** How the prototype times a blow: Kaya's bends (`fx.js` `MOVES`) or everyone else's (`units.js` `ATK`). */
 type Timing = 'bend' | 'blow';
@@ -91,8 +124,26 @@ export interface FigureSpec {
   readonly stride: number;
   readonly hit?: string;
   readonly ko?: string;
-  /** Ability poses: pose name -> animation key, with how many frames the prototype plays (Kaya's jab: 11). */
-  readonly actions: Readonly<Record<string, { readonly anim: string; readonly frames?: number }>>;
+  /**
+   * Knockout headings that end earlier than `KO_CELS`: how many cels they keep, the last one held. Jinu's south and
+   * north knockouts spread the cape into wings from the seventh cel, so they hold the sixth.
+   */
+  readonly koCels?: Partial<Record<Heading, number>>;
+  /**
+   * Ability poses: pose name -> animation key, with how many frames the prototype plays (Kaya's jab: 11). `mirror`
+   * draws a heading from another heading's cels flipped about the anchor column (the hand swaps), for a heading whose
+   * own take is unusable: Wen's gauntlet turned into a hook or a rope in the west and north-west of her punch.
+   */
+  readonly actions: Readonly<
+    Record<
+      string,
+      {
+        readonly anim: string;
+        readonly frames?: number;
+        readonly mirror?: Partial<Record<Heading, Heading>>;
+      }
+    >
+  >;
   /** The pose the legacy mirrored `cast` plays (its east heading). */
   readonly cast?: string;
   readonly timing: Timing;
@@ -255,6 +306,221 @@ const ROSTER: readonly FigureSpec[] = [
     actions: {},
     timing: 'blow',
   },
+  // T5 (#452): the quarry cast, from the prototype's approved idle, walk and blow (`build_b3.py` `T13`), with the hits
+  // and knockouts `tools/t5clips.py` posed from each one's own base, and the new mercenary sergeant.
+  {
+    name: 'deserter',
+    key: 'unit.enemy.deserter',
+    folder: 't13_deserter',
+    idle: 'custom-standing at rest in a ready st@899aa0',
+    walk: 'walking-8-frames@4fc032',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @72f948',
+    ko: 'custom-knocked out: staggers back one@1ba06e',
+    actions: {
+      attack: { anim: 'custom-a martial-arts punch: draws th@6c46fe' },
+      throw: { anim: 'custom-throws a small jar underarm to@28df8f' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'quarrybender',
+    key: 'unit.enemy.quarrybender',
+    folder: 't13_qbender',
+    idle: 'custom-standing at rest in a ready st@9368ae',
+    walk: 'walking-8-frames@984071',
+    stride: 30,
+    hit: 'custom-a hit reaction: flinches from @8a3a52',
+    ko: 'custom-knocked out: staggers back one@58ab07',
+    actions: { attack: { anim: 'custom-a heavy two-handed throw: crou@01c4bc' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'merc',
+    key: 'unit.enemy.merc',
+    folder: 't13_merc',
+    idle: 'custom-standing at rest in a ready st@99e889',
+    walk: 'walking-8-frames@6f3db0',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @fca5ad',
+    ko: 'custom-knocked out: staggers back one@22478f',
+    actions: { attack: { anim: 'custom-a quick low sword slash: steps@82fda6' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'crossbow',
+    key: 'unit.enemy.crossbow',
+    folder: 't13_xbow',
+    idle: 'custom-standing at rest in a ready st@4c219b',
+    walk: 'walking-8-frames@ed11b8',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @37b74a',
+    // The second knockout group: the first (@64ab6c) ended sitting up in every heading.
+    ko: 'custom-knocked out: staggers back one@b60996',
+    actions: { attack: { anim: 'custom-raises the crossbow to the sho@a5e4b9' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'sergeant',
+    key: 'unit.enemy.sergeant',
+    folder: 't5_sergeant',
+    idle: 'custom-standing at rest in a ready st@8c7f04',
+    walk: 'walking-8-frames@ab35a1',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @eac203',
+    ko: 'custom-knocked out: staggers back one@f4a18d',
+    actions: { attack: { anim: 'custom-a heavy overhand sword chop: r@3e7e72' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'ruon',
+    key: 'unit.ally.ruon',
+    folder: 't13_ruon',
+    idle: 'custom-standing at rest in a ready st@8f3b8e',
+    walk: 'walking-8-frames@56f096',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @4ece7f',
+    ko: 'custom-knocked out: staggers back one@9cddb9',
+    actions: { attack: { anim: 'custom-a disciplined sabre cut: draws@4d716f' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  // T8: the heroes the tutorial does not cast, made like Sura and Bo by `tools/t8heroes.py`: idle, walk, hit,
+  // knockout and a pose for each of the level-1 and level-2 abilities; the cast is the level-1 ability's.
+  {
+    name: 'tenzo',
+    key: 'unit.fire.tenzo',
+    folder: 't8_tenzo',
+    idle: 'custom-standing at rest in a ready st@c8ecc4',
+    walk: 'walking-8-frames@fc70f0',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @f0afab',
+    ko: 'custom-knocked out: staggers back one@4723e3',
+    actions: {
+      attack: { anim: 'custom-a martial-arts punch: draws th@653c55' },
+      blast: { anim: 'custom-a martial-arts double palm str@eb5022' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'nilak',
+    key: 'unit.water.nilak',
+    folder: 't8_nilak',
+    idle: 'custom-standing at rest in a ready st@56042a',
+    walk: 'walking-8-frames@3d44ae',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @844649',
+    ko: 'custom-knocked out: staggers back one@878a53',
+    actions: {
+      attack: { anim: 'custom-a whip-like arm sweep: swings @ee28e1' },
+      heal: { anim: 'custom-a calm healing gesture: brings@3b80c6' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'linmei',
+    key: 'unit.earth.linmei',
+    folder: 't8_linmei',
+    idle: 'custom-standing at rest in a ready st@21cddd',
+    walk: 'walking-8-frames@66c98b',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @f714e5',
+    ko: 'custom-knocked out: staggers back one@c21184',
+    actions: {
+      attack: { anim: 'custom-a martial-arts stomp and punch@1dbef8' },
+      throw: { anim: 'custom-a heavy two-handed throw: crou@ea198c' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'nima',
+    key: 'unit.air.nima',
+    folder: 't8_nima',
+    idle: 'custom-standing at rest in a ready st@cf3549',
+    walk: 'walking-8-frames@beb4a3',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @84431d',
+    ko: 'custom-knocked out: staggers back one@616959',
+    actions: {
+      attack: { anim: 'custom-a martial-arts open palm push:@3ec356' },
+      gust: { anim: 'custom-a wide sweeping two-arm swing:@acd49d' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'jinu',
+    key: 'unit.air.jinu',
+    folder: 't8_jinu',
+    idle: 'custom-standing at rest in a ready st@a43971',
+    walk: 'walking-8-frames@60c286',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @62f5fc',
+    ko: 'custom-knocked out: staggers back one@5a0a37',
+    // The seventh and eighth cels spread her cape into wings in the south and north: those hold the sixth.
+    koCels: { south: 6, north: 6 },
+    actions: {
+      attack: { anim: 'custom-a martial-arts open palm push:@dd511a' },
+      gust: { anim: 'custom-a wide sweeping two-arm swing:@789b1a' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'riko',
+    key: 'unit.non.riko',
+    folder: 't8_riko',
+    idle: 'custom-standing at rest in a ready st@099cc8',
+    walk: 'walking-8-frames@705043',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @479af0',
+    ko: 'custom-knocked out: staggers back one@bab294',
+    actions: {
+      attack: { anim: 'custom-a quick boxing combination: st@363f04' },
+      block: { anim: 'custom-a precise finger strike: darts@5ed79c' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'wen',
+    key: 'unit.non.wen',
+    folder: 't8_wen',
+    idle: 'custom-standing at rest in a ready st@3a8ec0',
+    walk: 'walking-8-frames@655aec',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @3bbc70',
+    ko: 'custom-knocked out: staggers back one@c886be',
+    actions: {
+      // West and north-west turned the gauntlet into a hook or a rope (twice): drawn as east and north-east, mirrored.
+      attack: {
+        anim: 'custom-a heavy hook punch: winds the @0e1997',
+        mirror: { west: 'east', northWest: 'northEast' },
+      },
+      spark: { anim: 'custom-thrusts the right arm with the@c4e7db' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  // T3: the town guard (the relief watch and a returnee), made like the residents: idle and walk, eight headings.
+  {
+    name: 'guard',
+    key: 'npc.guard',
+    folder: 't3_guard',
+    idle: 'custom-standing at rest: the chest an@e13bd6',
+    walk: 'walking-8-frames@9bfadc',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -407,6 +673,18 @@ function png(path: string): Image {
 }
 
 /** A figure frame: hard alpha, cleaned, centred on the 80 px basis. */
+/** A placed cel flipped about the basis' anchor column: basis pixel x lands on `BASIS - 1 - x`. */
+function mirrored(cel: Placed): Placed {
+  const { width: w, height: h } = cel.image;
+  const image = newImage(w, h);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const from = (y * w + x) * 4;
+      image.data.set(cel.image.data.subarray(from, from + 4), (y * w + (w - 1 - x)) * 4);
+    }
+  return { image, ox: BASIS - cel.ox - w, oy: cel.oy };
+}
+
 function figureCel(folder: string, file: string): Placed {
   const raw = png(join(SOURCE, 'chars', folder, file));
   return {
@@ -645,9 +923,13 @@ function figureSheet(spec: FigureSpec): Sheet {
     const ko = anim(spec.ko);
     actions.ko = {};
     for (const h of HEADINGS) {
-      const cels = load((ko[DIR[h]] ?? []).slice(0, KO_CELS));
+      const cels = load((ko[DIR[h]] ?? []).slice(0, spec.koCels?.[h] ?? KO_CELS));
       const clip = sided('ko', h, false);
-      const def = trimClip(clip, cels, timed(KO_MS, cels.length));
+      // A shortened knockout still lies still on its last cel for the full hold.
+      const ms = timed(KO_MS, cels.length).map((v, i, all) =>
+        i === all.length - 1 ? (KO_MS[KO_MS.length - 1] ?? v) : v,
+      );
+      const def = trimClip(clip, cels, ms);
       actions.ko[h] = def;
       if (DIAGONALS.includes(h)) clips[clip] = def;
     }
@@ -656,12 +938,18 @@ function figureSheet(spec: FigureSpec): Sheet {
     const last = se[se.length - 1];
     if (last) clips.ko = trimClip('ko', [last], [1000]);
   }
-  for (const [pose, { anim: id, frames }] of Object.entries(spec.actions)) {
+  for (const [pose, { anim: id, frames, mirror }] of Object.entries(spec.actions)) {
     const a = anim(id);
+    /** A heading's cels: its own, or (`mirror`) another heading's flipped. */
+    const celsOf = (h: Heading): Placed[] => {
+      const from = mirror?.[h];
+      const own = load((a[DIR[from ?? h]] ?? []).slice(0, frames));
+      return from ? own.map(mirrored) : own;
+    };
     actions[pose] = {};
     // One shared 3D motion per move, so the strike is measured once (`moves4.py`, `build_b3.py`).
     const reach = (h: Heading, pick: (b: Box) => number) => {
-      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      const cels = celsOf(h);
       let best = 0;
       cels.forEach((c, i) => {
         const b = inkBox(c);
@@ -680,7 +968,7 @@ function figureSheet(spec: FigureSpec): Sheet {
             ? reach('south', (b) => b.y0)
             : reach('east', (b) => b.x1);
     for (const h of HEADINGS) {
-      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      const cels = celsOf(h);
       const t =
         spec.timing === 'bend'
           ? bendTiming(pose, cels.length, strike ?? 0)
@@ -749,6 +1037,13 @@ function slamMs(n: number, hit: number, hold: readonly [number, number]): number
   });
 }
 
+/** Ground one tread loop covers: two tiles, so the eight tread cels turn over at a readable ~77 ms at 130 px/s. */
+const DRILLER_TREAD_PX = 80;
+/** The hit shudder's and the jammed knockout's cel times. */
+const DRILLER_HIT_MS = 70;
+const DRILLER_KO_MS = 110;
+const KO_PICK = [1, 2, 3, 4, 5, 6, 8, 10] as const;
+
 function drillerSheet(): Sheet {
   const key = 'unit.enemy.driller';
   const dir = join(SOURCE, 'driller');
@@ -799,13 +1094,30 @@ function drillerSheet(): Sheet {
       baselineYFromAnchorPx: lowest + 1 + box.y0 - anchors[h].y,
     };
   }
-  // A 2x2 sheet's frame is square: every view round its own anchor, plus a 1 px margin.
+  // T5's object clips (`prototypes/topdown/tools/t5clips.py`), one folder a clip, `<direction>_<i>.png` on the
+  // rotations' own 128 px canvas. Frame 0 of each is the heading's rotation itself, the motion starts at 1.
+  const t5 = (clip: string, h: Heading): Placed[] => {
+    const cels: Placed[] = [];
+    for (let i = 0; ; i++) {
+      const path = join(dir, 't5', clip, `${DIR[h]}_${i}.png`);
+      if (!existsSync(path)) break;
+      cels.push({ image: hard(path), ox: 0, oy: 0 });
+    }
+    if (cels.length === 0) throw new Error(`driller: no ${h} ${clip}`);
+    return cels;
+  };
+  // The tread loop is the walk: its eight drawn cels after the rotation, sharing the idle's frame and anchor.
+  const treads = {} as Record<Heading, Placed[]>;
+  for (const h of HEADINGS) treads[h] = t5('tread', h).slice(1);
+  // A 2x2 sheet's frame is square: every view and tread cel round its own anchor, plus a 1 px margin.
   let half = 0;
   let up = 0;
   for (const h of HEADINGS) {
-    const b = inkBox(views[h]) as Box;
-    half = Math.max(half, anchors[h].x - b.x0, b.x1 - anchors[h].x);
-    up = Math.max(up, anchors[h].y - b.y0);
+    for (const b of [views[h], ...treads[h]].map(inkBox)) {
+      if (!b) continue;
+      half = Math.max(half, anchors[h].x - b.x0, b.x1 - anchors[h].x);
+      up = Math.max(up, anchors[h].y - b.y0);
+    }
   }
   const side = Math.max(2 * (half + 1), up + 2);
   const items: Item[] = [];
@@ -816,11 +1128,13 @@ function drillerSheet(): Sheet {
     const cel = cut(views[h], rect);
     add(sided('idle', h, true), 0, cel);
     add(sided('rest', h, true), 0, cel);
-    add(sided('walk', h, true), 0, cel);
+    treads[h].forEach((c, i) => add(sided('walk', h, true), i, cut(c, rect)));
   }
   const slam: Record<string, ClipOut> = {};
   const rumbles: Record<string, ClipOut> = {};
-  const actions = { slam, rumble: rumbles };
+  const kos: Record<string, ClipOut> = {};
+  const actions = { slam, rumble: rumbles, ko: kos };
+  const clips: Record<string, ClipOut> = {};
   const trimClip = (
     clip: string,
     cels: Placed[],
@@ -859,19 +1173,35 @@ function drillerSheet(): Sheet {
         events: { hit },
       });
     }
-    // The engine's rumble, drawn in three headings only (`build_b3.py` plays it where it exists).
-    const rumble = frames('the_engine_idles', h);
-    if (rumble.length)
-      rumbles[h] = trimClip(`rumble${sided('', h, false)}`, rumble, anchors[h], {
-        frameMs: rumble.map(() => 110),
-        loop: true,
-      });
+    // The engine's rumble in all eight headings: the prototype's three (west, south-west, north-west) and T5's five
+    // in the same PixelLab animation group, at the prototype's 110 ms a cel.
+    const rumble = t5('rumble', h);
+    rumbles[h] = trimClip(`rumble${sided('', h, false)}`, rumble, anchors[h], {
+      frameMs: rumble.map(() => 110),
+      loop: true,
+    });
+    // The hit shudder: its eight drawn cels after the rotation (a clip holds eight at most), quick.
+    const shudder = t5('hit', h).slice(1);
+    clips[sided('hit', h, false)] = trimClip(sided('hit', h, false), shudder, anchors[h], {
+      frameMs: shudder.map(() => DRILLER_HIT_MS),
+    });
+    // The jammed knockout: the arm sags and the machine settles, its last cel held as the wreck. Ten drawn cels
+    // after the rotation; the settle keeps every other one, so the clip holds eight.
+    const ko = KO_PICK.map((i) => t5('ko', h)[i] as Placed);
+    const koClip = sided('ko', h, false);
+    kos[h] = trimClip(koClip, ko, anchors[h], {
+      frameMs: ko.map((_, i) => (i === ko.length - 1 ? 1000 : DRILLER_KO_MS)),
+    });
+    if (DIAGONALS.includes(h)) clips[koClip] = kos[h];
   }
+  // The legacy one-cel KO a fall without a heading asks for: the south-east wreck, as the figures do.
+  const wreck = KO_PICK.map((i) => t5('ko', 'southEast')[i] as Placed);
+  clips.ko = trimClip('ko', wreck.slice(-1), anchors.southEast, { frameMs: [1000] });
   return {
     name: 'driller',
     key,
     cels: items,
-    clips: {},
+    clips,
     actions,
     data: {
       pages: 1,
@@ -880,11 +1210,12 @@ function drillerSheet(): Sheet {
       footprint: 2,
       idleCels: HEADINGS.map(() => 1),
       idleMs: 1000,
-      walkCels: HEADINGS.map(() => 0),
-      walkCelMs: 1000,
+      walkCels: HEADINGS.map((h) => treads[h].length),
+      walkCelMs:
+        Math.round((DRILLER_TREAD_PX / treads.east.length / WALK_PX_PER_S) * 1000 * 1000) / 1000,
       walkMsPerTile: Math.round((PIXELS_PER_TILE / WALK_PX_PER_S) * 1000 * 10) / 10,
       cast,
-      clipData: false,
+      clipData: true,
       actions: true,
       treadGrounding: HEADINGS.map((h) => treadGrounding[h]),
     },
@@ -956,6 +1287,27 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
     if (sheet.data.actions) files.set(`${OUT}/${sheet.name}-actions.json`, json(sheet.actions));
     data[sheet.name] = { ...sheet.data, pages: laid.length };
   }
+  // T3: the Ba Dan objects, trimmed hard-alpha PNGs the scene loads by name (`prototypes/topdown/tools/t3objproc.py`).
+  for (const name of OBJECTS) {
+    const bytes = readFileSync(join(SOURCE, 'objects_t3', `${name}.png`));
+    files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
+    // A one-image atlas (every cel the image), so the object stands on its cell as a figure does
+    // (`topdownObject` in the manifest).
+    const w = bytes.readUInt32BE(16),
+      h = bytes.readUInt32BE(20);
+    files.set(
+      `${OBJECTS_OUT}/${name}.json`,
+      json({
+        frames: Object.fromEntries(
+          ['idle/0', 'idle/1', 'cast/0', 'cast/1', 'cast/2'].map((cel) => [
+            `world.${name}/${cel}`,
+            { frame: { x: 0, y: 0, w, h } },
+          ]),
+        ),
+        meta: { image: `${name}.png`, size: { w, h } },
+      }),
+    );
+  }
   files.set(DATA, await dataModule(data));
   return files;
 }
@@ -1002,7 +1354,7 @@ async function main(): Promise<void> {
   const check = process.argv.includes('--check');
   const files = await packTopdownSheets();
   let stale = 0;
-  if (!check) mkdirSync(OUT, { recursive: true });
+  if (!check) mkdirSync(OBJECTS_OUT, { recursive: true });
   for (const [path, content] of files) {
     const bytes = typeof content === 'string' ? Buffer.from(content) : Buffer.from(content);
     const same = existsSync(path) && Buffer.compare(readFileSync(path), bytes) === 0;
@@ -1011,7 +1363,7 @@ async function main(): Promise<void> {
     if (check) console.error(`stale: ${path}`);
     else writeFileSync(path, bytes);
   }
-  const shipped = existsSync(OUT) ? readdirSync(OUT).map((f) => `${OUT}/${f}`) : [];
+  const shipped = shippedFiles();
   // Keep the figure packer's ownership strict: only the VFX packer's two
   // explicit outputs may share this directory. Every other foreign file fails.
   const extra = shipped.filter(

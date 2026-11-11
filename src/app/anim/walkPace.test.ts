@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../../core/types';
-import { resolveAsset, sheetLocomotion, useWorldStyleTest } from '../../content/assets/manifest';
+import {
+  resolveAsset,
+  sheetLocomotion,
+  useTopDownStyle,
+  useWorldStyleTest,
+} from '../../content/assets/manifest';
 import { frameIndex, resolveClip } from '../../render/sheets/resolveClip';
 import { Animator, STOP_SETTLE_MS } from '../animator';
 import { choreograph } from './choreography';
@@ -140,5 +145,32 @@ describe('exploration pace without a combat gait change', () => {
       gait.walkCycleMs / 2 / STOP_SETTLE_MS + 1e-6,
     );
     expect(animator.unitPose(end + STOP_SETTLE_MS, 'p', sprite)).toBeUndefined();
+  });
+});
+
+describe('the top-down walk (ADR 0104)', () => {
+  // Last in the file: `?style=topdown` stays on for the rest of this module.
+  it("walks at the prototype's 130 px/s, about 308 ms a tile, and the clip keeps time with the ground", () => {
+    useTopDownStyle();
+    const gait = sheetLocomotion(sprite);
+    if (!gait) throw new Error('top-down Kaya has a declared gait');
+    expect(gait.walkCelMs).toBeUndefined();
+    const pace = gait.walkMsPerTile.east;
+    expect(pace).toBeCloseTo(307.7, 1);
+    const animator = new Animator(content, { motionReduced: () => false });
+    animator.setProjection('topdown');
+    animator.push(0, [walked], [unit]);
+    // four tiles at the fitted pace and the 120 ms of ramps
+    expect(animator.finishesAt).toBeCloseTo(4 * pace + 120, 6);
+    // No slide: at the cruise, clip time runs at exactly the rate the ground goes by.
+    for (const at of [200, 600, 1000]) {
+      const a = animator.unitPose(at, 'p', sprite)?.clipTime ?? 0;
+      const b = animator.unitPose(at + 100, 'p', sprite)?.clipTime ?? 0;
+      const ground =
+        ((animator.renderPos(at + 100, 'p')?.x ?? 0) - (animator.renderPos(at, 'p')?.x ?? 0)) *
+        pace;
+      expect(b - a).toBeCloseTo(100, 6);
+      expect(ground).toBeCloseTo(100, 6);
+    }
   });
 });

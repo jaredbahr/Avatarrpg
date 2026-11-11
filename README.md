@@ -22,16 +22,33 @@ npm run dev        # http://localhost:5173
 
 Other scripts:
 
-| Command            | What it does                                                                   |
-| ------------------ | ------------------------------------------------------------------------------ |
-| `npm run verify`   | typecheck + lint + format + unit/content/sim tests (before a PR)               |
-| `npm run ci:local` | full CI verify job (adds build, budgets, art, balance) — green before any push |
-| `npm test`         | vitest: rules, content validation, deterministic combat sim                    |
-| `npm run balance`  | headless AI-vs-AI win-rate report per encounter                                |
-| `npm run build`    | production build into `dist/` (includes service worker + manifest)             |
-| `npm run e2e`      | Playwright touch-mode end-to-end suite against the built site                  |
-| `npm run lint:fix` | autofix lint + layering violations where possible                              |
-| `npm run format`   | Prettier over the repo                                                         |
+| Command                       | What it does                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------- |
+| `npm run verify`              | typecheck + lint + format + unit/content/sim tests (before a PR)                  |
+| `npm run ci:local`            | full CI verify job (adds build, budgets, art, balance) — green before any push    |
+| `npm test`                    | vitest: rules, content validation, deterministic combat sim                       |
+| `npm run balance`             | headless AI-vs-AI win-rate report per encounter                                   |
+| `npm run replay -- SAVE.json` | inspect an exported save and its reconciled prose log                             |
+| `npm run docs:content`        | regenerate the [content reference](docs/content-reference.md) from source content |
+| `npm run docs:story`          | regenerate the [story route diagrams](docs/story/README.md) from source content   |
+| `npm run build`               | production build into `dist/` (includes service worker + manifest)                |
+| `npm run e2e`                 | Playwright touch-mode end-to-end suite against the built site                     |
+| `npm run lint:fix`            | autofix lint + layering violations where possible                                 |
+| `npm run format`              | Prettier over the repo                                                            |
+
+`npm run replay -- SAVE.json` reads a save through deserialization and the app's
+core load reconciliation, then prints its reconciled state summary and prose log,
+including any entries added by load repair, without changing the file.
+For machine-readable output, use
+`npm run --silent replay -- SAVE.json --json`; npm's banner is suppressed so
+stdout contains one JSON document. `--help` lists the options.
+
+Current saves contain a snapshot and human-readable log, with no command history
+or base checkpoint. The tool explicitly reports replay unavailable and
+`verified: false`. It validates nonnegative integer `--from N` / `--to M` offsets
+(`N <= M`) and accepts `--verify`, but these command operations exit nonzero when
+history is unavailable. Inspecting a valid snapshot without them exits zero;
+loading it does not establish replay determinism.
 
 ## Playing on the Surface
 

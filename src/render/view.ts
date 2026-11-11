@@ -121,6 +121,11 @@ export interface TargetReticleCue {
   readonly pos: Vec2;
   readonly elevation: 'above' | 'below' | null;
   readonly obscured: boolean;
+  /**
+   * The target is in cover from this shot (`hasCover` with the board's roster), or in cover the
+   * ability arcs over (`requiresLineOfSight: false`). The top-down board draws it as a pip.
+   */
+  readonly cover?: 'covered' | 'ignored' | null;
 }
 
 /** Two-tier breaks are the only elevation boundaries that movement cannot cross. */
@@ -343,6 +348,8 @@ export function npcClip(npc: Pick<NpcMarker, 'clip' | 'walking'>): ClipName {
  */
 export interface RenderProp {
   readonly id: string;
+  /** The prop's content id (`water_barrel`), which picks its top-down drawing (`TOPDOWN_PROPS`). */
+  readonly kind?: string;
   readonly pos: Vec2;
   readonly sprite: string;
   readonly name: string;
@@ -385,6 +392,8 @@ export interface MapView {
   readonly targetReticle?: TargetReticleCue | null;
   readonly npcs: readonly NpcMarker[];
   readonly props: readonly RenderProp[];
+  /** Cells the rules raised as walls this fight (`BattleState.temporaryWalls`), still standing. */
+  readonly raisedWalls?: readonly Vec2[];
   readonly path: readonly Vec2[];
   /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
   readonly pathFrom: Vec2 | null;

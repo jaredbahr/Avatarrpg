@@ -101,7 +101,7 @@ function camera(projection: 'topdown' | 'orthographic'): Camera {
 }
 
 /** What a whole Canvas 2D frame drew, in order: the scene's pages and the figures. */
-function canvasFrame(projection: 'topdown' | 'orthographic') {
+function canvasFrame(projection: 'topdown' | 'orthographic', overrides: Partial<MapView> = {}) {
   const drawn: { what: string; args: number[] }[] = [];
   const state: Record<string, unknown> = {
     globalAlpha: 1,
@@ -147,7 +147,7 @@ function canvasFrame(projection: 'topdown' | 'orthographic') {
     for (const u of v.units) drawn.push({ what: `unit:${u.id}`, args: [] });
   });
   const cam = camera(projection);
-  backend.draw(view(), cam);
+  backend.draw({ ...view(), ...overrides }, cam);
   return { drawn, camera: cam };
 }
 
@@ -186,6 +186,18 @@ describe('Canvas 2D draws a top-down scene', () => {
     const rock = drawn.find(({ what }) => what === ROCK_URL);
     // Drawn inside its own foot transform: up its full height from the foot.
     expect(rock?.args.slice(4)).toEqual([0, -80 * cam.scale, 40 * cam.scale, 80 * cam.scale]);
+  });
+
+  it('skips the board-edge falloff over a painted scene, which runs past the grid', () => {
+    const proto = Canvas2DBackend.prototype as unknown as Record<string, () => void>;
+    const shade = vi.spyOn(proto, 'drawShade').mockImplementation(() => undefined);
+    artLoaded(true);
+    canvasFrame('topdown', { atmosphere: true });
+    expect(shade).not.toHaveBeenCalled();
+    // Until the art loads, the procedural board keeps its falloff.
+    artLoaded(false);
+    canvasFrame('topdown', { atmosphere: true });
+    expect(shade).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the procedural terrain until every plate and piece has loaded', () => {

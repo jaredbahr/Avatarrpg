@@ -31,6 +31,7 @@ import type { Projection } from '../../render/projection';
 import { renderFoot } from '../../render/renderFoot';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
+import { sheetLocomotion } from '../../content/assets/manifest';
 import type { BendSources } from './bendHandoff';
 import { planBendCast } from './bendHandoff';
 
@@ -252,6 +253,20 @@ function timedSpan(clips: SheetClips | undefined, names: readonly ClipName[]): n
   return span;
 }
 
+/**
+ * How long an exploration walk takes a tile. The top-down sheets (ADR 0104) walk at their own fitted
+ * pace (the prototype's 130 px/s, about 308 ms a tile), so each walk cel keeps time with the ground and the planted foot
+ * holds; every other board cruises at the timing profile's `strollStep` (ADR 0095's amendment).
+ */
+function explorePace(input: ChoreographyInput, unitId: string, strollStep: number): number {
+  if (input.projection !== 'topdown') return strollStep;
+  const sprite = input.unitsBefore.find((u) => u.id === unitId)?.sprite;
+  const gait = sheetLocomotion(sprite);
+  if (!gait || gait.walkCelMs) return strollStep;
+  const paces = Object.values(gait.walkMsPerTile);
+  return paces.reduce((a, b) => a + b, 0) / paces.length / partyScale(input.projection);
+}
+
 export function choreograph(input: ChoreographyInput): Choreography {
   const { content, events, unitsBefore, rate, pushIndex } = input;
   const timing = input.timingProfile ?? DEFAULT_PRESENTATION_TIMING;
@@ -469,7 +484,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const curve = smoothPath(event.from, event.path);
         const stroll = strollTiming(
           curve.length,
-          input.amble ? STROLL_REFERENCE_MS : timing.strollStep,
+          input.amble ? STROLL_REFERENCE_MS : explorePace(input, event.unitId, timing.strollStep),
         );
         // Reduced motion retains the same abbreviated, pace-independent action
         // lock as combat movement. A long village route must not become slow

@@ -99,7 +99,7 @@ function makeApp(overrides: Record<string, unknown> = {}): App {
     freshCombatEntry: false,
     animator: { push: vi.fn(), clear: vi.fn(), busy: vi.fn(() => false), finishesAt: 0 },
     residents: { reset: vi.fn() },
-    toasts: { show: vi.fn() },
+    toasts: { show: vi.fn(), clear: vi.fn() },
     session: new Session(),
     audio: { play: vi.fn(), close: vi.fn(), unlock: vi.fn() },
     content: CONTENT,

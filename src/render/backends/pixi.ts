@@ -67,6 +67,20 @@ import {
 } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import { drawsScene, groundsSceneAtRuntime, tileSize } from '../projection';
+import { propShadows, rgbaCanvas, topdownPropArt } from '../topdown/propLayer';
+import { drawsWash, washLayer } from '../topdown/wash';
+import {
+  drawsOrganicSurfaces,
+  flameFoot,
+  flames,
+  flameSheet,
+  organicOwns,
+  puffRows,
+  surfaceArt,
+  surfaceCanvases,
+} from '../topdown/surfaceLayer';
+import { flameCel, glowAlpha, steamPuff, type SurfaceArt } from '../topdown/surfaces';
+import { withStructures } from '../topdown/structures';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
@@ -157,7 +171,14 @@ import {
 } from '../pixelOverlayGeometry';
 import type { PixelOverlayCue } from '../pixelOverlayGeometry';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
-import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import {
+  TOPDOWN_FEET_WIDTH,
+  feetBlobArt,
+  figureShadowArt,
+  poolOffset,
+  soleContactArt,
+  topdownFeetLevel,
+} from '../figureShadowArt';
 import {
   drillerGroundingArt,
   drillerGroundingGeometry,
@@ -424,6 +445,21 @@ export class PixiBackend implements RenderBackend {
   /** The ground transform with the effects' tile ratio folded in (`draw`). */
   private fxTransform = new Matrix();
   private sceneGround = new Container();
+  private propShadowSprite = new Sprite();
+  /** The organic surfaces (#458): the painted layer and the fire's glow, and the board's art. */
+  /**
+   * The top-down board's own ground marks (#458, #459, #457), in the ground's transform over the
+   * decor: the organic surfaces and their glow, the props' shadow layer, the organic overlays.
+   */
+  private surfaceMarks = new Container();
+  private surfaceSprite = new Sprite();
+  private glowSprite = new Sprite();
+  private organic = false;
+  private surfaces: SurfaceArt | null = null;
+  /** Steam's puffs, over the figures. */
+  private topdownSteam = new Graphics();
+  /** The organic reach, area and target washes, footprints, rings and cover pip (#457). */
+  private washSprite = new Sprite();
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
   /** Contact shadow and wear under the scenery (grounding.ts), above the ground chunks. */
@@ -505,6 +541,10 @@ export class PixiBackend implements RenderBackend {
   private shadowFilter: Filter | null = null;
   /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
   private grounding = DEFAULT_ACTOR_GROUNDING;
+  /** True on the top-down board, whose figures stand on `feetBlob` rather than the swept pool. */
+  private topdownFigures = false;
+  /** The scene's paved cells, where a top-down feet blob is drawn at paving's strength. */
+  private pavedCells: readonly Vec2[] | undefined;
   private castSprites = new Map<string, Sprite>();
   private castLive = new Set<string>();
   /** Painted bend effects under and over the actors (ADR 0055). */
@@ -693,6 +733,20 @@ export class PixiBackend implements RenderBackend {
       this.sceneGround,
       this.groundOverlaySprite,
     );
+    this.propShadowSprite.visible = false;
+    this.washSprite.visible = false;
+    this.surfaceSprite.visible = false;
+    this.glowSprite.visible = false;
+    this.glowSprite.blendMode = 'add';
+    // The top-down marks lie over the procedural decor and under the overlays, as Canvas 2D draws
+    // them, in the ground's own transform (world px on the top-down board): the surfaces, their
+    // glow, the props' shadows, then the organic overlays.
+    this.surfaceMarks.addChild(
+      this.surfaceSprite,
+      this.glowSprite,
+      this.propShadowSprite,
+      this.washSprite,
+    );
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
@@ -708,6 +762,7 @@ export class PixiBackend implements RenderBackend {
 
     this.root.addChild(
       this.decorLayer,
+      this.surfaceMarks,
       this.shadeLayer,
       this.overlayGfx,
       this.pixelOverlayLayer,
@@ -734,6 +789,7 @@ export class PixiBackend implements RenderBackend {
       this.pixelRingLayer,
       this.bendUnder,
       this.unitLayer,
+      this.topdownSteam,
       this.flockLayer,
       this.bendOver,
     );
@@ -845,6 +901,8 @@ export class PixiBackend implements RenderBackend {
       ...view,
       scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
     };
+    // The raised walls and rubble heaps stand as drawings among the figures (#577).
+    if (camera.projection === 'topdown') view = withStructures(view);
     if (!app) {
       // Still initialising: keep only the newest frame.
       this.pending = { view, camera };
@@ -907,6 +965,8 @@ export class PixiBackend implements RenderBackend {
     const painted = drawsScene(camera.projection) && view.scene ? scenePainted : backdropPainted;
     this.setPartialGroundOrder(partialScene);
     this.groundOverlaySprite.visible = partialScene;
+    this.organic = drawsOrganicSurfaces(view, camera.projection);
+    this.surfaces = this.organic ? surfaceArt(view, painted) : null;
     this.syncGround(view, painted, partialScene);
     // A complete partial scene needs only raised stone underlay here. Missing
     // art and High contrast still require every procedural rule marker.
@@ -922,6 +982,9 @@ export class PixiBackend implements RenderBackend {
         : 'none';
     this.syncDecor(view, camera, decorMode, painted);
     this.syncShade(view, camera, scenePainted);
+    this.syncTopdownSurfaces(view);
+    this.syncTopdownPropShadows(view, camera);
+    this.syncTopdownWash(view, camera);
     this.pixelSpriteUsed.clear();
     this.drawOverlays(view, camera);
     this.drawPath(view, camera);
@@ -936,7 +999,9 @@ export class PixiBackend implements RenderBackend {
       this.shadowComposite.visible = false;
       this.shadowComposite.texture = Texture.EMPTY;
     }
-    this.drawSteamPuffs(view, camera);
+    if (this.surfaces) this.drawSteamPuffs({ ...view, obscuringTiles: [] }, camera);
+    else this.drawSteamPuffs(view, camera);
+    this.drawTopdownSteam(view);
     this.drawTargetReticle(view, camera);
     const bendFx = view.bendFx ?? [];
     const bendTexture = (sprite: BendFxSprite) => {
@@ -1368,6 +1433,7 @@ export class PixiBackend implements RenderBackend {
     scale: number,
     widthTiles: number,
     strength: number,
+    at: Vec2,
     cels?: FigureCels,
   ): void {
     if (cels?.driller) {
@@ -1411,13 +1477,9 @@ export class PixiBackend implements RenderBackend {
       return;
     }
     if (strength <= 0 || !contactBand(this.grounding, 1)) return;
-    const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
-    if (!art) return;
     // The pool centres on the resting soles, in world px; one figure tile is `tile`.
     const tile = TILE * (cels?.scale ?? scale);
     const offset = poolOffset(cels?.resting, cels?.flip ?? false);
-    const drawn = cels?.drawn;
-    const soles = drawn?.feet && soleContactArt(drawn.feet, drawn.frame.w);
     const place = (id: string, canvas: HTMLCanvasElement, level: number) => {
       this.castLive.add(id);
       let sprite = this.castSprites.get(id);
@@ -1438,6 +1500,23 @@ export class PixiBackend implements RenderBackend {
       sprite.visible = sprite.alpha > 0;
       return sprite;
     };
+    if (this.topdownFigures) {
+      // The top-down board grounds a figure on Imagination's feet blob, centred on its resting soles.
+      const blob = feetBlobArt(TOPDOWN_FEET_WIDTH * scale * widthTiles);
+      if (!blob) return;
+      const feet = place(key, blob, topdownFeetLevel(this.pavedCells, at));
+      feet.position.set(
+        Math.round(foot.x + offset.x * tile - blob.width / 2),
+        Math.round(foot.y + offset.y * tile - blob.height / 2),
+      );
+      feet.width = blob.width;
+      feet.height = blob.height;
+      return;
+    }
+    const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
+    if (!art) return;
+    const drawn = cels?.drawn;
+    const soles = drawn?.feet && soleContactArt(drawn.feet, drawn.frame.w);
     const pool = place(key, art.cast, this.grounding.cast);
     pool.position.set(foot.x + offset.x * tile - art.footX, foot.y + offset.y * tile - art.footY);
     pool.width = art.cast.width;
@@ -1595,6 +1674,8 @@ export class PixiBackend implements RenderBackend {
     const app = this.app;
     if (!app) return;
     this.grounding = actorGrounding(view.scene);
+    this.topdownFigures = camera.projection === 'topdown';
+    this.pavedCells = view.scene?.pavedCells;
     this.structureShadowGfx.alpha = CAST_SHADOW_ALPHA / shadowCeiling(this.grounding);
     const hasStructure = this.syncStructureShadows(view, camera);
     if (groundsSceneAtRuntime(camera.projection)) this.syncSceneryShadows(view, camera);
@@ -2113,11 +2194,14 @@ export class PixiBackend implements RenderBackend {
    */
   private uploadMap(view: MapView, painted: boolean): void {
     const grid = view.grid;
-    const baked = grid.tiles.map((tile, i) =>
-      surfaceIsPainted(view, painted, tile, {
-        x: i % grid.width,
-        y: Math.floor(i / grid.width),
-      }),
+    // A surface the organic layer draws (#458) is left out of the shader, as art-painted ones are.
+    const baked = grid.tiles.map(
+      (tile, i) =>
+        organicOwns(this.organic, tile.surface?.id) ||
+        surfaceIsPainted(view, painted, tile, {
+          x: i % grid.width,
+          y: Math.floor(i / grid.width),
+        }),
     );
     const dry = grid.tiles.map((tile, i) =>
       paintedWaterIsDry(view, painted, tile, { x: i % grid.width, y: Math.floor(i / grid.width) }),
@@ -2142,7 +2226,10 @@ export class PixiBackend implements RenderBackend {
     for (let i = 0; i < grid.tiles.length; i++) {
       const tile = grid.tiles[i];
       if (!tile) continue;
-      const [surface, intensity] = surfaceTexel(tile, baked[i] === true);
+      // An organic surface (#458) is the top-down layer's: the shader draws nothing for it.
+      const [surface, intensity] = organicOwns(this.organic, tile.surface?.id)
+        ? [0, 0]
+        : surfaceTexel(tile, baked[i] === true);
       intensities[i] = surface === SURFACE_INDEX.fire ? intensity : 0;
 
       const o = i * 4;
@@ -2307,8 +2394,10 @@ export class PixiBackend implements RenderBackend {
     const top = this.overlayTopGfx;
     top.clear();
     this.drawObscurement(view, g);
+    // The top-down board draws its reach, targets, area and hover as the organic layer instead.
+    const cells = !drawsWash(view, camera.projection);
 
-    for (const layer of view.overlays) {
+    for (const layer of cells ? view.overlays : []) {
       if (layer.tiles.length === 0) continue;
       const cache = view.crispOverlays ? this.squareLoops : this.loops;
       let loops = cache.get(layer);
@@ -2324,7 +2413,7 @@ export class PixiBackend implements RenderBackend {
       );
     }
 
-    if (view.hoverTile) {
+    if (cells && view.hoverTile) {
       const cues =
         view.crispOverlays && view.calmPath && view.path.length > 0
           ? [hoverCalmMark(view.hoverTile, camera)]
@@ -2616,12 +2705,14 @@ export class PixiBackend implements RenderBackend {
         curve: smoothPath(view.pathFrom, view.path),
       };
     }
-    this.appendPixelMarks(
-      this.pixelPathLayer,
-      camera,
-      pathPixelMarks(view, camera, this.curve?.curve),
-      view.cameraNudge,
-    );
+    // On the top-down board the route is the organic layer's footprints.
+    if (!drawsWash(view, camera.projection))
+      this.appendPixelMarks(
+        this.pixelPathLayer,
+        camera,
+        pathPixelMarks(view, camera, this.curve?.curve),
+        view.cameraNudge,
+      );
     if (view.aimArc) {
       this.appendPixelMarks(
         this.pixelPathLayer,
@@ -2659,6 +2750,119 @@ export class PixiBackend implements RenderBackend {
    * `worldScale` is the CSS scale of the sprite's parent layer: the camera's
    * for the world layers, 1 for a sprite placed in screen space.
    */
+  /** The top-down props' shadow layer (#459), as Canvas 2D lays it: world px, nearest. */
+  private syncTopdownPropShadows(view: MapView, camera: Camera): void {
+    const sprite = this.propShadowSprite;
+    const layer =
+      camera.projection === 'topdown'
+        ? propShadows(view.props, view.scene?.pavedCells).layer
+        : null;
+    const canvas = layer && rgbaCanvas(layer.image);
+    if (!layer || !canvas) {
+      sprite.visible = false;
+      sprite.texture = Texture.EMPTY;
+      return;
+    }
+    const texture = this.texture(canvas);
+    if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+    sprite.texture = texture;
+    sprite.position.set(layer.x, layer.y);
+    sprite.width = layer.image.width;
+    sprite.height = layer.image.height;
+    sprite.visible = true;
+  }
+
+  /**
+   * The organic surfaces, as Canvas 2D lays them: the painted layer and the glow at the board's
+   * world px, nearest; the glow added at its flicker, still under reduce motion.
+   */
+  private syncTopdownSurfaces(view: MapView): void {
+    const art = this.surfaces;
+    const { layer, glow } = art ? surfaceCanvases(art) : { layer: null, glow: null };
+    const place = (sprite: Sprite, canvas: HTMLCanvasElement | null) => {
+      if (!art || !canvas) {
+        sprite.visible = false;
+        sprite.texture = Texture.EMPTY;
+        return;
+      }
+      const texture = this.texture(canvas);
+      if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+      sprite.texture = texture;
+      sprite.position.set(0, 0);
+      sprite.width = art.layer.width;
+      sprite.height = art.layer.height;
+      sprite.visible = true;
+    };
+    place(this.surfaceSprite, layer);
+    place(this.glowSprite, glow);
+    this.glowSprite.alpha = glowAlpha(view.reducedMotion ? null : view.time);
+  }
+
+  /** The ground flames among the figures, animated at 85 ms a cel (still under reduce motion). */
+  private drawFlames(view: MapView, camera: Camera, live: Set<string>): void {
+    const art = this.surfaces?.flames.length ? flames() : null;
+    if (!this.surfaces || !art) return;
+    const time = view.reducedMotion ? null : view.time;
+    const burning = new Set(this.surfaces.flames.map((site) => site.cell));
+    this.surfaces.flames.forEach((site, index) => {
+      const sheet = art.atlas.sheets[flameSheet(site, time, burning)];
+      const f = sheet.frames[flameCel(site, time, sheet.frames.length)];
+      if (!f) return;
+      const key = `flame:${index}`;
+      live.add(key);
+      const sprite = this.unitSprite(key);
+      const texture = this.frameTexture({ source: art.image, frame: f } as Pick<
+        ResolvedFrame,
+        'source' | 'frame'
+      >);
+      if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+      sprite.texture = texture;
+      sprite.anchor.set(0, 0);
+      sprite.position.set(site.x - sheet.pivot.x, site.y - sheet.pivot.y);
+      sprite.width = f.w;
+      sprite.height = f.h;
+      sprite.alpha = 1;
+      sprite.visible = true;
+      sprite.zIndex = sceneryZ(boardDepth(camera.groundPoint(flameFoot(site)), camera.projection));
+    });
+  }
+
+  /** Steam's puffs over the figures (`drawSteam`): drifting, or still under reduce motion. */
+  private drawTopdownSteam(view: MapView): void {
+    const g = this.topdownSteam;
+    g.clear();
+    if (!this.surfaces) return;
+    const time = view.reducedMotion ? 0 : view.time;
+    for (const site of this.surfaces.steam) {
+      const p = steamPuff(site, time);
+      for (const r of puffRows(p.x, p.y, p.r, Math.max(2, Math.floor(p.r * 0.6))))
+        g.rect(r.x, r.y, r.w, 1).fill({ color: 0xe8ece8, alpha: p.alpha });
+      for (const r of puffRows(p.x - 2, p.y - 2, p.r >> 1, Math.max(1, Math.floor(p.r * 0.3))))
+        g.rect(r.x, r.y, r.w, 1).fill({ color: 0xffffff, alpha: p.alpha * 0.6 });
+    }
+  }
+
+  /** The organic overlay layer, as Canvas 2D lays it: the board's world px, nearest. */
+  private syncTopdownWash(view: MapView, camera: Camera): void {
+    const sprite = this.washSprite;
+    const image = drawsWash(view, camera.projection)
+      ? washLayer(view, this.squareFootprints)
+      : null;
+    const canvas = image && rgbaCanvas(image);
+    if (!image || !canvas) {
+      sprite.visible = false;
+      sprite.texture = Texture.EMPTY;
+      return;
+    }
+    const texture = this.texture(canvas);
+    if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+    sprite.texture = texture;
+    sprite.position.set(0, 0);
+    sprite.width = image.width;
+    sprite.height = image.height;
+    sprite.visible = true;
+  }
+
   private sampleArt(sprite: Sprite, worldScale: number): void {
     const source = sprite.texture.source;
     const mode = scaleModeFor(Math.abs(sprite.scale.x) * worldScale * this.viewport.dpr);
@@ -2752,6 +2956,8 @@ export class PixiBackend implements RenderBackend {
     rings.clear();
     const px = this.spritePx(camera);
     this.grounding = actorGrounding(view.scene);
+    this.topdownFigures = camera.projection === 'topdown';
+    this.pavedCells = view.scene?.pavedCells;
     this.pixelTalkUsed = 0;
 
     const live = new Set<string>();
@@ -2837,6 +3043,7 @@ export class PixiBackend implements RenderBackend {
         scale,
         1,
         alpha,
+        at,
         frame
           ? {
               drawn: frame,
@@ -2872,24 +3079,41 @@ export class PixiBackend implements RenderBackend {
       const key = `prop:${prop.id}`;
       live.add(key);
       const sprite = this.unitSprite(key);
-      const art = sprites.get(prop.sprite, px, { facing: 1 });
-      sprite.texture = this.texture(art);
       const anchor = box(prop.pos);
+      // A top-down board stands the prop's top-down drawing on its own box; its shadow is in the
+      // props' layer (`syncTopdownPropShadows`), so it casts nothing into the figures' union.
+      const topdown = camera.projection === 'topdown' ? topdownPropArt(prop) : null;
       sprite.anchor.set(0, 0);
-      sprite.position.set(
-        anchor.x,
-        anchor.y - liftAt(view.grid, prop.pos, camera.projection) * this.tile,
-      );
       sprite.zIndex = depth(prop.pos);
-      sprite.width = this.tile;
-      sprite.height = this.tile;
       sprite.alpha = 1;
       sprite.visible = true;
-      const propStrength = castShadowStrength(prop.castShadow);
-      // A prop casts from its own ground and meets it on its contact line (ADR 0093).
-      if (propStrength > 0) this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
-      if (contactBand(this.grounding, propStrength))
-        this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
+      if (topdown) {
+        const texture = this.texture(topdown.image);
+        if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
+        sprite.texture = texture;
+        sprite.position.set(topdown.box.x, topdown.box.y);
+        sprite.width = topdown.box.w;
+        sprite.height = topdown.box.h;
+      } else if (!prop.sprite) {
+        // A wall or a heap whose drawing has not loaded: its cell already shows it.
+        sprite.visible = false;
+        continue;
+      } else {
+        const art = sprites.get(prop.sprite, px, { facing: 1 });
+        sprite.texture = this.texture(art);
+        sprite.position.set(
+          anchor.x,
+          anchor.y - liftAt(view.grid, prop.pos, camera.projection) * this.tile,
+        );
+        sprite.width = this.tile;
+        sprite.height = this.tile;
+        const propStrength = castShadowStrength(prop.castShadow);
+        // A prop casts from its own ground and meets it on its contact line (ADR 0093).
+        if (propStrength > 0)
+          this.projectGroundedCast(`prop:${prop.id}`, sprite, art, propStrength);
+        if (contactBand(this.grounding, propStrength))
+          this.projectContactLine(`propfoot:${prop.id}`, sprite, propStrength);
+      }
 
       /*
        * A damage bar only once it has been hit. A full bar on every barrel
@@ -2899,7 +3123,8 @@ export class PixiBackend implements RenderBackend {
       if (prop.hp >= prop.maxHp || prop.maxHp <= 0) continue;
       const w = this.tile * 0.6;
       const x = anchor.x + (this.tile - w) / 2;
-      const y = sprite.y + this.tile * 0.9;
+      const y =
+        anchor.y - liftAt(view.grid, prop.pos, camera.projection) * this.tile + this.tile * 0.9;
       const h = Math.max(2, this.tile * 0.05);
       g.rect(x, y, w, h).fill({ color: 'rgba(0,0,0,0.55)' });
       g.rect(x, y, (w * prop.hp) / prop.maxHp, h).fill({ color: '#d9a441' });
@@ -3056,6 +3281,7 @@ export class PixiBackend implements RenderBackend {
         castShadowStrength(unit.castShadow) *
           (unit.alpha ?? 1) *
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1),
+        pos,
         shadowCels,
       );
 
@@ -3126,6 +3352,7 @@ export class PixiBackend implements RenderBackend {
       badgeIndex = this.drawStatusBadges(g, unit, x, width, badgeIndex, silhouette.badgeY);
     }
 
+    this.drawFlames(view, camera, live);
     this.retireInactiveSprites(this.unitSprites, live);
     this.syncReveal(view, camera, revealFigures);
     for (let i = badgeIndex; i < this.badgeText.length; i++) {

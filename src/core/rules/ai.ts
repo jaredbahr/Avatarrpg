@@ -55,9 +55,11 @@ import type { CoverSource } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
   distance,
+  allowsCasterTarget,
   distanceBetweenUnits,
   distanceToUnit,
   occupiedCells,
+  pathCost,
   posKey,
   reachable,
   samePos,
@@ -560,6 +562,11 @@ export function scoreAbility(
   const struck = unitsOnTiles(draft.units, tiles, squareFootprints).filter(
     (u) => u.id !== caster.id,
   );
+  // A prospective move changes the caster's occupied cells. Keep its stale
+  // stored position out, then include the actual caster only when rules allow it.
+  if (allowsCasterTarget(ability)) {
+    struck.push(...unitsOnTiles([caster], tiles, squareFootprints));
+  }
   const weather = weatherAt(content, draft.encounterId, draft.round);
 
   /*
@@ -1381,35 +1388,24 @@ export function planAiTurn(draft: BattleDraft, unitId: string, rng: RngCursor): 
 /** Walks a path one tile at a time so surfaces get their say on every step. */
 function walk(draft: BattleDraft, unitId: string, path: readonly Vec2[]): void {
   const unit = draft.unit(unitId);
-  if (!unit) return;
-  let spent = 0;
-  const ctx = draft.moveContext(unit);
-  let from = unit.pos;
+  if (!unit || path.length === 0) return;
+  // Validate and price the whole path before contact effects, exactly as a
+  // public move command does (including climbs and every footprint cell).
+  const cost = pathCost(draft.moveContext(unit), unit.pos, path);
+  if (cost === null || cost > unit.move) return;
+  const walked: Vec2[] = [];
 
   for (const step of path) {
     const current = draft.unit(unitId);
     if (!current || !isAlive(current)) break;
-    const cost = 1 + surfaceExtraCost(draft, step);
-    if (spent + cost > current.move) break;
     draft.placeUnit(unitId, step);
-    spent += cost;
-    from = step;
+    walked.push(step);
   }
 
   const moved = draft.unit(unitId);
   if (!moved) return;
-  draft.replace({ ...moved, move: Math.max(0, moved.move - spent) });
-  if (spent > 0) {
-    draft.emit({ type: 'unitMoved', unitId, path: [...path], cost: spent });
-  }
-  void ctx;
-  void from;
-}
-
-function surfaceExtraCost(draft: BattleDraft, pos: Vec2): number {
-  const tile = tileAt(draft.grid, pos);
-  if (!tile?.surface) return 0;
-  return draft.content.surfaces.get(tile.surface.id)?.moveCost ?? 0;
+  draft.replace({ ...moved, move: Math.max(0, moved.move - cost) });
+  draft.emit({ type: 'unitMoved', unitId, path: walked, cost });
 }
 
 /** Walks toward the most attractive reachable tile when no ability is worth using. */

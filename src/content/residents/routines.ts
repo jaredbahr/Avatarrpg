@@ -17,8 +17,8 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
   {
     // Gao restacks his display. Its crates sit under the table, reached from
     // the front at (8,5); the display's own corner blocks the diagonal, so he
-    // goes round by the lane. Then along the lane to the foot of his steps, (10,3), for stock;
-    // the steps' own tile, (9,3), is under the porch and blocked.
+    // goes round by the lane. Then along the lane to his house's east side, (10,3), for the
+    // stock stacked at (10,2); (9,3) is his house and blocked.
     id: 'lw.npc.gao',
     mapId: VILLAGE,
     anchor: 'bd02.shopfront',
@@ -71,7 +71,8 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
 export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
   {
     // Pella's household carries a basket up to the square and back. The
-    // eight-leg schema cap sends it round the west end of the south court,
+    // eight-leg schema cap sends it round the west end of the south court, below the
+    // house's front door at (8,14),
     // clear of the house, planters and the kitchen garden's fence, up the west
     // lane at x1, then along the road and over the canal bridge.
     id: 'bg.pella_household',
@@ -82,11 +83,11 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
       {
         path: [
           { x: 10, y: 14 },
-          { x: 9, y: 14 },
-          { x: 8, y: 14 },
-          { x: 7, y: 14 },
-          { x: 6, y: 14 },
-          { x: 5, y: 14 },
+          { x: 9, y: 15 },
+          { x: 8, y: 15 },
+          { x: 7, y: 15 },
+          { x: 6, y: 15 },
+          { x: 5, y: 15 },
           { x: 4, y: 14 },
           { x: 3, y: 14 },
         ],
@@ -165,11 +166,11 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
       {
         path: [
           { x: 4, y: 14 },
-          { x: 5, y: 14 },
-          { x: 6, y: 14 },
-          { x: 7, y: 14 },
-          { x: 8, y: 14 },
-          { x: 9, y: 14 },
+          { x: 5, y: 15 },
+          { x: 6, y: 15 },
+          { x: 7, y: 15 },
+          { x: 8, y: 15 },
+          { x: 9, y: 15 },
           { x: 10, y: 14 },
           { x: 11, y: 13 },
         ],

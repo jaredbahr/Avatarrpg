@@ -1,5 +1,32 @@
 # Ba Dan Lane — top-down PixelLab test
 
+## T8 hero sprites (2026-11-10, ADR 0104 T8)
+- **Tool:** `tools/t8heroes.py` (the T2/T5 method; cap 1,750 under the `t8_` prefix; group ids in `t8/state.json`).
+- **The seven heroes the tutorial does not cast** (`unit.fire.tenzo`, `unit.water.nilak`, `unit.earth.linmei`, `unit.air.nima`,
+  `unit.air.jinu`, `unit.non.riko`, `unit.non.wen`): `assets/chars/t8_<who>/`, create-character-v3 at 48 px with the cast's
+  settings (mannequin, seed 11), described from `src/content/characters.ts` and the old sheets' outfit colours; idle, walk,
+  hit, knockout and a pose for the level-1 and level-2 abilities (skeleton-v3, 8 headings, pure body motion, the hands named).
+- Nima's and Jinu's first takes (`t8_nima-v1`, `t8_jinu-v1`) came back with knee-length capes and Nima bald; the second takes
+  keep the cape (PixelLab drew it long again even when asked for a capelet) and give Nima his hair.
+- Wen's hook punch (`attack`) keeps her gauntlet in six headings; in the north-west and west, where her right hand is turned
+  away, the gauntlet redraws as a hook or a rope after a retake. A straight-punch group (`attack2`) drew the same in the west and
+  dust in the north, so it is not packed. The packer draws the hook's west and north-west from its east and north-east,
+  mirrored (`mirror` in the spec), and holds Jinu's south and north knockouts on their sixth cel (`koCels`): the seventh
+  and eighth spread her cape into wings.
+- Packed by `scripts/art/topdown/pack-sheets.ts`; the heroes draw them under `?style=topdown`.
+
+## T5 quarry clips (2026-11-10, ADR 0104 T5, #452)
+- **Tool:** `tools/t5clips.py` (the T2 method of `t2clips.py`; cap 650 under the `t5_` prefix; group ids in `t5/state.json`).
+- **Hits and knockouts** (skeleton-v3, 8 headings, pure body motion, the hands named) for `t13_deserter`, `t13_qbender`,
+  `t13_merc`, `t13_xbow` and `t13_ruon` (the game's `fire_deserter`, `bandit_earthbender`, `merc_blade`, `merc_crossbow`,
+  `ruon_ally`). The crossbow's knockout is the second group (`@b60996`); the first ended sitting up.
+- **The mercenary sergeant** (`merc_sergeant`): `assets/chars/t5_sergeant/`, create-character-v3 at 48 px with the cast's
+  settings (mannequin, seed 11), Jin's crew's charcoal quilted jacket and teal sash, an iron helmet with a teal crest and a
+  brass rank sash; idle, walk, a sword chop, hit and knockout.
+- **The Driller** (object `b0cc7559`): its idle group extended to all eight headings (the rumble), and new groups for a tread
+  loop, a hit shudder and a jammed knockout, in `assets/driller/t5/<clip>/<direction>_<i>.png` (frame 0 is the rotation).
+- Packed by `scripts/art/topdown/pack-sheets.ts`; the quarry units draw them under `?style=topdown`.
+
 ## Houses redrawn with volume (v15 page; previous page kept as `badan-topdown-v14.html`, `badan-overview-v14.png`)
 Jared: "Some houses don't feel like they're 3D, almost as if they are placed on top of the world." v13's code cues (eave band, side strip,
 plinth) were quiet at 1x, so the six houses were regenerated.

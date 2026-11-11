@@ -1,0 +1,527 @@
+{
+ "id": "c40ee699-02fa-40f4-b55c-6924c52df13d",
+ "size": {
+  "width": 48,
+  "height": 48
+ },
+ "rot": {
+  "south": "rot_south.png",
+  "west": "rot_west.png",
+  "east": "rot_east.png",
+  "north": "rot_north.png",
+  "south-east": "rot_south-east.png",
+  "north-east": "rot_north-east.png",
+  "north-west": "rot_north-west.png",
+  "south-west": "rot_south-west.png"
+ },
+ "anims": {
+  "custom-a hit reaction: flinches from @f0afab": {
+   "south": [
+    "custom-a_hit_reaction_flinches_from_f0afab_south_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south_5.png"
+   ],
+   "south-west": [
+    "custom-a_hit_reaction_flinches_from_f0afab_south-west_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-west_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-west_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-west_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-west_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-west_5.png"
+   ],
+   "north-west": [
+    "custom-a_hit_reaction_flinches_from_f0afab_north-west_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-west_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-west_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-west_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-west_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-west_5.png"
+   ],
+   "north": [
+    "custom-a_hit_reaction_flinches_from_f0afab_north_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north_5.png"
+   ],
+   "south-east": [
+    "custom-a_hit_reaction_flinches_from_f0afab_south-east_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-east_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-east_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-east_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-east_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_south-east_5.png"
+   ],
+   "east": [
+    "custom-a_hit_reaction_flinches_from_f0afab_east_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_east_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_east_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_east_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_east_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_east_5.png"
+   ],
+   "west": [
+    "custom-a_hit_reaction_flinches_from_f0afab_west_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_west_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_west_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_west_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_west_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_west_5.png"
+   ],
+   "north-east": [
+    "custom-a_hit_reaction_flinches_from_f0afab_north-east_0.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-east_1.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-east_2.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-east_3.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-east_4.png",
+    "custom-a_hit_reaction_flinches_from_f0afab_north-east_5.png"
+   ]
+  },
+  "custom-a martial-arts double palm str@eb5022": {
+   "north": [
+    "custom-a_martial-arts_double_palm_str_eb5022_north_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north_9.png"
+   ],
+   "south": [
+    "custom-a_martial-arts_double_palm_str_eb5022_south_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south_9.png"
+   ],
+   "south-east": [
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-east_9.png"
+   ],
+   "east": [
+    "custom-a_martial-arts_double_palm_str_eb5022_east_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_east_9.png"
+   ],
+   "north-east": [
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-east_9.png"
+   ],
+   "west": [
+    "custom-a_martial-arts_double_palm_str_eb5022_west_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_west_9.png"
+   ],
+   "north-west": [
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_north-west_9.png"
+   ],
+   "south-west": [
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_0.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_1.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_2.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_3.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_4.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_5.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_6.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_7.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_8.png",
+    "custom-a_martial-arts_double_palm_str_eb5022_south-west_9.png"
+   ]
+  },
+  "custom-a martial-arts punch: draws th@653c55": {
+   "north": [
+    "custom-a_martial-arts_punch_draws_th_653c55_north_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north_9.png"
+   ],
+   "south-west": [
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-west_9.png"
+   ],
+   "south-east": [
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south-east_9.png"
+   ],
+   "north-east": [
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-east_9.png"
+   ],
+   "north-west": [
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_north-west_9.png"
+   ],
+   "east": [
+    "custom-a_martial-arts_punch_draws_th_653c55_east_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_east_9.png"
+   ],
+   "south": [
+    "custom-a_martial-arts_punch_draws_th_653c55_south_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_south_9.png"
+   ],
+   "west": [
+    "custom-a_martial-arts_punch_draws_th_653c55_west_0.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_1.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_2.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_3.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_4.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_5.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_6.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_7.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_8.png",
+    "custom-a_martial-arts_punch_draws_th_653c55_west_9.png"
+   ]
+  },
+  "custom-knocked out: staggers back one@4723e3": {
+   "west": [
+    "custom-knocked_out_staggers_back_one_4723e3_west_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_west_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_west_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_west_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_west_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_west_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_west_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_west_7.png"
+   ],
+   "south": [
+    "custom-knocked_out_staggers_back_one_4723e3_south_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south_7.png"
+   ],
+   "north-east": [
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-east_7.png"
+   ],
+   "south-west": [
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-west_7.png"
+   ],
+   "north": [
+    "custom-knocked_out_staggers_back_one_4723e3_north_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north_7.png"
+   ],
+   "south-east": [
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_south-east_7.png"
+   ],
+   "east": [
+    "custom-knocked_out_staggers_back_one_4723e3_east_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_east_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_east_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_east_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_east_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_east_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_east_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_east_7.png"
+   ],
+   "north-west": [
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_0.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_1.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_2.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_3.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_4.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_5.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_6.png",
+    "custom-knocked_out_staggers_back_one_4723e3_north-west_7.png"
+   ]
+  },
+  "custom-standing at rest in a ready st@c8ecc4": {
+   "east": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_east_7.png"
+   ],
+   "south": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south_7.png"
+   ],
+   "south-east": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-east_7.png"
+   ],
+   "north-east": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-east_7.png"
+   ],
+   "north": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north_7.png"
+   ],
+   "north-west": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_north-west_7.png"
+   ],
+   "south-west": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_south-west_7.png"
+   ],
+   "west": [
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_0.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_1.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_2.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_3.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_4.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_5.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_6.png",
+    "custom-standing_at_rest_in_a_ready_st_c8ecc4_west_7.png"
+   ]
+  },
+  "walking-8-frames@fc70f0": {
+   "south-west": [
+    "walking-8-frames_fc70f0_south-west_0.png",
+    "walking-8-frames_fc70f0_south-west_1.png",
+    "walking-8-frames_fc70f0_south-west_2.png",
+    "walking-8-frames_fc70f0_south-west_3.png",
+    "walking-8-frames_fc70f0_south-west_4.png",
+    "walking-8-frames_fc70f0_south-west_5.png",
+    "walking-8-frames_fc70f0_south-west_6.png",
+    "walking-8-frames_fc70f0_south-west_7.png"
+   ],
+   "west": [
+    "walking-8-frames_fc70f0_west_0.png",
+    "walking-8-frames_fc70f0_west_1.png",
+    "walking-8-frames_fc70f0_west_2.png",
+    "walking-8-frames_fc70f0_west_3.png",
+    "walking-8-frames_fc70f0_west_4.png",
+    "walking-8-frames_fc70f0_west_5.png",
+    "walking-8-frames_fc70f0_west_6.png",
+    "walking-8-frames_fc70f0_west_7.png"
+   ],
+   "south": [
+    "walking-8-frames_fc70f0_south_0.png",
+    "walking-8-frames_fc70f0_south_1.png",
+    "walking-8-frames_fc70f0_south_2.png",
+    "walking-8-frames_fc70f0_south_3.png",
+    "walking-8-frames_fc70f0_south_4.png",
+    "walking-8-frames_fc70f0_south_5.png",
+    "walking-8-frames_fc70f0_south_6.png",
+    "walking-8-frames_fc70f0_south_7.png"
+   ],
+   "south-east": [
+    "walking-8-frames_fc70f0_south-east_0.png",
+    "walking-8-frames_fc70f0_south-east_1.png",
+    "walking-8-frames_fc70f0_south-east_2.png",
+    "walking-8-frames_fc70f0_south-east_3.png",
+    "walking-8-frames_fc70f0_south-east_4.png",
+    "walking-8-frames_fc70f0_south-east_5.png",
+    "walking-8-frames_fc70f0_south-east_6.png",
+    "walking-8-frames_fc70f0_south-east_7.png"
+   ],
+   "east": [
+    "walking-8-frames_fc70f0_east_0.png",
+    "walking-8-frames_fc70f0_east_1.png",
+    "walking-8-frames_fc70f0_east_2.png",
+    "walking-8-frames_fc70f0_east_3.png",
+    "walking-8-frames_fc70f0_east_4.png",
+    "walking-8-frames_fc70f0_east_5.png",
+    "walking-8-frames_fc70f0_east_6.png",
+    "walking-8-frames_fc70f0_east_7.png"
+   ],
+   "north": [
+    "walking-8-frames_fc70f0_north_0.png",
+    "walking-8-frames_fc70f0_north_1.png",
+    "walking-8-frames_fc70f0_north_2.png",
+    "walking-8-frames_fc70f0_north_3.png",
+    "walking-8-frames_fc70f0_north_4.png",
+    "walking-8-frames_fc70f0_north_5.png",
+    "walking-8-frames_fc70f0_north_6.png",
+    "walking-8-frames_fc70f0_north_7.png"
+   ],
+   "north-east": [
+    "walking-8-frames_fc70f0_north-east_0.png",
+    "walking-8-frames_fc70f0_north-east_1.png",
+    "walking-8-frames_fc70f0_north-east_2.png",
+    "walking-8-frames_fc70f0_north-east_3.png",
+    "walking-8-frames_fc70f0_north-east_4.png",
+    "walking-8-frames_fc70f0_north-east_5.png",
+    "walking-8-frames_fc70f0_north-east_6.png",
+    "walking-8-frames_fc70f0_north-east_7.png"
+   ],
+   "north-west": [
+    "walking-8-frames_fc70f0_north-west_0.png",
+    "walking-8-frames_fc70f0_north-west_1.png",
+    "walking-8-frames_fc70f0_north-west_2.png",
+    "walking-8-frames_fc70f0_north-west_3.png",
+    "walking-8-frames_fc70f0_north-west_4.png",
+    "walking-8-frames_fc70f0_north-west_5.png",
+    "walking-8-frames_fc70f0_north-west_6.png",
+    "walking-8-frames_fc70f0_north-west_7.png"
+   ]
+  }
+ }
+}

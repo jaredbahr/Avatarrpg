@@ -2,7 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SceneScenery, Vec2 } from '../core/types';
 import { BA_DAN_SCENE } from '../content/scenes/baDan';
 import { Camera } from './camera';
-import { REVEAL_MIN, revealBox, revealOccluders, revealPixels, revealsUnit } from './reveal';
+import {
+  REVEAL_MIN,
+  revealBox,
+  revealOccluders,
+  revealPixels,
+  revealTint,
+  revealsUnit,
+} from './reveal';
 import { sceneImages, sceneryOpacity } from './scene';
 import type { MapView, RenderUnit } from './view';
 
@@ -204,5 +211,19 @@ describe('a house that reveals keeps its paint', () => {
         camera,
       ),
     ).toBe(1);
+  });
+});
+
+describe('the reveal tint per projection', () => {
+  it('keeps the oblique tint ADR 0096 shipped and quiets the top-down one', () => {
+    expect(revealTint('oblique')).toEqual({
+      rim: [255, 238, 196, 255],
+      fill: [255, 226, 160, 120],
+    });
+    const topdown = revealTint('topdown');
+    expect(topdown.rim.slice(0, 3)).toEqual([255, 238, 196]);
+    expect(topdown.rim[3]).toBeLessThan(255);
+    expect(topdown.fill[3]).toBeLessThan(120);
+    expect(topdown.fill[3]).toBeGreaterThan(0);
   });
 });

@@ -52,6 +52,19 @@ import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { drawArt } from '../pixelSampling';
+import { propShadows, rgbaCanvas, topdownPropArt } from '../topdown/propLayer';
+import { drawsWash, washLayer } from '../topdown/wash';
+import {
+  drawsOrganicSurfaces,
+  flameFoot,
+  flames,
+  organicOwns,
+  puffRows,
+  surfaceArt,
+  surfaceCanvases,
+} from '../topdown/surfaceLayer';
+import { flameCel, glowAlpha, steamPuff, type SurfaceArt } from '../topdown/surfaces';
+import { withStructures } from '../topdown/structures';
 import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
 import { drawCanvasPixelMark, resolvePixelMarkDraws } from '../pixelMarkRendering';
 import {
@@ -102,7 +115,14 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { boardDepth, compareRenderedDepth } from './depthOrder';
 import { renderFoot } from '../renderFoot';
 import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
-import { figureShadowArt, poolOffset, soleContactArt } from '../figureShadowArt';
+import {
+  TOPDOWN_FEET_WIDTH,
+  feetBlobArt,
+  figureShadowArt,
+  poolOffset,
+  soleContactArt,
+  topdownFeetLevel,
+} from '../figureShadowArt';
 import {
   drillerGroundingArt,
   drillerGroundingGeometry,
@@ -195,6 +215,12 @@ export class Canvas2DBackend implements RenderBackend {
   private shadowGridNow: ShadowGrid | null = null;
   /** This frame's scene grounding; the union is tinted at its ceiling and casters scale to it. */
   private grounding = DEFAULT_ACTOR_GROUNDING;
+  /** True on the top-down board, whose figures stand on `feetBlob` rather than the swept pool. */
+  private topdownFigures = false;
+  /** This frame draws its surfaces as the top-down organic layer (#458). */
+  private organic = false;
+  /** The scene's paved cells, where a top-down feet blob is drawn at paving's strength. */
+  private pavedCells: readonly Vec2[] | undefined;
   /** One caster at a time, in the exact-max path (see `castInto`). */
   private castScratch: HTMLCanvasElement | null = null;
   /** One viewport's static scenery union; live actors and props never enter it. */
@@ -259,6 +285,7 @@ export class Canvas2DBackend implements RenderBackend {
     };
 
     this.lifted = groundsSceneAtRuntime(camera.projection);
+    this.organic = false;
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
@@ -401,22 +428,34 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
     } else {
       this.dropLiftLayer();
+      // The raised walls and rubble heaps stand as drawings among the figures (#577).
+      if (camera.projection === 'topdown') view = withStructures(view);
       // The top-down board (ADR 0104) draws its scene's plates at the identity ground transform,
       // with no lift and no runtime grounding: its shadows are baked into the plates. Until every
       // plate and piece has loaded, the procedural terrain stands in, as on the oblique board.
       const scene = drawsScene(camera.projection) ? view.scene : undefined;
       let painted = painting !== null;
+      let scenePainted = false;
       if (scene) {
         const ground = sceneGroundImages(scene);
         painted = sceneArtLoaded(scene, ground);
+        scenePainted = painted;
         if (painted) this.drawScenePlates(ground, camera);
       }
+      this.organic = drawsOrganicSurfaces(view, camera.projection);
       this.drawGround(view, camera, painted);
       if (!painted || view.crispOverlays) this.drawDecor(view, camera);
-      if (view.atmosphere) this.drawShade(view, camera);
-      this.drawOverlays(view, camera);
-      this.drawSteamPuffs(view, camera);
-      this.drawPath(view, camera);
+      const surfaces = this.organic ? surfaceArt(view, painted) : null;
+      if (surfaces) this.drawTopdownSurfaces(surfaces, camera);
+      // A painted scene runs past the grid and carries its own light, so the board-edge falloff
+      // (clipped to the grid) would cut a straight band through it. Pixi skips it the same way.
+      if (view.atmosphere && !scenePainted) this.drawShade(view, camera);
+      if (camera.projection === 'topdown') this.drawTopdownPropShadows(view, camera);
+      const wash = drawsWash(view, camera.projection);
+      if (wash) this.drawTopdownWash(view, camera);
+      this.drawOverlays(view, camera, camera, !wash);
+      if (!surfaces) this.drawSteamPuffs(view, camera);
+      if (!wash) this.drawPath(view, camera);
       if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
       this.drawFxLayer(view, camera, 'under');
       this.drawExit(view, camera, view.cameraNudge);
@@ -424,12 +463,14 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
-      if (scene) this.drawOccupants(view, camera);
+      // A top-down board sorts its props, walls, flames and figures together even without a scene.
+      if (scene || camera.projection === 'topdown') this.drawOccupants(view, camera, surfaces);
       else {
         this.drawNpcs(view, camera);
         this.drawProps(view, camera);
         this.drawUnits(view, camera);
       }
+      if (surfaces) this.drawTopdownSteam(surfaces, camera);
       this.flushHealthBars(camera, view.cameraNudge);
       this.drawTargetReticle(view, camera);
       if (scene) this.drawFlock(view, camera);
@@ -447,7 +488,7 @@ export class Canvas2DBackend implements RenderBackend {
    * (faded where it hides a figure), NPCs, props and units, then the reveal of party members a
    * piece covers. The oblique and top-down boards both draw through it.
    */
-  private drawOccupants(view: MapView, camera: Camera): void {
+  private drawOccupants(view: MapView, camera: Camera, surfaces: SurfaceArt | null = null): void {
     const { ctx } = this;
     // All upright occupants share depth order, including NPCs and props.
     const opacities = sceneryOpacities(
@@ -502,6 +543,7 @@ export class Canvas2DBackend implements RenderBackend {
         pos: { x: prop.pos.x + 0.5, y: prop.pos.y + 0.5 },
         draw: () => this.drawProps({ ...view, props: [prop] }, camera),
       })),
+      ...this.flameOccupants(surfaces, camera),
       ...view.units.map((unit) => ({
         pos: renderFoot(
           unit.renderPos ?? unit.pos,
@@ -589,7 +631,11 @@ export class Canvas2DBackend implements RenderBackend {
         // A declared pool the rules no longer hold as water: hide the baked plate's water.
         else if (drawSurfaces && paintedWaterIsDry(view, painted, tile, pos))
           paintTerrain(ctx, box, tile, pos);
-        if (drawSurfaces && !surfaceIsPainted(view, painted, tile, pos))
+        if (
+          drawSurfaces &&
+          !surfaceIsPainted(view, painted, tile, pos) &&
+          !organicOwns(this.organic, tile.surface?.id)
+        )
           paintSurface(
             ctx,
             box,
@@ -884,9 +930,10 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  private drawOverlays(view: MapView, camera: Camera, markCamera = camera): void {
+  private drawOverlays(view: MapView, camera: Camera, markCamera = camera, cells = true): void {
     this.drawObscurement(view, camera);
-    for (const layer of view.overlays) {
+    // The top-down board draws its reach, targets, area and hover as the organic layer instead.
+    for (const layer of cells ? view.overlays : []) {
       if (layer.tiles.length === 0) continue;
       const cache = view.crispOverlays ? this.squareLoops : this.loops;
       let loops = cache.get(layer);
@@ -902,7 +949,7 @@ export class Canvas2DBackend implements RenderBackend {
       );
     }
 
-    if (view.hoverTile) {
+    if (cells && view.hoverTile) {
       const cues =
         view.crispOverlays && view.calmPath && view.path.length > 0
           ? [hoverCalmMark(view.hoverTile, markCamera)]
@@ -1262,6 +1309,118 @@ export class Canvas2DBackend implements RenderBackend {
       }
     }
   }
+  /**
+   * The top-down props' shadows (#459): one layer from the cached `hardShadowMask` of each loaded
+   * drawing, laid on the world-pixel grid with nearest sampling, under every mark and figure.
+   */
+  private drawTopdownPropShadows(view: MapView, camera: Camera): void {
+    const { layer } = propShadows(view.props, view.scene?.pavedCells);
+    if (!layer) return;
+    const canvas = rgbaCanvas(layer.image);
+    if (!canvas) return;
+    drawArt(this.ctx, 1, camera.scale, () =>
+      this.ctx.drawImage(
+        canvas,
+        layer.x * camera.scale - camera.offsetX,
+        layer.y * camera.scale - camera.offsetY,
+        layer.image.width * camera.scale,
+        layer.image.height * camera.scale,
+      ),
+    );
+  }
+
+  /**
+   * The organic surfaces (#458): the painted layer, then the fire's glow laid 'lighter', both on the
+   * world-pixel grid. Canvas 2D draws them still: the glow at the middle of its flicker.
+   */
+  private drawTopdownSurfaces(surfaces: SurfaceArt, camera: Camera): void {
+    const { layer, glow } = surfaceCanvases(surfaces);
+    const ctx = this.ctx;
+    const place = (canvas: HTMLCanvasElement) =>
+      drawArt(ctx, 1, camera.scale, () =>
+        ctx.drawImage(
+          canvas,
+          -camera.offsetX,
+          -camera.offsetY,
+          surfaces.layer.width * camera.scale,
+          surfaces.layer.height * camera.scale,
+        ),
+      );
+    if (layer) place(layer);
+    if (!glow) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = glowAlpha(null);
+    place(glow);
+    ctx.restore();
+  }
+
+  /** The ground flames as occupants, sorted with the figures by their feet; still on Canvas 2D. */
+  private flameOccupants(surfaces: SurfaceArt | null, camera: Camera) {
+    const art = surfaces?.flames.length ? flames() : null;
+    if (!surfaces || !art) return [];
+    const ctx = this.ctx;
+    return surfaces.flames.map((site) => ({
+      pos: flameFoot(site),
+      draw: () => {
+        const sheet = art.atlas.sheets[site.sheet];
+        const f = sheet.frames[flameCel(site, null, sheet.frames.length)];
+        if (!f) return;
+        drawArt(ctx, f.w, f.w * camera.scale, () =>
+          ctx.drawImage(
+            art.image,
+            f.x,
+            f.y,
+            f.w,
+            f.h,
+            (site.x - sheet.pivot.x) * camera.scale - camera.offsetX,
+            (site.y - sheet.pivot.y) * camera.scale - camera.offsetY,
+            f.w * camera.scale,
+            f.h * camera.scale,
+          ),
+        );
+      },
+    }));
+  }
+
+  /** Steam's puffs over the figures (`drawSteam`), still on Canvas 2D: each at its own phase. */
+  private drawTopdownSteam(surfaces: SurfaceArt, camera: Camera): void {
+    const ctx = this.ctx;
+    const k = camera.scale;
+    for (const site of surfaces.steam) {
+      const p = steamPuff(site, 0);
+      const fill = (rows: ReturnType<typeof puffRows>, color: string) => {
+        ctx.fillStyle = color;
+        for (const r of rows)
+          ctx.fillRect(r.x * k - camera.offsetX, r.y * k - camera.offsetY, r.w * k, k);
+      };
+      fill(
+        puffRows(p.x, p.y, p.r, Math.max(2, Math.floor(p.r * 0.6))),
+        `rgba(232,236,232,${p.alpha})`,
+      );
+      fill(
+        puffRows(p.x - 2, p.y - 2, p.r >> 1, Math.max(1, Math.floor(p.r * 0.3))),
+        `rgba(255,255,255,${p.alpha * 0.6})`,
+      );
+    }
+  }
+
+  /** The top-down board's reach, area and target washes, footprints, rings and cover pip (#457). */
+  private drawTopdownWash(view: MapView, camera: Camera): void {
+    const image = washLayer(view, this.squareFootprints);
+    const canvas = image && rgbaCanvas(image);
+    if (!image || !canvas) return;
+    drawArt(this.ctx, 1, camera.scale, () =>
+      this.ctx.drawImage(
+        canvas,
+        -camera.offsetX,
+        -camera.offsetY,
+        image.width * camera.scale,
+        image.height * camera.scale,
+      ),
+    );
+  }
+
   private drawProps(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const { dpr } = camera.viewport;
@@ -1270,8 +1429,23 @@ export class Canvas2DBackend implements RenderBackend {
       if (!camera.isVisible(prop.pos)) continue;
       const box = camera.spriteBox(prop.pos);
       box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
-      const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
-      ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+      // A top-down board draws the prop's top-down drawing on its own box, once it has loaded.
+      const art = camera.projection === 'topdown' ? topdownPropArt(prop) : null;
+      if (art) {
+        const { box: at } = art;
+        drawArt(ctx, at.w, at.w * camera.scale, () =>
+          ctx.drawImage(
+            art.image,
+            at.x * camera.scale - camera.offsetX,
+            at.y * camera.scale - camera.offsetY,
+            at.w * camera.scale,
+            at.h * camera.scale,
+          ),
+        );
+      } else if (prop.sprite) {
+        const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
+        ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+      } else continue;
 
       /*
        * A damage bar only once it has been hit. Showing a full bar on every
@@ -1313,6 +1487,8 @@ export class Canvas2DBackend implements RenderBackend {
     const layer = this.shadowLayer.getContext('2d');
     if (!layer) return;
     this.grounding = actorGrounding(view.scene);
+    this.topdownFigures = camera.projection === 'topdown';
+    this.pavedCells = view.scene?.pavedCells;
     // The union is a grey level per pixel on opaque black; see `castInto`.
     if (
       !this.castScratch ||
@@ -1611,6 +1787,7 @@ export class Canvas2DBackend implements RenderBackend {
     widthTiles: number,
     alpha: number,
     worldPixel: number,
+    at: Vec2,
     cels?: FigureCels,
   ): void {
     if (cels?.driller) {
@@ -1646,6 +1823,25 @@ export class Canvas2DBackend implements RenderBackend {
       return;
     }
     if (alpha <= 0 || !contactBand(this.grounding, 1)) return;
+    if (this.topdownFigures) {
+      // The top-down board grounds a figure on Imagination's feet blob, centred on its resting soles.
+      const blob = feetBlobArt(TOPDOWN_FEET_WIDTH * scale * widthTiles);
+      if (!blob) return;
+      const tile = TILE * worldPixel * (cels?.scale ?? scale);
+      const offset = poolOffset(cels?.resting, cels?.flip ?? false);
+      const w = blob.width * worldPixel,
+        h = blob.height * worldPixel;
+      const x = foot.x + offset.x * tile - w / 2,
+        y = foot.y + offset.y * tile - h / 2;
+      const level = topdownFeetLevel(this.pavedCells, at);
+      this.castInto(target, level, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
+        t.save();
+        t.globalAlpha = alpha;
+        t.drawImage(blob, x, y, w, h);
+        t.restore();
+      });
+      return;
+    }
     // A figure tile of the shipped sheets: the swept pool is the oblique and orthographic
     // boards' grounding, which `feetBlob` replaces on the top-down board (ADR 0104, T4).
     const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
@@ -1824,6 +2020,7 @@ export class Canvas2DBackend implements RenderBackend {
         1,
         npc.alpha ?? 1,
         worldPixel,
+        at,
         sheet
           ? {
               drawn: sheets.frame(npc.sprite, clip, npc.clipTime ?? 0, undefined, px, width),
@@ -1840,7 +2037,10 @@ export class Canvas2DBackend implements RenderBackend {
       target,
       groundsSceneAtRuntime(camera.projection) && view.scene
         ? view.props.filter((prop) => Boolean(prop.burning))
-        : view.props,
+        : camera.projection === 'topdown'
+          ? // A top-down drawing's shadow is in the props' own layer (`drawTopdownPropShadows`).
+            view.props.filter((prop) => prop.sprite && !topdownPropArt(prop))
+          : view.props,
       view,
       camera,
     );
@@ -1933,6 +2133,7 @@ export class Canvas2DBackend implements RenderBackend {
           (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
           castShadowStrength(unit.castShadow),
         worldPixel,
+        pos,
         groundingCels,
       );
     }

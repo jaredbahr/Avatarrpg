@@ -21,6 +21,7 @@ import {
   isValidTarget,
   knownAbilities,
   previewAbility,
+  resolveAim,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
@@ -39,6 +40,7 @@ import {
 } from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
+import { coverCue } from './coverCue';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer } from '../../render/renderer';
@@ -1282,7 +1284,11 @@ export class CombatScene implements Scene {
       return;
     }
 
-    this.pending = tile;
+    const unit = this.active();
+    const ability =
+      this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+    this.pending =
+      unit && ability ? resolveAim(this.app.content, battle, unit, ability, tile) : tile;
     this.renderHud();
   }
 
@@ -2872,6 +2878,7 @@ export class CombatScene implements Scene {
       const def = CONTENT.props.get(p.propId);
       return {
         id: p.id,
+        kind: p.propId,
         pos: p.pos,
         sprite: def?.sprite ?? 'prop.crate',
         name: def?.name ?? 'Something',
@@ -2899,6 +2906,7 @@ export class CombatScene implements Scene {
       units,
       npcs: [],
       props,
+      raisedWalls: battle.temporaryWalls.map((wall) => wall.pos),
       overlays,
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),
@@ -3354,6 +3362,7 @@ export class CombatScene implements Scene {
                 elevation:
                   breakdown.elevation > 0 ? 'above' : breakdown.elevation < 0 ? 'below' : null,
                 obscured: breakdown.obscurement.total < 0,
+                cover: coverCue(this.app.content, battle.grid, unit, target, ability, battle.units),
               };
             }
           }

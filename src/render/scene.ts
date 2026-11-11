@@ -298,11 +298,17 @@ export function sceneryOpacity(
           (foot.y - lift * scale - scenery.y) / scenery.height,
         )
       )
-        return 0.28;
+        return camera.projection === 'topdown' ? TOPDOWN_FADE_ALPHA : 0.28;
     }
   }
   return 1;
 }
+
+/**
+ * How far a top-down piece fades when it hides a figure: a tree or a small prop stays mostly there
+ * (a house reveals the figure instead, `reveal.ts`). The 0.28 of the painted boards left a ghost.
+ */
+export const TOPDOWN_FADE_ALPHA = 0.6;
 
 /** Evaluate each slice once per frame, then fade connected artwork as one mass.
  * Only opted-in slices participate; groups never cross the current scene.

@@ -347,23 +347,23 @@ suite('phase condition', () => {
     expect(evaluate(at('midday'), inList)).toBe(false);
   });
 
-  it('describes a single phase as a time of day', () => {
-    expect(describe(CONTENT, { kind: 'phase', in: ['evening'] })).toBe('in the evening');
+  it('describes a single phase as a complete time-of-day clause', () => {
+    expect(describe(CONTENT, { kind: 'phase', in: ['evening'] })).toBe('it is evening');
   });
 
-  it('joins several phases with "or", as the ADR writes them', () => {
+  it('joins alternative phases with "or" inside a complete clause', () => {
     expect(describe(CONTENT, { kind: 'phase', in: ['dawn', 'evening'] })).toBe(
-      'at dawn or in the evening',
+      'it is dawn or evening',
     );
   });
 
   it.each([
-    ['dawn', 'at dawn'],
-    ['morning', 'in the morning'],
-    ['midday', 'at midday'],
-    ['afternoon', 'in the afternoon'],
-    ['evening', 'in the evening'],
-    ['night', 'at night'],
+    ['dawn', 'it is dawn'],
+    ['morning', 'it is morning'],
+    ['midday', 'it is midday'],
+    ['afternoon', 'it is afternoon'],
+    ['evening', 'it is evening'],
+    ['night', 'it is night'],
   ] as const)('describes %s as "%s"', (phase, phrase) => {
     expect(describe(CONTENT, { kind: 'phase', in: [phase] })).toBe(phrase);
   });
