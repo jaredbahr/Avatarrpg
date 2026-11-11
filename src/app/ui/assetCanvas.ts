@@ -22,8 +22,8 @@ export const PIXEL_PORTRAIT_PX = 160;
 
 /**
  * Draws a 160 px pixel-art portrait so every art pixel covers a whole number of
- * device pixels. When the box is within a quarter of a whole multiple the portrait
- * is drawn at that multiple, nearest-neighbour and centred; any other box
+ * device pixels. When the box is within a quarter of a whole multiple, or 3x and up, the
+ * portrait is drawn at that multiple, nearest-neighbour and centred; any other box
  * upscales to the next whole multiple and smooths down from there, so a small
  * HUD portrait is never sampled at a fraction.
  */
@@ -35,8 +35,11 @@ export function drawPixelPortrait(
   const ratio = px / PIXEL_PORTRAIT_PX;
   const near = Math.round(ratio);
   ctx.imageSmoothingEnabled = false;
-  if (near >= 1 && Math.abs(ratio - near) <= 0.25) {
-    const size = PIXEL_PORTRAIT_PX * near;
+  // A big box (3x and up, e.g. the 15rem stage portrait at Large text, 4.5x) sits crisp at the whole
+  // multiple below instead of smoothing: the picture is centred and loses under a quarter of the box.
+  const mult = Math.abs(ratio - near) <= 0.25 ? near : ratio >= 3 ? Math.floor(ratio) : 0;
+  if (mult >= 1) {
+    const size = PIXEL_PORTRAIT_PX * mult;
     const offset = Math.floor((px - size) / 2);
     ctx.drawImage(image, offset, offset, size, size);
     return;

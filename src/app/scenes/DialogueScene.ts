@@ -28,8 +28,8 @@ import {
   type InterludeDef,
 } from '../../content/story/interludes';
 
-/** Portraits in the HUD are 6rem; on the stage the speaker is nearly twice that. */
-const STAGE_PORTRAIT_REM = 10;
+/** Portraits in the HUD are 6rem; on the stage the speaker is two and a half times that (240 px: 3x the 160 px art at dpr 2). */
+const STAGE_PORTRAIT_REM = 15;
 
 /**
  * The element a portrait is painted in. The manifest already tags every

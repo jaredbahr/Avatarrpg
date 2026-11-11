@@ -26,7 +26,7 @@ const BENDER_LABEL: Record<ElementId, string> = {
 };
 
 /** Large enough to remain crisp when the world-conversation frame expands it. */
-const COMPACT_PORTRAIT_REM = 10;
+const COMPACT_PORTRAIT_REM = 15;
 
 export interface ResolvedConversation {
   readonly speaker: string;
