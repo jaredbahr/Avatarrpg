@@ -54,7 +54,7 @@ const SHOT_LOOKS: Readonly<Record<string, string>> = {
   sling_stone: 'shot/stone',
   bolas: 'shot/stone',
   oil_flask: 'shot/jar',
-  torch_toss: 'vfx13/torch',
+  torch_toss: 'shot/torch',
 };
 
 /** ADR 0095's cadence calibration and base clock for the residents' slowed amble. */
@@ -893,20 +893,26 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 timing.travelMin,
                 Math.min(timing.travelMax, (distance / recipe.travel.speed) * 1000),
               ) * rate;
+          const arc = look === 'shot/stone' || look === 'shot/rock' ? 0.45 : 0.2;
           if (look)
             tracks.push({
               kind: 'shot',
               look,
               from,
               to,
-              arc: look === 'shot/stone' || look === 'shot/rock' ? 0.45 : 0.2,
+              // On the figures' foot line, a little below the cell centres.
+              feet: [
+                { x: caster.x, y: caster.y + 0.3 },
+                { x: target.x, y: target.y + 0.3 },
+              ],
+              arc,
               start: launchAt,
               duration: flight,
             });
           const nominal = Math.max(40, Math.round(flight / rate));
           const stretched = recipe.travel.emitters
-            // The shot's own cel replaces the particle head.
-            .filter((def) => !look || def.kind !== 'particles' || def.shape !== 'projectile')
+            // The shot's own cel replaces the particle head and any painted flame; its trail follows it.
+            .filter((def) => !look || (def.kind === 'particles' && def.shape !== 'projectile'))
             .map((def): EmitterDef => {
               if (def.kind === 'strokes')
                 return {
@@ -923,17 +929,19 @@ export function choreograph(input: ChoreographyInput): Choreography {
                   : {}),
               };
             });
-          emit(
-            stretched,
-            launchAt,
-            caster,
-            target,
-            palette,
-            eventIndex,
-            2,
-            recipe.travel.arc,
-            hand ? { from: hand, ...(torso ? { to: torso } : {}) } : undefined,
-          );
+          if (look) emit(stretched, launchAt, from, to, palette, eventIndex, 2, arc);
+          else
+            emit(
+              stretched,
+              launchAt,
+              caster,
+              target,
+              palette,
+              eventIndex,
+              2,
+              recipe.travel.arc,
+              hand ? { from: hand, ...(torso ? { to: torso } : {}) } : undefined,
+            );
           impactAt = launchAt + flight;
           // Water Whip remains tethered on its return. Keep the striking palm
           // out until that stroke has reeled in, rather than idling underneath it.

@@ -14,6 +14,8 @@ export interface Shot {
   readonly look: string;
   readonly from: Vec2;
   readonly to: Vec2;
+  /** The ground under `from` and under `to`, which the shot's shadow tracks. */
+  readonly feet: readonly [Vec2, Vec2];
   readonly arc: number;
   readonly start: number;
   readonly duration: number;
@@ -30,34 +32,46 @@ export function shotCel(track: Shot, elapsed: number): string {
     );
     return `shot/bolt/${(octant + 8) % 8}`;
   }
-  return track.look === 'vfx13/torch' ? `vfx13/torch/${Math.floor(elapsed / 70) % 6}` : track.look;
+  // The torch burns through its six cels; a rock or stone tumbles a quarter turn every 80 ms.
+  if (track.look === 'shot/torch') return `shot/torch/${Math.floor(elapsed / 70) % 6}`;
+  return track.look === 'shot/jar' ? track.look : `${track.look}/${Math.floor(elapsed / 80) % 4}`;
 }
 
-export function shotSprite(
-  track: Shot,
-  now: number,
-  data: TopdownVfxData | null,
-): BendFxSprite | null {
+/** The shot's cel over its small hard shadow on the ground below it, which gives the lob its depth. */
+export function shotSprite(track: Shot, now: number, data: TopdownVfxData | null): BendFxSprite[] {
   const elapsed = now - track.start;
-  const rect = (
-    data?.frames[shotCel(track, elapsed)] as { frame?: BendFxSprite['frame'] } | undefined
-  )?.frame;
-  if (!rect) return null;
   const t = Math.min(1, Math.max(0, elapsed / Math.max(1, track.duration)));
-  return {
-    image: 'art/topdown/' + (data?.meta.image ?? ''),
-    frame: rect,
-    pivot: { x: Math.floor(rect.w / 2), y: Math.floor(rect.h / 2) },
-    at: {
-      x: track.from.x + (track.to.x - track.from.x) * t,
-      y: track.from.y + (track.to.y - track.from.y) * t - Math.sin(t * Math.PI) * track.arc,
-    },
-    width: rect.w / TOPDOWN_TILE,
-    height: rect.h / TOPDOWN_TILE,
-    turn: 0,
-    alpha: 1,
-    blend: 'normal',
-    flash: 0,
-    z: 'overActor',
+  const along = (a: Vec2, b: Vec2, lift = 0) => ({
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t - lift,
+  });
+  const sprite = (cel: string, at: Vec2, z: BendFxSprite['z'], alpha: number) => {
+    const rect = (data?.frames[cel] as { frame?: BendFxSprite['frame'] } | undefined)?.frame;
+    return rect
+      ? [
+          {
+            image: 'art/topdown/' + (data?.meta.image ?? ''),
+            frame: rect,
+            pivot: { x: Math.floor(rect.w / 2), y: Math.floor(rect.h / 2) },
+            at,
+            width: rect.w / TOPDOWN_TILE,
+            height: rect.h / TOPDOWN_TILE,
+            turn: 0,
+            alpha,
+            blend: 'normal' as const,
+            flash: 0,
+            z,
+          },
+        ]
+      : [];
   };
+  const shot = sprite(
+    shotCel(track, elapsed),
+    along(track.from, track.to, Math.sin(t * Math.PI) * track.arc),
+    'overActor',
+    1,
+  );
+  return shot.length
+    ? [...sprite('shot/shadow', along(...track.feet), 'ground', 0.65), ...shot]
+    : [];
 }

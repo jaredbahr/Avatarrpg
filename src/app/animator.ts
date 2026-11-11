@@ -422,9 +422,7 @@ export class Animator {
         .active(now, 'bend')
         .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start)),
       // The top-down shots in flight draw as painted cels too (#588).
-      ...this.timeline
-        .active(now, 'shot')
-        .flatMap((track) => shotSprite(track, now, topdownVfx()) ?? []),
+      ...this.timeline.active(now, 'shot').flatMap((track) => shotSprite(track, now, topdownVfx())),
     ];
   }
 

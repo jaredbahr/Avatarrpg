@@ -242,6 +242,17 @@ describe('a top-down shot (#588)', () => {
         (t) => t.kind === 'emitter' && t.def.kind === 'particles' && t.def.shape === 'projectile',
       ),
     ).toBe(false);
+    // Its trail rides the bolt's own path and lob; the shadow tracks the ground between the cells.
+    const trail = out.tracks.find((t) => t.kind === 'emitter' && t.start === shot.start);
+    expect(trail?.kind === 'emitter' && [trail.from, trail.to, trail.arc]).toEqual([
+      shot.from,
+      shot.to,
+      shot.arc,
+    ]);
+    expect(shot.feet).toEqual([
+      { x: 5.5, y: 2.8 },
+      { x: 5.5, y: 7.8 },
+    ]);
   });
 
   it('skips the flight under reduce motion, on the oblique board and before the cels load', () => {
