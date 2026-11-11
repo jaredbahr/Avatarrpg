@@ -172,6 +172,8 @@ export interface ActorAttachment {
   readonly facing: 1 | -1;
   readonly scale: number;
   readonly offset: Vec2;
+  /** The top-down action the caster is drawing (ADR 0104), whose measured `hand` a cast socket is. */
+  readonly clip?: ClipName;
 }
 
 export interface EmitterAttachments {

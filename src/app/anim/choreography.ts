@@ -510,7 +510,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const meleeDirection = melee ? screenMeleeDirection(screenDir) : undefined;
         const attached = ['fire_jab', 'water_whip', 'air_blast'].includes(ability.id);
         // Lobbed oil and area fire leave a palm, but still land on the ground.
-        const castFromHand = attached || ability.id === 'fire_blast' || ability.id === 'oil_flask';
+        let castFromHand = attached || ability.id === 'fire_blast' || ability.id === 'oil_flask';
         const rock = ability.id === 'rock_throw';
         const strike = ability.id === 'strike';
         const facing = self
@@ -550,6 +550,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
           back = still;
           forward = still;
         }
+        // A drawn action's measured striking hand (ADR 0104) launches any bend but earth's ground contract.
+        const drawnHand = action ? casterClips?.[action]?.hand : undefined;
+        if (drawnHand && !self && ability.element !== 'earth') castFromHand = true;
         const compression = action ? 1 : motion.compression;
         const extension = action ? 1 : motion.extension;
         const clip: ClipName = action ?? (melee ? 'melee' : 'cast');
@@ -660,6 +663,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
                     ? partyScale(input.projection, poseScale)
                     : enemyScale(unit.sprite, poseScale, input.projection),
                 offset,
+                // The caster's hand on its drawn action, which is never mirrored.
+                ...(drawnHand && unit === casterUnit && socket.startsWith('cast')
+                  ? { clip: action, facing: 1 }
+                  : {}),
               }
             : undefined;
         const torso = attached || rock || strike ? snapshot(victim, 'torso') : undefined;

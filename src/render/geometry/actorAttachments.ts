@@ -57,12 +57,14 @@ const CAST_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
 };
 
 /** Upright offset from the foot anchor, in unscaled tile units. */
-export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec2 {
+export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry, measured?: Vec2): Vec2 {
   if (actor.socket === 'ground') return { x: 0, y: 0 };
   const hand = actor.socket !== 'torso';
   const index = actor.socket === 'cast-release' ? 1 : 0;
   const point =
-    actor.socket === 'waterskin' ? { x: 53, y: 100 } : CAST_HANDS[actor.sprite]?.[index];
+    actor.socket === 'waterskin'
+      ? { x: 53, y: 100 }
+      : (measured ?? CAST_HANDS[actor.sprite]?.[index]);
   if (hand && point && frame && !frame.placeholder) {
     return {
       x: (point.x - frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
@@ -105,9 +107,10 @@ export function attachmentPoint(
   lift: number,
   frame?: FrameGeometry,
   square = SQUARE_FOOTPRINTS,
+  hand?: Vec2,
 ): Vec2 {
   const ground = projectGround(renderFoot(actor.pos, actor.size, square, projection), projection);
-  const socket = socketOffset(actor, frame);
+  const socket = socketOffset(actor, frame, hand);
   // Orthographic sprites have a foot line below their cell centre. Oblique
   // sprites stand at it (Camera.spriteBox uses 0.86, and the sheet uses 0.85).
   const foot = projection === 'oblique' ? FOOT_LINE - 0.86 : FOOT_LINE - 0.5;
@@ -130,7 +133,9 @@ export function resolveActorEmitters(
   const point = (actor: ActorAttachment) => {
     const existing = presented.get(actor);
     if (existing?.projection === projection) return existing.point;
-    const clip = actor.socket === 'torso' ? 'idle' : 'cast';
+    // A drawn top-down action's hand is measured on its own cels (ADR 0104); the legacy cast's otherwise.
+    const drawn = actor.socket === 'torso' ? undefined : actor.clip;
+    const clip = actor.socket === 'torso' ? 'idle' : (drawn ?? 'cast');
     const frame = sheets.frame(
       actor.sprite,
       clip,
@@ -144,6 +149,8 @@ export function resolveActorEmitters(
       projection,
       liftAt(grid, actor.pos, projection),
       frame ?? undefined,
+      SQUARE_FOOTPRINTS,
+      drawn && sheets.clips(actor.sprite)?.[drawn]?.hand,
     );
     presented.set(actor, { projection, point: resolved });
     return resolved;
