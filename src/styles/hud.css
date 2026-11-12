@@ -2570,13 +2570,17 @@ html[data-contrast='high'] .hud-panel::after {
   display: none;
 }
 
+/* A solid plate with an ink edge, like the battle's title plate, so a caption
+   over a dark forest or a bright quarry reads the same (#630). */
 .toast {
   padding: var(--sp-2) var(--sp-4);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--c-bg) 96%, transparent);
-  border: var(--hairline) solid var(--c-line);
+  background: var(--surface-1);
+  border: var(--hairline) solid var(--c-ink-line);
   box-shadow: var(--inset-edge), var(--shadow-2);
-  font-size: var(--fs-sm);
+  color: var(--c-ink);
+  font-size: var(--fs-md);
+  line-height: 1.35;
   text-align: center;
   animation: toast-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
 }
