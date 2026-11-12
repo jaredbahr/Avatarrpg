@@ -407,6 +407,13 @@
   flex: 1 1 auto;
 }
 
+/* #622: a rule will fire, but the table has not found it yet. */
+.reaction-hint {
+  border-style: dashed;
+  border-left-style: solid;
+  border-left-color: var(--c-gold-soft);
+}
+
 /* A rule actually fired, rather than the surface just landing as authored. */
 .reaction-fires {
   border-left-color: var(--c-gold);
@@ -473,6 +480,12 @@
 .reaction-row-chain {
   border-left-color: var(--c-warn);
   background: color-mix(in srgb, var(--c-warn-deep) 45%, transparent);
+}
+
+/* #622: a combo the table has not found yet. */
+.reaction-row-unfound {
+  border-left-style: dashed;
+  color: var(--c-ink-faint);
 }
 
 .warn-note {
@@ -1206,6 +1219,36 @@ html[data-contrast='high'] .title-card .tagline {
 
 .choice-option.is-locked .speaker-tag {
   color: var(--c-ink-dim);
+}
+
+/*
+ * The table vote (#621). The result keeps every answer on screen with who
+ * picked it; the winner (or each tied answer, still tappable by the decider)
+ * is ringed in gold, and the rest only dim, without the locked dashes.
+ */
+.vote-banner .btn-large {
+  margin-top: var(--sp-2);
+}
+
+.vote-names {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-gold-deep);
+}
+
+.choice-option.is-winner,
+.choice-option.is-tied {
+  border-color: var(--c-gold);
+  box-shadow: 0 0 0 var(--hairline) var(--c-gold);
+  background: color-mix(in srgb, var(--c-gold) 12%, transparent);
+}
+
+.choice-option.is-winner:disabled {
+  opacity: 1;
+}
+
+.choice-option:disabled:not(.is-locked, .is-winner) {
+  opacity: 0.7;
 }
 
 /* The wait options are a phase and a word each, so they wrap as a row of

@@ -179,6 +179,8 @@ const gameState = z.object({
     runoff: runoffState,
   }),
   log: z.array(z.string()),
+  // #622. Defaulted like `props`: a save from before discovery simply has found nothing yet.
+  discoveredCombos: z.array(z.string()).default([]),
 });
 
 /** Anything the app wants to persist beside the rules state. */
