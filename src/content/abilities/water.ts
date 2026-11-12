@@ -20,7 +20,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
     ],
     description:
       'A lash of water at one enemy, with a 75% chance to leave them Wet for 2 rounds, ready for lightning or cold.',
-    flavor: 'Wet things conduct lightning. Cold can lock water solid. Remember that.',
+    flavor: 'Wet things conduct lightning. Remember that.',
     fx: 'fx.water.whip',
     tags: ['attack', 'control'],
   }),
@@ -149,7 +149,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
     cooldown: 2,
     effects: [{ kind: 'surface', surface: 'ice', duration: 3, area: 'area' }],
     description:
-      'Freezes a line of four tiles out from you for 3 rounds. The ice costs no extra Move but may Chill whoever steps on it; anyone standing in water there may be Frozen.',
+      'Freezes a line of four tiles out from you for 3 rounds. The ice costs no extra Move but may Chill whoever steps on it.',
     flavor: 'A road, or a trap, depending who walks it.',
     fx: 'fx.water.path',
     tags: ['surface', 'control'],

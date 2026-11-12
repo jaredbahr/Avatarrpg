@@ -16,8 +16,7 @@ export const EARTH_ABILITIES: readonly Ability[] = [
     range: 5,
     targeting: enemyTarget,
     effects: [{ kind: 'damage', base: 5, scale: 0.6, damageType: 'earth' }],
-    description:
-      'Tear a stone from the ground and hurl it at one enemy up to 5 tiles away. Where it lands, it smothers fire and churns water into mud.',
+    description: 'Tear a stone from the ground and hurl it at one enemy up to 5 tiles away.',
     flavor: 'Simple. Heavy. Effective.',
     fx: 'fx.earth.rock',
   }),
