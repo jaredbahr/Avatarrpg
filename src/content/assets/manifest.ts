@@ -936,7 +936,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.riko': image('art/portraits/riko.png', 'nonbender'),
   'portrait.wen': image('art/portraits/wen.png', 'nonbender'),
 
-  'portrait.narrator': painter('portrait', 'neutral', 'narrator'),
+  'portrait.narrator': image('art/portraits/narrator.png', 'neutral'),
   'portrait.mira': image('art/portraits/mira.png', 'earth'),
   'portrait.gao': image('art/portraits/gao.png', 'earth'),
   'portrait.pella': image('art/portraits/pella.png', 'air'),
