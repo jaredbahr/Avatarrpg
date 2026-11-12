@@ -423,6 +423,27 @@ describe('dialogue layer ownership', () => {
     expect(sceneHost.children).toEqual([world.stage]);
   });
 
+  it('releases a finished combat scene before mounting an explore-owned story beat', () => {
+    const finishedCombat = fakeScene('combat');
+    const exploredWorld = fakeScene('explore');
+    const dialogue = fakeScene('dialogue');
+    const { app, sceneHost } = appHarness(finishedCombat);
+    setRoute(app, ordinaryDialogue, 'dialogue', null);
+    Object.assign(app as unknown as Record<string, unknown>, {
+      createDialogueBackdrop: vi.fn(() => exploredWorld),
+    });
+
+    app.showScene(dialogue as unknown as Scene);
+
+    expect(finishedCombat.unmount).toHaveBeenCalledOnce();
+    expect(finishedCombat.suspend).not.toHaveBeenCalled();
+    expect(exploredWorld.mount).toHaveBeenCalledOnce();
+    expect(exploredWorld.suspend).toHaveBeenCalledOnce();
+    expect(sceneHost.children).toHaveLength(2);
+    expect(sceneHost.children[0]).toBe(exploredWorld.stage);
+    expect(sceneHost.children[1]?.children).toEqual([dialogue.stage]);
+  });
+
   it('force-replaces a loaded dialogue without leaving its stale layer', () => {
     const world = fakeScene('explore');
     const stale = fakeScene('dialogue');

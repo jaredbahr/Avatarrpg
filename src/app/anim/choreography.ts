@@ -36,11 +36,30 @@ import {
 import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
 import { renderFoot } from '../../render/renderFoot';
+import { attachmentPoint } from '../../render/geometry/actorAttachments';
+import { TOPDOWN_TILE } from '../../render/projection';
+import { SHOT_PX_PER_S } from '../../render/topdown/shots';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
 import { sheetLocomotion } from '../../content/assets/manifest';
 import type { BendSources } from './bendHandoff';
 import { planBendCast } from './bendHandoff';
+
+/** `BattleDraft.raiseWall`'s label on each cell a wall rises on, and how long the rise takes (#590). */
+const WALL_RISES = 'A wall of stone rises.';
+export const WALL_RISE_MS = 260;
+
+/** The cel each top-down projectile flies as (#588), by ability; the prototype's `b3/fx.js` looks. */
+const SHOT_LOOKS: Readonly<Record<string, string>> = {
+  merc_crossbow: 'shot/bolt',
+  rock_throw: 'shot/rock',
+  boulder: 'shot/rock',
+  driller_debris: 'shot/rock',
+  sling_stone: 'shot/stone',
+  bolas: 'shot/stone',
+  oil_flask: 'shot/jar',
+  torch_toss: 'shot/torch',
+};
 
 /** ADR 0095's cadence calibration and base clock for the residents' slowed amble. */
 export const STROLL_REFERENCE_MS = 750;
@@ -153,6 +172,8 @@ export interface ChoreographyInput {
    * out of that cell through the gather; without it, nothing changes.
    */
   readonly waterSources?: Readonly<Record<string, Vec2>>;
+  /** The top-down shot cels have loaded: a ranged attack on a top-down board flies one (#588). */
+  readonly shots?: boolean;
   /** Temporary A-4 test hook; defaults to the shipped footprint gate. */
   readonly squareFootprints?: boolean;
 }
@@ -822,7 +843,12 @@ export function choreograph(input: ChoreographyInput): Choreography {
             { from: source, to: gather },
           );
         }
-        if (rock && hand) {
+        // A top-down ranged attack flies its own cel from the hand (#588); reduce motion skips the flight.
+        const look =
+          input.shots && input.projection === 'topdown' && rate >= 1 && !self && recipe.travel
+            ? SHOT_LOOKS[ability.id]
+            : undefined;
+        if (rock && hand && !look) {
           const liftStart = cursor + windUp * 0.4;
           const lift = launchAt - liftStart;
           const stones =
@@ -851,44 +877,75 @@ export function choreograph(input: ChoreographyInput): Choreography {
         let returnAt = releaseAt + release;
         if (recipe.travel && !self) {
           const distance = Math.hypot(target.x - caster.x, target.y - caster.y);
-          const flight =
-            Math.max(
-              timing.travelMin,
-              Math.min(timing.travelMax, (distance / recipe.travel.speed) * 1000),
-            ) * rate;
-          // Travel emitters are authored for a nominal flight; stretch them to
-          // the real one. A particle emitter spawns across the whole flight and
-          // a head lives exactly as long as it; a stroke goes out and comes
-          // back, so it lasts twice the flight and a whip reaches the target
-          // as the hit lands.
+          // From the measured hand of the drawn action (else above the caster's tile) to the victim's chest.
+          const geometry = castDef?.frameSize &&
+            castDef.anchor && {
+              frame: { x: 0, y: 0, ...castDef.frameSize },
+              anchor: castDef.anchor,
+              pixelsPerTile: TOPDOWN_TILE,
+              placeholder: false,
+            };
+          const from =
+            hand && drawnHand && geometry
+              ? attachmentPoint(hand, 'topdown', 0, geometry, undefined, drawnHand)
+              : { x: caster.x, y: caster.y - 0.5 };
+          const chest = snapshot(victim, 'torso');
+          const to = chest ? attachmentPoint(chest, 'topdown', 0) : target;
+          const flight = look
+            ? (Math.hypot(to.x - from.x, to.y - from.y) * TOPDOWN_TILE * 1000) / SHOT_PX_PER_S
+            : Math.max(
+                timing.travelMin,
+                Math.min(timing.travelMax, (distance / recipe.travel.speed) * 1000),
+              ) * rate;
+          const arc = look === 'shot/stone' || look === 'shot/rock' ? 0.45 : 0.2;
+          if (look)
+            tracks.push({
+              kind: 'shot',
+              look,
+              from,
+              to,
+              // On the figures' foot line, a little below the cell centres.
+              feet: [
+                { x: caster.x, y: caster.y + 0.3 },
+                { x: target.x, y: target.y + 0.3 },
+              ],
+              arc,
+              start: launchAt,
+              duration: flight,
+            });
           const nominal = Math.max(40, Math.round(flight / rate));
-          const stretched = recipe.travel.emitters.map((def): EmitterDef => {
-            if (def.kind === 'strokes')
+          const stretched = recipe.travel.emitters
+            // The shot's own cel replaces the particle head and any painted flame; its trail follows it.
+            .filter((def) => !look || (def.kind === 'particles' && def.shape !== 'projectile'))
+            .map((def): EmitterDef => {
+              if (def.kind === 'strokes')
+                return {
+                  ...def,
+                  duration: nominal * (def.shape === 'gust' || def.shape === 'flame' ? 1 : 2),
+                };
+              const k = nominal / def.duration;
               return {
                 ...def,
-                duration: nominal * (def.shape === 'gust' || def.shape === 'flame' ? 1 : 2),
+                duration: nominal,
+                delay: [def.delay[0] * k, def.delay[1] * k],
+                ...(def.shape === 'projectile'
+                  ? { life: [nominal, nominal] as [number, number] }
+                  : {}),
               };
-            const k = nominal / def.duration;
-            return {
-              ...def,
-              duration: nominal,
-              delay: [def.delay[0] * k, def.delay[1] * k],
-              ...(def.shape === 'projectile'
-                ? { life: [nominal, nominal] as [number, number] }
-                : {}),
-            };
-          });
-          emit(
-            stretched,
-            launchAt,
-            caster,
-            target,
-            palette,
-            eventIndex,
-            2,
-            recipe.travel.arc,
-            hand ? { from: hand, ...(torso ? { to: torso } : {}) } : undefined,
-          );
+            });
+          if (look) emit(stretched, launchAt, from, to, palette, eventIndex, 2, arc);
+          else
+            emit(
+              stretched,
+              launchAt,
+              caster,
+              target,
+              palette,
+              eventIndex,
+              2,
+              recipe.travel.arc,
+              hand ? { from: hand, ...(torso ? { to: torso } : {}) } : undefined,
+            );
           impactAt = launchAt + flight;
           // Water Whip remains tethered on its return. Keep the striking palm
           // out until that stroke has reeled in, rather than idling underneath it.
@@ -1305,6 +1362,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
         cue(key, at, 15, eventIndex);
         const { recipe, palette } = effect(key);
         emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 8);
+        // A top-down Earth Wall rises out of the ground over the prototype's 260 ms (#590).
+        if (input.projection === 'topdown' && rate >= 1 && event.label === WALL_RISES)
+          tracks.push({ kind: 'rise', pos: event.pos, start: at, duration: WALL_RISE_MS });
         break;
       }
 

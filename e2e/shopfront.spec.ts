@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import { enterNode, pinObliqueStyle, resetStorage, startGame, waitForIdle } from './helpers';
 import { pixelsFromDataUrl } from './pixels';
 import type { MapView } from '../src/render/view';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 for (const renderer of ['canvas', 'webgl']) {
   test(`Look around → Visit Gao settles the party during conversation on ${renderer}`, async ({

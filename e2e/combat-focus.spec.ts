@@ -3,6 +3,7 @@ import { allowSoftwareWebgl } from './budget';
 import {
   enterNode,
   pauseClock,
+  pinObliqueStyle,
   resetStorage,
   setLargeText,
   settleLayout,
@@ -12,6 +13,9 @@ import {
 } from './helpers';
 import { paintedTileCentre } from './projection';
 import type { MapView } from '../src/render/view';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 test('a fresh battle establishes the full formation before the acting-unit hand-off', async ({
   page,

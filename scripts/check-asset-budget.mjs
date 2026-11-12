@@ -105,8 +105,9 @@ if (shipped.length === 0) {
   console.error('dist/ not found; run `npm run build` first.');
   process.exit(1);
 }
-// What the service worker leaves for run time (`precache.mjs`: the top-down family, fetched only
-// under ?style=topdown until T6) is shipped but not precached; its family budget still holds above.
+// What the service worker leaves for run time (`precache.mjs`: the oblique art of the maps that
+// draw a top-down scene, requested only under ?style=oblique until T7) is shipped but not precached;
+// its family budget still holds above.
 const precached = shipped.filter((f) => !isPrecacheIgnored(relative(dist, f).split(sep).join('/')));
 const deferred = shipped.length - precached.length;
 const total = precached.reduce((sum, f) => sum + statSync(f).size, 0);

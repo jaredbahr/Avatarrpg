@@ -29,7 +29,7 @@ import {
 } from '../../content/story/interludes';
 
 /** Portraits in the HUD are 6rem; on the stage the speaker is nearly twice that. */
-const STAGE_PORTRAIT_REM = 11;
+const STAGE_PORTRAIT_REM = 10;
 
 /**
  * The element a portrait is painted in. The manifest already tags every
@@ -117,6 +117,7 @@ export class DialogueScene implements Scene {
     }
 
     const scene = el('div', { class: 'scene dialogue-scene' });
+    if (node.kind === 'end') scene.classList.add('end-scene');
     scene.appendChild(this.topBar());
 
     if (this.interludeNode !== node.id) {

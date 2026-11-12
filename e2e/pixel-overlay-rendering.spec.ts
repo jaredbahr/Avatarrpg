@@ -13,9 +13,19 @@ import { talkPipMark, type PixelOverlayCue } from '../src/render/pixelOverlayGeo
 import { FOOT_LINE } from '../src/render/sheets/bake';
 import type { MapView, RenderUnit } from '../src/render/view';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pinObliqueStyle,
+  resetStorage,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { groundPoint } from './projection';
 import { prepareRaisedHoverEvidence } from './raised-hover-evidence';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 const REVIEW_DIR = resolve(process.cwd(), '.shots/pixel-overlay-review');
 const VIEWPORT = { width: 1280, height: 800 };
@@ -1417,6 +1427,7 @@ async function backendRun(
     hasTouch: true,
   });
   const page = await context.newPage();
+  await pinObliqueStyle(page);
   try {
     mkdirSync(REVIEW_DIR, { recursive: true });
     if (dpr === 1) await captureVillageOverlays(page, backend);
@@ -1726,6 +1737,7 @@ for (const backend of ['canvas', 'webgl'] as const) {
       hasTouch: true,
     });
     const page = await context.newPage();
+    await pinObliqueStyle(page);
     let observation: Awaited<ReturnType<typeof prepareRaisedHoverEvidence>> | null = null;
     try {
       if (backend === 'webgl') observation = await prepareRaisedHoverEvidence(page);
