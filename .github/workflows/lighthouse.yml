@@ -1,0 +1,36 @@
+name: Lighthouse report
+
+# One requested run only; this is informational and does not join the merge gates.
+# GitHub can dispatch a new workflow only after its file reaches the default branch.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Use preinstalled Chromium
+        run: |
+          chrome="$(command -v chromium || command -v google-chrome || true)"
+          test -n "$chrome"
+          echo "CHROME_PATH=$chrome" >> "$GITHUB_ENV"
+      - name: Build, preview, and collect mobile report
+        run: npm run lighthouse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: lighthouse-report/
+          if-no-files-found: error
+          retention-days: 1
