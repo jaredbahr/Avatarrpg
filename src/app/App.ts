@@ -9,10 +9,13 @@
  *                                                  -> new state -> scene.sync()
  */
 
+import { comboName } from './ui/comboText';
+import type { ComboReveal } from './ui/comboText';
 import type {
   BattleState,
   Command,
   ContentIndex,
+  Difficulty,
   ElementId,
   GameEvent,
   GameState,
@@ -49,6 +52,7 @@ import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
 import { AudioBus } from './audio/bus';
 import { setUiSink } from './audio/ui';
+import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
@@ -240,6 +244,8 @@ export class App {
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
   readonly audio: AudioBus;
+  /** Area music, on a context of its own so a load or Sound Off does not cut it (ADR 0108). */
+  readonly music: MusicPlayer;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
   /** Presentation-only provenance for the next newly mounted combat scene. */
@@ -313,6 +319,7 @@ export class App {
     // `button()` cannot see the app, so the bus is registered rather than
     // passed; a control asks for a click without knowing what makes one.
     setUiSink((key) => this.audio.play([{ key, at: 0, seed: 0 }], 0));
+    this.music = new MusicPlayer(() => this.settings.music);
     this.animator = this.createPresentationAnimator();
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);
@@ -381,9 +388,14 @@ export class App {
      * the context is already running. `pointerdown` rather than `click`,
      * because a tap that starts a drag on the board never becomes a click.
      */
-    const unlock = (): void => this.audio.unlock();
+    const unlock = (): void => {
+      this.audio.unlock();
+      this.music.unlock();
+    };
     window.addEventListener('pointerdown', unlock, { passive: true });
     window.addEventListener('keydown', unlock, { passive: true });
+    // A backgrounded tab pauses the music and returning plays it on, where it left off.
+    document.addEventListener('visibilitychange', () => this.music.setHidden(document.hidden));
     this.showScene(new TitleScene(this));
   }
 
@@ -423,6 +435,7 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     this.cancelRoute();
+    this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
     const nextInterlude =
       scene.name === 'dialogue' && Boolean(INTERLUDES[this.state?.story.nodeId ?? '']);
@@ -642,6 +655,19 @@ export class App {
     }
   }
 
+  /**
+   * The area's track, from the scene and the map (or battlefield) the state is on. Every scene change
+   * comes through here; the player ignores a track that is already playing, so moving between scenes
+   * of one area, a conversation included, never restarts it. A fight dips it rather than switching.
+   */
+  private syncMusic(scene: string): void {
+    const battle = this.state?.battle ?? null;
+    this.music.setTrack(
+      musicFor({ scene, mapId: this.state?.location.mapId, battleMapId: battle?.mapId }),
+    );
+    this.music.setDuck(battle !== null && (scene === 'combat' || scene === 'dialogue'));
+  }
+
   /** Discard the replaced state's queued animation and audio together. */
   private resetPlayback(): void {
     this.animator.clear();
@@ -687,6 +713,7 @@ export class App {
     slots: readonly PartySlot[],
     seed?: string,
     participants?: readonly Participant[],
+    difficulty?: Difficulty,
   ): void {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
@@ -696,6 +723,7 @@ export class App {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
       startNode: this.storyEntry,
+      ...(difficulty ? { difficulty } : {}),
     });
 
     this.session.setPlayers(
@@ -716,6 +744,18 @@ export class App {
     this.resetPlayback();
     this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
+  }
+
+  /**
+   * Changes the game's difficulty from Settings. A fight already on the field
+   * keeps its enemies; the next one (or a retry) is built at the new setting.
+   * Saved straight away, so Continue keeps it.
+   */
+  setDifficulty(difficulty: Difficulty): void {
+    const state = this.state;
+    if (!state || state.difficulty === difficulty) return;
+    this.state = apply(this.content, state, { type: 'setDifficulty', difficulty }).state;
+    if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
   /** Installs a loaded save, replacing everything. */
@@ -831,6 +871,15 @@ export class App {
         announce(event.label);
       }
       if (event.type === 'message') this.toasts.show(event.text);
+      if (event.type === 'comboDiscovered') {
+        const rule = this.content.combos.find((candidate) => candidate.id === event.comboId);
+        if (!rule) continue;
+        // After the clip, so the caption never sits over the hit or its number.
+        window.setTimeout(
+          () => this.toasts.show(`New combo found: ${comboName(this.content, rule)}!`),
+          Math.max(0, this.animator.finishesAt - performance.now()),
+        );
+      }
     }
   }
 
@@ -947,6 +996,11 @@ export class App {
     }
   }
 
+  /** Which combos the confirm step and the reference name openly (#622). */
+  comboReveal(): ComboReveal {
+    return this.settings.comboHints === 'show' ? 'all' : (this.state?.discoveredCombos ?? []);
+  }
+
   updateSettings(next: Partial<Settings>): void {
     this.settings = { ...this.settings, ...next };
     applySettings(this.settings);
@@ -956,6 +1010,8 @@ export class App {
     // setting *is* one.
     if (this.settings.volume <= 0) this.audio.close();
     else this.audio.unlock();
+    this.music.volumeChanged();
+    this.music.unlock();
     this.scene?.resize?.();
     this.scene?.sync();
   }
@@ -1061,6 +1117,13 @@ export class App {
   /* ---------------------------------------------------------------- */
   /* Battle resolution                                                 */
   /* ---------------------------------------------------------------- */
+
+  /** "Try again" on a lost fight (#620): rebuild the opening board and remount. */
+  retryBattle(): void {
+    this.dispatch({ type: 'retryBattle' });
+    this.animator.clear();
+    this.routeToState(true);
+  }
 
   /** Called by CombatScene once the player has read the result panel. */
   resolveBattle(): void {

@@ -27,9 +27,17 @@ export const PRECACHE_IGNORES = [
   'art/maps/quarry_floor.webp',
 ];
 
+/**
+ * Area music streams from the network as it plays (ADR 0108): a few MB of loops that one area at a
+ * time needs, and none of them before the first tap. `globPatterns` in `vite.config.ts` has no
+ * `m4a`, so workbox never lists them; the asset budget leaves them out of the precache total too
+ * (the audio family still counts them).
+ */
+export const STREAMED = ['audio/music/**'];
+
 /** Whether `path` (relative to `dist/`, `/`-separated) is left out of the precache. */
 export function isPrecacheIgnored(path) {
-  return PRECACHE_IGNORES.some((pattern) =>
+  return [...PRECACHE_IGNORES, ...STREAMED].some((pattern) =>
     pattern.endsWith('/**') ? path.startsWith(pattern.slice(0, -2)) : path === pattern,
   );
 }

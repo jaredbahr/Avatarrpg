@@ -1,16 +1,20 @@
 /**
  * Settings.
  *
- * Each control is aimed at a specific person at the table rather than
+ * Ten controls (eleven during a game, with its difficulty), each aimed at a
+ * specific person at the table rather than
  * at a spec: text too small on a 2736x1824 screen, too much going on, a room
- * where sound is not welcome, can't tell the fire from the mud, the panels
- * washing out in daylight, or a planner who counts squares.
+ * where sound (or only the music) is not welcome, a table that would rather not vote,
+ * a table that wants the combos spoiled,
+ * can't tell the fire from the mud, the panels washing out in daylight, or a planner
+ * who counts squares.
  */
 
 import type { App } from '../App';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
+import { DIFFICULTY_CHOICES, difficultyHint } from './difficultyText';
 
 /**
  * Four steps rather than a slider: `choiceRow` is already a row of real
@@ -58,6 +62,24 @@ export class SettingsPanel extends Dialog {
   protected build(body: HTMLElement): void {
     const settings = this.app.settings;
 
+    // Difficulty belongs to the game being played, not the device, so it only
+    // shows while there is one.
+    const game = this.app.state;
+    if (game) {
+      body.appendChild(
+        this.choiceRow(
+          'Difficulty',
+          `${difficultyHint(game.difficulty)} Saved with this game; changes start at the next fight.`,
+          DIFFICULTY_CHOICES,
+          game.difficulty,
+          (value) => {
+            const choice = DIFFICULTY_CHOICES.find((option) => option.value === value);
+            if (choice) this.app.setDifficulty(choice.value);
+          },
+        ),
+      );
+    }
+
     body.appendChild(
       this.choiceRow(
         'Text size',
@@ -79,6 +101,42 @@ export class SettingsPanel extends Dialog {
         VOLUME_CHOICES.map(({ label, value }) => ({ label, value: String(value) })),
         String(nearestVolume(settings.volume)),
         (value) => this.app.updateSettings({ volume: Number(value) }),
+      ),
+    );
+
+    body.appendChild(
+      this.choiceRow(
+        'Music',
+        'The tune for each place, apart from the sound effects.',
+        VOLUME_CHOICES.map(({ label, value }) => ({ label, value: String(value) })),
+        String(nearestVolume(settings.music)),
+        (value) => this.app.updateSettings({ music: Number(value) }),
+      ),
+    );
+
+    body.appendChild(
+      this.choiceRow(
+        'Story choices',
+        'Table vote: everyone picks in secret and a tie goes to the decider. Take turns: the decider picks alone.',
+        [
+          { label: 'Table vote', value: 'vote' },
+          { label: 'Take turns', value: 'turns' },
+        ],
+        settings.storyChoices,
+        (value) => this.app.updateSettings({ storyChoices: value === 'turns' ? 'turns' : 'vote' }),
+      ),
+    );
+
+    body.appendChild(
+      this.choiceRow(
+        'Combo hints',
+        'Hint first keeps each elemental combo a surprise until you see it happen once.',
+        [
+          { label: 'Hint first', value: 'hint' },
+          { label: 'Always show', value: 'show' },
+        ],
+        settings.comboHints,
+        (value) => this.app.updateSettings({ comboHints: value === 'show' ? 'show' : 'hint' }),
       ),
     );
 

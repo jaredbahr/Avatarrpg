@@ -137,7 +137,7 @@ export function connectAct1(map: MapDef): MapDef {
     case 'forest_road':
       return {
         ...map,
-        objective: 'Explore the woodland paths. The quarry lies east; Ba Dan lies west.',
+        objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
         objectiveVariants: [
           {
             when: RETURNEES_RETURNING,
@@ -203,7 +203,7 @@ export function connectAct1(map: MapDef): MapDef {
             id: 'dema',
             name: 'Dema, road keeper',
             pos: { x: 3, y: 1 },
-            sprite: 'npc.elder',
+            sprite: 'npc.dema',
             node: 'forest_dema',
             routes: [
               { when: rescued, node: 'dema_home' },
@@ -326,10 +326,27 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('ambush_road'),
           {
+            // Ruon stands where the ambush broke while he speaks (#628), and
+            // waits there until the party goes down to the quarry floor.
+            id: 'ruon_cutting',
+            name: 'Captain Ruon',
+            pos: { x: 10, y: 4 },
+            sprite: 'unit.ally.ruon',
+            node: 'ruon_cutting',
+            when: {
+              kind: 'all',
+              of: [
+                { kind: 'flag', key: 'ruon_spared', op: 'set' },
+                visited('after_ambush'),
+                unvisited('quarry_descent'),
+              ],
+            },
+          },
+          {
             id: 'rest_keeper',
             name: 'Sen, the tea keeper',
             pos: { x: 5, y: 9 },
-            sprite: 'npc.shopkeeper',
+            sprite: 'npc.sen',
             node: 'cutting_tea',
             routes: [
               { when: rescued, node: 'sen_home' },

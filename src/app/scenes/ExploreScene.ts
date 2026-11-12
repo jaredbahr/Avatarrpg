@@ -29,7 +29,11 @@ import { exploreTilePx, usesIntegerZoom } from '../../render/projection';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
 import { idlePhase } from '../../render/sheets/store';
-import { sheetLocomotion } from '../../content/assets/manifest';
+import { resolveAsset, sheetLocomotion } from '../../content/assets/manifest';
+import { authoredForBothSides } from '../../content/assets/clips';
+import { FOOT_LINE } from '../../render/sheets/bake';
+import { placeFrame } from '../../render/sheets/placement';
+import { npcClip } from '../../render/view';
 import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
@@ -502,6 +506,7 @@ export class ExploreScene implements Scene {
     // A dpr change (a window dragged to another screen) leaves the zoom off the
     // device-pixel grid; put it back on the nearest whole scale.
     camera.resnap();
+    this.frameConversationSpeaker();
     this.rememberViewSize();
     this.redrawLife();
   }
@@ -661,6 +666,7 @@ export class ExploreScene implements Scene {
           () => {
             if (!this.app.animator.busy(performance.now()))
               new TravelJournal(this.app).open(this.overlayHost());
+            else this.app.toasts.show('Let the party finish, then open the journal.');
           },
           { class: 'explore-header-action' },
         ),
@@ -735,6 +741,141 @@ export class ExploreScene implements Scene {
     this.objectivePresentation = toggleExploreObjective(this.objectivePresentation, objective);
     if (!objective) return;
     this.renderObjective(objective);
+  }
+
+  /**
+   * Keep what the conversation is about above the actual dialogue panel: the
+   * person or tiles its presentation stages (#628), else the pinned NPC's
+   * whole drawn body.
+   */
+  private frameConversationSpeaker(npcs = this.lastNpcs): boolean {
+    const camera = this.renderer?.camera;
+    if (!this.conversationMode || camera?.projection !== 'topdown') return false;
+    const state = this.app.state;
+    const map = this.map;
+    const presentation = state ? worldConversationFor(this.app.content, state) : undefined;
+    if (!state || !map || !presentation) return false;
+    const stage = presentation.stage;
+    if (stage && 'tiles' in stage) {
+      const corners = stage.tiles.flatMap((tile) => {
+        const box = camera.toScreen(tile);
+        return [
+          { x: box.x, y: box.y },
+          { x: box.x + box.size, y: box.y + box.size },
+        ];
+      });
+      return this.keepAbovePanel(corners);
+    }
+    const pin = state.world.talk;
+    const npcId = stage?.npc ?? (pin?.mapId === map.id ? pin.npcId : null);
+    if (!npcId) return false;
+    const placed = visibleNpcs(this.app.content, map, state).find((npc) => npc.id === npcId);
+    if (!placed) return false;
+    const figure = placed.resident
+      ? this.app.residents
+          .figures()
+          .find((who) => who.id === placed.resident && who.npcId === placed.id)
+      : undefined;
+    if (placed.resident && !figure) return false;
+    const npc = npcs.find((marker) => marker.id === (figure?.id ?? placed.id));
+    if (!npc || npc.quiet || (npc.alpha ?? 1) <= 0) return false;
+    if (figure && !samePos(npc.renderPos ?? npc.pos, figure.drawPos)) return false;
+    const { dpr } = camera.viewport;
+    const entry = resolveAsset(npc.sprite);
+    const footprint = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
+    const box = camera.spriteBox(npc.renderPos ?? npc.pos, footprint, false);
+    // Top-down actors have no elevation lift. Use the same anchored frame and
+    // pose transforms as their existing backends, including the snapped bob.
+    const foot = { x: box.x + (footprint * box.size) / 2, y: box.y + FOOT_LINE * box.size };
+    const scale = npc.scale ?? 1;
+    const clip = npcClip(npc);
+    const frame =
+      entry.kind === 'sheet'
+        ? sheets.frame(
+            npc.sprite,
+            clip,
+            npc.clipTime ?? 0,
+            undefined,
+            box.size * dpr * scale,
+            footprint,
+          )
+        : null;
+    const rect = frame
+      ? placeFrame(frame, 0, 0, box.size)
+      : {
+          x: (-footprint * box.size) / 2,
+          y: -FOOT_LINE * box.size,
+          w: footprint * box.size,
+          h: box.size,
+        };
+    const facing =
+      entry.kind === 'sheet' && entry.facing === 'both' && authoredForBothSides(clip)
+        ? 1
+        : (npc.facing ?? 1);
+    const pose = scale * (npc.poseScale ?? 1);
+    const bob = Math.round((npc.offset?.y ?? 0) * box.size * dpr) / dpr;
+    const cosine = Math.cos(npc.lean ?? 0),
+      sine = Math.sin(npc.lean ?? 0);
+    const corners = (
+      [
+        [rect.x, rect.y],
+        [rect.x + rect.w, rect.y],
+        [rect.x, rect.y + rect.h],
+        [rect.x + rect.w, rect.y + rect.h],
+      ] as const
+    ).map(([x, y]) => {
+      const dx = x * pose * facing,
+        dy = y * pose;
+      return { x: foot.x + dx * cosine - dy * sine, y: foot.y + bob + dx * sine + dy * cosine };
+    });
+    return this.keepAbovePanel(corners);
+  }
+
+  /** Pans the least distance that puts every corner inside the map above the dialogue panel. */
+  private keepAbovePanel(corners: readonly { x: number; y: number }[]): boolean {
+    const camera = this.renderer?.camera;
+    if (!camera || !corners.length) return false;
+    const panel = this.host?.querySelector<HTMLElement>(
+      '.explore-conversation .conversation-panel',
+    );
+    const canvas = this.canvas?.getBoundingClientRect();
+    if (!panel?.getClientRects().length || !canvas?.width || !canvas.height) return false;
+    const { dpr, width, height } = camera.viewport;
+    const pixel = 1 / dpr;
+    // Round inward by one device pixel: offset snapping must not put a body
+    // back under the panel. This never changes zoom or the camera's bounds.
+    const bottom =
+      Math.floor(
+        Math.min(
+          height,
+          ((panel.getBoundingClientRect().top - canvas.top) * height) / canvas.height,
+        ) * dpr,
+      ) /
+        dpr -
+      pixel;
+    if (bottom <= pixel || width <= 2 * pixel) return false;
+    const pan = (low: number, high: number, min: number, max: number): number => {
+      // An oversized body has one stable best-effort alignment, rather than
+      // alternating its two clipped edges. Existing clamps remain authoritative.
+      if (high - low > max - min) return Math.round(((min + max - low - high) * dpr) / 2) / dpr;
+      if (low < min) return Math.ceil((min - low) * dpr) / dpr;
+      if (high > max) return Math.floor((max - high) * dpr) / dpr;
+      return 0;
+    };
+    const dx = pan(
+      Math.min(...corners.map((p) => p.x)),
+      Math.max(...corners.map((p) => p.x)),
+      pixel,
+      width - pixel,
+    );
+    const dy = pan(
+      Math.min(...corners.map((p) => p.y)),
+      Math.max(...corners.map((p) => p.y)),
+      pixel,
+      bottom,
+    );
+    if (dx || dy) camera.panBy(dx, dy);
+    return true;
   }
 
   private followParty(): void {
@@ -1320,15 +1461,6 @@ export class ExploreScene implements Scene {
       this.app.audio.updateEnvironment(
         courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
       );
-    // The camera follows the walk and rests where it ends; a drag afterwards stays.
-    // A practice holds it on the benders and glides back to the leader after.
-    const glide = this.practiceCamera;
-    if (glide) {
-      const ms = motionReduced() ? 0 : PRACTICE_GLIDE_MS;
-      const to = glide.back ? (walking ?? state.location.pos) : glide.to;
-      renderer.camera.centreOn(glidePoint(glide.from, to, now - glide.start, ms));
-      if (glide.back && now - glide.start >= ms) this.practiceCamera = null;
-    } else if (walking) renderer.camera.centreOn(walking);
     const seats = this.ensureTrail(state, grid).positions(state.party.length);
     this.localMap?.update(
       seats.map(
@@ -1426,6 +1558,17 @@ export class ExploreScene implements Scene {
       .filter((npc) => !gone.has(npc.id))
       .map((npc) => ({ at: npc.renderPos ?? npc.pos, scale: npc.scale ?? 1, to: npc.pos }));
     this.lastNpcs = npcs;
+    // A conversation frames its real speaker while legal party tracks finish.
+    // Otherwise keep the existing walk/practice camera behavior.
+    if (!this.frameConversationSpeaker(npcs)) {
+      const glide = this.practiceCamera;
+      if (glide) {
+        const ms = motionReduced() ? 0 : PRACTICE_GLIDE_MS;
+        const to = glide.back ? (walking ?? state.location.pos) : glide.to;
+        renderer.camera.centreOn(glidePoint(glide.from, to, now - glide.start, ms));
+        if (glide.back && now - glide.start >= ms) this.practiceCamera = null;
+      } else if (walking) renderer.camera.centreOn(walking);
+    }
 
     // The air over the village and the light on its painted canal are fidelity,
     // drawn on both backends. Under reduce motion the motes and glints go and

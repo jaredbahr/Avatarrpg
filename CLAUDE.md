@@ -45,8 +45,9 @@ in the top-down style, the default since T6. The owner's direction for finishing
   "thanks for playing" card with a party summary and "play again with a different party".
 - **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
   UI sounds.
-- **Portraits:** the owner is choosing between pixel and hand-drawn dialogue portraits. Don't make new portraits
-  until he has picked a style.
+- **Portraits:** the owner chose **style B, detailed pixel art at 160 px**, on 2026-11-11 (ADR 0107). New portraits are
+  made with `prototypes/topdown/tools/portraits_b.py` (the old portrait at 160 px through PixelLab `edit-image-pro-flash`,
+  the B description with the character's own features, seed 11); each is checked at 3x before it ships.
 - **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
   new content or regions.
 

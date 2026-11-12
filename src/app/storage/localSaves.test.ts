@@ -3,8 +3,11 @@ import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { SAVE_FORMAT_VERSION, serialize } from '../../core/save/serialize';
 import {
+  DEFAULT_SETTINGS,
   clearSlot,
   listSlots,
+  loadSettings,
+  saveSettings,
   loadFromSlot,
   loadLastTitleArt,
   saveLastTitleArt,
@@ -55,6 +58,20 @@ describe('browser save slots', () => {
   });
 
   afterEach(() => vi.unstubAllGlobals());
+
+  it('keeps the Music level apart from Sound, and gives older settings the gentle default', () => {
+    expect(DEFAULT_SETTINGS.music).toBeLessThan(DEFAULT_SETTINGS.volume);
+    expect(loadSettings().music).toBe(DEFAULT_SETTINGS.music);
+    saveSettings({ ...DEFAULT_SETTINGS, volume: 0, music: 1 });
+    expect(loadSettings()).toMatchObject({ volume: 0, music: 1 });
+    saveSettings({ ...DEFAULT_SETTINGS, music: 0 });
+    expect(loadSettings().music).toBe(0);
+    // Written before music existed, or hand-edited out of range: the default, not silence.
+    entries.set('fnt.settings', JSON.stringify({ volume: 0.35 }));
+    expect(loadSettings()).toMatchObject({ volume: 0.35, music: DEFAULT_SETTINGS.music });
+    entries.set('fnt.settings', JSON.stringify({ music: 7 }));
+    expect(loadSettings().music).toBe(DEFAULT_SETTINGS.music);
+  });
 
   it('loads and lists existing saves when writes fail because storage is full', () => {
     vi.mocked(store.setItem).mockImplementation(() => {

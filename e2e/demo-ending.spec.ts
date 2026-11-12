@@ -114,7 +114,7 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
 
   await card.getByRole('button', { name: 'Play again with a different party' }).click();
-  await expect(page.getByRole('heading', { name: 'Who is playing?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose your party' })).toBeVisible();
   await expect(page.getByRole('button', { name: '3 players' })).toBeVisible();
   expect(errors).toEqual([]);
 });

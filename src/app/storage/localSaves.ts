@@ -12,6 +12,7 @@
 
 import type { GameState } from '../../core/types';
 import type { SaveBlob, SaveMeta, SessionMeta } from '../../core/save/serialize';
+import type { StoryChoices } from '../tableVote';
 import {
   deserialize,
   serialize,
@@ -290,6 +291,18 @@ export interface Settings {
    * "off" costs nothing rather than running a silent graph (ADR 0012).
    */
   volume: number;
+  /**
+   * How loud the area music is, 0 to 1, apart from Sound so a table can keep one and drop the other.
+   * Zero stops the music and gives its context back (ADR 0108).
+   */
+  music: number;
+  /**
+   * How a table of two or more settles a story choice: a secret vote with ties to the rotating
+   * decider (#621), or the decider alone.
+   */
+  storyChoices: StoryChoices;
+  /** #622: name a combo only once the table has seen it, or always. */
+  comboHints: 'hint' | 'show';
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -300,6 +313,10 @@ export const DEFAULT_SETTINGS: Settings = {
   showGrid: false,
   combatGuidance: true,
   volume: 0.7,
+  // Under the sound effects, so the music sits behind the table's talk.
+  music: 0.35,
+  storyChoices: 'vote',
+  comboHints: 'hint',
 };
 
 export function loadSettings(): Settings {
@@ -323,6 +340,12 @@ export function loadSettings(): Settings {
         typeof parsed.volume === 'number' && parsed.volume >= 0 && parsed.volume <= 1
           ? parsed.volume
           : DEFAULT_SETTINGS.volume,
+      music:
+        typeof parsed.music === 'number' && parsed.music >= 0 && parsed.music <= 1
+          ? parsed.music
+          : DEFAULT_SETTINGS.music,
+      storyChoices: parsed.storyChoices === 'turns' ? 'turns' : 'vote',
+      comboHints: parsed.comboHints === 'show' ? 'show' : 'hint',
     };
   } catch {
     return { ...DEFAULT_SETTINGS };

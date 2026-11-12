@@ -9,15 +9,21 @@ import { enterNode, resetStorage } from './helpers';
 const defaults: Settings = {
   largeText: 'off',
   volume: 0.7,
+  music: 0.35,
   reduceMotion: false,
   hatchSurfaces: false,
   highContrast: false,
   showGrid: false,
   combatGuidance: true,
+  storyChoices: 'vote',
+  comboHints: 'hint',
 };
 const inventory = [
   'Text size',
   'Sound',
+  'Music',
+  'Story choices',
+  'Combo hints',
   'Reduce motion',
   'Patterned ground',
   'Higher contrast',
@@ -34,6 +40,9 @@ const switches = [
 const changes: { label: string; values: Partial<Settings> }[] = [
   { label: 'Text size', values: { largeText: 'huge' } },
   { label: 'Sound', values: { volume: 0 } },
+  { label: 'Music', values: { music: 0 } },
+  { label: 'Story choices', values: { storyChoices: 'turns' } },
+  { label: 'Combo hints', values: { comboHints: 'show' } },
   { label: 'Reduce motion', values: { reduceMotion: true } },
   { label: 'Patterned ground', values: { hatchSurfaces: true } },
   { label: 'Higher contrast', values: { highContrast: true } },
@@ -81,15 +90,21 @@ async function closeSettings(page: Page, panel: Locator): Promise<void> {
 
 async function assertControlValues(panel: Locator, expected: Settings): Promise<void> {
   // Inventory the actual DOM, including extra input types/plain buttons, so
-  // adding another setting fails loudly instead of silently escaping tests.
-  await expect(panel.locator('.setting-row .setting-text > strong')).toHaveText(inventory);
-  await expect(panel.getByRole('radiogroup')).toHaveCount(2);
+  // Adding an unaccounted setting fails loudly instead of silently escaping tests.
+  // Difficulty belongs to a game in progress (#661), so it leads the sheet only then.
+  const inGame = await panel.page().evaluate(() => Boolean(window.fnt?.app.state));
+  const lead = inGame ? ['Difficulty'] : [];
+  await expect(panel.locator('.setting-row .setting-text > strong')).toHaveText([
+    ...lead,
+    ...inventory,
+  ]);
+  await expect(panel.getByRole('radiogroup')).toHaveCount(lead.length + 5);
   await expect(panel.getByRole('switch')).toHaveCount(5);
   expect(
     await panel
       .getByRole('radiogroup')
       .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-label'))),
-  ).toEqual(['Text size', 'Sound']);
+  ).toEqual([...lead, 'Text size', 'Sound', 'Music', 'Story choices', 'Combo hints']);
   expect(
     await panel
       .getByRole('switch')
@@ -103,13 +118,28 @@ async function assertControlValues(panel: Locator, expected: Settings): Promise<
   const text = panel.getByRole('radiogroup', { name: 'Text size', exact: true });
   const sound = panel.getByRole('radiogroup', { name: 'Sound', exact: true });
   await expect(text.getByRole('radio')).toHaveText(['Normal', 'Large', 'Largest']);
+  const music = panel.getByRole('radiogroup', { name: 'Music', exact: true });
   await expect(sound.getByRole('radio')).toHaveText(['Off', 'Quiet', 'Normal', 'Loud']);
+  await expect(music.getByRole('radio')).toHaveText(['Off', 'Quiet', 'Normal', 'Loud']);
   await expect(text.locator('[aria-checked="true"]')).toHaveText(
     expected.largeText === 'huge' ? 'Largest' : expected.largeText === 'on' ? 'Large' : 'Normal',
   );
   await expect(sound.locator('[aria-checked="true"]')).toHaveText(
     expected.volume === 0 ? 'Off' : 'Normal',
   );
+  await expect(music.locator('[aria-checked="true"]')).toHaveText(
+    expected.music === 0 ? 'Off' : 'Quiet',
+  );
+  const story = panel.getByRole('radiogroup', { name: 'Story choices', exact: true });
+  await expect(story.getByRole('radio')).toHaveText(['Table vote', 'Take turns']);
+  await expect(story.locator('[aria-checked="true"]')).toHaveText(
+    expected.storyChoices === 'turns' ? 'Take turns' : 'Table vote',
+  );
+  await expect(
+    panel
+      .getByRole('radiogroup', { name: 'Combo hints', exact: true })
+      .locator('[aria-checked="true"]'),
+  ).toHaveText(expected.comboHints === 'show' ? 'Always show' : 'Hint first');
   for (const [label, key] of switches) {
     await expect(panel.getByRole('switch', { name: label, exact: true })).toHaveAttribute(
       'aria-checked',
@@ -131,6 +161,30 @@ async function setThroughUi(panel: Locator, values: Partial<Settings>): Promise<
     await panel
       .getByRole('radiogroup', { name: 'Sound', exact: true })
       .getByRole('radio', { name: values.volume === 0 ? 'Off' : 'Normal', exact: true })
+      .click();
+  }
+  if (values.music !== undefined) {
+    await panel
+      .getByRole('radiogroup', { name: 'Music', exact: true })
+      .getByRole('radio', { name: values.music === 0 ? 'Off' : 'Quiet', exact: true })
+      .click();
+  }
+  if (values.storyChoices !== undefined) {
+    await panel
+      .getByRole('radiogroup', { name: 'Story choices', exact: true })
+      .getByRole('radio', {
+        name: values.storyChoices === 'turns' ? 'Take turns' : 'Table vote',
+        exact: true,
+      })
+      .click();
+  }
+  if (values.comboHints !== undefined) {
+    await panel
+      .getByRole('radiogroup', { name: 'Combo hints', exact: true })
+      .getByRole('radio', {
+        name: values.comboHints === 'show' ? 'Always show' : 'Hint first',
+        exact: true,
+      })
       .click();
   }
   for (const [label, key] of switches) {

@@ -189,6 +189,7 @@ function appHarness(initial: ReturnType<typeof fakeScene>) {
     state: null,
     content: { maps: new Map(), story: new Map() },
     curtain: { coverCurrent: vi.fn(), reveal: vi.fn() },
+    music: { setTrack: vi.fn(), setDuck: vi.fn() },
   });
   return { app, sceneHost };
 }

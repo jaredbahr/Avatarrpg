@@ -348,7 +348,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     id: 'dema_home',
     kind: 'dialogue',
     speaker: 'Dema',
-    portrait: 'portrait.mira',
+    portrait: 'portrait.dema',
     lines: [
       'The crews came past. A few stopped to ask about the stream.',
       'They will look at the settling pit when they are fit to work. There is still plenty of silt down here.',
@@ -360,7 +360,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     id: 'sen_home',
     kind: 'dialogue',
     speaker: 'Sen',
-    portrait: 'portrait.gao',
+    portrait: 'portrait.sen',
     lines: [
       'They came through just ahead of you. Filled this bench and most of the ground around it.',
       'I went through all the tea. Sit a moment; I have hot water left.',
