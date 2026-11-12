@@ -326,6 +326,23 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('ambush_road'),
           {
+            // Ruon stands where the ambush broke while he speaks (#628), and
+            // waits there until the party goes down to the quarry floor.
+            id: 'ruon_cutting',
+            name: 'Captain Ruon',
+            pos: { x: 10, y: 4 },
+            sprite: 'unit.ally.ruon',
+            node: 'ruon_cutting',
+            when: {
+              kind: 'all',
+              of: [
+                { kind: 'flag', key: 'ruon_spared', op: 'set' },
+                visited('after_ambush'),
+                unvisited('quarry_descent'),
+              ],
+            },
+          },
+          {
             id: 'rest_keeper',
             name: 'Sen, the tea keeper',
             pos: { x: 5, y: 9 },

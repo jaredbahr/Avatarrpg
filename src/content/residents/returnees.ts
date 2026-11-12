@@ -152,6 +152,10 @@ export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
   tile('return.amri', 'FOREST-RETURN', FOREST, 7, 2),
   tile('return.hesra', 'FOREST-RETURN', FOREST, 6, 2),
   tile('return.senn', 'FOREST-RETURN', FOREST, 9, 2),
+  // The east-road mouth, either side of the lane the party walks in on (#628).
+  tile('welcome.bo_shan', 'BD-EAST-ROAD', VILLAGE, 21, 6),
+  tile('welcome.leto', 'BD-EAST-ROAD', VILLAGE, 21, 9),
+  tile('welcome.amri', 'BD-EAST-ROAD', VILLAGE, 22, 9),
   tile('recovery.bo_shan', 'BD04', VILLAGE, 12, 12),
   tile('recovery.amri', 'BD12-CONTACT', VILLAGE, 13, 9),
   tile('recovery.leto', 'BD13-CONTACT', VILLAGE, 10, 9),
@@ -186,7 +190,27 @@ const schedule = (
     DAY_PHASES.map((phase) => [phase, publicPhases.includes(phase) ? publicSlot : 'home']),
   ) as Record<DayPhase, ResidentSlot | 'home'>;
 
+/**
+ * Three of the five walk into Ba Dan with the party (#628): from the arrival
+ * at the village edge until the welcome home has played, they stand at the
+ * east-road mouth beside the party rather than going straight indoors.
+ */
+const WELCOMERS: Readonly<Partial<Record<ReturneeRecord['npc'], string>>> = {
+  bo_shan: 'welcome.bo_shan',
+  leto: 'welcome.leto',
+  amri: 'welcome.amri',
+};
+
+const WELCOME_WALK: Condition = {
+  kind: 'all',
+  of: [
+    { kind: 'visited', nodeId: 'forest_return_arrival' },
+    { kind: 'not', of: { kind: 'visited', nodeId: 'demo_complete' } },
+  ],
+};
+
 const resident = (record: ReturneeRecord): ResidentDef => {
+  const welcome = WELCOMERS[record.npc];
   const returning = slot(record.returning, record.npc, 'returning_together');
   const recovery = slot(record.recovery, record.npc, 'quiet_recovery');
   return {
@@ -212,6 +236,17 @@ const resident = (record: ReturneeRecord): ResidentDef => {
         slots: {},
         all: returning,
       },
+      ...(welcome
+        ? [
+            {
+              id: `${record.npc}_welcome`,
+              tier: 'presence' as const,
+              when: { kind: 'all', of: [profile(record.id, 'resting'), WELCOME_WALK] } as Condition,
+              slots: {},
+              all: slot(welcome, record.npc, 'welcome_home'),
+            },
+          ]
+        : []),
       {
         id: `${record.npc}_resting`,
         tier: 'care',

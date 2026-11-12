@@ -542,7 +542,13 @@ for (const custody of ['trade', 'escort'] as const) {
     const custodyResponse =
       custody === 'trade' ? 'where Jin delivered him' : 'taking Ruon’s statement';
     await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
+    await page.locator('.dialogue-panel button.btn-primary').click();
+    await page.locator('.dialogue-panel button.btn-primary').click();
+    // The rubbing changes hands (#628).
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_rubbing');
+    await expect(page.locator('.dialogue-line')).toContainText('rubbing');
     await continueStory(page);
+    expect(await page.evaluate(() => window.fnt?.app.state?.flags.rubbing_given)).toBe(true);
     // Gao is resident-bound (ADR 0047): his homecoming hold keeps him at his shopfront.
     const gao = CONTENT.anchors.get('bd02.shopfront')?.site;
     if (gao?.kind !== 'map') throw new Error('Missing canonical village merchant');
@@ -562,9 +568,11 @@ for (const custody of ['trade', 'escort'] as const) {
     await saveAndReload(page);
     expect(await page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe('ba_dan_village');
     await walkTo(page, 11, 5);
-    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_epilogue');
-    await page.locator('.dialogue-panel button.btn-primary').click();
-    await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
+    // Once she has the rubbing, Mira never asks for it again.
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
+      'mira_rubbing_kept',
+    );
+    await expect(page.locator('.dialogue-line')).toContainText('rubbing');
     await continueStory(page);
 
     const xp = await page.evaluate(() => window.fnt?.app.state?.party.map((unit) => unit.xp));
