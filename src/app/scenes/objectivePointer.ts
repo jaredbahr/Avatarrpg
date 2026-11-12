@@ -40,6 +40,8 @@ export interface ObjectivePointerPlacement {
   readonly side: ObjectivePointerSide;
 }
 
+type MapCorner = Pick<HTMLElement, 'offsetLeft' | 'offsetTop' | 'offsetWidth' | 'offsetHeight'>;
+
 /**
  * Put the cue at the nearest inset edge and point it at the actual target.
  * A null result means the target is visible or the cue cannot fit.
@@ -48,7 +50,7 @@ export function objectivePointerPlacement(
   target: ObjectivePointerBox,
   width: number,
   height: number,
-  topRight?: { left: number; bottom: number },
+  corner?: MapCorner | null,
 ): ObjectivePointerPlacement | null {
   const inset = 32;
   if (
@@ -77,12 +79,15 @@ export function objectivePointerPlacement(
   const targetY = target.y + target.size / 2;
   let x = Math.max(inset, Math.min(targetX, width - inset));
   let y = Math.max(inset, Math.min(targetY, height - inset));
-  if (topRight && x + inset > topRight.left && y - inset < topRight.bottom) {
-    // Stay on the same edge, clear of the follow-party map in the corner.
-    if (side === 'north') x = topRight.left - inset;
-    else if (side === 'east') y = topRight.bottom + inset;
-    else return null;
-    if (x < inset || y > height - inset) return null;
+  if (corner?.offsetWidth) {
+    const left = corner.offsetLeft - inset;
+    const bottom = corner.offsetTop + corner.offsetHeight + inset;
+    if (x > left && y < bottom) {
+      // Stay on the same edge, clear of the follow-party map in the corner.
+      if (side === 'north' && left >= inset) x = left;
+      else if (side === 'east' && bottom <= height - inset) y = bottom;
+      else return null;
+    }
   }
 
   return {
@@ -101,22 +106,11 @@ export function drawObjectivePointer(
   target: ResolvedObjectivePointerTarget | null,
 ): void {
   if (!pointer) return;
-  if (!target) {
-    pointer.hidden = true;
-    return;
-  }
-
   const { width, height } = camera.viewport;
-  const placement = objectivePointerPlacement(
-    camera.toScreen(target.pos),
-    width,
-    height,
-    corner?.offsetWidth
-      ? { left: corner.offsetLeft, bottom: corner.offsetTop + corner.offsetHeight }
-      : undefined,
-  );
+  const placement =
+    target && objectivePointerPlacement(camera.toScreen(target.pos), width, height, corner);
   pointer.hidden = !placement;
-  if (!placement) return;
+  if (!target || !placement) return;
   pointer.style.cssText = `left:${placement.x}px;top:${placement.y}px;--objective-edge-angle:${placement.angle}rad`;
   pointer.setAttribute('aria-label', `${target.label} is off screen to the ${placement.side}.`);
 }

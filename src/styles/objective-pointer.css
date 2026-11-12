@@ -2,8 +2,9 @@
   position: absolute;
   z-index: var(--z-banner);
   display: grid;
-  width: var(--tap);
-  height: var(--tap);
+  /* Keep this passive cue inside the 32 CSS-pixel placement inset at large text. */
+  width: min(var(--tap), 62px);
+  height: min(var(--tap), 62px);
   place-items: center;
   border: var(--hairline) solid var(--c-gold-deep);
   border-radius: 50%;

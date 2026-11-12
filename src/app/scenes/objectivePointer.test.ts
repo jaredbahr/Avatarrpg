@@ -23,7 +23,7 @@ describe('off-screen objective pointer placement', () => {
   });
 
   it('keeps north and east cues clear of the map without leaving their edge', () => {
-    const corner = { left: 840, bottom: 140 };
+    const corner = { offsetLeft: 840, offsetTop: 12, offsetWidth: 148, offsetHeight: 128 };
     const north = objectivePointerPlacement({ x: 940, y: -100, size: 0 }, 1_000, 600, corner);
     const east = objectivePointerPlacement({ x: 1_120, y: -10, size: 0 }, 1_000, 600, corner);
     expect(north).toMatchObject({ side: 'north', x: 808, y: 32 });
