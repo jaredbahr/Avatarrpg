@@ -2785,7 +2785,8 @@ export class CombatScene implements Scene {
       'ul',
       { class: 'victory-list', attrs: { 'aria-label': 'What the party earned' } },
       ...rows.map((row) => {
-        const player = this.app.session.playerFor(row.unit.id);
+        // One person playing the whole party needs no names beside the heroes.
+        const player = this.app.session.solo ? undefined : this.app.session.playerFor(row.unit.id);
         return el(
           'li',
           { class: `victory-row element-${row.unit.element}` },
