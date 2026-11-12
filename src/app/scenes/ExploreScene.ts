@@ -1404,8 +1404,9 @@ export class ExploreScene implements Scene {
     if (!renderer || !state || !map || !grid) return;
 
     const now = performance.now();
+    const animator = this.app.animator;
     // Long roaming sessions must retire old walk tracks just as combat does.
-    this.app.animator.prune(now);
+    animator.prune(now);
     const held = Boolean(
       this.conversationMode || document.hidden || document.querySelector('[role="dialog"]'),
     );
@@ -1417,16 +1418,17 @@ export class ExploreScene implements Scene {
     const residents = this.app.residents;
     residents.tick(now, held);
     const live = !this.departing && !this.conversationMode && state.screen === 'explore';
-    const party = this.ensureTrail(state, grid).positions(state.party.length);
+    const trail = this.ensureTrail(state, grid);
+    let seats = trail.positions(state.party.length);
     // A routine keeps clear of the party: its tiles, where it is drawn, the way it walks.
-    const clear = [...party, ...(this.walking?.path ?? [])];
+    const clear = [...seats, ...(this.walking?.path ?? [])];
     for (const member of state.party) {
-      const drawn = this.app.animator.renderPos(now, member.id);
+      const drawn = animator.renderPos(now, member.id);
       if (drawn) clear.push({ x: Math.round(drawn.x), y: Math.round(drawn.y) });
     }
     // A follower on a tile someone is walking to steps aside.
-    if (residents.update(map, state, party, live, clear)) this.needsSettle = true;
-    if (!this.app.animator.busy(now)) {
+    if (residents.update(map, state, seats, live, clear)) this.needsSettle = true;
+    if (!animator.busy(now)) {
       if (!this.conversationMode) {
         if (this.walking) {
           this.walking = null;
@@ -1449,17 +1451,17 @@ export class ExploreScene implements Scene {
         !document.querySelector('[role="dialog"]')
       ) {
         this.needsSettle = false;
-        const trail = this.ensureTrail(state, grid);
         const routes = trail.settle(grid, this.standing(state), {
           beside: map.projection === 'topdown',
         });
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
         this.animatePartyBatches(batches, state, now);
+        seats = trail.positions(seats.length);
       }
     }
     if (!this.conversationMode && this.life?.update(now, renderer.camera)) return;
-    if (this.practising && !this.app.animator.busy(now)) {
+    if (this.practising && !animator.busy(now)) {
       this.practising = false;
       if (this.practiceCamera)
         this.practiceCamera = {
@@ -1470,7 +1472,7 @@ export class ExploreScene implements Scene {
         };
     }
     if (
-      this.hudMoving !== this.app.animator.busy(now) ||
+      this.hudMoving !== animator.busy(now) ||
       (this.practiceShown !== null && this.practiceShown !== this.practiceReady(state))
     )
       this.renderHud();
@@ -1479,23 +1481,15 @@ export class ExploreScene implements Scene {
     // The whole party walks the village: the leader on the rules' tile, the
     // others in a line behind, each their own figure.
     const leader = state.party[0];
-    const walking = leader ? this.app.animator.renderPos(now, leader.id) : undefined;
+    const walking = leader ? animator.renderPos(now, leader.id) : undefined;
     if (document.hidden) this.app.audio.clearEnvironment();
     else
       this.app.audio.updateEnvironment(
         courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
       );
-    const seats = this.ensureTrail(state, grid).positions(state.party.length);
-    this.localMap?.update(
-      seats.map(
-        (seat, index) =>
-          this.app.animator.renderPos(now, state.party[index]?.id ?? '') ??
-          (index === 0 ? state.location.pos : seat),
-      ),
-    );
+    const scale = partyScale(map.projection);
     const units: RenderUnit[] = state.party.map((member, index) => {
       // A practising bender draws their bend's cels, as combat does (ADR 0055).
-      const animator = this.app.animator;
       const bend = animator.bendPose(now, member.id);
       const pose = animator.unitPose(now, member.id, member.sprite);
       const unit: RenderUnit = {
@@ -1512,7 +1506,7 @@ export class ExploreScene implements Scene {
         // A health bar over someone strolling round a village is noise.
         showHealth: false,
         shadow: true,
-        scale: partyScale(map.projection),
+        scale,
         renderPos: index === 0 ? walking : animator.renderPos(now, member.id),
         offset: animator.offset(now, member.id, member.sprite),
         clipTime: pose?.clipTime,
@@ -1523,10 +1517,11 @@ export class ExploreScene implements Scene {
         ...unit,
         facing: 1,
         clip: 'stance',
-        bend: { heading: bend.heading, index: bend.index },
+        bend,
         flash: pose?.flash,
       };
     });
+    this.localMap?.update(units.map((unit) => unit.renderPos ?? unit.pos));
 
     // Residents and background roles come from the walks, in their drawn
     // places; signs and other unbound NpcDefs stand where they are defined.
@@ -1639,10 +1634,10 @@ export class ExploreScene implements Scene {
       calmPath: true,
       aimArc: null,
       // A practice's casts (issue #284) play their own effects over the ambience.
-      emitters: [...ambient, ...this.app.animator.emitters(now)],
-      bendFx: this.app.animator.bendFx(now),
+      emitters: [...ambient, ...animator.emitters(now)],
+      bendFx: animator.bendFx(now),
       floaters: [],
-      cameraNudge: this.app.animator.cameraNudge(now),
+      cameraNudge: animator.cameraNudge(now),
       activeUnitId: leader?.id ?? null,
       selectedUnitId: null,
       hoverTile: this.hover,
