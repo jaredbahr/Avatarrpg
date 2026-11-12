@@ -1,9 +1,10 @@
 /**
  * Settings.
  *
- * Eight controls (nine in a game: its difficulty), each one aimed at a specific person at the table rather than
+ * Nine controls (ten in a game: its difficulty), each one aimed at a specific person at the table rather than
  * at a spec: text too small on a 2736x1824 screen, too much going on, a room
  * where sound (or only the music) is not welcome, a table that would rather not vote,
+ * a table that wants the combos spoiled,
  * can't tell the fire from the mud, the panels washing out in daylight, or a planner
  * who counts squares.
  */
@@ -122,6 +123,19 @@ export class SettingsPanel extends Dialog {
         ],
         settings.storyChoices,
         (value) => this.app.updateSettings({ storyChoices: value === 'turns' ? 'turns' : 'vote' }),
+      ),
+    );
+
+    body.appendChild(
+      this.choiceRow(
+        'Combo hints',
+        'Hint first keeps each elemental combo a surprise until you see it happen once.',
+        [
+          { label: 'Hint first', value: 'hint' },
+          { label: 'Always show', value: 'show' },
+        ],
+        settings.comboHints,
+        (value) => this.app.updateSettings({ comboHints: value === 'show' ? 'show' : 'hint' }),
       ),
     );
 

@@ -164,6 +164,7 @@ export function describeEvent(
     case 'dialogueAdvanced':
     case 'screenChanged':
     case 'battleStarted':
+    case 'comboDiscovered': // its surfaceChanged already printed the rule's sentence
       return null;
 
     default:

@@ -71,7 +71,7 @@ describe('combat tap aim acceptance', () => {
   it('uses the earned Grumbler turn and exact reloadable save', () => {
     expect(checkpoint.transcript).toHaveLength(79);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '772bc9471b793ab5660170ae242706dc40473e46af515f5c0ca52a55fe99401b',
+      '89e04d1627447200e9c6abc317a36ea4a4a7ed924870e07992412b9c02bc7bed',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({
