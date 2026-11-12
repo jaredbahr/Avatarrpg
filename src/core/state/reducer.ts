@@ -377,6 +377,25 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
 }
 
 /**
+ * "Try again" after a lost fight (#620): re-enters the battle node from the
+ * RNG state the fight was built from. Nothing else moved while it ran (the
+ * party, flags and story only change when a fight resolves), so the board,
+ * the roster variant and the initiative come back exactly, and the same
+ * commands replay to the same log. No XP is paid: only a resolve pays.
+ */
+function handleRetryBattle(content: ContentIndex, state: GameState): StepResult {
+  const battle = state.battle;
+  const node = currentNode(content, state);
+  if (battle?.phase !== 'defeat' || battle.openingRng === null || node?.kind !== 'battle')
+    return refuse(state, 'There is no lost fight to try again.');
+  return withLog(
+    content,
+    state,
+    enterStoryNode(content, { ...state, rng: battle.openingRng }, node.id),
+  );
+}
+
+/**
  * Explore-map walking. Tapping an NPC opens their node; tapping the exit
  * advances the current explore node; anything else is a step.
  */
@@ -819,6 +838,9 @@ function applyCommand(content: ContentIndex, state: GameState, command: Command)
 
     case 'resolveBattle':
       return handleResolveBattle(content, state);
+
+    case 'retryBattle':
+      return handleRetryBattle(content, state);
 
     case 'chooseLevelUp':
       return handleChooseLevelUp(content, state, command.unitId, command.abilityId);

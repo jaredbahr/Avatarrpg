@@ -1082,6 +1082,13 @@ export class App {
   /* Battle resolution                                                 */
   /* ---------------------------------------------------------------- */
 
+  /** "Try again" on a lost fight (#620): rebuild the opening board and remount. */
+  retryBattle(): void {
+    this.dispatch({ type: 'retryBattle' });
+    this.animator.clear();
+    this.routeToState(true);
+  }
+
   /** Called by CombatScene once the player has read the result panel. */
   resolveBattle(): void {
     if (this.resolving) return;

@@ -1279,6 +1279,12 @@ export interface BattleState {
   readonly props: readonly PropInstance[];
   /** Incremented for every unit created, so ids never collide across a battle. */
   readonly nextUnitSerial: number;
+  /**
+   * The RNG state the battle was built from (#620). The party, flags and story
+   * do not change while a fight runs, so this alone rebuilds the opening board
+   * exactly for "Try again". Null on a save written before it existed.
+   */
+  readonly openingRng: RngState | null;
 }
 
 /**
@@ -1385,6 +1391,7 @@ export type Command =
   | { readonly type: 'endTurn'; readonly unitId: string }
   | { readonly type: 'runAiTurn' }
   | { readonly type: 'resolveBattle' }
+  | { readonly type: 'retryBattle' }
   | { readonly type: 'chooseLevelUp'; readonly unitId: string; readonly abilityId: string }
   | { readonly type: 'chooseDiscipline'; readonly unitId: string; readonly disciplineId: string }
   | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> }
