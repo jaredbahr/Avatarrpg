@@ -242,6 +242,7 @@ export class App {
   private dialogueBackdropOwner: DialogueBackdropOwner | null = null;
   private dialogueHost: HTMLElement | null = null;
   private pause: PauseMenu | null = null;
+  private pauseReturnFocus: (() => void) | null = null;
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
   readonly audio: AudioBus;
@@ -969,8 +970,10 @@ export class App {
   /* Pause and settings                                                */
   /* ---------------------------------------------------------------- */
 
-  openPause(): void {
+  openPause(returnFocus?: () => void): void {
     if (this.pause || !this.state) return;
+    const scene = this.scene;
+    this.pauseReturnFocus = returnFocus ?? null;
     // The pause owns combat progress: park enemy dispatch and timed scene
     // presentation. Explore keeps running, and a nested Save menu keeps
     // `this.pause` set so both holds remain in force.
@@ -979,13 +982,25 @@ export class App {
       this.scene.pausePresentation?.();
     }
     this.pause = new PauseMenu(this, () => {
+      const restoreFocus = this.pauseReturnFocus;
+      this.pauseReturnFocus = null;
       this.pause = null;
       this.resumeAfterPause();
+      if (
+        restoreFocus &&
+        this.scene === scene &&
+        document.activeElement === document.body &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        restoreFocus();
+      }
     });
     this.pause.open(this.overlayHost);
   }
 
   closePause(): void {
+    // A load or route replacement must not restore focus into the outgoing scene.
+    this.pauseReturnFocus = null;
     this.pause?.close();
     this.pause = null;
   }
