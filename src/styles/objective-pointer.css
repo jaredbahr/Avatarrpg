@@ -14,11 +14,13 @@
   transform: translate(-50%, -50%);
 }
 
-.objective-edge-pointer[hidden] {
+.objective-edge-pointer[hidden],
+:root:has([role='dialog']) .objective-edge-pointer {
   display: none;
 }
 
-.objective-edge-pointer > span {
+.objective-edge-pointer::before {
+  content: '→';
   font-size: var(--fs-lg);
   line-height: 1;
   transform: rotate(var(--objective-edge-angle, 0deg));

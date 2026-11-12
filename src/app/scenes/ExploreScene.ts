@@ -17,8 +17,7 @@ import {
   backgroundFigures,
   visibleNpcs,
   worldObjective,
-  worldObjectiveNpcId,
-  worldObjectiveTarget,
+  worldObjectiveTargetId,
 } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
@@ -207,11 +206,11 @@ export class ExploreScene implements Scene {
           'div',
           { class: 'map-wrap' },
           canvas,
-          (this.objectivePointer = el(
-            'div',
-            { class: 'objective-edge-pointer', hidden: true, attrs: { role: 'img' } },
-            el('span', { text: '↑', attrs: { 'aria-hidden': 'true' } }),
-          )),
+          (this.objectivePointer = el('div', {
+            class: 'objective-edge-pointer',
+            hidden: true,
+            attrs: { role: 'img' },
+          })),
           el('div', { class: 'explore-map-corner' }),
           el('div', { class: 'explore-conversation', hidden: true }),
         ),
@@ -751,20 +750,18 @@ export class ExploreScene implements Scene {
     button.title = expanded ? 'Hide objective details' : 'Show the full objective';
     button.classList.toggle('is-collapsed', !expanded);
     clear(button);
-    if (expanded) {
+    if (expanded)
       button.append(
         el('strong', { class: 'explore-objective-label tiny', text: 'Current objective' }),
-        el('span', { class: 'title-plate-objective', text: objective }),
       );
-      if (gate)
-        button.append(el('span', { class: 'explore-objective-gate tiny muted', text: gate }));
-    } else {
-      button.append(el('span', { class: 'title-plate-objective', text: objective }));
-      if (gate)
-        button.append(
-          el('span', { class: 'explore-objective-gate tiny muted', text: ` · ${gate}` }),
-        );
-    }
+    button.append(el('span', { class: 'title-plate-objective', text: objective }));
+    if (gate)
+      button.append(
+        el('span', {
+          class: 'explore-objective-gate tiny muted',
+          text: expanded ? gate : ` · ${gate}`,
+        }),
+      );
   }
 
   private toggleObjective(): void {
@@ -1107,7 +1104,7 @@ export class ExploreScene implements Scene {
           this.partyPositions() ?? [state.location.pos],
           (pos) => this.requestWalk(pos),
           () => this.followParty(),
-          worldObjectiveNpcId(this.app.content, state),
+          worldObjectiveTargetId(this.app.content, state),
         ).open(this.overlayHost());
       },
       { class: 'action-button', title: 'Local map and routes' },
@@ -1677,60 +1674,42 @@ export class ExploreScene implements Scene {
   /** The passive cue follows the exact camera transform used to draw the map. */
   private updateObjectivePointer(state: GameState, map: MapDef, npcs: readonly NpcMarker[]): void {
     const pointer = this.objectivePointer;
-    const canvas = this.canvas;
-    const renderer = this.renderer;
-    const wrap = pointer?.parentElement;
-    if (!pointer || !canvas || !renderer || !wrap) return;
+    const camera = this.renderer?.camera;
+    if (!pointer || !camera) return;
 
-    const shouldHide =
-      this.departing !== null ||
-      state.screen !== 'explore' ||
-      map.id === RIVERSIDE_ID ||
-      this.conversationMode ||
-      this.practising ||
-      this.practiceCamera !== null ||
-      document.hidden ||
-      Boolean(document.querySelector('[role="dialog"]'));
-    if (shouldHide) {
+    const target =
+      this.objectiveButton?.hidden === false &&
+      state.screen === 'explore' &&
+      !this.departing &&
+      !this.practising &&
+      !this.practiceCamera
+        ? resolveObjectivePointerTarget(
+            worldObjectiveTargetId(this.app.content, state),
+            map.exits,
+            npcs,
+          )
+        : null;
+    if (!target || camera.isVisible(target.pos)) {
       pointer.hidden = true;
       return;
     }
 
-    const target = resolveObjectivePointerTarget(
-      worldObjectiveTarget(this.app.content, state),
-      map.exits,
-      npcs,
-    );
-    if (!target || renderer.camera.isVisible(target.pos)) {
-      pointer.hidden = true;
-      return;
-    }
-
-    const canvasRect = canvas.getBoundingClientRect();
-    const wrapRect = wrap.getBoundingClientRect();
-    const corner = wrap.querySelector('.explore-map-corner')?.getBoundingClientRect();
-    const camera = renderer.camera;
-    const screen = camera.project({ x: target.pos.x + 0.5, y: target.pos.y + 0.5 });
+    // The canvas fills the relative map wrapper. Its viewport and the corner's
+    // offsets are both measured in the wrapper's CSS pixels.
+    const corner = pointer.parentElement?.querySelector<HTMLElement>('.explore-map-corner');
     const placement = objectivePointerPlacement(
-      {
-        x: canvasRect.left - wrapRect.left + (screen.x * canvasRect.width) / camera.viewport.width,
-        y: canvasRect.top - wrapRect.top + (screen.y * canvasRect.height) / camera.viewport.height,
-      },
-      wrapRect.width,
-      wrapRect.height,
-      corner?.width
-        ? { left: corner.left - wrapRect.left, bottom: corner.bottom - wrapRect.top }
+      camera.project({ x: target.pos.x + 0.5, y: target.pos.y + 0.5 }),
+      camera.viewport.width,
+      camera.viewport.height,
+      corner?.offsetWidth
+        ? { left: corner.offsetLeft, bottom: corner.offsetTop + corner.offsetHeight }
         : undefined,
     );
-    if (!placement) {
-      pointer.hidden = true;
-      return;
-    }
-
-    pointer.hidden = false;
+    pointer.hidden = !placement;
+    if (!placement) return;
     pointer.style.left = `${placement.x}px`;
     pointer.style.top = `${placement.y}px`;
-    pointer.style.setProperty('--objective-edge-angle', `${placement.angle}deg`);
+    pointer.style.setProperty('--objective-edge-angle', `${placement.angle}rad`);
     pointer.setAttribute('aria-label', `${target.label} is off screen to the ${placement.side}.`);
   }
 }

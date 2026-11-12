@@ -18,20 +18,17 @@ describe('off-screen objective pointer placement', () => {
 
   it('keeps a diagonal target inside both inset edges', () => {
     const placement = objectivePointerPlacement({ x: 1_020, y: -40 }, 1_000, 600);
-    expect(placement?.side).toBe('north');
-    expect(placement?.x).toBeGreaterThan(909);
-    expect(placement?.x).toBeLessThan(911);
-    expect(placement?.y).toBe(32);
-    expect(placement?.angle).toBeLessThan(180);
+    expect(placement).toMatchObject({ side: 'east', x: 968, y: 32 });
+    expect(placement?.angle).toBeCloseTo(Math.atan2(-72, 52));
   });
 
   it('keeps north and east cues clear of the map without leaving their edge', () => {
     const corner = { left: 840, bottom: 140 };
-    const north = objectivePointerPlacement({ x: 1_020, y: -100 }, 1_000, 600, corner);
+    const north = objectivePointerPlacement({ x: 940, y: -100 }, 1_000, 600, corner);
     const east = objectivePointerPlacement({ x: 1_120, y: -10 }, 1_000, 600, corner);
     expect(north).toMatchObject({ side: 'north', x: 808, y: 32 });
     expect(east).toMatchObject({ side: 'east', x: 968, y: 172 });
-    expect(east?.angle).toBeCloseTo((Math.atan2(-182, 152) * 180) / Math.PI + 90);
+    expect(east?.angle).toBeCloseTo(Math.atan2(-182, 152));
   });
 
   it.each([
@@ -52,21 +49,16 @@ describe('off-screen objective pointer placement', () => {
       renderPos: { x: 9, y: 7 },
       sprite: 'npc.elder',
     };
+    expect(resolveObjectivePointerTarget('elder_mira', undefined, [actor])).toEqual({
+      pos: { x: 9, y: 7 },
+      label: 'Elder Mira',
+    });
+    expect(resolveObjectivePointerTarget('elder_mira', undefined, [])).toBeNull();
     expect(
-      resolveObjectivePointerTarget({ kind: 'npc', id: 'elder_mira' }, undefined, [actor]),
-    ).toEqual({ pos: { x: 9, y: 7 }, label: 'Elder Mira' });
-    expect(
-      resolveObjectivePointerTarget({ kind: 'npc', id: 'elder_mira' }, undefined, []),
+      resolveObjectivePointerTarget('elder_mira', undefined, [{ ...actor, alpha: 0 }]),
     ).toBeNull();
     expect(
-      resolveObjectivePointerTarget({ kind: 'npc', id: 'elder_mira' }, undefined, [
-        { ...actor, alpha: 0 },
-      ]),
-    ).toBeNull();
-    expect(
-      resolveObjectivePointerTarget({ kind: 'npc', id: 'elder_mira' }, undefined, [
-        { ...actor, quiet: true },
-      ]),
+      resolveObjectivePointerTarget('elder_mira', undefined, [{ ...actor, quiet: true }]),
     ).toBeNull();
   });
 
@@ -78,14 +70,10 @@ describe('off-screen objective pointer placement', () => {
       label: 'East → Quarry Gate',
       requires: { kind: 'visited', nodeId: 'after_forest' } as const,
     };
-    expect(
-      resolveObjectivePointerTarget({ kind: 'exit', toMapId: 'quarry_gate' }, [exit], []),
-    ).toEqual({
+    expect(resolveObjectivePointerTarget('quarry_gate', [exit], [])).toEqual({
       pos: { x: 19, y: 4 },
       label: 'East → Quarry Gate',
     });
-    expect(
-      resolveObjectivePointerTarget({ kind: 'exit', toMapId: 'missing' }, [exit], []),
-    ).toBeNull();
+    expect(resolveObjectivePointerTarget('missing', [exit], [])).toBeNull();
   });
 });

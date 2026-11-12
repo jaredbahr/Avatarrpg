@@ -22,7 +22,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'forest_road',
     objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
-    objectiveExitToMapId: 'quarry_gate',
+    objectiveTargetId: 'quarry_gate',
     next: 'battle_forest_road',
   },
   {
@@ -30,7 +30,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'forest_road',
     objective: 'The road is open. Continue east to the quarry gate, or go back to Ba Dan.',
-    objectiveExitToMapId: 'quarry_gate',
+    objectiveTargetId: 'quarry_gate',
     next: 'gate_parley',
   },
   {

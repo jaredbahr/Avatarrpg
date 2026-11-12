@@ -43,18 +43,17 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ba_dan_village',
     objective: 'Talk to Elder Mira, then take the east road to the quarry.',
-    objectiveNpcId: 'elder_mira',
+    objectiveTargetId: 'elder_mira',
     objectiveVariants: [
       {
         when: RETURNEES_HOME,
         text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
-        objectiveNpcId: null,
+        objectiveTargetId: null,
       },
       {
         when: { kind: 'visited', nodeId: 'mira_intro' },
         text: 'Take the east road to the quarry. You can speak with the neighbors before you leave.',
-        objectiveNpcId: null,
-        objectiveExitToMapId: 'forest_road',
+        objectiveTargetId: 'forest_road',
       },
     ],
     next: 'road_depart',

@@ -142,17 +142,17 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
-        objectiveExitToMapId: 'quarry_gate',
+        objectiveTargetId: 'quarry_gate',
         objectiveVariants: [
           {
             when: RETURNEES_RETURNING,
             text: 'The five workers are returning. The roadblock is gone. Follow the road west to Ba Dan.',
-            objectiveExitToMapId: 'ba_dan_village',
+            objectiveTargetId: 'ba_dan_village',
           },
           {
             when: rescued,
             text: 'The roadblock is gone. Follow the road west to Ba Dan.',
-            objectiveExitToMapId: 'ba_dan_village',
+            objectiveTargetId: 'ba_dan_village',
           },
         ],
         exits: [

@@ -92,60 +92,21 @@ export function backgroundFigures(
   return roles;
 }
 
+/** Text and target always come from the same first-matching objective source. */
+function activeObjective(content: ContentIndex, state: GameState) {
+  const map = content.maps.get(state.location.mapId);
+  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
+  const source = node?.kind === 'explore' && node.mapId === map?.id ? node : map;
+  return source?.objectiveVariants?.find((variant) => evaluate(state, variant.when)) ?? source;
+}
+
 /** One objective for the banner and journal, derived from the current story and world state. */
 export function worldObjective(content: ContentIndex, state: GameState): string | null {
-  const map = content.maps.get(state.location.mapId);
-  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
-  if (node?.kind === 'explore' && node.mapId === map?.id)
-    return (
-      node.objectiveVariants?.find((variant) => evaluate(state, variant.when))?.text ??
-      node.objective
-    );
-  if (!map) return null;
-  return (
-    map.objectiveVariants?.find((variant) => evaluate(state, variant.when))?.text ??
-    map.objective ??
-    null
-  );
+  const objective = activeObjective(content, state);
+  return (objective && ('text' in objective ? objective.text : objective.objective)) ?? null;
 }
 
-/** Structured target metadata paired with the same active objective source. */
-export function worldObjectiveNpcId(content: ContentIndex, state: GameState): string | null {
-  const map = content.maps.get(state.location.mapId);
-  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
-  if (node?.kind !== 'explore' || node.mapId !== map?.id) return null;
-  const target = worldObjectiveTarget(content, state);
-  return target?.kind === 'npc' ? target.id : null;
-}
-
-export type WorldObjectiveTarget =
-  | { readonly kind: 'npc'; readonly id: string }
-  | { readonly kind: 'exit'; readonly toMapId: string };
-
-/** Structured target paired with the exact objective source shown to the player. */
-export function worldObjectiveTarget(
-  content: ContentIndex,
-  state: GameState,
-): WorldObjectiveTarget | null {
-  const map = content.maps.get(state.location.mapId);
-  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
-
-  const target = (source: {
-    readonly objectiveNpcId?: string | null;
-    readonly objectiveExitToMapId?: string | null;
-  }): WorldObjectiveTarget | null => {
-    if (source.objectiveNpcId) return { kind: 'npc', id: source.objectiveNpcId };
-    if (source.objectiveExitToMapId) return { kind: 'exit', toMapId: source.objectiveExitToMapId };
-    return null;
-  };
-
-  if (node?.kind === 'explore' && node.mapId === map?.id) {
-    const variant = node.objectiveVariants?.find((candidate) => evaluate(state, candidate.when));
-    // A matching variant owns its target too. An omitted or null target clears
-    // the node default, just as `worldObjectiveNpcId` does for LocalMap.
-    return target(variant ?? node);
-  }
-  if (!map) return null;
-  const variant = map.objectiveVariants?.find((candidate) => evaluate(state, candidate.when));
-  return target(variant ?? map);
+/** Unique authored npc/exit id paired with the active objective source. */
+export function worldObjectiveTargetId(content: ContentIndex, state: GameState): string | null {
+  return activeObjective(content, state)?.objectiveTargetId ?? null;
 }

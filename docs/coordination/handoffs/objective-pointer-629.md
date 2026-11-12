@@ -15,3 +15,7 @@
 ## Integration review
 
 The pointer projects into the displayed canvas dimensions and stays clear of the follow-party map. The new regression checks both adjacent edges and confirms the arrow still points toward the target after it moves. The focused tests passed 17/17, and typecheck, scoped lint, and scoped formatting passed. Exact browser review and the full local gate are pending.
+
+## Bundle checkpoint
+
+The first production build measured 410.5 KB gzipped. Sharing objective resolution, using one authored target field and simplifying placement reduced the latest measured bundle to 410.2 KB. The unchanged gate is 410 KB. All 17 focused tests, scoped lint and the production build passed on this candidate. The work remains local pending bundle headroom, browser review and the full local gate.

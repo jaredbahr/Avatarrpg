@@ -1,5 +1,4 @@
 import type { MapExit, Vec2 } from '../../core/types';
-import type { WorldObjectiveTarget } from '../../core/story/world';
 import type { NpcMarker } from '../../render/renderer';
 
 export interface ResolvedObjectivePointerTarget {
@@ -9,21 +8,19 @@ export interface ResolvedObjectivePointerTarget {
 
 /** Resolve authored targets against the scene's current, actually drawn actors. */
 export function resolveObjectivePointerTarget(
-  target: WorldObjectiveTarget | null,
+  id: string | null,
   exits: readonly MapExit[] | undefined,
   npcs: readonly NpcMarker[],
 ): ResolvedObjectivePointerTarget | null {
-  if (!target) return null;
-  if (target.kind === 'npc') {
-    const npc = npcs.find(
-      (candidate) =>
-        (candidate.id === target.id || candidate.npcId === target.id) &&
-        !candidate.quiet &&
-        (candidate.alpha ?? 1) > 0,
-    );
-    return npc ? { pos: npc.renderPos ?? npc.pos, label: npc.name } : null;
-  }
-  const exit = exits?.find((candidate) => candidate.toMapId === target.toMapId);
+  if (!id) return null;
+  const npc = npcs.find(
+    (candidate) =>
+      (candidate.id === id || candidate.npcId === id) &&
+      !candidate.quiet &&
+      (candidate.alpha ?? 1) > 0,
+  );
+  if (npc) return { pos: npc.renderPos ?? npc.pos, label: npc.name };
+  const exit = exits?.find((candidate) => candidate.toMapId === id);
   return exit ? { pos: exit.pos, label: exit.label } : null;
 }
 
@@ -37,15 +34,14 @@ export type ObjectivePointerSide = 'north' | 'east' | 'south' | 'west';
 export interface ObjectivePointerPlacement {
   readonly x: number;
   readonly y: number;
-  /** Degrees clockwise from the upward-pointing glyph. */
+  /** Radians clockwise from the right-pointing glyph. */
   readonly angle: number;
   readonly side: ObjectivePointerSide;
 }
 
 /**
- * Intersects the ray from the viewport centre to an off-screen target with an
- * inset CSS-pixel rectangle. A null result means the target is visible or the
- * viewport cannot safely contain the cue.
+ * Put the cue at the nearest inset edge and point it at the actual target.
+ * A null result means the target is visible or the cue cannot fit.
  */
 export function objectivePointerPlacement(
   target: ObjectivePointerPoint,
@@ -53,35 +49,22 @@ export function objectivePointerPlacement(
   height: number,
   topRight?: { left: number; bottom: number },
 ): ObjectivePointerPlacement | null {
+  const inset = 32;
   if (
     !Number.isFinite(target.x) ||
     !Number.isFinite(target.y) ||
     !Number.isFinite(width) ||
     !Number.isFinite(height) ||
-    width <= 0 ||
-    height <= 0
+    width <= inset * 2 ||
+    height <= inset * 2
   )
     return null;
 
   if (target.x >= 0 && target.x <= width && target.y >= 0 && target.y <= height) return null;
 
-  const centreX = width / 2;
-  const centreY = height / 2;
-  const dx = target.x - centreX;
-  const dy = target.y - centreY;
-  if (dx === 0 && dy === 0) return null;
-
-  const inset = 32;
-  const halfWidth = width / 2 - inset;
-  const halfHeight = height / 2 - inset;
-  if (halfWidth <= 0 || halfHeight <= 0) return null;
-
-  const scaleX = dx === 0 ? Number.POSITIVE_INFINITY : halfWidth / Math.abs(dx);
-  const scaleY = dy === 0 ? Number.POSITIVE_INFINITY : halfHeight / Math.abs(dy);
-  const scale = Math.min(scaleX, scaleY);
-  let x = centreX + dx * scale;
-  let y = centreY + dy * scale;
-  const side = scaleX <= scaleY ? (dx < 0 ? 'west' : 'east') : dy < 0 ? 'north' : 'south';
+  let x = Math.max(inset, Math.min(target.x, width - inset));
+  let y = Math.max(inset, Math.min(target.y, height - inset));
+  const side = target.x < 0 ? 'west' : target.x > width ? 'east' : target.y < 0 ? 'north' : 'south';
   if (topRight && x + inset > topRight.left && y - inset < topRight.bottom) {
     // Stay on the same edge, clear of the follow-party map in the corner.
     if (side === 'north') x = topRight.left - inset;
@@ -93,7 +76,7 @@ export function objectivePointerPlacement(
   return {
     x,
     y,
-    angle: (Math.atan2(target.y - y, target.x - x) * 180) / Math.PI + 90,
+    angle: Math.atan2(target.y - y, target.x - x),
     side,
   };
 }

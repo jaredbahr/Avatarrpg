@@ -560,15 +560,13 @@ export const mapSchema = z
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
     objective: z.string().min(1).optional(),
-    objectiveNpcId: id.optional(),
-    objectiveExitToMapId: id.optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
       .array(
         z.object({
           when: conditionSchema,
           text: z.string().min(1),
-          objectiveNpcId: id.nullable().optional(),
-          objectiveExitToMapId: id.nullable().optional(),
+          objectiveTargetId: id.nullable().optional(),
         }),
       )
       .optional(),
@@ -743,22 +741,6 @@ export const mapSchema = z
       .optional(),
   })
   .superRefine((map, ctx) => {
-    if (map.objectiveNpcId && map.objectiveExitToMapId) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['objectiveExitToMapId'],
-        message: 'a map objective may target only one npc or exit',
-      });
-    }
-    for (const [index, variant] of (map.objectiveVariants ?? []).entries()) {
-      if (variant.objectiveNpcId && variant.objectiveExitToMapId) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['objectiveVariants', index, 'objectiveExitToMapId'],
-          message: 'an objective variant may target only one npc or exit',
-        });
-      }
-    }
     if (
       map.cameraCentreMargin !== undefined &&
       Number.isFinite(map.cameraCentreMargin) &&
@@ -930,21 +912,14 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('explore'),
     mapId: id,
     objective: z.string().min(1),
-    objectiveNpcId: id.optional(),
-    objectiveExitToMapId: id.optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
       .array(
-        z
-          .object({
-            when: conditionSchema,
-            text: z.string().min(1),
-            objectiveNpcId: id.nullable().optional(),
-            objectiveExitToMapId: id.nullable().optional(),
-          })
-          .refine(
-            (variant) => !(variant.objectiveNpcId && variant.objectiveExitToMapId),
-            'an objective variant may target only one npc or exit',
-          ),
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveTargetId: id.nullable().optional(),
+        }),
       )
       .optional(),
     next: id,
@@ -2126,31 +2101,19 @@ export function validateContent(
   const checkObjectiveTarget = (
     map: MapDef,
     source: {
-      readonly objectiveNpcId?: string | null;
-      readonly objectiveExitToMapId?: string | null;
+      readonly objectiveTargetId?: string | null;
     },
     label: string,
   ): void => {
-    if (source.objectiveNpcId && source.objectiveExitToMapId) {
-      problems.push(`${label} may target only one npc or exit`);
-    }
-    if (source.objectiveNpcId && !map.npcs.some((npc) => npc.id === source.objectiveNpcId)) {
-      problems.push(`${label} targets unknown npc "${source.objectiveNpcId}" on map "${map.id}"`);
-    }
-    if (source.objectiveExitToMapId) {
-      const routes = (map.exits ?? []).filter(
-        (exit) => exit.toMapId === source.objectiveExitToMapId,
-      );
-      if (routes.length === 0) {
-        problems.push(
-          `${label} targets unknown exit to map "${source.objectiveExitToMapId}" on map "${map.id}"`,
-        );
-      } else if (routes.length > 1) {
-        problems.push(
-          `${label} targets an ambiguous exit to map "${source.objectiveExitToMapId}" on map "${map.id}"`,
-        );
-      }
-    }
+    const targetId = source.objectiveTargetId;
+    if (!targetId) return;
+    const matches =
+      map.npcs.filter((npc) => npc.id === targetId).length +
+      (map.exits ?? []).filter((exit) => exit.toMapId === targetId).length;
+    if (matches === 0)
+      problems.push(`${label} targets unknown npc or exit "${targetId}" on map "${map.id}"`);
+    else if (matches > 1)
+      problems.push(`${label} target "${targetId}" is ambiguous on map "${map.id}"`);
   };
 
   for (const map of bundle.maps) {
