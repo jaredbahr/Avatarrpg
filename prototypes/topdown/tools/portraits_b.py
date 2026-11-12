@@ -65,12 +65,30 @@ REDO = {
                    'with a few loose spiral ringlets at her temples; draw the curls as clustered curl shapes with highlights, not as two smooth buns, '
                    'with a clean outline and no scattered stray pixels',
               style_extra=' Clean, calm hair shapes; sparing dithering.'),
+ # 2026-11-12 owner review: the B redraw lost the forearm, so the hand on the abacus floats.
+ 'gao': dict(keep='his warm smile, flat brown cap, grey-black beard, green shirt with a pale apron, string of red chillies, and the gourd on its strap; '
+                  'his right forearm, with the white sleeve rolled to the elbow, comes in across the bottom left of the picture and joins the hand '
+                  'that holds the abacus against his chest, so the arm runs unbroken from the sleeve to the hand; both arms clearly attached to his shoulders, '
+                  'nothing cut off or floating',
+             style_extra=' Anatomy must be whole: every hand connects to an arm.'),
+}
+
+# Not a person: the narrator speaks as the places of the route (docs/art/prompts/portraits/narrator.md). Its base is a rough
+# composition sketch (gate, quarry hill, low sun, empty cart) passed with --base-dir.
+PLACE_STYLE = ('Highly detailed pixel art emblem of a place, in the style of a premium modern pixel-art RPG dialogue portrait: '
+               'rich palette of about 48 colours, careful hand-placed shading with soft ramps, selective dithering, crisp 1 px outlines in darker material tones. '
+               '{keep}. No people, no faces, no text. Plain light parchment sky, a full square picture with no circular crop. '
+               'No anti-aliased blur; every pixel deliberate.')
+PLACES = {
+ 'narrator': ('narrator_sketch.png', 'a village gate', 'A squat gate of cut warm grey-brown stone blocks with a heavy wooden double door and a wooden crossbeam, '
+              'filling the middle of the picture; a muted green quarry hill with pale cut rock faces rising behind it under a low warm sun; '
+              'a dusty road in front with one small empty wooden hand cart; calm, patient, a little foreboding'),
 }
 
 
 def make(pid, out, seed=11, base_dir=None):
-    base, who, keep = CAST[pid]
-    style = STYLE
+    base, who, keep = CAST[pid] if pid in CAST else PLACES[pid]
+    style = PLACE_STYLE if pid in PLACES else STYLE
     if seed != 11 and pid in REDO:
         keep = REDO[pid]['keep']; style = STYLE + REDO[pid]['style_extra']
     src = Image.open((Path(base_dir) if base_dir else PORTRAITS) / base).convert('RGBA')

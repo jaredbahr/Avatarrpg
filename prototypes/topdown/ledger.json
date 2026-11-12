@@ -26931,6 +26931,180 @@
     "image_id": "0713bf83-713f-5977-8f21-57cb98e2f00f",
     "source_image_id": "0713bf83-713f-5977-8f21-57cb98e2f00f"
    }
+  },
+  {
+   "name": "t9_portrait_gao_B_s23",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "cf9faf39-fa0c-4089-afe6-24365fdd49a4",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same stout middle-aged man, in th...",
+    "no_background": false,
+    "seed": 23
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7675.465464062499,
+   "balance_after": 7669.465464062499,
+   "secs": 71,
+   "notes": "",
+   "ids": {
+    "background_job_id": "cf9faf39-fa0c-4089-afe6-24365fdd49a4",
+    "image_id": "7283070f-80b3-5124-b720-95ee68d7e85b",
+    "source_image_id": "7283070f-80b3-5124-b720-95ee68d7e85b"
+   }
+  },
+  {
+   "name": "t9_portrait_gao_B_s31",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "85bd93e6-75e6-4217-a45d-948895a2ccee",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same stout middle-aged man, in th...",
+    "no_background": false,
+    "seed": 31
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7669.465464062499,
+   "balance_after": 7663.465464062499,
+   "secs": 43,
+   "notes": "",
+   "ids": {
+    "background_job_id": "85bd93e6-75e6-4217-a45d-948895a2ccee",
+    "image_id": "9e82f1d5-4166-5ce1-b351-754390d42ec1",
+    "source_image_id": "9e82f1d5-4166-5ce1-b351-754390d42ec1"
+   }
+  },
+  {
+   "name": "t9_portrait_gao_B_s47",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "465f35e2-5914-4be1-88f8-9ee943e9194d",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same stout middle-aged man, in th...",
+    "no_background": false,
+    "seed": 47
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7663.465464062499,
+   "balance_after": 7657.465464062499,
+   "secs": 55,
+   "notes": "",
+   "ids": {
+    "background_job_id": "465f35e2-5914-4be1-88f8-9ee943e9194d",
+    "image_id": "169814c2-211f-5bc9-8a16-4157ba74af9a",
+    "source_image_id": "169814c2-211f-5bc9-8a16-4157ba74af9a"
+   }
+  },
+  {
+   "name": "t9_portrait_narrator_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "21810565-c6c0-4f56-b36e-79565b979fad",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art emblem of a place, in the style of a premium modern pi...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 11.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7657.465464062499,
+   "balance_after": 7646.465464062499,
+   "secs": 49,
+   "notes": "",
+   "ids": {
+    "background_job_id": "21810565-c6c0-4f56-b36e-79565b979fad",
+    "image_id": "d3747088-6a32-5c0b-a71c-3abeaaa2cc10",
+    "source_image_id": "d3747088-6a32-5c0b-a71c-3abeaaa2cc10"
+   }
+  },
+  {
+   "name": "t9_portrait_narrator_B_s23",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "4f944723-f36c-47dc-abc6-b3142969b5bb",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art emblem of a place, in the style of a premium modern pi...",
+    "no_background": false,
+    "seed": 23
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 23.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7646.465464062499,
+   "balance_after": 7623.465464062499,
+   "secs": 38,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4f944723-f36c-47dc-abc6-b3142969b5bb",
+    "image_id": "4f99b6fe-121f-5c5e-8eee-6b964e127a76",
+    "source_image_id": "4f99b6fe-121f-5c5e-8eee-6b964e127a76"
+   }
+  },
+  {
+   "name": "t9_portrait_narrator_B_s31",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "953af5c3-e678-4695-9130-ddf4683ed3fc",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art emblem of a place, in the style of a premium modern pi...",
+    "no_background": false,
+    "seed": 31
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7623.465464062499,
+   "balance_after": 7617.465464062499,
+   "secs": 38,
+   "notes": "",
+   "ids": {
+    "background_job_id": "953af5c3-e678-4695-9130-ddf4683ed3fc",
+    "image_id": "3532b187-b35c-529d-97f4-a611c21be5ed",
+    "source_image_id": "3532b187-b35c-529d-97f4-a611c21be5ed"
+   }
   }
  ],
  "end_balance": 16728.0,
