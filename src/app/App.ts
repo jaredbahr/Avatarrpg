@@ -49,6 +49,7 @@ import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
 import { AudioBus } from './audio/bus';
 import { setUiSink } from './audio/ui';
+import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
@@ -240,6 +241,8 @@ export class App {
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
   readonly audio: AudioBus;
+  /** Area music, on a context of its own so a load or Sound Off does not cut it (ADR 0108). */
+  readonly music: MusicPlayer;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
   /** Presentation-only provenance for the next newly mounted combat scene. */
@@ -313,6 +316,7 @@ export class App {
     // `button()` cannot see the app, so the bus is registered rather than
     // passed; a control asks for a click without knowing what makes one.
     setUiSink((key) => this.audio.play([{ key, at: 0, seed: 0 }], 0));
+    this.music = new MusicPlayer(() => this.settings.music);
     this.animator = this.createPresentationAnimator();
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);
@@ -381,9 +385,14 @@ export class App {
      * the context is already running. `pointerdown` rather than `click`,
      * because a tap that starts a drag on the board never becomes a click.
      */
-    const unlock = (): void => this.audio.unlock();
+    const unlock = (): void => {
+      this.audio.unlock();
+      this.music.unlock();
+    };
     window.addEventListener('pointerdown', unlock, { passive: true });
     window.addEventListener('keydown', unlock, { passive: true });
+    // A backgrounded tab pauses the music and returning plays it on, where it left off.
+    document.addEventListener('visibilitychange', () => this.music.setHidden(document.hidden));
     this.showScene(new TitleScene(this));
   }
 
@@ -423,6 +432,7 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     this.cancelRoute();
+    this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
     const nextInterlude =
       scene.name === 'dialogue' && Boolean(INTERLUDES[this.state?.story.nodeId ?? '']);
@@ -640,6 +650,19 @@ export class App {
         this.showScene(new TitleScene(this), force);
         break;
     }
+  }
+
+  /**
+   * The area's track, from the scene and the map (or battlefield) the state is on. Every scene change
+   * comes through here; the player ignores a track that is already playing, so moving between scenes
+   * of one area, a conversation included, never restarts it. A fight dips it rather than switching.
+   */
+  private syncMusic(scene: string): void {
+    const battle = this.state?.battle ?? null;
+    this.music.setTrack(
+      musicFor({ scene, mapId: this.state?.location.mapId, battleMapId: battle?.mapId }),
+    );
+    this.music.setDuck(battle !== null && (scene === 'combat' || scene === 'dialogue'));
   }
 
   /** Discard the replaced state's queued animation and audio together. */
@@ -951,6 +974,8 @@ export class App {
     // setting *is* one.
     if (this.settings.volume <= 0) this.audio.close();
     else this.audio.unlock();
+    this.music.volumeChanged();
+    this.music.unlock();
     this.scene?.resize?.();
     this.scene?.sync();
   }

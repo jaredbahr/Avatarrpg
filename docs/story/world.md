@@ -29,7 +29,7 @@ flowchart TD
   n31["forest_dema<br/>Dema: Mind your feet. There are ducklings under that fern. Yes,…"]:::entry
   n32["forest_dema_again<br/>Dema: She has brought the ducklings over. I suppose the washing…"]:::entry
   n33["forest_ducks_seen<br/>Set flags"]
-  n34["forest_explore<br/>Explore forest_road: Explore the pine road east to the quarry g…"]:::entry
+  n34["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
   n43["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
   n48["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
   n8["battle_ambush — exit to act1 / part 1"]:::external

@@ -21,7 +21,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'forest_explore',
     kind: 'explore',
     mapId: 'forest_road',
-    objective: 'Explore the pine road east to the quarry gate, or go back west to Ba Dan.',
+    objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
     next: 'battle_forest_road',
   },
   {
