@@ -96,7 +96,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
     ],
     description:
       'A wave four tiles deep. Everyone in it, friend or foe, is pushed 2 tiles away from you and left Wet for 3 rounds, and the ground floods for 3.',
-    flavor: 'Use lightning while the water is there.',
+    flavor: 'Use lightning while they are still dripping.',
     fx: 'fx.water.wave',
     tags: ['attack', 'control', 'surface', 'signature'],
   }),
