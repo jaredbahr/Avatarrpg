@@ -82,7 +82,6 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
-    next: 'village_return_explore',
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
@@ -101,6 +100,39 @@ export const ACT1_NODES: readonly StoryNode[] = [
         ],
       },
     ],
+    next: 'mira_rubbing',
+  },
+  /*
+   * The rubbing from the driller's plate changes hands (#628). Mira routes to
+   * `mira_rubbing_kept` once she has it, so a second visit never asks again.
+   */
+  {
+    id: 'mira_rubbing',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'Is that the rubbing? Hold that corner flat for me.',
+      'Republic City. Somebody paid to bring that machine a long way. It goes in the report, and the province can tell me who.',
+    ],
+    next: 'mira_rubbing_given',
+  },
+  {
+    id: 'mira_rubbing_given',
+    kind: 'flags',
+    set: { rubbing_given: true },
+    next: 'village_return_explore',
+  },
+  {
+    id: 'mira_rubbing_kept',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'The rubbing is folded into the province report. Dorin asked to copy the maker’s mark into his watch book first.',
+      'Go and eat. Gao has kept bowls for you.',
+    ],
+    next: 'village_return_explore',
   },
   {
     id: 'gao_friendly',
@@ -486,7 +518,6 @@ export const ACT1_NODES: readonly StoryNode[] = [
     ],
     next: 'cutting_after_explore',
   },
-
   {
     // Ruon waits in the Cutting after the ambush (#628); tapping him gets this.
     id: 'ruon_cutting',

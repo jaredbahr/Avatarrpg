@@ -39,6 +39,8 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['riverside_invitation', 'ba_dan_village'],
   ['mira_intro', 'ba_dan_village'],
   ['mira_epilogue', 'ba_dan_village'],
+  ['mira_rubbing', 'ba_dan_village'],
+  ['mira_rubbing_kept', 'ba_dan_village'],
   ['gao_friendly', 'ba_dan_village'],
   ['gao_cold', 'ba_dan_village'],
   ['gao_home', 'ba_dan_village'],
