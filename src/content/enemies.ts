@@ -64,7 +64,17 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Bender',
     element: 'earth',
     size: 1,
-    stats: { maxHp: 36, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
+    /*
+     * Two AP, so one throw and rubble, or two throws, a turn (#632). It borrows the
+     * heroes' one-AP Rock Throw, so at four AP it was the last uncapped enemy
+     * attack, the bug `club_swing` documents: four stones a turn, about 35 damage
+     * onto one hero between two of their turns. On the bluffed gate that took
+     * the waterbender down by round 2 in 28 of 30 trials, and at a four-player
+     * quarry floor, where the reinforcement draws the party's fire and the bender
+     * lives longer, it put 2.1 of the party on the floor and dragged the boss
+     * fight to 11 rounds.
+     */
+    stats: { maxHp: 36, maxAp: 2, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
     abilities: ['rock_throw', 'raise_rubble'],
     ai: 'cautious',
     xp: 150,
@@ -78,7 +88,13 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Deserter',
     element: 'fire',
     size: 1,
-    stats: { maxHp: 34, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
+    /*
+     * Three AP: a blast or the oil flask, plus the torch (#632). At four he
+     * opened with two Fire Blasts into a party still bunched at the gate, about
+     * 34 damage before most of it had acted. The oil and the torch are the
+     * lesson; the double blast was only a spike.
+     */
+    stats: { maxHp: 34, maxAp: 3, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['fire_blast', 'oil_flask', 'torch_toss'],
     ai: 'cautious',
     xp: 200,
@@ -140,8 +156,14 @@ export const ENEMIES: readonly EnemyDef[] = [
     element: 'earth',
     size: 2,
     /* Option A restores square-footprint pressure through mobility and
-     * endurance without increasing any individual hit (ADR 0070). */
-    stats: { maxHp: 130, maxAp: 5, maxMove: 4, power: 7, defense: 5, speed: 4, focus: 5 },
+     * endurance without increasing any individual hit (ADR 0070).
+     *
+     * 130 -> 80 HP (#632): no fight should run past about six minutes, and at
+     * 130 a three-player party took 8.5 rounds (28 turns) to bring it down,
+     * past six minutes once people think between moves. At 80 it is about 5.5
+     * rounds and 20 turns at three players, about 6 at four, and still wins
+     * every simulated trial. `rules/difficulty.ts` still grows it with the table. */
+    stats: { maxHp: 80, maxAp: 5, maxMove: 4, power: 7, defense: 5, speed: 4, focus: 5 },
     abilities: ['driller_slam', 'driller_debris', 'driller_spray', 'driller_churn', 'raise_rubble'],
     ai: 'boss',
     xp: 360,
