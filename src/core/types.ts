@@ -1380,6 +1380,11 @@ export interface GameState {
   };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];
+  /**
+   * Combo rule ids this save has seen fire (#622), in discovery order. Until a
+   * rule is here the confirm step only hints at it; afterwards it is named.
+   */
+  readonly discoveredCombos: readonly string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -1471,6 +1476,8 @@ export type GameEvent =
       readonly from: SurfaceId | null;
       readonly to: SurfaceId | null;
       readonly label: string;
+      /** The combo rule (or 'paint', 'spread', 'expire') behind the change. */
+      readonly comboId?: string;
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
@@ -1539,6 +1546,8 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
+  /** A combo rule fired for the first time in this save (#622). */
+  | { readonly type: 'comboDiscovered'; readonly comboId: string }
   | { readonly type: 'screenChanged'; readonly screen: Screen }
   | {
       readonly type: 'phaseChanged';

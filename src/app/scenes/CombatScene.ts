@@ -2560,7 +2560,7 @@ export class CombatScene implements Scene {
 
     // What the ground is about to do, in the combo table's own words. This is
     // the part that used to say "Leaves Fire" over a puddle.
-    for (const note of reactionNotes(this.app.content, preview.reactions)) {
+    for (const note of reactionNotes(this.app.content, preview.reactions, this.app.comboReveal())) {
       body.appendChild(note);
     }
 

@@ -149,6 +149,19 @@ describe('save round trip', () => {
     expect(stateFromBlob(legacy.blob).battle?.openingRng).toBeNull();
   });
 
+  it('keeps the discovered combos, and loads an older save as having found none (#622)', () => {
+    const found: GameState = { ...midBattleState(), discoveredCombos: ['fire-into-oil'] };
+    const result = deserialize(serialize(found, META));
+    if (!result.ok) throw new Error(result.error);
+    expect(stateFromBlob(result.blob)).toEqual(found);
+
+    const blob = JSON.parse(serialize(found, META));
+    delete blob.state.discoveredCombos;
+    const legacy = deserialize(JSON.stringify(blob));
+    if (!legacy.ok) throw new Error(legacy.error);
+    expect(stateFromBlob(legacy.blob).discoveredCombos).toEqual([]);
+  });
+
   it('round-trips a size-2 unit and its anchor', () => {
     const before = sizeTwoBattleState();
     const boss = before.battle?.units.find((unit) => unit.size === 2);
