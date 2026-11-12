@@ -49,7 +49,10 @@ total) and never in the JS bundle. Each is an `<audio>` element streamed as it p
 through a `MediaElementAudioSourceNode` and a gain node, because iOS ignores
 `HTMLMediaElement.volume` and a crossfade needs a gain. A decoded buffer would loop more tightly
 but costs about 23 MB of floats per minute of 48 kHz stereo, twice during a crossfade, which iOS will not
-give a page.
+give a page. There are two elements, made and played inside the first gesture and then
+used in turn, because iOS lets an element play without a tap only after a tap has played it, and a
+crossfade often starts when a walk ends, with no gesture in hand; any later tap also replays a
+start the browser refused.
 
 **Its own context.** The music is not on ADR 0012's bus: the bus closes its context when a game
 loads and when Sound goes Off, and the music must play on through both. It has its own

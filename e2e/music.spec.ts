@@ -24,7 +24,8 @@ test('the title tap starts the title theme, Ba Dan switches it, and Off stops it
     window.musicProbe = probe;
     const play = HTMLMediaElement.prototype.play;
     HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
-      probe.played.push(this.src);
+      // The player blesses its two elements with an empty play() inside the first gesture.
+      if (this.src) probe.played.push(this.src);
       if (!probe.elements.includes(this)) probe.elements.push(this);
       return play.call(this);
     };

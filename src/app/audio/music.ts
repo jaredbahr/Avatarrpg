@@ -168,7 +168,14 @@ export class MusicPlayer {
 
 type ContextCtor = typeof AudioContext;
 
-/** `<audio>` elements through gain nodes on a context of the music's own. */
+/**
+ * `<audio>` elements through gain nodes on a context of the music's own.
+ *
+ * Two elements, made and played inside the first gesture and then reused by alternating, because
+ * iOS lets an element play without a tap only once a tap has played it: a crossfade that starts
+ * after a walk ends, with no gesture in hand, must reach for an element that is already allowed.
+ * A third change inside one crossfade cuts the oldest fade short.
+ */
 function createElementBackend(): MusicBackend | null {
   const w = window as unknown as { AudioContext?: ContextCtor; webkitAudioContext?: ContextCtor };
   const Ctor = w.AudioContext ?? w.webkitAudioContext;
@@ -181,7 +188,6 @@ function createElementBackend(): MusicBackend | null {
   }
   const master = ctx.createGain();
   master.connect(ctx.destination);
-  const live = new Set<HTMLAudioElement>();
   const ramp = (param: AudioParam, to: number, seconds: number): void => {
     const now = ctx.currentTime;
     param.cancelScheduledValues(now);
@@ -190,38 +196,57 @@ function createElementBackend(): MusicBackend | null {
   };
   // A browser without the codec, or a refused play(), is silence, never an error.
   const play = (element: HTMLAudioElement): void => void element.play().catch(() => undefined);
+  const slot = () => {
+    const element = new Audio();
+    element.loop = true;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    ctx.createMediaElementSource(element).connect(gain).connect(master);
+    // Inside the gesture: this is what allows the element to play later without one.
+    play(element);
+    return { element, gain, owner: null as object | null };
+  };
+  type Slot = ReturnType<typeof slot>;
+  const slots: readonly [Slot, Slot] = [slot(), slot()];
+  let next: 0 | 1 = 0;
+  const release = (slot: Slot): void => {
+    slot.owner = null;
+    slot.element.pause();
+    slot.element.removeAttribute('src');
+    slot.element.load();
+  };
   return {
     start(url) {
-      const element = new Audio(assetUrl(url));
-      element.loop = true;
-      const gain = ctx.createGain();
-      gain.gain.value = 0;
-      ctx.createMediaElementSource(element).connect(gain).connect(master);
-      live.add(element);
-      play(element);
+      const slot = slots[next];
+      next = next === 0 ? 1 : 0;
+      if (slot.owner) release(slot);
+      const owner = {};
+      slot.owner = owner;
+      slot.gain.gain.cancelScheduledValues(ctx.currentTime);
+      slot.gain.gain.setValueAtTime(0, ctx.currentTime);
+      slot.element.src = assetUrl(url);
+      play(slot.element);
       return {
-        fade: (to, seconds) => ramp(gain.gain, to, seconds),
-        stop() {
-          live.delete(element);
-          element.pause();
-          element.removeAttribute('src');
-          element.load();
-          gain.disconnect();
+        fade: (to, seconds) => {
+          if (slot.owner === owner) ramp(slot.gain.gain, to, seconds);
+        },
+        stop: () => {
+          if (slot.owner === owner) release(slot);
         },
       };
     },
     level: (to, seconds) => ramp(master.gain, to, seconds),
     pause() {
-      for (const element of live) element.pause();
+      for (const slot of slots) if (slot.owner) slot.element.pause();
       void ctx.suspend().catch(() => undefined);
     },
     resume() {
       if (ctx.state === 'suspended') void ctx.resume().catch(() => undefined);
-      for (const element of live) if (element.paused) play(element);
+      // Also the second chance for a start that was refused: the next tap plays it.
+      for (const slot of slots) if (slot.owner && slot.element.paused) play(slot.element);
     },
     close() {
-      for (const element of live) element.pause();
-      live.clear();
+      for (const slot of slots) release(slot);
       void ctx.close().catch(() => undefined);
     },
   };
