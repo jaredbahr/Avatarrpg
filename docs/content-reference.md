@@ -214,13 +214,13 @@ Names are shown in authored content order within each entry; sections and record
 
 ### Fire Nation Deserter
 
-- Stats: defense 2, focus 10, maxAp 4, maxHp 34, maxMove 4, power 6, speed 6
+- Stats: defense 2, focus 10, maxAp 3, maxHp 34, maxMove 4, power 6, speed 6
 - Abilities: Fire Blast, Oil Flask, Torch Toss
 - XP: 200
 
 ### Grumbler
 
-- Stats: defense 5, focus 5, maxAp 5, maxHp 130, maxMove 4, power 7, speed 4
+- Stats: defense 5, focus 5, maxAp 5, maxHp 80, maxMove 4, power 7, speed 4
 - Abilities: Driller Slam, Debris Throw, Oil Spray, Churn the Ground, Raise Rubble
 - XP: 360
 
@@ -244,7 +244,7 @@ Names are shown in authored content order within each entry; sections and record
 
 ### Quarry Bender
 
-- Stats: defense 3, focus 5, maxAp 4, maxHp 36, maxMove 3, power 6, speed 4
+- Stats: defense 3, focus 5, maxAp 2, maxHp 36, maxMove 3, power 6, speed 4
 - Abilities: Rock Throw, Raise Rubble
 - XP: 150
 
