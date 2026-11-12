@@ -653,7 +653,6 @@ export class ExploreScene implements Scene {
     if (!banner) return;
     clear(banner);
     const state = this.app.state;
-    const objective = state ? worldObjective(this.app.content, state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
     const clock = state?.world.clock;
     append(banner, [
@@ -710,7 +709,7 @@ export class ExploreScene implements Scene {
       { class: 'explore-header-action' },
     );
     banner.append(this.pauseButton);
-    this.renderObjective(objective);
+    this.renderObjective(state ? worldObjective(this.app.content, state) : null);
     const corner = this.mapCorner;
     if (corner && state && this.map && this.grid) {
       clear(corner);
@@ -734,22 +733,18 @@ export class ExploreScene implements Scene {
     const button = this.objectiveButton;
     if (!button) return;
     this.objectivePresentation = syncExploreObjective(this.objectivePresentation, objective);
-    const gate = this.atGate();
-    const visible = Boolean(objective) && !this.conversationMode && this.map?.id !== RIVERSIDE_ID;
-    button.hidden = !visible;
+    button.hidden = !objective || this.conversationMode || !!this.life;
     // Riverside and conversations hide the chip, but its text still follows the
     // story, so it is current the moment it shows again.
-    if (!objective) {
-      clear(button);
-      return;
-    }
+    clear(button);
+    if (!objective) return;
 
+    const gate = this.atGate();
     const expanded = this.objectivePresentation.expanded;
     button.setAttribute('aria-expanded', String(expanded));
     button.setAttribute('aria-label', `Current objective: ${objective}${gate ? `. ${gate}` : ''}`);
     button.title = expanded ? 'Hide objective details' : 'Show the full objective';
     button.classList.toggle('is-collapsed', !expanded);
-    clear(button);
     if (expanded)
       button.append(
         el('strong', { class: 'explore-objective-label tiny', text: 'Current objective' }),
@@ -765,7 +760,8 @@ export class ExploreScene implements Scene {
   }
 
   private toggleObjective(): void {
-    const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
+    const state = this.app.state;
+    const objective = state ? worldObjective(this.app.content, state) : null;
     this.objectivePresentation = toggleExploreObjective(this.objectivePresentation, objective);
     if (!objective) return;
     this.renderObjective(objective);
@@ -1666,7 +1662,7 @@ export class ExploreScene implements Scene {
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
     const target =
-      live && !held && !this.practiceCamera && this.objectiveButton?.hidden === false
+      !held && live && !this.practiceCamera && this.objectiveButton && !this.objectiveButton.hidden
         ? resolveObjectivePointerTarget(
             worldObjectiveTargetId(this.app.content, state),
             map.exits,
