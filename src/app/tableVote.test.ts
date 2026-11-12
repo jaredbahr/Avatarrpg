@@ -4,6 +4,7 @@ import {
   castVote,
   holdsVote,
   outright,
+  resetBallot,
   takeOver,
   tallyVotes,
   voteOrder,
@@ -60,5 +61,26 @@ describe('table vote', () => {
       votes: [],
       ready: true,
     });
+  });
+
+  it('starts fresh after replacement even when the choice and voters have the same key', () => {
+    const key = 'gate_parley|0|replacement-a|replacement-b|replacement-c';
+    castVote(key, 1);
+    takeOver(key);
+    const previous = castVote(key, 0);
+    expect(previous).toEqual({ key, votes: [1, 0], ready: false });
+
+    resetBallot();
+    const fresh = ballotFor(key);
+    expect(fresh).toEqual({ key, votes: [], ready: true });
+    expect(fresh).not.toBe(previous);
+    expect(ballotFor(key)).toBe(fresh);
+    expect(castVote(key, 0)).toEqual({ key, votes: [0], ready: false });
+    expect(takeOver(key)).toEqual({ key, votes: [0], ready: true });
+
+    // Replacing an already cleared vote is safe, including before its first render.
+    resetBallot();
+    resetBallot();
+    expect(ballotFor(key)).toEqual({ key, votes: [], ready: true });
   });
 });
