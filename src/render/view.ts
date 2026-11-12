@@ -6,7 +6,7 @@
  * that is what lets the Canvas 2D and WebGL backends be interchangeable.
  */
 
-import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types';
+import type { Grid, MapBackdrop, MapExit, MapScene, StatusId, Vec2 } from '../core/types';
 import { tileAt } from '../core/rules/grid';
 import type { ClipName, Heading, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
@@ -417,8 +417,8 @@ export interface MapView {
   readonly activeUnitId: string | null;
   readonly selectedUnitId: string | null;
   readonly hoverTile: Vec2 | null;
-  readonly exit: { readonly pos: Vec2; readonly label: string } | null;
-  readonly exits?: readonly { readonly pos: Vec2; readonly label: string }[];
+  readonly exit: Pick<MapExit, 'pos' | 'label' | 'direction'> | null;
+  readonly exits?: readonly Pick<MapExit, 'pos' | 'label' | 'direction'>[];
   /** Colourblind hatch patterns on surfaces. */
   readonly hatch: boolean;
   /** Tile lines over the ground. Off by default; a setting, and High contrast, turn them on. */

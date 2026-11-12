@@ -1216,7 +1216,13 @@ export class Canvas2DBackend implements RenderBackend {
     for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
       const anchor = boardPixelFromTile(camera, { x: exit.pos.x + 0.5, y: exit.pos.y + 0.5 });
       this.drawPixelCues(
-        [exitMark(anchor, cueOpacity(view.time, 420, view.reducedMotion))],
+        [
+          exitMark(
+            anchor,
+            cueOpacity(view.time, 420, view.reducedMotion),
+            camera.projection === 'topdown' ? exit.direction : undefined,
+          ),
+        ],
         camera,
         'ground',
         nudge,

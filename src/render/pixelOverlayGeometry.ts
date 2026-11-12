@@ -1,3 +1,4 @@
+import type { MapEdgeSide } from '../core/types';
 import { TILE, type Camera } from './camera';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from './geometry/arc';
 import { contourLoops } from './geometry/contour';
@@ -147,7 +148,26 @@ export function koCrossMark(anchor: G1Point, width: number, alpha = 1): PixelOve
   );
 }
 
-export function exitMark(anchor: G1Point, alpha: number): PixelOverlayCue {
+const EXIT_ARROW = [
+  { x: -12, y: -16 },
+  { x: 10, y: 0 },
+  { x: -12, y: 16 },
+  { x: -5, y: 0 },
+];
+
+const EXIT_ARROW_ROTATION: Record<MapEdgeSide, readonly [number, number]> = {
+  east: [1, 0],
+  south: [0, 1],
+  west: [-1, 0],
+  north: [0, -1],
+};
+
+export function exitMark(
+  anchor: G1Point,
+  alpha: number,
+  direction: MapEdgeSide = 'east',
+): PixelOverlayCue {
+  const [cos, sin] = EXIT_ARROW_ROTATION[direction];
   return pixelMark(
     'exit',
     [
@@ -161,12 +181,7 @@ export function exitMark(anchor: G1Point, alpha: number): PixelOverlayCue {
       {
         kind: 'polygon',
         color: 'gold',
-        points: [
-          { x: -12, y: -16 },
-          { x: 10, y: 0 },
-          { x: -12, y: 16 },
-          { x: -5, y: 0 },
-        ],
+        points: EXIT_ARROW.map(({ x, y }) => ({ x: x * cos - y * sin, y: x * sin + y * cos })),
       },
     ],
     { gold: OVERLAY.markerGold },
