@@ -41,7 +41,7 @@ export const ENEMY_ABILITIES: readonly Ability[] = [
     targeting: enemyTarget,
     effects: [{ kind: 'damage', base: 5, scale: 0.6, damageType: 'physical' }],
     description: 'A heavy, obvious club swing at someone adjacent.',
-    flavor: 'Bandit basics.',
+    flavor: 'Quarry crew basics.',
     fx: 'fx.enemy.club',
   }),
   ability({
