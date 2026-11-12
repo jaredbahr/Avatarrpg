@@ -32,6 +32,7 @@ import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
 import type { AnimatorOptions } from './animator';
 import { Session } from './session';
+import { resetBallot } from './tableVote';
 import type { Participant, Player } from './session';
 import type { Settings, SlotId } from './storage/localSaves';
 import {
@@ -735,9 +736,15 @@ export class App {
       participants,
     );
 
-    this.state = state;
+    this.state = {
+      ...state,
+      // Only a genuinely new game can enter the first-fight guidance flow.
+      // Loads, previews and parties that happen to be on the Forest Road do not.
+      flags: { ...state.flags, 'guidance.firstFightEligible': true },
+    };
     this.resetPlayback();
     this.residents.reset();
+    resetBallot();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
 
@@ -775,6 +782,7 @@ export class App {
     }
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
     this.session.restoreMeta(session);
+    resetBallot();
     this.resetPlayback();
     this.residents.reset();
     this.closePause();

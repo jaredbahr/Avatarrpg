@@ -1230,6 +1230,103 @@ html[data-contrast='high'] .title-card .tagline {
   margin-top: var(--sp-2);
 }
 
+/* A landscape tablet has room beside the vote heading, and beside each
+ * answer heading, for the hand-off controls and the revealed names. Keep the
+ * selected text size and every answer visible instead of stacking those into
+ * a second screenful (#664). Narrow screens retain the scrolling layout. */
+@media (min-width: 60rem) and (min-height: 35rem) and (orientation: landscape) {
+  .choice-panel[data-vote] {
+    gap: var(--sp-1);
+    padding: var(--sp-3);
+  }
+
+  .choice-panel[data-vote] .choice-options {
+    gap: var(--sp-2);
+  }
+
+  .choice-panel[data-vote] .vote-banner {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--sp-1) var(--sp-2);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  .choice-panel[data-vote] .vote-banner .btn-large {
+    margin: 0;
+  }
+
+  .choice-panel[data-vote] .choice-option {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: var(--sp-2);
+    padding: var(--sp-2);
+  }
+
+  .choice-panel[data-vote] .choice-option > strong {
+    grid-column: 1 / 3;
+    grid-row: 1;
+  }
+
+  .choice-panel[data-vote] .choice-option > span {
+    grid-column: 1 / -1;
+  }
+
+  .choice-panel[data-vote] .choice-option > .speaker-tag {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .choice-panel[data-vote] .choice-option:has(> .speaker-tag) > strong {
+    grid-column: 2;
+  }
+
+  .choice-panel[data-vote] .choice-option > .vote-names {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .stage:has(.choice-panel[data-vote]) {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .stage .choice-panel[data-vote] {
+    max-height: 100%;
+  }
+
+  /* Reuse the compact portrait/header arrangement from narrow dialogue, only
+   * for a vote. The answers can then use the whole card, while the speaker
+   * and prompt share its first row. No portrait or wording is removed. */
+  .explore-conversation .choice-panel[data-vote] {
+    --conversation-portrait: 5rem;
+    grid-template-columns: max-content minmax(0, 1fr);
+    max-height: calc(100% - 2 * var(--sp-2));
+    row-gap: var(--sp-1);
+    padding: var(--sp-2);
+    padding-block: var(--sp-1);
+  }
+
+  .explore-conversation .choice-panel[data-vote] > .conversation-compact-head {
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: row;
+    align-self: center;
+    gap: var(--sp-2);
+  }
+
+  .explore-conversation .choice-panel[data-vote] .conversation-compact-speaker {
+    width: auto;
+    text-align: left;
+  }
+
+  .explore-conversation .choice-panel[data-vote] > .vote-banner,
+  .explore-conversation .choice-panel[data-vote] > .choice-options,
+  .explore-conversation .choice-panel[data-vote] > .center {
+    grid-column: 1 / -1;
+  }
+}
+
 .vote-names {
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -1629,6 +1726,41 @@ html[data-contrast='high'] .explore-conversation::before {
   background: color-mix(in srgb, var(--c-bg-deep) 85%, transparent);
   border-bottom: var(--hairline) solid var(--c-line);
   flex: 0 0 auto;
+}
+
+.guidance-target {
+  outline: 0.2rem solid var(--c-gold);
+  outline-offset: 0.15rem;
+}
+
+.action-row.guidance-target {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 0.2rem var(--c-gold);
+}
+
+.combat-guidance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: min(100%, 42rem);
+  margin-inline: auto;
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--c-ink);
+  background: var(--c-bg);
+  border: var(--hairline) solid var(--c-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+}
+
+.combat-guidance > span {
+  min-width: 0;
+}
+
+.combat-guidance > button {
+  min-height: var(--tap);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .turn-chip {
@@ -3862,6 +3994,18 @@ html[data-contrast='high'] .hud-panel::after {
   flex-wrap: wrap;
   max-height: 40dvh;
   overflow-y: auto;
+}
+
+/* Give the coach its own dock row on landscape boards. As a third column it
+   narrows the action panel, stacks its controls, and can put legal board taps
+   underneath the guidance plate. A full row lets the actor and action panels
+   keep their normal widths while the map and dock reflow around the coach. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  .combat-scene .hud > .combat-guidance {
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: none;
+  }
 }
 
 /* At Huge text on a short landscape display, keep the dock's preferred height

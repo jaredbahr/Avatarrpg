@@ -1,6 +1,6 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import { enterNode, settleLayout, startGame, waitForIdle } from './helpers';
 
 // Partial #631 only: subtitle and riverside hierarchy. New game and all existing
 // accessible names stay unchanged while the separate rename awaits its handoff.
@@ -25,9 +25,13 @@ async function snapshot(page: Page) {
 
 async function openTitle(page: Page, renderer: string): Promise<string[]> {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1180, height: 820 });
-  await resetStorage(page, `?style=topdown&renderer=${renderer}&titleArt=a&titleArtHold=0`);
+  // Clear persisted data before the first app boot can start resource requests.
+  await page.goto('/robots.txt', { waitUntil: 'networkidle' });
+  await page.evaluate(() => localStorage.clear());
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(`/?style=topdown&renderer=${renderer}&titleArt=a&titleArtHold=0`);
+  await page.waitForFunction(() => Boolean(window.fnt?.app));
   await page.evaluate(() => window.fnt!.app.updateSettings({ reduceMotion: true, volume: 0 }));
   await expect(page.locator('.title-scene')).toBeVisible();
   await settleLayout(page);
