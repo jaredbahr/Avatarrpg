@@ -2719,6 +2719,11 @@ export class CombatScene implements Scene {
   private resultPanel(battle: BattleState): HTMLElement {
     const victory = battle.phase === 'victory';
     const anyFell = battle.units.some((unit) => unit.faction === 'party' && !isAlive(unit));
+    const state = this.app.state;
+    // A lost fight is the table's call (#620): Try again from the opening board,
+    // or Carry on down the story's defeat branch. The rotating decider has it.
+    const decider = !victory && state && !this.app.session.solo && this.app.session.decider(state);
+    const retry = !victory && battle.openingRng !== null;
     return el(
       'div',
       { class: 'handoff-banner result-banner' },
@@ -2732,11 +2737,23 @@ export class CombatScene implements Scene {
             ? anyFell
               ? 'Everyone who went down is patched up. The party keeps what it earned.'
               : 'The party keeps what it earned.'
-            : 'The fight is lost. Continue to see what happens next.',
+            : retry
+              ? 'Nobody is badly hurt. Catch your breath and try again, or carry on with the story.'
+              : 'Nobody is badly hurt. Carry on to see what happens next.',
         }),
-        button('Continue', () => this.app.resolveBattle(), {
-          class: 'btn-primary btn-large',
-        }),
+        decider ? el('p', { text: `${decider.name} decides.` }) : null,
+        el(
+          'div',
+          { class: 'row row-wrap' },
+          retry
+            ? button('Try again', () => this.app.retryBattle(), {
+                class: 'btn-primary btn-large',
+              })
+            : null,
+          button(victory ? 'Continue' : 'Carry on', () => this.app.resolveBattle(), {
+            class: retry ? 'btn-large' : 'btn-primary btn-large',
+          }),
+        ),
       ),
     );
   }
