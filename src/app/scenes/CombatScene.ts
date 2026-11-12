@@ -2721,7 +2721,7 @@ export class CombatScene implements Scene {
     const anyFell = battle.units.some((unit) => unit.faction === 'party' && !isAlive(unit));
     return el(
       'div',
-      { class: 'handoff-banner' },
+      { class: 'handoff-banner result-banner' },
       el(
         'div',
         { class: 'panel center result-panel' },
@@ -2918,7 +2918,11 @@ export class CombatScene implements Scene {
       units,
       npcs: [],
       props,
-      raisedWalls: battle.temporaryWalls.map((wall) => wall.pos),
+      // A wall still to rise, or rising, on a top-down board carries how far it is out (#590).
+      raisedWalls: battle.temporaryWalls.map(({ pos }) => {
+        const rise = this.animatorForBoard.wallRise(now, pos);
+        return rise === undefined ? pos : { ...pos, rise };
+      }),
       overlays,
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),

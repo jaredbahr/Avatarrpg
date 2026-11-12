@@ -21,7 +21,7 @@
  * are held to the same page rules and pins, and their bend sets to the bend
  * contract (`validateBends`). Every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
- * 512x512), because the loader falls back to the drawn placeholder on a
+ * 160x160), because the loader falls back to the drawn placeholder on a
  * missing file and a typo would otherwise ship green; and every map's
  * `backdrop` exists and measures the grid times its pixels a tile
  * (ADR 0009). Exit 1 on any problem, so CI can run it.
@@ -65,7 +65,7 @@ const MAX_ATLAS = 2048;
 
 /** What an image entry's file must measure, by key prefix; any other image key just has to fit a texture. */
 export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: number }>> = {
-  'portrait.': { width: 512, height: 512 },
+  'portrait.': { width: 160, height: 160 },
 };
 
 /**
@@ -175,7 +175,7 @@ export function footCentre(cel: Image, rows = 6): number | null {
   return count === 0 ? null : sum / count;
 }
 
-/** Larger than this and it is not the flat-shaded 512 px picture the packs ask for. */
+/** Larger than this and it is not the flat-shaded picture the packs ask for. */
 export const MAX_IMAGE_BYTES = 512 * 1024;
 
 /** True if any pixel on the frame's outer `margin` rows and columns is opaque. */

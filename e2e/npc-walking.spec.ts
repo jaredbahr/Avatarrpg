@@ -3,7 +3,10 @@ import type { Command, GameEvent, Vec2 } from '../src/core/types';
 import type { MapView } from '../src/render/view';
 import { allowSoftwareWebgl } from './budget';
 import { paintedTileCentre } from './projection';
-import { enterNode, resetStorage, startGame } from './helpers';
+import { enterNode, pinObliqueStyle, resetStorage, startGame } from './helpers';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 interface WalkAudit {
   truncated: boolean;

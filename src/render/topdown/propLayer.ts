@@ -37,13 +37,35 @@ const masks = new ObjectShadowCache();
 export interface TopdownPropArt {
   readonly sprite: TopdownPropSprite;
   readonly url: string;
-  readonly image: HTMLImageElement;
+  readonly image: HTMLImageElement | HTMLCanvasElement;
   readonly box: { x: number; y: number; w: number; h: number };
+}
+
+/** Steps a rising drawing comes out of the ground in: whole art px, and few masks to cast. */
+export const RISE_STEPS = 8;
+const risen = new Map<string, HTMLCanvasElement | null>();
+
+/**
+ * The drawing `step` eighths of the way out of the ground (#590): its top `step / RISE_STEPS` of rows
+ * stood on its own base row, the rest still below the ground. Null without a DOM.
+ */
+function risenImage(image: HTMLImageElement, url: string, step: number) {
+  const key = `${url}#${step}`;
+  if (!risen.has(key) && typeof document !== 'undefined') {
+    const { naturalWidth: w, naturalHeight: h } = image;
+    const shown = Math.round((h * step) / RISE_STEPS);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d')?.drawImage(image, 0, 0, w, shown, 0, h - shown, w, shown);
+    risen.set(key, canvas);
+  }
+  return risen.get(key) ?? null;
 }
 
 /** The prop's top-down drawing and box, or null where it has none or it has not loaded. */
 export function topdownPropArt(
-  prop: Pick<RenderProp, 'kind' | 'pos'>,
+  prop: Pick<RenderProp, 'kind' | 'pos' | 'rise'>,
   images: Pick<BackdropStore, 'get'> = topdownPropImages,
 ): TopdownPropArt | null {
   const sprite = topdownProp(prop.kind);
@@ -51,7 +73,12 @@ export function topdownPropArt(
   const url = topdownPropUrl(sprite);
   const image = images.get(url);
   if (!image) return null;
-  return { sprite, url, image, box: topdownPropBox(prop.pos, sprite) };
+  const box = topdownPropBox(prop.pos, sprite);
+  // A rising wall stands only as far out of the ground as it has come, its shadow with it.
+  const step = prop.rise === undefined ? RISE_STEPS : Math.ceil(prop.rise * RISE_STEPS);
+  if (step >= RISE_STEPS) return { sprite, url, image, box };
+  const part = step > 0 ? risenImage(image, url, step) : null;
+  return part ? { sprite, url: `${url}#${step}`, image: part, box } : null;
 }
 
 let scratch: HTMLCanvasElement | null = null;
@@ -96,7 +123,7 @@ let last: PropShadows | null = null;
  * the view). `pixels` reads a drawing's pixels on a mask cache miss.
  */
 export function propShadows(
-  props: readonly Pick<RenderProp, 'id' | 'kind' | 'pos' | 'castShadow'>[],
+  props: readonly Pick<RenderProp, 'id' | 'kind' | 'pos' | 'castShadow' | 'rise'>[],
   paved: readonly Vec2[] | undefined,
   images: Pick<BackdropStore, 'get'> = topdownPropImages,
   pixels: (image: HTMLImageElement) => RgbaImage | null = imagePixels,
@@ -111,7 +138,8 @@ export function propShadows(
   // yet is left out of the key, so the layer is rebuilt once they can.
   const casters: (ShadowCaster & { readonly id: string })[] = [];
   for (const { art } of arts) {
-    const mask = masks.get(art.url, () => pixels(art.image));
+    // A rising drawing is a canvas; `imagePixels` reads either.
+    const mask = masks.get(art.url, () => pixels(art.image as HTMLImageElement));
     if (mask) casters.push({ id: art.url, x: art.box.x, y: art.box.y, mask });
   }
   const key = [paved ? paved.length : -1, ...casters.map((c) => `${c.id}@${c.x},${c.y}`)].join('|');

@@ -1,8 +1,19 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pinObliqueStyle,
+  resetStorage,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { stageMotionTransition } from './motion-stage';
 import type { MapView, RenderUnit } from '../src/render/view';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`attack recovery and backward knockback stay grounded on ${renderer}`, async ({ page }) => {

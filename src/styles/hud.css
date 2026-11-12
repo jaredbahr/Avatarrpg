@@ -23,6 +23,11 @@
   z-index: var(--z-overlay);
 }
 
+.scene-host.reward-first .dialogue-scene,
+.scene-host.reward-first .explore-conversation {
+  display: none;
+}
+
 .overlay-host {
   pointer-events: none;
   z-index: var(--z-overlay-host);
@@ -992,6 +997,10 @@ html[data-contrast='high'] .title-card .tagline {
   background: color-mix(in srgb, var(--c-ink) 42%, transparent);
 }
 
+.dialogue-scene.end-scene {
+  background: var(--c-ink);
+}
+
 /*
  * The stage. The speaker stands over the text box, which sits in the lower
  * third of the screen the way a visual novel's does. The head overlaps the
@@ -1380,9 +1389,12 @@ html[data-contrast='high'] .map-wrap {
 
 .conversation-compact-portrait {
   position: relative;
-  flex: 0 0 var(--conversation-portrait);
-  width: var(--conversation-portrait);
-  height: var(--conversation-portrait);
+  /* The canvas inside is exactly --conversation-portrait, so its backing store is
+     never rescaled: the pixel portraits stay on whole device pixels. */
+  --conversation-frame: calc(var(--conversation-portrait) + 2 * var(--sp-1) + 2 * var(--hairline));
+  flex: 0 0 var(--conversation-frame);
+  width: var(--conversation-frame);
+  height: var(--conversation-frame);
   padding: var(--sp-1);
   border: var(--hairline) solid var(--c-ink-line);
   border-radius: var(--radius-lg);
@@ -2048,6 +2060,10 @@ html[data-contrast='high'] .hud-panel::after {
   z-index: var(--z-banner);
   padding: var(--sp-4);
   animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.handoff-banner.result-banner {
+  background: var(--c-ink);
 }
 
 .handoff-banner .panel {

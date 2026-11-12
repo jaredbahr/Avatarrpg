@@ -1,7 +1,17 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pinObliqueStyle,
+  resetStorage,
+  settleLayout,
+  startGame,
+  waitForIdle,
+} from './helpers';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 /** Pointer events use the painted canvas geometry, even mid-follow and at high DPR. */
 async function tapPath(page: Page, x: number, y: number) {
