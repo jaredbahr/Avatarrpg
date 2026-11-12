@@ -51,14 +51,13 @@ export function objectivePointerPlacement(
   target: ObjectivePointerPoint,
   width: number,
   height: number,
-  inset = 32,
+  topRight?: { left: number; bottom: number },
 ): ObjectivePointerPlacement | null {
   if (
     !Number.isFinite(target.x) ||
     !Number.isFinite(target.y) ||
     !Number.isFinite(width) ||
     !Number.isFinite(height) ||
-    !Number.isFinite(inset) ||
     width <= 0 ||
     height <= 0
   )
@@ -72,22 +71,29 @@ export function objectivePointerPlacement(
   const dy = target.y - centreY;
   if (dx === 0 && dy === 0) return null;
 
-  const safeInset = Math.max(0, inset);
-  const halfWidth = width / 2 - safeInset;
-  const halfHeight = height / 2 - safeInset;
+  const inset = 32;
+  const halfWidth = width / 2 - inset;
+  const halfHeight = height / 2 - inset;
   if (halfWidth <= 0 || halfHeight <= 0) return null;
 
   const scaleX = dx === 0 ? Number.POSITIVE_INFINITY : halfWidth / Math.abs(dx);
   const scaleY = dy === 0 ? Number.POSITIVE_INFINITY : halfHeight / Math.abs(dy);
   const scale = Math.min(scaleX, scaleY);
-  const x = centreX + dx * scale;
-  const y = centreY + dy * scale;
+  let x = centreX + dx * scale;
+  let y = centreY + dy * scale;
   const side = scaleX <= scaleY ? (dx < 0 ? 'west' : 'east') : dy < 0 ? 'north' : 'south';
+  if (topRight && x + inset > topRight.left && y - inset < topRight.bottom) {
+    // Stay on the same edge, clear of the follow-party map in the corner.
+    if (side === 'north') x = topRight.left - inset;
+    else if (side === 'east') y = topRight.bottom + inset;
+    else return null;
+    if (x < inset || y > height - inset) return null;
+  }
 
   return {
     x,
     y,
-    angle: (Math.atan2(dy, dx) * 180) / Math.PI + 90,
+    angle: (Math.atan2(target.y - y, target.x - x) * 180) / Math.PI + 90,
     side,
   };
 }

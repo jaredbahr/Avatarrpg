@@ -11,3 +11,7 @@
 - **Coordination:** Implementation is in Codex-owned #629 scope and avoids #278 renderer backends and shared `hud.css`. `/root` owns integration and exact gates.
 - **Next actions:** Review the cue in the exact selected browser matrix, especially top-right overlap with the follow-party minimap, compact viewports, and both camera projections. Run the normal local gate and exact required E2E only after coordination. Recheck current main before integration.
 - **Completion/transfer:** Local source implementation is committed and handed to `/root`; issue acceptance and merge remain pending exact visual/browser and full-gate review. Outgoing owner stops editing unless reassigned.
+
+## Integration review
+
+The pointer projects into the displayed canvas dimensions and stays clear of the follow-party map. The new regression checks both adjacent edges and confirms the arrow still points toward the target after it moves. The focused tests passed 17/17, and typecheck, scoped lint, and scoped formatting passed. Exact browser review and the full local gate are pending.

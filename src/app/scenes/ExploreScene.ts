@@ -1708,14 +1708,19 @@ export class ExploreScene implements Scene {
 
     const canvasRect = canvas.getBoundingClientRect();
     const wrapRect = wrap.getBoundingClientRect();
-    const screen = renderer.camera.project({ x: target.pos.x + 0.5, y: target.pos.y + 0.5 });
+    const corner = wrap.querySelector('.explore-map-corner')?.getBoundingClientRect();
+    const camera = renderer.camera;
+    const screen = camera.project({ x: target.pos.x + 0.5, y: target.pos.y + 0.5 });
     const placement = objectivePointerPlacement(
       {
-        x: canvasRect.left - wrapRect.left + screen.x,
-        y: canvasRect.top - wrapRect.top + screen.y,
+        x: canvasRect.left - wrapRect.left + (screen.x * canvasRect.width) / camera.viewport.width,
+        y: canvasRect.top - wrapRect.top + (screen.y * canvasRect.height) / camera.viewport.height,
       },
       wrapRect.width,
       wrapRect.height,
+      corner?.width
+        ? { left: corner.left - wrapRect.left, bottom: corner.bottom - wrapRect.top }
+        : undefined,
     );
     if (!placement) {
       pointer.hidden = true;

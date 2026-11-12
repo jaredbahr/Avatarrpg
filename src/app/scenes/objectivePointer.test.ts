@@ -25,6 +25,15 @@ describe('off-screen objective pointer placement', () => {
     expect(placement?.angle).toBeLessThan(180);
   });
 
+  it('keeps north and east cues clear of the map without leaving their edge', () => {
+    const corner = { left: 840, bottom: 140 };
+    const north = objectivePointerPlacement({ x: 1_020, y: -100 }, 1_000, 600, corner);
+    const east = objectivePointerPlacement({ x: 1_120, y: -10 }, 1_000, 600, corner);
+    expect(north).toMatchObject({ side: 'north', x: 808, y: 32 });
+    expect(east).toMatchObject({ side: 'east', x: 968, y: 172 });
+    expect(east?.angle).toBeCloseTo((Math.atan2(-182, 152) * 180) / Math.PI + 90);
+  });
+
   it.each([
     [{ x: 100, y: 100 }, 1_000, 600],
     [{ x: 0, y: 0 }, 1_000, 600],
