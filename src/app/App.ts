@@ -32,6 +32,7 @@ import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
 import type { AnimatorOptions } from './animator';
 import { Session } from './session';
+import { resetBallot } from './tableVote';
 import type { Participant, Player } from './session';
 import type { Settings, SlotId } from './storage/localSaves';
 import {
@@ -743,6 +744,7 @@ export class App {
     };
     this.resetPlayback();
     this.residents.reset();
+    resetBallot();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
 
@@ -780,6 +782,7 @@ export class App {
     }
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
     this.session.restoreMeta(session);
+    resetBallot();
     this.resetPlayback();
     this.residents.reset();
     this.closePause();

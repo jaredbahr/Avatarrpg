@@ -68,6 +68,11 @@ export interface Ballot {
 
 let ballot: Ballot | null = null;
 
+/** A loaded game replaces the choice, even when its ballot key is unchanged. */
+export function resetBallot(): void {
+  ballot = null;
+}
+
 /** The ballot for this choice, starting a fresh one when the choice is new. */
 export function ballotFor(key: string): Ballot {
   if (ballot?.key !== key) ballot = { key, votes: [], ready: true };
