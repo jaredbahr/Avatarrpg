@@ -64,6 +64,7 @@ import { burningPropEmitters } from '../anim/propFire';
 import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
+import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
 import { UI_MARKS, markKindFor } from '../ui/marks';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
@@ -268,6 +269,9 @@ export class CombatScene implements Scene {
   private freshBattleEntry = false;
   /** One presentation-only formation frame before the first hand-off. */
   private battleOpening: BattleOpeningState | null = null;
+  /** The victory card's rows, worked out once per finished battle. */
+  private resultShownFor: BattleState | null = null;
+  private victoryRows: { battle: BattleState; rows: VictoryRow[] } | null = null;
   /** Keeps the first combat frame on the last explore seats until the curtain lifts. */
   private approachPositions: ReadonlyMap<string, Vec2> | null = null;
   private approachEndsAt = 0;
@@ -1983,6 +1987,11 @@ export class CombatScene implements Scene {
         );
         return;
       }
+      // A caption left over from the fight's last beat would sit over the card.
+      if (this.resultShownFor !== battle) {
+        this.resultShownFor = battle;
+        this.app.toasts.clear();
+      }
       overlays.appendChild(this.resultPanel(battle));
       return;
     }
@@ -2731,16 +2740,17 @@ export class CombatScene implements Scene {
         'div',
         { class: 'panel center result-panel' },
         el('h1', { text: victory ? 'The fight is won' : 'Driven back' }),
-        el('p', {
-          class: 'muted',
-          text: victory
-            ? anyFell
-              ? 'Everyone who went down is patched up. The party keeps what it earned.'
-              : 'The party keeps what it earned.'
-            : retry
-              ? 'Nobody is badly hurt. Catch your breath and try again, or carry on with the story.'
-              : 'Nobody is badly hurt. Carry on to see what happens next.',
-        }),
+        victory ? this.victoryList(battle) : null,
+        victory && !anyFell
+          ? null
+          : el('p', {
+              class: 'muted',
+              text: victory
+                ? 'Everyone who went down is back on their feet.'
+                : retry
+                  ? 'Nobody is badly hurt. Catch your breath and try again, or carry on with the story.'
+                  : 'Nobody is badly hurt. Carry on to see what happens next.',
+            }),
         decider ? el('p', { text: `${decider.name} decides.` }) : null,
         el(
           'div',
@@ -2755,6 +2765,55 @@ export class CombatScene implements Scene {
           }),
         ),
       ),
+    );
+  }
+
+  /**
+   * One row per hero: the XP this fight paid, how near the next level is, and
+   * any level-up with what it brought (#630). Read off a dry run of the real
+   * resolve, once per finished battle.
+   */
+  private victoryList(battle: BattleState): HTMLElement | null {
+    const state = this.app.state;
+    if (!state) return null;
+    if (this.victoryRows?.battle !== battle) {
+      this.victoryRows = { battle, rows: victoryResults(this.app.content, state) };
+    }
+    const rows = this.victoryRows.rows;
+    if (rows.length === 0) return null;
+    return el(
+      'ul',
+      { class: 'victory-list', attrs: { 'aria-label': 'What the party earned' } },
+      ...rows.map((row) => {
+        const player = this.app.session.playerFor(row.unit.id);
+        return el(
+          'li',
+          { class: `victory-row element-${row.unit.element}` },
+          assetCanvas(portraitKeyFor(this.app.content, row.unit), 2.4),
+          el(
+            'div',
+            { class: 'victory-row-body' },
+            el(
+              'div',
+              { class: 'victory-row-head' },
+              el('strong', { text: row.unit.name }),
+              player && player.name !== row.unit.name
+                ? el('span', { class: 'muted', text: player.name })
+                : null,
+              el('span', { class: 'victory-xp', text: `+${row.xp} XP` }),
+              row.newLevel !== null
+                ? el('span', { class: 'victory-level', text: `Level ${row.newLevel}!` })
+                : null,
+            ),
+            el(
+              'div',
+              { class: 'bar victory-bar', attrs: { 'aria-hidden': 'true' } },
+              el('div', { class: 'bar-fill', style: { width: `${row.progress * 100}%` } }),
+            ),
+            el('span', { class: 'victory-note', text: victoryNote(row) }),
+          ),
+        );
+      }),
     );
   }
 

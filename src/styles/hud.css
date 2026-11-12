@@ -2062,8 +2062,20 @@ html[data-contrast='high'] .hud-panel::after {
   animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
 }
 
+/*
+ * The result covers the whole screen, not just the map: at Largest text the map
+ * is under half the height and the card would spill past it. It scrolls when
+ * it is taller than the screen, and `margin: auto` centres it otherwise.
+ */
 .handoff-banner.result-banner {
+  position: fixed;
+  display: flex;
+  overflow-y: auto;
   background: var(--c-ink);
+}
+
+.result-banner .panel {
+  margin: auto;
 }
 
 .handoff-banner .panel {
@@ -2114,6 +2126,78 @@ html[data-contrast='high'] .hud-panel::after {
 
 .result-panel h1 {
   color: var(--c-gold-deep);
+}
+
+/* What each hero earned (#630): a face, the XP, a bar to the next level. */
+.victory-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: min(30rem, 100%);
+  text-align: start;
+}
+
+.victory-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+  border: var(--hairline) solid var(--c-line);
+}
+
+.victory-row .painter {
+  box-shadow: 0 0 0 2px var(--el);
+}
+
+.victory-row-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.victory-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--sp-2);
+}
+
+.victory-row-head strong {
+  font-size: var(--fs-lg);
+}
+
+.victory-xp {
+  margin-inline-start: auto;
+  font-weight: 700;
+  color: var(--c-gold-deep);
+}
+
+.victory-level {
+  padding: 0 var(--sp-2);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--c-gold-soft), var(--c-gold));
+  color: var(--c-ink-on-gold);
+  font-weight: 700;
+}
+
+.victory-bar {
+  height: 0.6rem;
+  background: color-mix(in srgb, var(--c-ink) 18%, transparent);
+}
+
+.victory-bar .bar-fill {
+  background: linear-gradient(90deg, var(--c-gold-deep), var(--c-gold));
+}
+
+.victory-note {
+  font-size: var(--fs-sm);
 }
 
 /* ------------------------------------------------------------------ */
