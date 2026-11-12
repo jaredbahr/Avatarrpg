@@ -666,6 +666,7 @@ export class ExploreScene implements Scene {
           () => {
             if (!this.app.animator.busy(performance.now()))
               new TravelJournal(this.app).open(this.overlayHost());
+            else this.app.toasts.show('Let the party finish, then open the journal.');
           },
           { class: 'explore-header-action' },
         ),
