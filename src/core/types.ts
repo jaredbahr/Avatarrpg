@@ -741,6 +741,8 @@ export interface BackgroundRole {
 
 export interface MapExit {
   readonly pos: Vec2;
+  /** Direction of the top-down map marker at the route's mouth. */
+  readonly direction?: MapEdgeSide;
   /**
    * Multi-tile entrance (M2): the leader triggers the exit from any of these
    * cells. Absent means the single `pos` tile. When present it must contain

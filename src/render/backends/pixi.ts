@@ -2733,7 +2733,13 @@ export class PixiBackend implements RenderBackend {
         this.appendPixelMarks(
           this.pixelExitLayer,
           camera,
-          [exitMark(anchor, cueOpacity(view.time, 420, view.reducedMotion))],
+          [
+            exitMark(
+              anchor,
+              cueOpacity(view.time, 420, view.reducedMotion),
+              camera.projection === 'topdown' ? exit.direction : undefined,
+            ),
+          ],
           view.cameraNudge,
         );
       }
