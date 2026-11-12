@@ -736,9 +736,15 @@ export class App {
       participants,
     );
 
-    this.state = state;
+    this.state = {
+      ...state,
+      // Only a genuinely new game can enter the first-fight guidance flow.
+      // Loads, previews and parties that happen to be on the Forest Road do not.
+      flags: { ...state.flags, 'guidance.firstFightEligible': true },
+    };
     this.resetPlayback();
     this.residents.reset();
+    resetBallot();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
 

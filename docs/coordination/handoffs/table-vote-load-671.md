@@ -1,31 +1,62 @@
-# Fresh table vote after loading (#671)
+# Fresh ballots when replacing a campaign (#671)
 
-- **Owner / source:** `root/table-vote-load671-20261112`, branch `codex/table-vote-load-671`,
-  based on main `b39d3e79130fe638ef48073e1e641ede3d21139f`.
-- **Claim and validation record:** [issue comment 6824180843](https://github.com/jaredbahr/Avatarrpg/issues/671#issuecomment-6824180843),
-  verified before edits. The live claim and eventual PR hold revision-specific check results and evidence.
-- **Problem:** Save Slot 1 before voting, cast Ava's pick, then Pause → Load Slot 1 in the same page.
-  The restored game/session match the save but the module-local ballot still asks to pass to Ben.
-  Reload → Continue is the preserved positive control and starts at pick 1.
-- **Change:** expose `resetBallot()` in `src/app/tableVote.ts`; call it only from `App.adoptSave`
-  after restoring game/session and before pause-close or reroute callbacks. Ordinary rerenders and
-  voter handoffs retain their existing ballot behavior. No save format, reconciliation or voting-rule change.
-- **Regression coverage:** additive same-key replacement contract in `src/app/tableVote.test.ts`;
-  three actual manual Save/Load journeys in `e2e/table-vote-load.spec.ts`, starting from partial voting,
-  a majority result and a valid two-player tie. Check whole game/session preservation, fresh decider-first
-  pick 1, absence of old names/results/ties and normal voting afterward. The partial case retains the original
-  reload/Continue control and captured same-page failure oracle. Existing majority/rotation/tie/solo tests
-  remain unchanged. Fixtures enter supported nodes through existing helpers; they are not earned campaign runs.
-- **Baseline:** root's native partial-vote reproducer failed before this change, while its reload control passed;
-  25.293 s, log SHA256 `0c3aeae541dbd56ca97642ace6318696fc7b9e7c59e66e0cc22cab5f3e02bc4b`.
-  Original probe, observations and receipts remain outside the repository at
-  `/workspace/avatarrpg-env/vote-load-discovery-20261112/`. Earlier harness failures are separate evidence.
-- **Acceptance:** focused contracts, existing vote semantics, all three rendered journeys and exact-head
-  `ci:local` must pass before publication. Native tests keep the 60 s case / 10 s assertion limits and zero
-  retries. Physical/manual input, WebKit/Safari, PWA, FPS, device floors, merged runtime and owner acceptance
-  remain open. This task makes no layout acceptance claim; #664's CSS work is separate.
-- **Ownership:** exactly App import/adoptSave, tableVote implementation/test, the new browser spec and this
-  handoff. No new-game/playback behavior, ConversationPanel, SaveMenu, core/save/schema, renderer, content,
-  art, styles, versions, workflows or threshold changes. Root owns review, serialized validation and DRAFT
-  publication. Implementation evidence is external at
-  `/workspace/avatarrpg-env/table-vote-load671/implementation-receipt.json`.
+Owner: `root/table-vote-newgame671-20261112`, continuing
+`root/table-vote-load671-20261112` on the same branch `codex/table-vote-load-671`
+and draft PR672. [Claim6824180843](https://github.com/jaredbahr/Avatarrpg/issues/671#issuecomment-6824180843)
+was amended and read back before this continuation's edits.
+
+Loading a saved choice in the same page retained votes that were never saved.
+The first revision introduced `resetBallot()` and called it after successful
+`App.adoptSave` replacement, before pause-close/reroute callbacks. That behavior,
+its unit contract, three manual Save/Load regressions and original majority,
+rotation, tie and solo controls are preserved.
+
+A later actual two-player suggested-party journey exposed the other replacement
+boundary: vote on Gao's afternoon invitation, Quit to title, start a new game,
+then reach that same first choice. The new campaign retained Player 2's handoff.
+Its complete fresh state/session matched the first campaign except the expected
+new seed and RNG. No load, adoptSave, reload, forced node, flag or cache mutation
+was used. Walking used legal public commands checked against the real reducer;
+setup, opening, waiting, Talk, vote and Quit/New game used actual controls.
+
+The correction reuses the same reset API once in `App.newGame`, after the new
+state/session and presentation reset, before the first story dispatch. Ordinary
+rerenders and voter handoffs retain the ballot. Voting rules, save format,
+reconciliation, party ownership, guidance, camera, art and styles are unchanged.
+
+The source integrates current main `6a0c1d44ae5b013872af56fbfd33aa7a292802b9`
+with the published B2 parent. PR677's assignment actually completed by merge at
+16:32:17 UTC; [handoff6829424816](https://github.com/jaredbahr/Avatarrpg/pull/677#issuecomment-6829424816)
+records that resolution. Its complete new-game guidance eligibility assignment
+is inherited and preserved. No active owner hunk was taken on silence.
+
+Validation covers both replacement boundaries: the original Load cases and
+three new actual New game journeys starting from partial voting, unconfirmed
+majority and tie. New campaigns have fresh first picks, unchanged participants
+and decider; only new seed/RNG may differ in full-state comparisons. Ordinary
+settings redraw retains a new partial ballot, and Continue is reducer-equivalent.
+The new-game guidance eligibility flag remains set before the first forest fight.
+All original 60s/10s/zero-retry oracles remain intact.
+
+Preserved actual RED evidence:
+
+- Load: 25.293s, log SHA256
+  `0c3aeae541dbd56ca97642ace6318696fc7b9e7c59e66e0cc22cab5f3e02bc4b`;
+  fresh-page Reload/Continue positive control passed.
+- New game: 30.666s, solely expected fresh pick versus retained pass;
+  log `b611e49cc311ea93573cdd9871cc3b616bcb3a135fa10753e7f704cc83caf4c4`.
+  An initial opening-control harness failure is retained separately.
+
+Original source, raw observations, media and reports remain outside the repo at
+`/workspace/avatarrpg-env/table-vote-load671/`,
+`/workspace/avatarrpg-env/newgame-vote-discovery-20261112/` and
+`/workspace/avatarrpg-env/table-vote-newgame671/`. Revision-specific exact source,
+CI/native results and independent review are recorded in the claim and PR.
+Run the unchanged full `npm run ci:local` on the clean final head before updating
+the same branch with expected remote B2; no force push or duplicate PR.
+
+Keep draft. Physical input/device, WebKit/Safari/PWA, FPS, browser floors, owner
+acceptance and broader merged runtime remain separate gates. This makes no
+layout or earned-campaign claim; the walkthrough bypasses movement input using
+legal reducer-checked walks. No merge, deployment, dispatch, installation,
+security/credential, asset generation or budget change by this goal.
