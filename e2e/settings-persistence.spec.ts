@@ -84,14 +84,20 @@ async function closeSettings(page: Page, panel: Locator): Promise<void> {
 async function assertControlValues(panel: Locator, expected: Settings): Promise<void> {
   // Inventory the actual DOM, including extra input types/plain buttons, so
   // adding an eighth setting fails loudly instead of silently escaping tests.
-  await expect(panel.locator('.setting-row .setting-text > strong')).toHaveText(inventory);
-  await expect(panel.getByRole('radiogroup')).toHaveCount(4);
+  // Difficulty belongs to a game in progress (#661), so it leads the sheet only then.
+  const inGame = await panel.page().evaluate(() => Boolean(window.fnt?.app.state));
+  const lead = inGame ? ['Difficulty'] : [];
+  await expect(panel.locator('.setting-row .setting-text > strong')).toHaveText([
+    ...lead,
+    ...inventory,
+  ]);
+  await expect(panel.getByRole('radiogroup')).toHaveCount(lead.length + 4);
   await expect(panel.getByRole('switch')).toHaveCount(4);
   expect(
     await panel
       .getByRole('radiogroup')
       .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-label'))),
-  ).toEqual(['Text size', 'Sound', 'Music', 'Combo hints']);
+  ).toEqual([...lead, 'Text size', 'Sound', 'Music', 'Combo hints']);
   expect(
     await panel
       .getByRole('switch')
