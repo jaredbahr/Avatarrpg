@@ -438,6 +438,7 @@ export function createBattle(
   if (!encounter) throw new Error(`Unknown encounter "${encounterId}"`);
   const map = content.maps.get(encounter.mapId);
   if (!map) throw new Error(`Encounter "${encounterId}" uses unknown map "${encounter.mapId}"`);
+  const openingRng = rng.state;
 
   const variant = options.variantId
     ? (encounter.variants.find((v) => v.id === options.variantId) ?? null)
@@ -525,6 +526,7 @@ export function createBattle(
     temporaryWalls: [],
     props,
     nextUnitSerial: serial,
+    openingRng,
   };
 }
 

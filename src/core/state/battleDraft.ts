@@ -108,6 +108,7 @@ export class BattleDraft {
   readonly encounterId: string;
   readonly variantId: string | null;
   readonly mapId: string;
+  private readonly openingRng: BattleState['openingRng'];
   /** Preview drafts describe chance branches without choosing one. */
   readonly resolveChanceStatuses: boolean;
   /**
@@ -150,6 +151,7 @@ export class BattleDraft {
     this.encounterId = battle.encounterId;
     this.variantId = battle.variantId;
     this.mapId = battle.mapId;
+    this.openingRng = battle.openingRng;
     this.resolveChanceStatuses = options.resolveChanceStatuses ?? true;
     this.squareFootprints = options.squareFootprints ?? SQUARE_FOOTPRINTS;
   }
@@ -168,6 +170,7 @@ export class BattleDraft {
       temporaryWalls: this.temporaryWalls,
       props: this.props,
       nextUnitSerial: this.nextUnitSerial,
+      openingRng: this.openingRng,
     };
   }
 
