@@ -21,7 +21,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'forest_explore',
     kind: 'explore',
     mapId: 'forest_road',
-    objective: 'Explore the pine road east to the quarry gate, or go back west to Ba Dan.',
+    objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
     next: 'battle_forest_road',
   },
   {
@@ -49,7 +49,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'forest_dema',
     kind: 'dialogue',
     speaker: 'Dema',
-    portrait: 'portrait.mira',
+    portrait: 'portrait.dema',
     lines: [
       'Mind your feet. There are ducklings under that fern. Yes, the one you are about to step on.',
       "They used to nest down by the stream. Now it's full of quarry silt, and I've got a turtle-duck sitting in my clean washing.",
@@ -67,7 +67,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'forest_dema_again',
     kind: 'dialogue',
     speaker: 'Dema',
-    portrait: 'portrait.mira',
+    portrait: 'portrait.dema',
     lines: [
       'She has brought the ducklings over. I suppose the washing can wait.',
       'Any word about the runoff? It is still coming down white.',
@@ -78,7 +78,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'cutting_tea',
     kind: 'dialogue',
     speaker: 'Sen',
-    portrait: 'portrait.gao',
+    portrait: 'portrait.sen',
     lines: [
       'Cup? Mind the handle on the blue one. It comes off.',
       'The crews built this bench from offcuts. One shift started it and the next finished it. They never did agree on the height.',
@@ -96,7 +96,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'cutting_tea_again',
     kind: 'dialogue',
     speaker: 'Sen',
-    portrait: 'portrait.gao',
+    portrait: 'portrait.sen',
     lines: [
       "Back already? I've put fresh water on.",
       'Pass me those cups, would you? The cloth is under the bench.',

@@ -7,7 +7,14 @@ import {
   waitWithinResidentBudget,
 } from './resident-completion';
 import type { ResidentPlanSnapshot, PlannedResidentTrack } from './resident-completion';
-import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pauseClock,
+  pinObliqueStyle,
+  resetStorage,
+  startGame,
+  waitForIdle,
+} from './helpers';
 import { TIMING } from '../src/app/anim/choreography';
 import { strollTiming } from '../src/app/anim/stroll';
 import { previewWalk } from '../src/app/world/walking';
@@ -15,6 +22,9 @@ import { CONTENT } from '../src/content';
 import type { GameState } from '../src/core/types';
 import { smoothPath } from '../src/render/geometry/curve';
 import type { NpcMarker } from '../src/render/view';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 /**
  * What a fake-clock resident walk is allowed on a slow runner. These cases step

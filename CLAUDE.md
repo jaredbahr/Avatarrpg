@@ -13,7 +13,7 @@ their interpretation and the staged delivery plan.
 ## Current goal: a playable demo, Ba Dan to the quarry and back (owner, 2026-11-11)
 
 Everything on the route (Ba Dan, the Forest Road, the quarry gate, the Cutting, the Driller and the walk home) runs
-in the top-down style under `?style=topdown`. The owner's direction for finishing it:
+in the top-down style, the default since T6. The owner's direction for finishing it:
 
 - **Audience:** a playable link people open on their own device (the GitHub Pages build), plus a short video. The
   first ten minutes must hold up for a stranger: onboarding, saves and what-to-do-next are part of the demo.
@@ -45,8 +45,9 @@ in the top-down style under `?style=topdown`. The owner's direction for finishin
   "thanks for playing" card with a party summary and "play again with a different party".
 - **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
   UI sounds.
-- **Portraits:** the owner is choosing between pixel and hand-drawn dialogue portraits. Don't make new portraits
-  until he has picked a style.
+- **Portraits:** the owner chose **style B, detailed pixel art at 160 px**, on 2026-11-11 (ADR 0107). New portraits are
+  made with `prototypes/topdown/tools/portraits_b.py` (the old portrait at 160 px through PixelLab `edit-image-pro-flash`,
+  the B description with the character's own features, seed 11); each is checked at 3x before it ships.
 - **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
   new content or regions.
 
@@ -56,6 +57,11 @@ The owner approved a new art direction in a standalone prototype: **traditional 
 (ADR 0103). It lives in `prototypes/topdown/` (its own build; outside the bundle, lint and format). Game work in
 `src/` stays paused (#348) until the port to this style is planned. The active work is the prototype: the whole
 tutorial, Ba Dan to the Forest Road to the quarry and the Driller.
+
+**Top-down is the default style (ADR 0104 T6).** A link with no `style` boots top-down, and so does a Continue (the
+style is never saved); `?style=topdown` is an alias. `?style=oblique` keeps the old look until T7 deletes it, and the
+oblique bullets under "Things that will bite you" (the Ba Dan painting, lifted tiers, G1 walks) describe that legacy
+path only. The top-down family is precached; the swapped maps' oblique art is not (`scripts/precache.mjs`).
 
 - **Read `docs/art-lessons.md` first.** It records every failed attempt (isometric painting with AI-redrawn
   characters, the cel-shaded test, 3D-to-pixel, #411's walk, the code motion layer) so nobody repeats them.

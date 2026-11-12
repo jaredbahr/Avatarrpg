@@ -29,7 +29,7 @@ import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
 import type { AnimatorOptions } from './animator';
 import { Session } from './session';
-import type { Player } from './session';
+import type { Participant, Player } from './session';
 import type { Settings, SlotId } from './storage/localSaves';
 import {
   AUTOSAVE_ID,
@@ -49,6 +49,7 @@ import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
 import { AudioBus } from './audio/bus';
 import { setUiSink } from './audio/ui';
+import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
@@ -240,6 +241,8 @@ export class App {
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
   readonly audio: AudioBus;
+  /** Area music, on a context of its own so a load or Sound Off does not cut it (ADR 0108). */
+  readonly music: MusicPlayer;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
   /** Presentation-only provenance for the next newly mounted combat scene. */
@@ -313,6 +316,7 @@ export class App {
     // `button()` cannot see the app, so the bus is registered rather than
     // passed; a control asks for a click without knowing what makes one.
     setUiSink((key) => this.audio.play([{ key, at: 0, seed: 0 }], 0));
+    this.music = new MusicPlayer(() => this.settings.music);
     this.animator = this.createPresentationAnimator();
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);
@@ -381,9 +385,14 @@ export class App {
      * the context is already running. `pointerdown` rather than `click`,
      * because a tap that starts a drag on the board never becomes a click.
      */
-    const unlock = (): void => this.audio.unlock();
+    const unlock = (): void => {
+      this.audio.unlock();
+      this.music.unlock();
+    };
     window.addEventListener('pointerdown', unlock, { passive: true });
     window.addEventListener('keydown', unlock, { passive: true });
+    // A backgrounded tab pauses the music and returning plays it on, where it left off.
+    document.addEventListener('visibilitychange', () => this.music.setHidden(document.hidden));
     this.showScene(new TitleScene(this));
   }
 
@@ -423,6 +432,7 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     this.cancelRoute();
+    this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
     const nextInterlude =
       scene.name === 'dialogue' && Boolean(INTERLUDES[this.state?.story.nodeId ?? '']);
@@ -502,7 +512,7 @@ export class App {
       scene.name === 'dialogue' &&
       wantedBackdrop !== null &&
       !this.dialogueBackdrop &&
-      (this.scene?.name === 'explore' || this.scene?.name === 'combat');
+      this.scene?.name === wantedBackdrop.kind;
 
     if (keepWorld && this.scene) {
       this.dialogueBackdrop = this.scene;
@@ -642,6 +652,19 @@ export class App {
     }
   }
 
+  /**
+   * The area's track, from the scene and the map (or battlefield) the state is on. Every scene change
+   * comes through here; the player ignores a track that is already playing, so moving between scenes
+   * of one area, a conversation included, never restarts it. A fight dips it rather than switching.
+   */
+  private syncMusic(scene: string): void {
+    const battle = this.state?.battle ?? null;
+    this.music.setTrack(
+      musicFor({ scene, mapId: this.state?.location.mapId, battleMapId: battle?.mapId }),
+    );
+    this.music.setDuck(battle !== null && (scene === 'combat' || scene === 'dialogue'));
+  }
+
   /** Discard the replaced state's queued animation and audio together. */
   private resetPlayback(): void {
     this.animator.clear();
@@ -666,7 +689,7 @@ export class App {
     this.cancelRoute();
     this.previewSnapshot = null;
     this.state = previous.state;
-    this.session.setPlayers(Session.fromMeta(previous.session).players);
+    this.session.restoreMeta(previous.session);
     this.resetPlayback();
     this.residents.reset();
     this.closePause();
@@ -682,7 +705,12 @@ export class App {
   /* State                                                             */
   /* ---------------------------------------------------------------- */
 
-  newGame(players: readonly Player[], slots: readonly PartySlot[], seed?: string): void {
+  newGame(
+    players: readonly Player[],
+    slots: readonly PartySlot[],
+    seed?: string,
+    participants?: readonly Participant[],
+  ): void {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -697,7 +725,9 @@ export class App {
       players.map((player, index) => ({
         name: player.name,
         unitId: state.party[index]?.id ?? `p${index}`,
+        participantId: player.participantId,
       })),
+      participants,
     );
 
     this.state = state;
@@ -727,7 +757,7 @@ export class App {
       console.warn('Battle save could not be fully reconciled.', warning);
     }
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
-    this.session.setPlayers(Session.fromMeta(session).players);
+    this.session.restoreMeta(session);
     this.resetPlayback();
     this.residents.reset();
     this.closePause();
@@ -828,10 +858,11 @@ export class App {
 
   offerLevelUpIfPending(): void {
     const state = this.state;
-    if (!state || state.pendingChoices.length === 0) return;
-    if (this.levelUp) return;
     // Never interrupt a fight with a menu; choices wait for the story beat.
-    if (state.screen === 'combat') return;
+    if (!state || state.pendingChoices.length === 0 || this.levelUp || state.screen === 'combat') {
+      this.syncRewardDialogue();
+      return;
+    }
 
     const choice = state.pendingChoices[0];
     if (!choice) return;
@@ -843,6 +874,21 @@ export class App {
       this.levelUp = null;
       // More than one member may have levelled in the same fight.
       this.offerLevelUpIfPending();
+      if (
+        !this.levelUp &&
+        (this.state?.screen === 'dialogue' || this.state?.screen === 'ended') &&
+        !this.overlayHost.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        const dialogue =
+          this.dialogueHost ??
+          this.sceneHost.querySelector<HTMLElement>('.dialogue-scene, .explore-conversation');
+        const target =
+          dialogue?.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+          dialogue?.querySelector<HTMLElement>('.choice-option:not(:disabled)') ??
+          dialogue?.querySelector<HTMLElement>('[data-interlude-control="next"]') ??
+          dialogue?.querySelector<HTMLElement>('.end-panel button');
+        target?.focus({ preventScroll: true });
+      }
     };
 
     this.levelUp =
@@ -850,7 +896,29 @@ export class App {
         ? new DisciplineDialog(this, choice, done)
         : new LevelUpDialog(this, choice, done);
     this.levelUp.open(this.overlayHost);
+    // The modal now owns focus; its underlying story can safely leave the
+    // accessibility tree until the last pick closes the reward queue.
+    this.syncRewardDialogue();
     this.audio.play([{ key: 'levelUp', at: 0, seed: 0 }], 0);
+  }
+
+  /** Keep the next story beat out of sight and out of the tab order until its rewards are chosen. */
+  private syncRewardDialogue(): void {
+    if (!this.sceneHost) return;
+    const storyScreen = this.state?.screen === 'dialogue' || this.state?.screen === 'ended';
+    const concealed =
+      storyScreen &&
+      this.state !== null &&
+      (this.state.pendingChoices.length > 0 || this.levelUp !== null);
+    const dialogue =
+      this.dialogueHost ??
+      this.sceneHost.querySelector<HTMLElement>('.dialogue-scene, .explore-conversation');
+    if (concealed) this.sceneHost.classList.add('reward-first');
+    else this.sceneHost.classList.remove('reward-first');
+    if (!dialogue) return;
+    dialogue.inert = concealed;
+    if (concealed) dialogue.setAttribute('aria-hidden', 'true');
+    else dialogue.removeAttribute('aria-hidden');
   }
 
   /**
@@ -906,6 +974,8 @@ export class App {
     // setting *is* one.
     if (this.settings.volume <= 0) this.audio.close();
     else this.audio.unlock();
+    this.music.volumeChanged();
+    this.music.unlock();
     this.scene?.resize?.();
     this.scene?.sync();
   }

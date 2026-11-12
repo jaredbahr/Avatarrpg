@@ -26,7 +26,7 @@ const BENDER_LABEL: Record<ElementId, string> = {
 };
 
 /** Large enough to remain crisp when the world-conversation frame expands it. */
-const COMPACT_PORTRAIT_REM = 9;
+const COMPACT_PORTRAIT_REM = 10;
 
 export interface ResolvedConversation {
   readonly speaker: string;
@@ -105,8 +105,6 @@ function compactHeader(
         })
       : null;
   const portrait = assetCanvas(speaker.portrait, COMPACT_PORTRAIT_REM);
-  portrait.style.width = '100%';
-  portrait.style.height = '100%';
   return el(
     'div',
     { class: 'conversation-compact-head' },
@@ -253,7 +251,7 @@ function choicePanel(
           { class: 'decider-banner' },
           el('span', { class: 'tiny muted', text: 'This one is decided by' }),
           el('strong', { text: decider?.name ?? 'the party' }),
-          nextDecider && nextDecider.name !== decider?.name
+          nextDecider && nextDecider.id !== decider?.id
             ? el('span', { class: 'tiny muted', text: 'Next choice: ' + nextDecider.name })
             : null,
         ),

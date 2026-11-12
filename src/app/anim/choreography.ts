@@ -45,6 +45,10 @@ import { sheetLocomotion } from '../../content/assets/manifest';
 import type { BendSources } from './bendHandoff';
 import { planBendCast } from './bendHandoff';
 
+/** `BattleDraft.raiseWall`'s label on each cell a wall rises on, and how long the rise takes (#590). */
+const WALL_RISES = 'A wall of stone rises.';
+export const WALL_RISE_MS = 260;
+
 /** The cel each top-down projectile flies as (#588), by ability; the prototype's `b3/fx.js` looks. */
 const SHOT_LOOKS: Readonly<Record<string, string>> = {
   merc_crossbow: 'shot/bolt',
@@ -1358,6 +1362,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
         cue(key, at, 15, eventIndex);
         const { recipe, palette } = effect(key);
         emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 8);
+        // A top-down Earth Wall rises out of the ground over the prototype's 260 ms (#590).
+        if (input.projection === 'topdown' && rate >= 1 && event.label === WALL_RISES)
+          tracks.push({ kind: 'rise', pos: event.pos, start: at, duration: WALL_RISE_MS });
         break;
       }
 
