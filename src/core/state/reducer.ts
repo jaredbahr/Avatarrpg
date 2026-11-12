@@ -859,6 +859,14 @@ function applyCommand(content: ContentIndex, state: GameState, command: Command)
 
     case 'wait':
       return handleWait(content, state, command.until);
+
+    /*
+     * A battle already on the field keeps the stat blocks it was built with; the
+     * next fight (and a retry of this one) is built at the new difficulty.
+     */
+    case 'setDifficulty':
+      if (state.difficulty === command.difficulty) return { state, events: [] };
+      return { state: { ...state, difficulty: command.difficulty }, events: [] };
   }
 }
 

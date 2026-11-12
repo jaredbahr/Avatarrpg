@@ -19,6 +19,7 @@ import { RngCursor, seedFromString } from '../rng';
 import type {
   BattleState,
   ContentIndex,
+  Difficulty,
   FlagValue,
   GameEvent,
   GameState,
@@ -81,6 +82,8 @@ export interface SimOptions {
    * mercenaries on the boss floor, and that fight had never been measured.
    */
   readonly flags?: Readonly<Record<string, FlagValue>>;
+  /** The table's difficulty. Unset plays the default, Story. */
+  readonly difficulty?: Difficulty;
 }
 
 export interface SimResult {
@@ -208,6 +211,7 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
     party: options.party.map((slot) => ({ ...slot, level, autoChoose: true })),
     startNode: '',
     ...(options.flags ? { flags: options.flags } : {}),
+    ...(options.difficulty ? { difficulty: options.difficulty } : {}),
   });
 
   const rng = new RngCursor(seeded.rng);

@@ -15,6 +15,7 @@ import type {
   BattleState,
   Command,
   ContentIndex,
+  Difficulty,
   ElementId,
   GameEvent,
   GameState,
@@ -712,6 +713,7 @@ export class App {
     slots: readonly PartySlot[],
     seed?: string,
     participants?: readonly Participant[],
+    difficulty?: Difficulty,
   ): void {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
@@ -721,6 +723,7 @@ export class App {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
       startNode: this.storyEntry,
+      ...(difficulty ? { difficulty } : {}),
     });
 
     this.session.setPlayers(
@@ -736,6 +739,18 @@ export class App {
     this.resetPlayback();
     this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
+  }
+
+  /**
+   * Changes the game's difficulty from Settings. A fight already on the field
+   * keeps its enemies; the next one (or a retry) is built at the new setting.
+   * Saved straight away, so Continue keeps it.
+   */
+  setDifficulty(difficulty: Difficulty): void {
+    const state = this.state;
+    if (!state || state.difficulty === difficulty) return;
+    this.state = apply(this.content, state, { type: 'setDifficulty', difficulty }).state;
+    if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
   /** Installs a loaded save, replacing everything. */

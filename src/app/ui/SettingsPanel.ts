@@ -1,7 +1,7 @@
 /**
  * Settings.
  *
- * Eight controls, each one aimed at a specific person at the table rather than
+ * Eight controls (nine in a game: its difficulty), each one aimed at a specific person at the table rather than
  * at a spec: text too small on a 2736x1824 screen, too much going on, a room
  * where sound (or only the music) is not welcome, can't tell the fire from the mud, the panels
  * washing out in daylight, or a planner who counts squares.
@@ -11,6 +11,7 @@ import type { App } from '../App';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
+import { DIFFICULTY_CHOICES, difficultyHint } from './difficultyText';
 
 /**
  * Four steps rather than a slider: `choiceRow` is already a row of real
@@ -57,6 +58,24 @@ export class SettingsPanel extends Dialog {
 
   protected build(body: HTMLElement): void {
     const settings = this.app.settings;
+
+    // Difficulty belongs to the game being played, not the device, so it only
+    // shows while there is one.
+    const game = this.app.state;
+    if (game) {
+      body.appendChild(
+        this.choiceRow(
+          'Difficulty',
+          `${difficultyHint(game.difficulty)} Saved with this game; changes start at the next fight.`,
+          DIFFICULTY_CHOICES,
+          game.difficulty,
+          (value) => {
+            const choice = DIFFICULTY_CHOICES.find((option) => option.value === value);
+            if (choice) this.app.setDifficulty(choice.value);
+          },
+        ),
+      );
+    }
 
     body.appendChild(
       this.choiceRow(

@@ -16,13 +16,31 @@ import {
   enemiesToDrop,
   enemyHpScale,
   MAX_SCALE,
+  MIN_BOSS_AP,
   MIN_SCALE,
   scaleForTable,
+  UNDER_STRENGTH_BOSS_AP,
+  UNDER_STRENGTH_BOSS_DEFENSE,
   UNDER_STRENGTH_STEP,
 } from './difficulty';
 
 const TABLE_SIZES = [1, 2, 3, 4, 5, 6] as const;
 const UNTOUCHED_STATS = ['maxAp', 'maxMove', 'power', 'defense', 'speed', 'focus'] as const;
+/** A boss below the baseline also loses AP and defense (ADR 0110); nothing else moves. */
+const BOSS_UNDER_STRENGTH_STATS = ['maxAp', 'defense'] as const;
+
+function untouchedFor(isBoss: boolean, partySize: number, baseline: number) {
+  return isBoss && partySize < baseline
+    ? UNTOUCHED_STATS.filter(
+        (stat) => !(BOSS_UNDER_STRENGTH_STATS as readonly string[]).includes(stat),
+      )
+    : UNTOUCHED_STATS;
+}
+
+function expectedBossAp(maxAp: number, under: number): number {
+  if (under === 0) return maxAp;
+  return Math.max(Math.min(maxAp, MIN_BOSS_AP), maxAp - UNDER_STRENGTH_BOSS_AP * under);
+}
 const PARTY_CHARACTERS = ['kaya', 'nilak', 'bo', 'nima', 'riko', 'sura'] as const;
 const PROPERTY_CASES = 160;
 
@@ -211,7 +229,7 @@ describe('difficulty scaling across authored content', () => {
     expect(retainedBossCases).toBeGreaterThan(0);
   });
 
-  it('scales only max HP to a positive integer and preserves the other authored stats', () => {
+  it('at Story, scales max HP, and a boss below the baseline its AP and defense, and nothing else', () => {
     // Only HP is scaled; zero defense is a valid authored value (the Slinger).
     expect(ENEMY_BY_ID.get('bandit_slinger')?.stats.defense).toBe(0);
 
@@ -226,10 +244,21 @@ describe('difficulty scaling across authored content', () => {
 
           expect(Number.isInteger(scaled.maxHp)).toBe(true);
           expect(scaled.maxHp).toBeGreaterThan(0);
-          for (const stat of UNTOUCHED_STATS) {
+          const isBoss = enemy.ai === 'boss';
+          const baseline = encounter.baselinePartySize;
+          for (const stat of untouchedFor(isBoss, partySize, baseline)) {
             expect(scaled[stat]).toBe(enemy.stats[stat]);
+          }
+          for (const stat of UNTOUCHED_STATS) {
             expect(Number.isInteger(scaled[stat])).toBe(true);
             expect(scaled[stat]).toBeGreaterThanOrEqual(stat === 'defense' ? 0 : 1);
+          }
+          if (isBoss) {
+            const under = Math.max(0, baseline - partySize);
+            expect(scaled.maxAp).toBe(expectedBossAp(enemy.stats.maxAp, under));
+            expect(scaled.defense).toBe(
+              Math.max(0, enemy.stats.defense - UNDER_STRENGTH_BOSS_DEFENSE * under),
+            );
           }
         }
       }
@@ -255,8 +284,18 @@ describe('difficulty scaling across authored content', () => {
       expect(Number.isInteger(scaled.maxHp), failureContext).toBe(true);
       expect(scaled.maxHp, failureContext).toBeGreaterThan(0);
       expect(scaled.maxHp, failureContext).toBe(Math.max(1, Math.round(stats.maxHp * scale)));
-      for (const stat of UNTOUCHED_STATS) {
+      for (const stat of untouchedFor(isBoss, partySize, baseline)) {
         expect(scaled[stat], `${failureContext}: ${stat}`).toBe(stats[stat]);
+      }
+      if (isBoss && partySize < baseline) {
+        const under = baseline - partySize;
+        expect(scaled.maxAp, failureContext).toBe(expectedBossAp(stats.maxAp, under));
+        expect(scaled.maxAp, failureContext).toBeLessThanOrEqual(stats.maxAp);
+        expect(scaled.maxAp, failureContext).toBeGreaterThanOrEqual(
+          Math.min(stats.maxAp, MIN_BOSS_AP),
+        );
+        expect(scaled.defense, failureContext).toBeLessThanOrEqual(stats.defense);
+        expect(scaled.defense, failureContext).toBeGreaterThanOrEqual(0);
       }
       expect(stats, `${failureContext}: input mutated`).toEqual(before);
       if (partySize === baseline) expect(scaled.maxHp, failureContext).toBe(stats.maxHp);
