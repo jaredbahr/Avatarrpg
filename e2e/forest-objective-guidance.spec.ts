@@ -262,6 +262,90 @@ async function mapControl(page: Page) {
   return { before, after, eastAllowed };
 }
 
+test('the locked east route has an off-screen cue that follows the exploration camera', async ({
+  page,
+}) => {
+  const fixture = outbound('map');
+  await load(page, 'canvas', fixture);
+  const exit = CONTENT.maps.get('forest_road')?.exits?.find((e) => e.toMapId === 'quarry_gate');
+  if (!exit) throw new Error('Missing east quarry exit');
+  expect(evaluate(fixture.state, exit.requires)).toBe(false);
+
+  const canvas = page.locator('.map-canvas');
+  const follow = page.getByRole('button', { name: 'Follow party', exact: true });
+  const cue = page.getByRole('img', { name: /Quarry Gate is off screen/ });
+  const readTarget = async () => {
+    const box = await canvas.boundingBox();
+    const target = await paintedTileCentre(page, exit.pos);
+    if (!box || !target) throw new Error('Missing painted road');
+    return { box, target };
+  };
+  const initial = await readTarget();
+  await canvas.dispatchEvent('wheel', {
+    clientX: initial.box.x + initial.box.width / 2,
+    clientY: initial.box.y + initial.box.height / 2,
+    deltaY: -500,
+    bubbles: true,
+    cancelable: true,
+  });
+  await follow.click();
+
+  for (const width of [1_000, 820]) {
+    await page.setViewportSize({ width, height: 700 });
+    await settleLayout(page);
+    const { box, target } = await readTarget();
+    expect(target.x).toBeGreaterThan(box.x + box.width);
+    await expect(cue).toBeVisible();
+    await expect(cue).toHaveAccessibleName(/to the east\.$/);
+    const arrow = await cue.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const rotation = new DOMMatrix(getComputedStyle(node, '::before').transform);
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        dx: rotation.a,
+        dy: rotation.b,
+        right: rect.right,
+        top: rect.top,
+      };
+    });
+    const minimap = await follow.boundingBox();
+    if (!minimap) throw new Error('Missing follow-party map');
+    expect(arrow.right).toBeLessThanOrEqual(box.x + box.width);
+    expect(box.x + box.width - arrow.x).toBeLessThan(64);
+    const dx = target.x - arrow.x;
+    const dy = target.y - arrow.y;
+    expect((dx * arrow.dx + dy * arrow.dy) / Math.hypot(dx, dy)).toBeGreaterThan(0.99);
+    expect(arrow.right <= minimap.x || arrow.top >= minimap.y + minimap.height).toBe(true);
+  }
+
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Local map', exact: true });
+  await expect(dialog).toBeVisible();
+  await expect(cue).toBeHidden();
+  await dialog.getByRole('button', { name: 'Close map', exact: true }).click();
+  await expect(cue).toBeVisible();
+
+  const { box } = await readTarget();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  for (let pan = 0; pan < 8; pan++) {
+    if ((await readTarget()).target.x < box.x + box.width - 20) break;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - box.width / 3, y, { steps: 5 });
+    await page.mouse.up();
+    await settleLayout(page);
+  }
+  const visible = (await readTarget()).target;
+  expect(visible.x).toBeGreaterThan(box.x);
+  expect(visible.x).toBeLessThan(box.x + box.width);
+  expect(visible.y).toBeGreaterThan(box.y);
+  expect(visible.y).toBeLessThan(box.y + box.height);
+  await expect(cue).toBeHidden();
+  expect((await snapshot(page)).state).toEqual(fixture.state);
+});
+
 for (const renderer of ['canvas', 'webgl'] as const) {
   for (const source of ['map', 'legacy'] as const) {
     test(`forest outbound ${source} objective gives a visible eastward roadblock goal: ${renderer}`, async ({

@@ -20,13 +20,13 @@ export function resolveObjectivePointerTarget(
       (candidate.alpha ?? 1) > 0,
   );
   if (npc) return { pos: npc.renderPos ?? npc.pos, label: npc.name };
-  const exit = exits?.find((candidate) => candidate.toMapId === id);
-  return exit ? { pos: exit.pos, label: exit.label } : null;
+  return exits?.find((candidate) => candidate.toMapId === id) ?? null;
 }
 
-export interface ObjectivePointerPoint {
+export interface ObjectivePointerBox {
   readonly x: number;
   readonly y: number;
+  readonly size: number;
 }
 
 export type ObjectivePointerSide = 'north' | 'east' | 'south' | 'west';
@@ -44,7 +44,7 @@ export interface ObjectivePointerPlacement {
  * A null result means the target is visible or the cue cannot fit.
  */
 export function objectivePointerPlacement(
-  target: ObjectivePointerPoint,
+  target: ObjectivePointerBox,
   width: number,
   height: number,
   topRight?: { left: number; bottom: number },
@@ -60,11 +60,22 @@ export function objectivePointerPlacement(
   )
     return null;
 
-  if (target.x >= 0 && target.x <= width && target.y >= 0 && target.y <= height) return null;
+  const side =
+    target.x + target.size < 0
+      ? 'west'
+      : target.x > width
+        ? 'east'
+        : target.y + target.size < 0
+          ? 'north'
+          : target.y > height
+            ? 'south'
+            : null;
+  if (!side) return null;
 
-  let x = Math.max(inset, Math.min(target.x, width - inset));
-  let y = Math.max(inset, Math.min(target.y, height - inset));
-  const side = target.x < 0 ? 'west' : target.x > width ? 'east' : target.y < 0 ? 'north' : 'south';
+  const targetX = target.x + target.size / 2;
+  const targetY = target.y + target.size / 2;
+  let x = Math.max(inset, Math.min(targetX, width - inset));
+  let y = Math.max(inset, Math.min(targetY, height - inset));
   if (topRight && x + inset > topRight.left && y - inset < topRight.bottom) {
     // Stay on the same edge, clear of the follow-party map in the corner.
     if (side === 'north') x = topRight.left - inset;
@@ -76,7 +87,7 @@ export function objectivePointerPlacement(
   return {
     x,
     y,
-    angle: Math.atan2(target.y - y, target.x - x),
+    angle: Math.atan2(targetY - y, targetX - x),
     side,
   };
 }

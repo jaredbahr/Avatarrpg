@@ -1421,6 +1421,14 @@ export class ExploreScene implements Scene {
     const residents = this.app.residents;
     residents.tick(now, held);
     const live = !this.departing && !this.conversationMode && state.screen === 'explore';
+    const objectiveTargetId =
+      live &&
+      !held &&
+      !this.practiceCamera &&
+      !this.practising &&
+      this.objectiveButton?.hidden === false
+        ? worldObjectiveTargetId(this.app.content, state)
+        : null;
     const party = this.ensureTrail(state, grid).positions(state.party.length);
     // A routine keeps clear of the party: its tiles, where it is drawn, the way it walks.
     const clear = [...party, ...(this.walking?.path ?? [])];
@@ -1463,7 +1471,7 @@ export class ExploreScene implements Scene {
       }
     }
     if (!this.conversationMode && this.life?.update(now, renderer.camera)) {
-      this.updateObjectivePointer(state, map, this.lastNpcs);
+      this.updateObjectivePointer(objectiveTargetId);
       return;
     }
     if (this.practising && !this.app.animator.busy(now)) {
@@ -1554,7 +1562,7 @@ export class ExploreScene implements Scene {
         })),
       ...people.map((who) => ({
         id: who.id,
-        ...(who.npcId ? { npcId: who.npcId } : {}),
+        npcId: who.npcId ?? undefined,
         pos: who.pos ?? who.drawPos,
         sprite: who.sprite,
         name: who.name,
@@ -1668,28 +1676,17 @@ export class ExploreScene implements Scene {
     renderer.draw(view);
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
-    this.updateObjectivePointer(state, map, npcs);
+    this.updateObjectivePointer(objectiveTargetId);
   };
 
   /** The passive cue follows the exact camera transform used to draw the map. */
-  private updateObjectivePointer(state: GameState, map: MapDef, npcs: readonly NpcMarker[]): void {
+  private updateObjectivePointer(id: string | null): void {
     const pointer = this.objectivePointer;
     const camera = this.renderer?.camera;
     if (!pointer || !camera) return;
 
-    const target =
-      this.objectiveButton?.hidden === false &&
-      state.screen === 'explore' &&
-      !this.departing &&
-      !this.practising &&
-      !this.practiceCamera
-        ? resolveObjectivePointerTarget(
-            worldObjectiveTargetId(this.app.content, state),
-            map.exits,
-            npcs,
-          )
-        : null;
-    if (!target || camera.isVisible(target.pos)) {
+    const target = resolveObjectivePointerTarget(id, this.map?.exits, this.lastNpcs);
+    if (!target) {
       pointer.hidden = true;
       return;
     }
@@ -1698,7 +1695,7 @@ export class ExploreScene implements Scene {
     // offsets are both measured in the wrapper's CSS pixels.
     const corner = pointer.parentElement?.querySelector<HTMLElement>('.explore-map-corner');
     const placement = objectivePointerPlacement(
-      camera.project({ x: target.pos.x + 0.5, y: target.pos.y + 0.5 }),
+      camera.toScreen(target.pos),
       camera.viewport.width,
       camera.viewport.height,
       corner?.offsetWidth
@@ -1707,9 +1704,7 @@ export class ExploreScene implements Scene {
     );
     pointer.hidden = !placement;
     if (!placement) return;
-    pointer.style.left = `${placement.x}px`;
-    pointer.style.top = `${placement.y}px`;
-    pointer.style.setProperty('--objective-edge-angle', `${placement.angle}rad`);
+    pointer.style.cssText = `left:${placement.x}px;top:${placement.y}px;--objective-edge-angle:${placement.angle}rad`;
     pointer.setAttribute('aria-label', `${target.label} is off screen to the ${placement.side}.`);
   }
 }

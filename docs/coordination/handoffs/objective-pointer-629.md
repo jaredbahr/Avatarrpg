@@ -19,3 +19,5 @@ The pointer projects into the displayed canvas dimensions and stays clear of the
 ## Bundle checkpoint
 
 The first production build measured 410.5 KB gzipped. Sharing objective resolution, using one authored target field and simplifying placement reduced the latest measured bundle to 410.2 KB. The unchanged gate is 410 KB. All 17 focused tests, scoped lint and the production build passed on this candidate. The work remains local pending bundle headroom, browser review and the full local gate.
+
+After integrating main `0d184e29`, the production build and scoped lint passed with Node 22.23.4. The cue reuses the camera's projected tile bounds and hides while the target is partly on screen. All 18 focused tests passed. The shipped JavaScript measured 419,960 bytes gzipped against a 419,840-byte limit. The local production browser regression passed on Chromium touch and WebKit landscape in top-down Canvas. It verified the locked route cue, two viewport sizes, arrow direction, minimap clearance, modal hiding, and a pan that brings the target into view. WebGL, the alternate projection and the full local gate remain to be verified.
