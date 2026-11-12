@@ -35,6 +35,8 @@ export type TopdownName =
   | 'riko'
   | 'wen'
   | 'guard'
+  | 'dema'
+  | 'sen'
   | 'driller';
 
 export interface TopdownSheetData {
@@ -776,6 +778,34 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     anchor: { x: 0.5, y: 0.923077 },
     footprint: 1,
     idleCels: [3, 3, 3, 3, 2, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  dema: {
+    pages: 1,
+    frame: { w: 34, h: 49 },
+    anchor: { x: 0.5, y: 0.959184 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 2, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  sen: {
+    pages: 1,
+    frame: { w: 36, h: 49 },
+    anchor: { x: 0.5, y: 0.959184 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
     walkCelMs: 28.846,

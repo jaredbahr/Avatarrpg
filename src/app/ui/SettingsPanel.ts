@@ -1,9 +1,9 @@
 /**
  * Settings.
  *
- * Six controls, each one aimed at a specific person at the table rather than
+ * Seven controls, each one aimed at a specific person at the table rather than
  * at a spec: text too small on a 2736x1824 screen, too much going on, a room
- * where sound is not welcome, can't tell the fire from the mud, the panels
+ * where sound (or only the music) is not welcome, can't tell the fire from the mud, the panels
  * washing out in daylight, or a planner who counts squares.
  */
 
@@ -79,6 +79,16 @@ export class SettingsPanel extends Dialog {
         VOLUME_CHOICES.map(({ label, value }) => ({ label, value: String(value) })),
         String(nearestVolume(settings.volume)),
         (value) => this.app.updateSettings({ volume: Number(value) }),
+      ),
+    );
+
+    body.appendChild(
+      this.choiceRow(
+        'Music',
+        'The tune for each place, apart from the sound effects.',
+        VOLUME_CHOICES.map(({ label, value }) => ({ label, value: String(value) })),
+        String(nearestVolume(settings.music)),
+        (value) => this.app.updateSettings({ music: Number(value) }),
       ),
     );
 
