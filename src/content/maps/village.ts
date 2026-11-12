@@ -115,7 +115,11 @@ export const BA_DAN_VILLAGE: MapDef = {
       resident: 'lw.npc.mira',
       sprite: 'npc.elder',
       node: 'mira_intro',
-      routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'mira_epilogue' }],
+      routes: [
+        // Once the maker-plate rubbing is in her hands, she never asks for it again (#628).
+        { when: { kind: 'flag', key: 'rubbing_given', op: 'set' }, node: 'mira_rubbing_kept' },
+        { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'mira_epilogue' },
+      ],
     },
     {
       id: 'shopkeeper_gao',

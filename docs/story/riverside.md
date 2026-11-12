@@ -20,21 +20,21 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n86["riverside_dorin<br/>Dorin: I'm working on my footing. I keep doing well on the dry …"]:::entry
-  n87["riverside_explore<br/>Explore ba_dan_riverside: Take your time. Meet the neighbors, c…"]:::entry
-  n88["riverside_invitation<br/>Riverside path: “To the river.” An arrow points down the path."]:::entry
-  n89["riverside_mira<br/>Elder Mira: You found me. Sit down. That end of the bench is dr…"]:::entry
-  n91["riverside_pella<br/>Pella: I have to stay where Mira can see me. That is why I am s…"]:::entry
-  n92["riverside_shrine<br/>The riverside shrine: Fresh flowers stand in a chipped jar besi…"]:::entry
-  n93["riverside_shrine_found<br/>Set flags"]
-  n101["village_explore — exit to act1 / part 1"]:::external
-  n86 -->|"Next"| n87
-  n87 -->|"Legacy/audit exit (live map exits differ)"| n101
-  n88 -->|"Next"| n87
-  n89 -->|"Next"| n87
-  n91 -->|"Next"| n87
-  n92 -->|"Next"| n93
-  n93 -->|"set: riverside_shrine_found=true"| n87
+  n89["riverside_dorin<br/>Dorin: I'm working on my footing. I keep doing well on the dry …"]:::entry
+  n90["riverside_explore<br/>Explore ba_dan_riverside: Take your time. Meet the neighbors, c…"]:::entry
+  n91["riverside_invitation<br/>Riverside path: “To the river.” An arrow points down the path."]:::entry
+  n92["riverside_mira<br/>Elder Mira: You found me. Sit down. That end of the bench is dr…"]:::entry
+  n94["riverside_pella<br/>Pella: I have to stay where Mira can see me. That is why I am s…"]:::entry
+  n95["riverside_shrine<br/>The riverside shrine: Fresh flowers stand in a chipped jar besi…"]:::entry
+  n96["riverside_shrine_found<br/>Set flags"]
+  n105["village_explore — exit to act1 / part 1"]:::external
+  n89 -->|"Next"| n90
+  n90 -->|"Legacy/audit exit (live map exits differ)"| n105
+  n91 -->|"Next"| n90
+  n92 -->|"Next"| n90
+  n94 -->|"Next"| n90
+  n95 -->|"Next"| n96
+  n96 -->|"set: riverside_shrine_found=true"| n90
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

@@ -152,7 +152,7 @@ describe('world conversation presentations', () => {
     ['after_ambush', 'ambush_road', 'lost_ambush'],
   ])('keeps %s in the world after battle results are absorbed', (nodeId, mapId, lossFlag) => {
     const aftermath = conversation(nodeId, mapId);
-    expect(worldConversationFor(CONTENT, aftermath)).toEqual({
+    expect(worldConversationFor(CONTENT, aftermath)).toMatchObject({
       kind: 'world',
       mapId,
     });
@@ -161,7 +161,41 @@ describe('world conversation presentations', () => {
         ...aftermath,
         flags: { ...aftermath.flags, [lossFlag]: true },
       }),
-    ).toEqual({ kind: 'world', mapId });
+    ).toMatchObject({ kind: 'world', mapId });
+  });
+
+  it('stages what the quarry dialogue talks about (#628)', () => {
+    expect(STORY_PRESENTATIONS.after_ambush).toEqual({
+      kind: 'world',
+      mapId: 'ambush_road',
+      stage: { npc: 'ruon_cutting' },
+    });
+    const gate = STORY_PRESENTATIONS.gate_parley;
+    expect(gate?.mapId).toBe('quarry_gate');
+    const tiles = gate?.stage && 'tiles' in gate.stage ? gate.stage.tiles : [];
+    // The curtain wall is the gate's top rows, either side of the gatehouse.
+    expect(Math.min(...tiles.map((tile) => tile.y))).toBe(0);
+    expect(Math.min(...tiles.map((tile) => tile.x))).toBeLessThan(10);
+    expect(Math.max(...tiles.map((tile) => tile.x))).toBeGreaterThan(11);
+    expect(Math.max(...tiles.map((tile) => tile.y))).toBeLessThanOrEqual(1);
+  });
+
+  it('rejects a stage naming a person or tiles that are not on the map', () => {
+    const problems = validateStoryPresentations(
+      {
+        ...STORY_PRESENTATIONS,
+        after_ambush: { kind: 'world', mapId: 'ambush_road', stage: { npc: 'nobody_here' } },
+        gate_parley: { kind: 'world', mapId: 'quarry_gate', stage: { tiles: [{ x: 40, y: 0 }] } },
+      },
+      CONTENT_BUNDLE.story,
+      CONTENT_BUNDLE.maps,
+    );
+    expect(problems).toContain(
+      'story presentation "after_ambush" stages unknown npc "nobody_here" on "ambush_road"',
+    );
+    expect(problems).toContain(
+      'story presentation "gate_parley" stages tiles outside "quarry_gate"',
+    );
   });
 
   it('rejects a registry entry that points at a missing node', () => {

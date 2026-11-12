@@ -743,16 +743,33 @@ export class ExploreScene implements Scene {
     this.renderObjective(objective);
   }
 
-  /** Keep the pinned NPC's whole drawn body above the actual dialogue panel. */
+  /**
+   * Keep what the conversation is about above the actual dialogue panel: the
+   * person or tiles its presentation stages (#628), else the pinned NPC's
+   * whole drawn body.
+   */
   private frameConversationSpeaker(npcs = this.lastNpcs): boolean {
     const camera = this.renderer?.camera;
     if (!this.conversationMode || camera?.projection !== 'topdown') return false;
     const state = this.app.state;
     const map = this.map;
-    const pin = state?.world.talk;
-    if (!state || !map || pin?.mapId !== map.id || !worldConversationFor(this.app.content, state))
-      return false;
-    const placed = visibleNpcs(this.app.content, map, state).find((npc) => npc.id === pin.npcId);
+    const presentation = state ? worldConversationFor(this.app.content, state) : undefined;
+    if (!state || !map || !presentation) return false;
+    const stage = presentation.stage;
+    if (stage && 'tiles' in stage) {
+      const corners = stage.tiles.flatMap((tile) => {
+        const box = camera.toScreen(tile);
+        return [
+          { x: box.x, y: box.y },
+          { x: box.x + box.size, y: box.y + box.size },
+        ];
+      });
+      return this.keepAbovePanel(corners);
+    }
+    const pin = state.world.talk;
+    const npcId = stage?.npc ?? (pin?.mapId === map.id ? pin.npcId : null);
+    if (!npcId) return false;
+    const placed = visibleNpcs(this.app.content, map, state).find((npc) => npc.id === npcId);
     if (!placed) return false;
     const figure = placed.resident
       ? this.app.residents
@@ -763,25 +780,7 @@ export class ExploreScene implements Scene {
     const npc = npcs.find((marker) => marker.id === (figure?.id ?? placed.id));
     if (!npc || npc.quiet || (npc.alpha ?? 1) <= 0) return false;
     if (figure && !samePos(npc.renderPos ?? npc.pos, figure.drawPos)) return false;
-    const panel = this.host?.querySelector<HTMLElement>(
-      '.explore-conversation .conversation-panel',
-    );
-    const canvas = this.canvas?.getBoundingClientRect();
-    if (!panel?.getClientRects().length || !canvas?.width || !canvas.height) return false;
-    const { dpr, width, height } = camera.viewport;
-    const pixel = 1 / dpr;
-    // Round inward by one device pixel: offset snapping must not put a body
-    // back under the panel. This never changes zoom or the camera's bounds.
-    const bottom =
-      Math.floor(
-        Math.min(
-          height,
-          ((panel.getBoundingClientRect().top - canvas.top) * height) / canvas.height,
-        ) * dpr,
-      ) /
-        dpr -
-      pixel;
-    if (bottom <= pixel || width <= 2 * pixel) return false;
+    const { dpr } = camera.viewport;
     const entry = resolveAsset(npc.sprite);
     const footprint = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
     const box = camera.spriteBox(npc.renderPos ?? npc.pos, footprint, false);
@@ -829,6 +828,32 @@ export class ExploreScene implements Scene {
         dy = y * pose;
       return { x: foot.x + dx * cosine - dy * sine, y: foot.y + bob + dx * sine + dy * cosine };
     });
+    return this.keepAbovePanel(corners);
+  }
+
+  /** Pans the least distance that puts every corner inside the map above the dialogue panel. */
+  private keepAbovePanel(corners: readonly { x: number; y: number }[]): boolean {
+    const camera = this.renderer?.camera;
+    if (!camera || !corners.length) return false;
+    const panel = this.host?.querySelector<HTMLElement>(
+      '.explore-conversation .conversation-panel',
+    );
+    const canvas = this.canvas?.getBoundingClientRect();
+    if (!panel?.getClientRects().length || !canvas?.width || !canvas.height) return false;
+    const { dpr, width, height } = camera.viewport;
+    const pixel = 1 / dpr;
+    // Round inward by one device pixel: offset snapping must not put a body
+    // back under the panel. This never changes zoom or the camera's bounds.
+    const bottom =
+      Math.floor(
+        Math.min(
+          height,
+          ((panel.getBoundingClientRect().top - canvas.top) * height) / canvas.height,
+        ) * dpr,
+      ) /
+        dpr -
+      pixel;
+    if (bottom <= pixel || width <= 2 * pixel) return false;
     const pan = (low: number, high: number, min: number, max: number): number => {
       // An oversized body has one stable best-effort alignment, rather than
       // alternating its two clipped edges. Existing clamps remain authoritative.

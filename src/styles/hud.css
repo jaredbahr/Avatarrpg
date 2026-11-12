@@ -1713,6 +1713,41 @@ html[data-contrast='high'] .explore-conversation::before {
   flex: 0 0 auto;
 }
 
+.guidance-target {
+  outline: 0.2rem solid var(--c-gold);
+  outline-offset: 0.15rem;
+}
+
+.action-row.guidance-target {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 0.2rem var(--c-gold);
+}
+
+.combat-guidance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: min(100%, 42rem);
+  margin-inline: auto;
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--c-ink);
+  background: var(--c-bg);
+  border: var(--hairline) solid var(--c-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+}
+
+.combat-guidance > span {
+  min-width: 0;
+}
+
+.combat-guidance > button {
+  min-height: var(--tap);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .turn-chip {
   display: flex;
   flex-direction: column;
@@ -3946,6 +3981,18 @@ html[data-contrast='high'] .hud-panel::after {
   overflow-y: auto;
 }
 
+/* Give the coach its own dock row on landscape boards. As a third column it
+   narrows the action panel, stacks its controls, and can put legal board taps
+   underneath the guidance plate. A full row lets the actor and action panels
+   keep their normal widths while the map and dock reflow around the coach. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  .combat-scene .hud > .combat-guidance {
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: none;
+  }
+}
+
 /* At Huge text on a short landscape display, keep the dock's preferred height
  * fixed across aim changes, but let it shrink below its scroll cap so the
  * header and initiative strip cannot take the board below 40dvh. */
@@ -4309,5 +4356,28 @@ html[data-contrast='high'] .hud-panel::after {
     min-width: 0;
     min-height: var(--tap);
     padding: var(--sp-1) var(--sp-2);
+  }
+}
+
+/* Large text keeps the encounter and Pause together, then wraps the view
+ * controls at their full tap size. Short phones retain their More menu. */
+@media (min-width: 53rem) and (min-height: 34.01rem) and (orientation: landscape) {
+  html[data-large-text='huge'] .combat-scene .combat-bar {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  html[data-large-text='huge'] .combat-scene .combat-bar > .title-plate {
+    order: -2;
+    flex: 1 1 calc(100% - 12rem);
+    min-width: 12rem;
+  }
+
+  html[data-large-text='huge'] .combat-scene .combat-bar > .combat-pause {
+    order: -1;
+  }
+
+  html[data-large-text='huge'] .combat-scene .combat-bar > .spacer {
+    display: none;
   }
 }

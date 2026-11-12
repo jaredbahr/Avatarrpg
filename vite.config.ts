@@ -343,11 +343,14 @@ export default defineConfig({
     },
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: 'script-defer',
       // No includeAssets or manifest icons: globPatterns already precaches every
       // icon, and listing them again put each one in the manifest twice.
       includeManifestIcons: false,
       workbox: {
+        // The fixed registration mode needs the autoUpdate worker settings explicitly.
+        skipWaiting: true,
+        clientsClaim: true,
         /*
          * Sound effects precache: the whole set is well under a tenth of a
          * megabyte, and a footstep that arrives on the second walk is worse
