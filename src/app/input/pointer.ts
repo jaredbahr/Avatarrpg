@@ -101,9 +101,10 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   };
 
   const onPointerUp = (event: PointerEvent) => {
-    release(event);
+    const trackCanvasClick = activeCanvasPointers.delete(event.pointerId);
     recognizer.up(event.pointerId, local(event));
-    if (activeCanvasPointers.delete(event.pointerId)) {
+    release(event);
+    if (trackCanvasClick) {
       const timer = globalThis.setTimeout(() => clearPendingCanvasClick(event.pointerId), 1000);
       pendingCanvasClicks.set(event.pointerId, timer);
     }
@@ -139,11 +140,13 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   const onDocumentPointerDown = (event: PointerEvent) => {
     // Pointer IDs are reusable. A fresh contact anywhere in the document ends
     // the prior gesture's click window before its ID can be assigned again.
+    activeCanvasPointers.delete(event.pointerId);
     clearPendingCanvasClick(event.pointerId);
   };
 
   const onLostPointerCapture = (event: PointerEvent) => {
     // A release outside the canvas may no longer reach us once capture is lost.
+    activeCanvasPointers.delete(event.pointerId);
     recognizer.cancel(event.pointerId);
   };
 

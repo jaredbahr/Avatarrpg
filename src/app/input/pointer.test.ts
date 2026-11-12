@@ -6,6 +6,7 @@ class PointerTarget extends EventTarget {
   readonly ownerDocument = new EventTarget();
   readonly captures: number[] = [];
   readonly releases: number[] = [];
+  loseCaptureOnRelease = false;
   private readonly captured = new Set<number>();
 
   getBoundingClientRect(): Pick<DOMRect, 'left' | 'top'> {
@@ -24,6 +25,8 @@ class PointerTarget extends EventTarget {
   releasePointerCapture(id: number): void {
     this.releases.push(id);
     this.captured.delete(id);
+    if (this.loseCaptureOnRelease)
+      this.loseCapture(id, { pointerType: 'touch', button: 0, buttons: 0 });
   }
 
   contains(node: Node): boolean {
@@ -109,6 +112,7 @@ describe('pointer adapter contact buttons', () => {
   it('keeps a canvas touch click from activating an overlapping control', () => {
     vi.useFakeTimers();
     const canvas = new PointerTarget();
+    canvas.loseCaptureOnRelease = true;
     const onTap = vi.fn();
     const detach = attachPointer(canvas as unknown as HTMLElement, { onTap });
     const touch = { pointerType: 'touch', button: 0, buttons: 1 } as const;
@@ -124,6 +128,33 @@ describe('pointer adapter contact buttons', () => {
 
       expect(onTap).toHaveBeenCalledTimes(1);
       expect(retargetedClick.defaultPrevented).toBe(true);
+    } finally {
+      detach();
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not arm a click after lost capture and pointer ID reuse on a control', () => {
+    vi.useFakeTimers();
+    const canvas = new PointerTarget();
+    const detach = attachPointer(canvas as unknown as HTMLElement, {});
+    const touch = { pointerType: 'touch', button: 0, buttons: 1 } as const;
+
+    try {
+      fire(canvas, 'pointerdown', touch);
+      canvas.loseCapture(7, touch);
+      // The same ID starts on a control and ends over the canvas.
+      fire(canvas.ownerDocument as unknown as PointerTarget, 'pointerdown', touch);
+      fire(canvas, 'pointerup', touch);
+      const click = Object.assign(new Event('click', { bubbles: true, cancelable: true }), {
+        detail: 1,
+        pointerId: 7,
+        pointerType: 'touch',
+      });
+      canvas.ownerDocument.dispatchEvent(click);
+
+      expect(click.defaultPrevented).toBe(false);
+      expect(vi.getTimerCount()).toBe(0);
     } finally {
       detach();
       vi.useRealTimers();
