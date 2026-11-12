@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page, TestInfo } from '@playwright/test';
 import type { Settings } from '../src/app/storage/localSaves';
 import type { MapView } from '../src/render/view';
-import { enterNode, resetStorage } from './helpers';
+import { enterNode } from './helpers';
 
 // Independent expectations for the shipped UI, rather than importing the
 // implementation's defaults or assuming any newly added control is covered.
@@ -14,6 +14,7 @@ const defaults: Settings = {
   hatchSurfaces: false,
   highContrast: false,
   showGrid: false,
+  combatGuidance: true,
   storyChoices: 'vote',
   comboHints: 'hint',
 };
@@ -27,12 +28,14 @@ const inventory = [
   'Patterned ground',
   'Higher contrast',
   'Show grid',
+  'Combat guidance',
 ];
 const switches = [
   ['Reduce motion', 'reduceMotion'],
   ['Patterned ground', 'hatchSurfaces'],
   ['Higher contrast', 'highContrast'],
   ['Show grid', 'showGrid'],
+  ['Combat guidance', 'combatGuidance'],
 ] as const;
 const changes: { label: string; values: Partial<Settings> }[] = [
   { label: 'Text size', values: { largeText: 'huge' } },
@@ -44,6 +47,7 @@ const changes: { label: string; values: Partial<Settings> }[] = [
   { label: 'Patterned ground', values: { hatchSurfaces: true } },
   { label: 'Higher contrast', values: { highContrast: true } },
   { label: 'Show grid', values: { showGrid: true } },
+  { label: 'Combat guidance', values: { combatGuidance: false } },
 ];
 
 // Passive reads of the existing renderer's last genuinely drawn frame. This
@@ -86,7 +90,7 @@ async function closeSettings(page: Page, panel: Locator): Promise<void> {
 
 async function assertControlValues(panel: Locator, expected: Settings): Promise<void> {
   // Inventory the actual DOM, including extra input types/plain buttons, so
-  // adding a tenth setting fails loudly instead of silently escaping tests.
+  // Adding an unaccounted setting fails loudly instead of silently escaping tests.
   // Difficulty belongs to a game in progress (#661), so it leads the sheet only then.
   const inGame = await panel.page().evaluate(() => Boolean(window.fnt?.app.state));
   const lead = inGame ? ['Difficulty'] : [];
@@ -95,7 +99,7 @@ async function assertControlValues(panel: Locator, expected: Settings): Promise<
     ...inventory,
   ]);
   await expect(panel.getByRole('radiogroup')).toHaveCount(lead.length + 5);
-  await expect(panel.getByRole('switch')).toHaveCount(4);
+  await expect(panel.getByRole('switch')).toHaveCount(5);
   expect(
     await panel
       .getByRole('radiogroup')
@@ -358,9 +362,13 @@ for (const change of changes) {
     context,
   }, info) => {
     const errors: string[] = [];
-    errorsFrom(page, errors);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await resetStorage(page, '?renderer=canvas');
+    // Clear persisted settings before the app's first boot, so its startup
+    // asset requests are not interrupted by an immediate fixture reload.
+    await page.goto('/robots.txt', { waitUntil: 'networkidle' });
+    await page.evaluate(() => localStorage.clear());
+    errorsFrom(page, errors);
+    await page.goto('/?renderer=canvas');
     await checkBoot(page, defaults, false);
     await assertLiveRendering(page, defaults);
 
