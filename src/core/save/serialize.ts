@@ -13,7 +13,7 @@
  */
 
 import * as z from '../schema';
-import { DAY_PHASES, RESIDENT_PROFILES, RUNOFF_STATES } from '../types';
+import { DAY_PHASES, DIFFICULTIES, RESIDENT_PROFILES, RUNOFF_STATES } from '../types';
 import type { GameState } from '../types';
 import { MAX_BANKED_TOTAL_AP } from '../rules/stats';
 import type { DeepMutable, KeysMatch, RequireTrue } from './typeContract';
@@ -140,6 +140,12 @@ const gameState = z.object({
   seed: z.number(),
   rng: z.number(),
   screen: z.enum(['title', 'setup', 'explore', 'dialogue', 'combat', 'ended']),
+  /*
+   * Additive, like `battle.props`: every save written before the setting
+   * existed was played at the forgiving tuning, which is what Story is, so it
+   * loads as Story with no format bump (ADR 0110).
+   */
+  difficulty: z.enum(DIFFICULTIES).default('story'),
   party: z.array(unit).min(1),
   battle: battle.nullable(),
   story: z.object({

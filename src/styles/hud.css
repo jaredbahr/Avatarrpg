@@ -790,6 +790,17 @@ html[data-contrast='high'] .title-card .tagline {
   font-size: var(--fs-lg);
 }
 
+/* Party setup's "How tough are the fights?" (ADR 0110): a smaller heading than the step's own. */
+.setup-subhead {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-lg);
+}
+
+.btn-difficulty {
+  min-width: 7rem;
+  font-size: var(--fs-lg);
+}
+
 .setup-panel button,
 .setup-panel input {
   min-height: 3.5rem;
