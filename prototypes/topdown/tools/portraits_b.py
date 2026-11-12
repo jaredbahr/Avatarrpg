@@ -2,7 +2,8 @@
 
 Recipe: take the hand-drawn portrait (public/art/portraits/<id>.png), resize to 160x160 LANCZOS, run it through
 PixelLab /edit-image-pro-flash (method 'text', the B description below, seed 11, about 10 credits each).
-Run from this folder:  python3 portraits_b.py OUT_DIR id [id ...] [--seed N]
+Run from this folder:  python3 portraits_b.py OUT_DIR id [id ...] [--seed N] [--base-dir DIR]
+(--base-dir points at the pre-B hand-drawn portraits when redoing one; git show e1c545a7^:public/art/portraits/<id>.png)
 Every call is booked in ../ledger.json as t9_portrait_<id>_B (a retry adds _s<seed>).
 """
 import sys
@@ -51,13 +52,32 @@ CAST = {
 }
 
 
-def make(pid, out, seed=11):
+# Redo wording (2026-11-11 owner review, seed != 11). Pella: calm hair, little dithering. Jinu: her real hair is two
+# high round puffs of tight curls with small red ties plus a few loose ringlets at the temples (docs/art/prompts/portraits/jinu.md,
+# her top-down sprite), not two smooth buns.
+REDO = {
+ 'pella': dict(keep='her cheeky gap-toothed grin, dark pigtails with green ties, smudged cheeks, patched green vest, and the cabbage she hugs; '
+                    'draw the hair as a few large, calm, smooth shapes with one or two clean highlight bands and a clean outline, '
+                    'with no scattered stray pixels or flyaway noise, and use dithering only very sparingly, mostly flat colour ramps',
+               style_extra=' Clean, calm shapes; minimal dithering; no speckle.'),
+ 'jinu': dict(keep='her face, grey eyes, orange and red cloak with a spiral clasp over yellow, the peace sign, and the falling leaves; '
+                   'her hair is dark and tightly curly, gathered into two high round puffs of tight spiral curls each tied with a small red tie, '
+                   'with a few loose spiral ringlets at her temples; draw the curls as clustered curl shapes with highlights, not as two smooth buns, '
+                   'with a clean outline and no scattered stray pixels',
+              style_extra=' Clean, calm hair shapes; sparing dithering.'),
+}
+
+
+def make(pid, out, seed=11, base_dir=None):
     base, who, keep = CAST[pid]
-    src = Image.open(PORTRAITS / base).convert('RGBA')
+    style = STYLE
+    if seed != 11 and pid in REDO:
+        keep = REDO[pid]['keep']; style = STYLE + REDO[pid]['style_extra']
+    src = Image.open((Path(base_dir) if base_dir else PORTRAITS) / base).convert('RGBA')
     bg = Image.new('RGBA', src.size, CREAM + (255,)); bg.alpha_composite(src)
     canvas = bg.convert('RGB').resize((160, 160), Image.LANCZOS)
     name = f't9_portrait_{pid}_B' + ('' if seed == 11 else f'_s{seed}')
-    e, r = pl.run('/edit-image-pro-flash', {'image': pl.b64(canvas), 'method': 'text', 'description': STYLE.format(who=who, keep=keep),
+    e, r = pl.run('/edit-image-pro-flash', {'image': pl.b64(canvas), 'method': 'text', 'description': style.format(who=who, keep=keep),
                                             'no_background': False, 'seed': seed}, name, estimate=10)
     lr = r['final'].get('last_response') or r['final']; ims = []; pl.images(lr, ims)
     if not ims:
@@ -71,6 +91,9 @@ if __name__ == '__main__':
     args = sys.argv[1:]; seed = 11
     if '--seed' in args:
         i = args.index('--seed'); seed = int(args[i + 1]); del args[i:i + 2]
+    base_dir = None
+    if '--base-dir' in args:
+        i = args.index('--base-dir'); base_dir = args[i + 1]; del args[i:i + 2]
     out, ids = args[0], args[1:]
     Path(out).mkdir(parents=True, exist_ok=True)
-    for pid in ids: make(pid, out, seed)
+    for pid in ids: make(pid, out, seed, base_dir)

@@ -19,7 +19,7 @@ import { evaluate } from '../../core/story/conditions';
 import { CreditsDialog } from '../ui/CreditsDialog';
 import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el } from '../ui/dom';
-import { assetCanvas } from '../ui/assetCanvas';
+import { assetCanvas, fitAssetToBox } from '../ui/assetCanvas';
 import { conversationPanel, resolveConversation } from '../ui/ConversationPanel';
 import {
   INTERLUDES,
@@ -28,8 +28,8 @@ import {
   type InterludeDef,
 } from '../../content/story/interludes';
 
-/** Portraits in the HUD are 6rem; on the stage the speaker is nearly twice that. */
-const STAGE_PORTRAIT_REM = 10;
+/** Portraits in the HUD are 6rem; on the stage the speaker is two and a half times that (240 px: 3x the 160 px art at dpr 2). */
+const STAGE_PORTRAIT_REM = 15;
 
 /**
  * The element a portrait is painted in. The manifest already tags every
@@ -221,7 +221,8 @@ export class DialogueScene implements Scene {
   }
 
   private portrait(key: string, size = 6): HTMLElement {
-    return assetCanvas(key, size);
+    // The compact stage caps the box with max-width; redraw the store at the box it really gets.
+    return fitAssetToBox(assetCanvas(key, size));
   }
 
   private clearTimer(): void {

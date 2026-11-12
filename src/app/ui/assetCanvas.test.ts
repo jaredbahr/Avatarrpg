@@ -19,4 +19,11 @@ describe('drawPixelPortrait', () => {
     expect(ctx.drawImage).toHaveBeenCalledWith(expect.anything(), 16, 16, 320, 320);
     expect(PIXEL_PORTRAIT_PX).toBe(160);
   });
+
+  it('keeps a big box crisp at the multiple below (4.5x draws at 4x, centred)', () => {
+    const ctx = fakeCtx();
+    drawPixelPortrait(ctx as unknown as CanvasRenderingContext2D, {} as CanvasImageSource, 720);
+    expect(ctx.imageSmoothingEnabled).toBe(false);
+    expect(ctx.drawImage).toHaveBeenCalledWith(expect.anything(), 40, 40, 640, 640);
+  });
 });

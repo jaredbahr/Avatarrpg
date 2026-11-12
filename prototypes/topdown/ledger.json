@@ -26873,6 +26873,64 @@
    "ids": {
     "animation_group_id": "3b94f2f8-3d99-43a7-ab35-7c9f47e0f878"
    }
+  },
+  {
+   "name": "t9_portrait_jinu_B_s23",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "74c9198c-a9c7-44e3-9373-c18b47e86624",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same young woman, in the style of...",
+    "no_background": false,
+    "seed": 23
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8429.9654640625,
+   "balance_after": 8423.9654640625,
+   "secs": 59,
+   "notes": "",
+   "ids": {
+    "background_job_id": "74c9198c-a9c7-44e3-9373-c18b47e86624",
+    "image_id": "78d29768-e1f4-5cf4-8431-b0e0e298e537",
+    "source_image_id": "78d29768-e1f4-5cf4-8431-b0e0e298e537"
+   }
+  },
+  {
+   "name": "t9_portrait_pella_B_s23",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "a75e1a5d-c6f7-4f80-9357-73464f9643f8",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of the same child, in the style of a pre...",
+    "no_background": false,
+    "seed": 23
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 8423.9654640625,
+   "balance_after": 8417.9654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a75e1a5d-c6f7-4f80-9357-73464f9643f8",
+    "image_id": "0713bf83-713f-5977-8f21-57cb98e2f00f",
+    "source_image_id": "0713bf83-713f-5977-8f21-57cb98e2f00f"
+   }
   }
  ],
  "end_balance": 16728.0,
