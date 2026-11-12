@@ -14,11 +14,13 @@ const defaults: Settings = {
   hatchSurfaces: false,
   highContrast: false,
   showGrid: false,
+  storyChoices: 'vote',
 };
 const inventory = [
   'Text size',
   'Sound',
   'Music',
+  'Story choices',
   'Reduce motion',
   'Patterned ground',
   'Higher contrast',
@@ -34,6 +36,7 @@ const changes: { label: string; values: Partial<Settings> }[] = [
   { label: 'Text size', values: { largeText: 'huge' } },
   { label: 'Sound', values: { volume: 0 } },
   { label: 'Music', values: { music: 0 } },
+  { label: 'Story choices', values: { storyChoices: 'turns' } },
   { label: 'Reduce motion', values: { reduceMotion: true } },
   { label: 'Patterned ground', values: { hatchSurfaces: true } },
   { label: 'Higher contrast', values: { highContrast: true } },
@@ -80,15 +83,15 @@ async function closeSettings(page: Page, panel: Locator): Promise<void> {
 
 async function assertControlValues(panel: Locator, expected: Settings): Promise<void> {
   // Inventory the actual DOM, including extra input types/plain buttons, so
-  // adding an eighth setting fails loudly instead of silently escaping tests.
+  // adding a ninth setting fails loudly instead of silently escaping tests.
   await expect(panel.locator('.setting-row .setting-text > strong')).toHaveText(inventory);
-  await expect(panel.getByRole('radiogroup')).toHaveCount(3);
+  await expect(panel.getByRole('radiogroup')).toHaveCount(4);
   await expect(panel.getByRole('switch')).toHaveCount(4);
   expect(
     await panel
       .getByRole('radiogroup')
       .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-label'))),
-  ).toEqual(['Text size', 'Sound', 'Music']);
+  ).toEqual(['Text size', 'Sound', 'Music', 'Story choices']);
   expect(
     await panel
       .getByRole('switch')
@@ -113,6 +116,11 @@ async function assertControlValues(panel: Locator, expected: Settings): Promise<
   );
   await expect(music.locator('[aria-checked="true"]')).toHaveText(
     expected.music === 0 ? 'Off' : 'Quiet',
+  );
+  const story = panel.getByRole('radiogroup', { name: 'Story choices', exact: true });
+  await expect(story.getByRole('radio')).toHaveText(['Table vote', 'Take turns']);
+  await expect(story.locator('[aria-checked="true"]')).toHaveText(
+    expected.storyChoices === 'turns' ? 'Take turns' : 'Table vote',
   );
   for (const [label, key] of switches) {
     await expect(panel.getByRole('switch', { name: label, exact: true })).toHaveAttribute(
@@ -141,6 +149,15 @@ async function setThroughUi(panel: Locator, values: Partial<Settings>): Promise<
     await panel
       .getByRole('radiogroup', { name: 'Music', exact: true })
       .getByRole('radio', { name: values.music === 0 ? 'Off' : 'Quiet', exact: true })
+      .click();
+  }
+  if (values.storyChoices !== undefined) {
+    await panel
+      .getByRole('radiogroup', { name: 'Story choices', exact: true })
+      .getByRole('radio', {
+        name: values.storyChoices === 'turns' ? 'Take turns' : 'Table vote',
+        exact: true,
+      })
       .click();
   }
   for (const [label, key] of switches) {
