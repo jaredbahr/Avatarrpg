@@ -71,7 +71,7 @@ describe('combat tap aim acceptance', () => {
   it('uses the earned Grumbler turn and exact reloadable save', () => {
     expect(checkpoint.transcript).toHaveLength(79);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '8f3dc858b1338a42be188a4046ae35f19435521c1015cc469c0d387a911e9f36',
+      '89e04d1627447200e9c6abc317a36ea4a4a7ed924870e07992412b9c02bc7bed',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({
@@ -86,7 +86,7 @@ describe('combat tap aim acceptance', () => {
     const ability = CONTENT.abilities.get(checkpoint.abilityId);
     if (!caster || !boss || !ability) throw new Error('Missing earned aim participants');
     expect(caster).toMatchObject({ pos: { x: 8, y: 1 }, ap: 5 });
-    expect(boss).toMatchObject({ pos: { x: 12, y: 7 }, hp: 138, size: 2 });
+    expect(boss).toMatchObject({ pos: { x: 12, y: 7 }, hp: 88, size: 2 });
     expect(occupiedCells(boss)).toContainEqual(checkpoint.far);
     expect(targetableTiles(CONTENT, battle, caster, ability)).toContainEqual(checkpoint.far);
     expect(isValidTarget(CONTENT, battle, caster, ability, checkpoint.far)).toEqual({

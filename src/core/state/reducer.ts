@@ -859,6 +859,14 @@ function applyCommand(content: ContentIndex, state: GameState, command: Command)
 
     case 'wait':
       return handleWait(content, state, command.until);
+
+    /*
+     * A battle already on the field keeps the stat blocks it was built with; the
+     * next fight (and a retry of this one) is built at the new difficulty.
+     */
+    case 'setDifficulty':
+      if (state.difficulty === command.difficulty) return { state, events: [] };
+      return { state: { ...state, difficulty: command.difficulty }, events: [] };
   }
 }
 
@@ -872,7 +880,33 @@ function applyCommand(content: ContentIndex, state: GameState, command: Command)
 export function apply(content: ContentIndex, state: GameState, command: Command): StepResult {
   const result = applyCommand(content, state, command);
   const settled = settle(content, state, result.state);
-  return { state: settled.state, events: [...result.events, ...settled.events] };
+  return discoverCombos(content, settled.state, [...result.events, ...settled.events]);
+}
+
+/**
+ * #622: a combo rule that fired in these events joins the save's discovered
+ * set, once, and says so. It reads the events the rules emitted, so whatever
+ * set the ground off (a player, an enemy, a prop) counts as seeing it happen.
+ */
+function discoverCombos(
+  content: ContentIndex,
+  state: GameState,
+  events: readonly GameEvent[],
+): StepResult {
+  let found: string[] | null = null;
+  const discovered: GameEvent[] = [];
+  for (const event of events) {
+    const id = event.type === 'surfaceChanged' ? event.comboId : undefined;
+    if (!id || !content.combos.some((rule) => rule.id === id)) continue;
+    if (state.discoveredCombos.includes(id) || found?.includes(id)) continue;
+    (found ??= []).push(id);
+    discovered.push({ type: 'comboDiscovered', comboId: id });
+  }
+  if (!found) return { state, events };
+  return {
+    state: { ...state, discoveredCombos: [...state.discoveredCombos, ...found] },
+    events: [...events, ...discovered],
+  };
 }
 
 /** Applies a list of commands in order. Used by the simulator and by tests. */

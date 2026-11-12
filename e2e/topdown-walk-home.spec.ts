@@ -36,7 +36,7 @@ async function loadAfterDriller(page: Page): Promise<void> {
   await page.evaluate((json) => {
     const app = window.fnt?.app;
     if (!app) throw new Error('The game has not finished booting.');
-    app.updateSettings({ reduceMotion: true });
+    app.updateSettings({ reduceMotion: true, storyChoices: 'turns' });
     localStorage.setItem('fnt.save.slot1', json);
   }, fixture.json);
   await page.reload();

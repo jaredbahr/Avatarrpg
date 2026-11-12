@@ -233,7 +233,7 @@ test('camera follows the moving boss and returns to the next actor with motion o
     const draw = scene.renderer.draw.bind(scene.renderer);
     scene.renderer.draw = (view) => {
       draw(view);
-      const boss = view.units.find((unit) => unit.name === 'Grumbler');
+      const boss = view.units.find((unit) => unit.name === 'The Driller');
       if (!boss?.renderPos) return;
       const points = [0.5, 1.5].flatMap((dy) =>
         [0.5, 1.5].map((dx) =>

@@ -407,6 +407,13 @@
   flex: 1 1 auto;
 }
 
+/* #622: a rule will fire, but the table has not found it yet. */
+.reaction-hint {
+  border-style: dashed;
+  border-left-style: solid;
+  border-left-color: var(--c-gold-soft);
+}
+
 /* A rule actually fired, rather than the surface just landing as authored. */
 .reaction-fires {
   border-left-color: var(--c-gold);
@@ -473,6 +480,12 @@
 .reaction-row-chain {
   border-left-color: var(--c-warn);
   background: color-mix(in srgb, var(--c-warn-deep) 45%, transparent);
+}
+
+/* #622: a combo the table has not found yet. */
+.reaction-row-unfound {
+  border-left-style: dashed;
+  color: var(--c-ink-faint);
 }
 
 .warn-note {
@@ -787,6 +800,17 @@ html[data-contrast='high'] .title-card .tagline {
 .btn-count {
   min-width: 3.5rem;
   min-height: 3.5rem;
+  font-size: var(--fs-lg);
+}
+
+/* Party setup's "How tough are the fights?" (ADR 0110): a smaller heading than the step's own. */
+.setup-subhead {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-lg);
+}
+
+.btn-difficulty {
+  min-width: 7rem;
   font-size: var(--fs-lg);
 }
 
@@ -1195,6 +1219,36 @@ html[data-contrast='high'] .title-card .tagline {
 
 .choice-option.is-locked .speaker-tag {
   color: var(--c-ink-dim);
+}
+
+/*
+ * The table vote (#621). The result keeps every answer on screen with who
+ * picked it; the winner (or each tied answer, still tappable by the decider)
+ * is ringed in gold, and the rest only dim, without the locked dashes.
+ */
+.vote-banner .btn-large {
+  margin-top: var(--sp-2);
+}
+
+.vote-names {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-gold-deep);
+}
+
+.choice-option.is-winner,
+.choice-option.is-tied {
+  border-color: var(--c-gold);
+  box-shadow: 0 0 0 var(--hairline) var(--c-gold);
+  background: color-mix(in srgb, var(--c-gold) 12%, transparent);
+}
+
+.choice-option.is-winner:disabled {
+  opacity: 1;
+}
+
+.choice-option:disabled:not(.is-locked, .is-winner) {
+  opacity: 0.7;
 }
 
 /* The wait options are a phase and a word each, so they wrap as a row of
@@ -2062,8 +2116,20 @@ html[data-contrast='high'] .hud-panel::after {
   animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
 }
 
+/*
+ * The result covers the whole screen, not just the map: at Largest text the map
+ * is under half the height and the card would spill past it. It scrolls when
+ * it is taller than the screen, and `margin: auto` centres it otherwise.
+ */
 .handoff-banner.result-banner {
+  position: fixed;
+  display: flex;
+  overflow-y: auto;
   background: var(--c-ink);
+}
+
+.result-banner .panel {
+  margin: auto;
 }
 
 .handoff-banner .panel {
@@ -2114,6 +2180,78 @@ html[data-contrast='high'] .hud-panel::after {
 
 .result-panel h1 {
   color: var(--c-gold-deep);
+}
+
+/* What each hero earned (#630): a face, the XP, a bar to the next level. */
+.victory-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: min(30rem, 100%);
+  text-align: start;
+}
+
+.victory-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+  border: var(--hairline) solid var(--c-line);
+}
+
+.victory-row .painter {
+  box-shadow: 0 0 0 2px var(--el);
+}
+
+.victory-row-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.victory-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--sp-2);
+}
+
+.victory-row-head strong {
+  font-size: var(--fs-lg);
+}
+
+.victory-xp {
+  margin-inline-start: auto;
+  font-weight: 700;
+  color: var(--c-gold-deep);
+}
+
+.victory-level {
+  padding: 0 var(--sp-2);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--c-gold-soft), var(--c-gold));
+  color: var(--c-ink-on-gold);
+  font-weight: 700;
+}
+
+.victory-bar {
+  height: 0.6rem;
+  background: color-mix(in srgb, var(--c-ink) 18%, transparent);
+}
+
+.victory-bar .bar-fill {
+  background: linear-gradient(90deg, var(--c-gold-deep), var(--c-gold));
+}
+
+.victory-note {
+  font-size: var(--fs-sm);
 }
 
 /* ------------------------------------------------------------------ */
@@ -2570,13 +2708,17 @@ html[data-contrast='high'] .hud-panel::after {
   display: none;
 }
 
+/* A solid plate with an ink edge, like the battle's title plate, so a caption
+   over a dark forest or a bright quarry reads the same (#630). */
 .toast {
   padding: var(--sp-2) var(--sp-4);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--c-bg) 96%, transparent);
-  border: var(--hairline) solid var(--c-line);
+  background: var(--surface-1);
+  border: var(--hairline) solid var(--c-ink-line);
   box-shadow: var(--inset-edge), var(--shadow-2);
-  font-size: var(--fs-sm);
+  color: var(--c-ink);
+  font-size: var(--fs-md);
+  line-height: 1.35;
   text-align: center;
   animation: toast-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
 }

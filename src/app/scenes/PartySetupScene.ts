@@ -14,10 +14,12 @@
  */
 
 import type { App, Scene } from '../App';
-import type { CharacterDef, ElementId } from '../../core/types';
+import type { CharacterDef, Difficulty, ElementId } from '../../core/types';
+import { DEFAULT_DIFFICULTY } from '../../core/rules/difficulty';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { defaultPlayerName } from '../session';
+import { DIFFICULTY_CHOICES, difficultyHint } from '../ui/difficultyText';
 import { loadLastTitleArt } from '../storage/localSaves';
 import { titleArtById, type TitleArtDef } from '../titleArt';
 
@@ -44,6 +46,7 @@ export class PartySetupScene implements Scene {
   private people: PersonDraft[] = [];
   private heroes: HeroDraft[] = [];
   private resumeHeroIndex: number | null = null;
+  private difficulty: Difficulty = DEFAULT_DIFFICULTY;
 
   constructor(private app: App) {}
 
@@ -201,6 +204,33 @@ export class PartySetupScene implements Scene {
       }),
     );
 
+    panel.appendChild(el('h2', { class: 'setup-subhead', text: 'How tough are the fights?' }));
+    const levels = el('div', {
+      class: 'row row-wrap count-row',
+      attrs: { role: 'radiogroup', 'aria-label': 'Difficulty' },
+    });
+    for (const choice of DIFFICULTY_CHOICES) {
+      const active = choice.value === this.difficulty;
+      const node = button(
+        choice.label,
+        () => {
+          this.difficulty = choice.value;
+          this.render();
+        },
+        { class: active ? 'btn-primary btn-difficulty' : 'btn-difficulty' },
+      );
+      node.setAttribute('role', 'radio');
+      node.setAttribute('aria-checked', String(active));
+      levels.appendChild(node);
+    }
+    panel.appendChild(levels);
+    panel.appendChild(
+      el('p', {
+        class: 'muted tiny',
+        text: `${difficultyHint(this.difficulty)} You can change it in Settings.`,
+      }),
+    );
+
     panel.appendChild(
       el(
         'div',
@@ -246,6 +276,7 @@ export class PartySetupScene implements Scene {
       characterIds.map((characterId) => ({ characterId })),
       undefined,
       participants,
+      this.difficulty,
     );
   }
 
@@ -622,6 +653,6 @@ export class PartySetupScene implements Scene {
       return;
     }
 
-    this.app.newGame(players, slots, undefined, participants);
+    this.app.newGame(players, slots, undefined, participants, this.difficulty);
   }
 }
