@@ -646,8 +646,8 @@ describe('bounded combat outcome previews', () => {
     });
 
     const bossSource = battleFor('enc_grumbler', ['nima', 'kaya']);
-    const bossId = bossSource.units.find((unit) => unit.name === 'Grumbler')?.id;
-    if (!bossId) throw new Error('boss fixture has no Grumbler');
+    const bossId = bossSource.units.find((unit) => unit.name === 'The Driller')?.id;
+    if (!bossId) throw new Error('boss fixture has no Driller');
     // Row 3 runs clear to the east edge; rows 4-7 end in the drill shaft.
     const bossBattle = placed(bossSource, { p0: { x: 13, y: 3 }, [bossId]: { x: 15, y: 3 } }, [
       'p0',

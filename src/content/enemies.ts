@@ -22,7 +22,9 @@ import type { EnemyDef } from '../core/types';
 export const ENEMIES: readonly EnemyDef[] = [
   {
     id: 'bandit_thug',
-    name: 'Bandit',
+    // The story calls them quarry workers (#630); the id keeps its old name.
+    name: 'Quarry Worker',
+    shortName: 'Worker',
     element: 'nonbender',
     size: 1,
     stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
@@ -48,7 +50,8 @@ export const ENEMIES: readonly EnemyDef[] = [
   },
   {
     id: 'bandit_bruiser',
-    name: 'Bruiser',
+    name: 'Quarry Hauler',
+    shortName: 'Hauler',
     element: 'nonbender',
     size: 1,
     stats: { maxHp: 42, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
@@ -136,7 +139,9 @@ export const ENEMIES: readonly EnemyDef[] = [
   },
   {
     id: 'grumbler',
-    name: 'Grumbler',
+    // The machine is what the party fights; Grumbler is the man inside (#630).
+    name: 'The Driller',
+    shortName: 'Driller',
     element: 'earth',
     size: 2,
     /* Option A restores square-footprint pressure through mobility and
@@ -147,7 +152,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 360,
     sprite: 'unit.enemy.driller',
     description:
-      'A quartermaster at the controls of a four-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
+      'Grumbler, the quarry quartermaster, at the controls of a four-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
   },
 
   /* --------------------------------------------------------------------- */

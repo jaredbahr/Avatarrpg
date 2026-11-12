@@ -1309,7 +1309,7 @@ describe('victory result lifecycle', () => {
       },
       battle: () => battle,
       active: () => null,
-      app: { animator: { busy: vi.fn(() => false) } },
+      app: { animator: { busy: vi.fn(() => false) }, toasts: { clear: vi.fn() } },
       renderer: null,
       inspector: null,
       moreOpen: false,
