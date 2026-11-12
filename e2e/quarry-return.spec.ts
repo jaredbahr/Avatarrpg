@@ -408,7 +408,10 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_intro');
     await continueStory(page);
     await takeRoute(page, 'East road → Forest Road', 'forest_road');
-    await expectJournalObjective(page, 'quarry lies east');
+    await expectJournalObjective(
+      page,
+      'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
+    );
     await walkTo(page, 19, 4);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('road_depart');
     await continueStory(page);
