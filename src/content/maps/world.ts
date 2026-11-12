@@ -203,7 +203,7 @@ export function connectAct1(map: MapDef): MapDef {
             id: 'dema',
             name: 'Dema, road keeper',
             pos: { x: 3, y: 1 },
-            sprite: 'npc.elder',
+            sprite: 'npc.dema',
             node: 'forest_dema',
             routes: [
               { when: rescued, node: 'dema_home' },
@@ -329,7 +329,7 @@ export function connectAct1(map: MapDef): MapDef {
             id: 'rest_keeper',
             name: 'Sen, the tea keeper',
             pos: { x: 5, y: 9 },
-            sprite: 'npc.shopkeeper',
+            sprite: 'npc.sen',
             node: 'cutting_tea',
             routes: [
               { when: rescued, node: 'sen_home' },

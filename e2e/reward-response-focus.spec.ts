@@ -70,7 +70,8 @@ for (const chained of [false, true]) {
         app.adoptSave(state, session);
       }, fixture);
       expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
-      await expect(page.locator('.dialogue-layer .stage[data-kind="choice"]')).toBeVisible();
+      await expect(page.locator('.dialogue-layer .stage[data-kind="choice"]')).toBeHidden();
+      await expect(page.locator('.dialogue-layer')).toHaveAttribute('aria-hidden', 'true');
       await expect(page.locator('canvas.map-canvas')).toBeVisible();
       await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toBeFocused();
       const initialCapture = info.outputPath('initial-technique-response-modal.png');

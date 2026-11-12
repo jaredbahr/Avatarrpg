@@ -40,4 +40,11 @@ export function createTopdownVfxLoader(fetcher: typeof fetch) {
   };
 }
 
-export const loadTopdownVfx = createTopdownVfxLoader(fetch);
+const fetchVfx = createTopdownVfxLoader(fetch);
+let loaded: TopdownVfxData | null = null;
+
+export const loadTopdownVfx = (style: string | null, baseUrl: string) =>
+  fetchVfx(style, baseUrl).then((data) => (loaded ??= data));
+
+/** The top-down VFX atlas once it has loaded, for what draws from it synchronously (the shots in flight). */
+export const topdownVfx = (): TopdownVfxData | null => loaded;

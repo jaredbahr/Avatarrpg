@@ -31,6 +31,7 @@ import type { BendFxIndex } from '../render/fx/bendFx';
 import type { HealthChange, PresentationTimingProfile, SoundCue } from './anim/choreography';
 import { partyScale } from './anim/actorScale';
 import { Timeline } from './anim/timeline';
+import { easeOutQuad } from './anim/easing';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
 import {
@@ -41,6 +42,8 @@ import {
   screenDirection,
 } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
+import { topdownVfx } from '../content/assets/topdownVfx';
+import { shotSprite } from '../render/topdown/shots';
 import { actionClip, headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
 import type { Heading, LocomotionDef, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
@@ -314,6 +317,7 @@ export class Animator {
       projection: this.projection,
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
       headingOf: (unitId) => this.headingAfterCues(unitId),
+      shots: topdownVfx() !== null,
       ...(bends ? { bends } : {}),
       ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
       ...(options.waterSources ? { waterSources: options.waterSources } : {}),
@@ -414,9 +418,24 @@ export class Animator {
 
   /** Every live bend's painted effect at `now`, in play order. */
   bendFx(now: number): BendFxSprite[] {
-    return this.timeline
-      .active(now, 'bend')
-      .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start));
+    return [
+      ...this.timeline
+        .active(now, 'bend')
+        .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start)),
+      // The top-down shots in flight draw as painted cels too (#588).
+      ...this.timeline.active(now, 'shot').flatMap((track) => shotSprite(track, now, topdownVfx())),
+    ];
+  }
+
+  /**
+   * How far a top-down Earth Wall on `pos` is out of the ground at `now` (#590): 0 until its rise
+   * plays, eased to 1; undefined when no rise is queued or playing there.
+   */
+  wallRise(now: number, pos: Vec2): number | undefined {
+    const track = this.timeline
+      .unfinished(now, 'rise')
+      .find((t) => t.pos.x === pos.x && t.pos.y === pos.y);
+    return track && easeOutQuad(Math.max(0, Timeline.progress(track, now)));
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */

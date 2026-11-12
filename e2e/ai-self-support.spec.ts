@@ -15,8 +15,11 @@ import { BattleDraft } from '../src/core/state/battleDraft';
 import { RngCursor } from '../src/core/rng';
 import type { MapView } from '../src/render/view';
 import type { GameEvent } from '../src/core/types';
-import { resetStorage, settleMapCanvas, takeTurn, waitForIdle } from './helpers';
+import { pinObliqueStyle, resetStorage, settleMapCanvas, takeTurn, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 interface SupportRenderProbe {
   castFrames: number;
