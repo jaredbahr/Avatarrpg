@@ -146,6 +146,7 @@ export class ExploreScene implements Scene {
   /** Objective presentation is ephemeral and keyed by objective text, never saved. */
   private objectivePresentation = createExploreObjectivePresentation();
   private objectiveButton: HTMLButtonElement | null = null;
+  private pauseButton: HTMLButtonElement | null = null;
 
   constructor(private app: App) {}
 
@@ -249,6 +250,7 @@ export class ExploreScene implements Scene {
     this.practiceCamera = null;
     this.practiceShown = null;
     this.objectiveButton = null;
+    this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
     // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
     if (this.warmedBends) sheets.releaseBends();
@@ -676,7 +678,27 @@ export class ExploreScene implements Scene {
         }),
       );
     }
-    banner.append(button('Pause', () => this.app.openPause(), { class: 'explore-header-action' }));
+    this.pauseButton = button(
+      'Pause',
+      () =>
+        this.app.openPause(() => {
+          // Settings can rebuild the banner. Resolve its current button only on return.
+          const target = this.pauseButton;
+          if (
+            this.host?.isConnected &&
+            target?.isConnected &&
+            this.host.contains(target) &&
+            !target.matches(':disabled, [aria-disabled="true"]') &&
+            !target.closest('[hidden], [inert], [aria-hidden="true"]') &&
+            target.getClientRects().length > 0 &&
+            getComputedStyle(target).visibility === 'visible'
+          ) {
+            target.focus({ preventScroll: true });
+          }
+        }),
+      { class: 'explore-header-action' },
+    );
+    banner.append(this.pauseButton);
     this.renderObjective(objective);
     const corner = this.host?.querySelector<HTMLElement>('.explore-map-corner');
     const state = this.app.state;
