@@ -1,0 +1,37 @@
+{
+  "$comment": "Loop points for scripts/audio/music-loops.mjs (ADR 0108). start is a bar start in seconds of the master (scripts/audio/find-loop.py). end - start is the period at which the master repeats there (find-loop.py --refine): a whole number of bars at the tempo the master really plays, which is not always its prompt's. The road's end is then nudged 35 ms so the beats just after the seam land where the master's own continuation puts them. bpm is the measured tempo. The script rounds each length to whole AAC frames.",
+  "tracks": [
+    {
+      "id": "title",
+      "master": "main-menu-hollow-fanfare.mp3",
+      "bpm": 85,
+      "bars": 16,
+      "start": 34.302,
+      "end": 79.479
+    },
+    {
+      "id": "ba-dan",
+      "master": "ba-dan-morning-market.mp3",
+      "bpm": 84.99,
+      "bars": 32,
+      "start": 34.391,
+      "end": 124.749
+    },
+    {
+      "id": "road",
+      "master": "forest-road-forest-watch.mp3",
+      "bpm": 95.6,
+      "bars": 28,
+      "start": 70.412,
+      "end": 140.719
+    },
+    {
+      "id": "quarry",
+      "master": "quarry-stone-and-steam.mp3",
+      "bpm": 100.3,
+      "bars": 28,
+      "start": 43.674,
+      "end": 110.672
+    }
+  ]
+}

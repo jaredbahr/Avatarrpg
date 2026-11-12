@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../src/content';
 import { TOPDOWN_SCENES } from '../src/content/topdown';
-import { PRECACHE_IGNORES, isPrecacheIgnored } from './precache.mjs';
+import { PRECACHE_IGNORES, STREAMED, isPrecacheIgnored } from './precache.mjs';
 
 describe('the precache', () => {
   it('precaches the top-down family and leaves only the swapped maps’ oblique art for run time', () => {
@@ -52,6 +52,16 @@ describe('the precache', () => {
       if (ignored.length) swapped.add(map.id);
     }
     expect([...swapped].sort()).toEqual([...TOPDOWN_SCENES.keys()].sort());
+  });
+
+  it('streams the area music rather than precaching it, and precaches every other sound', () => {
+    expect(STREAMED).toEqual(['audio/music/**']);
+    for (const path of ['audio/music/title.m4a', 'audio/music/quarry.m4a'])
+      expect(isPrecacheIgnored(path), path).toBe(true);
+    for (const path of ['audio/hit-a.ogg', 'audio/ui-tap.ogg'])
+      expect(isPrecacheIgnored(path), path).toBe(false);
+    // Workbox would only list the loops if its patterns took an m4a.
+    expect(readFileSync('vite.config.ts', 'utf8')).not.toMatch(/globPatterns:[^\n]*m4a/);
   });
 
   it('is what workbox ignores and what the asset budget leaves out of its total', () => {
