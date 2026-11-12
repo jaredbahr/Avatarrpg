@@ -54,6 +54,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         when: { kind: 'visited', nodeId: 'mira_intro' },
         text: 'Take the east road to the quarry. You can speak with the neighbors before you leave.',
         objectiveNpcId: null,
+        objectiveExitToMapId: 'forest_road',
       },
     ],
     next: 'road_depart',

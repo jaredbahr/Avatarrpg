@@ -560,8 +560,17 @@ export const mapSchema = z
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
     objective: z.string().min(1).optional(),
+    objectiveNpcId: id.optional(),
+    objectiveExitToMapId: id.optional(),
     objectiveVariants: z
-      .array(z.object({ when: conditionSchema, text: z.string().min(1) }))
+      .array(
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveNpcId: id.nullable().optional(),
+          objectiveExitToMapId: id.nullable().optional(),
+        }),
+      )
       .optional(),
     exits: z
       .array(
@@ -734,6 +743,22 @@ export const mapSchema = z
       .optional(),
   })
   .superRefine((map, ctx) => {
+    if (map.objectiveNpcId && map.objectiveExitToMapId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['objectiveExitToMapId'],
+        message: 'a map objective may target only one npc or exit',
+      });
+    }
+    for (const [index, variant] of (map.objectiveVariants ?? []).entries()) {
+      if (variant.objectiveNpcId && variant.objectiveExitToMapId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['objectiveVariants', index, 'objectiveExitToMapId'],
+          message: 'an objective variant may target only one npc or exit',
+        });
+      }
+    }
     if (
       map.cameraCentreMargin !== undefined &&
       Number.isFinite(map.cameraCentreMargin) &&
@@ -906,13 +931,20 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     mapId: id,
     objective: z.string().min(1),
     objectiveNpcId: id.optional(),
+    objectiveExitToMapId: id.optional(),
     objectiveVariants: z
       .array(
-        z.object({
-          when: conditionSchema,
-          text: z.string().min(1),
-          objectiveNpcId: id.nullable().optional(),
-        }),
+        z
+          .object({
+            when: conditionSchema,
+            text: z.string().min(1),
+            objectiveNpcId: id.nullable().optional(),
+            objectiveExitToMapId: id.nullable().optional(),
+          })
+          .refine(
+            (variant) => !(variant.objectiveNpcId && variant.objectiveExitToMapId),
+            'an objective variant may target only one npc or exit',
+          ),
       )
       .optional(),
     next: id,
@@ -2091,6 +2123,42 @@ export function validateContent(
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
   const propIds = new Set(bundle.props.map((p) => p.id));
 
+  const checkObjectiveTarget = (
+    map: MapDef,
+    source: {
+      readonly objectiveNpcId?: string | null;
+      readonly objectiveExitToMapId?: string | null;
+    },
+    label: string,
+  ): void => {
+    if (source.objectiveNpcId && source.objectiveExitToMapId) {
+      problems.push(`${label} may target only one npc or exit`);
+    }
+    if (source.objectiveNpcId && !map.npcs.some((npc) => npc.id === source.objectiveNpcId)) {
+      problems.push(`${label} targets unknown npc "${source.objectiveNpcId}" on map "${map.id}"`);
+    }
+    if (source.objectiveExitToMapId) {
+      const routes = (map.exits ?? []).filter(
+        (exit) => exit.toMapId === source.objectiveExitToMapId,
+      );
+      if (routes.length === 0) {
+        problems.push(
+          `${label} targets unknown exit to map "${source.objectiveExitToMapId}" on map "${map.id}"`,
+        );
+      } else if (routes.length > 1) {
+        problems.push(
+          `${label} targets an ambiguous exit to map "${source.objectiveExitToMapId}" on map "${map.id}"`,
+        );
+      }
+    }
+  };
+
+  for (const map of bundle.maps) {
+    checkObjectiveTarget(map, map, `map "${map.id}" objective`);
+    for (const [index, variant] of (map.objectiveVariants ?? []).entries())
+      checkObjectiveTarget(map, variant, `map "${map.id}" objective variant ${index}`);
+  }
+
   /* --- abilities reference real statuses and surfaces --------------- */
   for (const a of bundle.abilities) {
     for (const effect of a.effects) {
@@ -2602,21 +2670,10 @@ export function validateContent(
       const map = bundle.maps.find((candidate) => candidate.id === node.mapId);
       if (!map) {
         problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
-      } else if (node.objectiveNpcId && !map.npcs.some((npc) => npc.id === node.objectiveNpcId)) {
-        problems.push(
-          `story node "${node.id}" targets unknown npc "${node.objectiveNpcId}" on map "${node.mapId}"`,
-        );
       } else {
-        for (const variant of node.objectiveVariants ?? []) {
-          if (
-            variant.objectiveNpcId &&
-            !map.npcs.some((npc) => npc.id === variant.objectiveNpcId)
-          ) {
-            problems.push(
-              `story node "${node.id}" objective variant targets unknown npc "${variant.objectiveNpcId}" on map "${node.mapId}"`,
-            );
-          }
-        }
+        checkObjectiveTarget(map, node, `story node "${node.id}"`);
+        for (const variant of node.objectiveVariants ?? [])
+          checkObjectiveTarget(map, variant, `story node "${node.id}" objective variant`);
       }
     }
   }

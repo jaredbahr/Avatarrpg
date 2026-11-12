@@ -1,0 +1,29 @@
+.objective-edge-pointer {
+  position: absolute;
+  z-index: var(--z-banner);
+  display: grid;
+  width: var(--tap);
+  height: var(--tap);
+  place-items: center;
+  border: var(--hairline) solid var(--c-gold-deep);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-1) 96%, transparent);
+  box-shadow: 0 0 var(--sp-2) var(--scrim);
+  color: var(--c-ink);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.objective-edge-pointer[hidden] {
+  display: none;
+}
+
+.objective-edge-pointer > span {
+  font-size: var(--fs-lg);
+  line-height: 1;
+  transform: rotate(var(--objective-edge-angle, 0deg));
+}
+
+html[data-contrast='high'] .objective-edge-pointer {
+  outline: var(--hairline) solid var(--c-ink-line);
+}

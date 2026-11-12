@@ -18,6 +18,7 @@ import {
   visibleNpcs,
   worldObjective,
   worldObjectiveNpcId,
+  worldObjectiveTarget,
 } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
@@ -58,6 +59,7 @@ import {
   toggleExploreObjective,
   walkExploreObjective,
 } from './exploreObjective';
+import { objectivePointerPlacement, resolveObjectivePointerTarget } from './objectivePointer';
 import { handoverBark } from '../world/barks';
 import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
@@ -146,6 +148,7 @@ export class ExploreScene implements Scene {
   /** Objective presentation is ephemeral and keyed by objective text, never saved. */
   private objectivePresentation = createExploreObjectivePresentation();
   private objectiveButton: HTMLButtonElement | null = null;
+  private objectivePointer: HTMLDivElement | null = null;
   private pauseButton: HTMLButtonElement | null = null;
 
   constructor(private app: App) {}
@@ -204,6 +207,11 @@ export class ExploreScene implements Scene {
           'div',
           { class: 'map-wrap' },
           canvas,
+          (this.objectivePointer = el(
+            'div',
+            { class: 'objective-edge-pointer', hidden: true, attrs: { role: 'img' } },
+            el('span', { text: '↑', attrs: { 'aria-hidden': 'true' } }),
+          )),
           el('div', { class: 'explore-map-corner' }),
           el('div', { class: 'explore-conversation', hidden: true }),
         ),
@@ -250,6 +258,7 @@ export class ExploreScene implements Scene {
     this.practiceCamera = null;
     this.practiceShown = null;
     this.objectiveButton = null;
+    this.objectivePointer = null;
     this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
     // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
@@ -1456,7 +1465,10 @@ export class ExploreScene implements Scene {
         this.animatePartyBatches(batches, state, now);
       }
     }
-    if (!this.conversationMode && this.life?.update(now, renderer.camera)) return;
+    if (!this.conversationMode && this.life?.update(now, renderer.camera)) {
+      this.updateObjectivePointer(state, map, this.lastNpcs);
+      return;
+    }
     if (this.practising && !this.app.animator.busy(now)) {
       this.practising = false;
       if (this.practiceCamera)
@@ -1545,6 +1557,7 @@ export class ExploreScene implements Scene {
         })),
       ...people.map((who) => ({
         id: who.id,
+        ...(who.npcId ? { npcId: who.npcId } : {}),
         pos: who.pos ?? who.drawPos,
         sprite: who.sprite,
         name: who.name,
@@ -1658,5 +1671,61 @@ export class ExploreScene implements Scene {
     renderer.draw(view);
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
+    this.updateObjectivePointer(state, map, npcs);
   };
+
+  /** The passive cue follows the exact camera transform used to draw the map. */
+  private updateObjectivePointer(state: GameState, map: MapDef, npcs: readonly NpcMarker[]): void {
+    const pointer = this.objectivePointer;
+    const canvas = this.canvas;
+    const renderer = this.renderer;
+    const wrap = pointer?.parentElement;
+    if (!pointer || !canvas || !renderer || !wrap) return;
+
+    const shouldHide =
+      this.departing !== null ||
+      state.screen !== 'explore' ||
+      map.id === RIVERSIDE_ID ||
+      this.conversationMode ||
+      this.practising ||
+      this.practiceCamera !== null ||
+      document.hidden ||
+      Boolean(document.querySelector('[role="dialog"]'));
+    if (shouldHide) {
+      pointer.hidden = true;
+      return;
+    }
+
+    const target = resolveObjectivePointerTarget(
+      worldObjectiveTarget(this.app.content, state),
+      map.exits,
+      npcs,
+    );
+    if (!target || renderer.camera.isVisible(target.pos)) {
+      pointer.hidden = true;
+      return;
+    }
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const wrapRect = wrap.getBoundingClientRect();
+    const screen = renderer.camera.project({ x: target.pos.x + 0.5, y: target.pos.y + 0.5 });
+    const placement = objectivePointerPlacement(
+      {
+        x: canvasRect.left - wrapRect.left + screen.x,
+        y: canvasRect.top - wrapRect.top + screen.y,
+      },
+      wrapRect.width,
+      wrapRect.height,
+    );
+    if (!placement) {
+      pointer.hidden = true;
+      return;
+    }
+
+    pointer.hidden = false;
+    pointer.style.left = `${placement.x}px`;
+    pointer.style.top = `${placement.y}px`;
+    pointer.style.setProperty('--objective-edge-angle', `${placement.angle}deg`);
+    pointer.setAttribute('aria-label', `${target.label} is off screen to the ${placement.side}.`);
+  }
 }

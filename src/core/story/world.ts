@@ -113,9 +113,39 @@ export function worldObjective(content: ContentIndex, state: GameState): string 
 export function worldObjectiveNpcId(content: ContentIndex, state: GameState): string | null {
   const map = content.maps.get(state.location.mapId);
   const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
+  if (node?.kind !== 'explore' || node.mapId !== map?.id) return null;
+  const target = worldObjectiveTarget(content, state);
+  return target?.kind === 'npc' ? target.id : null;
+}
+
+export type WorldObjectiveTarget =
+  | { readonly kind: 'npc'; readonly id: string }
+  | { readonly kind: 'exit'; readonly toMapId: string };
+
+/** Structured target paired with the exact objective source shown to the player. */
+export function worldObjectiveTarget(
+  content: ContentIndex,
+  state: GameState,
+): WorldObjectiveTarget | null {
+  const map = content.maps.get(state.location.mapId);
+  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
+
+  const target = (source: {
+    readonly objectiveNpcId?: string | null;
+    readonly objectiveExitToMapId?: string | null;
+  }): WorldObjectiveTarget | null => {
+    if (source.objectiveNpcId) return { kind: 'npc', id: source.objectiveNpcId };
+    if (source.objectiveExitToMapId) return { kind: 'exit', toMapId: source.objectiveExitToMapId };
+    return null;
+  };
+
   if (node?.kind === 'explore' && node.mapId === map?.id) {
     const variant = node.objectiveVariants?.find((candidate) => evaluate(state, candidate.when));
-    return variant ? (variant.objectiveNpcId ?? null) : (node.objectiveNpcId ?? null);
+    // A matching variant owns its target too. An omitted or null target clears
+    // the node default, just as `worldObjectiveNpcId` does for LocalMap.
+    return target(variant ?? node);
   }
-  return null;
+  if (!map) return null;
+  const variant = map.objectiveVariants?.find((candidate) => evaluate(state, candidate.when));
+  return target(variant ?? map);
 }
