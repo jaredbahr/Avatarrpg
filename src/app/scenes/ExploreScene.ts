@@ -1495,7 +1495,9 @@ export class ExploreScene implements Scene {
     );
     const units: RenderUnit[] = state.party.map((member, index) => {
       // A practising bender draws their bend's cels, as combat does (ADR 0055).
-      const bend = this.app.animator.bendPose(now, member.id);
+      const animator = this.app.animator;
+      const bend = animator.bendPose(now, member.id);
+      const pose = animator.unitPose(now, member.id, member.sprite);
       const unit: RenderUnit = {
         id: member.id,
         pos: index === 0 ? state.location.pos : (seats[index] ?? state.location.pos),
@@ -1511,10 +1513,10 @@ export class ExploreScene implements Scene {
         showHealth: false,
         shadow: true,
         scale: partyScale(map.projection),
-        renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
-        offset: this.app.animator.offset(now, member.id, member.sprite),
-        clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
-        ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
+        renderPos: index === 0 ? walking : animator.renderPos(now, member.id),
+        offset: animator.offset(now, member.id, member.sprite),
+        clipTime: pose?.clipTime,
+        ...animator.locomotion(now, member.id, 'rest', member.sprite),
       };
       if (!bend) return unit;
       return {
@@ -1522,9 +1524,7 @@ export class ExploreScene implements Scene {
         facing: 1,
         clip: 'stance',
         bend: { heading: bend.heading, index: bend.index },
-        ...(this.app.animator.unitPose(now, member.id, member.sprite)?.flash
-          ? { flash: this.app.animator.unitPose(now, member.id, member.sprite)?.flash }
-          : {}),
+        flash: pose?.flash,
       };
     });
 
