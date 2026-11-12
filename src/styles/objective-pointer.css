@@ -15,6 +15,7 @@
 }
 
 .objective-edge-pointer[hidden],
+.riverside-scene .objective-edge-pointer,
 :root:has([role='dialog']) .objective-edge-pointer {
   display: none;
 }

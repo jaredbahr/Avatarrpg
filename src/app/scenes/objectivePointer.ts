@@ -1,4 +1,5 @@
 import type { MapExit, Vec2 } from '../../core/types';
+import type { Camera } from '../../render/camera';
 import type { NpcMarker } from '../../render/renderer';
 
 export interface ResolvedObjectivePointerTarget {
@@ -90,4 +91,32 @@ export function objectivePointerPlacement(
     angle: Math.atan2(targetY - y, targetX - x),
     side,
   };
+}
+
+/** The passive cue follows the same camera and wrapper as the canvas. */
+export function drawObjectivePointer(
+  pointer: HTMLElement | null,
+  corner: HTMLElement | null,
+  camera: Camera,
+  target: ResolvedObjectivePointerTarget | null,
+): void {
+  if (!pointer) return;
+  if (!target) {
+    pointer.hidden = true;
+    return;
+  }
+
+  const { width, height } = camera.viewport;
+  const placement = objectivePointerPlacement(
+    camera.toScreen(target.pos),
+    width,
+    height,
+    corner?.offsetWidth
+      ? { left: corner.offsetLeft, bottom: corner.offsetTop + corner.offsetHeight }
+      : undefined,
+  );
+  pointer.hidden = !placement;
+  if (!placement) return;
+  pointer.style.cssText = `left:${placement.x}px;top:${placement.y}px;--objective-edge-angle:${placement.angle}rad`;
+  pointer.setAttribute('aria-label', `${target.label} is off screen to the ${placement.side}.`);
 }

@@ -58,7 +58,7 @@ import {
   toggleExploreObjective,
   walkExploreObjective,
 } from './exploreObjective';
-import { objectivePointerPlacement, resolveObjectivePointerTarget } from './objectivePointer';
+import { drawObjectivePointer, resolveObjectivePointerTarget } from './objectivePointer';
 import { handoverBark } from '../world/barks';
 import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
@@ -148,6 +148,7 @@ export class ExploreScene implements Scene {
   private objectivePresentation = createExploreObjectivePresentation();
   private objectiveButton: HTMLButtonElement | null = null;
   private objectivePointer: HTMLDivElement | null = null;
+  private mapCorner: HTMLDivElement | null = null;
   private pauseButton: HTMLButtonElement | null = null;
 
   constructor(private app: App) {}
@@ -211,7 +212,7 @@ export class ExploreScene implements Scene {
             hidden: true,
             attrs: { role: 'img' },
           })),
-          el('div', { class: 'explore-map-corner' }),
+          (this.mapCorner = el('div', { class: 'explore-map-corner' })),
           el('div', { class: 'explore-conversation', hidden: true }),
         ),
       ),
@@ -258,6 +259,7 @@ export class ExploreScene implements Scene {
     this.practiceShown = null;
     this.objectiveButton = null;
     this.objectivePointer = null;
+    this.mapCorner = null;
     this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
     // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
@@ -638,7 +640,7 @@ export class ExploreScene implements Scene {
   }
 
   /** DOM, all of it, rebuilt whenever the state changes: it is cheap and it is right. */
-  private renderChrome(restoreFocus = this.preserveFocus()): void {
+  private renderChrome(restoreFocus: () => void): void {
     this.renderBanner();
     this.renderRoster();
     this.renderHud();
@@ -650,9 +652,10 @@ export class ExploreScene implements Scene {
     const banner = this.host?.querySelector<HTMLElement>('.explore-bar-main');
     if (!banner) return;
     clear(banner);
-    const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
+    const state = this.app.state;
+    const objective = state ? worldObjective(this.app.content, state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
-    const clock = this.app.state?.world.clock;
+    const clock = state?.world.clock;
     append(banner, [
       el(
         'div',
@@ -708,8 +711,7 @@ export class ExploreScene implements Scene {
     );
     banner.append(this.pauseButton);
     this.renderObjective(objective);
-    const corner = this.host?.querySelector<HTMLElement>('.explore-map-corner');
-    const state = this.app.state;
+    const corner = this.mapCorner;
     if (corner && state && this.map && this.grid) {
       clear(corner);
       corner.hidden = this.conversationMode || !!this.life;
@@ -728,9 +730,7 @@ export class ExploreScene implements Scene {
     }
   }
 
-  private renderObjective(
-    objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null,
-  ): void {
+  private renderObjective(objective: string | null): void {
     const button = this.objectiveButton;
     if (!button) return;
     this.objectivePresentation = syncExploreObjective(this.objectivePresentation, objective);
@@ -1421,14 +1421,6 @@ export class ExploreScene implements Scene {
     const residents = this.app.residents;
     residents.tick(now, held);
     const live = !this.departing && !this.conversationMode && state.screen === 'explore';
-    const objectiveTargetId =
-      live &&
-      !held &&
-      !this.practiceCamera &&
-      !this.practising &&
-      this.objectiveButton?.hidden === false
-        ? worldObjectiveTargetId(this.app.content, state)
-        : null;
     const party = this.ensureTrail(state, grid).positions(state.party.length);
     // A routine keeps clear of the party: its tiles, where it is drawn, the way it walks.
     const clear = [...party, ...(this.walking?.path ?? [])];
@@ -1470,10 +1462,7 @@ export class ExploreScene implements Scene {
         this.animatePartyBatches(batches, state, now);
       }
     }
-    if (!this.conversationMode && this.life?.update(now, renderer.camera)) {
-      this.updateObjectivePointer(objectiveTargetId);
-      return;
-    }
+    if (!this.conversationMode && this.life?.update(now, renderer.camera)) return;
     if (this.practising && !this.app.animator.busy(now)) {
       this.practising = false;
       if (this.practiceCamera)
@@ -1676,35 +1665,14 @@ export class ExploreScene implements Scene {
     renderer.draw(view);
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
-    this.updateObjectivePointer(objectiveTargetId);
+    const target =
+      live && !held && !this.practiceCamera && this.objectiveButton?.hidden === false
+        ? resolveObjectivePointerTarget(
+            worldObjectiveTargetId(this.app.content, state),
+            map.exits,
+            npcs,
+          )
+        : null;
+    drawObjectivePointer(this.objectivePointer, this.mapCorner, renderer.camera, target);
   };
-
-  /** The passive cue follows the exact camera transform used to draw the map. */
-  private updateObjectivePointer(id: string | null): void {
-    const pointer = this.objectivePointer;
-    const camera = this.renderer?.camera;
-    if (!pointer || !camera) return;
-
-    const target = resolveObjectivePointerTarget(id, this.map?.exits, this.lastNpcs);
-    if (!target) {
-      pointer.hidden = true;
-      return;
-    }
-
-    // The canvas fills the relative map wrapper. Its viewport and the corner's
-    // offsets are both measured in the wrapper's CSS pixels.
-    const corner = pointer.parentElement?.querySelector<HTMLElement>('.explore-map-corner');
-    const placement = objectivePointerPlacement(
-      camera.toScreen(target.pos),
-      camera.viewport.width,
-      camera.viewport.height,
-      corner?.offsetWidth
-        ? { left: corner.offsetLeft, bottom: corner.offsetTop + corner.offsetHeight }
-        : undefined,
-    );
-    pointer.hidden = !placement;
-    if (!placement) return;
-    pointer.style.cssText = `left:${placement.x}px;top:${placement.y}px;--objective-edge-angle:${placement.angle}rad`;
-    pointer.setAttribute('aria-label', `${target.label} is off screen to the ${placement.side}.`);
-  }
 }
