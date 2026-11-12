@@ -288,6 +288,11 @@ export interface Settings {
    * "off" costs nothing rather than running a silent graph (ADR 0012).
    */
   volume: number;
+  /**
+   * How loud the area music is, 0 to 1, apart from Sound so a table can keep one and drop the other.
+   * Zero stops the music and gives its context back (ADR 0108).
+   */
+  music: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -297,6 +302,8 @@ export const DEFAULT_SETTINGS: Settings = {
   highContrast: false,
   showGrid: false,
   volume: 0.7,
+  // Under the sound effects, so the music sits behind the table's talk.
+  music: 0.35,
 };
 
 export function loadSettings(): Settings {
@@ -319,6 +326,10 @@ export function loadSettings(): Settings {
         typeof parsed.volume === 'number' && parsed.volume >= 0 && parsed.volume <= 1
           ? parsed.volume
           : DEFAULT_SETTINGS.volume,
+      music:
+        typeof parsed.music === 'number' && parsed.music >= 0 && parsed.music <= 1
+          ? parsed.music
+          : DEFAULT_SETTINGS.music,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
