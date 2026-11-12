@@ -12,7 +12,7 @@ import {
 } from './helpers';
 import { paintedTileCentre } from './projection';
 
-const oilHint = 'and it lights any oil the target stands in.';
+const repeatHint = 'At 1 AP you can throw it more than once a turn.';
 const CAPTURE_DIR = resolve(process.cwd(), '.shots/ability-header');
 const flask = { x: 12, y: 4 };
 const viewports = [
@@ -203,7 +203,7 @@ for (const choice of levelThreeChoices) {
         expect(short.descriptionLineClamp, label).toBe('2');
         expect(long.descriptionLineClamp, label).toBe('2');
         expect(short.descriptionText).toBe('A quick flame strike.');
-        expect(long.descriptionText).toContain(oilHint);
+        expect(long.descriptionText).toContain(repeatHint);
         expect(long.name).toBe('Fire Jab');
         expect(long.nameWidth).toBeGreaterThanOrEqual(long.nameScrollWidth);
         expect(long.descriptionHeight).toBeLessThanOrEqual(long.headerHeight);
@@ -227,7 +227,7 @@ for (const choice of levelThreeChoices) {
           // The selected viewport capture is the rendered-ink proof: the
           // browser's Range box includes font ascent/descent outside the
           // clipped description even when every glyph is visible. Review the
-          // entire oil clause in the exact-profile PNG alongside this bound.
+          // entire 1 AP clause in the exact-profile PNG alongside this bound.
         }
       });
 
