@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page, TestInfo } from '@playwright/test';
 import type { Settings } from '../src/app/storage/localSaves';
 import type { MapView } from '../src/render/view';
-import { enterNode, resetStorage } from './helpers';
+import { enterNode } from './helpers';
 
 // Independent expectations for the shipped UI, rather than importing the
 // implementation's defaults or assuming any newly added control is covered.
@@ -362,9 +362,13 @@ for (const change of changes) {
     context,
   }, info) => {
     const errors: string[] = [];
-    errorsFrom(page, errors);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await resetStorage(page, '?renderer=canvas');
+    // Clear persisted settings before the app's first boot, so its startup
+    // asset requests are not interrupted by an immediate fixture reload.
+    await page.goto('/robots.txt', { waitUntil: 'networkidle' });
+    await page.evaluate(() => localStorage.clear());
+    errorsFrom(page, errors);
+    await page.goto('/?renderer=canvas');
     await checkBoot(page, defaults, false);
     await assertLiveRendering(page, defaults);
 
