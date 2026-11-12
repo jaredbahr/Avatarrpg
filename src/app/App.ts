@@ -9,10 +9,13 @@
  *                                                  -> new state -> scene.sync()
  */
 
+import { comboName } from './ui/comboText';
+import type { ComboReveal } from './ui/comboText';
 import type {
   BattleState,
   Command,
   ContentIndex,
+  Difficulty,
   ElementId,
   GameEvent,
   GameState,
@@ -710,6 +713,7 @@ export class App {
     slots: readonly PartySlot[],
     seed?: string,
     participants?: readonly Participant[],
+    difficulty?: Difficulty,
   ): void {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
@@ -719,6 +723,7 @@ export class App {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
       startNode: this.storyEntry,
+      ...(difficulty ? { difficulty } : {}),
     });
 
     this.session.setPlayers(
@@ -734,6 +739,18 @@ export class App {
     this.resetPlayback();
     this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
+  }
+
+  /**
+   * Changes the game's difficulty from Settings. A fight already on the field
+   * keeps its enemies; the next one (or a retry) is built at the new setting.
+   * Saved straight away, so Continue keeps it.
+   */
+  setDifficulty(difficulty: Difficulty): void {
+    const state = this.state;
+    if (!state || state.difficulty === difficulty) return;
+    this.state = apply(this.content, state, { type: 'setDifficulty', difficulty }).state;
+    if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
   /** Installs a loaded save, replacing everything. */
@@ -849,6 +866,15 @@ export class App {
         announce(event.label);
       }
       if (event.type === 'message') this.toasts.show(event.text);
+      if (event.type === 'comboDiscovered') {
+        const rule = this.content.combos.find((candidate) => candidate.id === event.comboId);
+        if (!rule) continue;
+        // After the clip, so the caption never sits over the hit or its number.
+        window.setTimeout(
+          () => this.toasts.show(`New combo found: ${comboName(this.content, rule)}!`),
+          Math.max(0, this.animator.finishesAt - performance.now()),
+        );
+      }
     }
   }
 
@@ -963,6 +989,11 @@ export class App {
       this.scene.releaseAi?.();
       this.scene.resumePresentation?.();
     }
+  }
+
+  /** Which combos the confirm step and the reference name openly (#622). */
+  comboReveal(): ComboReveal {
+    return this.settings.comboHints === 'show' ? 'all' : (this.state?.discoveredCombos ?? []);
   }
 
   updateSettings(next: Partial<Settings>): void {

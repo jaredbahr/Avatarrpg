@@ -1337,12 +1337,23 @@ export const RUNOFF_STATES = ['unresolved', 'inspected', 'repaired'] as const;
 
 export type RunoffState = (typeof RUNOFF_STATES)[number];
 
+/**
+ * How hard the table asked the fights to be (ADR 0110). Story is the forgiving
+ * default; Hard is for players who want the fights to push back. Only
+ * `rules/difficulty.ts` reads it.
+ */
+export const DIFFICULTIES = ['story', 'hard'] as const;
+
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */
   readonly version: number;
   readonly seed: number;
   readonly rng: RngState;
   readonly screen: Screen;
+  /** Chosen at party setup, changeable in Settings; old saves load as `story`. */
+  readonly difficulty: Difficulty;
   /** The canonical party. HP and XP persist between battles. */
   readonly party: readonly Unit[];
   readonly battle: BattleState | null;
@@ -1369,6 +1380,11 @@ export interface GameState {
   };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];
+  /**
+   * Combo rule ids this save has seen fire (#622), in discovery order. Until a
+   * rule is here the confirm step only hints at it; afterwards it is named.
+   */
+  readonly discoveredCombos: readonly string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -1395,7 +1411,8 @@ export type Command =
   | { readonly type: 'chooseLevelUp'; readonly unitId: string; readonly abilityId: string }
   | { readonly type: 'chooseDiscipline'; readonly unitId: string; readonly disciplineId: string }
   | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> }
-  | { readonly type: 'wait'; readonly until: DayPhase };
+  | { readonly type: 'wait'; readonly until: DayPhase }
+  | { readonly type: 'setDifficulty'; readonly difficulty: Difficulty };
 
 export type GameEvent =
   | { readonly type: 'message'; readonly text: string }
@@ -1459,6 +1476,8 @@ export type GameEvent =
       readonly from: SurfaceId | null;
       readonly to: SurfaceId | null;
       readonly label: string;
+      /** The combo rule (or 'paint', 'spread', 'expire') behind the change. */
+      readonly comboId?: string;
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
@@ -1527,6 +1546,8 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
+  /** A combo rule fired for the first time in this save (#622). */
+  | { readonly type: 'comboDiscovered'; readonly comboId: string }
   | { readonly type: 'screenChanged'; readonly screen: Screen }
   | {
       readonly type: 'phaseChanged';

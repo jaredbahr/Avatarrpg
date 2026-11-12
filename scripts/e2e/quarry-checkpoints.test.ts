@@ -14,7 +14,7 @@ import {
 const PINS = {
   trade: {
     gate: {
-      save: '43f15aa2ded3e39c8e3dc579d69c82e624631ba8f1c1694d54e29ef1c54d29d3',
+      save: 'd33be1120f1fcd2174f1ae2e1d11be02f5a9f5cdab89408d53073425a58e81ac',
       commands: '7a9f72a0ae5af23b6e8fb5faa5fe3db163a9b018f3f4f1996cf18b07387d88a9',
       count: 62,
       node: 'gate_trade_explore',
@@ -24,9 +24,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '37b69290e21d19f62da95ed257275aaa867e72d5a417a8662936852f4383f52c',
-      commands: 'e54f7a86bbf93025d28479a21c5658fb73ad169db9668cdbd6b64b8c4257b73c',
-      count: 167,
+      save: 'e7040050b9ff7930c4e95bd8dda384a1d91d92502b58f01bba8c7418b9b25e16',
+      commands: 'cf1c24a105b264e867ea9e625d37c82e754c08f327fb0ae1cd7c097ed17aa40b',
+      count: 141,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
@@ -36,7 +36,7 @@ const PINS = {
   },
   escort: {
     gate: {
-      save: 'a57a4aa2ee9a4012d01734ccb87404298dff56fd380968cb1e1d794481b2cbb3',
+      save: '07c29265ee7ecb93e66fe90d916da8d6abf0791153760a2dbb155829914c1733',
       commands: '31301c4a60c53252be90b80b24af3f0e9b3b589aca3b404ee662202aef465dd6',
       count: 96,
       node: 'gate_escort_explore',
@@ -46,9 +46,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '13eb7473f8d385f88e24f6be52998481d36d90e00ad3de7e7af27a7bcb071d8a',
-      commands: '625e0ef1b97e6d3531c436eaeb36d0a07bd520d7b1b016abf56817ae701d563a',
-      count: 432,
+      save: 'ab54ac958cdb90c3b76892b632f479412de440b3d075d88f18f3b108cf5548a4',
+      commands: '4ee9a5d33647988c08b095e47547384590c71a3df1fce349660ea1777ec4e329',
+      count: 377,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,

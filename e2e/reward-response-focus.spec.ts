@@ -66,7 +66,7 @@ for (const chained of [false, true]) {
       await resetStorage(page, '?renderer=canvas');
       await page.evaluate(({ state, session }) => {
         const app = window.fnt!.app;
-        app.updateSettings({ reduceMotion: true });
+        app.updateSettings({ reduceMotion: true, storyChoices: 'turns' });
         app.adoptSave(state, session);
       }, fixture);
       expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
