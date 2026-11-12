@@ -3,6 +3,7 @@ import { attachPointer } from './pointer';
 
 /** Only the DOM surface the adapter uses; events still use real EventTarget dispatch. */
 class PointerTarget extends EventTarget {
+  readonly ownerDocument = new EventTarget();
   readonly captures: number[] = [];
   readonly releases: number[] = [];
   private readonly captured = new Set<number>();
@@ -23,6 +24,10 @@ class PointerTarget extends EventTarget {
   releasePointerCapture(id: number): void {
     this.releases.push(id);
     this.captured.delete(id);
+  }
+
+  contains(node: Node): boolean {
+    return node === (this as unknown as Node);
   }
 
   /** The browser clears capture before notifying the previous capture target. */
@@ -100,6 +105,62 @@ describe('pointer adapter contact buttons', () => {
       detach();
     },
   );
+
+  it('keeps a canvas touch click from activating an overlapping control', () => {
+    vi.useFakeTimers();
+    const canvas = new PointerTarget();
+    const onTap = vi.fn();
+    const detach = attachPointer(canvas as unknown as HTMLElement, { onTap });
+    const touch = { pointerType: 'touch', button: 0, buttons: 1 } as const;
+
+    try {
+      fire(canvas, 'pointerdown', touch);
+      fire(canvas, 'pointerup', touch);
+      const retargetedClick = Object.assign(
+        new Event('click', { bubbles: true, cancelable: true }),
+        { detail: 1, pointerId: 7, pointerType: 'touch' },
+      );
+      canvas.ownerDocument.dispatchEvent(retargetedClick);
+
+      expect(onTap).toHaveBeenCalledTimes(1);
+      expect(retargetedClick.defaultPrevented).toBe(true);
+    } finally {
+      detach();
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves a reused pointer ID button tap and keyboard activation alone', () => {
+    vi.useFakeTimers();
+    const canvas = new PointerTarget();
+    const detach = attachPointer(canvas as unknown as HTMLElement, {});
+    const touch = { pointerType: 'touch', button: 0, buttons: 1 } as const;
+
+    try {
+      fire(canvas, 'pointerdown', touch);
+      fire(canvas, 'pointerup', touch);
+      // This fresh contact reuses the ID but starts on a control, not canvas.
+      fire(canvas.ownerDocument as unknown as PointerTarget, 'pointerdown', touch);
+      const buttonClick = Object.assign(new Event('click', { bubbles: true, cancelable: true }), {
+        detail: 1,
+        pointerId: 7,
+        pointerType: 'touch',
+      });
+      canvas.ownerDocument.dispatchEvent(buttonClick);
+      const keyboardClick = Object.assign(new Event('click', { bubbles: true, cancelable: true }), {
+        detail: 0,
+        pointerId: 7,
+        pointerType: '',
+      });
+      canvas.ownerDocument.dispatchEvent(keyboardClick);
+
+      expect(buttonClick.defaultPrevented).toBe(false);
+      expect(keyboardClick.defaultPrevented).toBe(false);
+    } finally {
+      detach();
+      vi.useRealTimers();
+    }
+  });
 
   it.each(NON_PRIMARY_CONTACTS)(
     'does not let ignored $pointerType button $button poison the next pen-tip contact',
