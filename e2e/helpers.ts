@@ -93,6 +93,12 @@ export interface StartOptions {
    * round. A spec about motion turns it off.
    */
   readonly reduceMotion?: boolean;
+  /**
+   * Story choices are taken in turns by default here, so a spec that taps an
+   * option sees it chosen at any table size. `e2e/table-vote.spec.ts` owns the
+   * shipped default, the table vote (#621).
+   */
+  readonly storyChoices?: 'vote' | 'turns';
 }
 
 /** Starts a game without walking the whole setup flow. */
@@ -104,17 +110,23 @@ export async function startGame(
   options: StartOptions = {},
 ): Promise<void> {
   await page.evaluate(
-    ({ players, characterIds, seed, reduceMotion }) => {
+    ({ players, characterIds, seed, reduceMotion, storyChoices }) => {
       const app = window.fnt?.app;
       if (!app) throw new Error('The game has not finished booting.');
-      app.updateSettings({ reduceMotion });
+      app.updateSettings({ reduceMotion, storyChoices });
       app.newGame(
         players.map((name) => ({ name, unitId: '' })),
         characterIds.map((characterId) => ({ characterId })),
         seed,
       );
     },
-    { players, characterIds, seed, reduceMotion: options.reduceMotion ?? true },
+    {
+      players,
+      characterIds,
+      seed,
+      reduceMotion: options.reduceMotion ?? true,
+      storyChoices: options.storyChoices ?? 'turns',
+    },
   );
 }
 

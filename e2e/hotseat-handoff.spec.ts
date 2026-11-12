@@ -71,6 +71,8 @@ async function setupNamedParty(page: Page, size: number) {
   await page.getByRole('button', { name: /^Settings$/ }).click();
   const reducedMotion = page.getByRole('switch', { name: 'Reduce motion', exact: true });
   if ((await reducedMotion.getAttribute('aria-checked')) !== 'true') await reducedMotion.click();
+  // This spec is about the rotating decider itself; the table vote has its own.
+  await page.getByRole('radio', { name: 'Take turns', exact: true }).click();
   await page.getByRole('button', { name: /^Done$/ }).click();
 
   await page.getByRole('button', { name: /new game/i }).click();
