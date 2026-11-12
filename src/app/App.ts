@@ -9,6 +9,8 @@
  *                                                  -> new state -> scene.sync()
  */
 
+import { comboName } from './ui/comboText';
+import type { ComboReveal } from './ui/comboText';
 import type {
   BattleState,
   Command,
@@ -849,6 +851,15 @@ export class App {
         announce(event.label);
       }
       if (event.type === 'message') this.toasts.show(event.text);
+      if (event.type === 'comboDiscovered') {
+        const rule = this.content.combos.find((candidate) => candidate.id === event.comboId);
+        if (!rule) continue;
+        // After the clip, so the caption never sits over the hit or its number.
+        window.setTimeout(
+          () => this.toasts.show(`New combo found: ${comboName(this.content, rule)}!`),
+          Math.max(0, this.animator.finishesAt - performance.now()),
+        );
+      }
     }
   }
 
@@ -963,6 +974,11 @@ export class App {
       this.scene.releaseAi?.();
       this.scene.resumePresentation?.();
     }
+  }
+
+  /** Which combos the confirm step and the reference name openly (#622). */
+  comboReveal(): ComboReveal {
+    return this.settings.comboHints === 'show' ? 'all' : (this.state?.discoveredCombos ?? []);
   }
 
   updateSettings(next: Partial<Settings>): void {
