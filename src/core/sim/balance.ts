@@ -11,7 +11,7 @@
  * better than these numbers, so treat the band as a floor, not a target.
  */
 
-import type { ContentIndex, ElementId } from '../types';
+import type { ContentIndex, Difficulty, ElementId } from '../types';
 import type { PartySlot } from '../state/createGame';
 import { STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 
@@ -51,6 +51,8 @@ export interface BalanceOptions {
    * proves they *play* the same.
    */
   readonly perVariant?: boolean;
+  /** The difficulty every trial plays at. Unset is the default, Story. */
+  readonly difficulty?: Difficulty;
 }
 
 /**
@@ -244,6 +246,7 @@ export function runBalanceReport(
           party,
           partyLevel: options.partyLevel ?? encounter.expectedLevel,
           ...(variantId ? { variantId } : {}),
+          ...(options.difficulty ? { difficulty: options.difficulty } : {}),
         });
 
         if (result.outcome === 'victory') encounterWins++;

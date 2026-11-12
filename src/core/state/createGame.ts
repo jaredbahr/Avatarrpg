@@ -14,6 +14,7 @@ import type {
   BattleState,
   CharacterDef,
   ContentIndex,
+  Difficulty,
   EncounterDef,
   EncounterPlacement,
   EncounterVariant,
@@ -27,7 +28,7 @@ import type {
 } from '../types';
 import { evaluate } from '../story/conditions';
 import { buildGrid, occupiedCells, posKey, standCost, tileAt, withTile } from '../rules/grid';
-import { enemiesToDrop, scaleForTable } from '../rules/difficulty';
+import { DEFAULT_DIFFICULTY, enemiesToDrop, scaleForTable } from '../rules/difficulty';
 import {
   combinedKit,
   grantedUpTo,
@@ -78,6 +79,8 @@ export interface NewGameOptions {
   readonly party: readonly PartySlot[];
   readonly startNode: string;
   readonly flags?: Readonly<Record<string, FlagValue>>;
+  /** Defaults to Story, the forgiving tuning. */
+  readonly difficulty?: Difficulty;
 }
 
 /** Builds one level-1 (or `level`) party member from a character definition. */
@@ -168,6 +171,7 @@ export function createGame(content: ContentIndex, options: NewGameOptions): Game
     seed,
     rng: seed as RngState,
     screen: 'dialogue',
+    difficulty: options.difficulty ?? DEFAULT_DIFFICULTY,
     party,
     battle: null,
     story: { nodeId: options.startNode, deciderIndex: 0, visited: [], lineIndex: 0 },
@@ -221,7 +225,7 @@ function createUnitFromPlacement(
   serial: number,
   pos: Vec2,
   defaultLevel: number,
-  table: { baselinePartySize: number; partySize: number },
+  table: { baselinePartySize: number; partySize: number; difficulty: Difficulty },
 ): Unit | null {
   const def = content.enemies.get(placement.enemyId);
   if (!def) return null;
@@ -239,6 +243,7 @@ function createUnitFromPlacement(
           baselinePartySize: table.baselinePartySize,
           partySize: table.partySize,
           isBoss: def.ai === 'boss',
+          difficulty: table.difficulty,
         })
       : levelled;
 
@@ -491,6 +496,7 @@ export function createBattle(
   const table = {
     baselinePartySize: encounter.baselinePartySize,
     partySize: state.party.length + encounter.allies.length,
+    difficulty: state.difficulty,
   };
 
   for (const placement of roster.allies) {
