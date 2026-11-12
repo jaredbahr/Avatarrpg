@@ -184,6 +184,7 @@ export function createGame(content: ContentIndex, options: NewGameOptions): Game
       runoff: 'unresolved',
     },
     log: [],
+    discoveredCombos: [],
   };
 }
 

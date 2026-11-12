@@ -1007,6 +1007,7 @@ export class BattleDraft {
         from: change.from,
         to: change.to,
         label: change.label,
+        comboId: change.comboId,
       });
     }
 
