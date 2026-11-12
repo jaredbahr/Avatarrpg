@@ -1407,9 +1407,8 @@ export class ExploreScene implements Scene {
     const animator = this.app.animator;
     // Long roaming sessions must retire old walk tracks just as combat does.
     animator.prune(now);
-    const held = Boolean(
-      this.conversationMode || document.hidden || document.querySelector('[role="dialog"]'),
-    );
+    const dialogOpen = !!document.querySelector('[role="dialog"]');
+    const held = this.conversationMode || document.hidden || dialogOpen;
     // Never carry queued intent through a menu, a loaded save, a story/map
     // change, or a world conversation.
     if (held) this.clearNextWalk();
@@ -1448,7 +1447,7 @@ export class ExploreScene implements Scene {
         this.needsSettle &&
         (map.projection === 'oblique' || map.projection === 'topdown') &&
         !this.departing &&
-        !document.querySelector('[role="dialog"]')
+        !dialogOpen
       ) {
         this.needsSettle = false;
         const routes = trail.settle(grid, this.standing(state), {
@@ -1641,7 +1640,7 @@ export class ExploreScene implements Scene {
       activeUnitId: leader?.id ?? null,
       selectedUnitId: null,
       hoverTile: this.hover,
-      exit: map.exit ? { pos: map.exit.pos, label: map.exit.label } : null,
+      exit: map.exit ?? null,
       exits: map.exits,
       hatch: this.app.settings.hatchSurfaces,
       gridLines: showGridLines(this.app.settings),
