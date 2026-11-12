@@ -1519,6 +1519,21 @@ html[data-contrast='high'] .map-wrap {
   gap: var(--sp-2);
 }
 
+/* Keep the line count beside a short tablet conversation visible at Huge text.
+   The approved portrait size stays intact; only spare vertical spacing changes.
+   Choices have their own layout, including the table vote. */
+@media (min-width: 60rem) and (min-height: 35rem) and (max-height: 55rem) and (orientation: landscape) {
+  .explore-conversation .dialogue-panel.conversation-panel:not(.choice-panel) {
+    padding-block: var(--sp-1);
+  }
+
+  .explore-conversation
+    .dialogue-panel.conversation-panel:not(.choice-panel)
+    > .conversation-compact-head {
+    gap: var(--sp-1);
+  }
+}
+
 @media (orientation: portrait) {
   .explore-conversation {
     padding-inline: var(--sp-2);
