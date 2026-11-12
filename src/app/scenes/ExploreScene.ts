@@ -1548,12 +1548,12 @@ export class ExploreScene implements Scene {
         name: who.name,
         scale: npcPresentationScale(who.sprite, map.projection),
         renderPos: who.drawPos,
-        ...(who.offset ? { offset: who.offset } : {}),
+        offset: who.offset,
         facing: who.facing,
         alpha: who.alpha,
         clipTime: who.clipTime,
         walking: who.walking,
-        ...(who.clip ? { clip: who.clip } : {}),
+        clip: who.clip,
         poseScale: who.poseScale,
         lean: who.lean,
         quiet: !who.npcId || !who.pos,
@@ -1657,7 +1657,7 @@ export class ExploreScene implements Scene {
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
     const target =
-      !held && live && !this.practiceCamera && this.objectiveButton && !this.objectiveButton.hidden
+      !held && live && !this.practiceCamera && this.objectiveButton?.hidden === false
         ? resolveObjectivePointerTarget(
             worldObjectiveTargetId(this.app.content, state),
             map.exits,
