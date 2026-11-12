@@ -487,6 +487,19 @@ export const ACT1_NODES: readonly StoryNode[] = [
     next: 'cutting_after_explore',
   },
 
+  {
+    // Ruon waits in the Cutting after the ambush (#628); tapping him gets this.
+    id: 'ruon_cutting',
+    kind: 'dialogue',
+    speaker: 'Captain Ruon',
+    portrait: 'portrait.ruon',
+    lines: [
+      'The quarry floor is east, past the ore cart. I’ll keep to the back.',
+      'If Jin sends anyone else, they reach me first. That was the arrangement.',
+    ],
+    next: 'cutting_after_explore',
+  },
+
   /* ------------------------------------------------------ Branch B: trade */
   /*
    * Jin pays, and the payment is worth the same as the ambush the party just
