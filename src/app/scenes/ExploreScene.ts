@@ -1138,16 +1138,13 @@ export class ExploreScene implements Scene {
       return;
     }
     host.appendChild(panel);
-    const target = refocusNext
-      ? (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+    if (refocusNext) {
+      const target =
+        host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
         host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
-        panel)
-      : refocusPanel
-        ? panel
-        : (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
-          host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
-          panel);
-    if (refocusNext || refocusPanel) target?.focus({ preventScroll: true });
+        panel;
+      target.focus({ preventScroll: true });
+    } else if (refocusPanel) panel.focus({ preventScroll: true });
   }
 
   private talkTo(npc: PlacedNpc | null): void {
