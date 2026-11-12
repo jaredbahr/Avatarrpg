@@ -4214,3 +4214,26 @@ html[data-contrast='high'] .hud-panel::after {
     padding: var(--sp-1) var(--sp-2);
   }
 }
+
+/* Large text keeps the encounter and Pause together, then wraps the view
+ * controls at their full tap size. Short phones retain their More menu. */
+@media (min-width: 53rem) and (min-height: 34.01rem) and (orientation: landscape) {
+  html[data-large-text='huge'] .combat-scene .combat-bar {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  html[data-large-text='huge'] .combat-scene .combat-bar > .title-plate {
+    order: -2;
+    flex: 1 1 calc(100% - 12rem);
+    min-width: 12rem;
+  }
+
+  html[data-large-text='huge'] .combat-scene .combat-bar > .combat-pause {
+    order: -1;
+  }
+
+  html[data-large-text='huge'] .combat-scene .combat-bar > .spacer {
+    display: none;
+  }
+}
