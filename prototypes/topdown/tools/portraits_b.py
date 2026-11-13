@@ -47,6 +47,11 @@ CAST = {
  'enemy.grumbler': ('enemy.grumbler.png', 'the same steam-powered tracked drilling machine', 'its brass and rust-red boiler body, glowing amber window, caterpillar tracks and big grey drill cone, no person'),
  'dema': ('mira.png', 'a weathered woman in her forties, the road keeper',
           'her strong build; she is a new person: tan weathered skin with laugh lines, a wide conical straw hat shading her face, an oatmeal-coloured tunic with the sleeves rolled to the elbow, a rust-orange sash at the waist, a warm practical expression with a small knowing smile'),
+ 'hanru': ('dorin.png', 'a sturdy middle-aged village watch keeper',
+           'the upright spear and calm guard pose; this is a new person: a plain weathered face with steady patient eyes and a faint kind '
+           'half-smile, short dark hair greying at the temples under a soft brown cloth cap, a knee-length muted olive-green padded coat '
+           'with a plain leather belt, holding a plain wooden spear upright; practical, few words, kind without saying so; '
+           'an androgynous look, neither clearly a man nor a woman, no moustache or beard'),
  'sen': ('gao.png', 'a tall lanky man in his thirties, the tea keeper',
          'his friendly pose; he is a new person: narrow kind face with a slightly wry smile, short dark hair under a grey headband, a slate-grey quilted vest over a brick-red shirt, a white towel over one shoulder, a tan sash, holding out a dented tin kettle in one hand and a chipped cup with a blue handle in the other'),
 }
