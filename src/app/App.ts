@@ -74,7 +74,6 @@ import { BEND_FX } from '../content/fxCels';
 import { loadBendFx } from '../render/fx/bendFx';
 import type { BendFxIndex } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
-import { liftAt } from '../render/geometry/elevation';
 import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
 
@@ -422,10 +421,6 @@ export class App {
               frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
             }
           : undefined;
-      },
-      liftOf: (pos) => {
-        const grid = this.state?.battle?.grid;
-        return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
       },
     });
   }

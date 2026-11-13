@@ -152,7 +152,7 @@ describe('a house that reveals keeps its paint', () => {
     const camera = new Camera(
       { width: 800, height: 600, dpr: 1 },
       { width: 8, height: 8 },
-      'oblique',
+      'orthographic',
     );
     camera.scale = 1;
     camera.offsetX = camera.offsetY = 0;
@@ -179,8 +179,8 @@ describe('a house that reveals keeps its paint', () => {
 });
 
 describe('the reveal tint per projection', () => {
-  it('keeps the oblique tint ADR 0096 shipped and quiets the top-down one', () => {
-    expect(revealTint('oblique')).toEqual({
+  it('keeps the tint ADR 0096 shipped on the orthographic board and quiets the top-down one', () => {
+    expect(revealTint('orthographic')).toEqual({
       rim: [255, 238, 196, 255],
       fill: [255, 226, 160, 120],
     });

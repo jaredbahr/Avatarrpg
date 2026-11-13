@@ -1,8 +1,7 @@
 /**
- * Top-down is the default style (ADR 0104 T6), so its family is precached and the game plays
- * offline; the oblique art of the five maps that draw a top-down scene is left for run time
- * (`?style=oblique` only). Workbox is told so, the asset budget counts the precache the same way,
- * and nothing else is left out of it.
+ * Since T7 (ADR 0104) the oblique map art is gone, so nothing the game draws is left for run time;
+ * only the area music streams. Workbox is told so, and the asset budget counts the precache the
+ * same way.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -10,7 +9,7 @@ import { CONTENT } from '../src/content';
 import { PRECACHE_IGNORES, STREAMED, isPrecacheIgnored } from './precache.mjs';
 
 describe('the precache', () => {
-  it('precaches the top-down family and leaves only the swapped maps’ oblique art for run time', () => {
+  it('precaches every image, the top-down family and the riverside included', () => {
     for (const path of [
       'art/topdown/kaya.webp',
       'art/topdown/vfx.json',
@@ -22,14 +21,7 @@ describe('the precache', () => {
       'sw.js',
     ])
       expect(isPrecacheIgnored(path), path).toBe(false);
-    for (const path of [
-      'art/maps/ba-dan-scene/ground-01.webp',
-      'art/maps/forest-g1/forest.webp',
-      'art/maps/quarry_gate.webp',
-      'art/maps/quarry-surround/rim.webp',
-    ])
-      expect(isPrecacheIgnored(path), path).toBe(true);
-    expect(PRECACHE_IGNORES.every((pattern) => pattern.startsWith('art/maps/'))).toBe(true);
+    expect(PRECACHE_IGNORES).toEqual([]);
   });
 
   it('precaches every image a map draws (ADR 0104 T7: no map draws oblique art)', () => {

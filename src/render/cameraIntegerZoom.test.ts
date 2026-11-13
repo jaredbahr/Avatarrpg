@@ -1,14 +1,14 @@
 /**
- * Integer zoom (ADR 0088): the pixel-art boards draw at a whole number of
+ * Integer zoom (ADR 0088): the top-down pixel-art board draws at a whole number of
  * device pixels per world pixel, on the device-pixel grid, and picking stays
- * the exact inverse of drawing.
+ * the exact inverse of drawing. Its N >= dpr floor is `topdownCamera.test.ts`'s.
  */
 import { describe, expect, it } from 'vitest';
 import { buildGrid } from '../core/rules/grid';
 import { FOREST_ROAD, QUARRY_FLOOR } from '../content/maps/combat';
-import { Camera, MIN_TILE_PX, TILE, isWholeScale, wholeDeviceScale } from './camera';
+import { Camera, MIN_TILE_PX, isWholeScale, wholeDeviceScale } from './camera';
+import { TOPDOWN_TILE as TILE } from './projection';
 import type { Viewport } from './camera';
-import { liftAt } from './geometry/elevation';
 
 /** The viewports the device matrix names, with their device pixel ratios. */
 const VIEWPORTS: readonly (Viewport & { name: string })[] = [
@@ -32,12 +32,8 @@ function expectSettled(camera: Camera): void {
   expect(onDeviceGrid(camera.offsetY, dpr), `offsetY ${camera.offsetY}`).toBe(true);
 }
 
-function integerCamera(
-  viewport: Viewport,
-  grid: { width: number; height: number },
-  projection: 'oblique' | 'orthographic' = 'oblique',
-): Camera {
-  const camera = new Camera(viewport, grid, projection);
+function integerCamera(viewport: Viewport, grid: { width: number; height: number }): Camera {
+  const camera = new Camera(viewport, grid, 'topdown');
   camera.integerZoom = true;
   return camera;
 }
@@ -69,7 +65,7 @@ describe('wholeDeviceScale', () => {
 
 describe('integer zoom: the settled views', () => {
   for (const viewport of VIEWPORTS) {
-    it(`frames the oblique combat board on whole device pixels (${viewport.name})`, () => {
+    it(`frames the combat board on whole device pixels (${viewport.name})`, () => {
       for (const preferred of [96, 64, 40]) {
         const camera = integerCamera(viewport, FOREST_ROAD);
         camera.fitExplore(preferred, 12, 'floor');
@@ -80,45 +76,19 @@ describe('integer zoom: the settled views', () => {
     });
 
     it(`fits a board to whole device pixels, panning only for a fingertip (${viewport.name})`, () => {
-      for (const projection of ['oblique', 'orthographic'] as const) {
-        const camera = integerCamera(viewport, FOREST_ROAD, projection);
-        camera.fit();
-        expectSettled(camera);
-        expect(TILE * camera.scale).toBeGreaterThanOrEqual(MIN_TILE_PX);
-        // Either the whole board is in view, or a smaller whole scale would
-        // put a tile under a fingertip (the portrait pan exception).
-        const smaller = (camera.deviceScale - 1) / viewport.dpr;
-        if (!camera.fitted) expect(TILE * smaller).toBeLessThan(MIN_TILE_PX);
-      }
+      const camera = integerCamera(viewport, FOREST_ROAD);
+      camera.fit();
+      expectSettled(camera);
+      expect(TILE * camera.scale).toBeGreaterThanOrEqual(MIN_TILE_PX);
+      // Either the whole board is in view, or a smaller whole scale would
+      // put a tile under a fingertip (the portrait pan exception).
+      const smaller = (camera.deviceScale - 1) / viewport.dpr;
+      if (!camera.fitted) expect(TILE * smaller).toBeLessThan(MIN_TILE_PX);
     });
   }
 
-  it.each([
-    { dpr: 1, preferred: 40, expected: 64 },
-    { dpr: 1, preferred: 64, expected: 64 },
-    { dpr: 1, preferred: 96, expected: 64 },
-    { dpr: 1.5, preferred: 40, expected: 64 / 1.5 },
-    { dpr: 1.5, preferred: 64, expected: 64 / 1.5 },
-    { dpr: 2, preferred: 40, expected: 64 },
-    { dpr: 2, preferred: 64, expected: 64 },
-    { dpr: 2, preferred: 96, expected: 96 },
-    { dpr: 3, preferred: 40, expected: 128 / 3 },
-    { dpr: 3, preferred: 64, expected: 64 },
-  ])(
-    'snaps a $preferred px combat preference at DPR $dpr to $expected px',
-    ({ dpr, preferred, expected }) => {
-      // A short canvas keeps the board fit below the preferred scale. ADR 0088
-      // floors the preference, then enforces the smallest whole, tappable stop.
-      const camera = integerCamera({ width: 1280, height: 200, dpr }, FOREST_ROAD);
-      camera.fitExplore(preferred, 12, 'floor');
-      expect(TILE * camera.scale).toBeCloseTo(expected, 9);
-      expect(TILE * camera.scale).toBeGreaterThanOrEqual(MIN_TILE_PX);
-      expectSettled(camera);
-    },
-  );
-
   it('leaves the continuous camera alone when integer zoom is off', () => {
-    const camera = new Camera({ width: 1368, height: 912, dpr: 1.5 }, FOREST_ROAD, 'oblique');
+    const camera = new Camera({ width: 1368, height: 912, dpr: 1.5 }, FOREST_ROAD, 'orthographic');
     camera.fitExplore(96);
     expect(camera.scale).toBe(1.5);
     camera.offsetX = 10.3;
@@ -135,7 +105,7 @@ describe('integer zoom: picking', () => {
   }));
 
   for (const viewport of VIEWPORTS) {
-    it(`picks every cell, raised tops included, from where it is drawn (${viewport.name})`, () => {
+    it(`picks every cell from where it is drawn (${viewport.name})`, () => {
       const camera = integerCamera(viewport, grid);
       camera.fitExplore(96);
       for (const zoom of [1, 1.6, 0.6]) {
@@ -143,16 +113,8 @@ describe('integer zoom: picking', () => {
         camera.centreOn({ x: 9.3, y: 5.7 });
         expectSettled(camera);
         for (const cell of cells) {
-          // A flat cell can sit under a raised top in front of it; the lifted
-          // picks are the raised cells' own.
-          const flat = camera.project({ x: cell.x + 0.5, y: cell.y + 0.5 });
-          expect(camera.pickTile(flat.x, flat.y, null)).toEqual(cell);
-        }
-        for (const cell of cells.filter((c) => liftAt(grid, c, 'oblique') > 0)) {
-          const lift = liftAt(grid, cell, 'oblique');
           const centre = camera.project({ x: cell.x + 0.5, y: cell.y + 0.5 });
-          const drawn = { x: centre.x, y: centre.y - lift * TILE * camera.scale };
-          expect(camera.pickTile(drawn.x, drawn.y, grid)).toEqual(cell);
+          expect(camera.toTile(centre.x, centre.y)).toEqual(cell);
           // And the drawn transform is the one the pointer inverts.
           const back = camera.unproject(centre);
           expect(back.x).toBeCloseTo(cell.x + 0.5, 9);
@@ -180,8 +142,10 @@ describe('integer zoom: gestures', () => {
   const viewport = { width: 1194, height: 834, dpr: 2 };
 
   it('steps a slow pinch through whole device scales, anchored on the fingers', () => {
-    const camera = integerCamera(viewport, FOREST_ROAD);
-    camera.fitExplore(96);
+    // A board wider than the view at every step, so the pan clamp never moves the anchor.
+    const camera = integerCamera(viewport, { width: 60, height: 40 });
+    camera.fitExplore(TILE);
+    camera.centreOn({ x: 30, y: 20 });
     const at = { x: 400, y: 300 };
     const seen = new Set<number>([camera.deviceScale]);
     for (let i = 0; i < 40; i++) {
@@ -195,7 +159,7 @@ describe('integer zoom: gestures', () => {
       expect(Math.abs(after.y - at.y)).toBeLessThanOrEqual(0.5 / viewport.dpr + 1e-9);
     }
     // Every whole step up to the limit, none skipped.
-    expect([...seen].sort((a, b) => a - b)).toEqual([3, 4, 5]);
+    expect([...seen].sort((a, b) => a - b)).toEqual([2, 3, 4, 5]);
   });
 
   it('zooms out one wheel notch at a time to the fitted board and no further', () => {
@@ -213,32 +177,14 @@ describe('integer zoom: gestures', () => {
     expect(camera.deviceScale).toBe(out + 1);
   });
 
-  it('at 1 dpr, zooms out past one device pixel to the whole board, and back', () => {
-    const camera = integerCamera({ width: 1368, height: 612, dpr: 1 }, FOREST_ROAD);
-    camera.fitExplore(96, 12, 'floor');
-    expect(camera.deviceScale).toBe(1);
-    expect(camera.fitted).toBe(false);
-    for (let i = 0; i < 6; i++) camera.zoomAt({ x: 600, y: 300 }, 0.8);
-    // The overview: the continuous fit, the one stop under a device pixel.
-    expect(camera.scale).toBeCloseTo(camera.fitScale(), 9);
-    expect(camera.fitted).toBe(true);
-    // A HUD reflow keeps it, and a dpr-less refit does not pull it back to 1x.
-    camera.raiseToFit();
-    expect(camera.fitted).toBe(true);
-    for (let i = 0; i < 6; i++) camera.zoomAt({ x: 600, y: 300 }, 1.25);
-    expectSettled(camera);
-    // And in past the 2x the explore view opens at, to the third step.
-    for (let i = 0; i < 20; i++) camera.zoomAt({ x: 600, y: 300 }, 1.25);
-    expect(camera.deviceScale).toBe(3);
-  });
-
   it('combat floors its tuned tile, exploration rounds it', () => {
     const viewport = { width: 1368, height: 912, dpr: 1 };
     const combat = integerCamera(viewport, FOREST_ROAD);
-    combat.fitExplore(96, 12, 'floor');
+    // 100 px is 2.5 world px a world pixel: floored to 2, rounded by ratio to 3.
+    combat.fitExplore(100, 12, 'floor');
     const explore = integerCamera(viewport, FOREST_ROAD);
-    explore.fitExplore(96);
-    expect([combat.deviceScale, explore.deviceScale]).toEqual([1, 2]);
+    explore.fitExplore(100);
+    expect([combat.deviceScale, explore.deviceScale]).toEqual([2, 3]);
   });
 
   it('keeps sub-pixel drags: the exact offset survives the snap', () => {
@@ -263,7 +209,7 @@ describe('integer zoom: gestures', () => {
   });
 
   it('raiseToFit lifts a zoomed-out board to its whole-pixel fit and keeps a closer zoom', () => {
-    const camera = integerCamera({ width: 1368, height: 912, dpr: 2 }, FOREST_ROAD, 'orthographic');
+    const camera = integerCamera({ width: 1368, height: 912, dpr: 2 }, FOREST_ROAD);
     camera.fit();
     const fit = camera.scale;
     camera.zoomAt({ x: 600, y: 400 }, 2);

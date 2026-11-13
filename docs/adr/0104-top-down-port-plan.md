@@ -291,12 +291,46 @@ its own:
   `maps/combat.ts`). The oblique scene modules (`scenes/baDan*.ts`, `forestRoad*.ts`, `quarryGate.ts`,
   `quarryProjected.ts` and their helpers) and their art pipelines (`scripts/art/ba-dan-regions/`, the forest G1 and
   quarry packers) are deleted with their tests.
-- **Not yet:** the shipped oblique map art and its sources (next step), then the oblique projection in the renderer
-  (the lift pass, the diamond camera and its painted-ring and hull clamps) and the G1 sheets in `ASSETS`, which the art
-  and animation tests still pin and whose dormant mechanics (bends, stance, jog, brisk cadence) need their own
-  migration.
+- **The oblique map art is deleted**: the five maps' backdrops and scene pages under `public/art/maps/` (only the
+  riverside's backdrop stays), the world-style figures (`public/art/units/world/`, `style-test/`), their sources
+  (`art/source/ba-dan-*` but the riverside, `grounding/`, `figure-scale/`, `party-world/`,
+  `style-test-world-chars/`) and their NOTICE entries. `art/source/forest-road-g1/` stays: it is the provenance of
+  the shipped combat props. `PRECACHE_IGNORES` is empty again, so the whole game is precached.
+- **Not yet:** the oblique projection in the renderer (the lift pass, the diamond camera and its painted-ring and hull
+  clamps) and the G1 sheets in `ASSETS`, which the art and animation tests still pin and whose dormant mechanics
+  (bends, stance, jog, brisk cadence) need their own migration.
 
-Measured on the build: JavaScript 410.0 KB before, 402.4 KB after (budget 410, unchanged).
+Measured on the build: JavaScript 410.0 KB before, 402.1 KB after (budget 410, unchanged). Precache 17.44 MB
+before, with 97 files left for run time; 16.57 MB after, with 4 (the streamed music). The maps family went from
+5.47 MB to 0.42 MB and units from 7.02 MB to 6.17 MB.
+
+## T7, second half: the oblique projection in the renderer (2026-11-13)
+
+The renderer now knows two boards: `'topdown'` and the riverside's `'orthographic'`. Both are the identity ground
+transform, so:
+
+- **`'oblique'` is gone from `Projection`** and from the map schema (`projection: 'topdown'` or unset; a backdrop no
+  longer says `projection`). `projectGround`, `unprojectGround`, `groundBounds`, `renderFoot` and the animator's
+  `screenDirection` were identity on both boards and are deleted; callers use the ground point and
+  `footprintFoot` directly.
+- **The lift pass is gone** (`geometry/lift.ts`, `geometry/elevation.ts`: `liftAt`, `liftAlong`, `pickCell`, the
+  lift layer and its `liftCost` probe on both backends, `MapScene.reliefLift`). No shipped board lifted anything: the
+  top-down board never did, and the riverside has no raised ground. `Camera.pickTile` is `toTile` (kept for callers).
+- **The camera's oblique clamps are gone**: the painted ring (`clampRingTiles`), the programmatic-reachable convex hull
+  (`clampToProgrammaticReachableSet`, `MapDef.cameraPaint`) and the sub-device-pixel overview. Integer zoom is the
+  top-down board's alone, so its floor is always N ≥ dpr.
+- **Runtime scene grounding is gone**: `groundsSceneAtRuntime`, `grounding.ts`/`groundingLayer.ts` (the contact
+  wash), the structure and scenery shadow masks (`structureShadowPolygons`, `pieceArt`, `pieceFeet`,
+  `footprintSpan`), and on WebGL the partial-scene ground overlay and its raised-stone base, which only an oblique
+  `groundMode: 'partial'` scene ever showed. A top-down scene's shadows are baked into its plates (§2).
+- **Kept:** the figure shadow pool (`figureShadowArt`), which still grounds figures on the orthographic riverside;
+  `groundedCastArt` for props drawn from a sprite; the orthographic cliff bands (`boardRelief`); the riverside backdrop.
+
+The oblique figure scale (`OBLIQUE_FIGURE_SCALE`, ADR 0094) went with the projection: `partyScale` is the pose's own
+scale on both boards. The G1 sheets themselves are the next step.
+
+Measured on the build: JavaScript 402.2 KB before, 389.2 KB after (budget 410, unchanged). Precache 16.67 MB before,
+16.63 MB after (325 entries both).
 
 ## Driller grounding implementation (#469)
 

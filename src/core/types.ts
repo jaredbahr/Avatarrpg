@@ -489,6 +489,11 @@ export interface EncounterDef {
   readonly variants: readonly EncounterVariant[];
   /** Area obscurement (sandstorm); weather is derived from this and the round. */
   readonly weather?: EncounterWeather;
+  /**
+   * What Hard does differently in this fight: these fields replace the shared
+   * Hard profile's (`rules/difficulty.ts`). Story never reads it.
+   */
+  readonly hard?: Partial<DifficultyProfile>;
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -789,9 +794,9 @@ export interface MapEdge {
 export interface MapDef {
   /**
    * Draw-time projection; rule coordinates and saves stay on the logical grid.
-   * Unset is the orthographic board; `'topdown'` is ADR 0104's (40 px tiles, no lift).
+   * Unset is the orthographic board; `'topdown'` is ADR 0104's (40 px tiles).
    */
-  readonly projection?: 'oblique' | 'topdown';
+  readonly projection?: 'topdown';
   readonly scene?: MapScene;
   readonly id: string;
   readonly name: string;
@@ -841,16 +846,6 @@ export interface MapDef {
    * `ambience`: nothing in the rules reads it.
    */
   readonly backdrop?: MapBackdrop;
-  /**
-   * Marks maps whose non-rectangular paint needs the programmatic-reachable
-   * manual camera bound. Points are projected ground coordinates (the same
-   * space as `projectGround`) and describe only the painted fade used by exact
-   * blank-area tests; runtime clamp geometry is derived from the grid.
-   */
-  readonly cameraPaint?: {
-    readonly kind: 'convex-hull';
-    readonly points: readonly Vec2[];
-  };
   /** Keep the viewport centre within the map, optionally grown by this many tiles. */
   readonly cameraCentreMargin?: number;
 }
@@ -862,8 +857,6 @@ export interface MapDef {
 export interface MapBackdrop {
   readonly url: string;
   readonly pixelsPerTile: number;
-  /** Tagged oblique paintings are already projected, including upright scenery. */
-  readonly projection?: 'oblique';
   readonly padding?: {
     readonly left: number;
     readonly top: number;
@@ -975,14 +968,6 @@ export interface MapScene {
   readonly paintedWaterCells?: readonly Vec2[];
   /** Exact cells whose permanent rubble is already represented by registered art. */
   readonly paintedRubble?: readonly Vec2[];
-  /**
-   * How far the ground art already lifts a raised cell's top, in tiles per
-   * tier (ADR 0065). The renderers lift it the rest of the way and draw the
-   * faces; art painted at the full tier lift keeps its own faces. A list
-   * gives each tier's top in turn, for art that paints tiers unevenly.
-   * Absent, 0.
-   */
-  readonly reliefLift?: number | readonly number[];
   /**
    * The rectangle the art covers, in the same projected world pixels as `ground` (the camera's own).
    * The exploration camera keeps the whole view inside it, so the edge of a painting can never be seen;
@@ -1353,6 +1338,18 @@ export type RunoffState = (typeof RUNOFF_STATES)[number];
 export const DIFFICULTIES = ['story', 'hard'] as const;
 
 export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** What a difficulty does on top of the table scaling (`rules/difficulty.ts`). */
+export interface DifficultyProfile {
+  /** Multiplies every enemy's max HP after the table scaling. */
+  readonly hp: number;
+  /** Multiplies a boss's max HP after the table scaling, instead of `hp`. */
+  readonly bossHp: number;
+  /** Added to every enemy's power. */
+  readonly power: number;
+  /** Added to every enemy's max AP. */
+  readonly ap: number;
+}
 
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */

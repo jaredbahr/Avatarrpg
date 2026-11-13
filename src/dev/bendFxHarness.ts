@@ -29,7 +29,6 @@ import type { ContentIndex, Grid, Tile, Vec2 } from '../core/types';
 import { loadBendFx } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
 import { BEND_FX_PX_PER_TILE } from '../render/fx/bendFxSample';
-import { projectGround } from '../render/projection';
 import { Renderer } from '../render/renderer';
 import { FOOT_LINE } from '../render/sheets/bake';
 import { sheets } from '../render/sheets/store';
@@ -70,7 +69,7 @@ const step = GRID_STEP[heading];
 const along = (d: number) => (d > 0 ? 1 : d < 0 ? SIZE - 2 : 4);
 const caster: Vec2 = { x: along(step.x), y: along(step.y) };
 const target: Vec2 = { x: caster.x + step.x * range, y: caster.y + step.y * range };
-const SCALE = partyScale('oblique');
+const SCALE = partyScale();
 
 const tile: Tile = {
   terrain: 'grass',
@@ -87,14 +86,10 @@ const grid: Grid = {
 };
 
 /** A unit's foot on the board: its tile's centre, less the sheet's foot line (as `spriteBox` places it). */
-const foot = (pos: Vec2): Vec2 => {
-  const p = projectGround({ x: pos.x + 0.5, y: pos.y + 0.5 }, 'oblique');
-  return { x: p.x, y: p.y + FOOT_LINE - 0.86 };
-};
+const foot = (pos: Vec2): Vec2 => ({ x: pos.x + 0.5, y: pos.y + FOOT_LINE });
 
 const canvas = document.getElementById('board') as HTMLCanvasElement;
 const renderer = new Renderer(canvas, grid);
-renderer.camera.projection = 'oblique';
 renderer.resize();
 renderer.camera.fit();
 

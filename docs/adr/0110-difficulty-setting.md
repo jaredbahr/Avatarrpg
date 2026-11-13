@@ -23,7 +23,7 @@ the new setting, a fight already on the field keeps its enemies), and saved with
 defaults a missing value to Story, the tuning every older save was played at, so there is no format bump.
 
 **Applied only in `rules/difficulty.ts`.** `DIFFICULTY_PROFILES` holds one profile per difficulty; nothing
-is per encounter or per enemy. Story is the authored tuning. Hard:
+is per enemy (an encounter may override the Hard profile; see the 2026-11-13 amendment). Story is the authored tuning. Hard:
 
 | Stat         | Story | Hard |
 | ------------ | ----- | ---- |
@@ -57,3 +57,19 @@ already leaves the field one for one. The baseline and larger tables are unchang
   harsh (the Driller wins about a third to a half at four to six heroes, gate fights drop as low as
   31% at five), and at one or two heroes the Cutting falls to 10–74%. Revisit if parties other than
   three come back.
+
+## Amendment, 2026-11-13: an encounter may name its own Hard fields
+
+#709 cut the Cutting's blade from 50 to 32 HP so the Story fight finishes sooner. The blade is the
+Cutting's own enemy, so Hard lost its bite there: at three heroes it went from 84% to 100%, at two from
+11% to 84% (owner: Hard keeps its bite at the Cutting, Story stays as #709 left it).
+
+`EncounterDef.hard` is a partial Hard profile that replaces the shared one's fields for that fight only.
+It is content, so the encounter says what Hard changes, and `rules/difficulty.ts` stays the one place a
+fight's numbers move; Story never reads it, and nothing changes the roster, so the two levers stay two.
+A Hard-gated reinforcement was the other option, but reinforcements are counted by table size and
+carry no condition, and an extra body changes the roster the tests hold identical across difficulties.
+
+The Cutting sets `hard: { hp: 1.5 }` (the shared Hard has 1.1), which lands back on the pre-#709 Hard
+numbers: 84% at three heroes, 11% at two, Kaya, Sura and Bo 94%, in 5.4 rounds. Extra power or AP barely
+moved it (+4 power still won 100% at three).
