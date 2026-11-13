@@ -408,7 +408,10 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_intro');
     await continueStory(page);
     await takeRoute(page, 'East road → Forest Road', 'forest_road');
-    await expectJournalObjective(page, 'quarry lies east');
+    await expectJournalObjective(
+      page,
+      'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
+    );
     await walkTo(page, 19, 4);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('road_depart');
     await continueStory(page);
@@ -457,10 +460,9 @@ for (const custody of ['trade', 'escort'] as const) {
     await continueStory(page);
     await finishBattle(page, 'enc_grumbler');
 
-    await expect(page.getByRole('button', { name: 'Read summary' })).toBeVisible();
-    await page.getByRole('button', { name: 'Read summary' }).click();
-    await expect(page.getByRole('button', { name: 'Continue exploring' })).toBeVisible();
-    await page.getByRole('button', { name: 'Continue exploring' }).click();
+    // The workers-are-free beat leads straight into the walk home.
+    await expect(page.getByRole('button', { name: 'Skip scene' })).toBeVisible();
+    await page.getByRole('button', { name: 'Skip scene' }).click();
     expect(await page.evaluate(() => window.fnt?.app.state?.flags.act1_complete)).toBe(true);
     await expect(page.locator('.title-plate-objective')).toContainText('west');
     await expectJournalObjective(page, 'Take the west path');
@@ -513,6 +515,18 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
       Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'resting'])),
     );
+    // The first step in from the east road plays the welcome home and the
+    // demo-complete card; keep exploring from it to reach the homecomings.
+    await walkTo(page, 19, 7);
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
+      'welcome_home_mira',
+    );
+    await continueStory(page);
+    await expect(page.locator('.end-panel')).toContainText('Demo complete');
+    await page.getByRole('button', { name: 'Keep exploring', exact: true }).click();
+    await expect
+      .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+      .toBe('village_return_explore');
     // Dorin and Hanru occupy adjacent handover tiles. From the east-road
     // return position, tapping Dorin must open and pin Dorin, not Hanru.
     const dorin = CONTENT.anchors.get('bd03.handover')?.site;
@@ -528,7 +542,13 @@ for (const custody of ['trade', 'escort'] as const) {
     const custodyResponse =
       custody === 'trade' ? 'where Jin delivered him' : 'taking Ruon’s statement';
     await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
+    await page.locator('.dialogue-panel button.btn-primary').click();
+    await page.locator('.dialogue-panel button.btn-primary').click();
+    // The rubbing changes hands (#628).
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_rubbing');
+    await expect(page.locator('.dialogue-line')).toContainText('rubbing');
     await continueStory(page);
+    expect(await page.evaluate(() => window.fnt?.app.state?.flags.rubbing_given)).toBe(true);
     // Gao is resident-bound (ADR 0047): his homecoming hold keeps him at his shopfront.
     const gao = CONTENT.anchors.get('bd02.shopfront')?.site;
     if (gao?.kind !== 'map') throw new Error('Missing canonical village merchant');
@@ -548,9 +568,11 @@ for (const custody of ['trade', 'escort'] as const) {
     await saveAndReload(page);
     expect(await page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe('ba_dan_village');
     await walkTo(page, 11, 5);
-    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_epilogue');
-    await page.locator('.dialogue-panel button.btn-primary').click();
-    await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
+    // Once she has the rubbing, Mira never asks for it again.
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
+      'mira_rubbing_kept',
+    );
+    await expect(page.locator('.dialogue-line')).toContainText('rubbing');
     await continueStory(page);
 
     const xp = await page.evaluate(() => window.fnt?.app.state?.party.map((unit) => unit.xp));

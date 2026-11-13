@@ -116,6 +116,25 @@ describe.each(PACKED.map((p) => [p.board.id, p] as const))('the %s board', (_id,
 describe("Ba Dan's top-down ground", () => {
   const { baked } = BA_DAN;
 
+  it('shows the whole east-road bridge through its far cap at the packed edge', () => {
+    const bridge = baked.placed.find((p) => p.o.id === 'walkway');
+    expect(bridge).toBeDefined();
+    if (!bridge) return;
+
+    const sourceX = bridge.w - 1;
+    const sourceY = Array.from({ length: bridge.h }, (_, y) => y).find(
+      (y) => bridge.img.data[(y * bridge.w + sourceX) * 4 + 3] === 255,
+    );
+    expect(sourceY).toBeDefined();
+    if (sourceY === undefined) return;
+
+    const source = (sourceY * bridge.w + sourceX) * 4;
+    const edge = ((bridge.y + sourceY) * PLATE_W + PLATE_W - 1) * 4;
+    expect([...baked.ground.data.slice(edge, edge + 4)]).toEqual([
+      ...bridge.img.data.slice(source, source + 4),
+    ]);
+  });
+
   it('shades most of the village at the full 25 %', () => {
     const rows = shadowTable(baked).filter((r) => r.visible >= 20);
     expect(rows.length).toBeGreaterThan(50);

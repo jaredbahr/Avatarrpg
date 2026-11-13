@@ -16,13 +16,22 @@ export interface Player {
   readonly name: string;
   /** The party unit this person controls, by unit id. */
   readonly unitId: string;
+  /** Stable human identity; display names are not unique. */
+  readonly participantId?: string;
+}
+
+export interface Participant {
+  readonly id: string;
+  readonly name: string;
 }
 
 export class Session {
-  private roster: Player[];
+  private roster: Player[] = [];
+  private people: Participant[] = [];
+  private explicitPeople = false;
 
-  constructor(players: readonly Player[] = []) {
-    this.roster = [...players];
+  constructor(players: readonly Player[] = [], participants?: readonly Participant[]) {
+    this.setPlayers(players, participants);
   }
 
   get players(): readonly Player[] {
@@ -30,21 +39,57 @@ export class Session {
   }
 
   get count(): number {
-    return this.roster.length;
+    return this.people.length;
+  }
+
+  get participants(): readonly Participant[] {
+    return this.people;
   }
 
   /** Solo play skips the hand-off banner entirely. */
   get solo(): boolean {
-    return this.roster.length <= 1;
+    return this.people.length <= 1;
   }
 
-  setPlayers(players: readonly Player[]): void {
-    this.roster = [...players];
+  setPlayers(players: readonly Player[], participants?: readonly Participant[]): void {
+    this.explicitPeople =
+      participants !== undefined || players.some((player) => player.participantId !== undefined);
+    this.roster = players.map((player, index) => ({
+      ...player,
+      participantId:
+        player.participantId ?? participants?.[index]?.id ?? `legacy-player-${index + 1}`,
+    }));
+    this.people = participants
+      ? [...participants]
+      : [
+          ...new Map(
+            this.roster.map((player) => [
+              player.participantId!,
+              { id: player.participantId!, name: player.name },
+            ]),
+          ).values(),
+        ];
+  }
+
+  restoreMeta(meta: SessionMeta | undefined): void {
+    this.setPlayers(
+      meta?.players.map((player) => ({
+        name: player.name,
+        unitId: player.unitId,
+        participantId: player.participantId,
+      })) ?? [],
+      meta?.participants,
+    );
   }
 
   playerFor(unitId: string | null | undefined): Player | undefined {
     if (!unitId) return undefined;
     return this.roster.find((p) => p.unitId === unitId);
+  }
+
+  participantForUnit(unitId: string | null | undefined): Participant | undefined {
+    const player = this.playerFor(unitId);
+    return player ? this.people.find((person) => person.id === player.participantId) : undefined;
   }
 
   /** "Nilak (Ava)" — the character, then the human. */
@@ -60,20 +105,20 @@ export class Session {
    * rules every time a choice resolves, so the rotation survives a save and
    * does not depend on anything the UI remembers.
    */
-  decider(state: GameState): Player | undefined {
-    if (this.roster.length === 0) return undefined;
+  decider(state: GameState): Participant | undefined {
+    if (this.people.length === 0) return undefined;
     const index =
-      ((state.story.deciderIndex % this.roster.length) + this.roster.length) % this.roster.length;
-    return this.roster[index];
+      ((state.story.deciderIndex % this.people.length) + this.people.length) % this.people.length;
+    return this.people[index];
   }
 
   /** Who decides after this one — shown so the table knows the rotation is real. */
-  nextDecider(state: GameState): Player | undefined {
-    if (this.roster.length === 0) return undefined;
+  nextDecider(state: GameState): Participant | undefined {
+    if (this.people.length === 0) return undefined;
     const index =
-      (((state.story.deciderIndex + 1) % this.roster.length) + this.roster.length) %
-      this.roster.length;
-    return this.roster[index];
+      (((state.story.deciderIndex + 1) % this.people.length) + this.people.length) %
+      this.people.length;
+    return this.people[index];
   }
 
   /**
@@ -87,19 +132,27 @@ export class Session {
     const previous = this.playerFor(previousUnitId);
     const next = this.playerFor(nextUnitId);
     if (!next) return false;
-    return previous?.name !== next.name;
+    return previous?.participantId !== next.participantId;
   }
 
   toMeta(): SessionMeta {
     return {
-      players: this.roster.map((p) => ({ name: p.name, unitId: p.unitId })),
+      players: this.roster.map((p) => ({
+        name: p.name,
+        unitId: p.unitId,
+        ...(this.explicitPeople ? { participantId: p.participantId } : {}),
+      })),
+      ...(this.explicitPeople
+        ? { participants: this.people.map((person) => ({ ...person })) }
+        : {}),
       soloPlay: this.solo,
     };
   }
 
   static fromMeta(meta: SessionMeta | undefined): Session {
-    if (!meta) return new Session();
-    return new Session(meta.players.map((p) => ({ name: p.name, unitId: p.unitId })));
+    const session = new Session();
+    session.restoreMeta(meta);
+    return session;
   }
 }
 

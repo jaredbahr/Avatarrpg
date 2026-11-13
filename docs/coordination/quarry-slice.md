@@ -1,5 +1,34 @@
 # Current delivery: village to quarry and back
 
+## Current priorities (orchestrator, 2026-11-11): read this first
+
+The owner's direction is in `CLAUDE.md` ("Current goal"). The demo is a **playable link** for strangers, played
+under `?style=topdown`, tuned for **iPad landscape**. "Finished" means **combat juice** and **story presentation**.
+Everything below this section is history; where it disagrees, this section wins.
+
+**Codex queue, in order.** Take the top open item that no one has claimed:
+
+1. #598: the white bars beside the quarry boards, organic oil edges, and a liquid sheen on oil (see its latest
+   comment).
+2. #624: a one-tap suggested party, and one player can run several heroes.
+3. #632: shorten the Driller fight to about 6 minutes (it ran 8–11 rounds in AI play).
+4. #626: clear the result panel and combat HUD before post-fight dialogue.
+5. #625: a guided first fight on the Forest Road.
+6. #620: Try again or Carry on after a defeat (the Driller loss first).
+7. #630: a victory results card, readable captions, and names that match the story.
+8. #627: keep the speaker in view; size the dialogue panel to its text.
+9. #629: objective pointers, NPC name tags, and the exit arrows.
+10. #628: stage what the dialogue talks about (Ruon, the freed workers, the rubbing).
+11. #631: the title puts the demo first.
+12. #621: a table vote for story choices. #622: combos hinted, then revealed.
+
+**Parked until the demo is done:** reports, tooling and the oblique-only polish (#568, #611, #529, #528, #526, #525
+and similar). Finish the PRs already open for them only if they're small; don't start new ones.
+
+**Claude owns:** projectiles in flight (#588), the Earth Wall rise (#590), the demo's ending (welcome home and the
+"Demo complete" card), portraits and other art (PixelLab), and making top-down the default (T6). Don't start
+overlapping work.
+
 Current delivery mandate: [finish the complete run through the Driller](finish-through-driller.md), including its outcome and return. v0.2.0 is an interim playable release.
 
 **Next steps (2026-10-29):** the phased plan (M1 art lock, M2 demo-flow polish, M3 the quarry slice through the Driller, and CI health) is in [the roadmap's next stretch](../roadmap.md#next-stretch-2026-10-29). Its issues are tracked in [#348](https://github.com/jaredbahr/Avatarrpg/issues/348). Codex takes the code issues and Claude sessions take the PixelLab art.

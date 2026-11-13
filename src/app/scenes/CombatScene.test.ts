@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PropInstance, Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
+import { CONTENT } from '../../content';
 import { Camera } from '../../render/camera';
+import { sheets, type SheetClips } from '../../render/sheets/store';
+import { Animator } from '../animator';
+import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
 import {
   combatCameraFollowDecision,
   combatCameraGlidePoint,
@@ -19,6 +23,7 @@ import {
   actingTurnCopy,
 } from './CombatScene';
 import { beginVictoryBeat } from './victoryBeat';
+import { PresentationClock } from './presentationClock';
 
 function prop(id: string, pos: Vec2): PropInstance {
   return {
@@ -178,6 +183,536 @@ describe('acting-turn card copy', () => {
 
     scene.unmount();
     expect(clearConfirmation).toHaveBeenCalledOnce();
+  });
+});
+
+describe('scene-owned top-down playback', () => {
+  it('intercepts event playback into its own clock domain and leaves oblique dispatch to App', () => {
+    const push = vi.fn();
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      sceneAnimator: { push, finishesAt: 900 },
+      presentationClock: new PresentationClock(100),
+      battle: () => ({ phase: 'active' }),
+      topdownBlowPoints: [],
+      topdownBlowEndsAt: 0,
+    }) as unknown as CombatScene;
+    const events = [{ type: 'turnEnded', unitId: 'hero' }] as const;
+    const unitsBefore = [unit('hero', { x: 1, y: 1 })];
+
+    expect(scene.onEvents(events, 150, unitsBefore)).toBe(true);
+    expect(push).toHaveBeenCalledWith(150, events, unitsBefore);
+
+    const oblique = Object.assign(Object.create(CombatScene.prototype) as object, {
+      sceneAnimator: null,
+      presentationClock: null,
+      battle: () => ({ phase: 'active' }),
+    }) as unknown as CombatScene;
+    expect(oblique.onEvents(events, 150, unitsBefore)).toBe(false);
+  });
+
+  it('holds both attacker and target focus through a blow, including wind-up', () => {
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      sceneAnimator: { push: vi.fn(), actionReadyAt: 900, finishesAt: 1200 },
+      presentationClock: new PresentationClock(100),
+      battle: () => ({ phase: 'active' }),
+      topdownBlowPoints: [],
+      topdownBlowEndsAt: 0,
+    }) as unknown as {
+      onEvents: CombatScene['onEvents'];
+      topdownBlowPoints: Vec2[];
+      topdownBlowEndsAt: number;
+      sceneAnimator: { actionReadyAt: number; finishesAt: number };
+    };
+    const attacker = unit('attacker', { x: 2, y: 3 }, { size: 2 });
+    const target = unit('target', { x: 7, y: 4 });
+
+    scene.onEvents(
+      [
+        {
+          type: 'abilityUsed',
+          unitId: attacker.id,
+          abilityId: 'slam',
+          target: target.pos,
+          tiles: [target.pos],
+        },
+      ],
+      150,
+      [attacker, target],
+    );
+
+    expect(scene.topdownBlowPoints).toEqual([
+      { x: 3, y: 4 },
+      { x: 7.5, y: 4.5 },
+    ]);
+    expect(scene.topdownBlowEndsAt).toBe(900);
+    expect(scene.sceneAnimator.finishesAt).toBe(1200);
+  });
+
+  it('sets one 200 ms enemy deadline after the top-down strike tail', () => {
+    vi.stubGlobal('performance', { now: () => 1000 });
+    const attacker = unit(
+      'attacker',
+      { x: 5, y: 3 },
+      { faction: 'enemy', sprite: 'unit.enemy.thug' },
+    );
+    const target = unit('target', { x: 1, y: 3 }, { sprite: 'unit.fire.kaya' });
+    const animator = new Animator(CONTENT, {
+      motionReduced: () => false,
+      timingProfile: TOPDOWN_PRESENTATION_TIMING,
+      actionQueue: true,
+    });
+    animator.setProjection('topdown');
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      sceneAnimator: animator,
+      presentationClock: new PresentationClock(1000),
+      battle: () => ({ phase: 'active' }),
+      active: () => attacker,
+      suspended: false,
+      aiHeld: false,
+      presentationHeld: false,
+      battleOpening: null,
+      aiDueAt: null,
+      aiDueUnitId: null,
+      aiScheduled: false,
+      aiTimer: null,
+      topdownBlowPoints: [],
+      topdownBlowEndsAt: 0,
+    }) as unknown as {
+      onEvents: CombatScene['onEvents'];
+      maybeRunAi: () => void;
+      aiDueAt: number | null;
+    };
+    scene.onEvents(
+      [
+        {
+          type: 'abilityUsed',
+          unitId: attacker.id,
+          abilityId: 'fire_jab',
+          target: target.pos,
+          tiles: [target.pos],
+        },
+        {
+          type: 'damaged',
+          unitId: target.id,
+          amount: 4,
+          crit: false,
+          damageType: 'fire',
+          sourceId: attacker.id,
+        },
+      ],
+      1000,
+      [target, attacker],
+    );
+    scene.maybeRunAi();
+
+    expect(animator.actionReadyAt).toBeCloseTo(1384.1961538461537, 8);
+    expect(animator.finishesAt).toBeCloseTo(2219.1961538461537, 8);
+    expect(scene.aiDueAt).toBeCloseTo(1584.1961538461537, 8);
+    expect(animator.floaters(animator.actionReadyAt).length).toBeGreaterThan(0);
+  });
+
+  it('keeps floaters visual-only and settles only the same actor before its next move', () => {
+    const attacker = unit(
+      'attacker',
+      { x: 5, y: 3 },
+      { faction: 'enemy', sprite: 'unit.enemy.thug' },
+    );
+    const target = unit('target', { x: 1, y: 3 }, { sprite: 'unit.fire.kaya' });
+    const other = unit('other', { x: 3, y: 8 });
+    const longHit = {
+      hit: { frames: ['hit-0', 'hit-1'], fps: 1, loop: false, frameMs: [1000] },
+    } as unknown as SheetClips;
+    const makeAnimator = () => {
+      const animator = new Animator(CONTENT, {
+        actionQueue: true,
+        motionReduced: () => false,
+        timingProfile: TOPDOWN_PRESENTATION_TIMING,
+        sheetClips: () => longHit,
+      });
+      animator.setProjection('topdown');
+      animator.push(
+        1000,
+        [
+          {
+            type: 'abilityUsed',
+            unitId: attacker.id,
+            abilityId: 'fire_jab',
+            target: target.pos,
+            tiles: [target.pos],
+          },
+          {
+            type: 'damaged',
+            unitId: target.id,
+            amount: 4,
+            crit: false,
+            damageType: 'fire',
+            sourceId: attacker.id,
+          },
+        ],
+        [attacker, target, other],
+      );
+      return animator;
+    };
+
+    const otherActorAnimator = makeAnimator();
+    const actionReady = otherActorAnimator.actionReadyAt;
+    expect(otherActorAnimator.finishesAt).toBeGreaterThan(actionReady);
+    expect(otherActorAnimator.floaters(actionReady).length).toBeGreaterThan(0);
+    otherActorAnimator.push(
+      actionReady,
+      [{ type: 'unitMoved', unitId: other.id, path: [{ x: 4, y: 8 }], cost: 1 }],
+      [attacker, target, other],
+    );
+    expect(otherActorAnimator.renderPos(actionReady + 1, other.id)).toBeDefined();
+    expect(otherActorAnimator.floaters(actionReady + 1).length).toBeGreaterThan(0);
+
+    const sameActorAnimator = makeAnimator();
+    const settled = sameActorAnimator.actorFinishesAt(target.id);
+    expect(settled).toBeGreaterThan(sameActorAnimator.actionReadyAt);
+    sameActorAnimator.push(
+      sameActorAnimator.actionReadyAt,
+      [{ type: 'unitMoved', unitId: target.id, path: [{ x: 2, y: 3 }], cost: 1 }],
+      [attacker, target, other],
+    );
+    const heldAtPriorPosition = sameActorAnimator.renderPos(settled - 1, target.id);
+    expect(heldAtPriorPosition).toBeDefined();
+    expect(sameActorAnimator.renderPos(settled + 1, target.id)).not.toEqual(heldAtPriorPosition);
+  });
+
+  it('holds future virtual sound cues until their presentation deadline', () => {
+    const play = vi.fn();
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      sceneAnimator: {},
+      app: { audio: { play } },
+      topdownSoundQueue: [
+        { key: 'hit', at: 90, seed: 1 },
+        { key: 'crit', at: 120, seed: 2 },
+      ],
+    }) as unknown as {
+      deliverTopdownSounds: (presentationNow: number, wallNow: number) => void;
+      topdownSoundQueue: { key: string; at: number; seed: number }[];
+    };
+
+    scene.deliverTopdownSounds(100, 500);
+
+    expect(play).toHaveBeenCalledWith([{ key: 'hit', at: 500, seed: 1 }], 500);
+    expect(scene.topdownSoundQueue).toEqual([{ key: 'crit', at: 120, seed: 2 }]);
+  });
+
+  it('skip settles the current animation while leaving the enemy gap deadline intact', () => {
+    vi.stubGlobal('performance', { now: () => 100 });
+    const clock = new PresentationClock(0);
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      presentationClock: clock,
+      sceneAnimator: {
+        busy: () => true,
+        actionBusy: () => true,
+        finishesAt: 900,
+        actionReadyAt: 500,
+        actorFinishesAt: () => 0,
+      },
+      active: () => ({ id: 'enemy' }),
+      aiDueAt: 700,
+      topdownSoundQueue: [],
+    }) as unknown as {
+      skipPresentation: () => void;
+      presentationClock: PresentationClock;
+      aiDueAt: number;
+    };
+
+    scene.skipPresentation();
+
+    expect(clock.now(100)).toBe(500);
+    expect(scene.aiDueAt).toBe(700);
+  });
+
+  it('skip drops the passed cues but keeps the ones that say how it ended', () => {
+    vi.stubGlobal('performance', { now: () => 100 });
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      presentationClock: new PresentationClock(0),
+      sceneAnimator: {
+        busy: () => true,
+        actionBusy: () => true,
+        actionReadyAt: 500,
+        actorFinishesAt: () => 0,
+      },
+      active: () => ({ id: 'kaya' }),
+      topdownSoundQueue: [
+        { key: 'hit', at: 200, seed: 1 },
+        { key: 'ko', at: 300, seed: 2 },
+        { key: 'step', at: 450, seed: 3 },
+        { key: 'victory', at: 480, seed: 4 },
+        { key: 'turn', at: 600, seed: 5 },
+      ],
+    }) as unknown as { skipPresentation: () => void; topdownSoundQueue: { key: string }[] };
+
+    scene.skipPresentation();
+
+    expect(scene.topdownSoundQueue.map((cue) => cue.key)).toEqual(['ko', 'victory', 'turn']);
+  });
+
+  it('a tap on a busy top-down board skips the playing action', () => {
+    vi.stubGlobal('performance', { now: () => 100 });
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      renderer: {},
+      battle: () => ({ phase: 'active' }),
+      skipBattleOpening: () => false,
+      victoryBeat: null,
+      presentationClock: new PresentationClock(0),
+      sceneAnimator: {
+        busy: () => true,
+        actionBusy: () => true,
+        actionReadyAt: 500,
+        actorFinishesAt: () => 0,
+      },
+      active: () => ({ id: 'kaya' }),
+      topdownSoundQueue: [],
+      resolvePointer: vi.fn(),
+    }) as unknown as {
+      onTap: (x: number, y: number) => void;
+      presentationClock: PresentationClock;
+      resolvePointer: ReturnType<typeof vi.fn>;
+    };
+
+    scene.onTap(10, 10);
+
+    expect(scene.presentationClock.now(100)).toBe(500);
+    expect(scene.resolvePointer).not.toHaveBeenCalled();
+  });
+
+  it('keeps victory Continue behind visual KO completion after action-ready', () => {
+    const busy = vi.fn(() => true);
+    const startVictoryBeat = vi.fn();
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      sceneAnimator: {
+        busy,
+        actionBusy: () => false,
+        finishesAt: 2000,
+        actionReadyAt: 1200,
+        actorFinishesAt: () => 0,
+      },
+      presentationClock: new PresentationClock(0),
+      battle: () => ({ phase: 'victory' }),
+      victoryPending: true,
+      victoryBeat: null,
+      suspended: false,
+      presentationHeld: false,
+      paintingStill: false,
+      startVictoryBeat,
+    }) as unknown as {
+      updateVictoryBeat: (now: number) => void;
+      sceneAnimator: { busy: ReturnType<typeof vi.fn> };
+      startVictoryBeat: ReturnType<typeof vi.fn>;
+    };
+
+    scene.updateVictoryBeat(1500);
+    expect(scene.startVictoryBeat).not.toHaveBeenCalled();
+    expect(scene.sceneAnimator.busy(1500)).toBe(true);
+
+    busy.mockReturnValue(false);
+    scene.updateVictoryBeat(2000);
+    expect(scene.startVictoryBeat).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the top-down AI deadline unchanged while an explicit camera glide remains', () => {
+    const enemy = unit('enemy', { x: 3, y: 3 }, { faction: 'enemy' });
+    const dispatch = vi.fn();
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      presentationClock: new PresentationClock(0),
+      aiDueAt: 200,
+      aiDueUnitId: enemy.id,
+      aiScheduled: true,
+      cameraGlide: {
+        from: { x: 0, y: 0 },
+        to: { x: 100, y: 0 },
+        startedAt: 0,
+        duration: 420,
+      },
+      paintingStill: false,
+      suspended: false,
+      aiHeld: false,
+      battleOpening: null,
+      presentationHeld: false,
+      battle: () => ({ phase: 'active' }),
+      active: () => enemy,
+      stopAiTimer: vi.fn(),
+      maybeRunAi: vi.fn(),
+      app: { dispatch },
+    }) as unknown as {
+      aiDueAt: number | null;
+      cameraGlide: CombatCameraGlide | null;
+      advanceTopdownAi: (now: number) => void;
+    };
+
+    scene.advanceTopdownAi(500);
+    expect(scene.aiDueAt).toBe(200);
+    expect(dispatch).not.toHaveBeenCalled();
+
+    scene.cameraGlide = null;
+    scene.advanceTopdownAi(500);
+    expect(scene.aiDueAt).toBeNull();
+    expect(dispatch).toHaveBeenCalledWith({ type: 'runAiTurn' });
+    expect(dispatch).toHaveBeenCalledOnce();
+    scene.advanceTopdownAi(516);
+    expect(dispatch).toHaveBeenCalledOnce();
+  });
+
+  it('does not dispatch from suspend() forced still paint and rearms once on resume', () => {
+    let wallNow = 0;
+    vi.stubGlobal('performance', { now: () => wallNow });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    const enemy = unit('enemy', { x: 3, y: 3 }, { faction: 'enemy' });
+    const dispatch = vi.fn();
+    const clock = new PresentationClock(0);
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      presentationClock: clock,
+      sceneAnimator: { finishesAt: 0, actionReadyAt: 0, actorFinishesAt: () => 0 },
+      presentationHeld: false,
+      suspended: false,
+      paintingStill: false,
+      aiHeld: false,
+      aiTimer: null,
+      aiScheduled: false,
+      aiDueAt: null,
+      aiDueUnitId: null,
+      battleOpening: null,
+      frame: 0,
+      victoryBeat: null,
+      app: {
+        state: { battle: { phase: 'active' } },
+        animator: { finishesAt: 0, busy: () => false },
+        dispatch,
+      },
+      battle: () => ({ phase: 'active' }),
+      active: () => enemy,
+      loop: () => undefined,
+    }) as unknown as {
+      presentationClock: PresentationClock;
+      aiDueAt: number | null;
+      suspend: () => void;
+      resume: () => void;
+      loop: () => void;
+      maybeRunAi: () => void;
+      advanceTopdownAi: (now: number) => void;
+      app: { dispatch: ReturnType<typeof vi.fn> };
+    };
+    scene.loop = () => scene.advanceTopdownAi(scene.presentationClock.now(wallNow));
+    scene.maybeRunAi();
+    expect(scene.aiDueAt).toBe(200);
+
+    // suspend paints synchronously before flipping suspended=true; this call
+    // used to dispatch because the old deadline was already due.
+    wallNow = 250;
+    scene.suspend();
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(scene.aiDueAt).toBeNull();
+
+    scene.resume();
+    expect(scene.aiDueAt).toBe(450);
+    wallNow = 449;
+    scene.advanceTopdownAi(clock.now(wallNow));
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(scene.aiDueAt).toBe(450);
+    wallNow = 450;
+    scene.advanceTopdownAi(clock.now(wallNow));
+    expect(dispatch).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('top-down follow for stationary turn arrivals', () => {
+  beforeEach(() => {
+    vi.stubGlobal('document', { documentElement: { dataset: {} } });
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
+  });
+
+  function sceneAt(pos: Vec2) {
+    const actor = unit('incoming', pos, { faction: 'enemy' });
+    const grid = {
+      width: 20,
+      height: 12,
+      tiles: Array.from({ length: 20 * 12 }, () => ({ elevation: 0 })),
+    };
+    const battle = { phase: 'active', grid, units: [actor] };
+    const camera = new Camera({ width: 600, height: 400, dpr: 1.5 }, grid, 'topdown');
+    camera.integerZoom = true;
+    camera.scale = 1;
+    camera.offsetX = 0;
+    camera.offsetY = 0;
+    const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
+      renderer: { camera, viewport: { dpr: 1.5 } },
+      sceneAnimator: {
+        renderPos: () => undefined,
+        unitPose: () => undefined,
+        unitHealth: () => ({ hp: actor.hp, fallen: false }),
+      },
+      battle: () => battle,
+      active: () => actor,
+      poseFields: () => ({ scale: 1, clip: 'idle', clipTime: 0 }),
+      cameraFollow: { kind: 'following', unitId: 'previous-actor' },
+      followSuspended: false,
+      battleOpening: null,
+      cameraGlide: null,
+      topdownBlowEndsAt: 0,
+      topdownBlowPoints: [],
+      syncRecentre: vi.fn(),
+    }) as unknown as {
+      cameraFollow: { kind: 'idle' } | { kind: 'following'; unitId: string };
+      followSuspended: boolean;
+      keepAnimatedLargeActorInView: (now: number, battle: unknown, deltaMs: number) => void;
+      syncRecentre: ReturnType<typeof vi.fn>;
+    };
+    return { scene, camera, actor, battle };
+  }
+
+  it('eases a stationary incoming actor into the margins when the previous animation releases', () => {
+    const { scene, camera, battle } = sceneAt({ x: 19, y: 6 });
+    const frame = vi.spyOn(sheets, 'frame').mockReturnValue(null);
+    try {
+      scene.keepAnimatedLargeActorInView(1000, battle, 16);
+      expect(scene.cameraFollow).toEqual({ kind: 'following', unitId: 'incoming' });
+      expect(camera.offsetX).toBeGreaterThan(0);
+      expect(camera.offsetX * camera.viewport.dpr).toBeCloseTo(
+        Math.round(camera.offsetX * camera.viewport.dpr),
+      );
+    } finally {
+      frame.mockRestore();
+    }
+  });
+
+  it('holds a stationary actor already inside the margins and honors overview suspension', () => {
+    const frame = vi.spyOn(sheets, 'frame').mockReturnValue(null);
+    try {
+      const inside = sceneAt({ x: 9, y: 6 });
+      inside.scene.keepAnimatedLargeActorInView(1000, inside.battle, 16);
+      expect(inside.camera.offsetX).toBe(0);
+      expect(inside.camera.offsetY).toBe(0);
+
+      const overview = sceneAt({ x: 19, y: 6 });
+      overview.scene.followSuspended = true;
+      overview.scene.keepAnimatedLargeActorInView(1000, overview.battle, 16);
+      expect(overview.camera.offsetX).toBe(0);
+      expect(overview.camera.offsetY).toBe(0);
+      expect(overview.scene.cameraFollow).toEqual({ kind: 'idle' });
+    } finally {
+      frame.mockRestore();
+    }
+  });
+
+  it('snaps an off-frame stationary actor into view under reduced motion', () => {
+    vi.stubGlobal('document', { documentElement: { dataset: { reduceMotion: 'on' } } });
+    const { scene, camera, battle } = sceneAt({ x: 19, y: 6 });
+    const frame = vi.spyOn(sheets, 'frame').mockReturnValue(null);
+    try {
+      scene.keepAnimatedLargeActorInView(1000, battle, 16);
+      expect(camera.offsetX).toBe(200);
+      expect(camera.offsetX * camera.viewport.dpr).toBeCloseTo(
+        Math.round(camera.offsetX * camera.viewport.dpr),
+      );
+      expect(scene.cameraFollow).toEqual({ kind: 'following', unitId: 'incoming' });
+    } finally {
+      frame.mockRestore();
+    }
   });
 });
 
@@ -774,7 +1309,7 @@ describe('victory result lifecycle', () => {
       },
       battle: () => battle,
       active: () => null,
-      app: { animator: { busy: vi.fn(() => false) } },
+      app: { animator: { busy: vi.fn(() => false) }, toasts: { clear: vi.fn() } },
       renderer: null,
       inspector: null,
       moreOpen: false,
@@ -917,6 +1452,15 @@ describe('victory result lifecycle', () => {
       frame: 0,
       suspended: false,
       aiHeld: false,
+      aiScheduled: false,
+      aiDueAt: 500,
+      aiDueUnitId: 'enemy',
+      presentationClock: new PresentationClock(0),
+      presentationHeld: false,
+      sceneAnimator: { clear: vi.fn() },
+      topdownSoundQueue: [{ key: 'hit', at: 250, seed: 1 }],
+      topdownBlowPoints: [{ x: 2, y: 2 }],
+      topdownBlowEndsAt: 300,
       battleOpening: null,
       victoryBeat: beginVictoryBeat(100, 700),
       victoryFocus: { x: 3, y: 4 },
@@ -942,6 +1486,11 @@ describe('victory result lifecycle', () => {
       victoryFocus: Vec2 | null;
       unmount: () => void;
       setVictoryBeatMarker: ReturnType<typeof vi.fn>;
+      sceneAnimator: { clear: ReturnType<typeof vi.fn> };
+      topdownSoundQueue: unknown[];
+      topdownBlowPoints: Vec2[];
+      aiDueAt: number | null;
+      aiDueUnitId: string | null;
     };
 
     scene.unmount();
@@ -949,6 +1498,11 @@ describe('victory result lifecycle', () => {
     expect(scene.victoryBeat).toBeNull();
     expect(scene.victoryFocus).toBeNull();
     expect(scene.setVictoryBeatMarker).toHaveBeenCalledWith(false);
+    expect(scene.sceneAnimator.clear).toHaveBeenCalledOnce();
+    expect(scene.topdownSoundQueue).toEqual([]);
+    expect(scene.topdownBlowPoints).toEqual([]);
+    expect(scene.aiDueAt).toBeNull();
+    expect(scene.aiDueUnitId).toBeNull();
   });
 
   it('pauses presentation separately from the AI dispatch hold', () => {
@@ -981,8 +1535,9 @@ describe('victory result lifecycle', () => {
     scene.resumePresentation();
     expect(scene.presentationHeld).toBe(false);
     expect(scene.victoryBeat.lastAt).toBeNull();
+    expect(scene.maybeRunAi).toHaveBeenCalledOnce();
 
     scene.releaseAi();
-    expect(scene.maybeRunAi).toHaveBeenCalledOnce();
+    expect(scene.maybeRunAi).toHaveBeenCalledTimes(2);
   });
 });

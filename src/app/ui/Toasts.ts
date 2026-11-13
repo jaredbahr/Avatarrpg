@@ -27,6 +27,15 @@ type ToastTimers = {
   onDismiss?: () => void;
 };
 
+/**
+ * How long a toast stays when the caller does not say: long enough for a young
+ * reader to finish it (#630). A fight's opening caption runs to two lines and
+ * left at 2.6 s before anyone had read it; a short nudge still goes quickly.
+ */
+export function readingMs(text: string): number {
+  return Math.min(7000, Math.max(2600, 1200 + text.length * 55));
+}
+
 export class Toasts {
   private host: HTMLElement;
   private recent = new Map<string, number>();
@@ -51,7 +60,7 @@ export class Toasts {
   show(
     text: string,
     kind: ToastKind = 'info',
-    ms = 2600,
+    ms = readingMs(text),
     onDismiss?: () => void,
   ): ToastHandle | null {
     if (!text) return null;

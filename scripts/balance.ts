@@ -20,7 +20,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { CONTENT } from '../src/content';
 import { combatTuningOverrideSchema, combatTuningSchema } from '../src/content/tuning.schema';
 import { runDisciplineSweep, runTableSizeSweep } from '../src/core/sim/balance';
-import type { ContentIndex } from '../src/core/types';
+import { DIFFICULTIES } from '../src/core/types';
+import type { ContentIndex, Difficulty } from '../src/core/types';
 import { applyScenario, readScenario, unsupportedKnobs } from './balance/scenario';
 import { runScenarioReport, type ScenarioReport, type ScenarioRow } from './balance/report';
 
@@ -81,6 +82,13 @@ const sizes = (process.env.BALANCE_SIZES ?? '1,3,6').split(',').map(Number);
  * proves they *play* the same.
  */
 const perVariant = process.env.BALANCE_VARIANTS === '1';
+/* BALANCE_DIFFICULTY=hard measures the Hard layer (ADR 0110); unset is Story. */
+const difficultyName = process.env.BALANCE_DIFFICULTY ?? 'story';
+if (!(DIFFICULTIES as readonly string[]).includes(difficultyName)) {
+  console.error(`BALANCE_DIFFICULTY must be one of ${DIFFICULTIES.join(', ')}`);
+  process.exit(1);
+}
+const difficulty = difficultyName as Difficulty;
 const pad = (s: string, n: number) => s.padEnd(n);
 const num = (n: number, w: number) => n.toFixed(1).padStart(w);
 
@@ -182,9 +190,11 @@ if (scenarioPath) {
   }
 }
 
-const sweep = runTableSizeSweep(content, sizes, { trials, perVariant });
+const sweep = runTableSizeSweep(content, sizes, { trials, perVariant, difficulty });
 
-console.log(`\nBalance report - ${trials} AI-vs-AI trials per encounter, per table size\n`);
+console.log(
+  `\nBalance report (${difficulty}) - ${trials} AI-vs-AI trials per encounter, per table size\n`,
+);
 
 const anomalies: string[] = [];
 

@@ -14,7 +14,16 @@
  */
 
 import type { App, Scene, CameraInfo } from '../App';
-import type { Ability, BattleState, PropInstance, Unit, Vec2 } from '../../core/types';
+import type {
+  Ability,
+  BattleState,
+  Command,
+  GameEvent,
+  GameState,
+  PropInstance,
+  Unit,
+  Vec2,
+} from '../../core/types';
 import {
   canUseAbility,
   heightReachBonus,
@@ -64,6 +73,7 @@ import { burningPropEmitters } from '../anim/propFire';
 import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
+import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
 import { UI_MARKS, markKindFor } from '../ui/marks';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
@@ -86,10 +96,15 @@ import { sheetLocomotion } from '../../content/assets/manifest';
 import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { partyWalkPhase } from '../animator';
+import type { Animator } from '../animator';
+import type { SoundCue } from '../anim/choreography';
+import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
+import { PresentationClock, type CombatSpeed } from './presentationClock';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
 import { liftAlong } from '../../render/geometry/elevation';
 import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
+import { applyTopdownFollow, topdownFollow } from '../../render/topdownFollow';
 import {
   actorKeepInViewDelta,
   combatCameraGlidePoint,
@@ -107,6 +122,16 @@ import {
   type VictoryBeatClock,
   victoryActorBounds,
 } from './victoryBeat';
+import {
+  FIRST_FIGHT_GUIDANCE,
+  combatTipCopy,
+  combatTipEvents,
+  combatTipFeatures,
+  firstFightStage,
+  nextFirstFightStage,
+  unseenCombatTips,
+  type CombatTipFeature,
+} from './combatGuidance';
 
 export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
   return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
@@ -223,12 +248,24 @@ interface OverlayBuild {
   readonly targetReticle: TargetReticleCue | null;
 }
 
+/** Sound cues a top-down skip still plays: the ones that tell how a blow or the fight ended. */
+const OUTCOME_CUES: ReadonlySet<string> = new Set(['ko', 'victory', 'defeat']);
 export class CombatScene implements Scene {
   readonly name = 'combat';
 
   private host: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private renderer: Renderer | null = null;
+  private readonly sceneAnimator: Animator | null;
+  private readonly presentationClock: PresentationClock | null;
+  private topdownSoundQueue: SoundCue[] = [];
+  private guidanceTipQueue: CombatTipFeature[] = [];
+  private guidanceTipTimer: number | null = null;
+  private guidanceTipHandle: ToastHandle | null = null;
+  private guideReleaseTimer: number | null = null;
+  private topdownBlowPoints: Vec2[] = [];
+  private topdownBlowEndsAt = 0;
+  private aiDueAt: number | null = null;
   private detach: (() => void) | null = null;
   private frame = 0;
   private suspended = false;
@@ -245,7 +282,7 @@ export class CombatScene implements Scene {
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
 
-  /** Unit whose hand-off banner has been acknowledged. */
+  /** Party unit whose owner last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
@@ -255,11 +292,16 @@ export class CombatScene implements Scene {
   private freshBattleEntry = false;
   /** One presentation-only formation frame before the first hand-off. */
   private battleOpening: BattleOpeningState | null = null;
+  /** The victory card's rows, worked out once per finished battle. */
+  private resultShownFor: BattleState | null = null;
+  private victoryRows: { battle: BattleState; rows: VictoryRow[] } | null = null;
   /** Keeps the first combat frame on the last explore seats until the curtain lifts. */
   private approachPositions: ReadonlyMap<string, Vec2> | null = null;
   private approachEndsAt = 0;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
+  /** Explicit top-down overview survives resize until the next actor turn. */
+  private topdownOverview = false;
   /**
    * True after a user zoom/pan/focus until the next turn change or Recentre:
    * the camera stops following a moving actor. Kept apart from `manualCamera`,
@@ -306,6 +348,7 @@ export class CombatScene implements Scene {
   /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
+  private aiDueUnitId: string | null = null;
   private resultShown = false;
   private victoryPending = false;
   private victoryBeat: VictoryBeatClock | null = null;
@@ -322,9 +365,122 @@ export class CombatScene implements Scene {
   private flushedAt: number | null = null;
   private endTurnConfirmation: ToastHandle | null = null;
   private endTurnConfirmationTimer: number | null = null;
+  private lastPresentationFrameAt: number | null = null;
 
   constructor(private app: App) {
     this.movementThreatQuery = createMovementThreatQuery(app.content);
+    const battle = app.state?.battle;
+    const projection = battle
+      ? (app.content.maps.get(battle.mapId)?.projection ?? 'orthographic')
+      : 'orthographic';
+    if (projection === 'topdown') {
+      this.presentationClock = new PresentationClock(performance.now());
+      this.sceneAnimator = app.createPresentationAnimator({
+        actionQueue: true,
+        timingProfile: TOPDOWN_PRESENTATION_TIMING,
+        onSounds: (cues) => this.topdownSoundQueue.push(...cues),
+      });
+    } else {
+      this.presentationClock = null;
+      this.sceneAnimator = null;
+    }
+  }
+
+  private get animatorForBoard(): Animator {
+    return this.sceneAnimator ?? this.app.animator;
+  }
+
+  private presentationNow(wallNow = performance.now()): number {
+    return this.presentationClock?.now(wallNow) ?? wallNow;
+  }
+
+  private boardActionReadyAt(unitId?: string): number {
+    const animator = this.animatorForBoard;
+    if (!this.presentationClock) return animator.finishesAt;
+    return Math.max(animator.actionReadyAt, unitId ? animator.actorFinishesAt(unitId) : 0);
+  }
+
+  private boardActionBusy(now: number, unitId?: string): boolean {
+    const animator = this.animatorForBoard;
+    if (!this.presentationClock) return animator.busy(now);
+    return (
+      animator.actionBusy(now) || (unitId !== undefined && animator.actorFinishesAt(unitId) > now)
+    );
+  }
+
+  private syncPresentationClock(wallNow = performance.now()): void {
+    if (!this.presentationClock) return;
+    if (this.suspended || this.presentationHeld) this.presentationClock.pause(wallNow);
+    else this.presentationClock.resume(wallNow);
+  }
+
+  private deliverTopdownSounds(presentationNow: number, wallNow: number): void {
+    if (!this.sceneAnimator || this.topdownSoundQueue.length === 0) return;
+    const due: SoundCue[] = [];
+    const pending: SoundCue[] = [];
+    for (const cue of this.topdownSoundQueue) {
+      if (cue.at <= presentationNow) due.push({ ...cue, at: wallNow });
+      else pending.push(cue);
+    }
+    this.topdownSoundQueue = pending;
+    if (due.length > 0) this.app.audio.play(due, wallNow);
+  }
+
+  private cycleCombatSpeed(): void {
+    const clock = this.presentationClock;
+    if (!clock) return;
+    const next = ((clock.rate % 3) + 1) as CombatSpeed;
+    clock.setRate(next, performance.now());
+    this.renderTopBar();
+  }
+
+  presentationBusy(): boolean {
+    return this.sceneAnimator?.busy(this.presentationNow()) === true;
+  }
+
+  private skipPresentation(): void {
+    const clock = this.presentationClock;
+    if (!clock) return;
+    const wallNow = performance.now();
+    const now = clock.now(wallNow);
+    if (!this.boardActionBusy(now, this.active()?.id)) return;
+    const readyAt = this.boardActionReadyAt(this.active()?.id);
+    clock.skipTo(readyAt, wallNow);
+    // A skip must not burst every passed cue at once: keep only the ones that say how it ended.
+    this.topdownSoundQueue = this.topdownSoundQueue.filter(
+      (cue) => cue.at > readyAt || OUTCOME_CUES.has(cue.key),
+    );
+  }
+
+  /** Own top-down event playback so one Animator never mixes clock domains. */
+  onEvents(events: readonly GameEvent[], wallNow: number, unitsBefore: readonly Unit[]): boolean {
+    this.queueCombatTips(combatTipEvents(events));
+    if (!this.sceneAnimator || !this.battle()) return false;
+    this.sceneAnimator.push(this.presentationNow(wallNow), events, unitsBefore);
+    const endpoints: Vec2[] = [];
+    const unitCentre = (id: string): Vec2 | undefined => {
+      const unit = unitsBefore.find((candidate) => candidate.id === id);
+      return unit ? { x: unit.pos.x + unit.size / 2, y: unit.pos.y + unit.size / 2 } : undefined;
+    };
+    for (const event of events) {
+      if (event.type === 'abilityUsed') {
+        const source = unitCentre(event.unitId);
+        if (source) endpoints.push(source);
+        endpoints.push({ x: event.target.x + 0.5, y: event.target.y + 0.5 });
+      } else if (event.type === 'damaged' || event.type === 'attackMissed') {
+        const sourceId = event.type === 'damaged' ? event.sourceId : event.unitId;
+        const targetId = event.type === 'damaged' ? event.unitId : event.targetId;
+        const source = sourceId ? unitCentre(sourceId) : undefined;
+        const target = unitCentre(targetId);
+        if (source) endpoints.push(source);
+        if (target) endpoints.push(target);
+      }
+    }
+    if (endpoints.length > 0) {
+      this.topdownBlowPoints = endpoints;
+      this.topdownBlowEndsAt = this.sceneAnimator.actionReadyAt;
+    }
+    return true;
   }
 
   /* ---------------------------------------------------------------- */
@@ -335,7 +491,10 @@ export class CombatScene implements Scene {
     this.suspended = false;
     this.aiHeld = false;
     this.presentationHeld = false;
+    this.syncPresentationClock();
     this.host = host;
+    if (this.app.state)
+      this.queueCombatTips(combatTipFeatures(this.app.state, this.app.content.props));
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     const approach = this.freshBattleEntry
       ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
@@ -383,6 +542,22 @@ export class CombatScene implements Scene {
     this.suspended = false;
     this.aiHeld = false;
     this.presentationHeld = false;
+    this.syncPresentationClock();
+    this.aiDueAt = null;
+    this.aiDueUnitId = null;
+    this.topdownSoundQueue = [];
+    this.guidanceTipQueue = [];
+    if (this.guideReleaseTimer != null && typeof window !== 'undefined')
+      window.clearTimeout(this.guideReleaseTimer);
+    this.guideReleaseTimer = null;
+    if (this.guidanceTipTimer != null && typeof window !== 'undefined')
+      window.clearTimeout(this.guidanceTipTimer);
+    this.guidanceTipTimer = null;
+    if (this.guidanceTipHandle) this.app?.toasts?.dismiss(this.guidanceTipHandle);
+    this.guidanceTipHandle = null;
+    this.topdownBlowPoints = [];
+    this.topdownBlowEndsAt = 0;
+    this.sceneAnimator?.clear();
     this.battleOpening = null;
     this.victoryPending = false;
     this.victoryBeat = null;
@@ -424,12 +599,14 @@ export class CombatScene implements Scene {
     this.loop();
     this.paintingStill = false;
     this.suspended = true;
+    this.syncPresentationClock();
     this.stopAiTimer();
   }
 
   resume(): void {
     if (!this.suspended) return;
     this.suspended = false;
+    this.syncPresentationClock();
     this.pauseVictoryBeat();
     this.loop();
     this.maybeRunAi();
@@ -455,18 +632,23 @@ export class CombatScene implements Scene {
 
   pausePresentation(): void {
     this.presentationHeld = true;
+    this.syncPresentationClock();
     this.pauseVictoryBeat();
   }
 
   resumePresentation(): void {
     this.presentationHeld = false;
+    this.syncPresentationClock();
     this.pauseVictoryBeat();
+    this.maybeRunAi();
   }
 
   private stopAiTimer(): void {
     if (this.aiTimer !== null) window.clearTimeout(this.aiTimer);
     this.aiTimer = null;
     this.aiScheduled = false;
+    this.aiDueAt = null;
+    this.aiDueUnitId = null;
   }
 
   resize(): void {
@@ -545,7 +727,11 @@ export class CombatScene implements Scene {
       return;
     }
     if (this.cameraGlide) this.retargetCameraGlide();
-    else if (!this.manualCamera) this.recentre();
+    else if (!this.manualCamera) {
+      if (camera.projection === 'topdown' && this.topdownOverview) camera.fit();
+      else if (camera.projection === 'topdown') this.fitTopdownCombat(camera);
+      else this.recentre();
+    }
     // A zoomed board keeps its zoom; one a rotation left under its fit rises
     // to it, on whole device pixels on the pixel-art boards (ADR 0088).
     else camera.raiseToFit();
@@ -626,7 +812,10 @@ export class CombatScene implements Scene {
     if (!camera) return;
     this.cancelCameraGlide();
     this.manualCamera = false;
-    this.followSuspended = false;
+    this.topdownOverview = camera.projection === 'topdown';
+    // Recentre is the whole-board overview on top-down maps. Hold that framing
+    // until a later actor turn explicitly re-arms follow.
+    this.followSuspended = camera.projection === 'topdown';
     if (camera.projection === 'oblique') {
       // Key off both the layout and visual viewports and the text setting,
       // then use the first settled canvas height to account for the full
@@ -663,6 +852,14 @@ export class CombatScene implements Scene {
     this.syncRecentre();
   }
 
+  /** Initial and resize framing at top-down combat N=2, respecting minimum taps. */
+  private fitTopdownCombat(camera: Camera): void {
+    camera.fitExplore(80 / camera.viewport.dpr, 12, 'floor');
+    const unit = this.active();
+    if (!camera.fitted && unit) camera.centreOn(unit.pos, unit.size);
+    this.syncRecentre();
+  }
+
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
     if (!camera || this.victoryPending || this.victoryBeat) return;
@@ -671,6 +868,7 @@ export class CombatScene implements Scene {
     if (cancelledGlide) {
       this.manualCamera = true;
       this.followSuspended = true;
+      this.topdownOverview = false;
     }
     if (this.battleOpening) this.skipBattleOpening();
     const before = camera.scale;
@@ -678,6 +876,7 @@ export class CombatScene implements Scene {
     if (camera.scale !== before) {
       this.manualCamera = true;
       this.followSuspended = true;
+      this.topdownOverview = false;
     }
     this.syncRecentre();
   }
@@ -690,6 +889,7 @@ export class CombatScene implements Scene {
     if (cancelledGlide) {
       this.manualCamera = true;
       this.followSuspended = true;
+      this.topdownOverview = false;
     }
     if (this.battleOpening) this.skipBattleOpening();
     const before = { x: camera.offsetX, y: camera.offsetY };
@@ -697,6 +897,7 @@ export class CombatScene implements Scene {
     if (camera.offsetX !== before.x || camera.offsetY !== before.y) {
       this.manualCamera = true;
       this.followSuspended = true;
+      this.topdownOverview = false;
     }
   }
 
@@ -713,6 +914,7 @@ export class CombatScene implements Scene {
     camera.centreOn(combatFocusPosition(unit), unit.size);
     this.manualCamera = true;
     this.followSuspended = true;
+    this.topdownOverview = false;
     this.syncRecentre();
   }
 
@@ -726,7 +928,7 @@ export class CombatScene implements Scene {
   }
 
   private frameVictoryParty(camera: Camera, battle: BattleState): Vec2 | null {
-    const now = performance.now();
+    const now = this.presentationNow();
     return frameLivingParty(camera, battle.units, (unit) => {
       const pose = this.poseFields(now, unit.id, 1, true, unit.sprite, false);
       const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
@@ -734,7 +936,7 @@ export class CombatScene implements Scene {
         camera,
         unit,
         {
-          pos: this.app.animator.renderPos(now, unit.id) ?? unit.pos,
+          pos: this.animatorForBoard.renderPos(now, unit.id) ?? unit.pos,
           scale: pose.scale ?? partyScale(camera.projection),
           frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
           ...(pose.offset ? { offset: pose.offset } : {}),
@@ -765,7 +967,12 @@ export class CombatScene implements Scene {
       this.manualCamera = true;
       this.followSuspended = true;
     }
-    this.victoryBeat = this.victoryFocus ? beginVictoryBeat(now, VICTORY_BEAT_HOLD_MS) : null;
+    this.victoryBeat = this.victoryFocus
+      ? beginVictoryBeat(
+          now,
+          this.presentationClock ? TOPDOWN_PRESENTATION_TIMING.victoryBeat : VICTORY_BEAT_HOLD_MS,
+        )
+      : null;
     // The first framed render begins the hold; fitting the camera never eats
     // into the visible beat.
     this.pauseVictoryBeat();
@@ -792,7 +999,7 @@ export class CombatScene implements Scene {
     }
     if (this.victoryPending) {
       if (
-        this.app.animator.busy(now) ||
+        this.animatorForBoard.busy(now) ||
         this.suspended ||
         this.presentationHeld ||
         this.paintingStill
@@ -846,23 +1053,26 @@ export class CombatScene implements Scene {
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
-    this.renderer.camera.clampRingTiles = COMBAT_CAMERA_RING_TILES[
-      battle.mapId as keyof typeof COMBAT_CAMERA_RING_TILES
-    ] ?? {
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    };
+    this.renderer.camera.clampRingTiles =
+      this.renderer.camera.projection === 'topdown'
+        ? { top: 0, right: 0, bottom: 0, left: 0 }
+        : (COMBAT_CAMERA_RING_TILES[battle.mapId as keyof typeof COMBAT_CAMERA_RING_TILES] ?? {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+          });
     // The oblique and top-down boards are pixel art at one art px per world px
     // (ADR 0085, 0104): they draw at a whole number of device pixels per world
     // pixel (ADR 0088), at N >= dpr on the top-down board.
     this.renderer.camera.integerZoom = usesIntegerZoom(this.renderer.camera.projection);
     this.renderer.camera.clampToProgrammaticReachableSet =
       this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull';
-    this.app.animator.setProjection(this.renderer.camera.projection);
+    this.animatorForBoard.setProjection(this.renderer.camera.projection);
     if (this.renderer.camera.projection === 'oblique')
       this.renderer.camera.fitExplore(96, 12, 'floor');
+    else if (this.renderer.camera.projection === 'topdown')
+      this.fitTopdownCombat(this.renderer.camera);
     else this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size
@@ -908,14 +1118,14 @@ export class CombatScene implements Scene {
   partyPositions(): readonly Vec2[] | null {
     const battle = this.battle();
     if (!battle) return null;
-    const now = performance.now();
+    const now = this.presentationNow();
     return battle.units
       .filter((unit) => unit.faction === 'party')
       .map((unit) => this.renderPosition(unit, now) ?? unit.pos);
   }
 
   private renderPosition(unit: Unit, now: number): Vec2 | undefined {
-    return this.approachPositions?.get(unit.id) ?? this.app.animator.renderPos(now, unit.id);
+    return this.approachPositions?.get(unit.id) ?? this.animatorForBoard.renderPos(now, unit.id);
   }
 
   /* ---------------------------------------------------------------- */
@@ -1013,7 +1223,7 @@ export class CombatScene implements Scene {
       const scale =
         unit.faction === 'party' ? partyScale(projection) : enemyScale(unit.sprite, 1, projection);
       if (!SQUARE_FOOTPRINTS || unit.size !== 2 || scale <= 1) return false;
-      const pos = this.app.animator.renderPos(performance.now(), unit.id) ?? unit.pos;
+      const pos = this.animatorForBoard.renderPos(this.presentationNow(), unit.id) ?? unit.pos;
       const box = renderer.camera.spriteBox(pos, unit.size, true);
       box.y -= liftAlong(battle.grid, pos, projection) * box.size;
       const bounds = actorBodyBounds(
@@ -1040,10 +1250,10 @@ export class CombatScene implements Scene {
       if (!tiles) return { tile: groundTile };
       for (const tile of tiles) protectedTiles.add(posKey(tile));
     }
-    const now = performance.now();
+    const now = this.presentationNow();
     const geometryFor = (units: readonly Unit[]) =>
       units.map((unit) => {
-        const health = this.app.animator.unitHealth(now, unit);
+        const health = this.animatorForBoard.unitHealth(now, unit);
         const pose = this.poseFields(
           now,
           unit.id,
@@ -1053,7 +1263,7 @@ export class CombatScene implements Scene {
           health.fallen,
         );
         const scale = pose.scale ?? 1;
-        const pos = this.app.animator.renderPos(now, unit.id) ?? unit.pos;
+        const pos = this.animatorForBoard.renderPos(now, unit.id) ?? unit.pos;
         const box = renderer.camera.spriteBox(pos, unit.size, SQUARE_FOOTPRINTS);
         if (pose.offset) {
           box.x += pose.offset.x * box.size;
@@ -1105,7 +1315,11 @@ export class CombatScene implements Scene {
     if (!renderer || !battle) return;
     if (this.skipBattleOpening()) return;
     if (this.victoryBeat || battle.phase !== 'active') return;
-    if (this.app.animator.busy(performance.now())) return;
+    if (this.boardActionBusy(this.presentationNow(), this.active()?.id)) {
+      // Top-down: a tap on a busy board skips to the end of the playing action (the prototype's x6).
+      this.skipPresentation();
+      return;
+    }
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
 
@@ -1243,7 +1457,7 @@ export class CombatScene implements Scene {
         battle.grid.width * battle.grid.height * 4,
       );
       const path = route?.path ?? [unit.pos];
-      this.app.animator.push(
+      this.animatorForBoard.push(
         now,
         [{ type: 'partyWalked', unitId: unit.id, from, path }],
         battle.units,
@@ -1254,7 +1468,7 @@ export class CombatScene implements Scene {
         },
       );
     }
-    this.approachEndsAt = this.app.animator.finishesAt;
+    this.approachEndsAt = this.animatorForBoard.finishesAt;
   }
 
   private skipBattleOpening(): boolean {
@@ -1280,7 +1494,10 @@ export class CombatScene implements Scene {
         this.battleOpening = { ...opening, startedAt: now };
         return;
       }
-      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS || now < this.approachEndsAt) return;
+      const hold = this.presentationClock
+        ? TOPDOWN_PRESENTATION_TIMING.openingHold
+        : COMBAT_OPENING_HOLD_MS;
+      if (now - opening.startedAt < hold || now < this.approachEndsAt) return;
       this.battleOpening = {
         kind: 'focus',
         startedAt: now,
@@ -1291,7 +1508,10 @@ export class CombatScene implements Scene {
       return;
     }
 
-    const fraction = (now - opening.startedAt) / COMBAT_OPENING_FOCUS_MS;
+    const focus = this.presentationClock
+      ? TOPDOWN_PRESENTATION_TIMING.openingFocus
+      : COMBAT_OPENING_FOCUS_MS;
+    const fraction = (now - opening.startedAt) / focus;
     const t = Math.max(0, Math.min(1, fraction));
     const eased = t * t * (3 - 2 * t);
     camera.scale = opening.frame[0] + (opening.focus[0] - opening.frame[0]) * eased;
@@ -1311,12 +1531,24 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!unit || unit.faction !== 'party') return false;
     if (this.app.session.solo) return false;
-    return this.handedOffTo !== unit.id;
+    return this.app.session.needsHandoff(this.handedOffTo, unit.id);
   }
 
   sync(): void {
     const battle = this.battle();
     if (!battle) return;
+    if (
+      !this.app.settings?.combatGuidance ||
+      battle.phase !== 'active' ||
+      battle.encounterId === 'enc_forest_road'
+    ) {
+      this.guidanceTipQueue = [];
+      if (this.guidanceTipTimer != null && typeof window !== 'undefined')
+        window.clearTimeout(this.guidanceTipTimer);
+      this.guidanceTipTimer = null;
+      if (this.guidanceTipHandle) this.app?.toasts?.dismiss(this.guidanceTipHandle);
+      this.guidanceTipHandle = null;
+    }
 
     if (this.inspector instanceof PropInspector) {
       const inspector = this.inspector;
@@ -1340,10 +1572,8 @@ export class CombatScene implements Scene {
       this.clearPending();
       this.stopAiTimer();
 
-      // A new player's turn needs the hand-off card before anything is shown.
-      if (unit && unit.faction === 'party' && !this.app.session.solo) {
-        this.handedOffTo = null;
-      }
+      // Keep the last acknowledged human across unit and enemy turns; only a
+      // change of human ownership needs another hand-off card.
       if (unit) {
         announce(
           unit.faction === 'party'
@@ -1361,12 +1591,16 @@ export class CombatScene implements Scene {
       // already owned by follow keeps ownership until its release frame. The
       // player's zoom (`manualCamera`) is theirs until they press Recentre.
       this.followSuspended = false;
+      this.topdownOverview = false;
       const followedStillMoving =
         this.cameraFollow.kind === 'following' &&
-        this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
+        this.animatorForBoard.renderPos(this.presentationNow(), this.cameraFollow.unitId) !==
+          undefined;
       // Establish the initial actor immediately so the first settled HUD
       // measurement can choose compact framing before later turns glide.
-      if (battle.phase === 'active' && !followedStillMoving)
+      // Top-down turn changes hand ownership to the per-frame margin follow;
+      // the legacy centring glide is reserved for oblique combat.
+      if (battle.phase === 'active' && !followedStillMoving && camera?.projection !== 'topdown')
         this.centreOnActiveUnit(unit, camera, this.layoutMeasuredAfterSync);
     }
 
@@ -1409,10 +1643,22 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!battle || battle.phase !== 'active' || !unit) return;
     if (this.suspended || this.aiHeld || this.battleOpening) return;
-    if (unit.faction === 'party' || this.aiScheduled) return;
+    if (unit.faction === 'party') return;
+
+    if (this.presentationClock) {
+      if (this.aiDueAt === null) {
+        this.aiDueUnitId = unit.id;
+        this.aiDueAt =
+          Math.max(this.presentationNow(), this.boardActionReadyAt(unit.id)) +
+          TOPDOWN_PRESENTATION_TIMING.enemyGap;
+        this.aiScheduled = true;
+      }
+      return;
+    }
+    if (this.aiScheduled) return;
 
     this.aiScheduled = true;
-    const delay = Math.max(0, this.app.animator.finishesAt - performance.now()) + 260;
+    const delay = Math.max(0, this.animatorForBoard.finishesAt - performance.now()) + 260;
     const schedule = (wait: number): void => {
       const timer = window.setTimeout(() => {
         // A canceled callback must not clear a newer actor's owned timer.
@@ -1439,6 +1685,41 @@ export class CombatScene implements Scene {
     schedule(delay);
   }
 
+  /** Top-down AI is sequenced once at the end of a frame on presentation time. */
+  private advanceTopdownAi(now: number): void {
+    if (!this.presentationClock || this.aiDueAt === null || this.aiDueUnitId === null) return;
+    // suspend() paints one final still frame before setting `suspended`; that
+    // frame may cross a due deadline, but must never advance the battle behind
+    // the scene that is about to cover it.
+    if (
+      this.paintingStill ||
+      this.suspended ||
+      this.aiHeld ||
+      this.battleOpening ||
+      this.presentationHeld
+    )
+      return;
+    // If a future explicit top-down reveal glide is introduced, keep the
+    // existing due deadline parked until that camera motion has completed.
+    if (this.cameraGlide) return;
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || battle.phase !== 'active' || !unit || unit.faction === 'party') {
+      this.stopAiTimer();
+      return;
+    }
+    if (unit.id !== this.aiDueUnitId) {
+      this.stopAiTimer();
+      this.maybeRunAi();
+      return;
+    }
+    if (now < this.aiDueAt) return;
+    this.aiDueAt = null;
+    this.aiDueUnitId = null;
+    this.aiScheduled = false;
+    this.app.dispatch({ type: 'runAiTurn' });
+  }
+
   /* ---------------------------------------------------------------- */
   /* Rendering: chrome                                                 */
   /* ---------------------------------------------------------------- */
@@ -1455,7 +1736,7 @@ export class CombatScene implements Scene {
     const weather = weatherAt(this.app.content, battle.encounterId, battle.round);
     const weatherText = weatherChipText(this.app.content.tuning, weather);
     const weatherShortText = weatherChipShortText(this.app.content.tuning, weather);
-    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}|${battle.phase}|${this.victoryPending}|${Boolean(this.victoryBeat)}`;
+    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}|${battle.phase}|${this.victoryPending}|${Boolean(this.victoryBeat)}|${this.presentationClock?.rate ?? 1}`;
     if (key === this.topBarKey && bar.childElementCount > 0) return;
     this.topBarKey = key;
     // On a rebuild, the button that had focus is found again by its key, so a
@@ -1532,7 +1813,10 @@ export class CombatScene implements Scene {
       folded(() => this.recentre()),
       {
         class: 'btn-ghost',
-        title: 'Reset the battlefield view around the acting unit',
+        title:
+          this.renderer?.camera.projection === 'topdown'
+            ? 'Show the whole battlefield'
+            : 'Reset the battlefield view around the acting unit',
         disabled: victoryBeat,
       },
     );
@@ -1557,6 +1841,27 @@ export class CombatScene implements Scene {
     actor.dataset.key = 'actor';
     this.actorButton = actor;
     more.appendChild(actor);
+
+    if (this.presentationClock) {
+      const speed = button(
+        `Speed ${this.presentationClock.rate}×`,
+        folded(() => this.cycleCombatSpeed()),
+        {
+          class: 'btn-ghost',
+          title: 'Change combat presentation speed',
+        },
+      );
+      speed.setAttribute('aria-label', `Combat speed ${this.presentationClock.rate} times`);
+      speed.dataset.key = 'speed';
+      more.appendChild(speed);
+      const skip = button(
+        'Skip animation',
+        folded(() => this.skipPresentation()),
+        { class: 'btn-ghost', title: 'Finish the current presentation only' },
+      );
+      skip.dataset.key = 'skip';
+      more.appendChild(skip);
+    }
 
     if (encounter) {
       const advice = encounterText(encounter, battle.variantId).tip;
@@ -1669,6 +1974,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!strip || !battle) return;
     clear(strip);
+    strip.classList.toggle('guidance-target', this.guideStage() === 3);
 
     for (const unit of upcomingOrder(battle, battle.units.length).filter(isAlive)) {
       // Once the fight is over nobody is acting, so no chip is plated.
@@ -1729,6 +2035,11 @@ export class CombatScene implements Scene {
         );
         return;
       }
+      // A caption left over from the fight's last beat would sit over the card.
+      if (this.resultShownFor !== battle) {
+        this.resultShownFor = battle;
+        this.app.toasts.clear();
+      }
       overlays.appendChild(this.resultPanel(battle));
       return;
     }
@@ -1761,6 +2072,8 @@ export class CombatScene implements Scene {
           el('span', { class: 'enemy-turn-copy', text: actingTurnCopy(unit) }),
         ),
       );
+      const guidance = this.guideStage() === 3 ? this.firstFightGuidance() : null;
+      if (guidance) hud.appendChild(guidance);
       if (this.logOpen) hud.appendChild(this.logPanel());
       return;
     }
@@ -1768,6 +2081,8 @@ export class CombatScene implements Scene {
     hud.appendChild(this.unitPanel(unit));
     const actions = this.actionBar(unit);
     hud.appendChild(actions);
+    const guidance = this.firstFightGuidance();
+    if (guidance) hud.appendChild(guidance);
     if (this.logOpen) hud.appendChild(this.logPanel());
 
     if (this.pending) {
@@ -1778,9 +2093,173 @@ export class CombatScene implements Scene {
     }
   }
 
+  /**
+   * The guide's stage as shown. Stage 1 asks for an attack only once an enemy
+   * is in reach; until then it is cue 4, which points at End turn (#697): the
+   * Forest Road opens with the bandits out of every hero's range.
+   */
+  private guideStage(): number | null {
+    const stage =
+      this.app.settings?.combatGuidance && this.app.state ? firstFightStage(this.app.state) : null;
+    const unit = stage === 1 ? this.active() : undefined;
+    const battle = this.battle();
+    const content = this.app.content;
+    return unit?.faction === 'party' &&
+      battle &&
+      !knownAbilities(content, unit).some(
+        (ability) =>
+          canUseAbility(content, unit, ability).ok &&
+          targetableTiles(content, battle, unit, ability).some(
+            (tile) => unitAt(battle.units, tile)?.faction === 'enemy',
+          ),
+      )
+      ? 4
+      : stage;
+  }
+
+  private firstFightGuidance(): HTMLElement | null {
+    const stage = this.guideStage();
+    const copy = [
+      'Choose Move, then tap a highlighted tile.',
+      'Choose an ability, then tap an enemy.',
+      "When you're done, End turn.",
+      'The strip above shows whose turn comes next.',
+      'No enemy is in reach yet. Move closer, or End turn.',
+    ][stage ?? -1];
+    if (!copy) return null;
+    if (stage === 3) this.scheduleGuideRelease();
+    return el(
+      'div',
+      { class: 'combat-guidance', attrs: { role: 'status', 'aria-live': 'polite' } },
+      el('span', { text: copy }),
+      button(
+        'Skip guidance',
+        () => {
+          this.finishFirstFightGuide();
+        },
+        { class: 'btn-ghost' },
+      ),
+    );
+  }
+
+  private scheduleGuideRelease(delay = 7000): void {
+    if (this.guideReleaseTimer !== null) return;
+    this.guideReleaseTimer = window.setTimeout(() => {
+      this.guideReleaseTimer = null;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+        this.scheduleGuideRelease(700);
+        return;
+      }
+      if (this.guideStage() === 3) this.finishFirstFightGuide();
+    }, delay);
+  }
+
+  private finishFirstFightGuide(): void {
+    if (this.guideReleaseTimer !== null) window.clearTimeout(this.guideReleaseTimer);
+    this.guideReleaseTimer = null;
+    this.saveGuidanceFlags({ [FIRST_FIGHT_GUIDANCE.stage]: 'done' });
+    this.renderHud();
+  }
+
+  private saveGuidanceFlags(flags: Readonly<Record<string, boolean | number | string>>): void {
+    const state = this.app.state;
+    if (!state) return;
+    // Guidance is presentation state. Preserve it in the saved GameState
+    // without sending a no-op reducer command through App's scene router.
+    this.app.state = { ...state, flags: { ...state.flags, ...flags } };
+  }
+
+  private advanceGuideForAction(
+    command: Command,
+    events: readonly GameEvent[],
+    before: GameState | null,
+  ): void {
+    if (!before || !this.app.settings.combatGuidance) return;
+    const stage = firstFightStage(before);
+    if (stage === null) return;
+    const next = nextFirstFightStage(stage, command, events, before);
+    if (next !== null) {
+      this.saveGuidanceFlags({ [FIRST_FIGHT_GUIDANCE.stage]: next });
+      this.renderHud();
+    }
+  }
+
+  private queueCombatTips(features: readonly CombatTipFeature[]): void {
+    if (features.length === 0) return;
+    const state = this.app.state;
+    if (
+      !state ||
+      !state.battle ||
+      state.battle.phase !== 'active' ||
+      state.battle.encounterId === 'enc_forest_road' ||
+      !this.app.settings?.combatGuidance
+    )
+      return;
+    const unseen = unseenCombatTips(features, state.flags).filter(
+      (feature) => !this.guidanceTipQueue.includes(feature),
+    );
+    this.guidanceTipQueue.push(...unseen);
+    this.scheduleCombatTip();
+  }
+
+  private scheduleCombatTip(delay = 700): void {
+    if (
+      this.guidanceTipTimer !== null ||
+      this.guidanceTipHandle ||
+      this.guidanceTipQueue.length === 0
+    )
+      return;
+    this.guidanceTipTimer = window.setTimeout(() => {
+      this.guidanceTipTimer = null;
+      this.showNextCombatTip();
+    }, delay);
+  }
+
+  private showNextCombatTip(): void {
+    const state = this.app.state;
+    if (
+      !this.host ||
+      !state?.battle ||
+      state.battle.phase !== 'active' ||
+      state.battle.encounterId === 'enc_forest_road' ||
+      this.guidanceTipQueue.length === 0
+    ) {
+      this.guidanceTipQueue = [];
+      return;
+    }
+    if (!this.app.settings.combatGuidance) {
+      this.guidanceTipQueue = [];
+      return;
+    }
+    if (this.battleOpening || this.needsHandoff()) {
+      this.scheduleCombatTip(500);
+      return;
+    }
+    if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+      this.scheduleCombatTip(500);
+      return;
+    }
+    const feature = this.guidanceTipQueue.shift();
+    if (!feature) return;
+    if (state.flags[`guidance.tip.${feature}`] === true) {
+      this.scheduleCombatTip(200);
+      return;
+    }
+    this.guidanceTipHandle = this.app.toasts.show(combatTipCopy(feature), 'info', 5200, () => {
+      this.guidanceTipHandle = null;
+      this.scheduleCombatTip(350);
+    });
+    if (this.guidanceTipHandle) {
+      this.saveGuidanceFlags({ [`guidance.tip.${feature}`]: true });
+    } else {
+      this.guidanceTipQueue.unshift(feature);
+      this.scheduleCombatTip(900);
+    }
+  }
+
   private unitPanel(unit: Unit): HTMLElement {
     const stats = effectiveStats(this.app.content, unit);
-    const player = this.app.session.playerFor(unit.id);
+    const player = this.app.session.participantForUnit(unit.id);
 
     const apPips = el('div', {
       class: 'pips',
@@ -1863,12 +2342,13 @@ export class CombatScene implements Scene {
     bar.appendChild(this.abilityHeader(unit));
     const row = el('div', { class: 'action-row' });
     const interactive = unit.faction === 'party' && this.isPlayerTurn();
+    const cue = this.guideStage();
 
     const moveActive = this.mode.kind === 'move';
     const movementReason = this.movementBlockReason(unit);
     const canMoveNow = unit.move > 0 && !movementReason;
     const moveButton = button(`Move`, () => this.selectMove(), {
-      class: `action-button${moveActive ? ' selected' : ''}`,
+      class: `action-button${moveActive ? ' selected' : ''}${cue === 0 ? ' guidance-target' : ''}`,
       disabled: !interactive || !canMoveNow,
       title: !interactive
         ? 'Player controls are locked while another unit acts'
@@ -1887,7 +2367,7 @@ export class CombatScene implements Scene {
     }
 
     const endButton = button('End turn', () => this.endTurn(unit), {
-      class: 'action-button end-turn',
+      class: `action-button end-turn${cue === 2 || cue === 4 ? ' guidance-target' : ''}`,
       title: 'Finish this turn. One unused AP carries over.',
       disabled: !interactive,
     });
@@ -1895,6 +2375,7 @@ export class CombatScene implements Scene {
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
     row.appendChild(endButton);
+    if (cue === 1) row.classList.add('guidance-target');
 
     bar.appendChild(row);
     return bar;
@@ -2004,7 +2485,8 @@ export class CombatScene implements Scene {
   }
 
   private endTurn(unit: Unit): void {
-    if (unit.ap > 0 && !this.confirmedEndTurn) {
+    // The guide's own End turn cue takes one tap; spare AP is not a slip there.
+    if (unit.ap > 0 && !this.confirmedEndTurn && this.guideStage() !== 4) {
       this.confirmedEndTurn = true;
       const confirmation = this.app.toasts.show(
         `${unit.name} still has ${unit.ap} AP. Tap End turn again to finish anyway.`,
@@ -2026,8 +2508,10 @@ export class CombatScene implements Scene {
     this.clearEndTurnConfirmation();
     this.mode = { kind: 'idle' };
     this.clearPending();
-    this.handedOffTo = null;
-    this.app.dispatch({ type: 'endTurn', unitId: unit.id });
+    const command = { type: 'endTurn', unitId: unit.id } as const;
+    const before = this.app.state;
+    const events = this.app.dispatch(command);
+    this.advanceGuideForAction(command, events, before);
   }
 
   private confirmedEndTurn = false;
@@ -2090,7 +2574,10 @@ export class CombatScene implements Scene {
           }),
         ),
         () => {
-          this.app.dispatch({ type: 'move', unitId: unit.id, path: cell.path });
+          const command = { type: 'move', unitId: unit.id, path: cell.path } as const;
+          const before = this.app.state;
+          const events = this.app.dispatch(command);
+          this.advanceGuideForAction(command, events, before);
           this.clearPending();
           this.mode = { kind: 'idle' };
           this.renderHud();
@@ -2298,7 +2785,7 @@ export class CombatScene implements Scene {
 
     // What the ground is about to do, in the combo table's own words. This is
     // the part that used to say "Leaves Fire" over a puddle.
-    for (const note of reactionNotes(this.app.content, preview.reactions)) {
+    for (const note of reactionNotes(this.app.content, preview.reactions, this.app.comboReveal())) {
       body.appendChild(note);
     }
 
@@ -2309,12 +2796,15 @@ export class CombatScene implements Scene {
     }
 
     return this.confirmShell(body, () => {
-      this.app.dispatch({
+      const command = {
         type: 'useAbility',
         unitId: unit.id,
         abilityId: ability.id,
         target,
-      });
+      } as const;
+      const before = this.app.state;
+      const events = this.app.dispatch(command);
+      this.advanceGuideForAction(command, events, before);
       this.clearPending();
       this.mode = { kind: 'idle' };
       this.renderHud();
@@ -2466,25 +2956,93 @@ export class CombatScene implements Scene {
   private resultPanel(battle: BattleState): HTMLElement {
     const victory = battle.phase === 'victory';
     const anyFell = battle.units.some((unit) => unit.faction === 'party' && !isAlive(unit));
+    const state = this.app.state;
+    // A lost fight is the table's call (#620): Try again from the opening board,
+    // or Carry on down the story's defeat branch. The rotating decider has it.
+    const decider = !victory && state && !this.app.session.solo && this.app.session.decider(state);
+    const retry = !victory && battle.openingRng !== null;
     return el(
       'div',
-      { class: 'handoff-banner' },
+      { class: 'handoff-banner result-banner' },
       el(
         'div',
         { class: 'panel center result-panel' },
         el('h1', { text: victory ? 'The fight is won' : 'Driven back' }),
-        el('p', {
-          class: 'muted',
-          text: victory
-            ? anyFell
-              ? 'Everyone who went down is patched up. The party keeps what it earned.'
-              : 'The party keeps what it earned.'
-            : 'The fight is lost. Continue to see what happens next.',
-        }),
-        button('Continue', () => this.app.resolveBattle(), {
-          class: 'btn-primary btn-large',
-        }),
+        victory ? this.victoryList(battle) : null,
+        victory && !anyFell
+          ? null
+          : el('p', {
+              class: 'muted',
+              text: victory
+                ? 'Everyone who went down is back on their feet.'
+                : retry
+                  ? 'Nobody is badly hurt. Catch your breath and try again, or carry on with the story.'
+                  : 'Nobody is badly hurt. Carry on to see what happens next.',
+            }),
+        decider ? el('p', { text: `${decider.name} decides.` }) : null,
+        el(
+          'div',
+          { class: 'row row-wrap' },
+          retry
+            ? button('Try again', () => this.app.retryBattle(), {
+                class: 'btn-primary btn-large',
+              })
+            : null,
+          button(victory ? 'Continue' : 'Carry on', () => this.app.resolveBattle(), {
+            class: retry ? 'btn-large' : 'btn-primary btn-large',
+          }),
+        ),
       ),
+    );
+  }
+
+  /**
+   * One row per hero: the XP this fight paid, how near the next level is, and
+   * any level-up with what it brought (#630). Read off a dry run of the real
+   * resolve, once per finished battle.
+   */
+  private victoryList(battle: BattleState): HTMLElement | null {
+    const state = this.app.state;
+    if (!state) return null;
+    if (this.victoryRows?.battle !== battle) {
+      this.victoryRows = { battle, rows: victoryResults(this.app.content, state) };
+    }
+    const rows = this.victoryRows.rows;
+    if (rows.length === 0) return null;
+    return el(
+      'ul',
+      { class: 'victory-list', attrs: { 'aria-label': 'What the party earned' } },
+      ...rows.map((row) => {
+        // One person playing the whole party needs no names beside the heroes.
+        const player = this.app.session.solo ? undefined : this.app.session.playerFor(row.unit.id);
+        return el(
+          'li',
+          { class: `victory-row element-${row.unit.element}` },
+          assetCanvas(portraitKeyFor(this.app.content, row.unit), 2.4),
+          el(
+            'div',
+            { class: 'victory-row-body' },
+            el(
+              'div',
+              { class: 'victory-row-head' },
+              el('strong', { text: row.unit.name }),
+              player && player.name !== row.unit.name
+                ? el('span', { class: 'muted', text: player.name })
+                : null,
+              el('span', { class: 'victory-xp', text: `+${row.xp} XP` }),
+              row.newLevel !== null
+                ? el('span', { class: 'victory-level', text: `Level ${row.newLevel}!` })
+                : null,
+            ),
+            el(
+              'div',
+              { class: 'bar victory-bar', attrs: { 'aria-hidden': 'true' } },
+              el('div', { class: 'bar-fill', style: { width: `${row.progress * 100}%` } }),
+            ),
+            el('span', { class: 'victory-note', text: victoryNote(row) }),
+          ),
+        );
+      }),
     );
   }
 
@@ -2516,12 +3074,16 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
 
-    const now = performance.now();
-    this.app.stats?.frame(now);
-    this.app.animator.prune(now);
+    const wallNow = performance.now();
+    const now = this.presentationNow(wallNow);
+    this.app.stats?.frame(wallNow);
+    this.animatorForBoard.prune(now);
+    const deltaMs =
+      this.lastPresentationFrameAt === null ? 16 : Math.max(0, now - this.lastPresentationFrameAt);
+    this.lastPresentationFrameAt = now;
     this.updateBattleOpening(now);
     this.updateVictoryBeat(now);
-    if (battle.phase === 'active') this.keepAnimatedLargeActorInView(now, battle);
+    if (battle.phase === 'active') this.keepAnimatedLargeActorInView(now, battle, deltaMs);
 
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
@@ -2535,7 +3097,7 @@ export class CombatScene implements Scene {
       battle.phase === 'active' &&
       this.isPlayerTurn() &&
       !this.needsHandoff() &&
-      !this.app.animator.busy(now);
+      !this.boardActionBusy(now, unit?.id);
 
     if (interactive && unit) {
       const pending = this.pending;
@@ -2595,7 +3157,7 @@ export class CombatScene implements Scene {
     }
 
     const units: RenderUnit[] = battle.units.map((u) => {
-      const health = this.app.animator.unitHealth(now, u);
+      const health = this.animatorForBoard.unitHealth(now, u);
       return {
         id: u.id,
         pos: u.pos,
@@ -2619,7 +3181,7 @@ export class CombatScene implements Scene {
       };
     });
     const floaters = placeFloaters(
-      this.app.animator.floaters(now),
+      this.animatorForBoard.floaters(now),
       undefined,
       this.app.settings.largeText === 'huge'
         ? 1.5
@@ -2661,7 +3223,11 @@ export class CombatScene implements Scene {
       units,
       npcs: [],
       props,
-      raisedWalls: battle.temporaryWalls.map((wall) => wall.pos),
+      // A wall still to rise, or rising, on a top-down board carries how far it is out (#590).
+      raisedWalls: battle.temporaryWalls.map(({ pos }) => {
+        const rise = this.animatorForBoard.wallRise(now, pos);
+        return rise === undefined ? pos : { ...pos, rise };
+      }),
       overlays,
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),
@@ -2673,13 +3239,13 @@ export class CombatScene implements Scene {
       pathFrom: unit?.pos ?? null,
       aimArc,
       emitters: [
-        ...this.app.animator.emitters(now),
+        ...this.animatorForBoard.emitters(now),
         ...burningPropEmitters(props, now, renderer.camera.projection, motionReduced()),
         ...ambient,
       ],
-      bendFx: this.app.animator.bendFx(now),
+      bendFx: this.animatorForBoard.bendFx(now),
       floaters,
-      cameraNudge: this.app.animator.cameraNudge(now),
+      cameraNudge: this.animatorForBoard.cameraNudge(now),
       activeUnitId: battle.phase === 'active' ? (unit?.id ?? null) : null,
       selectedUnitId: null,
       hoverTile:
@@ -2699,6 +3265,8 @@ export class CombatScene implements Scene {
     };
 
     renderer.draw(view);
+    this.deliverTopdownSounds(now, wallNow);
+    this.advanceTopdownAi(now);
   };
 
   /**
@@ -2706,7 +3274,7 @@ export class CombatScene implements Scene {
    * pan/zoom deliberately suspends it, and ordinary actors retain the shipped
    * turn-start centring behavior.
    */
-  private keepAnimatedLargeActorInView(now: number, battle: BattleState): void {
+  private keepAnimatedLargeActorInView(now: number, battle: BattleState, deltaMs: number): void {
     const renderer = this.renderer;
     if (!renderer) return;
     if (this.battleOpening) return;
@@ -2719,10 +3287,27 @@ export class CombatScene implements Scene {
       scale: number;
       pose: ReturnType<CombatScene['poseFields']>;
     } | null = null;
+    type FollowCandidate = {
+      unit: Unit;
+      pos: Vec2;
+      scale: number;
+      pose: ReturnType<CombatScene['poseFields']>;
+    };
+    const topdownCandidates: FollowCandidate[] = [];
+    const animatedPoints: Vec2[] = [];
+    let activeFallback: FollowCandidate | null = null;
+    const activeId = this.active()?.id;
     for (const unit of battle.units) {
-      const pos = this.app.animator.renderPos(now, unit.id);
-      if (!pos) continue;
-      const health = this.app.animator.unitHealth(now, unit);
+      const movingPos = this.animatorForBoard.renderPos(now, unit.id);
+      if (projection !== 'topdown' && !movingPos) continue;
+      const activePose =
+        projection === 'topdown'
+          ? this.animatorForBoard.unitPose(now, unit.id, unit.sprite)
+          : undefined;
+      if (!movingPos && !activePose && !(projection === 'topdown' && unit.id === activeId))
+        continue;
+      const pos = movingPos ?? unit.pos;
+      const health = this.animatorForBoard.unitHealth(now, unit);
       const pose = this.poseFields(
         now,
         unit.id,
@@ -2732,7 +3317,15 @@ export class CombatScene implements Scene {
         health.fallen,
       );
       const scale = pose.scale ?? 1;
-      if (
+      if (projection === 'topdown') {
+        const candidate = { unit, pos, scale, pose };
+        if (movingPos || activePose) {
+          animatedPoints.push(
+            camera.project({ x: pos.x + unit.size / 2, y: pos.y + unit.size / 2 }),
+          );
+          topdownCandidates.push(candidate);
+        } else activeFallback = candidate;
+      } else if (
         !shouldFollowAnimatedLargeActor({
           size: unit.size,
           scale,
@@ -2740,23 +3333,42 @@ export class CombatScene implements Scene {
         })
       )
         continue;
-
-      followed = { unit, pos, scale, pose };
-      break;
+      else {
+        followed = { unit, pos, scale, pose };
+        break;
+      }
     }
+    if (projection === 'topdown')
+      followed =
+        topdownCandidates.find((candidate) => candidate.unit.size === 2) ??
+        topdownCandidates[0] ??
+        activeFallback;
+    const reducedMotion = motionReduced();
     const decision = combatCameraFollowDecision(this.cameraFollow, {
       animatedUnitId: followed?.unit.id ?? null,
       activeUnitId: this.active()?.id ?? null,
       followSuspended: this.followSuspended,
-      reducedMotion: motionReduced(),
+      // Top-down reduce-motion still reveals an off-frame actor, but does it
+      // in one device-snapped correction rather than easing toward margins.
+      reducedMotion: projection === 'topdown' ? false : reducedMotion,
     });
     this.cameraFollow = decision.state;
-    if (decision.owner === 'follow') this.cancelCameraGlide();
-    if (decision.owner === 'recentre') {
+    let owner = decision.owner;
+    if (projection === 'topdown' && owner === 'recentre') {
+      if (followed && !this.followSuspended) {
+        this.cameraFollow = { kind: 'following', unitId: followed.unit.id };
+        owner = 'follow';
+      } else {
+        this.cameraFollow = { kind: 'idle' };
+        owner = 'idle';
+      }
+    }
+    if (owner === 'follow') this.cancelCameraGlide();
+    if (owner === 'recentre') {
       this.centreOnActiveUnit(this.active(), camera, true);
       return;
     }
-    if (decision.owner !== 'follow' || !followed) {
+    if (owner !== 'follow' || !followed) {
       this.updateCameraGlide(now, camera);
       return;
     }
@@ -2787,6 +3399,22 @@ export class CombatScene implements Scene {
       frame?.headroom ?? null,
       scale,
     );
+    if (projection === 'topdown') {
+      const result = topdownFollow({
+        focus: { x: (body.left + body.right) / 2, y: (body.top + body.bottom) / 2 },
+        blowEndpoints:
+          now <= this.topdownBlowEndsAt && this.topdownBlowPoints.length > 0
+            ? this.topdownBlowPoints.map((point) => camera.project({ x: point.x, y: point.y }))
+            : animatedPoints,
+        body,
+        viewport: camera.viewport,
+        deltaMs: reducedMotion ? Number.POSITIVE_INFINITY : deltaMs,
+      });
+      if (now > this.topdownBlowEndsAt) this.topdownBlowPoints = [];
+      applyTopdownFollow(camera, body, result);
+      this.syncRecentre();
+      return;
+    }
     const delta = actorKeepInViewDelta(body, camera.viewport);
     if (delta.x !== 0 || delta.y !== 0) camera.panBy(delta.x, delta.y);
   }
@@ -2813,7 +3441,12 @@ export class CombatScene implements Scene {
       this.cancelCameraGlide();
       return;
     }
-    this.cameraGlide = { from, to, startedAt: performance.now(), duration: COMBAT_TURN_GLIDE_MS };
+    this.cameraGlide = {
+      from,
+      to,
+      startedAt: this.presentationNow(),
+      duration: COMBAT_TURN_GLIDE_MS,
+    };
     this.setCameraGlideMarker(true);
   }
 
@@ -2843,7 +3476,7 @@ export class CombatScene implements Scene {
     const camera = this.renderer?.camera;
     const active = this.active();
     if (!glide || !camera || !active) return;
-    const now = performance.now();
+    const now = this.presentationNow();
     const elapsed = Math.max(0, now - glide.startedAt);
     const remaining = Math.max(0, glide.duration - elapsed);
     const from = { x: camera.offsetX, y: camera.offsetY };
@@ -2915,11 +3548,11 @@ export class CombatScene implements Scene {
     | 'flash'
     | 'bend'
   > {
-    const pose = this.app.animator.unitPose(now, unitId, sprite);
+    const pose = this.animatorForBoard.unitPose(now, unitId, sprite);
     const mapId = this.app.state?.battle?.mapId;
     const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
     // A bend draws its own cels at the party's scale, where the plan put its sockets.
-    const bend = this.app.animator.bendPose(now, unitId);
+    const bend = this.animatorForBoard.bendPose(now, unitId);
     if (bend) {
       return {
         facing: 1,
@@ -2929,13 +3562,13 @@ export class CombatScene implements Scene {
         ...(pose ? { flash: pose.flash } : {}),
       };
     }
-    const walked = this.app.animator.facing(unitId);
+    const walked = this.animatorForBoard.facing(unitId);
     // The party stands in its fighting stance between moves (ADR 0052); an
     // enemy on an eight-way sheet (the thug, ADR 0059) idles and walks by
     // heading the same way.
     const movement =
       directional || sheetLocomotion(sprite)?.headings === 8
-        ? this.app.animator.locomotion(
+        ? this.animatorForBoard.locomotion(
             now,
             unitId,
             directional ? 'stance' : 'idle',
@@ -2948,7 +3581,7 @@ export class CombatScene implements Scene {
       : enemyScale(sprite, pose?.scale, projection);
     // Once a G knockout has played, the body stays where it fell (ADR 0059).
     const down =
-      !pose && fallen ? this.app.animator.fallenPose(unitId, sprite, restFacing) : undefined;
+      !pose && fallen ? this.animatorForBoard.fallenPose(unitId, sprite, restFacing) : undefined;
     if (down) return { ...down, facing: fallenFacing(down.clip, walked ?? restFacing), scale };
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {

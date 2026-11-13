@@ -1,6 +1,16 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pinObliqueStyle,
+  resetStorage,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 async function game(page: Page) {
   return page.evaluate(() => {
@@ -82,9 +92,9 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
     body: Buffer.from(JSON.stringify(observed, null, 2)),
     contentType: 'application/json',
   });
-  await expect(page.locator('.toast').last()).toContainText(
-    'This save looks damaged (state.battle.turnIndex).',
-  );
+  const warning = page.locator('.toast.toast-warn').last();
+  await expect(warning).toHaveText('This save looks damaged. Try another save file.');
+  await expect(warning).toBeVisible();
   await expect(menu).toBeVisible();
   expect(await game(page)).toEqual(before);
   await page.screenshot({ path: testInfo.outputPath('corrupt-import.png') });

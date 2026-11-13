@@ -12,10 +12,11 @@ import type { Vec2 } from '../../core/types';
 import type { EmitterDef } from '../../content/fx';
 import type { Curve } from '../../render/geometry/curve';
 import type { ClipName, EmitterAttachments } from '../../render/view';
-import type { MeleeDirection } from '../../content/assets/clips';
+import type { Heading, MeleeDirection } from '../../content/assets/clips';
 import type { Easing } from './easing';
 import type { BendFxIndex } from '../../render/fx/bendFx';
 import type { BendPlan } from './bendChoreo';
+import type { Shot } from '../../render/topdown/shots';
 
 export type { ClipName };
 
@@ -51,6 +52,8 @@ export interface PoseTrack extends Track {
   readonly frame?: number;
   /** Elapsed clip time at this track's start, for a timed clip split across motion phases. */
   readonly clipTimeOffset?: number;
+  /** The heading a top-down action is drawn in (ADR 0104); the unit keeps facing it afterwards. */
+  readonly heading?: Heading;
 }
 
 export interface FlashTrack extends Track {
@@ -108,8 +111,27 @@ export interface BendTrack extends Track {
   readonly fx: BendFxIndex;
 }
 
+/** A top-down Earth Wall rising out of the ground on one cell (#590). */
+export interface RiseTrack extends Track {
+  readonly kind: 'rise';
+  readonly pos: Vec2;
+}
+
+/** A top-down projectile in flight (#588). */
+export interface ShotTrack extends Shot {
+  readonly kind: 'shot';
+}
+
 export type AnyTrack =
-  MoveTrack | PoseTrack | FlashTrack | EmitterTrack | FloaterTrack | ShakeTrack | BendTrack;
+  | MoveTrack
+  | PoseTrack
+  | FlashTrack
+  | EmitterTrack
+  | FloaterTrack
+  | ShakeTrack
+  | BendTrack
+  | RiseTrack
+  | ShotTrack;
 
 export type TrackKind = AnyTrack['kind'];
 export type TrackOf<K extends TrackKind> = Extract<AnyTrack, { kind: K }>;
@@ -117,6 +139,7 @@ export type TrackOf<K extends TrackKind> = Extract<AnyTrack, { kind: K }>;
 export class Timeline {
   private tracks: AnyTrack[] = [];
   private endsAt = 0;
+  private actionEndsAt = 0;
 
   add(track: AnyTrack): void {
     this.tracks.push(track);
@@ -129,17 +152,44 @@ export class Timeline {
     this.endsAt = Math.max(this.endsAt, at);
   }
 
+  /** Scene-ready horizon; visual-only tracks can continue beyond this time. */
+  holdActionUntil(at: number): void {
+    this.actionEndsAt = Math.max(this.actionEndsAt, at);
+  }
+
   get finishesAt(): number {
     return this.endsAt;
+  }
+
+  get actionReadyAt(): number {
+    return this.actionEndsAt;
   }
 
   busy(now: number): boolean {
     return now < this.endsAt;
   }
 
+  actionBusy(now: number): boolean {
+    return now < this.actionEndsAt;
+  }
+
+  /** End of an actor's voluntary pose or movement, excluding informational FX. */
+  actorFinishesAt(unitId: string): number {
+    let end = 0;
+    for (const track of this.tracks) {
+      if (
+        (track.kind === 'pose' || track.kind === 'move' || track.kind === 'bend') &&
+        track.unitId === unitId
+      )
+        end = Math.max(end, track.start + track.duration);
+    }
+    return end;
+  }
+
   clear(): void {
     this.tracks = [];
     this.endsAt = 0;
+    this.actionEndsAt = 0;
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
@@ -156,6 +206,13 @@ export class Timeline {
       out.push(track as TrackOf<K>);
     }
     return out;
+  }
+
+  /** Tracks of one kind not yet finished at `now`, those still to start among them. */
+  unfinished<K extends TrackKind>(now: number, kind: K): TrackOf<K>[] {
+    return this.tracks.filter(
+      (track): track is TrackOf<K> => track.kind === kind && now <= track.start + track.duration,
+    );
   }
 
   /** Earliest queued movement for a unit, irrespective of insertion order. */

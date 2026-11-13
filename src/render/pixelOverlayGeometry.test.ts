@@ -5,6 +5,7 @@ import {
   aimArcPixelMarks,
   boardPixelFromTile,
   cueOpacity,
+  exitMark,
   healthBarSpikeMark,
   pathPixelMarks,
   targetReticleMark,
@@ -20,6 +21,25 @@ describe('pixel overlay geometry', () => {
       expect(cueOpacity(0, period, false)).toBeCloseTo(0.725, 9);
       expect(cueOpacity(period, period, false)).toBeGreaterThan(cueOpacity(0, period, false));
     }
+  });
+
+  it.each([
+    ['east', { x: 10, y: 0 }],
+    ['west', { x: -10, y: 0 }],
+    ['north', { x: 0, y: -10 }],
+    ['south', { x: 0, y: 10 }],
+  ] as const)('points the exit polygon %s without moving its ring', (direction, tip) => {
+    const anchor = { x: 320, y: 240 };
+    const legacy = exitMark(anchor, 0.9);
+    const mark = exitMark(anchor, 0.9, direction);
+    const [ring, arrow] = mark.spec.operations;
+    expect(mark.anchor).toEqual(anchor);
+    expect(mark.alpha).toBe(legacy.alpha);
+    expect(ring).toEqual(legacy.spec.operations[0]);
+    expect(arrow?.kind).toBe('polygon');
+    if (arrow?.kind !== 'polygon') return;
+    expect(arrow.points[1]).toEqual(tip);
+    if (direction === 'east') expect(mark).toEqual(legacy);
   });
 
   it('snaps enemy cap vertices relative to a movable anchor', () => {

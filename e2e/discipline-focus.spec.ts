@@ -102,15 +102,17 @@ for (const presentation of ['retained world', 'plain fallback'] as const) {
         await resetStorage(page, '?renderer=canvas');
         await page.evaluate(({ state, session }) => {
           const app = window.fnt!.app;
-          app.updateSettings({ reduceMotion: true });
+          app.updateSettings({ reduceMotion: true, storyChoices: 'turns' });
           app.adoptSave(state, session);
         }, fixture);
         expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
         if (presentation === 'retained world') {
-          await expect(page.locator('.dialogue-layer .stage[data-kind="choice"]')).toBeVisible();
+          await expect(page.locator('.dialogue-layer .stage[data-kind="choice"]')).toBeHidden();
+          await expect(page.locator('.dialogue-layer')).toHaveAttribute('aria-hidden', 'true');
           await expect(page.locator('canvas.map-canvas')).toBeVisible();
         } else {
-          await expect(page.locator('.dialogue-scene .stage[data-kind="choice"]')).toBeVisible();
+          await expect(page.locator('.dialogue-scene .stage[data-kind="choice"]')).toBeHidden();
+          await expect(page.locator('.dialogue-scene')).toHaveAttribute('aria-hidden', 'true');
           await expect(page.locator('.dialogue-layer')).toHaveCount(0);
         }
         await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toBeFocused();
@@ -234,10 +236,12 @@ for (const presentation of ['retained world', 'plain fallback'] as const) {
         }, fixture);
         expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
         if (presentation === 'retained world') {
-          await expect(page.locator('.dialogue-layer .stage[data-kind="dialogue"]')).toBeVisible();
+          await expect(page.locator('.dialogue-layer .stage[data-kind="dialogue"]')).toBeHidden();
+          await expect(page.locator('.dialogue-layer')).toHaveAttribute('aria-hidden', 'true');
           await expect(page.locator('canvas.map-canvas')).toBeVisible();
         } else {
-          await expect(page.locator('.dialogue-scene .stage[data-kind="dialogue"]')).toBeVisible();
+          await expect(page.locator('.dialogue-scene .stage[data-kind="dialogue"]')).toBeHidden();
+          await expect(page.locator('.dialogue-scene')).toHaveAttribute('aria-hidden', 'true');
           await expect(page.locator('.dialogue-layer')).toHaveCount(0);
         }
         await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toBeFocused();

@@ -20,34 +20,34 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n11["cutting_after_explore<br/>Explore ambush_road: Follow the east path down to the quarry fl…"]:::entry
-  n12["cutting_explore<br/>Explore ambush_road: Explore the cutting with Ruon. Jin’s peopl…"]:::entry
-  n14["cutting_tea<br/>Sen: Cup? Mind the handle on the blue one. It comes off."]:::entry
-  n15["cutting_tea_again<br/>Sen: Back already? I've put fresh water on."]:::entry
-  n16["cutting_tea_shared<br/>Set flags"]
-  n28["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
-  n29["forest_dema<br/>Dema: Mind your feet. There are ducklings under that fern. Yes,…"]:::entry
-  n30["forest_dema_again<br/>Dema: She has brought the ducklings over. I suppose the washing…"]:::entry
-  n31["forest_ducks_seen<br/>Set flags"]
-  n32["forest_explore<br/>Explore forest_road: Explore the pine road east to the quarry g…"]:::entry
-  n41["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
-  n46["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
-  n7["battle_ambush — exit to act1 / part 1"]:::external
-  n8["battle_forest_road — exit to act1 / part 1"]:::external
-  n43["gate_parley — exit to act1 / part 1"]:::external
-  n77["quarry_descent — exit to act1 / part 1"]:::external
-  n11 -->|"Legacy/audit exit (live map exits differ)"| n77
-  n12 -->|"Legacy/audit exit (live map exits differ)"| n7
-  n14 -->|"Next"| n16
-  n15 -->|"Next"| n11
-  n16 -->|"set: world.tea_shared=true"| n11
-  n28 -->|"Legacy/audit exit (live map exits differ)"| n43
-  n29 -->|"Next"| n31
-  n30 -->|"Next"| n32
-  n31 -->|"set: world.ducks_seen=true"| n32
-  n32 -->|"Legacy/audit exit (live map exits differ)"| n8
-  n41 -->|"Legacy/audit exit (live map exits differ)"| n12
-  n46 -->|"Legacy/audit exit (live map exits differ)"| n11
+  n12["cutting_after_explore<br/>Explore ambush_road: Follow the east path down to the quarry fl…"]:::entry
+  n13["cutting_explore<br/>Explore ambush_road: Explore the cutting with Ruon. Jin’s peopl…"]:::entry
+  n15["cutting_tea<br/>Sen: Cup? Mind the handle on the blue one. It comes off."]:::entry
+  n16["cutting_tea_again<br/>Sen: Back already? I've put fresh water on."]:::entry
+  n17["cutting_tea_shared<br/>Set flags"]
+  n30["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
+  n31["forest_dema<br/>Dema: Mind your feet. There are ducklings under that fern. Yes,…"]:::entry
+  n32["forest_dema_again<br/>Dema: She has brought the ducklings over. I suppose the washing…"]:::entry
+  n33["forest_ducks_seen<br/>Set flags"]
+  n34["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
+  n43["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
+  n48["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
+  n8["battle_ambush — exit to act1 / part 1"]:::external
+  n9["battle_forest_road — exit to act1 / part 1"]:::external
+  n45["gate_parley — exit to act1 / part 1"]:::external
+  n82["quarry_descent — exit to act1 / part 1"]:::external
+  n12 -->|"Legacy/audit exit (live map exits differ)"| n82
+  n13 -->|"Legacy/audit exit (live map exits differ)"| n8
+  n15 -->|"Next"| n17
+  n16 -->|"Next"| n12
+  n17 -->|"set: world.tea_shared=true"| n12
+  n30 -->|"Legacy/audit exit (live map exits differ)"| n45
+  n31 -->|"Next"| n33
+  n32 -->|"Next"| n34
+  n33 -->|"set: world.ducks_seen=true"| n34
+  n34 -->|"Legacy/audit exit (live map exits differ)"| n9
+  n43 -->|"Legacy/audit exit (live map exits differ)"| n13
+  n48 -->|"Legacy/audit exit (live map exits differ)"| n12
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

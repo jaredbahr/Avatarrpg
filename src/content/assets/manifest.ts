@@ -90,10 +90,15 @@ export type AssetEntry =
       readonly clipData?: string;
       /**
        * The per-heading ability poses of a top-down sheet (ADR 0104), as a JSON of clips by pose name
-       * and then heading, relative to the site root, whose cels live on the pages above. Nothing plays
-       * them before the top-down combat slice (T4); the legacy `cast` stands in until then.
+       * and then heading, relative to the site root, whose cels live on the pages above. Combat plays
+       * them by `actionMap`, each heading as drawn; while they load, the legacy `cast` stands in.
        */
       readonly actions?: string;
+      /**
+       * Which pose of `actions` plays: `cast` for an ability `abilities` does not list (ability id to
+       * pose), and `idle`, when set, as the idle loop in each heading (the Driller's rumble).
+       */
+      readonly actionMap?: TopdownActionMap;
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet; 40 on the top-down board. */
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
@@ -585,15 +590,79 @@ export function useWorldStyleTest(): void {
   ]);
 }
 
+export interface TopdownActionMap {
+  readonly cast: string;
+  readonly idle?: string;
+  readonly abilities?: Readonly<Record<string, string>>;
+}
+
+const HEAL = ['healing_stream', 'healing_hands', 'purifying_mist', 'life_tide'];
+const GUST = ['gust', 'cyclone', 'tornado', 'deafening_shout', 'air_shield', 'air_scooter'];
+
+/**
+ * The pose each top-down sheet plays for an ability (ADR 0104), by pose: the first entry is the pose any
+ * ability not listed plays, and each other pose lists its abilities. `idle` loops in place of the idle.
+ */
+const TOPDOWN_ACTIONS: Partial<
+  Record<TopdownName, { cast: string; idle?: string; by?: Record<string, readonly string[]> }>
+> = {
+  kaya: {
+    cast: 'jab',
+    by: {
+      whip: ['flame_arc'],
+      blast: ['fire_blast', 'dragon_breath', 'lightning_storm'],
+      stomp: ['fire_step', 'fire_wall', 'heat_shield'],
+    },
+  },
+  tenzo: {
+    cast: 'attack',
+    by: { blast: ['fire_blast', 'flame_arc', 'dragon_breath', 'lightning_storm', 'fire_wall'] },
+  },
+  nilak: { cast: 'attack', by: { heal: HEAL } },
+  sura: {
+    cast: 'attack',
+    by: {
+      ice: ['ice_path', 'ice_spikes', 'ice_shield', 'tidal_wave', 'octopus_form'],
+      heal: HEAL,
+    },
+  },
+  bo: {
+    cast: 'attack',
+    by: {
+      wall: ['earth_wall', 'shockwave', 'raise_rubble', 'mudslide', 'fissure'],
+      stance: ['stone_stance', 'metal_armor', 'seismic_sense'],
+    },
+  },
+  linmei: {
+    cast: 'attack',
+    by: { throw: ['rock_throw', 'boulder', 'metal_cable', 'metalbending'] },
+  },
+  nima: { cast: 'attack', by: { gust: GUST } },
+  jinu: { cast: 'attack', by: { gust: GUST } },
+  riko: { cast: 'attack', by: { block: ['chi_block', 'pressure_points'] } },
+  wen: { cast: 'attack', by: { spark: ['gauntlet_spark', 'electrified_glove', 'shock_mine'] } },
+  deserter: { cast: 'attack', by: { throw: ['oil_flask', 'torch_toss'] } },
+  driller: { cast: 'slam', idle: 'rumble' },
+};
+
+/** A sheet's `actionMap`, from `TOPDOWN_ACTIONS` (its own `attack` for a sheet not listed there). */
+function topdownActionMap(name: TopdownName): TopdownActionMap {
+  const { by = {}, ...rest } = TOPDOWN_ACTIONS[name] ?? { cast: 'attack' };
+  const abilities: Record<string, string> = {};
+  for (const [pose, ids] of Object.entries(by)) for (const id of ids) abilities[id] = pose;
+  return { ...rest, abilities };
+}
+
 /**
  * A top-down figure (ADR 0104 T2), packed from the prototype's approved PixelLab takes by
  * `scripts/art/topdown/pack-sheets.ts`: 48 px characters at one art px a world px on the 40 px
  * top-down tile, PixelLab's eight drawn headings (never mirrored) and eight-way locomotion. Idle, walk
  * and rest share the sheet's frame and foot anchor; the idle plays the prototype's calm cels there and
  * back. The hits (eight headings) and knockouts (the four diagonals the clip vocabulary asks for) arrive
- * with the clip file; every heading of every ability, and all eight knockouts, are in the actions file
- * for the combat slice (T4). The legacy mirrored `cast` is the main ability's east heading. A figure the
- * prototype never walked (Mira, Hanru) holds its idle's first cel as its walk; the Driller walks on its tread loop (T5).
+ * with the clip file; every heading of every ability, and all eight knockouts, are in the actions file,
+ * which combat plays per heading and ability by `actionMap`. The legacy mirrored `cast` (the main
+ * ability's east heading) stands in while it loads. A figure the prototype never walked (Mira, Hanru)
+ * holds its idle's first cel as its walk; the Driller walks on its tread loop (T5).
  */
 export function topdownSheet(name: TopdownName, key: string, palette: string): SheetEntry {
   const t = TOPDOWN_SHEETS[name];
@@ -642,7 +711,10 @@ export function topdownSheet(name: TopdownName, key: string, palette: string): S
       ),
     }),
     ...(t.clipData && { clipData: `art/topdown/${name}-clips.json` }),
-    ...(t.actions && { actions: `art/topdown/${name}-actions.json` }),
+    ...(t.actions && {
+      actions: `art/topdown/${name}-actions.json`,
+      actionMap: topdownActionMap(name),
+    }),
     pixelsPerTile: 40,
     frameSize: t.frame,
     footprint: { w: t.footprint, h: t.footprint },
@@ -665,6 +737,14 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'unit.fire.kaya': ['kaya', 'fire'],
   'unit.water.sura': ['sura', 'water'],
   'unit.earth.bo': ['bo', 'earth'],
+  // T8: the heroes the tutorial does not cast.
+  'unit.fire.tenzo': ['tenzo', 'fire'],
+  'unit.water.nilak': ['nilak', 'water'],
+  'unit.earth.linmei': ['linmei', 'earth'],
+  'unit.air.nima': ['nima', 'air'],
+  'unit.air.jinu': ['jinu', 'air'],
+  'unit.non.riko': ['riko', 'nonbender'],
+  'unit.non.wen': ['wen', 'nonbender'],
   'unit.enemy.thug': ['thug', 'enemy'],
   'unit.enemy.slinger': ['slinger', 'enemy'],
   'unit.enemy.bruiser': ['bruiser', 'enemy'],
@@ -683,6 +763,9 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'npc.household': ['household', 'earth'],
   'npc.hanru': ['hanru', 'nonbender'],
   'npc.guard': ['guard', 'earth'],
+  // T10: Dema, the road keeper, and Sen, the tea keeper, in their own clothes.
+  'npc.dema': ['dema', 'earth'],
+  'npc.sen': ['sen', 'earth'],
 };
 
 /**
@@ -804,10 +887,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
-  // The residents' G sheets (issue #284). Dema and the shrine figure share Mira's,
-  // and Sen Gao's, as they shared the old images (owner decision pending).
+  // The residents' G sheets (issue #284). The shrine figure shares Mira's.
   'npc.elder': residentGSheet('mira', 'npc.elder', 'neutral'),
   'npc.shopkeeper': residentGSheet('gao', 'npc.shopkeeper', 'earth'),
+  // Dema and Sen have their own top-down sheets (T10). A G sheet's cels carry its own key, so the oblique
+  // look, until T7 deletes it, draws them as the painted elder and shopkeeper, as they were before #284.
+  'npc.dema': painter('villager', 'earth', 'elder'),
+  'npc.sen': painter('villager', 'earth', 'shopkeeper'),
   'world.turtle_ducks': image('art/world/turtle-ducks-nest.webp', 'earth'),
   'world.runoff_marker': image('art/world/runoff-marker.png', 'neutral'),
   'world.tea_station': image('art/props/tea-station.png', 'earth'),
@@ -837,7 +923,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.enemy.quarrybender': image('art/portraits/enemy.quarrybender.png', 'earth'),
   'portrait.enemy.crossbow': image('art/portraits/enemy.crossbow.png', 'enemy'),
   'portrait.enemy.thug': image('art/portraits/enemy.thug.png', 'enemy'),
-  'portrait.enemy.deserter': image('art/portraits/enemy.deserter.webp', 'fire'),
+  'portrait.enemy.deserter': image('art/portraits/enemy.deserter.png', 'fire'),
   'portrait.enemy.driller': image('art/portraits/enemy.grumbler.png', 'enemy'),
   'portrait.kaya': image('art/portraits/kaya.png', 'fire'),
   'portrait.tenzo': image('art/portraits/tenzo.png', 'fire'),
@@ -850,13 +936,15 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.riko': image('art/portraits/riko.png', 'nonbender'),
   'portrait.wen': image('art/portraits/wen.png', 'nonbender'),
 
-  'portrait.narrator': painter('portrait', 'neutral', 'narrator'),
+  'portrait.narrator': image('art/portraits/narrator.png', 'neutral'),
   'portrait.mira': image('art/portraits/mira.png', 'earth'),
   'portrait.gao': image('art/portraits/gao.png', 'earth'),
   'portrait.pella': image('art/portraits/pella.png', 'air'),
   'portrait.dorin': image('art/portraits/dorin.png', 'earth'),
   'portrait.ruon': image('art/portraits/ruon.png', 'neutral'),
   'portrait.jin': image('art/portraits/jin.png', 'nonbender'),
+  'portrait.dema': image('art/portraits/dema.png', 'neutral'),
+  'portrait.sen': image('art/portraits/sen.png', 'neutral'),
 
   /* ------------------------------------------------------------ Probe */
   /*

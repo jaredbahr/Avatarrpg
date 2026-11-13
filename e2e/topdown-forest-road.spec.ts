@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
+import { PNG } from 'pngjs';
+import { deserialize, serialize, stateFromBlob } from '../src/core/save/serialize';
 import { allowSoftwareWebgl } from './budget';
-import { paintedTileCentre } from './projection';
+import { paintedGroundPoint, paintedTileCentre } from './projection';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 /**
@@ -42,6 +44,80 @@ async function expectTopDownForest(page: Page, renderer: Renderer): Promise<void
 }
 
 for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[]) {
+  test(`the Forest Road exit markers point along their routes on ${renderer}`, async ({ page }) => {
+    allowSoftwareWebgl(test, renderer);
+    if (renderer === 'webgl')
+      test.skip(!(await webglAvailable(page)), 'WebGL is unavailable on this browser host.');
+    const errors = collectErrors(page);
+
+    await page.goto(`/?renderer=${renderer}&style=topdown`);
+    await page.waitForFunction(() => Boolean(window.fnt?.app));
+    await startGame(page, ['Elias'], ['kaya'], `forest-exit-direction-${renderer}`);
+    await enterNode(page, 'forest_explore');
+    const forest = await page.evaluate(() => window.fnt!.app.state!);
+    expect(forest.location.mapId).toBe('forest_road');
+    const session = { players: [{ name: 'Elias', unitId: 'p0' }], soloPlay: true };
+
+    const canvas = page.locator('.explore-scene .map-canvas');
+    const tile = 40;
+    for (const [column, sign] of [
+      [0, -1],
+      [19, 1],
+    ] as const) {
+      // Enter through the normal save API beside each mouth so the game can
+      // frame it without crossing the roadblock or depending on gesture pan.
+      const nearby = {
+        ...forest,
+        location: { ...forest.location, pos: { x: column - sign, y: 4 } },
+      };
+      const saved = deserialize(
+        serialize(nearby, {
+          label: 'Forest exit marker',
+          summary: 'A position near an authored road mouth',
+          savedAt: 1_700_000_000_000,
+          session,
+        }),
+      );
+      if (!saved.ok) throw new Error(`Invalid exit fixture: ${saved.error}`);
+      await page.evaluate(({ state, session }) => window.fnt!.app.adoptSave(state, session), {
+        state: stateFromBlob(saved.blob),
+        session: saved.blob.session,
+      });
+      await settleLayout(page);
+      await expectTopDownForest(page, renderer);
+      const centre = { x: column + 0.5, y: 4.5 };
+      const box = await canvas.boundingBox();
+      if (!box) throw new Error('Missing exit marker canvas');
+
+      const image = PNG.sync.read(await canvas.screenshot({ scale: 'css' }));
+      for (const [side, visible] of [
+        [sign, true],
+        [-sign, false],
+      ] as const) {
+        const sample = await paintedGroundPoint(page, {
+          x: centre.x + (side * 7) / tile,
+          y: centre.y,
+        });
+        if (!sample) throw new Error('Missing painted arrow sample');
+        const x = Math.round(sample.x - box.x);
+        const y = Math.round(sample.y - box.y);
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThan(image.width);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(y).toBeLessThan(image.height);
+        const i = (y * image.width + x) * 4;
+        const [red = 0, green = 0, blue = 0] = image.data.subarray(i, i + 3);
+        // These are inside the arrow's head and rear notch, well inside the ring.
+        const gold = red >= 210 && green >= 165 && red - green >= 22 && green - blue >= 39;
+        expect(
+          gold,
+          `exit column ${column}, sample side ${side}, RGB ${red}/${green}/${blue}`,
+        ).toBe(visible);
+      }
+    }
+    expect(errors.filter((text) => !/favicon/i.test(text))).toEqual([]);
+  });
+
   test(`the top-down Forest Road walks in exploration on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
     allowSoftwareWebgl(test, renderer);

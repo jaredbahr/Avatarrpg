@@ -174,8 +174,8 @@ for (const custody of ['escort', 'trade'] as const) {
     expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
       Object.fromEntries(RETURNEES.map((id) => [id, 'returning'])),
     );
-    await page.getByRole('button', { name: 'Read summary' }).click();
-    await page.getByRole('button', { name: 'Continue exploring' }).click();
+    // The workers-are-free beat is an interlude now; the demo ends in Ba Dan.
+    await page.getByRole('button', { name: 'Skip scene' }).click();
 
     await takeRoute(page, 'West → The Cutting', 'ambush_road');
     await takeRoute(page, 'West → Quarry Gate', 'quarry_gate');
@@ -212,8 +212,22 @@ for (const custody of ['escort', 'trade'] as const) {
       Object.fromEntries(RETURNEES.map((id) => [id, 'resting'])),
     );
     await settleResidents(page);
-    expect(await drawnReturnees(page)).toEqual([]);
+    // Three of them walk into Ba Dan with the party (#628) and stand at the
+    // east-road mouth until the welcome home has played; the others are indoors.
+    expect([...(await drawnReturnees(page))].sort()).toEqual([
+      'lw.npc.amri',
+      'lw.npc.bo_shan',
+      'lw.npc.leto',
+    ]);
     await expect(page.locator('.title-plate-objective')).toContainText('home');
+    await walkTo(page, 20, 7);
+    expect(await page.evaluate(() => window.fnt!.app.state?.story.nodeId)).toBe(
+      'welcome_home_mira',
+    );
+    await enterNode(page, 'demo_complete');
+    await page.getByRole('button', { name: 'Keep exploring', exact: true }).click();
+    await settleResidents(page);
+    expect(await drawnReturnees(page)).toEqual([]);
     expect(
       await page.evaluate(
         (flag) => window.fnt!.app.state?.flags[flag],

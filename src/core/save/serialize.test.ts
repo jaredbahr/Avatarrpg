@@ -93,6 +93,29 @@ function sizeTwoBattleState(): GameState {
 }
 
 describe('save round trip', () => {
+  it('retains explicit participant identity metadata while legacy session rows remain valid', () => {
+    const state = midBattleState();
+    const session = {
+      players: [
+        { name: 'Alex', unitId: 'p0', participantId: 'person-1' },
+        { name: 'Alex', unitId: 'p1', participantId: 'person-2' },
+        { name: 'Alex', unitId: 'p2', participantId: 'person-1' },
+      ],
+      participants: [
+        { id: 'person-1', name: 'Alex' },
+        { id: 'person-2', name: 'Alex' },
+      ],
+      soloPlay: false,
+    };
+    const loaded = deserialize(serialize(state, { ...META, session }));
+    if (!loaded.ok) throw new Error(loaded.error);
+    expect(loaded.blob.session).toEqual(session);
+
+    const legacy = deserialize(serialize(state, META));
+    if (!legacy.ok) throw new Error(legacy.error);
+    expect(legacy.blob.session).toEqual(META.session);
+  });
+
   it('survives a round trip unchanged', () => {
     const before = midBattleState();
     expect(before.battle?.phase, 'the fixture should still be mid-battle').toBe('active');
@@ -106,6 +129,37 @@ describe('save round trip', () => {
     // Deep equality, not a spot check: this is what fails when a new field is
     // added to GameState/BattleState and not to the schema in serialize.ts.
     expect(after).toEqual(before);
+  });
+
+  it('keeps a lost fight retryable after a reload, and loads an older one without the seed', () => {
+    const base = midBattleState();
+    const battle = base.battle;
+    if (!battle) throw new Error('fixture should be mid-battle');
+    expect(battle.openingRng, 'createBattle records the retry seed (#620)').not.toBeNull();
+    const lost: GameState = { ...base, battle: { ...battle, phase: 'defeat' } };
+
+    const result = deserialize(serialize(lost, META));
+    if (!result.ok) throw new Error(result.error);
+    expect(stateFromBlob(result.blob)).toEqual(lost);
+
+    const blob = JSON.parse(serialize(lost, META));
+    delete blob.state.battle.openingRng;
+    const legacy = deserialize(JSON.stringify(blob));
+    if (!legacy.ok) throw new Error(legacy.error);
+    expect(stateFromBlob(legacy.blob).battle?.openingRng).toBeNull();
+  });
+
+  it('keeps the discovered combos, and loads an older save as having found none (#622)', () => {
+    const found: GameState = { ...midBattleState(), discoveredCombos: ['fire-into-oil'] };
+    const result = deserialize(serialize(found, META));
+    if (!result.ok) throw new Error(result.error);
+    expect(stateFromBlob(result.blob)).toEqual(found);
+
+    const blob = JSON.parse(serialize(found, META));
+    delete blob.state.discoveredCombos;
+    const legacy = deserialize(JSON.stringify(blob));
+    if (!legacy.ok) throw new Error(legacy.error);
+    expect(stateFromBlob(legacy.blob).discoveredCombos).toEqual([]);
   });
 
   it('round-trips a size-2 unit and its anchor', () => {

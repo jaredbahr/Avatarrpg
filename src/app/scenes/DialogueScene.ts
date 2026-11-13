@@ -12,12 +12,14 @@
  */
 
 import type { App, Mood, Scene } from '../App';
-import type { StoryNode } from '../../core/types';
+import type { EndRecap, StoryNode } from '../../core/types';
 import { ELEMENT_IDS } from '../../core/types';
 import { resolveDialogue } from '../../core/story/storyEngine';
+import { evaluate } from '../../core/story/conditions';
+import { CreditsDialog } from '../ui/CreditsDialog';
 import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el } from '../ui/dom';
-import { assetCanvas } from '../ui/assetCanvas';
+import { assetCanvas, fitAssetToBox } from '../ui/assetCanvas';
 import { conversationPanel, resolveConversation } from '../ui/ConversationPanel';
 import {
   INTERLUDES,
@@ -26,8 +28,8 @@ import {
   type InterludeDef,
 } from '../../content/story/interludes';
 
-/** Portraits in the HUD are 6rem; on the stage the speaker is nearly twice that. */
-const STAGE_PORTRAIT_REM = 11;
+/** Portraits in the HUD are 6rem; on the stage the speaker is two and a half times that (240 px: 3x the 160 px art at dpr 2). */
+const STAGE_PORTRAIT_REM = 15;
 
 /**
  * The element a portrait is painted in. The manifest already tags every
@@ -115,6 +117,7 @@ export class DialogueScene implements Scene {
     }
 
     const scene = el('div', { class: 'scene dialogue-scene' });
+    if (node.kind === 'end') scene.classList.add('end-scene');
     scene.appendChild(this.topBar());
 
     if (this.interludeNode !== node.id) {
@@ -218,7 +221,8 @@ export class DialogueScene implements Scene {
   }
 
   private portrait(key: string, size = 6): HTMLElement {
-    return assetCanvas(key, size);
+    // The compact stage caps the box with max-width; redraw the store at the box it really gets.
+    return fitAssetToBox(assetCanvas(key, size));
   }
 
   private clearTimer(): void {
@@ -395,45 +399,91 @@ export class DialogueScene implements Scene {
 
   private endPanel(node: Extract<StoryNode, { kind: 'end' }>): HTMLElement {
     const next = node.next;
+    const recap = node.recap;
     const lines = el('div', { class: 'stack' });
     for (const line of node.lines) lines.appendChild(el('p', { text: line }));
 
-    return el(
-      'div',
-      { class: 'panel dialogue-panel end-panel' },
-      el('h1', { text: node.title }),
-      lines,
+    const panel = el('div', { class: 'panel dialogue-panel end-panel' });
+    if (recap) panel.appendChild(el('p', { class: 'end-kicker', text: recap.label }));
+    panel.appendChild(el('h1', { text: node.title }));
+    panel.appendChild(lines);
+    if (recap) panel.appendChild(this.recapSummary(recap));
+    panel.appendChild(
       el(
         'div',
         { class: 'teaser' },
         el('span', { class: 'tiny muted', text: next ? 'What lies ahead' : 'Next time' }),
         el('p', { text: node.teaser }),
       ),
-      el(
-        'div',
-        { class: 'row row-wrap' },
-        button('Save this game', () => this.app.openPause()),
-        INTERLUDES[node.id]
-          ? button('Replay scene', () => {
-              this.endFrame = 0;
-              this.endSummary = false;
-              this.render();
-            })
-          : null,
-        el('div', { class: 'spacer' }),
-        button('Back to the title', () => this.app.start(), {
-          class: next ? 'btn-ghost' : 'btn-primary btn-large',
-        }),
-        next
-          ? button(
-              'Continue exploring',
-              () => this.app.dispatch({ type: 'enterNode', nodeId: next }),
-              {
-                class: 'btn-primary btn-large',
-              },
-            )
-          : null,
-      ),
+    );
+    if (recap) panel.appendChild(el('p', { class: 'end-thanks', text: recap.thanks }));
+
+    const host = () => document.querySelector<HTMLElement>('.overlay-host') ?? document.body;
+    const actions = recap
+      ? [
+          button('Credits', () => new CreditsDialog().open(host())),
+          button('Save this game', () => this.app.openPause()),
+          next
+            ? button('Keep exploring', () => this.app.dispatch({ type: 'enterNode', nodeId: next }))
+            : null,
+          el('div', { class: 'spacer' }),
+          button('Back to the title', () => this.app.start(), { class: 'btn-ghost' }),
+          button(
+            'Play again with a different party',
+            () => this.app.goToSetup(this.app.session.count),
+            {
+              class: 'btn-primary btn-large',
+            },
+          ),
+        ]
+      : [
+          button('Save this game', () => this.app.openPause()),
+          INTERLUDES[node.id]
+            ? button('Replay scene', () => {
+                this.endFrame = 0;
+                this.endSummary = false;
+                this.render();
+              })
+            : null,
+          el('div', { class: 'spacer' }),
+          button('Back to the title', () => this.app.start(), {
+            class: next ? 'btn-ghost' : 'btn-primary btn-large',
+          }),
+          next
+            ? button(
+                'Continue exploring',
+                () => this.app.dispatch({ type: 'enterNode', nodeId: next }),
+                { class: 'btn-primary btn-large' },
+              )
+            : null,
+        ];
+    panel.appendChild(el('div', { class: 'row row-wrap' }, ...actions));
+    return panel;
+  }
+
+  /** The party as it finished, and the choices it made on the way. */
+  private recapSummary(recap: EndRecap): HTMLElement {
+    const state = this.app.state;
+    const players = this.app.session.players;
+    const party = el('ul', { class: 'end-recap-list' });
+    for (const unit of state?.party ?? []) {
+      const who = unit.characterId ? this.app.content.characters.get(unit.characterId) : undefined;
+      const name = who?.name ?? unit.id;
+      const player = players.find((candidate) => candidate.unitId === unit.id)?.name;
+      const by = player && player !== name ? ` (${player})` : '';
+      party.appendChild(el('li', { text: `${name}, level ${unit.level}${by}` }));
+    }
+    const choices = el('ul', { class: 'end-recap-list' });
+    for (const choice of recap.choices)
+      if (state && evaluate(state, choice.when))
+        choices.appendChild(el('li', { text: choice.text }));
+    return el(
+      'div',
+      { class: 'end-recap' },
+      el('div', { class: 'stack' }, el('h2', { text: 'The party' }), party),
+      choices.childElementCount
+        ? el('div', { class: 'stack' }, el('h2', { text: 'On the way' }), choices)
+        : null,
     );
   }
 }

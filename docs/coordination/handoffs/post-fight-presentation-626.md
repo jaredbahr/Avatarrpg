@@ -1,0 +1,9 @@
+# Post-fight presentation — issue #626
+
+- **Updated:** 2026-11-11 08:24 UTC; source owner `/root/avatar538_finish`, integration owner `/root`.
+- **Outcome:** A finished combat scene is released when the next story beat belongs to exploration. Earned reward choices appear first; the next dialogue remains mounted but concealed and inert until the final pick closes. Battle results and the demo-complete stage use a solid backdrop.
+- **Location:** `D:/Codex/worktrees/avatar626-post-fight-presentation-01a1b3cc`, branch `codex/issue-626-post-fight-presentation-01a1b3cc`, based on `96770384ad28b94a02346c93e05bc43b468bc15e`. Root claimed issue #626. No PR or push yet.
+- **Scope:** `App.showScene` keeps only a backdrop whose scene kind matches its owner. Reward presentation changes do not defer choices or change reducer, save, story text, or battle resolution. The result banner and end scene receive specific opaque styles. Lifecycle and browser regressions cover the handoff, chained rewards and all four authored battle Continue actions.
+- **Verification:** Root reviewed the source and `git diff --check` passed. Prettier passed on all 12 changed paths; the focused `SceneLifecycle.test.ts` run passed 17/17 on the same code bytes. Browser, full local CI and device checks remain unrun. The gate test stages a won board, then uses the real App result and Continue path; it does not claim four naturally won battles. The first visible post-gate dialogue screenshot is specified by the test and has not been produced or reviewed yet.
+- **Coordination:** Root owns runtime scheduling and final integration with active #624. The #626 source worktree is isolated; #624 files were not edited. #636 ending content and narrative remain unchanged.
+- **Next:** Run the focused four-battle and reward-focus browser specs when the runtime lane is free; inspect the actual first post-gate screenshot, then run required exact-head local and hosted checks before Ready.

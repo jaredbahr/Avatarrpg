@@ -26,7 +26,7 @@ A road through lowland woods a day out of the village, where the party is first 
 - Ledges, one step up (13 tiles): 10 tiles (top right), row 1: columns 16–17; row 2: columns 15–18; row 3: columns 16–19; 3 tiles (middle right), row 5: columns 18–19; row 6: column 19.
 - Heaps of tumbled rock (2 tiles): one tile at column 7, row 3 (top centre); one tile at column 8, row 9 (bottom centre).
 - Open ground everywhere else: grass (107 tiles).
-- The party enters from the left, standing at (1, 3), (3, 4), (1, 5), (3, 6), (1, 7), (3, 8); enemies come from the right. Paint nothing there that would read as an object to walk round.
+- The party enters from the left, standing at (2, 5), (3, 4), (1, 5), (3, 6), (1, 7), (3, 8); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 

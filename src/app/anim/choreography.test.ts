@@ -3,7 +3,16 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
-import { HIT_SETTLE_MS, TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
+import {
+  DEFAULT_PRESENTATION_TIMING,
+  HIT_SETTLE_MS,
+  TIMING,
+  TOPDOWN_PRESENTATION_TIMING,
+  WALL_RISE_MS,
+  choreograph,
+  hitSpan,
+  knockoutSpan,
+} from './choreography';
 import { HEADINGS, hitClip } from '../../content/assets/clips';
 import { attackMotion } from './attackMotion';
 import { enemyScale, partyScale } from './actorScale';
@@ -62,6 +71,31 @@ const roster = [unit('p0', 1, 3), unit('e0', 5, 3)];
 function run(events: GameEvent[], rate = 1) {
   return choreograph({ content, events, unitsBefore: roster, cursor: 1000, rate, pushIndex: 0 });
 }
+
+describe('presentation timing profiles', () => {
+  it('keeps event spacing separate from the top-down enemy wait', () => {
+    expect(DEFAULT_PRESENTATION_TIMING).toMatchObject(TIMING);
+    expect(DEFAULT_PRESENTATION_TIMING.tail).toBe(0);
+    expect(DEFAULT_PRESENTATION_TIMING.enemyGap).toBe(260);
+    expect(DEFAULT_PRESENTATION_TIMING).toMatchObject({
+      openingHold: 700,
+      openingFocus: 320,
+      victoryBeat: 1000,
+    });
+    expect(TOPDOWN_PRESENTATION_TIMING).toMatchObject({
+      windUp: 62,
+      release: 84,
+      recover: 46,
+      gap: 60,
+      tail: 110,
+      enemyGap: 200,
+      openingHold: 700,
+      openingFocus: 320,
+      victoryBeat: 1000,
+    });
+    expect(TIMING.windUp).not.toBe(TOPDOWN_PRESENTATION_TIMING.windUp);
+  });
+});
 
 describe('timed bare legacy clips', () => {
   const holds = {
@@ -678,6 +712,33 @@ describe('choreograph', () => {
     expect(move.duration).toBe(TIMING.strollStep * 2 + STROLL_RAMP_MS);
     expect(cursor).toBe(1000 + move.duration);
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
+  });
+
+  it('marks a top-down party walk action-ready at its end while visual tail remains', () => {
+    const out = choreograph({
+      content,
+      events: [
+        {
+          type: 'partyWalked',
+          unitId: 'leader',
+          from: { x: 3, y: 7 },
+          path: [
+            { x: 4, y: 7 },
+            { x: 5, y: 7 },
+          ],
+        },
+      ],
+      unitsBefore: roster,
+      cursor: 1000,
+      rate: 1,
+      timingProfile: TOPDOWN_PRESENTATION_TIMING,
+      pushIndex: 0,
+    });
+    const move = out.tracks.find((track) => track.kind === 'move');
+
+    if (move?.kind !== 'move') throw new Error('expected a party walk track');
+    expect(out.actionReadyAt).toBe(1000 + move.duration);
+    expect(out.cursor).toBe(out.actionReadyAt + TOPDOWN_PRESENTATION_TIMING.tail);
   });
 
   it('keeps reduced-motion party footsteps inside the abbreviated walk', () => {
@@ -1298,6 +1359,33 @@ describe('G hit timing', () => {
         track.kind === 'pose' && track.unitId === kaya.id && track.clip === clip,
     );
 
+  it('adds one strike tail before the separate exact enemy-turn deadline', () => {
+    const out = choreograph({
+      content,
+      events: [attack(), damage(4)],
+      unitsBefore: [kaya, attacker],
+      cursor: 1000,
+      rate: 1,
+      timingProfile: TOPDOWN_PRESENTATION_TIMING,
+      pushIndex: 0,
+      clipsOf: loaded,
+    });
+    const impactAt = 1000 + 62 + 84 * 0.75 * 0.45 + (4 / 26) * 1000;
+    const recoverAt = Math.max(1000 + 62 + 84 * 0.75, impactAt + 30);
+    const afterAbility = Math.max(recoverAt + 46 * 1.1, impactAt + 30) + 60;
+    const afterDamage = Math.max(afterAbility, impactAt + 30) + 60;
+    const expectedFinish = afterDamage + 110;
+
+    expect(out.cursor).toBeCloseTo(expectedFinish, 8);
+    expect(out.cursor).toBeCloseTo(1554.7961538461539, 8);
+    const actionReadyAt = impactAt + 30 + TOPDOWN_PRESENTATION_TIMING.tail;
+    expect(out.actionReadyAt).toBeCloseTo(actionReadyAt, 8);
+    expect(out.actionReadyAt + TOPDOWN_PRESENTATION_TIMING.enemyGap).toBeCloseTo(
+      1584.1961538461537,
+      8,
+    );
+  });
+
   it('pre-rolls a pending lethal G hit after the attack wind-up and starts KO at the hit end', () => {
     const out = play([attack(), damage(20), { type: 'unitDied', unitId: kaya.id }]);
     const hit = pose(out.tracks, 'hit');
@@ -1642,5 +1730,54 @@ describe('feel pass: every table beat is heard, and dust never holds the turn', 
     expect(tracks.filter((track) => track.kind === 'emitter').length).toBeGreaterThanOrEqual(2);
     expect(ignitionEmitters.some((track) => track.def.kind === 'particles')).toBe(true);
     expect(ignitionEmitters.some((track) => track.def.kind === 'strokes')).toBe(false);
+  });
+});
+
+describe('the top-down Earth Wall rise (#590)', () => {
+  const rises: GameEvent = {
+    type: 'surfaceChanged',
+    pos: { x: 3, y: 2 },
+    from: null,
+    to: null,
+    label: 'A wall of stone rises.',
+  };
+  const input = { content, unitsBefore: roster, cursor: 1000, pushIndex: 0 };
+  const riseTracks = (events: GameEvent[], projection: 'topdown' | 'oblique', rate = 1) =>
+    choreograph({ ...input, events, rate, projection }).tracks.filter((t) => t.kind === 'rise');
+
+  it('raises each cell over 260 ms on the top-down board, presentation only', () => {
+    const tracks = riseTracks([rises, { ...rises, pos: { x: 3, y: 3 } }], 'topdown');
+    expect(WALL_RISE_MS).toBe(260);
+    expect(tracks.map((t) => [t.kind === 'rise' && t.pos, t.duration])).toEqual([
+      [{ x: 3, y: 2 }, 260],
+      [{ x: 3, y: 3 }, 260],
+    ]);
+  });
+
+  it('stands the wall at once on the oblique board, under reduce motion, and when it crumbles', () => {
+    expect(riseTracks([rises], 'oblique')).toEqual([]);
+    expect(riseTracks([rises], 'topdown', 0.35)).toEqual([]);
+    expect(riseTracks([{ ...rises, label: 'The stone wall crumbles.' }], 'topdown')).toEqual([]);
+  });
+
+  it('reads 0 until the rise plays, eases out of the ground, and is whole after', () => {
+    const animator = new Animator(content, { motionReduced: () => false });
+    animator.setProjection('topdown');
+    animator.push(1000, [rises], roster);
+    const track = choreograph({
+      ...input,
+      events: [rises],
+      rate: 1,
+      projection: 'topdown',
+    }).tracks.find((t) => t.kind === 'rise');
+    if (!track) throw new Error('expected a rise');
+    const at = (ms: number) => animator.wallRise(track.start + ms, rises.pos);
+    expect(at(-1)).toBe(0);
+    expect(at(0)).toBe(0);
+    expect(at(130)).toBeGreaterThan(0.5);
+    expect(at(130)).toBeLessThan(1);
+    expect(at(260)).toBe(1);
+    expect(at(261)).toBeUndefined();
+    expect(animator.wallRise(track.start + 130, { x: 0, y: 0 })).toBeUndefined();
   });
 });

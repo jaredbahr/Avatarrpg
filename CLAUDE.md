@@ -10,12 +10,60 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
+## Current goal: a playable demo, Ba Dan to the quarry and back (owner, 2026-11-11)
+
+Everything on the route (Ba Dan, the Forest Road, the quarry gate, the Cutting, the Driller and the walk home) runs
+in the top-down style, the default since T6. The owner's direction for finishing it:
+
+- **Audience:** a playable link people open on their own device (the GitHub Pages build), plus a short video. The
+  first ten minutes must hold up for a stranger: onboarding, saves and what-to-do-next are part of the demo.
+- **Device:** tuned first for **iPad, landscape**: tap targets, camera zoom, text size and the HUD.
+- **What "finished" means:** **combat juice** (an action clip per heading and ability, impact effects, projectiles,
+  hit-stop, the follow camera) and **story presentation** (dialogue, portraits, scene transitions, and the walk
+  home landing as an ending).
+- **One style:** once the route is solid, top-down becomes the default (T6) and the oblique art and code are
+  deleted (T7). Don't spend effort polishing oblique-only paths.
+- **Players:** families and tactics fans, layered: easy to pick up for kids (about 7–12), with depth (combos, a
+  harder difficulty) for experienced players. Usually **3–4 players** share the iPad, so whose turn it is and the
+  hand-offs must always be clear.
+- **Tone:** a warm adventure, with humour and friendship and real stakes but nothing grim. Bandits are people with
+  reasons (`docs/writing-guide.md`).
+- **Difficulty:** forgiving by default (most first-time players win if they try), plus a harder option.
+- **Losing a fight:** the players choose "Try again" (restart the fight) or "Carry on" (the story's defeat branch)
+  (#620).
+- **Story choices:** a table vote, with ties going to the rotating decider (#621).
+- **Combos:** hinted first ("something here reacts to fire"), then named and shown openly once discovered (#622).
+- **Length:** one play-through of the demo takes about 30–40 minutes; trim any fight that drags past about 6.
+- **First ten minutes:**
+  - Party setup offers a one-tap suggested party (Kaya, Sura, Bo), with "Choose your own" for the full roster.
+  - The Forest Road ambush is a guided first fight (move, attack, end turn), then lets go. Later fights only show a
+    tip when something new appears.
+  - The game autosaves at every scene and fight start, the title shows Continue, and manual slots stay in the menu.
+- **Effects:** punchy but readable: strong impact frames, a small shake, hit-stop and bold elemental bursts, never
+  covering who got hit or the damage number.
+- **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
+  "thanks for playing" card with a party summary and "play again with a different party".
+- **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
+  UI sounds.
+- **Portraits:** the owner chose **style B, detailed pixel art at 160 px**, on 2026-11-11 (ADR 0107). New portraits are
+  made with `prototypes/topdown/tools/portraits_b.py` (the old portrait at 160 px through PixelLab `edit-image-pro-flash`,
+  the B description with the character's own features, seed 11); each is checked at 3x before it ships. A portrait
+  fix or new portrait made with that recipe merges on the orchestrator's 3x check without waiting for the owner, and
+  the result is sent to him afterwards (owner, 2026-11-13).
+- **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
+  new content or regions.
+
 ## Current state: top-down art direction (read first, 2026-11-05)
 
 The owner approved a new art direction in a standalone prototype: **traditional top-down PixelLab pixel art**
 (ADR 0103). It lives in `prototypes/topdown/` (its own build; outside the bundle, lint and format). Game work in
 `src/` stays paused (#348) until the port to this style is planned. The active work is the prototype: the whole
 tutorial, Ba Dan to the Forest Road to the quarry and the Driller.
+
+**Top-down is the default style (ADR 0104 T6).** A link with no `style` boots top-down, and so does a Continue (the
+style is never saved); `?style=topdown` is an alias. `?style=oblique` keeps the old look until T7 deletes it, and the
+oblique bullets under "Things that will bite you" (the Ba Dan painting, lifted tiers, G1 walks) describe that legacy
+path only. The top-down family is precached; the swapped maps' oblique art is not (`scripts/precache.mjs`).
 
 - **Read `docs/art-lessons.md` first.** It records every failed attempt (isometric painting with AI-redrawn
   characters, the cel-shaded test, 3D-to-pixel, #411's walk, the code motion layer) so nobody repeats them.

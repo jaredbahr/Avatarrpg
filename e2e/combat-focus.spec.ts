@@ -3,6 +3,7 @@ import { allowSoftwareWebgl } from './budget';
 import {
   enterNode,
   pauseClock,
+  pinObliqueStyle,
   resetStorage,
   setLargeText,
   settleLayout,
@@ -12,6 +13,9 @@ import {
 } from './helpers';
 import { paintedTileCentre } from './projection';
 import type { MapView } from '../src/render/view';
+
+// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
+test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 test('a fresh battle establishes the full formation before the acting-unit hand-off', async ({
   page,
@@ -229,7 +233,7 @@ test('camera follows the moving boss and returns to the next actor with motion o
     const draw = scene.renderer.draw.bind(scene.renderer);
     scene.renderer.draw = (view) => {
       draw(view);
-      const boss = view.units.find((unit) => unit.name === 'Grumbler');
+      const boss = view.units.find((unit) => unit.name === 'The Driller');
       if (!boss?.renderPos) return;
       const points = [0.5, 1.5].flatMap((dy) =>
         [0.5, 1.5].map((dx) =>
