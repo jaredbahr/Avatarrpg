@@ -844,6 +844,16 @@ export const encounterSchema = z.object({
   ),
   reinforcements: z.array(placement),
   weather: encounterWeatherSchema.optional(),
+  hard: z
+    .object({
+      hp: z.number().min(1).max(3),
+      bossHp: z.number().min(1).max(3),
+      power: z.number().int().min(0).max(10),
+      ap: z.number().int().min(0).max(4),
+    })
+    .partial()
+    .strict()
+    .optional(),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),
