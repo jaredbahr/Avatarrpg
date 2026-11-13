@@ -1,13 +1,14 @@
 # T7 retirement inventory (ADR 0104)
 
-Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `d6887867350313f5f41c0ab99156501538c5a5f4` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
+Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `4e9b044cce71cfb415fcc87e7c81dd349220ed50` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
 
 ## Retirement status on 2026-11-13
 
 - [#712](https://github.com/jaredbahr/Avatarrpg/pull/712) removed the style switch, world-style registration and the old scene modules and packers for the five route maps. A failed top-down scene load now uses the bare boards. The rule layout and top-down scene registry carry forward.
 - [#715](https://github.com/jaredbahr/Avatarrpg/pull/715) removed 3,162 source-art blobs (125,343,646 B) across ten directories and 119 shipped-art blobs (6,196,436 B). The shipped removals include 93 map blobs (5,300,686 B) and 26 world and style-test unit blobs (895,750 B). These are sizes from the actual merge's first-parent Git diff. The `forest-road-g1` provenance for shipped combat props, `ba-dan-riverside` and `occlusion-reveal` source directories remain. Riverside's orthographic backdrop is the only file left under `public/art/maps/`.
-- [#718](https://github.com/jaredbahr/Avatarrpg/pull/718) removed the oblique projection, lift pass, painted-ring and reachable-hull clamps, several grounding paths, and `OBLIQUE_FIGURE_SCALE`. Riverside’s orthographic backdrop and figure shadows are still in use. The G1 registrations and tests, `G1_WALK`, jog cels and brisk cadence remain for a follow-up. Preserve Riverside, top-down elevation and picking coverage, and the live occlusion reveal.
-- The top-down Kaya and Sura sheets lack the tea and wave clips from their G1 sheets. At startup, the top-down sheets replace the G1 registrations, and a missing clip falls back to idle. The [Riverside tea regression](https://github.com/jaredbahr/Avatarrpg/pull/717) exposes the missing seated-cup pose. The final paired build should start after the replacement clips and their Canvas and WebGL checks land, so the comparison measures retirement separately from replacement work.
+- [#718](https://github.com/jaredbahr/Avatarrpg/pull/718) removed the oblique projection, lift pass, painted-ring and reachable-hull clamps, several grounding paths, and `OBLIQUE_FIGURE_SCALE`. Riverside’s orthographic backdrop and figure shadows are still in use. Preserve Riverside, top-down elevation and picking coverage, and the live occlusion reveal.
+- [#720](https://github.com/jaredbahr/Avatarrpg/pull/720) removed the G1 registrations and packers, `G1_WALK`, jog cels and brisk cadence. The top-down sheet definitions now hold the original asset keys directly.
+- The top-down Kaya and Sura sheets still lack the tea and wave clips. A missing clip falls back to idle. The [Riverside tea regression](https://github.com/jaredbahr/Avatarrpg/pull/717) exposes the missing seated-cup pose. Measure any replacement art and its Canvas and WebGL behavior when that follow-up lands.
 
 ## Renderer retirement measurement
 
@@ -15,13 +16,13 @@ The early #718 draft `90593903` reported a local comparison against `a9990588` o
 
 The merged PR head `4d5107a7` passed hosted Verify in merge preview `2217582e` over `b525798f`. Compared with exact hosted main, shipped JavaScript fell from 413,091 to 399,803 gzip bytes (13,288 B). Workbox reported 17,027.79 to 16,986.79 KiB (41.00 KiB), with 325 entries in both builds. Both runs passed build and budgets. The preview passed 4,424 tests in 326 files. Under the PR policy, the browser and gallery verification jobs passed and the actual suites skipped. The figures describe the preview checkout, which embeds its own build revision. [Baseline Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43485012567/job/132091266463) · [Renderer Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43491784496/job/132114554794)
 
-The renderer PR lists coverage to migrate for ground pixels, whole-board picking, canvas reflow, top-down zoom and grounding. The final measurement still requires the G1 retirement and a qualified comparison with replacement Riverside clips available.
+The renderer PR lists coverage to migrate for ground pixels, whole-board picking, canvas reflow, top-down zoom and grounding.
 
-## G1 retirement preview
+## G1 retirement measurement
 
-[#720](https://github.com/jaredbahr/Avatarrpg/pull/720) proposes retiring the G1 sheets, their packers, bend tracks and effects, and the unused stance, jog and brisk cadence paths. Its exact merge preview `f02dac65` over `d6887867` deletes 12,204 source-art files (83,050,561 B) and 74 public-art files (3,789,566 B), measured from the deleted Git blobs. It preserves `art/source/forest-road-g1/` as combat-prop provenance. These blob totals describe the source diff.
+The #720 merge `4e9b044c` has the same tree as hosted preview `f02dac65`. It deletes 12,204 source-art files (83,050,561 B) and 74 public-art files (3,789,566 B), measured from the deleted Git blobs. It preserves `art/source/forest-road-g1/` as combat-prop provenance and retains the older non-G1 sheets outside this step. These blob totals describe the source diff.
 
-The PR reports local builds of 390.4 to 382.3 KiB of JavaScript gzip and 16.63 to 12.99 MiB precached, with 325 to 251 entries. Exact hosted verification and its independently recorded build figures are pending. The preview leaves the Riverside tea and wave replacement clips open. It also retains the older non-G1 sheets, which are outside this step. [Hosted Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43498459760/job/132137647412)
+Compared with its exact first parent `d6887867`, the hosted preview reduced shipped JavaScript from 399,808 to 391,484 gzip bytes, a reduction of 8,324 B. Workbox reported 16,986.79 to 13,265.93 KiB, a reduction of 3,720.86 KiB, and 325 to 251 entries. Both builds and budgets passed. The preview passed 4,044 tests in 310 files and balance. The browser and gallery verification jobs passed under the PR policy, and their actual suites skipped. Each checkout embeds its own build revision. [Baseline Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43493276984/job/132119705577) · [G1 Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43498459760/job/132137647412)
 
 ## Measured savings from the first two T7 steps
 
@@ -33,7 +34,7 @@ The existing hosted Verify jobs built the following clean revisions with Node 22
 | [`39c2a386`](https://github.com/jaredbahr/Avatarrpg/actions/runs/43467625415/job/132030854363) | Style switch and scene code removed         |       412,117 B |                      351 |         17,898.30 KiB |
 | [`1711e288`](https://github.com/jaredbahr/Avatarrpg/actions/runs/43472775026/job/132048699370) | Shipped oblique and world-style art removed |       411,778 B |                      325 |         17,023.55 KiB |
 
-The code step saved 7,682 gzip bytes and 22.26 KiB of reported precache size. The art step saved another 339 gzip bytes and 874.75 KiB of reported precache size, leaving four streamed music files in the asset budget's deferred count, down from 97. Across both steps the measured savings are 8,021 gzip bytes, 26 precache entries and 897.01 KiB of reported precache size. The shipped-art blob total above includes map files that T6 already excluded from precache. The later renderer comparison uses a different baseline. The remaining G1 step still needs a paired build measurement.
+The code step saved 7,682 gzip bytes and 22.26 KiB of reported precache size. The art step saved another 339 gzip bytes and 874.75 KiB of reported precache size, leaving four streamed music files in the asset budget's deferred count, down from 97. Across both steps the measured savings are 8,021 gzip bytes, 26 precache entries and 897.01 KiB of reported precache size. The shipped-art blob total above includes map files that T6 already excluded from precache. The renderer and G1 comparisons above use their own exact baselines.
 
 The `39c2a386` preview has the same tree as the #712 merge `f9125d69`. The `1711e288` preview applies only #715 on `f9125d69`. The actual #715 merge `a9990588` also contains the independent staged-dialogue header (#714) and Cutting difficulty (#711) changes. Its first-parent art diff matches the art-only preview's diff in all 3,293 paths and blob IDs. The builds embed their own seven-character Git revision, so the byte figures describe the named checkouts.
 
