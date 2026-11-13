@@ -1086,22 +1086,30 @@ export class ExploreScene implements Scene {
     party.prepend(mark(UI_MARKS.party));
     party.appendChild(el('span', { class: 'action-sub', text: `${state.party.length} strong` }));
     row.appendChild(party);
+    // Departure playback can still draw the old map after the rules have moved on.
+    const mapState = () => {
+      const current = this.app.state;
+      return current?.screen === 'explore' && current.location.mapId === this.map?.id
+        ? current
+        : null;
+    };
     const map = button(
       'Map',
       () => {
-        if (!this.map || !this.grid) return;
+        const current = mapState();
+        if (!current || !this.map || !this.grid) return;
         new LocalMapDialog(
           this.map,
           this.grid,
-          state,
+          current,
           this.app.content,
-          this.partyPositions() ?? [state.location.pos],
+          this.partyPositions() ?? [current.location.pos],
           (pos) => this.requestWalk(pos),
           () => this.followParty(),
-          worldObjectiveNpcId(this.app.content, state),
+          worldObjectiveNpcId(this.app.content, current),
         ).open(this.overlayHost());
       },
-      { class: 'action-button', title: 'Local map and routes' },
+      { class: 'action-button', title: 'Local map and routes', disabled: !mapState() },
     );
     map.prepend(mark(UI_MARKS.recentre));
     row.insertBefore(map, look);
