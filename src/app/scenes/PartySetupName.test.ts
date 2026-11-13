@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { App } from '../App';
 import { PartySetupScene } from './PartySetupScene';
 
@@ -153,4 +153,92 @@ it('Back from the first hero handoff returns to names instead of trapping the us
   scene.goBack();
   expect(scene.current).toBe(0);
   expect(scene.step).toBe('name');
+});
+
+it('Skip names gives everyone their default name in one tap and goes to the heroes', () => {
+  const { scene, panel } = nameForm();
+  scene.playerCount = 3;
+  scene.people = [{ name: 'Player 1' }, { name: 'half-typed' }, { name: 'Player 3' }];
+  const skip = panel.find(
+    (element) => element.tag === 'button' && element.textContent === 'Skip names',
+  );
+  if (!skip) throw new Error('The first name step must offer Skip names.');
+
+  skip.fire('click', {} as MouseEvent);
+
+  expect(scene.phase).toBe('heroes');
+  expect(scene.current).toBe(0);
+  expect(scene.step).toBe('handoff');
+  expect(scene.people.map((person) => person.name)).toEqual(['Player 1', 'Player 2', 'Player 3']);
+});
+
+describe('the suggested party', () => {
+  interface SuggestedScene {
+    playerCount: number;
+    step: string;
+    render: ReturnType<typeof vi.fn>;
+    chooseSuggested(): void;
+    beginSuggested(typed: readonly string[]): void;
+  }
+
+  function suggested(playerCount: number) {
+    const newGame = vi.fn();
+    const scene = new PartySetupScene({ newGame } as unknown as App) as unknown as SuggestedScene;
+    scene.playerCount = playerCount;
+    scene.render = vi.fn();
+    return { scene, newGame };
+  }
+
+  const today = [
+    { id: 'player-1', name: 'Player 1' },
+    { id: 'player-2', name: 'Player 2' },
+    { id: 'player-3', name: 'Player 3' },
+  ];
+
+  it('starts at once for one player, who has no hand-off card to name', () => {
+    const { scene, newGame } = suggested(1);
+    scene.chooseSuggested();
+    expect(scene.render).not.toHaveBeenCalled();
+    expect(newGame).toHaveBeenCalledOnce();
+    expect(newGame.mock.calls[0]?.[3]).toEqual([{ id: 'player-1', name: 'Player 1' }]);
+  });
+
+  it('asks a table for names, and Skip starts exactly the game it starts today', () => {
+    const { scene, newGame } = suggested(3);
+    scene.chooseSuggested();
+    expect(scene.step).toBe('tableNames');
+    expect(newGame).not.toHaveBeenCalled();
+
+    scene.beginSuggested([]);
+    const [players, slots, seed, participants] = newGame.mock.calls[0] ?? [];
+    expect(participants).toEqual(today);
+    expect(players).toEqual([
+      { name: 'Player 1', unitId: '', participantId: 'player-1' },
+      { name: 'Player 2', unitId: '', participantId: 'player-2' },
+      { name: 'Player 3', unitId: '', participantId: 'player-3' },
+    ]);
+    expect(slots).toEqual([
+      { characterId: 'kaya' },
+      { characterId: 'sura' },
+      { characterId: 'bo' },
+    ]);
+    expect(seed).toBeUndefined();
+  });
+
+  it('keeps typed names for the hand-off card only, cleaned, and leaves blank seats alone', () => {
+    const { scene, newGame } = suggested(3);
+    scene.beginSuggested(['  Maya ', '   ', 'Bartholomew the Brave']);
+    const [players, , , participants] = newGame.mock.calls[0] ?? [];
+    expect(participants).toEqual([
+      { id: 'player-1', name: 'Player 1', handoffName: 'Maya' },
+      { id: 'player-2', name: 'Player 2' },
+      { id: 'player-3', name: 'Player 3', handoffName: 'Bartholomew' },
+    ]);
+    // Player names (and so the seed, the vote and the ending) are untouched.
+    expect((players as { name: string }[]).map((player) => player.name)).toEqual([
+      'Player 1',
+      'Player 2',
+      'Player 3',
+    ]);
+  });
 });
