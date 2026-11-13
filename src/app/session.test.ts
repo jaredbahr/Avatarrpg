@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { Session, type Participant, type Player } from './session';
+import {
+  HANDOFF_NAME_MAX,
+  sanitiseHandoffName,
+  Session,
+  type Participant,
+  type Player,
+} from './session';
 import type { GameState } from '../core/types';
 
 const story = (deciderIndex: number) => ({ story: { deciderIndex } }) as unknown as GameState;
@@ -63,5 +69,56 @@ describe('hot-seat participant ownership', () => {
       ],
       soloPlay: false,
     });
+  });
+});
+
+describe('optional hand-off names', () => {
+  const participants: Participant[] = [
+    { id: 'player-1', name: 'Player 1', handoffName: 'Maya' },
+    { id: 'player-2', name: 'Player 2' },
+    { id: 'player-3', name: 'Player 3', handoffName: '  Theo  ' },
+  ];
+  const players: Player[] = [
+    { unitId: 'kaya', name: 'Player 1', participantId: 'player-1' },
+    { unitId: 'sura', name: 'Player 2', participantId: 'player-2' },
+    { unitId: 'bo', name: 'Player 3', participantId: 'player-3' },
+  ];
+
+  it('cleans what was typed: trimmed, one space, no control characters, 12 characters', () => {
+    expect(sanitiseHandoffName(undefined)).toBeUndefined();
+    expect(sanitiseHandoffName('   ')).toBeUndefined();
+    expect(sanitiseHandoffName('  Maya  ')).toBe('Maya');
+    expect(sanitiseHandoffName('Ma\u0000ya\n  Rose')).toBe('Ma ya Rose');
+    expect(sanitiseHandoffName('Bartholomew the Brave')).toBe('Bartholomew');
+    expect(sanitiseHandoffName('Abcdefghijklmnop')).toHaveLength(HANDOFF_NAME_MAX);
+    // Twelve characters, not twelve UTF-16 units: an emoji is never split.
+    expect(sanitiseHandoffName('🐉'.repeat(14))).toBe('🐉'.repeat(12));
+    expect(sanitiseHandoffName('<b>Jo</b>')).toBe('<b>Jo</b>');
+  });
+
+  it('names the hand-off card and nothing else', () => {
+    const session = new Session(players, participants);
+    expect(session.handoffNameFor('kaya')).toBe('Maya');
+    expect(session.handoffNameFor('bo')).toBe('Theo');
+    // No name typed for this seat: the card keeps the wording it always had.
+    expect(session.handoffNameFor('sura')).toBe('Player 2');
+    expect(session.handoffNameFor('enemy')).toBeUndefined();
+    // The story rotation and every other label keep the player names.
+    expect(session.decider(story(0))?.name).toBe('Player 1');
+    expect(session.playerFor('kaya')?.name).toBe('Player 1');
+  });
+
+  it('survives a save and loads an older save that has none', () => {
+    const restored = Session.fromMeta(new Session(players, participants).toMeta());
+    expect(restored.handoffNameFor('kaya')).toBe('Maya');
+    expect(restored.handoffNameFor('bo')).toBe('Theo');
+    expect(restored.participants[1]).toEqual({ id: 'player-2', name: 'Player 2' });
+
+    const older = Session.fromMeta({
+      players: players.map(({ name, unitId }) => ({ name, unitId })),
+      soloPlay: false,
+    });
+    expect(older.handoffNameFor('kaya')).toBe('Player 1');
+    expect(older.handoffNameFor('sura')).toBe('Player 2');
   });
 });

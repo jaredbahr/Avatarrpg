@@ -6,6 +6,10 @@
  * name, picks an element, picks a character, and confirms. Then a summary, then
  * Begin.
  *
+ * The suggested party skips all of that. With more than one player it asks
+ * for names on one optional screen ("Skip" is one tap and changes nothing);
+ * those names appear only on the combat hand-off card.
+ *
  * Two rules that matter at a real table:
  *  - A character already taken cannot be taken again. Two Kayas is confusing
  *    for everyone and makes the turn banner useless.
@@ -18,12 +22,12 @@ import type { CharacterDef, Difficulty, ElementId } from '../../core/types';
 import { DEFAULT_DIFFICULTY } from '../../core/rules/difficulty';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
-import { defaultPlayerName } from '../session';
+import { defaultPlayerName, HANDOFF_NAME_MAX, sanitiseHandoffName } from '../session';
 import { DIFFICULTY_CHOICES, difficultyHint } from '../ui/difficultyText';
 import { loadLastTitleArt } from '../storage/localSaves';
 import { titleArtById, type TitleArtDef } from '../titleArt';
 
-type Step = 'count' | 'handoff' | 'name' | 'element' | 'character' | 'summary';
+type Step = 'count' | 'tableNames' | 'handoff' | 'name' | 'element' | 'character' | 'summary';
 
 interface PersonDraft {
   name: string;
@@ -47,6 +51,8 @@ export class PartySetupScene implements Scene {
   private heroes: HeroDraft[] = [];
   private resumeHeroIndex: number | null = null;
   private difficulty: Difficulty = DEFAULT_DIFFICULTY;
+  /** What was typed on the suggested party's optional names screen, by seat. */
+  private tableNames: string[] = [];
 
   constructor(
     private app: App,
@@ -99,6 +105,9 @@ export class PartySetupScene implements Scene {
       case 'count':
         this.renderCount(panel);
         break;
+      case 'tableNames':
+        this.renderTableNames(panel);
+        break;
       case 'handoff':
         this.renderHandoff(panel);
         break;
@@ -123,7 +132,10 @@ export class PartySetupScene implements Scene {
 
     // Replacing a step removes its focused control. Keep a selected count/card
     // selected for keyboard users, or begin the new step at its first choice.
+    // The optional names screen starts on Skip, so an iPad does not raise its
+    // keyboard over a table that only wants to play.
     const target =
+      panel.querySelector<HTMLElement>('[data-autofocus]') ??
       panel.querySelector<HTMLElement>('input') ??
       panel.querySelector<HTMLElement>('button[aria-pressed="true"]:not([disabled])') ??
       panel.querySelector<HTMLElement>('button.pick-card:not([disabled])') ??
@@ -243,7 +255,7 @@ export class PartySetupScene implements Scene {
         button('Back', () => this.app.start(), { class: 'btn-ghost' }),
         el('div', { class: 'spacer' }),
         button('Choose your own', () => this.startDrafting(), { class: 'btn-ghost btn-large' }),
-        button('Start with the suggested party', () => this.beginSuggested(), {
+        button('Start with the suggested party', () => this.chooseSuggested(), {
           class: 'btn-primary btn-large',
         }),
       ),
@@ -266,11 +278,95 @@ export class PartySetupScene implements Scene {
     this.render();
   }
 
-  private beginSuggested(): void {
-    const participants = Array.from({ length: this.playerCount }, (_, index) => ({
-      id: `player-${index + 1}`,
-      name: defaultPlayerName(index),
-    }));
+  /** Solo play has no hand-off card, so it has nothing to name and starts at once. */
+  private chooseSuggested(): void {
+    if (this.playerCount <= 1) {
+      this.beginSuggested([]);
+      return;
+    }
+    this.tableNames = Array.from({ length: this.playerCount }, (_, i) => this.tableNames[i] ?? '');
+    this.step = 'tableNames';
+    this.render();
+  }
+
+  private renderTableNames(panel: HTMLElement): void {
+    panel.appendChild(el('h1', { text: 'Who is playing?' }));
+    panel.appendChild(
+      el('p', {
+        class: 'muted',
+        text: 'Optional. A name shows when the tablet is passed to you in a fight.',
+      }),
+    );
+
+    const fields = el('div', { class: 'table-names' });
+    for (let index = 0; index < this.playerCount; index++) {
+      const label = defaultPlayerName(index);
+      const input = el('input', {
+        type: 'text',
+        value: this.tableNames[index] ?? '',
+        placeholder: label,
+        attrs: {
+          maxlength: String(HANDOFF_NAME_MAX),
+          'aria-label': `${label} name`,
+          autocomplete: 'off',
+          autocapitalize: 'words',
+          spellcheck: 'false',
+          enterkeyhint: index + 1 < this.playerCount ? 'next' : 'go',
+        },
+        onInput: (event) => {
+          this.tableNames[index] = (event.target as HTMLInputElement).value;
+        },
+        onKeyDown: (event) => {
+          if (event.key !== 'Enter' || event.isComposing) return;
+          event.preventDefault();
+          const next = fields.querySelectorAll<HTMLInputElement>('input')[index + 1];
+          if (next) next.focus();
+          else this.beginSuggested(this.tableNames);
+        },
+      });
+      fields.appendChild(
+        el(
+          'label',
+          { class: 'table-name' },
+          el('span', { class: 'table-name-seat', text: label }),
+          input,
+        ),
+      );
+    }
+    panel.appendChild(fields);
+
+    const skip = button('Skip', () => this.beginSuggested([]), { class: 'btn-ghost btn-large' });
+    skip.dataset.autofocus = '';
+    panel.appendChild(
+      el(
+        'div',
+        { class: 'row row-wrap setup-footer' },
+        button(
+          'Back',
+          () => {
+            this.step = 'count';
+            this.render();
+          },
+          { class: 'btn-ghost' },
+        ),
+        el('div', { class: 'spacer' }),
+        skip,
+        button('Start', () => this.beginSuggested(this.tableNames), {
+          class: 'btn-primary btn-large',
+        }),
+      ),
+    );
+  }
+
+  private beginSuggested(typed: readonly string[]): void {
+    const participants = Array.from({ length: this.playerCount }, (_, index) => {
+      const handoffName = sanitiseHandoffName(typed[index]);
+      return {
+        id: `player-${index + 1}`,
+        name: defaultPlayerName(index),
+        ...(handoffName ? { handoffName } : {}),
+      };
+    });
     const characterIds = ['kaya', 'sura', 'bo'];
     const players = characterIds.map((_, index) => {
       const owner = participants[index % participants.length]!;
@@ -352,9 +448,14 @@ export class PartySetupScene implements Scene {
     panel.appendChild(
       el(
         'div',
-        { class: 'row setup-footer' },
+        { class: 'row row-wrap setup-footer' },
         button('Back', () => this.goBack(), { class: 'btn-ghost' }),
         el('div', { class: 'spacer' }),
+        // Names are optional: one tap gives everyone still to come the
+        // "Player N" they would have had, and goes straight to the heroes.
+        this.resumeHeroIndex === null
+          ? button('Skip names', () => this.skipNames(), { class: 'btn-ghost btn-large' })
+          : null,
         button('Next', () => this.finishName(input), { class: 'btn-primary btn-large' }),
       ),
     );
@@ -380,6 +481,17 @@ export class PartySetupScene implements Scene {
       this.current = 0;
       this.step = this.playerCount > 1 ? 'handoff' : 'element';
     }
+    this.render();
+  }
+
+  private skipNames(): void {
+    for (let index = this.current; index < this.people.length; index++) {
+      const person = this.people[index];
+      if (person) person.name = defaultPlayerName(index);
+    }
+    this.phase = 'heroes';
+    this.current = 0;
+    this.step = this.playerCount > 1 ? 'handoff' : 'element';
     this.render();
   }
 
