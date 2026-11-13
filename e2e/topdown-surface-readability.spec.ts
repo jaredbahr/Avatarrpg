@@ -168,10 +168,20 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await startGame(page, ['Oil review'], ['kaya'], `surface-oil-${board.id}`, {
         reduceMotion: true,
       });
+      // A combat tip writes its `guidance.tip.` flag when it shows and its toast
+      // can sit over the board; this case pins an unchanged state and an
+      // unobscured, still material, so tips stay off (combat-guidance covers them).
+      await page.evaluate(() => window.fnt!.app.updateSettings({ combatGuidance: false }));
       await enterNode(page, board.node);
       expect(await takeTurn(page)).toBe(true);
       await waitForIdle(page);
       expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(renderer);
+      // Top-down combat opens on the follow camera at N = 2 around the actor,
+      // which leaves part of the oil off screen; Recentre is the real control
+      // for the whole-board overview, where every sampled oil cell is drawn.
+      await page.getByRole('button', { name: 'Recentre', exact: true }).click();
+      await waitForIdle(page);
+      expect(await page.evaluate(() => window.fnt!.app.rendererCamera()?.fitted)).toBe(true);
       const before = await state(page);
       expect(before.location.mapId).toBe(board.id);
       for (const cell of board.oil)
