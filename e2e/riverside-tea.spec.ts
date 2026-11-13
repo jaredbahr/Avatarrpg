@@ -285,6 +285,20 @@ for (const backend of ['canvas', 'webgl']) {
       expect(sample.inked, 'the tea region must contain the drawn figure').toBeGreaterThan(0);
       return sample.cel;
     };
+    /*
+     * The pose the layer drew, by clip and cel (`data-pose-cels`): both seated figures draw their own top-down `tea`
+     * clip, not the idle a sheet without one falls back to. Reduced motion holds its first cel, the cup in the lap.
+     */
+    const poseCels = () => stage.getAttribute('data-pose-cels');
+    /** Publish frames on the paused clock until the layer reports `want`, then hold it to that. */
+    const drawsPose = async (want: string) => {
+      for (let attempt = 0; attempt < 24 && (await poseCels()) !== want; attempt++) {
+        await page.clock.runFor(17);
+        await page.waitForTimeout(40);
+      }
+      expect(await poseCels()).toBe(want);
+    };
+    await drawsPose('tea:0 tea:0');
     const still = await teaCel();
     // Reduced motion holds the seated cup pose, rather than reverting to idle.
     await page.waitForTimeout(300);
@@ -312,6 +326,10 @@ for (const backend of ['canvas', 'webgl']) {
     await page.clock.pauseAt(now + 30_000);
     // Publish the held frame before measuring the four-second cel interval.
     await page.clock.runFor(17);
+    // The held cel, whichever of the two the break has reached by now; both figures sat down together.
+    const held = /^tea:([01]) tea:\1$/.exec((await poseCels()) ?? '')?.[1];
+    expect(held, `the pair draws its tea clip: ${await poseCels()}`).toBeDefined();
+    const sipped = held === '0' ? '1' : '0';
     const hold = await teaCel();
     // Attach the held region too: a crop that missed the figure is the one
     // failure this assertion cannot explain on its own.
@@ -339,6 +357,9 @@ for (const backend of ['canvas', 'webgl']) {
       }),
       contentType: 'application/json',
     });
+    // The clip itself turned over to its other cel (the sip, or the cup lowered again)...
+    await drawsPose(`tea:${sipped} tea:${sipped}`);
+    // ...and that is the drawing on the layer.
     const sip = await teaCel();
     expect(sip).not.toBe(hold);
     // Two cels at 0.25 fps: one more interval returns the held cup drawing.
@@ -357,6 +378,7 @@ for (const backend of ['canvas', 'webgl']) {
       returned = await teaCel();
     }
     expect(returned).toBe(hold);
+    await drawsPose(`tea:${held} tea:${held}`);
     await expect(stage).toHaveAttribute('data-tea-actors', '2');
     await test.info().attach(`tea-${backend}-sip`, {
       body: png(sip),
@@ -377,3 +399,51 @@ test('tea only seats present supported characters on the porch', async ({ page }
   );
   expect(await page.evaluate(() => window.fnt!.app.state!.flags.riverside_tea)).toBe(true);
 });
+
+for (const leader of ['kaya', 'sura']) {
+  test(`the wave plays the leader's own wave clip (${leader})`, async ({ page }) => {
+    await page.clock.install();
+    await resetStorage(page, '?renderer=canvas');
+    // The wave is the party leader's; the other one stands by.
+    await startGame(
+      page,
+      ['Host'],
+      leader === 'kaya' ? ['kaya', 'sura'] : ['sura', 'kaya'],
+      'e2e-seed',
+      {
+        reduceMotion: false,
+      },
+    );
+    await enterNode(page, 'riverside_explore');
+    const stage = page.locator('.village-life-canvas');
+    await expect(stage).toHaveAttribute('data-illustrated-actors', /^[1-9]/);
+    await waitForIdle(page);
+    /*
+     * Freeze the clock, then wave from inside the page so the gesture starts on the frozen clock: every cel below is
+     * then a fixed time into it (`waveDrawing`: the hand is up from 180 ms, swinging between the clip's two cels
+     * every 220 ms from 420 ms), whatever the runner's frame rate.
+     */
+    await pauseClock(page);
+    await page.evaluate(() => {
+      const wave = [...document.querySelectorAll<HTMLButtonElement>('button')].find(
+        (b) => b.textContent === 'Wave',
+      );
+      if (!wave) throw new Error('missing Wave button');
+      wave.click();
+    });
+    const poseCels = () => stage.getAttribute('data-pose-cels');
+    const drawsPose = async (want: string) => {
+      for (let attempt = 0; attempt < 24 && (await poseCels()) !== want; attempt++) {
+        await page.clock.runFor(17);
+        await page.waitForTimeout(40);
+      }
+      expect(await poseCels()).toBe(want);
+    };
+    await page.clock.runFor(500);
+    await drawsPose('wave:0');
+    await page.clock.runFor(220);
+    await drawsPose('wave:1');
+    await page.clock.runFor(220);
+    await drawsPose('wave:0');
+  });
+}

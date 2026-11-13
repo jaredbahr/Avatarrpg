@@ -27392,6 +27392,230 @@
    "ids": {
     "background_job_id": "fc4ee01b-32bc-4746-ab67-51e06e92682b"
    }
+  },
+  {
+   "name": "t14_kaya_wave",
+   "endpoint": "/characters/animations",
+   "job": [
+    "278e5e3d-c494-487b-a78a-a03e6c5ad18f",
+    "7effb819-efe1-40d9-ac22-1f4c407e7f1c"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a friendly wave: standing in place with the feet planted, she raises one open ha...",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "south-east"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 15.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 7467.465464062499,
+   "balance_after": 7452.465464062499,
+   "secs": 74,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "e5a08fea-db28-4a64-8a2d-d30ec6a7a8b4"
+   }
+  },
+  {
+   "name": "t14_sura_wave",
+   "endpoint": "/characters/animations",
+   "job": [
+    "06f21a3f-5379-4e82-b91f-a9bdd1f83eec",
+    "eb4b52e4-7a5b-4a04-a6d0-0f6b4041e6c2"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "60e95676-bc43-4a4a-88b0-08d79955126f",
+    "mode": "skeleton-v3",
+    "action_description": "a friendly wave: standing in place with the feet planted, she raises one open ha...",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "south-east"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 15.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 7467.465464062499,
+   "balance_after": 7452.465464062499,
+   "secs": 74,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "62339b08-f7fc-414b-9cea-744f862d75af"
+   }
+  },
+  {
+   "name": "t14_sura_tea",
+   "endpoint": "/characters/animations",
+   "job": [
+    "0a74287a-37e4-4bb0-bcad-ba0f4a204901",
+    "c87d4029-ca8e-4031-a228-995bf32d98b8"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "60e95676-bc43-4a4a-88b0-08d79955126f",
+    "mode": "skeleton-v3",
+    "action_description": "seated tea: she sits cross-legged on the ground and stays seated the whole time,...",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "south-east"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 7467.465464062499,
+   "balance_after": 7443.465464062499,
+   "secs": 104,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "2af7bc67-6d16-46ae-94f8-70da985ff676"
+   }
+  },
+  {
+   "name": "t14_kaya_tea",
+   "endpoint": "/characters/animations",
+   "job": [
+    "48c32094-5ce2-4291-a1c3-3f8626382046",
+    "438ed522-d751-4e77-bf28-8954f712352e"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "seated tea: she sits cross-legged on the ground and stays seated the whole time,...",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "south-east"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 7467.465464062499,
+   "balance_after": 7443.465464062499,
+   "secs": 109,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "8d4e685e-51eb-4537-9eef-7c9093d00b3d"
+   }
+  },
+  {
+   "name": "t14_kaya_wave2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "586c7313-9128-4bf2-9a0a-eb4dc5403ebd",
+    "d6ffec0f-f3fc-4d67-9242-ff24f4041d04"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "a big friendly hello wave: standing in place with the feet planted, she lifts on...",
+    "frame_count": 6,
+    "directions": [
+     "south-east",
+     "south"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 7443.465464062499,
+   "balance_after": 7434.465464062499,
+   "secs": 81,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "9c9d91ef-7d0a-4cb7-8205-8c7e5704fd8c"
+   }
+  },
+  {
+   "name": "t14_sura_wave2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "76207a0a-5b9f-4607-b083-17d0d5a9eece",
+    "2eabf298-3cae-447c-a299-28fe72afbc8e"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "60e95676-bc43-4a4a-88b0-08d79955126f",
+    "mode": "skeleton-v3",
+    "action_description": "a big friendly hello wave: standing in place with the feet planted, she lifts on...",
+    "frame_count": 6,
+    "directions": [
+     "south-east",
+     "south"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 12.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 7443.465464062499,
+   "balance_after": 7431.465464062499,
+   "secs": 97,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "782513b9-5ba4-4b3e-9083-11f642d7d41f"
+   }
+  },
+  {
+   "name": "t14_kaya_tea2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "420bbcf0-8d8e-4ac8-8833-ef9472b1eddf",
+    "9d7e1708-7a72-4884-ba49-d21ea6e1653b"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "977535f6-c1b6-4a2f-999c-ffea3a9ba289",
+    "mode": "skeleton-v3",
+    "action_description": "seated tea: she is already sitting cross-legged on the ground at the start and s...",
+    "frame_count": 6,
+    "directions": [
+     "east",
+     "south-east"
+    ]
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "generations": 6.0
+   },
+   "balance_before": 7431.465464062499,
+   "balance_after": 7425.465464062499,
+   "secs": 126,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "ff3d70c5-eb86-495c-bcfa-79ceb9497212"
+   }
   }
  ],
  "end_balance": 16728.0,
