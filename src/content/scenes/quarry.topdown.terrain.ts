@@ -251,6 +251,7 @@ const reach = (tiers: number): number => tiers * Q_FACE + 3;
 function boxBump(px: number, py: number, x0: number, x1: number, y0: number, y1: number): number {
   const dx = Math.max(x0 - px, 0, px - x1) / FALL_X,
     dy = Math.max(y0 - py, 0, py - y1) / FALL_Y;
+  if (dx >= 1 || dy >= 1) return 0;
   const d = Math.hypot(dx, dy);
   if (d >= 1) return 0;
   const t = 1 - d;
