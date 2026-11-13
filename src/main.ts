@@ -9,6 +9,7 @@ import './styles/fonts.css';
 import './styles/base.css';
 import './styles/hud.css';
 import './styles/interludes.css';
+import './styles/objective-pointer.css';
 import './styles/a11y.css';
 
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';

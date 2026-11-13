@@ -560,8 +560,15 @@ export const mapSchema = z
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
     objective: z.string().min(1).optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
-      .array(z.object({ when: conditionSchema, text: z.string().min(1) }))
+      .array(
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveTargetId: id.nullable().optional(),
+        }),
+      )
       .optional(),
     exits: z
       .array(
@@ -905,13 +912,13 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('explore'),
     mapId: id,
     objective: z.string().min(1),
-    objectiveNpcId: id.optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
       .array(
         z.object({
           when: conditionSchema,
           text: z.string().min(1),
-          objectiveNpcId: id.nullable().optional(),
+          objectiveTargetId: id.nullable().optional(),
         }),
       )
       .optional(),
@@ -2091,6 +2098,30 @@ export function validateContent(
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
   const propIds = new Set(bundle.props.map((p) => p.id));
 
+  const checkObjectiveTarget = (
+    map: MapDef,
+    source: {
+      readonly objectiveTargetId?: string | null;
+    },
+    label: string,
+  ): void => {
+    const targetId = source.objectiveTargetId;
+    if (!targetId) return;
+    const matches =
+      map.npcs.filter((npc) => npc.id === targetId).length +
+      (map.exits ?? []).filter((exit) => exit.toMapId === targetId).length;
+    if (matches === 0)
+      problems.push(`${label} targets unknown npc or exit "${targetId}" on map "${map.id}"`);
+    else if (matches > 1)
+      problems.push(`${label} target "${targetId}" is ambiguous on map "${map.id}"`);
+  };
+
+  for (const map of bundle.maps) {
+    checkObjectiveTarget(map, map, `map "${map.id}" objective`);
+    for (const [index, variant] of (map.objectiveVariants ?? []).entries())
+      checkObjectiveTarget(map, variant, `map "${map.id}" objective variant ${index}`);
+  }
+
   /* --- abilities reference real statuses and surfaces --------------- */
   for (const a of bundle.abilities) {
     for (const effect of a.effects) {
@@ -2602,21 +2633,10 @@ export function validateContent(
       const map = bundle.maps.find((candidate) => candidate.id === node.mapId);
       if (!map) {
         problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
-      } else if (node.objectiveNpcId && !map.npcs.some((npc) => npc.id === node.objectiveNpcId)) {
-        problems.push(
-          `story node "${node.id}" targets unknown npc "${node.objectiveNpcId}" on map "${node.mapId}"`,
-        );
       } else {
-        for (const variant of node.objectiveVariants ?? []) {
-          if (
-            variant.objectiveNpcId &&
-            !map.npcs.some((npc) => npc.id === variant.objectiveNpcId)
-          ) {
-            problems.push(
-              `story node "${node.id}" objective variant targets unknown npc "${variant.objectiveNpcId}" on map "${node.mapId}"`,
-            );
-          }
-        }
+        checkObjectiveTarget(map, node, `story node "${node.id}"`);
+        for (const variant of node.objectiveVariants ?? [])
+          checkObjectiveTarget(map, variant, `story node "${node.id}" objective variant`);
       }
     }
   }
