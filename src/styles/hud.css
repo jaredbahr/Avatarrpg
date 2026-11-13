@@ -4017,15 +4017,64 @@ html[data-contrast='high'] .hud-panel::after {
   overflow-y: auto;
 }
 
-/* Give the coach its own dock row on landscape boards. As a third column it
-   narrows the action panel, stacks its controls, and can put legal board taps
-   underneath the guidance plate. A full row lets the actor and action panels
-   keep their normal widths while the map and dock reflow around the coach. */
+/* Give the coach its own dock row on landscape boards at Normal text. As a
+   third column it narrows the action panel, stacks its controls, and can put
+   legal board taps underneath the guidance plate. A full row lets the actor
+   and action panels keep their normal widths while the map and dock reflow
+   around the coach. */
 @media (min-width: 53rem) and (orientation: landscape) {
   .combat-scene .hud > .combat-guidance {
     flex: 1 0 100%;
     width: 100%;
     max-width: none;
+  }
+}
+
+/* Larger text, or a tablet held upright, leaves no room for that row: it
+   pushed the coach, or a pending Confirm, under the dock's edge, and the page
+   never scrolls (#695). There the coach takes the acting card's place while it
+   speaks; the turn strip still marks whose turn it is. Phones keep their own
+   compact dock. */
+@media (min-width: 36.0625rem) and (min-height: 34.0625rem) {
+  html:not([data-large-text='off']) .combat-scene .hud:has(> .combat-guidance) > .unit-panel {
+    display: none;
+  }
+
+  html:not([data-large-text='off']) .combat-scene .hud > .combat-guidance {
+    order: -1;
+    flex: 1 1 12rem;
+    flex-direction: column;
+    align-items: stretch;
+    align-self: flex-start;
+    justify-content: flex-start;
+    width: auto;
+    max-width: none;
+    margin: 0;
+  }
+
+  /* The same dock is too short for the actions and a decision stacked, so a
+     pending decision leads the action panel with Confirm and Cancel above its
+     forecast. */
+  html:not([data-large-text='off']) .combat-scene .action-bar > .confirm-bar,
+  html:not([data-large-text='off']) .combat-scene .confirm-dialog > .row {
+    order: -1;
+  }
+}
+
+@media (min-width: 36.0625rem) and (orientation: portrait) {
+  html[data-large-text='off'] .combat-scene .hud:has(> .combat-guidance) > .unit-panel {
+    display: none;
+  }
+
+  html[data-large-text='off'] .combat-scene .hud > .combat-guidance {
+    order: -1;
+    flex: 1 1 12rem;
+    flex-direction: column;
+    align-items: stretch;
+    align-self: flex-start;
+    justify-content: flex-start;
+    width: auto;
+    margin: 0;
   }
 }
 
