@@ -48,7 +48,12 @@ export class PartySetupScene implements Scene {
   private resumeHeroIndex: number | null = null;
   private difficulty: Difficulty = DEFAULT_DIFFICULTY;
 
-  constructor(private app: App) {}
+  constructor(
+    private app: App,
+    playerCount = 1,
+  ) {
+    this.playerCount = Math.min(6, Math.max(1, Math.round(playerCount) || 1));
+  }
 
   mount(host: HTMLElement): void {
     this.host = host;
