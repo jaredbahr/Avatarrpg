@@ -265,6 +265,11 @@
   white-space: nowrap;
 }
 
+/* Leave room for display glyphs that extend beyond their advance box. */
+.combat-bar .title-plate > .title-plate-name {
+  padding-inline-start: var(--hairline);
+}
+
 .title-plate-round {
   font-size: var(--fs-xs);
   color: var(--c-ink-dim);
