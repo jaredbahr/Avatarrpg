@@ -233,7 +233,7 @@ export const statusSchema = z.object({
     move: z.number(),
     ap: z.number(),
     accuracy: z.number(),
-    incomingMultiplier: z.record(z.number().positive()),
+    incomingMultiplier: z.record(z.string(), z.number().positive()),
   }),
   clears: z.array(statusId),
   upgradeFrom: z.array(statusId).nullable(),
@@ -536,7 +536,7 @@ export const mapSchema = z
     width: z.number().int().min(4).max(64),
     height: z.number().int().min(4).max(64),
     rows: z.array(z.string()).min(1),
-    legend: z.record(tileTemplate),
+    legend: z.record(z.string(), tileTemplate),
     partySpawns: z.array(vec2).min(1),
     npcs: z.array(
       z
@@ -893,7 +893,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
           label: z.string().min(1),
           detail: z.string().min(1),
           next: id,
-          setFlags: z.record(flagValue).optional(),
+          setFlags: z.record(z.string(), flagValue).optional(),
           requires: conditionSchema.optional(),
           speaker: z
             .object({ element: elementId.optional(), characterId: id.optional() })
@@ -927,8 +927,8 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
     kind: z.literal('flags'),
-    set: z.record(flagValue),
-    residentProfiles: z.record(z.enum(RESIDENT_PROFILES)).optional(),
+    set: z.record(z.string(), flagValue),
+    residentProfiles: z.record(z.string(), z.enum(RESIDENT_PROFILES)).optional(),
     grantXp: z.number().int().min(0).max(2000).optional(),
     phase: dayPhaseId.optional(),
     next: id,
@@ -1091,7 +1091,7 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
       .object({
         cast: z.string().min(1),
         idle: z.string().min(1).optional(),
-        abilities: z.record(z.string().min(1)).optional(),
+        abilities: z.record(z.string(), z.string().min(1)).optional(),
       })
       .optional(),
     // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body. 64 is
