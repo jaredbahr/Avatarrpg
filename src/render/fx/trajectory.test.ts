@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BendTrajectory } from '../../content/bends';
-import { projectGround } from '../projection';
 import {
   aimDeg,
-  boardStep,
   celTurnDeg,
   flightDurationMs,
   flightPoint,
@@ -21,7 +19,8 @@ const STRAIGHT: BendTrajectory = { kind: 'straight' };
 const TOTAL = 300;
 
 const STEP = Math.hypot(1, 0.5);
-const board = (x: number, y: number) => projectGround({ x, y }, 'oblique');
+/** The prototype's oblique step, kept as a fixture: the trajectory data was authored on it. */
+const board = (x: number, y: number) => ({ x: x - y, y: (x + y) / 2 });
 const ORIGIN = board(0, 0);
 /** A grid axis is a screen diagonal on the oblique board; a grid diagonal is screen-horizontal. */
 const CASES = {
@@ -32,10 +31,7 @@ const CASES = {
 } as const;
 
 describe('bend trajectories', () => {
-  it('measures a tile as one board step, as the prototype did', () => {
-    // The prototype's STEP = (96, 48) px, one grid step on the oblique board.
-    expect(boardStep('oblique')).toBe(Math.hypot(96, 48) / 96);
-    expect(boardStep('orthographic')).toBe(1);
+  it('reads the fixture board as the prototype did', () => {
     expect(board(1, 0)).toEqual({ x: 1, y: 0.5 });
     expect(board(3, -3)).toEqual({ x: 6, y: 0 });
   });

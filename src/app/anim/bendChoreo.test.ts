@@ -10,7 +10,6 @@ import type { ContentIndex } from '../../core/types';
 import { Animator } from '../animator';
 import { bendStep, flightDurationMs, whipHead } from '../../render/fx/trajectory';
 import type { Point } from '../../render/fx/trajectory';
-import { projectGround } from '../../render/projection';
 import type { BendCel, BendPlan, BendSpec } from './bendChoreo';
 import {
   bendCelAt,
@@ -35,8 +34,11 @@ const SETS = {
   water: read('art/units/sura-bend.json') as BendSetDef,
 };
 
-/** A caster's foot at grid (1, 6) on the oblique board, and a target `dx, dy` tiles away. */
-const board = (x: number, y: number): Point => projectGround({ x: x + 0.5, y: y + 0.5 }, 'oblique');
+/**
+ * A caster's foot at grid (1, 6) on the prototype's oblique board, and a target `dx, dy` tiles
+ * away: the bend data was authored on that step, so the fixture keeps it.
+ */
+const board = (x: number, y: number): Point => ({ x: x - y, y: (x + y + 1) / 2 });
 const FOOT = board(1, 6);
 
 function spec(

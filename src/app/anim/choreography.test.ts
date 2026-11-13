@@ -280,7 +280,7 @@ describe('directed Fire Jab attachments', () => {
       cursor: 1000,
       rate,
       pushIndex: 0,
-      projection: 'oblique',
+      projection: 'orthographic',
     });
 
   it('attaches either boss footprint cell to the same torso while preserving logical trajectory', () => {
@@ -340,7 +340,7 @@ describe('directed Fire Jab attachments', () => {
           sprite: target.sprite,
           pos: target.pos,
           // A G enemy (ADR 0059, ADR 0062) stands at the party's scale on `play`'s oblique map.
-          scale: enemyScale(target.sprite, 1, 'oblique'),
+          scale: enemyScale(target.sprite, 1),
           size: 1,
         });
         expect(travel?.to).toEqual({ x: 5.5, y: 3.5 });
@@ -568,7 +568,7 @@ describe('directed Fire Jab attachments', () => {
     if (pose?.kind !== 'pose' || !pose.scale) throw new Error('Missing release pose');
     const fraction = pose.ease((release.start - pose.start) / pose.duration);
     expect(release.attachments?.from?.scale).toBeCloseTo(
-      partyScale('oblique') * (pose.scale.from + (pose.scale.to - pose.scale.from) * fraction),
+      partyScale() * (pose.scale.from + (pose.scale.to - pose.scale.from) * fraction),
       9,
     );
     expect(release.attachments?.from?.offset.x).toBeCloseTo(
@@ -598,11 +598,12 @@ describe('directed Fire Jab attachments', () => {
     expect(reduced.cursor - 1000).toBeCloseTo((normal.cursor - 1000) * 0.02, 7);
   });
 
-  it('uses the same explicit side for the palm and cast pose at vertical screen headings', () => {
-    for (const [x, y, facing] of [
-      [3, 5, 1],
-      [3, 6, -1],
-      [1, 5, -1],
+  it('uses the same explicit side for the palm and cast pose at every heading', () => {
+    for (const [x, y] of [
+      [3, 5],
+      [3, 6],
+      [1, 5],
+      [1, 6],
     ] as const) {
       const events: GameEvent[] = [
         {
@@ -617,6 +618,7 @@ describe('directed Fire Jab attachments', () => {
       const poses = tracks.filter(
         (t): t is PoseTrack => t.kind === 'pose' && t.unitId === caster.id,
       );
+      const facing = poses[0]?.facing;
       expect(poses.every((pose) => pose.facing === facing)).toBe(true);
       const palms = tracks.filter(
         (t): t is EmitterTrack => t.kind === 'emitter' && t.attachments?.from?.socket !== 'torso',
@@ -1268,48 +1270,6 @@ describe('choreograph', () => {
   });
 });
 
-it('projects attack and reaction poses without changing timing, particles or sound', () => {
-  const events: GameEvent[] = [
-    {
-      type: 'abilityUsed',
-      unitId: 'p0',
-      abilityId: 'fire_jab',
-      target: { x: 4, y: 6 },
-      tiles: [{ x: 4, y: 6 }],
-    },
-    { type: 'damaged', damageType: 'fire', unitId: 'e0', amount: 5, sourceId: 'p0', crit: false },
-  ];
-  const input = {
-    content,
-    events,
-    unitsBefore: [unit('p0', 4, 4), unit('e0', 4, 6)],
-    cursor: 0,
-    rate: 1,
-    pushIndex: 0,
-  };
-  const flat = choreograph(input);
-  const oblique = choreograph({ ...input, projection: 'oblique' });
-  expect(oblique.cursor).toBe(flat.cursor);
-  expect(oblique.sounds).toEqual(flat.sounds);
-  // Attachments are projected presentation snapshots. Logical particle paths,
-  // emitter definitions, seeds and clocks still match exactly.
-  const logicalTracks = (tracks: readonly AnyTrack[]) =>
-    tracks
-      .filter((t) => t.kind !== 'pose')
-      .map((t) => (t.kind === 'emitter' ? { ...t, attachments: undefined } : t));
-  expect(logicalTracks(oblique.tracks)).toEqual(logicalTracks(flat.tracks));
-  const flatPoses = flat.tracks.filter((t) => t.kind === 'pose');
-  const poses = oblique.tracks.filter((t) => t.kind === 'pose');
-  expect(poses.map(({ offset: _offset, facing: _facing, ...rest }) => rest)).toEqual(
-    flatPoses.map(({ offset: _offset, facing: _facing, ...rest }) => rest),
-  );
-  const attacks = poses.filter((t) => t.unitId === 'p0');
-  expect(attacks.every((t) => t.facing === -1)).toBe(true);
-  expect(attacks.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
-  const recoil = poses.filter((t) => t.unitId === 'e0');
-  expect(recoil.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
-});
-
 describe('G hit timing', () => {
   const kayaClips = JSON.parse(
     readFileSync('public/art/units/kaya-g-clips.json', 'utf8'),
@@ -1742,7 +1702,7 @@ describe('the top-down Earth Wall rise (#590)', () => {
     label: 'A wall of stone rises.',
   };
   const input = { content, unitsBefore: roster, cursor: 1000, pushIndex: 0 };
-  const riseTracks = (events: GameEvent[], projection: 'topdown' | 'oblique', rate = 1) =>
+  const riseTracks = (events: GameEvent[], projection: 'topdown' | 'orthographic', rate = 1) =>
     choreograph({ ...input, events, rate, projection }).tracks.filter((t) => t.kind === 'rise');
 
   it('raises each cell over 260 ms on the top-down board, presentation only', () => {
@@ -1755,7 +1715,7 @@ describe('the top-down Earth Wall rise (#590)', () => {
   });
 
   it('stands the wall at once on the oblique board, under reduce motion, and when it crumbles', () => {
-    expect(riseTracks([rises], 'oblique')).toEqual([]);
+    expect(riseTracks([rises], 'orthographic')).toEqual([]);
     expect(riseTracks([rises], 'topdown', 0.35)).toEqual([]);
     expect(riseTracks([{ ...rises, label: 'The stone wall crumbles.' }], 'topdown')).toEqual([]);
   });

@@ -37,7 +37,6 @@ export function topDownSceneSchema(sceneUrl: string): Schema<MapScene> {
     groundMode: s.literal('partial').optional(),
     paintedWaterCells: s.array(point).optional(),
     paintedRubble: s.array(point).optional(),
-    reliefLift: s.union([finite, s.array(finite)]).optional(),
     paintExtent: s.object({ x: finite, y: finite, width: positive, height: positive }).optional(),
     chimneys: s.array(point).optional(),
     pavedCells: s.array(point).optional(),

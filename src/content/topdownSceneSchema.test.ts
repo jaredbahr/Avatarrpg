@@ -108,7 +108,6 @@ describe('fetched top-down scene validation', () => {
       groundMode: 'partial',
       paintedWaterCells: [{ x: 1, y: 2 }],
       paintedRubble: [{ x: 3, y: 4 }],
-      reliefLift: [0, 0.25],
       chimneys: [{ x: -2.5, y: -3.25 }],
       ambienceSources: { steam: [{ x: -1, y: 2 }], lanterns: [{ x: 3, y: -4 }] },
       actorGrounding: {
@@ -142,5 +141,15 @@ describe('fetched top-down scene validation', () => {
     const before = structuredClone(payload);
     expect((await load(payload, url)).get('fixture')?.scene).toStrictEqual(payload);
     expect(payload).toStrictEqual(before);
+  });
+
+  it('drops the retired oblique `reliefLift` from a scene that still carries it (ADR 0104 T7)', async () => {
+    const url = 'art/topdown/ba-dan/scene.json';
+    const payload = readScene(url);
+    const expected = structuredClone(payload);
+    Object.assign(payload, { reliefLift: [0, 0.25] });
+    const scene = (await load(payload, url)).get('fixture')?.scene;
+    expect(scene).toStrictEqual(expected);
+    expect(scene && 'reliefLift' in scene).toBe(false);
   });
 });

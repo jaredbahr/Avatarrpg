@@ -132,7 +132,7 @@ describe('victory beat', () => {
     const camera = new Camera(
       { width: 1000, height: 600, dpr: 2 },
       { width: 20, height: 12 },
-      'oblique',
+      'topdown',
     );
     camera.integerZoom = true;
     camera.scale = 2;

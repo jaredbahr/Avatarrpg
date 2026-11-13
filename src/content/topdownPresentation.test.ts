@@ -21,13 +21,7 @@ const fromDisk = (url: string): Promise<unknown> =>
   Promise.resolve(JSON.parse(readFileSync(`public/${url}`, 'utf8')) as unknown);
 
 /** The fields only the renderers and the camera read. */
-const PRESENTATION_FIELDS = new Set([
-  'projection',
-  'scene',
-  'backdrop',
-  'cameraPaint',
-  'cameraCentreMargin',
-]);
+const PRESENTATION_FIELDS = new Set(['projection', 'scene', 'backdrop', 'cameraCentreMargin']);
 
 const PRESENTATION: TopDownPresentation = { projection: 'topdown', scene: TOPDOWN_FIXTURE_SCENE };
 
@@ -134,7 +128,6 @@ describe('withTopDownMaps', () => {
         expect(TOPDOWN_FIXTURE_SCENE.paintedRubble).toBeUndefined();
       }
       expect('backdrop' in after).toBe(false);
-      expect('cameraPaint' in after).toBe(false);
       // The map's own centre margin stays unless the presentation sets one.
       expect(after.cameraCentreMargin).toBe(before.cameraCentreMargin);
     }

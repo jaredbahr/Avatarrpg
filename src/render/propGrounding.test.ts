@@ -13,7 +13,6 @@ import { FOOT_LINE } from './sheets/bake';
 import {
   CAST_PER_PIXEL,
   CONTACT_LINE,
-  footprintSpan,
   groundProfile,
   groundedCast,
   projectShadowPoint,
@@ -46,16 +45,6 @@ describe('a prop stands on the hull of its bottom edge', () => {
     expect(free[0]).toBe(1);
     // With it the arm stands over the ground the post stands on.
     expect([...footed]).toEqual([6, 6, 6, 6, 6]);
-  });
-
-  it('spans a footprint diamond column by column', () => {
-    // One cell, ground corners (0,0) (2,1) (0,2) (-2,1) in art px around x = 2: a 4 x 2 diamond.
-    const span = footprintSpan([{ x: 0, y: 0 }], (p) => ({
-      x: 2 + (p.x - p.y) * 2,
-      y: (p.x + p.y) * 1,
-    }));
-    expect(span(1)).toEqual({ top: 0.25, bottom: 1.75 });
-    expect(span(10)).toBeNull();
   });
 
   it('casts down-right from the base, the base row its own cast', () => {

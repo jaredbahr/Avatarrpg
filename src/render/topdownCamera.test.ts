@@ -10,16 +10,7 @@ import { FOREST_ROAD } from '../content/maps/combat';
 import { Camera, MIN_TILE_PX, TILE, isWholeScale } from './camera';
 import { TOPDOWN_FIXTURE as FIXTURE } from './topdown.fixture';
 import type { Viewport } from './camera';
-import { liftAlong, liftAt, pickCell } from './geometry/elevation';
-import {
-  TOPDOWN_TILE,
-  exploreTilePx,
-  groundBounds,
-  projectGround,
-  tileSize,
-  unprojectGround,
-  usesIntegerZoom,
-} from './projection';
+import { TOPDOWN_TILE, exploreTilePx, tileSize, usesIntegerZoom } from './projection';
 
 /** The viewports the device matrix names, with their device pixel ratios. */
 const VIEWPORTS: readonly (Viewport & { name: string })[] = [
@@ -64,20 +55,12 @@ function topdown(viewport: Viewport, grid: { width: number; height: number }): C
 }
 
 describe('top-down ground contract', () => {
-  it('is the identity ground transform at 40 world px a tile, leaving the others at 64', () => {
+  it('is the identity ground transform at 40 world px a tile, leaving the orthographic at 64', () => {
     expect(TOPDOWN_TILE).toBe(40);
     expect(tileSize('topdown')).toBe(40);
-    expect(tileSize('oblique')).toBe(TILE);
     expect(tileSize('orthographic')).toBe(TILE);
     expect(usesIntegerZoom('topdown')).toBe(true);
-    expect(usesIntegerZoom('oblique')).toBe(true);
     expect(usesIntegerZoom('orthographic')).toBe(false);
-    expect(groundBounds(20, 12, 'topdown')).toEqual({ minX: 0, minY: 0, width: 20, height: 12 });
-    for (const x of [-1, 0, 0.125, 7.5, 19.999, 20])
-      for (const y of [-1, 0, 3.25, 11.5, 12]) {
-        expect(projectGround({ x, y }, 'topdown')).toEqual({ x, y });
-        expect(unprojectGround(projectGround({ x, y }, 'topdown'), 'topdown')).toEqual({ x, y });
-      }
   });
 
   it('round-trips ground points through the camera at every scale, offset and dpr', () => {
@@ -115,18 +98,18 @@ describe('top-down ground contract', () => {
         }
   });
 
-  it('leaves the oblique board on 64 px tiles', () => {
+  it('leaves the orthographic board on 64 px tiles', () => {
     const camera = new Camera(
       { width: 1000, height: 700, dpr: 1 },
       { width: 24, height: 16 },
-      'oblique',
+      'orthographic',
     );
     expect(camera.tile).toBe(64);
     camera.scale = 1;
     expect(camera.toScreen({ x: 0, y: 0 }).size).toBe(64);
   });
 
-  it('lifts nothing and picks the flat cell, raised or not', () => {
+  it('picks the flat cell, raised or not', () => {
     const grid = buildGrid(FIXTURE);
     const camera = new Camera({ width: 1000, height: 700, dpr: 2 }, grid, 'topdown');
     camera.scale = 1.5;
@@ -136,16 +119,9 @@ describe('top-down ground contract', () => {
     for (let y = 0; y < grid.height; y++)
       for (let x = 0; x < grid.width; x++) {
         const tile = grid.tiles[y * grid.width + x];
-        if ((tile?.elevation ?? 0) > 0) {
-          raised += 1;
-          // The same cell lifts on the oblique board, so the fixture tests what it says.
-          if (!tile?.blocked) expect(liftAt(grid, { x, y }, 'oblique')).toBeGreaterThan(0);
-        }
-        expect(liftAt(grid, { x, y }, 'topdown')).toBe(0);
-        expect(liftAlong(grid, { x: x + 0.37, y: y + 0.81 }, 'topdown')).toBe(0);
+        if ((tile?.elevation ?? 0) > 0) raised += 1;
         for (const fx of [0.001, 0.5, 0.999])
           for (const fy of [0.001, 0.5, 0.999]) {
-            expect(pickCell(grid, { x: x + fx, y: y + fy }, 'topdown')).toEqual({ x, y });
             const screen = camera.project({ x: x + fx, y: y + fy });
             expect(camera.pickTile(screen.x, screen.y, grid)).toEqual({ x, y });
           }
@@ -155,7 +131,7 @@ describe('top-down ground contract', () => {
 
   it('is a map projection the content schema accepts', () => {
     expect(mapSchema.safeParse({ ...FOREST_ROAD, projection: 'topdown' }).success).toBe(true);
-    expect(mapSchema.safeParse({ ...FOREST_ROAD, projection: 'oblique' }).success).toBe(true);
+    expect(mapSchema.safeParse({ ...FOREST_ROAD, projection: 'oblique' }).success).toBe(false);
     expect(mapSchema.safeParse({ ...FOREST_ROAD, projection: 'isometric' }).success).toBe(false);
   });
 });
@@ -236,14 +212,12 @@ describe('top-down integer zoom: N >= dpr', () => {
     expect(camera.tile * camera.scale).toBe(120);
   });
 
-  it('is what exploration asks for on a top-down map, and the oblique and flat asks are unchanged', () => {
+  it('is what exploration asks for on a top-down map, and the flat ask is unchanged', () => {
     expect(exploreTilePx('topdown')).toBe(120);
-    expect(exploreTilePx('oblique')).toBe(96);
     expect(exploreTilePx('orthographic')).toBe(48);
     // An upright phone steps down to N = 2 so it shows more than three tiles across.
     expect(exploreTilePx('topdown', 390)).toBe(80);
     expect(exploreTilePx('topdown', 1180)).toBe(120);
-    expect(exploreTilePx('oblique', 390)).toBe(96);
     const phone = topdown({ width: 390, height: 844, dpr: 1 }, { width: 24, height: 16 });
     phone.fitExplore(exploreTilePx('topdown', 390));
     expect(phone.deviceScale).toBe(2);

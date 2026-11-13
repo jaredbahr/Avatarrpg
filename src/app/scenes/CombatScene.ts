@@ -55,7 +55,7 @@ import { encounterText } from '../../core/story/encounterText';
 import { Renderer } from '../../render/renderer';
 import { usesIntegerZoom } from '../../render/projection';
 import type { Camera } from '../../render/camera';
-import { renderFoot } from '../../render/renderFoot';
+import { footprintFoot } from '../../core/rules/footprint';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { cliffEdgesFor, placeFloaters, type TargetReticleCue } from '../../render/view';
 import { weatherAt } from '../../core/rules/obscurement';
@@ -101,7 +101,6 @@ import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
 import { PresentationClock, type CombatSpeed } from './presentationClock';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
-import { liftAlong } from '../../render/geometry/elevation';
 import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
 import { applyTopdownFollow, topdownFollow } from '../../render/topdownFollow';
 import {
@@ -321,13 +320,6 @@ export class CombatScene implements Scene {
     height: number;
     dpr: number;
   } | null = null;
-  /**
-   * The compact oblique frame is chosen from the first settled combat canvas,
-   * before an ability or log panel changes its height. Keeping that choice for
-   * the scene prevents aim-mode reflow from zooming the board in and out.
-   */
-  private preferredCombatTilePx: number | null = null;
-  private preferredCombatFrameKey: string | null = null;
 
   firstFrameSheetKeys(): readonly string[] {
     return this.battle()?.units.map((unit) => unit.sprite) ?? [];
@@ -771,23 +763,6 @@ export class CombatScene implements Scene {
     const desiredY = Math.min(viewport.height - padding, Math.max(padding, point.y));
     camera.panBy(desiredX - point.x, desiredY - point.y);
 
-    // A non-rectangular reachable-set projection can push the requested pan
-    // back along a diagonal edge. If that leaves the selected tile outside
-    // the padded viewport, use its programmatic centre as the final point on
-    // the same reachable set. centreOn() is deliberately used here instead
-    // of writing offsets: it shares the camera's exact centring arithmetic.
-    const revealed = camera.project({ x: target.x + 0.5, y: target.y + 0.5 });
-    const revealTolerance = 0.5;
-    if (
-      camera.clampToProgrammaticReachableSet &&
-      (revealed.x < padding - revealTolerance ||
-        revealed.x > viewport.width - padding + revealTolerance ||
-        revealed.y < padding - revealTolerance ||
-        revealed.y > viewport.height - padding + revealTolerance)
-    ) {
-      camera.centreOn(target, 1);
-    }
-
     this.lastPendingMoveReveal = {
       target: { ...target },
       width: viewport.width,
@@ -802,8 +777,7 @@ export class CombatScene implements Scene {
   }
 
   /**
-   * Restore readable oblique framing, or the whole board otherwise: the fitted
-   * orthographic board, and on the top-down board (ADR 0104) the largest whole
+   * Restore the whole board: the fitted orthographic board, and on the top-down board (ADR 0104) the largest whole
    * scale that shows all of it, never under a fingertip (`Camera.fit`).
    */
   private recentre(): void {
@@ -815,37 +789,7 @@ export class CombatScene implements Scene {
     // Recentre is the whole-board overview on top-down maps. Hold that framing
     // until a later actor turn explicitly re-arms follow.
     this.followSuspended = camera.projection === 'topdown';
-    if (camera.projection === 'oblique') {
-      // Key off both the layout and visual viewports and the text setting,
-      // then use the first settled canvas height to account for the full
-      // decision dock. iOS toolbars can change the visual viewport while the
-      // layout viewport stays put; HUD panels change only the canvas during
-      // aim mode and must keep the player's framing.
-      const visualViewport = window.visualViewport;
-      const visualWidth = Math.round(visualViewport?.width ?? window.innerWidth);
-      const visualHeight = Math.round(visualViewport?.height ?? window.innerHeight);
-      const frameKey = `${window.innerWidth}x${window.innerHeight}:${visualWidth}x${visualHeight}:${this.app.settings.largeText}`;
-      const hudAllowance = this.app.settings.largeText === 'huge' ? 220 : 200;
-      const decisionHeight = camera.viewport.height - hudAllowance;
-      const compact = decisionHeight < 360;
-      const preferredTilePx = compact
-        ? this.app.settings.largeText === 'huge' || window.innerWidth < 600
-          ? 40
-          : 64
-        : 96;
-      const idleFrameCorrection =
-        this.mode.kind === 'idle' && this.preferredCombatTilePx !== preferredTilePx;
-      if (this.preferredCombatFrameKey !== frameKey || idleFrameCorrection) {
-        this.preferredCombatFrameKey = frameKey;
-        // The action/preview panel takes a predictable slice of the first
-        // settled canvas. Reserve that full dock before choosing the readable
-        // 96px frame; Huge text needs the larger allowance.
-        this.preferredCombatTilePx = preferredTilePx;
-      }
-      // Combat rounds its tuned tile down onto whole device pixels (ADR 0088),
-      // so the fight stays at least as much in view as it was tuned to show.
-      camera.fitExplore(this.preferredCombatTilePx ?? 96, 12, 'floor');
-    } else camera.fit();
+    camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos, unit.size);
     this.syncRecentre();
@@ -931,17 +875,12 @@ export class CombatScene implements Scene {
     return frameLivingParty(camera, battle.units, (unit) => {
       const pose = this.poseFields(now, unit.id, 1, true, unit.sprite, false);
       const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
-      return victoryActorBounds(
-        camera,
-        unit,
-        {
-          pos: this.animatorForBoard.renderPos(now, unit.id) ?? unit.pos,
-          scale: pose.scale ?? partyScale(camera.projection),
-          frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
-          ...(pose.offset ? { offset: pose.offset } : {}),
-        },
-        battle.grid,
-      );
+      return victoryActorBounds(camera, unit, {
+        pos: this.animatorForBoard.renderPos(now, unit.id) ?? unit.pos,
+        scale: pose.scale ?? partyScale(),
+        frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
+        ...(pose.offset ? { offset: pose.offset } : {}),
+      });
     });
   }
 
@@ -1052,18 +991,11 @@ export class CombatScene implements Scene {
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
-    this.renderer.camera.clampRingTiles = { top: 0, right: 0, bottom: 0, left: 0 };
-    // The oblique and top-down boards are pixel art at one art px per world px
-    // (ADR 0085, 0104): they draw at a whole number of device pixels per world
-    // pixel (ADR 0088), at N >= dpr on the top-down board.
+    // The top-down board is pixel art at one art px per world px (ADR 0104): it draws at a whole
+    // number of device pixels per world pixel (ADR 0088), at N >= dpr.
     this.renderer.camera.integerZoom = usesIntegerZoom(this.renderer.camera.projection);
-    this.renderer.camera.clampToProgrammaticReachableSet =
-      this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull';
     this.animatorForBoard.setProjection(this.renderer.camera.projection);
-    if (this.renderer.camera.projection === 'oblique')
-      this.renderer.camera.fitExplore(96, 12, 'floor');
-    else if (this.renderer.camera.projection === 'topdown')
-      this.fitTopdownCombat(this.renderer.camera);
+    if (this.renderer.camera.projection === 'topdown') this.fitTopdownCombat(this.renderer.camera);
     else this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size
@@ -1205,18 +1137,15 @@ export class CombatScene implements Scene {
     const renderer = this.renderer;
     const battle = this.battle();
     if (!renderer || !battle) return null;
-    const groundTile = renderer.camera.pickTile(x, y, battle.grid);
+    const groundTile = renderer.camera.toTile(x, y);
     const active = this.active();
-    const projection = renderer.camera.projection;
     const point = { x, y };
     const eligible = battle.units.filter((unit) => {
       if (intent !== 'inspect' && !isAlive(unit)) return false;
-      const scale =
-        unit.faction === 'party' ? partyScale(projection) : enemyScale(unit.sprite, 1, projection);
+      const scale = unit.faction === 'party' ? partyScale() : enemyScale(unit.sprite, 1);
       if (!SQUARE_FOOTPRINTS || unit.size !== 2 || scale <= 1) return false;
       const pos = this.animatorForBoard.renderPos(this.presentationNow(), unit.id) ?? unit.pos;
       const box = renderer.camera.spriteBox(pos, unit.size, true);
-      box.y -= liftAlong(battle.grid, pos, projection) * box.size;
       const bounds = actorBodyBounds(
         { ...box, width: box.size * unit.size },
         unit.size,
@@ -1260,7 +1189,6 @@ export class CombatScene implements Scene {
           box.x += pose.offset.x * box.size;
           box.y += pose.offset.y * box.size;
         }
-        box.y -= liftAlong(battle.grid, pos, projection) * box.size;
         const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
         return {
           unit,
@@ -1590,7 +1518,7 @@ export class CombatScene implements Scene {
       // Establish the initial actor immediately so the first settled HUD
       // measurement can choose compact framing before later turns glide.
       // Top-down turn changes hand ownership to the per-frame margin follow;
-      // the legacy centring glide is reserved for oblique combat.
+      // the centring glide is reserved for the orthographic board.
       if (battle.phase === 'active' && !followedStillMoving && camera?.projection !== 'topdown')
         this.centreOnActiveUnit(unit, camera, this.layoutMeasuredAfterSync);
     }
@@ -3140,7 +3068,7 @@ export class CombatScene implements Scene {
         );
         if (target) {
           aimArc = {
-            from: renderFoot(unit.pos, unit.size, SQUARE_FOOTPRINTS, renderer.camera.projection),
+            from: footprintFoot(unit.pos, unit.size, SQUARE_FOOTPRINTS),
             to: { x: target.x + 0.5, y: target.y + 0.5 },
             arc: lob,
             color: paletteFor(ability.element).light,
@@ -3372,7 +3300,6 @@ export class CombatScene implements Scene {
       box.x += pose.offset.x * box.size;
       box.y += pose.offset.y * box.size;
     }
-    box.y -= liftAlong(battle.grid, pos, projection) * box.size;
     const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
     const frame =
       bend ||
@@ -3542,8 +3469,6 @@ export class CombatScene implements Scene {
     | 'bend'
   > {
     const pose = this.animatorForBoard.unitPose(now, unitId, sprite);
-    const mapId = this.app.state?.battle?.mapId;
-    const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
     // A bend draws its own cels at the party's scale, where the plan put its sockets.
     const bend = this.animatorForBoard.bendPose(now, unitId);
     if (bend) {
@@ -3551,7 +3476,7 @@ export class CombatScene implements Scene {
         facing: 1,
         clip: 'stance',
         bend: { heading: bend.heading, index: bend.index },
-        scale: partyScale(projection),
+        scale: partyScale(),
         ...(pose ? { flash: pose.flash } : {}),
       };
     }
@@ -3569,9 +3494,7 @@ export class CombatScene implements Scene {
             restFacing,
           )
         : undefined;
-    const scale = directional
-      ? partyScale(projection, pose?.scale)
-      : enemyScale(sprite, pose?.scale, projection);
+    const scale = directional ? partyScale(pose?.scale) : enemyScale(sprite, pose?.scale);
     // Once a G knockout has played, the body stays where it fell (ADR 0059).
     const down =
       !pose && fallen ? this.animatorForBoard.fallenPose(unitId, sprite, restFacing) : undefined;

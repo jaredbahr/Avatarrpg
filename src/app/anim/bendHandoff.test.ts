@@ -100,7 +100,7 @@ function run(
     cursor: CURSOR,
     rate: options.rate ?? 1,
     pushIndex: 0,
-    projection: 'oblique',
+    projection: 'orthographic',
     ...(options.bends ? { bends: options.bends } : {}),
     ...(options.clips ? { clipsOf: (sprite: string) => gClips[sprite] } : {}),
   });
@@ -143,7 +143,7 @@ describe('which casts bend', () => {
 
   it('turns down a cast at the caster’s own tile, a missing bend, heading, cel or effect', () => {
     const at = (sources: BendSources | undefined, target = foe.pos) =>
-      planBendCast(sources, kaya, kaya.pos, ability('fire_jab'), target, undefined, 'oblique');
+      planBendCast(sources, kaya, kaya.pos, ability('fire_jab'), target, undefined);
     expect(at(loaded)).toBeDefined();
     expect(at(loaded, kaya.pos)).toBeUndefined();
     expect(at(undefined)).toBeUndefined();
@@ -159,30 +159,19 @@ describe('which casts bend', () => {
 
   it('faces the Animator’s eight-way heading toward the target', () => {
     const heading = (target: Vec2) =>
-      planBendCast(loaded, kaya, kaya.pos, ability('fire_jab'), target, undefined, 'oblique')?.plan
-        .heading;
-    // On the oblique board a grid +x step is screen south-east, +x-y is east.
-    expect(heading({ x: 5, y: 3 })).toBe('southEast');
-    expect(heading({ x: 3, y: 1 })).toBe('east');
-    expect(heading({ x: 3, y: 5 })).toBe('south');
-    expect(heading({ x: 1, y: 0 })).toBe('northEast');
+      planBendCast(loaded, kaya, kaya.pos, ability('fire_jab'), target, undefined)?.plan.heading;
+    // On a flat board the grid's axes are the screen's.
+    expect(heading({ x: 5, y: 3 })).toBe('east');
+    expect(heading({ x: 3, y: 1 })).toBe('northEast');
+    expect(heading({ x: 3, y: 5 })).toBe('southEast');
+    expect(heading({ x: 1, y: 0 })).toBe('north');
   });
 
-  it('aims from the caster’s drawn feet, lifted by its ground', () => {
-    const cast = planBendCast(
-      loaded,
-      kaya,
-      kaya.pos,
-      ability('fire_jab'),
-      foe.pos,
-      undefined,
-      'oblique',
-      (pos) => (pos.x === kaya.pos.x ? 0.12 : 0),
-    );
-    expect(cast?.plan.shot.from).toEqual(unitFoot(kaya.pos, 1, 'oblique', 0.12));
-    expect(unitFoot({ x: 2, y: 3 }, 1, 'orthographic')).toEqual({ x: 2.5, y: 3.85 });
-    expect(unitFoot({ x: 2, y: 3 }, 2, 'orthographic', 0, true)).toEqual({ x: 3, y: 4.85 });
-    expect(unitFoot({ x: 2, y: 3 }, 2, 'oblique', 0, true)).toEqual({ x: -1, y: 3.99 });
+  it('aims from the caster’s drawn feet', () => {
+    const cast = planBendCast(loaded, kaya, kaya.pos, ability('fire_jab'), foe.pos, undefined);
+    expect(cast?.plan.shot.from).toEqual(unitFoot(kaya.pos, 1));
+    expect(unitFoot({ x: 2, y: 3 }, 1)).toEqual({ x: 2.5, y: 3.85 });
+    expect(unitFoot({ x: 2, y: 3 }, 2, true)).toEqual({ x: 3, y: 4.85 });
   });
 
   it('plans a gated size-2 cast between square footprint centres', () => {
@@ -195,12 +184,10 @@ describe('which casts bend', () => {
       ability('fire_jab'),
       struck.pos,
       struck,
-      'orthographic',
-      () => 0,
       true,
     );
-    expect(cast?.plan.shot.from).toEqual(unitFoot(boss.pos, 2, 'orthographic', 0, true));
-    expect(cast?.plan.shot.to.x).toBeCloseTo(unitFoot(struck.pos, 2, 'orthographic', 0, true).x);
+    expect(cast?.plan.shot.from).toEqual(unitFoot(boss.pos, 2, true));
+    expect(cast?.plan.shot.to.x).toBeCloseTo(unitFoot(struck.pos, 2, true).x);
   });
 
   it('preloads only party units whose sheet has a bend', () => {
@@ -395,9 +382,7 @@ describe('the legacy cast, unchanged', () => {
 
 describe('the animator plays it where it was laid', () => {
   const animator = () => {
-    const a = new Animator(CONTENT, { motionReduced: () => false, bends: () => loaded });
-    a.setProjection('oblique');
-    return a;
+    return new Animator(CONTENT, { motionReduced: () => false, bends: () => loaded });
   };
 
   it('starts the bend at the choreography cursor, queued or not, with the damage on it', () => {
@@ -408,7 +393,7 @@ describe('the animator plays it where it was laid', () => {
     const expected = run(jab, { bends: loaded });
     const plan = expected.tracks.find((t): t is BendTrack => t.kind === 'bend')!.plan;
     const impact = first + bendSceneAt(plan, plan.arrivals[1]!);
-    expect(a.bendPose(first, 'kaya')).toEqual({ heading: 'southEast', index: 0, held: false });
+    expect(a.bendPose(first, 'kaya')).toEqual({ heading: 'east', index: 0, held: false });
     expect(a.unitHealth(impact - 1, foe).hp).toBe(20);
     expect(a.unitHealth(impact, foe).hp).toBe(13);
   });
@@ -420,13 +405,12 @@ describe('the animator plays it where it was laid', () => {
     const after = a.finishesAt + 1;
     expect(a.bendPose(after, 'kaya')).toBeUndefined();
     expect(a.locomotion(after, 'kaya', 'stance', 'unit.fire.kaya').clip).toBe(
-      headingClip('stance', 'northEast'),
+      headingClip('stance', 'north'),
     );
   });
 
   it('plays the legacy cast under reduced motion', () => {
     const a = new Animator(CONTENT, { motionReduced: () => true, bends: () => loaded });
-    a.setProjection('oblique');
     a.push(0, jab, [kaya, foe]);
     expect(a.bendPose(0, 'kaya')).toBeUndefined();
     expect(a.unitPose(0, 'kaya', 'unit.fire.kaya')?.clip).toBe('cast');

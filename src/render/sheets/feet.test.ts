@@ -9,7 +9,6 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { OBLIQUE_FIGURE_SCALE } from '../../app/anim/actorScale';
 import {
   ASSETS,
   TOPDOWN_KEYS,
@@ -23,6 +22,9 @@ import { poolOffset } from '../figureShadowArt';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
 import { feetFromPixels, plantAnchor, restingClip, standsOnSoles, type FrameFeet } from './feet';
 import { withActions, type SheetActions, type SheetClips } from './store';
+
+/** The oblique board's figure scale the G1 sheets were fitted at (ADR 0094); the board retired at T7. */
+const OBLIQUE_FIGURE_SCALE = 1.25;
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 

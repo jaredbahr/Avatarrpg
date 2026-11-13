@@ -612,7 +612,7 @@ export const mapSchema = z
     cameraCentreMargin: z.number().finite().optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
-    projection: z.enum(['oblique', 'topdown']).optional(),
+    projection: z.literal('topdown').optional(),
     scene: z
       .object({
         paintedWater: z.boolean().optional(),
@@ -642,9 +642,6 @@ export const mapSchema = z
               .optional(),
           })
           .strict()
-          .optional(),
-        reliefLift: z
-          .union([z.number().min(0).max(0.5), z.array(z.number().min(0).max(0.5))])
           .optional(),
         // The rectangle the art covers, in projected world pixels: the camera
         // keeps its whole view inside it.
@@ -728,7 +725,6 @@ export const mapSchema = z
       .object({
         url: z.string().min(1),
         pixelsPerTile: z.number().int().min(32).max(256),
-        projection: z.literal('oblique').optional(),
         padding: z
           .object({
             left: z.number().nonnegative(),

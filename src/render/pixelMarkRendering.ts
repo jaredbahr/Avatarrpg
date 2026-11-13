@@ -76,7 +76,6 @@ export function drawCanvasPixelMark(
   camera: Camera,
   draw: PixelMarkDraw,
   nudge: { x: number; y: number },
-  plane: 'ground' | 'screen',
 ): void {
   const dpr = camera.viewport.dpr;
   const scale = camera.scale;
@@ -84,11 +83,8 @@ export function drawCanvasPixelMark(
   const nudgeX = nudge.x * tile * scale;
   const nudgeY = nudge.y * tile * scale;
   const current = context.getTransform();
-  const matrix = camera.groundMatrix();
-  const expectedX =
-    dpr * (nudgeX + (plane === 'ground' && camera.projection === 'oblique' ? matrix.tx : 0));
-  const expectedY =
-    dpr * (nudgeY + (plane === 'ground' && camera.projection === 'oblique' ? matrix.ty : 0));
+  const expectedX = dpr * nudgeX;
+  const expectedY = dpr * nudgeY;
   const extraX = current.e - expectedX;
   const extraY = current.f - expectedY;
 

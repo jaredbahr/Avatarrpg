@@ -1,6 +1,6 @@
 /**
- * The grounding rule of ADR 0093: everything a backend draws standing on an
- * oblique board — every figure and every prop — gets a contact shadow under its
+ * The grounding rule of ADR 0093: everything a backend draws standing on the
+ * orthographic board — every figure and every prop — gets a contact shadow under its
  * feet or base and a cast down-right along its scene's key, hard-edged on the
  * world-pixel grid, on both backends. A figure's is a calm pool under its feet
  * with a short cast along the key, in the painting's own tone where the scene
@@ -24,7 +24,7 @@ import {
 const read = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8');
 
 describe("a figure's shadow is a calm pool (ADR 0093's figure amendment)", () => {
-  const boards = ALL_MAPS.filter((map) => map.projection === 'oblique');
+  const boards = ALL_MAPS.filter((map) => map.projection !== 'topdown');
 
   for (const map of boards)
     it(`keeps a figure's cast on ${map.id} to a quarter of its height or less`, () => {
@@ -109,10 +109,6 @@ describe('both backends draw the same grounding', () => {
       expect(source).toContain('projectContactLine(');
       expect(source).toContain('CONTACT_LINE');
       expect(source).toContain('groundedCastArt(');
-    });
-    it(`${file} grounds solid scenery on its own base, its feet inside its footprint`, () => {
-      expect(source).toContain('groundSceneryPiece(');
-      expect(source).toContain('pieceFeet(');
     });
   }
 
