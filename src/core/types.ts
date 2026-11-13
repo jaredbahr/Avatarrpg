@@ -489,6 +489,11 @@ export interface EncounterDef {
   readonly variants: readonly EncounterVariant[];
   /** Area obscurement (sandstorm); weather is derived from this and the round. */
   readonly weather?: EncounterWeather;
+  /**
+   * What Hard does differently in this fight: these fields replace the shared
+   * Hard profile's (`rules/difficulty.ts`). Story never reads it.
+   */
+  readonly hard?: Partial<DifficultyProfile>;
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -1353,6 +1358,18 @@ export type RunoffState = (typeof RUNOFF_STATES)[number];
 export const DIFFICULTIES = ['story', 'hard'] as const;
 
 export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** What a difficulty does on top of the table scaling (`rules/difficulty.ts`). */
+export interface DifficultyProfile {
+  /** Multiplies every enemy's max HP after the table scaling. */
+  readonly hp: number;
+  /** Multiplies a boss's max HP after the table scaling, instead of `hp`. */
+  readonly bossHp: number;
+  /** Added to every enemy's power. */
+  readonly power: number;
+  /** Added to every enemy's max AP. */
+  readonly ap: number;
+}
 
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */

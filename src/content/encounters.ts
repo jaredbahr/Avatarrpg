@@ -170,6 +170,16 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       at(15, 8, 'merc_blade'),
       at(17, 9, 'merc_sergeant'),
     ],
+    /*
+     * Hard keeps the bite #709 took off Story. Cutting the blade from 50 to 32
+     * HP sped the Story fight up, and on Hard it lifted three players from 84%
+     * to 100% and two from 11% to 84% (owner, 2026-11-13: Hard keeps its bite
+     * here). Swept at 200 trials (3 players / 2 / Kaya, Sura and Bo): 1.4 ->
+     * 97 / 22 / 98%; 1.45 -> 94 / 16 / 96%; 1.5 -> 84 / 11 / 94%; 1.55 -> 81 / 9
+     * / 91%. 1.5 lands back on the pre-#709 Hard numbers, in 5.4 rounds. Extra
+     * power or AP barely moved it (+4 power: 100 / 89%).
+     */
+    hard: { hp: 1.5 },
     intro:
       "Jin's people are already in the cutting. They knew which road you would take, and they have come for Ruon.",
     tip: 'Ruon fights with you, and his orders make a hero hit harder. The road squeezes into a narrow gap, with a pool in the middle and ledges on both sides. High ground helps your aim. Shove someone off a ledge to make them fall and hurt; it never finishes them.',

@@ -63,7 +63,7 @@ tutorial, Ba Dan to the Forest Road to the quarry and the Driller.
 **Top-down is the only style (ADR 0104 T6, T7).** Every link boots top-down; `?style=` is ignored, so an old
 `?style=oblique` or `?style=topdown` link still works. The five route maps declare `projection: 'topdown'` and fetch their
 scenes at boot (`src/content/topdown.ts`); the riverside stays on its orthographic backdrop. T7's first half removed the
-style switch, the oblique map scenes and their art pipelines; the oblique projection in the renderer (lifted tiers, the
+style switch, the oblique map scenes, their art pipelines and their art; the oblique projection in the renderer (lifted tiers, the
 diamond camera) and the G1 sheets that `ASSETS` still lists for the art and animation tests are what remains, and the
 bullets below that name them describe that legacy code only.
 
