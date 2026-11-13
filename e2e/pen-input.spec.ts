@@ -6,8 +6,6 @@ import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './hel
 import { groundPoint, paintedTileCentre } from './projection';
 import type { Point } from './projection';
 
-// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-
 /** Read-only observations of the real mounted combat scene, without staging game state. */
 interface ReadonlyCombatScene {
   readonly mode: { readonly kind: string };
