@@ -936,7 +936,12 @@ export class ExploreScene implements Scene {
         const { x, y, size } = camera.spriteBox(npc.renderPos ?? npc.pos);
         const left = x + size / 2;
         const top = y + (FOOT_LINE - npcPipLift(npc.sprite, npc.scale ?? 1)) * size;
-        if (left < 0 || left > camera.viewport.width || top < 0 || y > camera.viewport.height)
+        if (
+          left < 0 ||
+          left > camera.viewport.width ||
+          y + FOOT_LINE * size < 0 ||
+          y > camera.viewport.height
+        )
           continue;
         const tag = layer.children[count] as HTMLElement | undefined;
         const label = tag ?? layer.appendChild(el('span'));
