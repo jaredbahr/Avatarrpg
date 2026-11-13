@@ -113,8 +113,13 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await expect(page.getByRole('dialog')).toContainText('Credits');
   await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
 
+  // The same table plays again: setup starts from the number of people who just finished.
+  const people = await page.evaluate(() => window.fnt?.app.session.count ?? 0);
+  expect(people).toBeGreaterThan(1);
   await card.getByRole('button', { name: 'Play again with a different party' }).click();
   await expect(page.getByRole('heading', { name: 'Choose your party' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '3 players' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: `${people} players`, exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
   expect(errors).toEqual([]);
 });
