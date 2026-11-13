@@ -1,13 +1,14 @@
 import { defineConfig } from 'vitest/config';
 
-const include = ['src/**/*.test.ts', 'scripts/**/*.test.ts'];
 const exclude = ['e2e/**', 'node_modules/**', 'dist/**'];
-const timingSensitive = ['src/core/sim/runCombat.test.ts', 'scripts/bundle-report-cli.test.ts'];
+const serial = [
+  'src/core/sim/runCombat.test.ts',
+  'scripts/bundle-report-cli.test.ts',
+  'src/core/state/immutability.property.test.ts',
+];
 
 export default defineConfig({
   test: {
-    // The rules core is pure TypeScript, so the default node environment is
-    // enough. Presentation code is covered by Playwright instead.
     environment: 'node',
     // Keep mock call history behavior from Vitest 2.
     clearMocks: false,
@@ -17,19 +18,19 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'unit',
-          include,
-          exclude: [...exclude, ...timingSensitive],
+          include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
+          exclude: [...exclude, ...serial],
           sequence: { groupOrder: 2 },
         },
       },
       {
         extends: true,
         test: {
-          name: 'simulation and bundle CLI',
-          include: timingSensitive,
+          name: 'serial',
+          include: serial,
           exclude,
-          // These files spawn their own workers or npm processes. Run one file
-          // at a time before the general pool starts.
+          // Keep subprocesses, combat simulations and whole-state checks off
+          // the shared pool while Vitest enforces their existing deadlines.
           fileParallelism: false,
           sequence: { groupOrder: 1 },
         },
