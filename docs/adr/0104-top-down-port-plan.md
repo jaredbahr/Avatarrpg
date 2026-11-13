@@ -361,6 +361,18 @@ hit and knockout timing tests keep the G Kaya, Sura, Bo and thug clip files as f
 Measured on the build: JavaScript 390.4 KB before, 382.3 KB after (budget 410, unchanged). Precache 16.63 MB before,
 12.99 MB after (325 entries before, 251 after).
 
+The legacy unit sheets went after it: the four-way hero sheets (`public/art/units/walking-*`), the 128 px quarry and
+Cutting sheets (the deserter, the crossbow, the mercenary, the sergeant and Ruon) and the old 2x2 `driller` sheet, the
+whole of `public/art/units/`. `useTopDownStyle` already laid a top-down sheet over every one of those keys, so nothing
+drew them; a Playwright run through every route node and fight on both renderers requested none of them. Their keys
+now hold their top-down sheet in `ASSETS`, so every `unit.*` key is top-down and the crossbow's 1.23 scale goes. Their
+packers (`side-walk`, `directional-motion`, `rest-poses`, `riko-directional-contact`, `cutting-characters`,
+`fire-deserter`, `driller-2x2`) and the sources that only fed them (`assets/reference/character-poses`,
+`character-locomotion`, `pose-guides`, `cutting-characters`, the deserter's combat and walk sources,
+`docs/art/sources/riko-directional-contact/`, `media/art-sources/driller-2x2-v1/`) and the Driller's NOTICE entry
+leave with them; four-way tests use the committed probe atlas. JavaScript 382.3 KB before, 381.5 KB after. Precache
+12.99 MB before, 10.42 MB after (251 entries before, 225 after).
+
 ## Driller grounding implementation (#469)
 
 The Driller packer records each static heading's tread span, center offset and baseline from
