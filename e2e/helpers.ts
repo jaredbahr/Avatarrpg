@@ -436,18 +436,3 @@ export async function useOrthographicBackdropFixture(page: Page, mapId: string):
     });
   }, mapId);
 }
-
-/**
- * Pins a spec to the oblique look (ADR 0104 T6). Top-down is the default style; the specs that
- * still measure the oblique boards, lifts and walks call this in a `beforeEach` until they are
- * migrated or deleted with the oblique code at T7. It adds `style=oblique` to every page load
- * that names no style, before the app reads the URL.
- */
-export async function pinObliqueStyle(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const url = new URL(window.location.href);
-    if (url.searchParams.has('style')) return;
-    url.searchParams.set('style', 'oblique');
-    window.history.replaceState(window.history.state, '', url);
-  });
-}

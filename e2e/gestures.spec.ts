@@ -4,7 +4,6 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import {
   enterNode,
-  pinObliqueStyle,
   resetStorage,
   settleLayout,
   settleMapCanvas,
@@ -14,7 +13,6 @@ import {
 } from './helpers';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 /**
  * Pinch, pan and Recentre.

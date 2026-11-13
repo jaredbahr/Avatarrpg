@@ -1,11 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, pinObliqueStyle, resetStorage, settleLayout, startGame } from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame } from './helpers';
 import { average, screenshotClipPixels } from './pixels';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 // The production service worker precaches art; this probe must intercept the
 // network response instead of receiving the already cached illustration.

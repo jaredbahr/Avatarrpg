@@ -2,19 +2,10 @@ import { expect, test } from '@playwright/test';
 import type { MapView } from '../src/render/view';
 import type { Camera, Viewport } from '../src/render/camera';
 import { allowSoftwareWebgl } from './budget';
-import {
-  enterNode,
-  pinObliqueStyle,
-  resetStorage,
-  settleLayout,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 interface ResizeSample {
   beforeHeight: number;

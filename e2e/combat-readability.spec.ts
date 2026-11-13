@@ -5,7 +5,6 @@ import { PNG } from 'pngjs';
 import { allowSoftwareWebgl } from './budget';
 import {
   enterNode,
-  pinObliqueStyle,
   resetStorage,
   setLargeText,
   settleLayout,
@@ -18,7 +17,6 @@ import { liftAlong } from '../src/render/geometry/elevation';
 import type { MapView } from '../src/render/view';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 const REVIEW_DIR = resolve(process.cwd(), '.shots/combat-readability');
 const viewports = [

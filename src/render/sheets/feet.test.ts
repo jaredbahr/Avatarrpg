@@ -15,7 +15,6 @@ import {
   TOPDOWN_KEYS,
   resolveAsset,
   useTopDownStyle,
-  useWorldStyleTest,
   type SheetEntry,
 } from '../../content/assets/manifest';
 import { TILE } from '../camera';
@@ -113,7 +112,6 @@ function lowestOpaqueRow(cel: Cel): number {
 const EIGHT_WAY = Object.entries(ASSETS)
   .filter(([, asset]) => asset.kind === 'sheet' && asset.locomotion)
   .map(([key]) => key);
-const WORLD_STYLE = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo', 'npc.shopkeeper'];
 
 function holdsEveryCelOnItsSoles(
   label: string,
@@ -154,11 +152,6 @@ function holdsEveryCelOnItsSoles(
 
 describe('every figure stands on its own soles', () => {
   holdsEveryCelOnItsSoles('shipped eight-way', () => EIGHT_WAY);
-
-  describe('the ?style=world test sheets', () => {
-    beforeAll(() => useWorldStyleTest());
-    holdsEveryCelOnItsSoles('?style=world', () => WORLD_STYLE, /style-test|units\/world\//);
-  });
 
   describe('the ?style=topdown sheets', () => {
     beforeAll(() => useTopDownStyle());

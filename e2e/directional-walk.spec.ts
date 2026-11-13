@@ -1,13 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import {
-  enterNode,
-  pauseClock,
-  pinObliqueStyle,
-  resetStorage,
-  startGame,
-  waitForIdle,
-} from './helpers';
+import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
 import { ASSETS } from '../src/content/assets/manifest';
 import { TIMING } from '../src/app/anim/choreography';
 import { BRISK_WALK_CEL_MS } from '../src/app/animator';
@@ -15,7 +8,6 @@ import { strollTiming } from '../src/app/anim/stroll';
 import type { MapView, RenderUnit } from '../src/render/view';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   for (const riverside of [false, true]) {

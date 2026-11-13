@@ -1,18 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import {
-  enterNode,
-  pinObliqueStyle,
-  resetStorage,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
+import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { screenshotClipPixels, average, type Pixels } from './pixels';
 import type { MapView } from '../src/render/view';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 const ROI_CSS = 96;
 

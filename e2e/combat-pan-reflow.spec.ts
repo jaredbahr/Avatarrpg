@@ -6,7 +6,6 @@ import { BattleDraft } from '../src/core/state/battleDraft';
 import { allowSoftwareWebgl } from './budget';
 import {
   enterNode,
-  pinObliqueStyle,
   resetStorage,
   setLargeText,
   settleLayout,
@@ -17,7 +16,6 @@ import {
 import { groundPoint, paintedTileCentre } from './projection';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 async function lowestVisibleMoveTarget(page: Page): Promise<{ x: number; y: number }> {
   const view = await page.evaluate(() => {

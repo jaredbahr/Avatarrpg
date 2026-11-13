@@ -1,18 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { SOFTWARE_WEBGL_BUDGET_MS, allowSoftwareWebgl } from './budget';
-import {
-  enterNode,
-  pinObliqueStyle,
-  resetStorage,
-  settleLayout,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels } from './pixels';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 /**
  * The sheet path, end to end, on both backends.

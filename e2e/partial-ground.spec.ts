@@ -1,18 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import {
-  enterNode,
-  pinObliqueStyle,
-  resetStorage,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
+import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, pixelsFromDataUrl, type Rgb } from './pixels';
 import type { MapView } from '../src/render/view';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 const svg = (colour: string): string =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="${colour}"/></svg>`)}`;

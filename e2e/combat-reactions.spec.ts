@@ -2,19 +2,10 @@ import { PNG } from 'pngjs';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { SOFTWARE_WEBGL_BUDGET_MS, allowSoftwareWebgl } from './budget';
-import {
-  enterNode,
-  pinObliqueStyle,
-  resetStorage,
-  settleLayout,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotClipPixels } from './pixels';
 
 // Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 // The production service worker precaches art; the probe must intercept the
 // network response instead of receiving the cached page.
