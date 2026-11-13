@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 const exclude = ['e2e/**', 'node_modules/**', 'dist/**'];
 const serial = [
   'src/core/sim/runCombat.test.ts',
+  'src/content/topdownLayout.test.ts',
   'scripts/bundle-report-cli.test.ts',
   'src/core/state/immutability.property.test.ts',
 ];

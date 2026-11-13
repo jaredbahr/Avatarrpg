@@ -4,26 +4,35 @@ import { Worker } from 'node:worker_threads';
 import { build } from 'esbuild';
 import type { SimOptions, SimResult } from '../../src/core/sim/runCombat';
 
-type QuarryCase = Pick<SimOptions, 'seed' | 'encounterId' | 'party'>;
-type QuarryResult = Pick<SimResult, 'anomalies' | 'outcome'>;
-type ResultRow = { index: number; result: QuarryResult };
+type CombatCase = Pick<SimOptions, 'seed' | 'encounterId' | 'party'>;
+type CombatResult = Pick<
+  SimResult,
+  'anomalies' | 'outcome' | 'rounds' | 'partyHpRemaining' | 'partyHpTotal'
+>;
+type ResultRow = { index: number; result: CombatResult };
 
-export async function runQuarryCases(
-  cases: readonly QuarryCase[],
+let source: string | undefined;
+
+export async function runCombatCases(
+  cases: readonly CombatCase[],
   signal: AbortSignal,
-): Promise<QuarryResult[]> {
+): Promise<CombatResult[]> {
   signal.throwIfAborted();
-  const entry = fileURLToPath(new URL('./quarryWorker.ts', import.meta.url));
-  const bundle = await build({
-    entryPoints: [entry],
-    bundle: true,
-    write: false,
-    platform: 'node',
-    target: 'node22',
-    format: 'cjs',
-    sourcemap: 'inline',
-  });
-  const source = bundle.outputFiles[0]!.text;
+  if (cases.length === 0) return [];
+  if (source === undefined) {
+    const entry = fileURLToPath(new URL('./combatWorker.ts', import.meta.url));
+    const bundle = await build({
+      entryPoints: [entry],
+      bundle: true,
+      write: false,
+      platform: 'node',
+      target: 'node22',
+      format: 'cjs',
+      sourcemap: 'inline',
+    });
+    source = bundle.outputFiles[0]!.text;
+  }
+  const workerSource = source;
   const count = Math.min(4, availableParallelism(), cases.length);
   const workers: Worker[] = [];
   let stopping: Promise<number[]> | undefined;
@@ -34,17 +43,20 @@ export async function runQuarryCases(
     signal.throwIfAborted();
     const stripes = Array.from(
       { length: count },
-      () => [] as { index: number; options: QuarryCase }[],
+      () => [] as { index: number; options: CombatCase }[],
     );
     for (const [index, options] of cases.entries()) {
-      const seedMajorIndex = (index % 8) * (cases.length / 8) + Math.floor(index / 8);
-      stripes[seedMajorIndex % count]!.push({ index, options });
+      stripes[index % count]!.push({ index, options });
     }
     const rows = await Promise.all(
       stripes.map(
         (stripe) =>
           new Promise<ResultRow[]>((resolve, reject) => {
-            const worker = new Worker(source, { eval: true, execArgv: [], workerData: stripe });
+            const worker = new Worker(workerSource, {
+              eval: true,
+              execArgv: [],
+              workerData: stripe,
+            });
             workers.push(worker);
             let result: ResultRow[] | undefined;
             worker.once('message', (message: ResultRow[]) => {
@@ -55,7 +67,7 @@ export async function runQuarryCases(
             worker.once('exit', (code) => {
               if (code === 0 && result?.length === stripe.length) resolve(result);
               else
-                reject(new Error(`Quarry worker exited with code ${code} or incomplete results`));
+                reject(new Error(`Combat worker exited with code ${code} or incomplete results`));
             });
           }),
       ),
@@ -63,7 +75,7 @@ export async function runQuarryCases(
     signal.throwIfAborted();
     const ordered = rows.flat().sort((a, b) => a.index - b.index);
     if (ordered.length !== cases.length || ordered.some((row, index) => row.index !== index)) {
-      throw new Error('Incomplete quarry results');
+      throw new Error('Incomplete combat results');
     }
     return ordered.map(({ result }) => result);
   } finally {

@@ -8,7 +8,10 @@ const cases = workerData as {
   options: Pick<SimOptions, 'seed' | 'encounterId' | 'party'>;
 }[];
 const rows = cases.map(({ index, options }) => {
-  const { anomalies, outcome } = runCombat(CONTENT, options);
-  return { index, result: { anomalies, outcome } };
+  const { anomalies, outcome, rounds, partyHpRemaining, partyHpTotal } = runCombat(
+    CONTENT,
+    options,
+  );
+  return { index, result: { anomalies, outcome, rounds, partyHpRemaining, partyHpTotal } };
 });
 parentPort!.postMessage(rows);
