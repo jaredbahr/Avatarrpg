@@ -171,6 +171,28 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(after.state).toEqual(before.state);
       expect(after.session).toEqual(before.session);
       expect(after.boardHeight).toBeGreaterThanOrEqual(VIEWPORT.height * 0.4);
+
+      const titleAfterReady = page.locator('.combat-bar .title-plate-name');
+      await expect(titleAfterReady).toHaveText('Ambush on the Forest Road');
+      await expect(titleAfterReady).toBeInViewport({ ratio: 1 });
+      expect((await titleAfterReady.boundingBox())!.width).toBeGreaterThanOrEqual(
+        geometry.title.firstFour,
+      );
+      const pause = page.getByRole('button', { name: 'Pause', exact: true });
+      await expect(pause).toBeInViewport({ ratio: 1 });
+      const pauseBox = (await pause.boundingBox())!;
+      expect(pauseBox.width).toBeGreaterThanOrEqual(geometry.tap);
+      expect(pauseBox.height).toBeGreaterThanOrEqual(geometry.tap);
+      await pause.tap();
+      const paused = page.getByRole('dialog', { name: 'Paused', exact: true });
+      await expect(paused).toBeVisible();
+      await paused.getByRole('button', { name: 'Resume', exact: true }).tap();
+      await expect(paused).toHaveCount(0);
+      const resumed = await page.evaluate(() => ({
+        state: window.fnt!.app.state,
+        session: window.fnt!.app.session.toMeta(),
+      }));
+      expect(resumed).toEqual({ state: before.state, session: before.session });
     });
   });
 }
