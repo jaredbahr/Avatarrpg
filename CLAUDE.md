@@ -47,7 +47,9 @@ in the top-down style, the default since T6. The owner's direction for finishing
   UI sounds.
 - **Portraits:** the owner chose **style B, detailed pixel art at 160 px**, on 2026-11-11 (ADR 0107). New portraits are
   made with `prototypes/topdown/tools/portraits_b.py` (the old portrait at 160 px through PixelLab `edit-image-pro-flash`,
-  the B description with the character's own features, seed 11); each is checked at 3x before it ships.
+  the B description with the character's own features, seed 11); each is checked at 3x before it ships. A portrait
+  fix or new portrait made with that recipe merges on the orchestrator's 3x check without waiting for the owner, and
+  the result is sent to him afterwards (owner, 2026-11-13).
 - **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
   new content or regions.
 
