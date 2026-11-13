@@ -477,21 +477,17 @@ export async function playQuarryDriller(
     body: JSON.stringify(liveBoundary),
     contentType: 'application/json',
   });
-  expect(quarryRouteBoundary(liveBoundary)).toEqual(
-    fromNewGame
-      ? {
-          ...completed.projection,
-          // These tips are shown by the browser combat scene during the full
-          // escort run. The reducer-only checkpoint never renders them.
-          flags: {
-            ...completed.projection.flags,
-            [FIRST_FIGHT_GUIDANCE.eligible]: true,
-            'guidance.tip.cover': true,
-            'guidance.tip.surface.rubble': true,
-          },
-        }
-      : completed.projection,
-  );
+  expect(quarryRouteBoundary(liveBoundary)).toEqual({
+    ...completed.projection,
+    // The combat scene records displayed tips. The reducer-only checkpoint
+    // does not render them, and only the uninterrupted route is a new game.
+    flags: {
+      ...completed.projection.flags,
+      ...(fromNewGame ? { [FIRST_FIGHT_GUIDANCE.eligible]: true } : {}),
+      'guidance.tip.cover': true,
+      ...(custody === 'escort' ? { 'guidance.tip.surface.rubble': true } : {}),
+    },
+  });
 }
 
 export async function playQuarryHome(page: Page, custody: 'trade' | 'escort'): Promise<void> {
