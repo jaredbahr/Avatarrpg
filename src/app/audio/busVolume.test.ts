@@ -245,10 +245,10 @@ describe('live volume of already queued one-shots', () => {
 
   it('changes a queued voice and its crack while preserving recipe clocks and filters', () => {
     const { bus, volume, contexts } = setup();
-    const def = resolveSound('fx.lightning.volume-test');
+    const def = resolveSound('fx.ice.volume-test');
     if (def?.kind !== 'voice' || !def.crack) throw new Error('Missing real crack voice');
     bus.unlock();
-    bus.play([{ key: 'fx.lightning.volume-test', at: 2000, seed: 1 }], 0);
+    bus.play([{ key: 'fx.ice.volume-test', at: 2000, seed: 1 }], 0);
     const ctx = contexts[0];
     if (!ctx) throw new Error('Missing unlocked context');
     const [voice, crack] = ctx.sources;
@@ -265,16 +265,16 @@ describe('live volume of already queued one-shots', () => {
     expect(ctx.sources).toHaveLength(2);
   });
 
-  it('changes every queued material layer and still coalesces the whole cue', () => {
+  it('changes every queued layer and still coalesces the whole cue', () => {
     const { bus, volume, contexts } = setup();
-    const def = resolveSound('fx.fire.jab');
-    if (def?.kind !== 'layers') throw new Error('Missing real layered Fire Jab');
+    const def = resolveSound('turn');
+    if (def?.kind !== 'layers') throw new Error('Missing real layered turn sting');
     bus.unlock();
     bus.play(
       [
-        { key: 'fx.fire.jab', at: 2000, seed: 1 },
-        { key: 'fx.fire.jab', at: 2010, seed: 2 },
-        { key: 'fx.fire.jab', at: 10_001, seed: 3 },
+        { key: 'turn', at: 2000, seed: 1 },
+        { key: 'turn', at: 2010, seed: 2 },
+        { key: 'turn', at: 10_001, seed: 3 },
       ],
       0,
     );

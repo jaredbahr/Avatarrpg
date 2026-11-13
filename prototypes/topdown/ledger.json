@@ -27105,6 +27105,293 @@
     "image_id": "3532b187-b35c-529d-97f4-a611c21be5ed",
     "source_image_id": "3532b187-b35c-529d-97f4-a611c21be5ed"
    }
+  },
+  {
+   "name": "t9_portrait_hanru_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "d22b60be-73e4-489c-8c6d-1847dc5ade4a",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a sturdy middle-aged village watch ke...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7591.465464062499,
+   "balance_after": 7585.465464062499,
+   "secs": 36,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d22b60be-73e4-489c-8c6d-1847dc5ade4a",
+    "image_id": "f2cd571b-cede-5224-8d57-9c52b013e68a",
+    "source_image_id": "f2cd571b-cede-5224-8d57-9c52b013e68a"
+   }
+  },
+  {
+   "name": "t9_portrait_hanru_B_s23",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "6f871a5e-d514-464b-8b5c-faea3fa64c93",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a sturdy middle-aged village watch ke...",
+    "no_background": false,
+    "seed": 23
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7585.465464062499,
+   "balance_after": 7579.465464062499,
+   "secs": 48,
+   "notes": "",
+   "ids": {
+    "background_job_id": "6f871a5e-d514-464b-8b5c-faea3fa64c93",
+    "image_id": "e189da9e-74c9-59db-904f-e3b882a01741",
+    "source_image_id": "e189da9e-74c9-59db-904f-e3b882a01741"
+   }
+  },
+  {
+   "name": "t9_portrait_hanru_B_s31",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "0b74a1a3-c47a-4889-9064-81f35d648a2b",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a sturdy middle-aged village watch ke...",
+    "no_background": false,
+    "seed": 31
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7579.465464062499,
+   "balance_after": 7573.465464062499,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "0b74a1a3-c47a-4889-9064-81f35d648a2b",
+    "image_id": "aab9e55c-0683-59e9-bf6d-0ac10161ffba",
+    "source_image_id": "aab9e55c-0683-59e9-bf6d-0ac10161ffba"
+   }
+  },
+  {
+   "name": "t9_sfx_lightning",
+   "endpoint": "/sound-effects",
+   "job": "8920f009-986a-4ec7-b0d0-62df1bdd3eba",
+   "status": "completed",
+   "settings": {
+    "prompt": "a small crackling lightning bolt from fingertips: a bright electric snap and zap, not a sci-fi laser",
+    "seconds": 0.8,
+    "name": "fnt-lightning"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7573.465464062499,
+   "balance_after": 7572.465464062499,
+   "secs": 15,
+   "notes": "",
+   "ids": {
+    "background_job_id": "8920f009-986a-4ec7-b0d0-62df1bdd3eba"
+   }
+  },
+  {
+   "name": "t9_sfx_fire",
+   "endpoint": "/sound-effects",
+   "job": "03d555a8-bc08-4e80-848f-a21c36e6fe8a",
+   "status": "completed",
+   "settings": {
+    "prompt": "a short punchy burst of flame thrown from a fist: quick ignition crackle then a roaring whoosh that cuts off",
+    "seconds": 1.0,
+    "name": "fnt-fire"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7572.465464062499,
+   "balance_after": 7571.465464062499,
+   "secs": 15,
+   "notes": "",
+   "ids": {
+    "background_job_id": "03d555a8-bc08-4e80-848f-a21c36e6fe8a"
+   }
+  },
+  {
+   "name": "t9_sfx_water",
+   "endpoint": "/sound-effects",
+   "job": "afdc8abf-3c3f-4f79-baa5-bd45ccacbd5f",
+   "status": "completed",
+   "settings": {
+    "prompt": "a rope of water whipped through the air, a wet lash then a splash on impact",
+    "seconds": 1.0,
+    "name": "fnt-water"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7571.465464062499,
+   "balance_after": 7570.465464062499,
+   "secs": 14,
+   "notes": "",
+   "ids": {
+    "background_job_id": "afdc8abf-3c3f-4f79-baa5-bd45ccacbd5f"
+   }
+  },
+  {
+   "name": "t9_sfx_earth",
+   "endpoint": "/sound-effects",
+   "job": "f1b85094-bfc6-4078-8624-3d3ea0ce02b9",
+   "status": "completed",
+   "settings": {
+    "prompt": "a slab of stone ripped out of the ground: a short gritty grind then a heavy solid thud",
+    "seconds": 1.2,
+    "name": "fnt-earth"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7570.465464062499,
+   "balance_after": 7569.465464062499,
+   "secs": 14,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f1b85094-bfc6-4078-8624-3d3ea0ce02b9"
+   }
+  },
+  {
+   "name": "t9_sfx_air",
+   "endpoint": "/sound-effects",
+   "job": "2acc3f7c-3aba-42fa-ae36-023ed8a10014",
+   "status": "completed",
+   "settings": {
+    "prompt": "a sharp gust of wind pushed from open palms: a quick airy snap and rushing whoosh",
+    "seconds": 1.0,
+    "name": "fnt-air"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7569.465464062499,
+   "balance_after": 7568.465464062499,
+   "secs": 14,
+   "notes": "",
+   "ids": {
+    "background_job_id": "2acc3f7c-3aba-42fa-ae36-023ed8a10014"
+   }
+  },
+  {
+   "name": "t9_sfx_rock",
+   "endpoint": "/sound-effects",
+   "job": "a1160007-498d-4813-8786-f6b939bc2d51",
+   "status": "completed",
+   "settings": {
+    "prompt": "a fist-sized stone thrown hard, a short whoosh then a sharp crack against a target",
+    "seconds": 1.0,
+    "name": "fnt-rock"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7568.465464062499,
+   "balance_after": 7567.465464062499,
+   "secs": 14,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a1160007-498d-4813-8786-f6b939bc2d51"
+   }
+  },
+  {
+   "name": "t9_sfx_sling",
+   "endpoint": "/sound-effects",
+   "job": "f68448a3-f588-44a7-bc77-e23629eacc5c",
+   "status": "completed",
+   "settings": {
+    "prompt": "a leather sling whirling once and releasing, a small stone zipping away with a thin whistle",
+    "seconds": 1.0,
+    "name": "fnt-sling"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7567.465464062499,
+   "balance_after": 7566.465464062499,
+   "secs": 14,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f68448a3-f588-44a7-bc77-e23629eacc5c"
+   }
+  },
+  {
+   "name": "t9_sfx_crossbow",
+   "endpoint": "/sound-effects",
+   "job": "fc4ee01b-32bc-4746-ab67-51e06e92682b",
+   "status": "completed",
+   "settings": {
+    "prompt": "a wooden crossbow firing: a crisp string twang and a bolt thwipping away through the air",
+    "seconds": 0.8,
+    "name": "fnt-crossbow"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7566.465464062499,
+   "balance_after": 7565.465464062499,
+   "secs": 14,
+   "notes": "",
+   "ids": {
+    "background_job_id": "fc4ee01b-32bc-4746-ab67-51e06e92682b"
+   }
   }
  ],
  "end_balance": 16728.0,
