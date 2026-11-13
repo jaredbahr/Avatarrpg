@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
+import { runQuarryCases } from '../../../scripts/test-support/runQuarryCases';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 import { partyOfSize, runBalanceReport } from './balance';
 import { encounterRoster } from '../state/createGame';
@@ -93,27 +94,43 @@ describe('combat simulation', () => {
     }
   });
 
-  it('keeps the quarry winnable with every character in a three-person party', () => {
-    for (const character of CONTENT.characters.values()) {
+  it('keeps the quarry winnable with every character in a three-person party', async ({
+    signal,
+    onTestFinished,
+  }) => {
+    const cases = [...CONTENT.characters.values()].map((character) => {
       const companions =
         character.element === 'air'
           ? ['kaya', 'bo']
           : ['nilak', 'bo', 'kaya'].includes(character.id)
             ? ['nilak', 'bo', 'kaya'].filter((id) => id !== character.id)
             : ['kaya', 'nilak'];
-      const roster = [character.id, ...companions].map((characterId) => ({ characterId }));
+      const party = [character.id, ...companions].map((characterId) => ({ characterId }));
+      return { id: character.id, party };
+    });
+    const trials = cases.flatMap(({ id, party }) =>
+      Array.from({ length: 8 }, (_, trial) => ({
+        seed: seedFor(`quarry-${id}`, trial),
+        encounterId: 'enc_grumbler',
+        party,
+      })),
+    );
+    const run = runQuarryCases(trials, signal);
+    // A timeout can finish the test before its worker cleanup has settled.
+    onTestFinished(async () => {
+      await Promise.allSettled([run]);
+    });
+    const results = await run;
+    expect(results).toHaveLength(trials.length);
+    for (const [index, { id }] of cases.entries()) {
       let victories = 0;
       for (let trial = 0; trial < 8; trial++) {
-        const result = runCombat(CONTENT, {
-          seed: seedFor(`quarry-${character.id}`, trial),
-          encounterId: 'enc_grumbler',
-          party: roster,
-        });
-        expect(result.anomalies, `${character.id} trial ${trial}`).toEqual([]);
-        expect(result.outcome, `${character.id} trial ${trial}`).not.toBe('stalemate');
+        const result = results[index * 8 + trial]!;
+        expect(result.anomalies, `${id} trial ${trial}`).toEqual([]);
+        expect(result.outcome, `${id} trial ${trial}`).not.toBe('stalemate');
         if (result.outcome === 'victory') victories++;
       }
-      expect(victories, `${character.id} in the quarry`).toBeGreaterThan(0);
+      expect(victories, `${id} in the quarry`).toBeGreaterThan(0);
     }
   });
 });
