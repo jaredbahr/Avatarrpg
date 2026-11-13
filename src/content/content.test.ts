@@ -371,6 +371,23 @@ describe('content', () => {
     ).toBe(false);
   });
 
+  it('accepts finite authored numeric flags and rejects non-finite values', () => {
+    const parse = (value: number) =>
+      storyNodeSchema.safeParse({
+        id: 'numeric_flag',
+        kind: 'flags',
+        set: { value },
+        next: STORY_ENTRY,
+      });
+    expect(parse(1.5).success).toBe(true);
+    for (const value of [Number.NaN, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]) {
+      const result = parse(value);
+      expect(result.success).toBe(false);
+      if (!result.success)
+        expect(result.error.issues.map((issue) => issue.path)).toContainEqual(['set', 'value']);
+    }
+  });
+
   it('rejects a profile assignment to an unknown resident', () => {
     const problems = validateContent({
       ...CONTENT_BUNDLE,

@@ -384,7 +384,7 @@ export const headingBendDefSchema: z.ZodType<HeadingBendDef> = z
     scale: z.number().gt(0).max(1),
     frameSize: pixelSize,
     anchor: anchorPoint,
-    keyFrames: z.record(bendKeyFrameSchema),
+    keyFrames: z.record(z.string(), bendKeyFrameSchema),
     smearFrame: celIndex.optional(),
     attacks: z.array(bendAttackCueSchema),
     socketsPerFrame: z.array(bendFrameSocketsSchema).min(BEND_FRAME_MIN).max(BEND_FRAME_MAX),
