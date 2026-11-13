@@ -10,7 +10,7 @@ import {
   sampleParticles,
   sampleStrokes,
 } from '../../render/fx/simulate';
-import { ambientEmitters, waterCells } from './ambience';
+import { MAX_SHEDDING_CANOPIES, ambientEmitters, waterCells } from './ambience';
 
 /** Ba Dan's top-down scene: its chimneys and canopies are what the ambience reads. */
 const BA_DAN = JSON.parse(readFileSync('public/art/topdown/ba-dan/scene.json', 'utf8')) as MapScene;
@@ -307,6 +307,22 @@ describe('ambientEmitters', () => {
       expect(slots).toBeLessThanOrEqual(4);
     });
 
+    it("sheds from an evenly spread, fixed subset of a crowded scene's canopies", () => {
+      const many = Array.from({ length: 21 }, (_, i) => ({ x: i + 1, y: (i % 3) + 1 }));
+      const shedding = (time: number) =>
+        new Set(
+          ambientEmitters(village, grid, time, [], false, [], many)
+            .filter((e) => isLeaf(e.def))
+            .map((e) => `${e.to.x},${e.to.y}`),
+        );
+      const first = shedding(4000);
+      expect(first.size).toBe(MAX_SHEDDING_CANOPIES);
+      expect(shedding(61_000)).toEqual(first);
+      // Spread across the list, not bunched at its start.
+      expect(first.has('1,1')).toBe(true);
+      expect([...first].some((key) => Number(key.split(',')[0]) > 18)).toBe(true);
+    });
+
     it('is absent under reduce motion or without trees', () => {
       const still = ambientEmitters(village, grid, 4000, [], true, [], trees);
       expect(still.some((e) => isLeaf(e.def))).toBe(false);
@@ -315,35 +331,29 @@ describe('ambientEmitters', () => {
     });
   });
 
-  // Known breach: on the top-down scene (5 chimneys, 21 canopies) the sweep peaks at 130, and
-  // `canvasFx` drops everything past 96. It held on the retired oblique scene; this flips to a pass
-  // once the village's emitters are thinned.
-  it.fails(
-    'keeps the whole village in the air under the Canvas 2D cap of 96 particles (ADR 0004)',
-    () => {
-      const village = FX_AMBIENCE.village;
-      if (!village) throw new Error('no village ambience');
-      const out = new Float32Array(400 * PARTICLE_STRIDE);
-      let most = 0;
-      for (let time = 0; time < 120_000; time += 100) {
-        let live = 0;
-        for (const e of ambientEmitters(
-          village,
-          grid,
-          time,
-          BA_DAN.chimneys ?? [],
-          false,
-          [],
-          BA_DAN.canopies ?? [],
-        ))
-          if (e.def.kind === 'particles')
-            live += sampleParticles(e.def, e.elapsed, e.seed, e.from, e.to, out);
-        most = Math.max(most, live);
-      }
-      expect(most).toBeGreaterThan(40);
-      expect(most).toBeLessThanOrEqual(96);
-    },
-  );
+  it('keeps the whole village in the air under the Canvas 2D cap of 96 particles (ADR 0004)', () => {
+    const village = FX_AMBIENCE.village;
+    if (!village) throw new Error('no village ambience');
+    const out = new Float32Array(400 * PARTICLE_STRIDE);
+    let most = 0;
+    for (let time = 0; time < 120_000; time += 100) {
+      let live = 0;
+      for (const e of ambientEmitters(
+        village,
+        grid,
+        time,
+        BA_DAN.chimneys ?? [],
+        false,
+        [],
+        BA_DAN.canopies ?? [],
+      ))
+        if (e.def.kind === 'particles')
+          live += sampleParticles(e.def, e.elapsed, e.seed, e.from, e.to, out);
+      most = Math.max(most, live);
+    }
+    expect(most).toBeGreaterThan(40);
+    expect(most).toBeLessThanOrEqual(96);
+  });
 
   describe('waterCells', () => {
     const tile = (water: number | null): Tile =>
