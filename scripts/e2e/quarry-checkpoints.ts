@@ -5,6 +5,9 @@
  * combat transient fields diverge. The shared boundary compares party identity,
  * level, XP and abilities, plus the full story, world, flags and location;
  * the fixture's full state and command transcript are pinned separately.
+ * Flags under `guidance.` are left out of the boundary: the App writes them
+ * (a new game's first-fight eligibility, each combat tip once it has shown),
+ * never the reducer, so a headless replay cannot and should not carry them.
  */
 import { CONTENT, STORY_ENTRY } from '../../src/content';
 import { INTERLUDES } from '../../src/content/story/interludes';
@@ -62,6 +65,11 @@ export interface QuarryBoundary {
   readonly battle: GameState['battle'];
 }
 
+/** The flags the story reducer owns; the App's `guidance.` bookkeeping is presentation. */
+function storyFlags(flags: GameState['flags']): GameState['flags'] {
+  return Object.fromEntries(Object.entries(flags).filter(([key]) => !key.startsWith('guidance.')));
+}
+
 export function quarryRouteBoundary(state: GameState): QuarryBoundary {
   const stage = state.flags.act1_complete === true ? 'afterDriller' : 'gate';
   const custody: QuarryCustody = state.flags.ruon_traded === true ? 'trade' : 'escort';
@@ -80,7 +88,7 @@ export function quarryRouteBoundary(state: GameState): QuarryBoundary {
       xp: unit.xp,
       abilities: unit.abilities,
     })),
-    flags: state.flags,
+    flags: storyFlags(state.flags),
     world: state.world,
     story: state.story,
     location: state.location,
