@@ -4417,3 +4417,8 @@ html[data-contrast='high'] .hud-panel::after {
     display: none;
   }
 }
+
+/* A staged conversation owns the header; keep the exploration camera allocation. */
+.scene-host.has-dialogue-backdrop > .explore-scene > .explore-bar {
+  visibility: hidden;
+}
