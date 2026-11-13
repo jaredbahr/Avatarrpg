@@ -15,7 +15,6 @@ import './styles/a11y.css';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
 import { App } from './app/App';
 import { bakeReview } from './render/sheets/review';
-import { liftCost } from './render/geometry/lift';
 import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
 import { loadTopDownPresentations, withTopDownMaps } from './content/topdown';
@@ -56,7 +55,7 @@ function boot(content: ContentIndex): void {
   if (!root) return;
   const app = new App(content, root, STORY_ENTRY);
   app.start();
-  window.fnt = { app, bakeReview, loadedFxCels, liftCost };
+  window.fnt = { app, bakeReview, loadedFxCels };
 }
 
 // The top-down scenes are assets (ADR 0104), fetched before the app boots. Without them the maps
@@ -83,7 +82,6 @@ declare global {
       app: App;
       bakeReview?: typeof bakeReview;
       loadedFxCels: typeof loadedFxCels;
-      liftCost: typeof liftCost;
     };
   }
 }

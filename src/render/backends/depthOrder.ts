@@ -38,8 +38,7 @@ export const TOPDOWN_X_WEIGHT = 1e-7;
 
 /**
  * Ground depth of a foot already in world pixels (`camera.groundPoint`). The
- * oblique and orthographic boards sort by the foot's screen y alone, as they
- * always have. The top-down board (ADR 0104) sorts by the foot's screen y,
+ * orthographic board sorts by the foot's screen y alone, as it always has. The top-down board (ADR 0104) sorts by the foot's screen y,
  * then its x, so two things on one row draw in the same order on both
  * backends whatever order they were listed in.
  */

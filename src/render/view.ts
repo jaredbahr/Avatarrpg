@@ -83,15 +83,10 @@ export function fallenAlpha(unit: Pick<RenderUnit, 'fallen' | 'clip'>): number {
  * stay on the logical ground point. Elevation is applied in actor space for
  * both rendering backends.
  */
-export function unitMarkerGroundPoint(
-  base: Vec2,
-  tileSize: number,
-  elevationLift: number,
-  contactOffset?: Vec2,
-): Vec2 {
+export function unitMarkerGroundPoint(base: Vec2, tileSize: number, contactOffset?: Vec2): Vec2 {
   return {
     x: base.x + (contactOffset?.x ?? 0) * tileSize,
-    y: base.y + ((contactOffset?.y ?? 0) - elevationLift) * tileSize,
+    y: base.y + (contactOffset?.y ?? 0) * tileSize,
   };
 }
 

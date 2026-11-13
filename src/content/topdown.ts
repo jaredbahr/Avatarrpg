@@ -2,8 +2,8 @@
  * The top-down presentation swap (ADR 0104, phase T3): under `?style=topdown` a map registered
  * here is drawn in the top-down style, with its own scene, instead of its oblique painting.
  *
- * Presentation only. The swap replaces a map's `projection` and `scene` and drops the fields that
- * describe the oblique art (`backdrop`, `cameraPaint`); every rules field (rows, legend, spawns,
+ * Presentation only. The swap replaces a map's `projection` and `scene` and drops the field that
+ * describes the oblique art (`backdrop`); every rules field (rows, legend, spawns,
  * npcs, props, exits, triggers, edges and the rest) stays the very same object, so the rules, the
  * edge contract and saves never tell the two styles apart. Positions stay whole logical cells.
  *
@@ -99,13 +99,7 @@ function topDownScene(mapScene: MapScene | undefined, presentationScene: MapScen
 
 /** One map in its top-down presentation: the same rules objects, a new projection and scene. */
 export function topDownMap(map: MapDef, presentation: TopDownPresentation): MapDef {
-  const {
-    backdrop: _backdrop,
-    cameraPaint: _cameraPaint,
-    projection: _projection,
-    scene: _scene,
-    ...rules
-  } = map;
+  const { backdrop: _backdrop, projection: _projection, scene: _scene, ...rules } = map;
   return {
     ...rules,
     projection: presentation.projection,
