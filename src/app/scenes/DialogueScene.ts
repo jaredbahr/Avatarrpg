@@ -428,9 +428,13 @@ export class DialogueScene implements Scene {
             : null,
           el('div', { class: 'spacer' }),
           button('Back to the title', () => this.app.start(), { class: 'btn-ghost' }),
-          button('Play again with a different party', () => this.app.goToSetup(), {
-            class: 'btn-primary btn-large',
-          }),
+          button(
+            'Play again with a different party',
+            () => this.app.goToSetup(this.app.session.count),
+            {
+              class: 'btn-primary btn-large',
+            },
+          ),
         ]
       : [
           button('Save this game', () => this.app.openPause()),

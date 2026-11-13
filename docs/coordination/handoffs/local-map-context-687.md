@@ -1,68 +1,55 @@
-# Local map arrival context (#687)
+# Local map arrival context (#687 / draft #689)
 
-- **Owner:** root/local-map-context687, 2026-11-12; branch
-  `codex/local-map-context-687`, base `0d184e29efff1d4f16a0f4db71e96debdedc5a45`.
-- **Outcome:** prevent the Map control from opening an outgoing area while
-  normal departure animation finishes. It checks the current logical screen
-  and map against this exploration scene at render and activation, then passes
-  that current state to LocalMapDialog. Ordinary same-map walks stay available.
-- **Scope:** only the Map button closure/options hunk in ExploreScene.renderHud,
-  new `e2e/local-map-context.spec.ts`, and this handoff. No movement, lifecycle,
-  map dialog, route, objective pointer, camera, renderer, style or asset change.
-- **Reproduction:** existing qualified producer `059c1c5a` (old dependency lock),
-  one failed regression /one passed same-map walking control, stable 41.102 s;
-  log `dc192cdacc06c9056b9908bf220346222af500fbb1235e372c1457e7799387f6`.
-  During an actual Map touch with 4,958 ms departure playback left, core map was
-  Forest Road, drawn map Ba Dan, and the open dialog was Ba Dan. That old dialog
-  and its routes persisted after the drawn map became Forest Road. Complete
-  core/session matched the real reducer result. No errors, skips or retries.
-- **Fixture limits:** controlled public startGame/enterNode setup, not an earned
-  campaign; subsequent movement uses legal reducer-checked public commands,
-  normal animation and actual touchscreen Map taps. No fake clock or state edit.
-  MapDialog/Dialog and Map activation/App.dispatch source parity with current
-  main is recorded externally. This diagnostic is not new-lock qualification.
-- **Acceptance:** no outgoing-area dialog during cross-context departure;
-  current destination Map re-enables and shows Forest Road after arrival; Map
-  remains usable during ordinary same-area walking. Preserve full core/session,
-  all original native oracles, 60 s cases and zero retries. No blanket walking
-  disable or change to route rules. Candidate native GREEN has NOT been run.
-- **Coordination:** [issue 687](https://github.com/jaredbahr/Avatarrpg/issues/687),
-  [claim 6836748703](https://github.com/jaredbahr/Avatarrpg/issues/687#issuecomment-6836748703),
-  [exact-hunk notice 6836748975](https://github.com/jaredbahr/Avatarrpg/issues/629#issuecomment-6836748975).
-  Active #629 pointer/camera scope remains separate; no integration hooks are
-  touched. If its unpublished work overlaps this exact Map hunk, stop for handoff.
-  PR609 label/style files and LocalMap.ts remain untouched. SOL authored only the
-  new frozen native file; its lease is released. Root owns source and integration.
-- **Qualification correction (2026-11-13):** the earlier stop before even
-  executing CI/native on existing tools was our overly strict interpretation,
-  not a failed gate or an extra user/AGENTS requirement. Original local receipts,
-  source review, patch and bundle remain historical evidence. Run the unchanged
-  full `npm run ci:local` once on this same approved executor, then fresh native
-  acceptance against its own output; preserve any actual failure unchanged.
-  No install, dependency/lock edit, skipped stage, assertion/budget/deadline/retry
-  change, new runner, access change or alternate-executor bypass is authorized.
-- **Toolchain limitation:** current main's #686 lock has 20 installed-version
-  differences. Existing tools include Node 22.23.4, npm 11.9.0, TypeScript 5.9.3,
-  Vite 6.4.3 (lock 6.4.6), Prettier 3.9.6 (lock 3.10.1), tsx 4.23.13 (lock
-  4.23.15), and Playwright 1.63.0. Package ranges and the Pixi/Playwright/Zod
-  runtime are unchanged. A pass qualifies only the exact source/output on these
-  recorded installed tools; reproduction with the updated lock stays OPEN.
-  [Existing matching-runner request](https://github.com/jaredbahr/Avatarrpg/pull/686#issuecomment-6836433253)
-  remains an additional reproduction request, not permission to install.
-- **Preserved native failure / driver repair:** the first candidate run on
-  `1118a24e` had one failed exit case and one passed same-map control (33.298 s;
-  log `390a1a6179a0322f71efa7aad3daaba66236de8a4d28408b072dce694ccb0480`).
-  The exit case failed before the touch: separate visibility and bounding-box
-  reads were consistent with HUD button replacement; the retained DOM showed a visible,
-  correctly disabled Map. Read one attached element's geometry atomically,
-  keeping the real touch, positive dimensions, all state/dialog/window/route
-  oracles and existing deadlines/retries. No production change was needed.
-  Earlier full CI on that exact head passed 12 stages /354 files /4,794 tests;
-  that historical pass does not qualify the amended final source. Re-run full
-  exact clean final-head CI and native acceptance before publication.
-- **Publication gate:** exact clean final-head unchanged `npm run ci:local`,
-  fresh relevant native acceptance and final independent evidence review must
-  actually pass before push. Publish only a DRAFT disclosing the toolchain
-  limitation and exact results. No unrun check is passed by this handoff.
-  Physical input/WebKit/iPadOS/PWA/device performance stay open.
-  No Ready, formal approval, merge, deployment, generated assets or new service.
+- **Owner and scope:** root/local-map-context687; branch
+  `codex/local-map-context-687`, same
+  [claim 6836748703](https://github.com/jaredbahr/Avatarrpg/issues/687#issuecomment-6836748703).
+  Only the Map closure/options in `ExploreScene.buildHud` (called by
+  `renderHud`), unchanged `e2e/local-map-context.spec.ts`, and this handoff are
+  authored here. No movement, loop, lifecycle, camera, pointer, LocalMap, style,
+  asset, dependency, budget or original-test changes.
+- **Behavior:** Map is unavailable while this scene still draws an outgoing
+  area after the logical screen/map has changed. Activation rechecks the live
+  state, then passes that current state, position and objective to LocalMapDialog.
+  Ordinary same-area walking keeps Map available. The pointer owner's
+  [integration instruction](https://github.com/jaredbahr/Avatarrpg/issues/629#issuecomment-6834618598)
+  is retained: `worldObjectiveTargetId(this.app.content, current)`.
+- **Current integration:** inherit merged main
+  `e668b68927273869481b27032960bb80ce0abe5f`, tree
+  `5da87736073898968b89100258fb585979facd81`, verbatim outside the owned Map
+  hunk. This includes the merged framing/readiness/name/art inputs, music
+  synchronization and Play again table-size changes. Main's Look around branch
+  remains unchanged; this does not stack #690. The eventual same-branch
+  fast-forward commit must retain published `9632152b` as first parent and E668
+  as second parent. Canonical incoming metadata and blobs are preserved outside
+  source; a local shallow boundary does not rewrite their parents.
+- **Preserved evidence:** original qualified `9632152b` source, own CI output,
+  native evidence, immutable qualification/review and all earlier failures remain
+  separate. The failed F7 integrated candidate (tree `32428f34`, actual bundle
+  419,872/419,840 B) is fully archived before this integration: source, all 447
+  outputs, three authored copies, probes, patch and local archive bundle. Its
+  failed gate is not waived or transferred to this source. The original pre-touch
+  driver failure, subsequent strict-null compiler errors and interrupted CI are
+  retained in the original task evidence.
+- **Regression contract:** the existing two-case regression remains byte-identical
+  (`6443b2eda9d1c73f34e1b4c9c880e267b3b6deff0834d19f5dc2b4d2e3a43719`).
+  Controlled public startGame/enterNode setup precedes legal reducer-checked
+  movement, normal animation and actual touchscreen Map taps; this is not an
+  earned campaign. Preserve full unnormalized core/session, departure-window,
+  current-area, route and same-area controls, 60 s cases and zero retries. No
+  fake clock, state surgery, blanket walking disable or route-policy change.
+- **Acceptance for this integration:** build/budget, exact clean final-head
+  unchanged `npm run ci:local`, and fresh own-output native checks are UNRUN at
+  this authoring freeze. Require Map 2, unchanged Map/curtain 3, original
+  pointer/objective/dialogue 15 Chromium cases, music 2 and demo-ending 1 (23
+  total), with unchanged assertions and deadlines. Bind source/probes and every
+  output path/SHA/byte count to the actual producer; inspect raw state/media and
+  obtain independent evidence review before updating the same DRAFT. No older
+  head, owner or #690 pass qualifies this integration.
+- **Open limits:** the existing approved installed toolchain differs from the
+  updated lock at 20 patch versions; fresh locked-toolchain native reproduction
+  remains open. No install or lock changes are authorized. Original WebKit
+  pointer/dialogue cases and the owner's separate 820×700 Huge check are not
+  replaced by Chromium controls. Physical input, Safari/iPadOS, PWA and device
+  performance remain open; no broad visual or art acceptance is implied.
+  No Ready, formal approval, PR merge, deployment, dispatch, new art, service or
+  security/access action belongs to this task.

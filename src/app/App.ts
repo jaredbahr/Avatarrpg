@@ -622,6 +622,9 @@ export class App {
     if (!force && this.scene?.name === wanted) {
       if (wanted === 'dialogue') this.showScene(this.scene);
       else {
+        // The same scene can move to another area (a walk off the Forest Road onto the quarry
+        // gate), and only showScene picks the track otherwise; the player ignores an unchanged one.
+        this.syncMusic(this.scene.name);
         this.setMood(this.defaultMood());
         // A walk off one map onto the next keeps the explore scene, which swaps
         // its board in place: cover that swap as a scene change is covered, and
@@ -702,8 +705,9 @@ export class App {
     this.showScene(new TitleScene(this));
   }
 
-  goToSetup(): void {
-    this.showScene(new PartySetupScene(this));
+  /** Party setup, starting from `playerCount` people (the table that just finished, on Play again). */
+  goToSetup(playerCount = 1): void {
+    this.showScene(new PartySetupScene(this, playerCount));
   }
 
   /* ---------------------------------------------------------------- */
