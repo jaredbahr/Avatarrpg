@@ -12,8 +12,8 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 
 /** The eight-way PixelLab G party (ADR 0050, ADR 0051). */
 const G_PARTY = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo'] as const;
-/** A sheet on the legacy four-way cadence contract. */
-const FOUR_WAY = 'unit.earth.linmei';
+/** A sheet on the legacy four-way cadence contract: the committed probe atlas declares no locomotion. */
+const FOUR_WAY = 'unit.test.probe';
 
 describe('directional walking', () => {
   it('keeps a diagonal corner stable, then turns when the route changes axis', () => {
@@ -130,18 +130,31 @@ describe('heading vocabulary is a declared sheet capability', () => {
     expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
   });
 
-  it('only the top-down sheets in `ASSETS` (the party, the bandits, the quarry bender and the Ba Dan residents) declare eight-way locomotion today', () => {
+  it('only the top-down sheets in `ASSETS` (every unit and the Ba Dan residents) declare eight-way locomotion today', () => {
     const eightWay = Object.entries(ASSETS).flatMap(([key, entry]) =>
       entry.kind === 'sheet' && entry.locomotion?.headings === 8 ? [[key, entry.atlas]] : [],
     );
     expect(eightWay).toEqual([
       ['unit.fire.kaya', 'art/topdown/kaya.json'],
+      ['unit.fire.tenzo', 'art/topdown/tenzo.json'],
+      ['unit.water.nilak', 'art/topdown/nilak.json'],
       ['unit.water.sura', 'art/topdown/sura.json'],
       ['unit.earth.bo', 'art/topdown/bo.json'],
+      ['unit.earth.linmei', 'art/topdown/linmei.json'],
+      ['unit.air.nima', 'art/topdown/nima.json'],
+      ['unit.air.jinu', 'art/topdown/jinu.json'],
+      ['unit.non.riko', 'art/topdown/riko.json'],
+      ['unit.non.wen', 'art/topdown/wen.json'],
       ['unit.enemy.thug', 'art/topdown/thug.json'],
       ['unit.enemy.slinger', 'art/topdown/slinger.json'],
       ['unit.enemy.bruiser', 'art/topdown/bruiser.json'],
       ['unit.enemy.quarrybender', 'art/topdown/quarrybender.json'],
+      ['unit.enemy.deserter', 'art/topdown/deserter.json'],
+      ['unit.enemy.merc', 'art/topdown/merc.json'],
+      ['unit.enemy.crossbow', 'art/topdown/crossbow.json'],
+      ['unit.enemy.sergeant', 'art/topdown/sergeant.json'],
+      ['unit.enemy.driller', 'art/topdown/driller.json'],
+      ['unit.ally.ruon', 'art/topdown/ruon.json'],
       ['npc.elder', 'art/topdown/mira.json'],
       ['npc.shopkeeper', 'art/topdown/gao.json'],
       ['npc.kid', 'art/topdown/pella.json'],
@@ -195,7 +208,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
     }
   }
 
-  for (const sprite of ['unit.earth.linmei', 'unit.water.nilak', 'unit.fire.tenzo', undefined]) {
+  for (const sprite of [FOUR_WAY, 'npc.hanru', 'npc.dema', undefined]) {
     it(`keeps the legacy four-way choices exactly for ${sprite ?? 'an unknown sprite'}`, () => {
       let previous: WalkDirection | undefined;
       let facing: 1 | -1 = 1;
@@ -233,7 +246,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
       [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
       [],
     );
-    expect(legacy.locomotion(200, 'u', 'idle', 'unit.earth.linmei')).toEqual({
+    expect(legacy.locomotion(200, 'u', 'idle', FOUR_WAY)).toEqual({
       clip: 'walk',
       facing: 1,
     });
