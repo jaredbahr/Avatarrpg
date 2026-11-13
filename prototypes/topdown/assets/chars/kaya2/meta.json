@@ -1947,6 +1947,78 @@
     "custom-knocked_out_staggers_back_one_867b24_north-east_6.png",
     "custom-knocked_out_staggers_back_one_867b24_north-east_7.png"
    ]
+  },
+  "custom-a friendly wave: standing in p@e5a08f": {
+   "east": [
+    "custom-a_friendly_wave_standing_in_p_e5a08f_east_0.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_east_1.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_east_2.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_east_3.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_east_4.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_east_5.png"
+   ],
+   "south-east": [
+    "custom-a_friendly_wave_standing_in_p_e5a08f_south-east_0.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_south-east_1.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_south-east_2.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_south-east_3.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_south-east_4.png",
+    "custom-a_friendly_wave_standing_in_p_e5a08f_south-east_5.png"
+   ]
+  },
+  "custom-seated tea: she sits cross-leg@8d4e68": {
+   "east": [
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_east_0.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_east_1.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_east_2.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_east_3.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_east_4.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_east_5.png"
+   ],
+   "south-east": [
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_south-east_0.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_south-east_1.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_south-east_2.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_south-east_3.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_south-east_4.png",
+    "custom-seated_tea_she_sits_cross-leg_8d4e68_south-east_5.png"
+   ]
+  },
+  "custom-a big friendly hello wave: sta@9c9d91": {
+   "south-east": [
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south-east_0.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south-east_1.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south-east_2.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south-east_3.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south-east_4.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south-east_5.png"
+   ],
+   "south": [
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south_0.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south_1.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south_2.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south_3.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south_4.png",
+    "custom-a_big_friendly_hello_wave_sta_9c9d91_south_5.png"
+   ]
+  },
+  "custom-seated tea: she is already sit@ff3d70": {
+   "south-east": [
+    "custom-seated_tea_she_is_already_sit_ff3d70_south-east_0.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_south-east_1.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_south-east_2.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_south-east_3.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_south-east_4.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_south-east_5.png"
+   ],
+   "east": [
+    "custom-seated_tea_she_is_already_sit_ff3d70_east_0.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_east_1.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_east_2.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_east_3.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_east_4.png",
+    "custom-seated_tea_she_is_already_sit_ff3d70_east_5.png"
+   ]
   }
  }
 }
