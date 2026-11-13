@@ -1,4 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { precachePaths } from '../scripts/e2e/precache-manifest';
+import { resetStorage } from './helpers';
+import {
+  installQuarryRouteDiagnostics,
+  playQuarryDriller,
+  playQuarryGate,
+  playQuarryHome,
+  playQuarryOpening,
+} from './quarry-route';
 
 /**
  * The PWA promise: install it once on the Surface, then it works in the car,
@@ -97,4 +106,94 @@ test.describe('offline', () => {
     );
     expect(manifest.icons.some((i) => i.purpose === 'maskable')).toBe(true);
   });
+});
+
+test.describe('quarry campaign precache coverage', () => {
+  installQuarryRouteDiagnostics();
+
+  for (const style of ['default', 'explicit top-down'] as const) {
+    test(`precaches assets through the Driller and home in ${style} style`, async ({
+      page,
+      context,
+    }, testInfo) => {
+      test.setTimeout(600_000);
+      const requests = new Set<string>();
+      page.on('request', (request) => requests.add(request.url()));
+
+      const query = style === 'default' ? '?renderer=canvas' : '?renderer=canvas&style=topdown';
+      await page.clock.install();
+      await resetStorage(page, query);
+      await page.waitForFunction(() => navigator.serviceWorker?.controller?.state === 'activated');
+      const worker = await page.evaluate(() => navigator.serviceWorker.controller!.scriptURL);
+      const workerUrl = new URL(worker);
+      const response = await page.request.get(worker);
+      expect(response.ok()).toBe(true);
+      const precached = precachePaths(await response.text(), workerUrl);
+
+      // Enter setup with a trusted gesture so the online request audit includes
+      // music, even though the deterministic party fixture handles the picks.
+      await page.getByRole('button', { name: /new game/i }).click();
+      try {
+        await playQuarryOpening(page, 'escort');
+        await playQuarryGate(page, 'escort');
+        await playQuarryDriller(page, 'escort', true);
+        await playQuarryHome(page, 'escort');
+
+        const online = [...requests];
+        const root = new URL('./', workerUrl).pathname;
+        const entry = new URL('index.html', workerUrl).pathname;
+        const observed = [
+          ...new Set(
+            online
+              .map((value) => new URL(value))
+              .filter((url) => url.origin === workerUrl.origin)
+              .map((url) => (url.pathname === root ? entry : url.pathname)),
+          ),
+        ].sort();
+        const missing = observed.filter((path) => !precached.has(path));
+        await testInfo.attach('quarry-precache-requests', {
+          body: JSON.stringify({ style, worker, observed, missing, requests: online }, null, 2),
+          contentType: 'application/json',
+        });
+        expect(observed.some((path) => path.startsWith(root + 'art/topdown/ba-dan/'))).toBe(true);
+        expect(observed.some((path) => path.startsWith(root + 'art/topdown/quarry-floor/'))).toBe(
+          true,
+        );
+
+        await context.setOffline(true);
+        try {
+          await page.reload();
+          await expect(page.getByRole('heading', { name: /four nations tactics/i })).toBeVisible();
+          await page.getByRole('button', { name: /new game/i }).click();
+          const ground = page.waitForResponse((res) => {
+            const url = new URL(res.url());
+            return (
+              url.origin === workerUrl.origin &&
+              url.pathname.startsWith(root + 'art/topdown/ba-dan/') &&
+              url.pathname.endsWith('/ground.webp')
+            );
+          });
+          await playQuarryOpening(page, 'escort');
+          const painted = await ground;
+          expect(painted.ok()).toBe(true);
+          expect(painted.fromServiceWorker()).toBe(true);
+          await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
+          await expect
+            .poll(() => page.evaluate(() => window.fnt?.app.rendererCamera()?.projection))
+            .toBe('topdown');
+        } finally {
+          await context.setOffline(false);
+        }
+
+        expect(missing, 'same-origin campaign requests absent from the emitted precache').toEqual(
+          [],
+        );
+      } finally {
+        await testInfo.attach('quarry-all-requests', {
+          body: JSON.stringify([...requests].sort()),
+          contentType: 'application/json',
+        });
+      }
+    });
+  }
 });
