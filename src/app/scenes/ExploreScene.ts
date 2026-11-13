@@ -329,7 +329,7 @@ export class ExploreScene implements Scene {
       this.renderer?.camera.fitExplore(
         exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
       );
-      this.renderer?.camera.centreOn(state.location.pos);
+      this.frameArrival(state);
       this.rememberViewSize();
     }
     this.setConversationMode(conversation);
@@ -902,6 +902,22 @@ export class ExploreScene implements Scene {
     return true;
   }
 
+  private frameArrival(state: GameState): void {
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    const { mapId, pos } = state.location;
+    // At the west arrival, make room above the party for Dema on the verge.
+    // Use the party view on short boards and after the road narration.
+    const frameVerge =
+      camera.projection === 'topdown' &&
+      mapId === 'forest_road' &&
+      pos.x === 1 &&
+      pos.y === 4 &&
+      !state.story.visited.includes('road_depart') &&
+      camera.viewport.height >= 4.25 * camera.tile * camera.scale;
+    camera.centreOn(frameVerge ? { x: pos.x, y: 2.25 } : pos);
+  }
+
   private followParty(): void {
     if (this.conversationMode) return;
     const state = this.departing ?? this.app.state;
@@ -1188,7 +1204,7 @@ export class ExploreScene implements Scene {
     this.renderer.camera.fitExplore(
       exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
     );
-    this.renderer.camera.centreOn(state.location.pos);
+    this.frameArrival(state);
     this.rememberViewSize();
 
     // The chrome round the map can still grow — a late web font, a longer
