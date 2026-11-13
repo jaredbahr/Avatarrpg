@@ -1466,6 +1466,27 @@ html[data-contrast='high'] .map-wrap {
   height: 100%;
 }
 
+.explore-npc-names {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.explore-npc-names > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, calc(-100% - 6px));
+  padding: 2px 6px;
+  border: var(--hairline) solid var(--c-ink-line);
+  border-radius: var(--radius);
+  color: var(--c-ink);
+  background: var(--surface-1);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
 /* A world conversation keeps the map scene alive and places a small readable
    plate over its lower edge. The map canvas remains visible around it, while
    its pointer adapter is guarded in ExploreScene as well as here. */

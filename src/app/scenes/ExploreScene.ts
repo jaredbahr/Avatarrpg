@@ -34,6 +34,7 @@ import { authoredForBothSides } from '../../content/assets/clips';
 import { FOOT_LINE } from '../../render/sheets/bake';
 import { placeFrame } from '../../render/sheets/placement';
 import { npcClip } from '../../render/view';
+import { npcPipLift } from '../../render/npcPip';
 import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
@@ -50,7 +51,7 @@ import { WaitDialog } from '../ui/WaitDialog';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
-import { nearbyExits, nearbyExploreTarget } from '../world/guidance';
+import { nearbyExits, nearbyExploreTarget, TALK_RANGE } from '../world/guidance';
 import { partyWalkPhase } from '../animator';
 import {
   createExploreObjectivePresentation,
@@ -148,6 +149,7 @@ export class ExploreScene implements Scene {
   private objectivePresentation = createExploreObjectivePresentation();
   private objectiveButton: HTMLButtonElement | null = null;
   private objectivePointer: HTMLDivElement | null = null;
+  private npcNames: HTMLDivElement | null = null;
   private mapCorner: HTMLDivElement | null = null;
   private pauseButton: HTMLButtonElement | null = null;
 
@@ -219,6 +221,10 @@ export class ExploreScene implements Scene {
             hidden: true,
             attrs: { role: 'img' },
           })),
+          (this.npcNames = el('div', {
+            class: 'explore-npc-names',
+            attrs: { 'aria-hidden': 'true' },
+          })),
           (this.mapCorner = el('div', { class: 'explore-map-corner' })),
           el('div', { class: 'explore-conversation', hidden: true }),
         ),
@@ -267,6 +273,7 @@ export class ExploreScene implements Scene {
     this.practiceShown = null;
     this.objectiveButton = null;
     this.objectivePointer = null;
+    this.npcNames = null;
     this.mapCorner = null;
     this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
@@ -909,6 +916,44 @@ export class ExploreScene implements Scene {
     );
     if (dx || dy) camera.panBy(dx, dy);
     return true;
+  }
+
+  private drawNpcNames(npcs: readonly NpcMarker[], pos: Vec2 | null): void {
+    const layer = this.npcNames;
+    const camera = this.renderer?.camera;
+    if (!layer || !camera) return;
+    let count = 0;
+    if (pos && camera.projection === 'topdown') {
+      for (const npc of npcs) {
+        if (
+          npc.quiet ||
+          (npc.alpha ?? 1) < 1 ||
+          npc.id.startsWith('trigger:') ||
+          npc.sprite.startsWith('world.') ||
+          distance(pos, npc.pos) > TALK_RANGE
+        )
+          continue;
+        const { x, y, size } = camera.spriteBox(npc.renderPos ?? npc.pos);
+        const left = x + size / 2;
+        const top = y + (FOOT_LINE - npcPipLift(npc.sprite, npc.scale ?? 1)) * size;
+        if (left < 0 || left > camera.viewport.width || top < 0 || y > camera.viewport.height)
+          continue;
+        const tag = layer.children[count] as HTMLElement | undefined;
+        const label = tag ?? layer.appendChild(el('span'));
+        if (label.textContent !== npc.name) label.textContent = npc.name;
+        const half = label.offsetWidth / 2;
+        const labelX = Math.max(half, Math.min(left, camera.viewport.width - half));
+        const labelY = Math.max(top, label.offsetHeight + 6);
+        const corner = this.mapCorner;
+        if (corner && labelX + half > corner.offsetLeft && labelY < corner.offsetHeight + 6) {
+          label.remove();
+          continue;
+        }
+        label.style.translate = `${labelX}px ${labelY}px`;
+        count++;
+      }
+    }
+    while (layer.children.length > count) layer.lastElementChild?.remove();
   }
 
   private frameArrival(state: GameState): void {
@@ -1677,6 +1722,7 @@ export class ExploreScene implements Scene {
     renderer.draw(view);
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
+    this.drawNpcNames(npcs, !held && live && !this.life ? state.location.pos : null);
     const target =
       !held && live && !this.practiceCamera && this.objectiveButton?.hidden === false
         ? resolveObjectivePointerTarget(
