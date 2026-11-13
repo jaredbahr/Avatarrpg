@@ -301,6 +301,25 @@ export class Camera {
   }
 
   /**
+   * True when every tile of the grid is drawn on screen. `fitted` asks for the fit's margin too, so
+   * an integer-zoom stop can show the whole board in less than that margin and not be fitted: a
+   * 20x12 top-down board at N = dpr in an iPad's 497 px landscape map is 480 px tall, all of it on
+   * screen, under a fit of 0.985. Recentre has nothing to show then.
+   */
+  get showsWholeGrid(): boolean {
+    if (this.fitted) return true;
+    const left = -this.offsetX;
+    const top = -this.offsetY;
+    const slack = 1e-6;
+    return (
+      left >= -slack &&
+      top >= -slack &&
+      left + this.worldWidth <= this.viewport.width + slack &&
+      top + this.worldHeight <= this.viewport.height + slack
+    );
+  }
+
+  /**
    * Scales so the entire grid fits inside the viewport, then centres it. Used
    * for every combat map on every resize. When fitting would make a tile
    * smaller than a fingertip, fits to the smallest tappable tile instead and
