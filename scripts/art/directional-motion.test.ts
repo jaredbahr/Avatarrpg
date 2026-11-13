@@ -6,8 +6,6 @@ import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { frameIndex, resolveClip } from '../../src/render/sheets/resolveClip';
 import { readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
-import { decodeWebp } from './lib/webp';
-import { STAND_TOLERANCE, validateSheets } from './validate';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -24,68 +22,8 @@ describe('directional art compatibility', () => {
       );
       const oldImage = readPng(`assets/reference/character-poses/${originalStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
-      if (atlas.image.endsWith('.webp')) {
-        // The PixelLab G party (ADR 0050, ADR 0051).
-        expect(['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo']).toContain(key);
-        expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
-        // Decoded margin, per-cel pins and the eight-way foot line.
-        expect(await validateSheets('public', { [key]: entry })).toEqual([]);
-        const decoded = await decodeWebp(
-          new Uint8Array(readFileSync(`public/art/units/${atlas.image}`)),
-        );
-        const cel = (id: string) => {
-          const r = atlas.frames.get(id);
-          if (!r) throw new Error(`Missing ${id}`);
-          return crop(decoded, { x: r.x, y: r.y, width: r.w, height: r.h });
-        };
-        // On the world's G1 grid (ADR 0089) the legacy cast and KO cels are
-        // redrawn, not retained: the cast is the east bend's stance, wind-up and
-        // strike, and the KO the south-east knockout's last cel, each a trimmed
-        // cel standing by its own foot anchor.
-        const g = entry.pixelsPerTile / 128;
-        expect(entry.pixelsPerTile).toBe(64);
-        for (const clip of ['cast', 'ko'] as const) {
-          const def = entry.clips[clip];
-          if (!def?.frameSize || !def.anchor) throw new Error(`${key} ${clip} is not trimmed`);
-          for (const id of def.frames) {
-            const r = atlas.frames.get(id);
-            expect(r && [r.w, r.h], id).toEqual([def.frameSize.w, def.frameSize.h]);
-            expect(alphaBounds(cel(id)), id).toBeTruthy();
-          }
-        }
-        for (const direction of [
-          '',
-          'NorthEast',
-          'North',
-          'NorthWest',
-          'West',
-          'SouthWest',
-          'South',
-          'SouthEast',
-        ]) {
-          const idle = resolveClip(entry.clips, `idle${direction}` as 'idle');
-          const walk = resolveClip(entry.clips, `walk${direction}` as 'walk');
-          expect(idle?.exact, `idle${direction}`).toBe(true);
-          expect(idle?.def.frames).toHaveLength(4);
-          expect(walk?.exact, `walk${direction}`).toBe(true);
-          expect(walk?.def.frames).toHaveLength(12);
-          for (const id of [...(idle?.def.frames ?? []), ...(walk?.def.frames ?? [])]) {
-            const rect = atlas.frames.get(id);
-            expect(rect && [rect.w, rect.h], id).toEqual([128 * g, 192 * g]);
-          }
-          for (const id of idle?.def.frames ?? []) {
-            const line = Math.round(0.85 * 192 * g);
-            expect(Math.abs(lowestOpaqueRow(cel(id)) - line), id).toBeLessThanOrEqual(
-              STAND_TOLERANCE * g,
-            );
-          }
-          const strides = new Set(
-            (walk?.def.frames ?? []).map((id) => Buffer.from(cel(id).data).toString('base64')),
-          );
-          expect(strides.size, `walk${direction} needs twelve distinct cels`).toBe(12);
-        }
-        continue;
-      }
+      // The party draws top-down since T7 retired its G sheets (ADR 0104); its packer holds that art.
+      if (entry.atlas.startsWith('art/topdown/')) continue;
       const image = readPng(`public/art/units/${atlas.image}`);
       const extract = (im: typeof image, r: { x: number; y: number; w: number; h: number }) =>
         crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });

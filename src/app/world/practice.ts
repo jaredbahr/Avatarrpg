@@ -5,8 +5,8 @@
  *
  * It is presentation only. Nothing here reaches the reducer: the casts are
  * `abilityUsed` events made up for the animator, which plays them through the
- * same choreography combat uses (ADR 0055), so the clip, its painted effect,
- * its hit-stop and its sound are the combat ones. No damage event follows, so
+ * same choreography combat uses, so the drawn action, its effect, its
+ * hit-stop and its sound are the combat ones. No damage event follows, so
  * nobody is struck and no state changes.
  *
  * Riverside's own practice is Dorin's form drill in `VillageLife`, which
@@ -14,8 +14,7 @@
  */
 
 import type { Ability, ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
-import { isBendingAttack } from '../anim/bendHandoff';
-import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/maps/baDanLayout';
+import { BA_DAN_CANAL_BRIDGE } from '../../content/maps/baDanLayout';
 
 // Preserve the practice module's established export while sharing the easing
 // primitive with other presentation systems.
@@ -30,14 +29,12 @@ export interface PracticeGround {
   readonly reach: number;
   /** The tile every bend is thrown at. */
   readonly mark: Vec2;
-  /** Open water a water bender draws from: the nearest cell to them. */
-  readonly water: readonly Vec2[];
 }
 
 /**
  * Ba Dan's south canal bank, east of the bridge's foot, inside the demo slice
  * (x 0-13, y 0-9). The bends go north-west at a mark on the canal's near edge,
- * so they burst over the open water, and Sura lifts her water out of the canal.
+ * so they burst over the open water.
  * The bridge deck itself is within reach of Mira's table, a seat, where Wait
  * keeps the slot; west of the bridge the house hides a follower.
  */
@@ -47,7 +44,6 @@ export const BA_DAN_PRACTICE: PracticeGround = {
   anchor: { x: BA_DAN_CANAL_BRIDGE.x + 1, y: BA_DAN_CANAL_BRIDGE.y + 2 },
   reach: 1,
   mark: { x: 6, y: 7 },
-  water: BA_DAN_WATER_CELLS,
 };
 
 const GROUNDS: readonly PracticeGround[] = [BA_DAN_PRACTICE];
@@ -63,12 +59,22 @@ export function practiceAt(mapId: string | undefined, leader: Vec2): PracticeGro
   );
 }
 
-/** Whether this map has a practice ground at all, so the scene knows to warm the bends. */
-export function hasPractice(mapId: string | undefined): boolean {
-  return GROUNDS.some((ground) => ground.mapId === mapId);
+/**
+ * Whether a member practises this ability: a party unit's single-target ranged damage of its own
+ * element (`targeting.shape === 'unit'`, `range > 1`), not tagged heal, buff or mobility.
+ */
+export function isBendingAttack(unit: Unit, ability: Ability): boolean {
+  return (
+    unit.faction === 'party' &&
+    unit.element === ability.element &&
+    ability.targeting.shape === 'unit' &&
+    ability.range > 1 &&
+    !ability.tags.some((tag) => tag === 'heal' || tag === 'buff' || tag === 'mobility') &&
+    ability.effects.some((effect) => effect.kind === 'damage')
+  );
 }
 
-/** The bend a member practises: the first ability in their kit that plays their bend in combat. */
+/** The bend a member practises: the first ability in their kit that `isBendingAttack` admits. */
 export function practiceAbility(content: ContentIndex, unit: Unit): Ability | undefined {
   for (const id of unit.abilities) {
     const ability = content.abilities.get(id);
@@ -84,31 +90,6 @@ export interface PracticeCast {
   readonly abilityId: string;
   readonly from: Vec2;
   readonly target: Vec2;
-  /** Where a water bender draws from. */
-  readonly source?: Vec2;
-}
-
-/** The open-water cell nearest `from`, ties to the one nearer the mark, then west. */
-function nearestWater(ground: PracticeGround, from: Vec2): Vec2 | undefined {
-  let best: Vec2 | undefined;
-  const key = (cell: Vec2) => [
-    Math.hypot(cell.x - from.x, cell.y - from.y),
-    chebyshev(cell, ground.mark),
-    cell.x,
-    cell.y,
-  ];
-  for (const cell of ground.water) {
-    if (cell.x === ground.mark.x && cell.y === ground.mark.y) continue;
-    if (!best) {
-      best = cell;
-      continue;
-    }
-    const a = key(cell);
-    const b = key(best);
-    const i = a.findIndex((v, n) => v !== b[n]);
-    if (i >= 0 && (a[i] ?? 0) < (b[i] ?? 0)) best = cell;
-  }
-  return best;
 }
 
 /**
@@ -127,14 +108,12 @@ export function practiceCasts(
     const from = positions[index];
     const ability = practiceAbility(content, unit);
     if (!from || !ability || chebyshev(from, ground.mark) === 0) return;
-    const source = ability.element === 'water' ? nearestWater(ground, from) : undefined;
     casts.push({
       unitId: unit.id,
       sprite: unit.sprite,
       abilityId: ability.id,
       from,
       target: ground.mark,
-      ...(source ? { source } : {}),
     });
   });
   return casts;
@@ -154,13 +133,6 @@ export function practiceEvents(casts: readonly PracticeCast[]): GameEvent[] {
 /** The units as the choreography needs them: the party where each is drawn standing. */
 export function practiceUnits(party: readonly Unit[], positions: readonly Vec2[]): Unit[] {
   return party.map((unit, index) => ({ ...unit, pos: positions[index] ?? unit.pos }));
-}
-
-/** Where each water bender draws from, by unit id, for the animator. */
-export function practiceSources(casts: readonly PracticeCast[]): Record<string, Vec2> {
-  const sources: Record<string, Vec2> = {};
-  for (const cast of casts) if (cast.source) sources[cast.unitId] = cast.source;
-  return sources;
 }
 
 /**

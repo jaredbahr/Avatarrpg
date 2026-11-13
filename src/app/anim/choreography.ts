@@ -14,7 +14,7 @@
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
-import { fxPalette, openWaterDraw, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
+import { fxPalette, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
@@ -42,8 +42,6 @@ import { SHOT_PX_PER_S } from '../../render/topdown/shots';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
 import { sheetLocomotion } from '../../content/assets/manifest';
-import type { BendSources } from './bendHandoff';
-import { planBendCast } from './bendHandoff';
 
 /** `BattleDraft.raiseWall`'s label on each cell a wall rises on, and how long the rise takes (#590). */
 const WALL_RISES = 'A wall of stone rises.';
@@ -159,17 +157,6 @@ export interface ChoreographyInput {
   readonly clipsOf?: (sprite: string) => SheetClips | undefined;
   /** The eight-way heading a unit faces as this push starts, for a top-down action aimed at itself. */
   readonly headingOf?: (unitId: string) => Heading | undefined;
-  /**
-   * The loaded bends and painted effects (ADR 0055, step 7). Without them, or
-   * for a cast `planBendCast` turns down, the cast is the legacy one exactly.
-   */
-  readonly bends?: BendSources;
-  /**
-   * Open water a water bender draws from, by unit id (issue #284's practice
-   * by Ba Dan's canal). A water bend from a unit listed here lifts its water
-   * out of that cell through the gather; without it, nothing changes.
-   */
-  readonly waterSources?: Readonly<Record<string, Vec2>>;
   /** The top-down shot cels have loaded: a ranged attack on a top-down board flies one (#588). */
   readonly shots?: boolean;
   /** Temporary A-4 test hook; defaults to the shipped footprint gate. */
@@ -294,7 +281,7 @@ function explorePace(input: ChoreographyInput, unitId: string, strollStep: numbe
   if (input.projection !== 'topdown') return strollStep;
   const sprite = input.unitsBefore.find((u) => u.id === unitId)?.sprite;
   const gait = sheetLocomotion(sprite);
-  if (!gait || gait.walkCelMs) return strollStep;
+  if (!gait) return strollStep;
   const paces = Object.values(gait.walkMsPerTile);
   return paces.reduce((a, b) => a + b, 0) / paces.length / partyScale();
 }
@@ -637,67 +624,6 @@ export function choreograph(input: ChoreographyInput): Choreography {
             (cell) => cell.x === event.target.x && cell.y === event.target.y,
           );
         });
-        // A bending attack plays the caster's bend instead (ADR 0055, step 7).
-        // Reduced motion keeps the legacy cast, whose collapsed clock it is
-        // built for, and so does anything the bend lookups cannot draw yet.
-        const bend =
-          casterUnit && rate >= 1
-            ? planBendCast(
-                input.bends,
-                casterUnit,
-                casterPos,
-                ability,
-                event.target,
-                victim && { pos: positions.get(victim.id) ?? victim.pos, size: victim.size },
-                input.squareFootprints ?? SQUARE_FOOTPRINTS,
-              )
-            : undefined;
-        if (bend) {
-          tracks.push({
-            kind: 'bend',
-            unitId: event.unitId,
-            plan: bend.plan,
-            fx: bend.fx,
-            start: cursor,
-            duration: bend.plan.duration,
-          });
-          cue(ability.fx, cursor + bend.launchAt, 1, eventIndex);
-          const source = input.waterSources?.[event.unitId];
-          if (source && casterUnit && ability.element === 'water' && bend.launchAt > 0) {
-            emit(
-              openWaterDraw(bend.launchAt),
-              cursor,
-              centre(source),
-              caster,
-              palette,
-              eventIndex,
-              21,
-              0.4,
-              {
-                to: {
-                  pos: { ...casterPos },
-                  sprite: casterUnit.sprite,
-                  size: casterUnit.size,
-                  socket: 'cast-gather',
-                  facing: source.x + 0.5 < caster.x ? -1 : 1,
-                  scale: partyScale(),
-                  offset: still,
-                },
-              },
-            );
-          }
-          // The one rules result shows once, when the damage release lands,
-          // and the struck unit holds through that impact's hit-stop.
-          pending = {
-            at: cursor + bend.impactAt,
-            hitStop: bend.hitStop,
-            flash: bend.flash,
-            casterId: event.unitId,
-          };
-          readyBy(pending.at + pending.hitStop);
-          cursor += bend.plan.duration + timing.gap * rate;
-          break;
-        }
         const snapshot = (
           unit: Unit | undefined,
           socket: ActorAttachment['socket'],

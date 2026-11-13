@@ -16,10 +16,8 @@ import type { ClipDef, ClipName } from '../../content/assets/clips';
  * falls back to the legacy pose and its G hit to the legacy cel (ADR 0059,
  * ADR 0063), either one before its clip data has loaded. A heading's idle or
  * walk falls back through its front or back pose to the side clip; a
- * heading's rest is that heading's idle, then the same; and a fighting stance
- * is the idle of a sheet that authors none (ADR 0052). A jog is asked only of
- * a sheet that has one (ADR 0095). A top-down action falls back to the
- * legacy cast or knockout.
+ * heading's rest is that heading's idle, then the same. A top-down action falls
+ * back to the legacy cast or knockout.
  */
 function fallbacks(clip: ClipName): readonly ClipName[] {
   // A top-down action not loaded (yet) is the legacy cast, or the legacy knockout (ADR 0104).
@@ -35,7 +33,7 @@ function fallbacks(clip: ClipName): readonly ClipName[] {
           : ['idle'];
   if (base === 'ko') return ['ko', 'hit', 'idle'];
   if (base === 'hit') return ['hit', 'idle'];
-  const own = base === 'rest' || base === 'stance' ? [`idle${ns}${ew}`] : [];
+  const own = base === 'rest' ? [`idle${ns}${ew}`] : [];
   const side = ns && ew ? [`${base === 'walk' ? 'walk' : 'idle'}${ns}`] : [];
   const tail = base === 'walk' || base === 'rest' ? [base, 'idle'] : ['idle'];
   return [...own, ...side, ...tail] as ClipName[];

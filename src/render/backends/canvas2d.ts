@@ -774,10 +774,7 @@ export class Canvas2DBackend implements RenderBackend {
       );
       const frame =
         this.squareFootprints && target
-          ? (target.bend
-              ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
-              : null) ||
-            sheets.frame(
+          ? sheets.frame(
               target.sprite,
               target.clip ?? 'idle',
               target.clipTime ?? view.time + idlePhase(target.id),
@@ -1476,9 +1473,8 @@ export class Canvas2DBackend implements RenderBackend {
       const clip = unit.clip ?? 'idle';
       const asset = resolveAsset(unit.sprite);
       const px = box.size * camera.viewport.dpr * scale;
-      // A bend cel has no measured feet: the pool alone, with its core.
       const cels =
-        asset.kind === 'sheet' && !unit.bend
+        asset.kind === 'sheet'
           ? {
               drawn: sheets.frame(
                 unit.sprite,
@@ -1729,20 +1725,16 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.globalAlpha = alpha;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at device resolution (ADR 0003); the anchor stands on the foot line.
-      // A bend cel (ADR 0055) stands by its heading's own anchor and is never mirrored.
-      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
-      const frame =
-        bend ||
-        sheets.frame(
-          unit.sprite,
-          unit.clip ?? 'idle',
-          unit.clipTime ?? view.time + idlePhase(unit.id),
-          unit.clipFrame,
-          box.size * dpr * scale,
-          unit.size,
-          unit.meleeDirection,
-          heightTiles,
-        );
+      const frame = sheets.frame(
+        unit.sprite,
+        unit.clip ?? 'idle',
+        unit.clipTime ?? view.time + idlePhase(unit.id),
+        unit.clipFrame,
+        box.size * dpr * scale,
+        unit.size,
+        unit.meleeDirection,
+        heightTiles,
+      );
       const silhouette = combatActorSilhouetteScreenGeometry(
         { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
@@ -1757,7 +1749,7 @@ export class Canvas2DBackend implements RenderBackend {
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
         const { x: drawX, y: drawY, w: fw, h: fh } = placeFrame(frame, ax, ay, box.size * scale);
-        if (drawFacing === -1 && !bend) {
+        if (drawFacing === -1) {
           ctx.translate(ax, 0);
           ctx.scale(-1, 1);
           ctx.translate(-ax, 0);
@@ -1776,17 +1768,16 @@ export class Canvas2DBackend implements RenderBackend {
                 h: fh / camera.scale,
               },
               world(ax, camera.offsetX),
-              drawFacing === -1 && !bend,
+              drawFacing === -1,
             ),
-            flip: drawFacing === -1 && !bend,
+            flip: drawFacing === -1,
             foot: camera.groundPoint(footprintFoot(pos, unit.size, this.squareFootprints)).y,
           });
         }
         // A sheet pixel on a whole block of device pixels draws nearest (ADR 0088).
         drawArt(ctx, f.w, fw, () => {
           ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
-          // The white mask is a copy of the whole page: never for a bend page.
-          if (unit.flash && unit.flash > 0 && !bend) {
+          if (unit.flash && unit.flash > 0) {
             ctx.globalAlpha *= Math.min(1, unit.flash);
             ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
           }

@@ -5,7 +5,6 @@ import { enemyScale, partyScale } from '../../src/app/anim/actorScale';
 import { resolvePainter } from '../../src/render/painters/registry';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { readPng } from './lib/image';
-import { decodeWebp } from './lib/webp';
 import { alphaBounds, crop } from './lib/trim';
 import { validateSheets } from './validate';
 
@@ -13,34 +12,13 @@ import { validateSheets } from './validate';
 // 5 s default once. Headroom here, not a raised global timeout.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
-const standing = async (asset: string, clip: string) => {
-  const entry = ASSETS[asset];
-  if (entry?.kind !== 'sheet') throw new Error(`Missing ${asset}`);
-  const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
-  const pixels = await decodeWebp(new Uint8Array(readFileSync(`public/art/units/${atlas.image}`)));
-  const rect = atlas.frames.get(`${asset}/${clip}/0`);
-  if (!rect) throw new Error(`Missing ${asset}/${clip}/0`);
-  const body = alphaBounds(crop(pixels, { x: rect.x, y: rect.y, width: rect.w, height: rect.h }));
-  if (!body) throw new Error('Empty standing frame');
-  // In tiles: the party stands on the world's 64 px G1 grid (ADR 0089), the
-  // enemies on the 128 px G grid.
-  return body.height / entry.pixelsPerTile;
-};
-
 it.each(['thug', 'slinger', 'bruiser', 'quarrybender'])(
-  'stands the G %s at the party G body’s height and scale (ADR 0059, ADR 0062)',
-  async (name) => {
+  'draws the %s at the party’s scale (ADR 0059, ADR 0062)',
+  (name) => {
     const key = `unit.enemy.${name}`;
-    // Same camera: within 8 G px (1/16 tile) of Kaya's standing height.
-    const enemy = await standing(key, 'idleSouth');
-    expect(Math.abs(enemy - (await standing('unit.fire.kaya', 'idleSouth')))).toBeLessThanOrEqual(
-      8 / 128,
-    );
     expect(enemyScale(key, 1)).toBe(partyScale());
     expect(enemyScale(key, 0.9)).toBeCloseTo(partyScale(0.9));
-    expect(await validateSheets('public', { [key]: ASSETS[key]! })).toEqual([]);
   },
-  60_000,
 );
 
 it('validates the live lossless Driller sheet and its UI headroom cap', async () => {

@@ -59,7 +59,6 @@ export function shotSprite(track: Shot, now: number, data: TopdownVfxData | null
             turn: 0,
             alpha,
             blend: 'normal' as const,
-            flash: 0,
             z,
           },
         ]

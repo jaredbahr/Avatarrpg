@@ -455,7 +455,8 @@ It uses the same family, anchors and grounding as Ba Dan; the rules are a demo's
 - **The thug:** a club and a rust headscarf.
 - **The slinger:** hooded, masked, with a sling.
 - **The bruiser:** a 56 px canvas, so bigger, with a cudgel.
-- **Sura and Bo:** from their G1 design descriptions in `art/source/party-g1`.
+- **Sura and Bo:** from their G1 design descriptions in `art/source/party-g1` (retired with the G1 sheets in T7;
+  it is in the history at b525798fde).
 
 Each has an idle, a walk (`walking-8-frames`, skeleton-v3) and an attack (custom skeleton-v3: club swing, sling
 throw, heavy slam, water push, stomp and punch), in four headings. Kaya is v2 with the v4 bends and their fire VFX,
