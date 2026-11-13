@@ -1,6 +1,6 @@
 # T7 retirement inventory (ADR 0104)
 
-Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `6d8adcbf7744f15058b791578cb70aa893036dd4` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
+Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `b525798fdedc23b020c3762fa2cb8e07cae786b4` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
 
 ## Retirement status on 2026-11-13
 
@@ -8,6 +8,14 @@ Issue #467 records the dependencies and build measurements for T7. The current s
 - [#715](https://github.com/jaredbahr/Avatarrpg/pull/715) removed 3,162 source-art blobs (125,343,646 B) across ten directories and 119 shipped-art blobs (6,196,436 B). The shipped removals include 93 map blobs (5,300,686 B) and 26 world and style-test unit blobs (895,750 B). These are sizes from the actual merge's first-parent Git diff. The `forest-road-g1` provenance for shipped combat props, `ba-dan-riverside` and `occlusion-reveal` source directories remain. Riverside's orthographic backdrop is the only file left under `public/art/maps/`.
 - The remaining T7 work includes the G1 sheet registrations and their tests, `G1_WALK`, jog cels, brisk cadence, `OBLIQUE_FIGURE_SCALE`, the oblique projection and its lift pass and camera clamps. Both Canvas and Pixi still call `liftPlan`. Audit the remaining call sites and migrate the specific G1 and projection tests before measuring that last step. Preserve Riverside, the top-down elevation and picking coverage, and the live occlusion reveal.
 - The top-down Kaya and Sura sheets lack the tea and wave clips from their G1 sheets. At startup, the top-down sheets replace the G1 registrations, and a missing clip falls back to idle. The [Riverside tea regression](https://github.com/jaredbahr/Avatarrpg/pull/717) exposes the missing seated-cup pose. The final paired build should start after the replacement clips and their Canvas and WebGL checks land, so the comparison measures retirement separately from replacement work.
+
+## Proposed renderer retirement
+
+Draft [#718](https://github.com/jaredbahr/Avatarrpg/pull/718) at `90593903` proposes removing the oblique projection, lift pass, painted-ring and reachable-hull clamps, and several grounding paths. It retains Riverside’s orthographic backdrop and figure shadows. The draft leaves G1 sheet registration, bends, stance, jog, brisk cadence and `G1_WALK` for a follow-up.
+
+The draft reports a local build comparison against `a9990588` of 402.2 to 389.2 KB gzip and 16.67 to 16.63 MB precached, at 325 entries on both builds. Its published merge preview `946c0301` failed typecheck after the removal of `MapScene.reliefLift`: the scene-validator test still supplies that field, and the fetched-scene schema still declares it. Build and browser evidence for that preview remain pending. Keep the [draft’s measurement](https://github.com/jaredbahr/Avatarrpg/pull/718) separate from the exact hosted pairs below. [Hosted typecheck](https://github.com/jaredbahr/Avatarrpg/actions/runs/43487288560/job/132098977361)
+
+The draft also lists coverage to migrate for ground pixels, whole-board picking, canvas reflow, top-down zoom and grounding. The final measurement still requires the G1 retirement and a qualified comparison with replacement Riverside clips available.
 
 ## Measured savings from the first two T7 steps
 
