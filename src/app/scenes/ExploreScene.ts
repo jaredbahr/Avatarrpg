@@ -170,8 +170,15 @@ export class ExploreScene implements Scene {
   }
 
   firstFrameSheetKeys(): readonly string[] {
+    const { content, state } = this.app;
+    const map = this.map;
+    if (!state || !map) return [];
+    // In-place travel asks before the first draw of the destination.
     return [
-      ...(this.app.state?.party.map((member) => member.sprite) ?? []),
+      ...state.party.map((member) => member.sprite),
+      ...visibleNpcs(content, map, state).map((npc) => npc.sprite),
+      ...backgroundFigures(content, map, state).map((role) => role.sprite),
+      ...activeTriggers(map, state).map((trigger) => trigger.sprite),
       ...this.lastNpcs.map((npc) => npc.sprite),
     ];
   }
@@ -254,6 +261,7 @@ export class ExploreScene implements Scene {
     this.life?.destroy();
     this.life = null;
     this.lastLife = null;
+    this.lastNpcs = [];
     this.practising = false;
     this.practiceCamera = null;
     this.practiceShown = null;
@@ -311,6 +319,7 @@ export class ExploreScene implements Scene {
       this.departing = null;
       this.app.animator.clear();
       this.map = map;
+      this.lastNpcs = [];
       this.app.animator.setProjection(map.projection ?? 'orthographic');
       this.practising = false;
       this.practiceCamera = null;
