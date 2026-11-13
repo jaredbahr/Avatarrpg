@@ -219,6 +219,9 @@ export function topdownSheet(name: TopdownName, key: string, palette: string): S
     msPerTile[heading] = t.walkMsPerTile;
   });
   if (t.cast) clips.cast = t.cast;
+  // The riverside's seated tea and wave (Kaya and Sura), mirrored by facing like the cast.
+  if (t.tea) clips.tea = t.tea;
+  if (t.wave) clips.wave = t.wave;
   const eastWalk = t.walkCels[0] ?? 0;
   return {
     kind: 'sheet',
