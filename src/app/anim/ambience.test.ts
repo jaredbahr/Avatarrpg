@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FX_AMBIENCE } from '../../content/fx';
-import { BA_DAN_CANOPIES, BA_DAN_CHIMNEYS } from '../../content/scenes/baDan';
+import { readFileSync } from 'node:fs';
+import type { MapScene } from '../../core/types';
 import type { Grid, Tile } from '../../core/types';
 import {
   PARTICLE_STRIDE,
@@ -9,7 +10,10 @@ import {
   sampleParticles,
   sampleStrokes,
 } from '../../render/fx/simulate';
-import { ambientEmitters, waterCells } from './ambience';
+import { MAX_SHEDDING_CANOPIES, ambientEmitters, waterCells } from './ambience';
+
+/** Ba Dan's top-down scene: its chimneys and canopies are what the ambience reads. */
+const BA_DAN = JSON.parse(readFileSync('public/art/topdown/ba-dan/scene.json', 'utf8')) as MapScene;
 
 const grid: Grid = { width: 20, height: 12, tiles: [] };
 
@@ -303,6 +307,22 @@ describe('ambientEmitters', () => {
       expect(slots).toBeLessThanOrEqual(4);
     });
 
+    it("sheds from an evenly spread, fixed subset of a crowded scene's canopies", () => {
+      const many = Array.from({ length: 21 }, (_, i) => ({ x: i + 1, y: (i % 3) + 1 }));
+      const shedding = (time: number) =>
+        new Set(
+          ambientEmitters(village, grid, time, [], false, [], many)
+            .filter((e) => isLeaf(e.def))
+            .map((e) => `${e.to.x},${e.to.y}`),
+        );
+      const first = shedding(4000);
+      expect(first.size).toBe(MAX_SHEDDING_CANOPIES);
+      expect(shedding(61_000)).toEqual(first);
+      // Spread across the list, not bunched at its start.
+      expect(first.has('1,1')).toBe(true);
+      expect([...first].some((key) => Number(key.split(',')[0]) > 18)).toBe(true);
+    });
+
     it('is absent under reduce motion or without trees', () => {
       const still = ambientEmitters(village, grid, 4000, [], true, [], trees);
       expect(still.some((e) => isLeaf(e.def))).toBe(false);
@@ -322,10 +342,10 @@ describe('ambientEmitters', () => {
         village,
         grid,
         time,
-        BA_DAN_CHIMNEYS,
+        BA_DAN.chimneys ?? [],
         false,
         [],
-        BA_DAN_CANOPIES,
+        BA_DAN.canopies ?? [],
       ))
         if (e.def.kind === 'particles')
           live += sampleParticles(e.def, e.elapsed, e.seed, e.from, e.to, out);
