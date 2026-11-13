@@ -1,12 +1,13 @@
 # T7 retirement inventory (ADR 0104)
 
-Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `a999058812c8d0cbeb7eaa91ea628aea44eaecb0` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
+Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `6d8adcbf7744f15058b791578cb70aa893036dd4` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
 
 ## Retirement status on 2026-11-13
 
 - [#712](https://github.com/jaredbahr/Avatarrpg/pull/712) removed the style switch, world-style registration and the old scene modules and packers for the five route maps. A failed top-down scene load now uses the bare boards. The rule layout and top-down scene registry carry forward.
 - [#715](https://github.com/jaredbahr/Avatarrpg/pull/715) removed 3,162 source-art blobs (125,343,646 B) across ten directories and 119 shipped-art blobs (6,196,436 B). The shipped removals include 93 map blobs (5,300,686 B) and 26 world and style-test unit blobs (895,750 B). These are sizes from the actual merge's first-parent Git diff. The `forest-road-g1` provenance for shipped combat props, `ba-dan-riverside` and `occlusion-reveal` source directories remain. Riverside's orthographic backdrop is the only file left under `public/art/maps/`.
 - The remaining T7 work includes the G1 sheet registrations and their tests, `G1_WALK`, jog cels, brisk cadence, `OBLIQUE_FIGURE_SCALE`, the oblique projection and its lift pass and camera clamps. Both Canvas and Pixi still call `liftPlan`. Audit the remaining call sites and migrate the specific G1 and projection tests before measuring that last step. Preserve Riverside, the top-down elevation and picking coverage, and the live occlusion reveal.
+- The top-down Kaya and Sura sheets lack the tea and wave clips from their G1 sheets. At startup, the top-down sheets replace the G1 registrations, and a missing clip falls back to idle. The [Riverside tea regression](https://github.com/jaredbahr/Avatarrpg/pull/717) exposes the missing seated-cup pose. The final paired build should start after the replacement clips and their Canvas and WebGL checks land, so the comparison measures retirement separately from replacement work.
 
 ## Measured savings from the first two T7 steps
 
