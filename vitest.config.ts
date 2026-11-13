@@ -5,6 +5,7 @@ const serial = [
   'src/core/sim/runCombat.test.ts',
   'src/content/topdownLayout.test.ts',
   'scripts/bundle-report-cli.test.ts',
+  'scripts/perf/core-bench.test.ts',
   'src/core/state/immutability.property.test.ts',
 ];
 
@@ -30,8 +31,8 @@ export default defineConfig({
           name: 'serial',
           include: serial,
           exclude,
-          // Keep subprocesses, combat simulations and whole-state checks off
-          // the shared pool while Vitest enforces their existing deadlines.
+          // Keep subprocesses and timing-sensitive workloads off the shared
+          // pool while Vitest enforces their existing deadlines and budgets.
           fileParallelism: false,
           sequence: { groupOrder: 1 },
         },
