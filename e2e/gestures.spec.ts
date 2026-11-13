@@ -483,3 +483,187 @@ test.describe('zoom and pan', () => {
     await expectActorOnScreen(page);
   });
 });
+
+/**
+ * The top-down board draws at integer zoom (ADR 0104): a world pixel covers a whole number N of
+ * device pixels, and N never drops under the device pixel ratio, so a 40 px tile is never under a
+ * fingertip. Pinch and wheel move a continuous request and the board steps between those stops;
+ * Recentre goes back to the whole board at the largest stop that shows it.
+ */
+test.describe('top-down integer zoom', () => {
+  const BOARD = { width: 20, height: 12 };
+
+  /** Device pixels per world pixel, which integer zoom keeps whole. */
+  const deviceScale = (cam: CameraInfo, dpr: number) => (cam.tilePx / cam.tile) * dpr;
+
+  /** The lowest stop: the whole scale at or under the board's fit, never under N = dpr. */
+  async function lowestStop(page: Page, cam: CameraInfo, dpr: number): Promise<number> {
+    const box = await page.locator('.map-canvas').boundingBox();
+    if (!box) throw new Error('no canvas');
+    const fit = Math.max(
+      0.35,
+      Math.min(
+        2.5,
+        (box.width - 24) / (BOARD.width * cam.tile),
+        (box.height - 24) / (BOARD.height * cam.tile),
+      ),
+    );
+    return Math.max(1, Math.floor(fit * dpr + 1e-6), dpr);
+  }
+
+  async function wheel(page: Page, deltaY: number): Promise<void> {
+    await page.evaluate((deltaY) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!canvas) throw new Error('no canvas');
+      const rect = canvas.getBoundingClientRect();
+      canvas.dispatchEvent(
+        new WheelEvent('wheel', {
+          deltaY,
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }, deltaY);
+  }
+
+  function expectStop(cam: CameraInfo, dpr: number, label: string): number {
+    const n = deviceScale(cam, dpr);
+    expect(cam.projection, label).toBe('topdown');
+    expect(Math.abs(n - Math.round(n)), `${label}: N = ${n} is not whole`).toBeLessThan(1e-6);
+    expect(Math.round(n), `${label}: N under the device pixel ratio`).toBeGreaterThanOrEqual(dpr);
+    // The offsets sit on the device-pixel grid too, or the art resamples.
+    for (const offset of [cam.offsetX, cam.offsetY])
+      expect(Math.abs(offset * dpr - Math.round(offset * dpr)), `${label}: offset`).toBeLessThan(
+        1e-6,
+      );
+    return Math.round(n);
+  }
+
+  test('pinch and wheel step through whole device scales and stop at N >= dpr', async ({
+    page,
+  }) => {
+    await openFight(page);
+    const dpr = await page.evaluate(() => window.devicePixelRatio || 1);
+    const opening = await camera(page);
+    const start = expectStop(opening, dpr, 'opening frame');
+
+    // A pinch outwards steps in, anchored: the tile under the fingers stays under them.
+    const { point, tile } = await centreTile(page);
+    await pinch(
+      page,
+      [
+        { x: point.x - 30, y: point.y },
+        { x: point.x + 30, y: point.y },
+      ],
+      [
+        { x: point.x - 90, y: point.y },
+        { x: point.x + 90, y: point.y },
+      ],
+    );
+    const pinched = await camera(page);
+    const top = expectStop(pinched, dpr, 'after a pinch in');
+    expect(top).toBeGreaterThan(start);
+    expect(groundTile(pinched, point)).toEqual(tile);
+
+    // The wheel steps out a stop at a time, every one whole, down to the lowest and no further.
+    const low = await lowestStop(page, pinched, dpr);
+    let previous = top;
+    const seen = [top];
+    for (let i = 0; i < 24; i++) {
+      await wheel(page, 120);
+      const n = expectStop(await camera(page), dpr, `wheel out ${i + 1}`);
+      expect(n).toBeLessThanOrEqual(previous);
+      if (n !== previous) seen.push(n);
+      previous = n;
+    }
+    expect(previous, `stops seen: ${seen.join(' -> ')}`).toBe(low);
+
+    // And back in a stop at a time.
+    for (let i = 0; i < 24; i++) {
+      await wheel(page, -120);
+      const n = expectStop(await camera(page), dpr, `wheel in ${i + 1}`);
+      expect(n).toBeGreaterThanOrEqual(previous);
+      previous = n;
+    }
+    expect(previous).toBeGreaterThan(low);
+
+    // A pinch inwards, however hard, stops at the lowest whole stop: never under N = dpr.
+    for (let i = 0; i < 3; i++) {
+      const { point: centre } = await centreTile(page);
+      await pinch(
+        page,
+        [
+          { x: centre.x - 160, y: centre.y },
+          { x: centre.x + 160, y: centre.y },
+        ],
+        [
+          { x: centre.x - 8, y: centre.y },
+          { x: centre.x + 8, y: centre.y },
+        ],
+      );
+    }
+    const pinchedOut = await camera(page);
+    expect(expectStop(pinchedOut, dpr, 'after pinching out')).toBe(low);
+  });
+
+  test('Recentre returns to the whole-board view', async ({ page }) => {
+    await openFight(page);
+    const dpr = await page.evaluate(() => window.devicePixelRatio || 1);
+    // On a narrow screen the view buttons fold behind More; `hidden` is the button's own state.
+    const recentre = page.locator('button[data-key="recentre"]');
+    const more = page.getByRole('button', { name: 'More', exact: true });
+
+    const { point } = await centreTile(page);
+    await pinch(
+      page,
+      [
+        { x: point.x - 30, y: point.y },
+        { x: point.x + 30, y: point.y },
+      ],
+      [
+        { x: point.x - 90, y: point.y },
+        { x: point.x + 90, y: point.y },
+      ],
+    );
+    // Pan away from the actor too, so Recentre has a framing to undo as well as a zoom.
+    await swipe(page, point, { x: point.x - 120, y: point.y - 60 });
+    const zoomed = await camera(page);
+    expect(zoomed.fitted).toBe(false);
+    await expect(recentre).toHaveJSProperty('hidden', false);
+
+    if (await more.isVisible()) await more.click();
+    await recentre.click();
+    await settleMapCanvas(page);
+    const back = await camera(page);
+    const low = await lowestStop(page, back, dpr);
+    expect(expectStop(back, dpr, 'after Recentre')).toBe(low);
+
+    const box = await page.locator('.map-canvas').boundingBox();
+    if (!box) throw new Error('no canvas');
+    const fits = BOARD.width * back.tilePx <= box.width && BOARD.height * back.tilePx <= box.height;
+    if (fits) {
+      // The whole board: every corner on the canvas.
+      for (const corner of [
+        { x: 0, y: 0 },
+        { x: BOARD.width, y: 0 },
+        { x: 0, y: BOARD.height },
+        { x: BOARD.width, y: BOARD.height },
+      ]) {
+        const p = groundPoint(back, corner);
+        expect(p.x).toBeGreaterThanOrEqual(-0.5);
+        expect(p.y).toBeGreaterThanOrEqual(-0.5);
+        expect(p.x).toBeLessThanOrEqual(box.width + 0.5);
+        expect(p.y).toBeLessThanOrEqual(box.height + 0.5);
+      }
+      // `fitted` asks for a margin too (an iPad's landscape map shows all 480 px of the board in
+      // 497), so this is the visible board's own test: nothing is off screen, so no Recentre.
+      await expect(recentre).toHaveJSProperty('hidden', true);
+    } else {
+      // Too narrow for the board at a fingertip tile (an iPad held upright): N = dpr, on the actor.
+      expect(back.tilePx).toBeCloseTo(back.tile, 6);
+      await expectActorOnScreen(page);
+    }
+  });
+});

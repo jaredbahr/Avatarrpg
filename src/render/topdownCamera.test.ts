@@ -168,6 +168,26 @@ describe('top-down integer zoom: N >= dpr', () => {
       }
   });
 
+  it('counts a whole board on screen inside less than the fit margin as showing the whole grid', () => {
+    // An iPad's landscape combat canvas: the 20x12 fight at N = dpr is 800x480, all on screen,
+    // but under the 12 px margin the fit asks for, so it is not `fitted`.
+    const camera = topdown({ width: 1194, height: 497, dpr: 2 }, { width: 20, height: 12 });
+    camera.fit();
+    expect(camera.deviceScale).toBe(2);
+    expect(camera.fitted).toBe(false);
+    expect(camera.showsWholeGrid).toBe(true);
+    // Zoomed in a stop, the board runs off screen, and Recentre has something to show again.
+    camera.zoomAt({ x: 597, y: 248 }, 1.6);
+    expect(camera.deviceScale).toBe(3);
+    expect(camera.showsWholeGrid).toBe(false);
+    for (const viewport of VIEWPORTS)
+      for (const board of BOARDS) {
+        const fitted = topdown(viewport, board);
+        fitted.fit();
+        if (fitted.fitted) expect(fitted.showsWholeGrid, viewport.name).toBe(true);
+      }
+  });
+
   it('stops a pinch out at N = dpr, with no smoothed overview below it', () => {
     for (const viewport of VIEWPORTS)
       for (const board of BOARDS) {

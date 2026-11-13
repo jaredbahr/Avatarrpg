@@ -1,7 +1,16 @@
 import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import type { Vec2 } from '../src/core/types';
+import {
+  enterNode,
+  resetStorage,
+  settleLayout,
+  settleMapCanvas,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 
 /**
  * The camera has to measure the box the map actually got.
@@ -89,7 +98,7 @@ test.describe('map viewport', () => {
 
     expect(target, 'no single-tile enemy to tap').not.toBeNull();
     if (!target) return;
-    // Readable oblique combat deliberately pans. Bring this enemy into view
+    // Top-down combat pans at a readable zoom. Bring this enemy into view
     // before testing the independent painted-pixel to tile conversion.
     await page
       .getByRole('button', { name: `Focus ${target.name}`, exact: true })
@@ -111,14 +120,119 @@ test.describe('map viewport', () => {
 });
 
 /**
- * A raised tile is drawn lifted a quarter tile a tier (ADR 0065), so the top of
- * its lifted diamond lies over the flat cell up and to the left of it. Pointing
- * there must still act on the raised tile, on both backends, for the hover
- * highlight and for a Move tap alike: the pick follows the lift, not the grid.
+ * The top-down board (ADR 0104) scrolls and draws at integer zoom, and its HUD reflows on most
+ * taps: Move adds the aim hint, a pending tile adds the confirm bar (whose height follows its text),
+ * and the log panel takes a slab of the screen. After each reflow the camera must again be measured
+ * from the canvas element, so the hover highlight and a Move tap land on the tile painted under the
+ * pointer. The probe is the lowest whole row on the canvas, where a stale height misses by most.
  */
+test('the top-down camera follows the canvas through HUD reflows', async ({ page }) => {
+  await resetStorage(page);
+  await startGame(page, ['Solo'], ['kaya'], 'viewport-topdown-reflow');
+  await enterNode(page, 'battle_forest_road');
+  await expect(page.locator('.action-bar')).toBeVisible();
+  expect(await takeTurn(page)).toBe(true);
+  await waitForIdle(page);
+  expect(await page.evaluate(() => window.fnt?.app.rendererCamera()?.projection)).toBe('topdown');
 
-/**
- * Independent of groundTransform and camera.project: these clicks use the
- * approved 2:1 diamond basis itself. Clicks do not follow a faulty exposed
- * affine back to the same wrong tile. Off-centre samples cover both diamond edges.
- */
+  type Picks = { hover: Vec2 | null; pending: Vec2 | null };
+  const picks = () =>
+    page.evaluate(() => {
+      const scene = (window.fnt?.app as unknown as { scene: Picks }).scene;
+      return { hover: scene.hover, pending: scene.pending };
+    });
+
+  /** The camera's viewport against the canvas box, and a clear cell in the lowest whole row. */
+  const measure = () =>
+    page.evaluate(() => {
+      const app = window.fnt?.app;
+      const scene = (
+        app as unknown as {
+          scene?: { renderer?: { camera: { viewport: { width: number; height: number } } } };
+        }
+      )?.scene;
+      const camera = app?.rendererCamera();
+      const battle = app?.state?.battle;
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const viewport = scene?.renderer?.camera.viewport;
+      if (!camera || !battle || !canvas || !viewport) throw new Error('No top-down board mounted.');
+      const rect = canvas.getBoundingClientRect();
+      const m = camera.groundTransform;
+      const t = camera.tile;
+      const point = (x: number, y: number) => ({
+        x: rect.left + m.a * x * t + m.c * y * t + m.tx,
+        y: rect.top + m.b * x * t + m.d * y * t + m.ty,
+      });
+      const occupied = (x: number, y: number) =>
+        battle.units.some(
+          (u) => u.hp > 0 && Math.abs(u.pos.x - x) <= 1 && Math.abs(u.pos.y - y) <= 1,
+        );
+      for (let y = battle.grid.height - 1; y >= 0; y--) {
+        const top = point(0, y).y;
+        const bottom = point(0, y + 1).y;
+        if (top < rect.top || bottom > rect.bottom) continue;
+        // Right of centre, so the far side of the board is in the sample too.
+        for (let x = Math.floor(battle.grid.width * 0.6); x < battle.grid.width; x++) {
+          const centre = point(x + 0.5, y + 0.5);
+          if (occupied(x, y) || centre.x > rect.right - camera.tilePx / 2) continue;
+          if (document.elementFromPoint(centre.x, centre.y) !== canvas) continue;
+          return {
+            viewport: { width: viewport.width, height: viewport.height },
+            box: { width: rect.width, height: rect.height },
+            cell: { x, y },
+          };
+        }
+      }
+      return {
+        viewport: { width: viewport.width, height: viewport.height },
+        box: { width: rect.width, height: rect.height },
+        cell: null,
+      };
+    });
+
+  /** Settle, check the camera measured this box, then point at the painted cell. */
+  const pointAtLowestRow = async (label: string, tap: boolean): Promise<Vec2> => {
+    await settleMapCanvas(page);
+    const seen = await measure();
+    expect(seen.viewport.width, `${label}: camera width`).toBeCloseTo(seen.box.width, 0);
+    expect(seen.viewport.height, `${label}: camera height`).toBeCloseTo(seen.box.height, 0);
+    expect(seen.cell, `${label}: no clear cell in the lowest whole row`).not.toBeNull();
+    const cell = seen.cell as Vec2;
+    const point = await paintedTileCentre(page, cell);
+    expect(point, `${label}: no painted centre`).not.toBeNull();
+    if (!point) return cell;
+    await page.mouse.move(point.x, point.y);
+    await expect
+      .poll(async () => (await picks()).hover, { message: `${label}: hover` })
+      .toEqual(cell);
+    if (tap) {
+      await page.mouse.click(point.x, point.y);
+      await expect
+        .poll(async () => (await picks()).pending, { message: `${label}: tap` })
+        .toEqual(cell);
+    }
+    return cell;
+  };
+
+  const opening = (await measure()).box.height;
+  await pointAtLowestRow('the opening frame', false);
+
+  // Move: the aim hint fills in under the board.
+  await page.getByRole('button', { name: /^Move\b/ }).click();
+  await pointAtLowestRow('after Move', true);
+
+  // A pending tile adds the confirm bar; the next tap is measured through it.
+  await expect(page.locator('.confirm-bar')).toBeVisible();
+  await pointAtLowestRow('with the confirm bar', true);
+
+  // The log panel is the HUD growing again, long after mount.
+  await page.getByRole('button', { name: /^Log$/ }).click();
+  await expect(page.locator('.log-panel')).toBeVisible();
+  await pointAtLowestRow('with the log open', true);
+  const withLog = (await measure()).box.height;
+  expect(withLog, 'the log panel should take height from the map').toBeLessThan(opening);
+
+  await page.getByRole('button', { name: /^Hide log$/ }).click();
+  await expect(page.locator('.log-panel')).toBeHidden();
+  await pointAtLowestRow('with the log hidden again', true);
+});
