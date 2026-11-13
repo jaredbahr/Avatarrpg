@@ -39,7 +39,7 @@ const mutations = [
 ] as const;
 
 async function village(page: Page, renderer: string) {
-  await resetStorage(page, `?renderer=${renderer}&style=topdown`);
+  await resetStorage(page, `?renderer=${renderer}`);
   await startGame(page, ['Jared'], ['kaya'], 'scene-validation-471');
   await enterNode(page, 'village_explore');
   await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
@@ -68,7 +68,7 @@ async function walk(page: Page) {
   const target = { x: 5, y: 7 };
   const point = await paintedTileCentre(page, target);
   expect(point).not.toBeNull();
-  if (!point) throw new Error('No painted walking target');
+  if (!point) throw new Error('No rendered walking target');
   await page.mouse.click(point.x, point.y);
   await waitForIdle(page);
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual(target);
@@ -123,10 +123,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       });
       expect(responses).toBeGreaterThan(0);
       expect(loaded.backend).toBe(renderer);
-      expect(loaded.projection).toBe('oblique');
-      expect(loaded.camera?.projection).toBe('oblique');
+      expect(loaded.projection).toBe('topdown');
+      expect(loaded.camera?.projection).toBe('topdown');
+      expect(loaded.scenery).toBeUndefined();
+      expect(loaded.ground).toBeUndefined();
       const reported = errors.filter((error) =>
-        error.startsWith('The top-down scenes did not load; drawing the oblique maps.'),
+        error.startsWith('The top-down scenes did not load; drawing the bare boards.'),
       );
       expect(reported.length).toBeGreaterThan(0);
       expect(reported.every((error) => error.includes(url) && error.includes(mutation.path))).toBe(
