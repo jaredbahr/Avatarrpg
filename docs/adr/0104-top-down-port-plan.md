@@ -261,6 +261,49 @@ switches the default: it is only ever requested under `?style=topdown`. `scripts
 workbox ignores it and `check-asset-budget.mjs` leaves it out of the precache total, while the `topdown` family keeps
 its own 6 MiB budget. `scripts/precache.test.ts` pins it. T6 revisits it.
 
+## T6: top-down is the default (2026-11-11)
+
+A page with no `style` parameter, an unknown one or `?style=topdown` boots top-down (`src/app/style.ts`); the
+style stays a URL choice and never enters a save (§4), so a fresh link and a Continue both land in it.
+`?style=oblique` keeps the old look for one release and `?style=world` stays the figure test on it.
+
+The 2026-11-10 note above is reversed: the top-down family is precached, so the game plays offline after a first
+visit. No budget moves. What the service worker leaves for run time is now the oblique art of the five maps that draw
+a top-down scene (Ba Dan's continuous painting, the forest G1 pages, the quarry's projected pages and the five
+backdrops): only `?style=oblique`, or a failed top-down scene load, ever requests it. The riverside keeps its
+backdrop, since it has no top-down scene. Measured on the build: precache 21.47 MB before (125 top-down files left
+for run time), 21.01 MB after (93 oblique files left for run time), of 25 MB. JavaScript 399.3 KB of 404 KB gzipped,
+the precache manifest in `sw.js` included. `scripts/precache.test.ts` pins that every map drawing ignored art is a
+swapped one. T7 deletes those files.
+
+## T7, first half: the style switch and the oblique maps (2026-11-13)
+
+The owner approved T7 after an end-to-end top-down playthrough found no blockers. It lands in steps, each green on
+its own:
+
+- **The style switch is gone.** `src/app/style.ts`, `?style=oblique` and `?style=world` (the world-style figure test,
+  ADR 0097) are deleted; `main.ts` always turns on the top-down figures and fetches the scenes. A `?style=` in an old
+  link is ignored. A scene that fails to load leaves its map on the bare board (there is no oblique fallback).
+- **The route maps are top-down in the content itself.** Ba Dan, the Forest Road, the quarry gate, the Cutting and the
+  Driller floor declare `projection: 'topdown'` and `cameraCentreMargin: 1`, with no `backdrop` or `cameraPaint`; their
+  own `scene` carries only the rules' `paintedRubble` until the fetched scene replaces it. The rule layout that lived in
+  the oblique scene modules moved beside the maps (`maps/baDanLayout.ts`; the roadside and rubble cells in
+  `maps/combat.ts`). The oblique scene modules (`scenes/baDan*.ts`, `forestRoad*.ts`, `quarryGate.ts`,
+  `quarryProjected.ts` and their helpers) and their art pipelines (`scripts/art/ba-dan-regions/`, the forest G1 and
+  quarry packers) are deleted with their tests.
+- **The oblique map art is deleted**: the five maps' backdrops and scene pages under `public/art/maps/` (only the
+  riverside's backdrop stays), the world-style figures (`public/art/units/world/`, `style-test/`), their sources
+  (`art/source/ba-dan-*` but the riverside, `grounding/`, `figure-scale/`, `party-world/`,
+  `style-test-world-chars/`) and their NOTICE entries. `art/source/forest-road-g1/` stays: it is the provenance of
+  the shipped combat props. `PRECACHE_IGNORES` is empty again, so the whole game is precached.
+- **Not yet:** the oblique projection in the renderer (the lift pass, the diamond camera and its painted-ring and hull
+  clamps) and the G1 sheets in `ASSETS`, which the art and animation tests still pin and whose dormant mechanics
+  (bends, stance, jog, brisk cadence) need their own migration.
+
+Measured on the build: JavaScript 410.0 KB before, 402.1 KB after (budget 410, unchanged). Precache 17.44 MB
+before, with 97 files left for run time; 16.57 MB after, with 4 (the streamed music). The maps family went from
+5.47 MB to 0.42 MB and units from 7.02 MB to 6.17 MB.
+
 ## Driller grounding implementation (#469)
 
 The Driller packer records each static heading's tread span, center offset and baseline from

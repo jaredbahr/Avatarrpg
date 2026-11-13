@@ -10,12 +10,62 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
+## Current goal: a playable demo, Ba Dan to the quarry and back (owner, 2026-11-11)
+
+Everything on the route (Ba Dan, the Forest Road, the quarry gate, the Cutting, the Driller and the walk home) runs
+in the top-down style, the default since T6. The owner's direction for finishing it:
+
+- **Audience:** a playable link people open on their own device (the GitHub Pages build), plus a short video. The
+  first ten minutes must hold up for a stranger: onboarding, saves and what-to-do-next are part of the demo.
+- **Device:** tuned first for **iPad, landscape**: tap targets, camera zoom, text size and the HUD.
+- **What "finished" means:** **combat juice** (an action clip per heading and ability, impact effects, projectiles,
+  hit-stop, the follow camera) and **story presentation** (dialogue, portraits, scene transitions, and the walk
+  home landing as an ending).
+- **One style:** top-down is the only style (T6 made it the default; T7 is deleting the oblique art and code).
+  Don't spend effort on oblique-only paths.
+- **Players:** families and tactics fans, layered: easy to pick up for kids (about 7–12), with depth (combos, a
+  harder difficulty) for experienced players. Usually **3–4 players** share the iPad, so whose turn it is and the
+  hand-offs must always be clear.
+- **Tone:** a warm adventure, with humour and friendship and real stakes but nothing grim. Bandits are people with
+  reasons (`docs/writing-guide.md`).
+- **Difficulty:** forgiving by default (most first-time players win if they try), plus a harder option.
+- **Losing a fight:** the players choose "Try again" (restart the fight) or "Carry on" (the story's defeat branch)
+  (#620).
+- **Story choices:** a table vote, with ties going to the rotating decider (#621).
+- **Combos:** hinted first ("something here reacts to fire"), then named and shown openly once discovered (#622).
+- **Length:** one play-through of the demo takes about 30–40 minutes; trim any fight that drags past about 6.
+- **First ten minutes:**
+  - Party setup offers a one-tap suggested party (Kaya, Sura, Bo), with "Choose your own" for the full roster.
+  - The Forest Road ambush is a guided first fight (move, attack, end turn), then lets go. Later fights only show a
+    tip when something new appears.
+  - The game autosaves at every scene and fight start, the title shows Continue, and manual slots stay in the menu.
+- **Effects:** punchy but readable: strong impact frames, a small shake, hit-stop and bold elemental bursts, never
+  covering who got hit or the damage number.
+- **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
+  "thanks for playing" card with a party summary and "play again with a different party".
+- **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
+  UI sounds.
+- **Portraits:** the owner chose **style B, detailed pixel art at 160 px**, on 2026-11-11 (ADR 0107). New portraits are
+  made with `prototypes/topdown/tools/portraits_b.py` (the old portrait at 160 px through PixelLab `edit-image-pro-flash`,
+  the B description with the character's own features, seed 11); each is checked at 3x before it ships. A portrait
+  fix or new portrait made with that recipe merges on the orchestrator's 3x check without waiting for the owner, and
+  the result is sent to him afterwards (owner, 2026-11-13).
+- **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
+  new content or regions.
+
 ## Current state: top-down art direction (read first, 2026-11-05)
 
 The owner approved a new art direction in a standalone prototype: **traditional top-down PixelLab pixel art**
 (ADR 0103). It lives in `prototypes/topdown/` (its own build; outside the bundle, lint and format). Game work in
 `src/` stays paused (#348) until the port to this style is planned. The active work is the prototype: the whole
 tutorial, Ba Dan to the Forest Road to the quarry and the Driller.
+
+**Top-down is the only style (ADR 0104 T6, T7).** Every link boots top-down; `?style=` is ignored, so an old
+`?style=oblique` or `?style=topdown` link still works. The five route maps declare `projection: 'topdown'` and fetch their
+scenes at boot (`src/content/topdown.ts`); the riverside stays on its orthographic backdrop. T7's first half removed the
+style switch, the oblique map scenes, their art pipelines and their art; the oblique projection in the renderer (lifted tiers, the
+diamond camera) and the G1 sheets that `ASSETS` still lists for the art and animation tests are what remains, and the
+bullets below that name them describe that legacy code only.
 
 - **Read `docs/art-lessons.md` first.** It records every failed attempt (isometric painting with AI-redrawn
   characters, the cel-shaded test, 3D-to-pixel, #411's walk, the code motion layer) so nobody repeats them.
@@ -222,8 +272,8 @@ Never run `npx playwright install` in the dev container — Chromium is already 
     do not span an object that runs off screen.
   - Assigning `filter.resources` after construction does not rebuild the bind
     group; create the texture before the filter and update it in place.
-- **A raised tile is drawn a quarter tile a tier up the screen** on the oblique
-  board (ADR 0065), so a pointer must go through `camera.pickTile(x, y, grid)`,
+- **Legacy (T7 retires it): a raised tile is drawn a quarter tile a tier up the screen** on the oblique
+  board (ADR 0065); the top-down board lifts nothing and picks flat, so a pointer must go through `camera.pickTile(x, y, grid)`,
   never `toTile`, or a tap on a bench's far corner acts on the cell behind it.
   Ground art that already paints height declares it in `MapScene.reliefLift`;
   anything that stands on a tile lifts by `liftAt` / `liftAlong`.
@@ -256,23 +306,7 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   already passed through and nothing lights.
 - `previewAbility` consumes no RNG, and the AI's `scoreAbility` must not either.
   That is why damage to props is flat, with no to-hit roll or crit.
-- **Ba Dan is one continuous painting, and `baDan.art.ts` is generated.** Six accepted region paintings
-  (`art/source/ba-dan-regions/accepted/`, crops of the G1 master) are stitched, cut into 12 ground plates and 46 uprights (the
-  pieces a figure can stand behind; 32 more are the ground only), and packed by `sh scripts/art/ba-dan-regions/regen.sh` (`--check` proves the shipped files are
-  what the sources make). Never edit `src/content/scenes/baDan.art.ts` or the `ground-NN` / `uprights-N` files by hand. The painting
-  holds the light, cast shadow, contact, worn ground, joins and the canal, so Ba Dan is a **complete scene** (no `groundMode:
-'partial'`, `paintedWater: true`) and draws no runtime contact, cast or join wash; do not add one. The split is cut by the **frozen**
-  geometry (`art/source/ba-dan-regions/geometry/`), not by `baDan.ts`: moving a piece is a repaint of its region, and a
-  piece's footprint, depth key and flags in `baDan.ts` must still equal the frozen ones (`baDan.test.ts`). Rejected by the owner: the
-  piece-on-lawn village (houses, trees and dressing laid on baked ground plates: cut, stacked, floating).
-- **Ba Dan's resolution is 1 painting px per world px for ground and uprights** (`regions.py` `SCALE`). The owner approved
-  1 px on 2026-10-28 because the party now ships at 1 px (ADR 0090, replacing the old 1.5 px "do not downscale" rule): integer
-  zoom samples 1 px art nearest at every N, where 1.5 px was smoothed at N = 2. Do not scale the painting back up. The frozen
-  geometry stays in world px. The maps art family is 6 MiB (ADR 0076).
-- **A Ba Dan house is one sprite with its yard in it, so it has one depth key.** `house()` in `baDan.ts` sorts it by the
-  lane cell below its south-west corner, `(x + 0.5, y + h + 0.5)`, not the front corner: the front corner put a figure on the
-  lane beside the yard behind the yard's fence. `baDan.test.ts` checks every walkable cell the sprite would paint over.
-- **Every native-G1 figure still walks; exploration now cruises at 625 ms a tile** (ADR 0095's
+- **Legacy (T7 retires it): every native-G1 figure still walks at 625 ms a tile** (ADR 0095's
   2026-11-01 amendment, owner feedback: walking is a bit slow). Combat stays at 720. The jog read as legs
   growing, so no sheet's locomotion sets `jog`; its cels stay unplayed. Do not turn the jog back on.
   `walkMsPerTile` stays fitted per family and heading to the drawn feet (`G1_WALK`, from `walk_stride.py`),
@@ -295,12 +329,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   or a sheared silhouette for figures. Every idle, walk, jog, rest and stance cel **stands on its own lowest sole**:
   the store measures each cel when its atlas loads (`sheets/feet.ts`) and moves its anchor's foot line there, the
   pool centres on the heading's resting feet, and a 1–2 px contact line in the contact tone sits under each planted
-  sole; `feet.test.ts` holds every shipped and `?style=world` cel to ±1 world px. A painted scene sets its shadow `ink` and levels so the pool lands on the
-  painting's own tone (Ba Dan's are fitted by `art/source/grounding/tools/figure_shadow_tone.py`). Every prop
+  sole; `feet.test.ts` holds every shipped cel to ±1 world px. On the top-down board `feetBlob` replaces the swept
+  pool and the static shadows are baked into the plates (ADR 0104 §2). Every prop
   gets a 2 world px contact line and a cast from its own base (`groundedCast`), so no ground shows between a box's
   side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is grounded
-  the same way, its feet only inside its footprint; a tree or a hanging lamp does not. Ba Dan's painted
-  objects are shaded in the master by `ba-dan-route-a/tools/shadows.py`, never in the shipped files.
+  the same way, its feet only inside its footprint; a tree or a hanging lamp does not.
   `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
@@ -312,13 +345,12 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   changes that box on most turns. `CombatScene.refit()` refits only when the
   board was fitted, or a rotation has left it smaller than it could be, and
   otherwise clamps; never wire `onViewportChange` straight to `camera.fit()`.
-- **The oblique boards draw at integer zoom** (ADR 0088): `camera.integerZoom` puts a whole number of device pixels on
+- **The pixel-art boards draw at integer zoom** (ADR 0088, and N ≥ dpr on the top-down board, ADR 0104): `camera.integerZoom` puts a whole number of device pixels on
   each world pixel and reads the offsets back on the device-pixel grid, and art is sampled nearest only where one of
   its pixels covers a whole number of device pixels (`src/render/pixelSampling.ts`, both backends). Never write
   `camera.scale` from a scene to a computed value; go through `fit`, `fitExplore`, `zoomAt`, `raiseToFit` or
   `snapScale` (the battle opening's ease is the one deliberate exception), or the board resamples. Map art ships
-  at 1 art px per world px, Ba Dan and the forest included (owner-approved 2026-10-28, because the party now ships at 1 px;
-  ADR 0090): a density that does not divide every N, as the old 1.5 px did, is smoothed.
+  at 1 art px per world px: a density that does not divide every N is smoothed.
 - **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
   the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
   tappable tile and pans instead; that is the one exception to "combat never

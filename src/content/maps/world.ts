@@ -1,5 +1,5 @@
 /** The first connected region. Encounters retain their authored level order. */
-import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/types';
+import type { Condition, MapDef, MapEdgeSide, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
 import { discoveryMarkers } from './discoveries';
 import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
@@ -13,10 +13,11 @@ const route = (
   toMapId: string,
   toPos: Vec2,
   label: string,
+  direction: MapEdgeSide,
   area?: readonly Vec2[],
   requires?: Condition,
   lockedHint?: string,
-): MapExit => ({ pos, toMapId, toPos, label, area, requires, lockedHint });
+): MapExit => ({ pos, toMapId, toPos, label, direction, area, requires, lockedHint });
 
 /** A road mouth (M2): the walkable cells of the exit's cross-section at the map edge. */
 const mouth = (x: number, ys: readonly number[]): readonly Vec2[] => ys.map((y) => ({ x, y }));
@@ -73,6 +74,7 @@ export function connectAct1(map: MapDef): MapDef {
             'forest_road',
             { x: 1, y: 4 },
             'East road → Forest Road',
+            'east',
             mouth(23, [7, 8]),
           ),
           route(
@@ -80,9 +82,25 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_riverside',
             { x: 10, y: 19 },
             'River path → Riverside',
+            'south',
             // The path's mouth on the rim, between the canal's end and the
             // small trees on both shoulders: the walkable border cells are the exit.
             [18, 19, 20].map((x) => ({ x, y: 15 })),
+          ),
+        ],
+        // The demo's ending: the first step in from the east road after the walk home.
+        triggers: [
+          crossing(
+            map,
+            20,
+            7,
+            'welcome_home_mira',
+            'Ba Dan comes out to meet you',
+            'npc.household',
+            {
+              kind: 'all',
+              of: [visited('forest_return_arrival'), unvisited('demo_complete')],
+            },
           ),
         ],
       };
@@ -109,6 +127,7 @@ export function connectAct1(map: MapDef): MapDef {
             // One step inside the village's river-path mouth, never on it.
             { x: 19, y: 14 },
             'South path → Ba Dan Village',
+            'south',
             // The south path from row 20 to the rim: it leaves with no tile to miss.
             [
               { x: 10, y: 20 },
@@ -122,13 +141,19 @@ export function connectAct1(map: MapDef): MapDef {
     case 'forest_road':
       return {
         ...map,
-        objective: 'Explore the woodland paths. The quarry lies east; Ba Dan lies west.',
+        objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
+        objectiveTargetId: 'quarry_gate',
         objectiveVariants: [
           {
             when: RETURNEES_RETURNING,
             text: 'The five workers are returning. The roadblock is gone. Follow the road west to Ba Dan.',
+            objectiveTargetId: 'ba_dan_village',
           },
-          { when: rescued, text: 'The roadblock is gone. Follow the road west to Ba Dan.' },
+          {
+            when: rescued,
+            text: 'The roadblock is gone. Follow the road west to Ba Dan.',
+            objectiveTargetId: 'ba_dan_village',
+          },
         ],
         exits: [
           route(
@@ -136,6 +161,7 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_village',
             { x: 22, y: 7 },
             'West → Ba Dan Village',
+            'west',
             // Preserve the road's five-cell mouth; these walkable rim cells are
             // exits rather than edge-band terrain.
             mouth(0, [4, 5, 6, 7, 8]),
@@ -145,6 +171,7 @@ export function connectAct1(map: MapDef): MapDef {
             'quarry_gate',
             { x: 1, y: 5 },
             'East → Quarry Gate',
+            'east',
             // Preserve the road's five-cell mouth past the NE bank; these
             // walkable rim cells remain exits rather than edge-band terrain.
             mouth(19, [4, 5, 6, 7, 8]),
@@ -188,7 +215,7 @@ export function connectAct1(map: MapDef): MapDef {
             id: 'dema',
             name: 'Dema, road keeper',
             pos: { x: 3, y: 1 },
-            sprite: 'npc.elder',
+            sprite: 'npc.dema',
             node: 'forest_dema',
             routes: [
               { when: rescued, node: 'dema_home' },
@@ -248,6 +275,7 @@ export function connectAct1(map: MapDef): MapDef {
             'forest_road',
             { x: 18, y: 4 },
             'West → Forest Road',
+            'west',
             mouth(0, [5, 6]),
           ),
           route(
@@ -255,6 +283,7 @@ export function connectAct1(map: MapDef): MapDef {
             'ambush_road',
             { x: 1, y: 4 },
             'East → The Cutting',
+            'east',
             mouth(19, [5, 6]),
             { kind: 'any', of: [visited('escort_chosen'), visited('trade_chosen')] },
             'Speak with Ruon and decide how to proceed first.',
@@ -289,6 +318,7 @@ export function connectAct1(map: MapDef): MapDef {
             'quarry_gate',
             { x: 18, y: 5 },
             'West → Quarry Gate',
+            'west',
             mouth(0, [4, 5, 6, 7]),
           ),
           route(
@@ -296,6 +326,7 @@ export function connectAct1(map: MapDef): MapDef {
             'quarry_floor',
             { x: 1, y: 5 },
             'East → Quarry Floor',
+            'east',
             mouth(19, [4, 5, 6, 7]),
             { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
             'Jin’s people are waiting further along the cutting.',
@@ -311,10 +342,27 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('ambush_road'),
           {
+            // Ruon stands where the ambush broke while he speaks (#628), and
+            // waits there until the party goes down to the quarry floor.
+            id: 'ruon_cutting',
+            name: 'Captain Ruon',
+            pos: { x: 10, y: 4 },
+            sprite: 'unit.ally.ruon',
+            node: 'ruon_cutting',
+            when: {
+              kind: 'all',
+              of: [
+                { kind: 'flag', key: 'ruon_spared', op: 'set' },
+                visited('after_ambush'),
+                unvisited('quarry_descent'),
+              ],
+            },
+          },
+          {
             id: 'rest_keeper',
             name: 'Sen, the tea keeper',
             pos: { x: 5, y: 9 },
-            sprite: 'npc.shopkeeper',
+            sprite: 'npc.sen',
             node: 'cutting_tea',
             routes: [
               { when: rescued, node: 'sen_home' },
@@ -342,6 +390,7 @@ export function connectAct1(map: MapDef): MapDef {
             'ambush_road',
             { x: 18, y: 4 },
             'West → The Cutting',
+            'west',
             mouth(0, [5, 6]),
           ),
         ],

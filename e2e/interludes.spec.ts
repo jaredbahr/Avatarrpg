@@ -176,8 +176,20 @@ test('playback pauses for menus and returns to exploration before the road encou
     .toBe('enc_forest_road');
 });
 
+test('act1_victory frees the workers and walks on home without an end card', async ({ page }) => {
+  await enterNode(page, 'act1_victory');
+  const flags = await page.evaluate(() => window.fnt?.app.state?.flags);
+  await expect(page.locator('.interlude-art')).toHaveAttribute('src', /rescue\.webp/);
+  await expect(page.locator('.line-count')).toHaveText('1 of 4');
+  await expect(page.getByRole('button', { name: 'Read summary' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Skip scene', exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('quarry_after_explore');
+  expect(await page.evaluate(() => window.fnt?.app.state?.flags)).toEqual(flags);
+});
+
 for (const [node, title, art] of [
-  ['act1_victory', 'The Quarry of Ba Dan', 'rescue.webp'],
   ['act1_lost', 'The Quarry Keeps Running', 'ba-dan.webp'],
 ] as const) {
   test(`${node} shows only its own outcome and can replay without changing flags`, async ({

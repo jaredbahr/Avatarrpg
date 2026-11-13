@@ -68,6 +68,46 @@ export function shippedFiles(): string[] {
 /** The VFX packer owns exactly these two shared-directory outputs. */
 export const VFX_OUTPUTS = [`${OUT}/vfx.webp`, `${OUT}/vfx.json`] as const;
 
+/**
+ * The striking hand of an action in one heading, in frame px of its trimmed cels, on its hit cel: where its attached
+ * effects start. Of the pixels the strike drew that its first cel did not (all of the hit cel's, if under four), above
+ * 60% of the figure's height (so not the stepping feet), the one reaching furthest from the chest along the aim, plus
+ * half its distance from the chest and a little height, since a hand raised for an overhead throw is still the hand;
+ * the middle of those within a pixel of the best. A hand hidden behind the body (a punch facing north) lands on the
+ * nearest drawn reach: the shoulders or the head.
+ */
+export function strikeHand(
+  first: Image,
+  hit: Image,
+  anchor: { x: number; y: number },
+  heading: Heading,
+): { x: number; y: number } {
+  const angle = (HEADINGS.indexOf(heading) * Math.PI) / 4;
+  const [dx, dy] = [Math.cos(angle), Math.sin(angle)];
+  const ax = anchor.x * hit.width;
+  const ay = anchor.y * hit.height;
+  let top = hit.height;
+  for (let i = 0; i < first.width * first.height; i++)
+    if (alphaAt(first, i % first.width, Math.floor(i / first.width)))
+      top = Math.min(top, Math.floor(i / first.width));
+  const chest = top + 0.35 * (ay - top);
+  const band: [number, number, boolean][] = [];
+  for (let y = 0; y < hit.height && y + 0.5 <= top + 0.6 * (ay - top); y++)
+    for (let x = 0; x < hit.width; x++)
+      if (alphaAt(hit, x, y)) band.push([x, y, !alphaAt(first, x, y)]);
+  const drawn = band.filter((p) => p[2]);
+  const pts = drawn.length >= 4 ? drawn : band;
+  const score = ([x, y]: [number, number, boolean]) => {
+    const vx = x + 0.5 - ax;
+    const vy = y + 0.5 - chest;
+    return vx * dx + vy * dy + 0.5 * Math.hypot(vx, vy) - 0.4 * vy;
+  };
+  const best = Math.max(...pts.map(score));
+  const near = pts.filter((p) => score(p) >= best - 1);
+  const mean = (i: 0 | 1) => Math.round(near.reduce((sum, p) => sum + p[i], 0) / near.length);
+  return { x: mean(0), y: mean(1) };
+}
+
 /** The game's headings (`HEADINGS` order) and PixelLab's direction names for them. */
 const HEADINGS = [
   'east',
@@ -521,6 +561,28 @@ const ROSTER: readonly FigureSpec[] = [
     actions: {},
     timing: 'blow',
   },
+  // T10: the road keeper Dema and Sen, the Cutting's tea keeper, who borrowed Mira's and Gao's sheets, made as the
+  // guard was (`tools/t10residents.py`): idle and walk, eight headings.
+  {
+    name: 'dema',
+    key: 'npc.dema',
+    folder: 't10_dema',
+    idle: 'custom-standing at rest: the chest an@571e1f',
+    walk: 'walking-8-frames@73450f',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'sen',
+    key: 'npc.sen',
+    folder: 't10_sen',
+    idle: 'custom-standing at rest: the chest an@3b94f2',
+    walk: 'walking-8-frames@ca010f',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -778,6 +840,7 @@ interface ClipOut {
   events?: { hit: number };
   frameSize?: { w: number; h: number };
   anchor?: { x: number; y: number };
+  hand?: { x: number; y: number };
 }
 
 /** What the manifest's builder reads for one sheet (`topdownSheets.ts`). */
@@ -895,9 +958,12 @@ function figureSheet(spec: FigureSpec): Sheet {
     cels: readonly Placed[],
     frameMs: number[],
     extra: Partial<ClipOut> = {},
+    aim?: Heading,
   ): ClipOut => {
     const t = trimmed(cels, anchorPoint);
     t.images.forEach((im, i) => add(clip, i, im));
+    const first = t.images[0];
+    const hit = t.images[extra.events?.hit ?? -1];
     return {
       frames: t.images.map((_, i) => `${spec.key}/${clip}/${i}`),
       fps: 10,
@@ -906,6 +972,7 @@ function figureSheet(spec: FigureSpec): Sheet {
       ...extra,
       frameSize: t.frameSize,
       anchor: { x: round6(t.anchor.x), y: round6(t.anchor.y) },
+      ...(aim && first && hit && { hand: strikeHand(first, hit, t.anchor, aim) }),
     };
   };
   if (spec.hit) {
@@ -973,9 +1040,13 @@ function figureSheet(spec: FigureSpec): Sheet {
         spec.timing === 'bend'
           ? bendTiming(pose, cels.length, strike ?? 0)
           : blowTiming(cels.length);
-      actions[pose][h] = trimClip(`${pose}${sided('', h, false)}`, cels, t.frameMs, {
-        events: { hit: t.hit },
-      });
+      actions[pose][h] = trimClip(
+        `${pose}${sided('', h, false)}`,
+        cels,
+        t.frameMs,
+        { events: { hit: t.hit } },
+        h,
+      );
     }
   }
   let cast: ClipOut | null = null;
@@ -1312,8 +1383,21 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
   return files;
 }
 
-async function dataModule(data: Record<string, SheetData>): Promise<string> {
+export async function dataModule(data: Record<string, SheetData>): Promise<string> {
   const names = Object.keys(data);
+  let compact = JSON.stringify(data);
+  for (const sheet of Object.values(data)) {
+    const frames = sheet.cast?.frames;
+    if (!frames?.length) continue;
+    const prefix = frames[0]?.replace(/\/0$/, '');
+    if (!prefix || !frames.every((frame, index) => frame === `${prefix}/${index}`)) continue;
+    const original = `"frames":${JSON.stringify(frames)}`;
+    if (!compact.includes(original)) throw new Error(`Missing cast frames for ${prefix}`);
+    compact = compact.replace(
+      original,
+      `"frames":castFrames(${JSON.stringify(prefix)},${frames.length})`,
+    );
+  }
   const text = [
     '/**',
     ' * Generated by `scripts/art/topdown/pack-sheets.ts`; do not edit by hand.',
@@ -1324,6 +1408,9 @@ async function dataModule(data: Record<string, SheetData>): Promise<string> {
     ' * its actions file, both beside its atlas under `public/art/topdown/`.',
     ' */',
     "import type { ClipDef } from './clips';",
+    '',
+    'const castFrames = (prefix: string, count: number): string[] =>',
+    '  Array.from({ length: count }, (_, index) => `${prefix}/${index}`);',
     '',
     `export type TopdownName = ${names.map((n) => `'${n}'`).join(' | ')};`,
     '',
@@ -1343,7 +1430,7 @@ async function dataModule(data: Record<string, SheetData>): Promise<string> {
     '  readonly treadGrounding?: readonly { readonly spanPx: number; readonly centerXFromAnchorPx: number; readonly baselineYFromAnchorPx: number }[];',
     '}',
     '',
-    `export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = ${JSON.stringify(data)};`,
+    `export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = ${compact};`,
     '',
   ].join('\n');
   // Formatted as `format:check` wants it, so the shipped file is the packer's output byte for byte.

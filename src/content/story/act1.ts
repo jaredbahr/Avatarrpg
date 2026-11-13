@@ -43,17 +43,17 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ba_dan_village',
     objective: 'Talk to Elder Mira, then take the east road to the quarry.',
-    objectiveNpcId: 'elder_mira',
+    objectiveTargetId: 'elder_mira',
     objectiveVariants: [
       {
         when: RETURNEES_HOME,
         text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
-        objectiveNpcId: null,
+        objectiveTargetId: null,
       },
       {
         when: { kind: 'visited', nodeId: 'mira_intro' },
         text: 'Take the east road to the quarry. You can speak with the neighbors before you leave.',
-        objectiveNpcId: null,
+        objectiveTargetId: 'forest_road',
       },
     ],
     next: 'road_depart',
@@ -82,7 +82,6 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
-    next: 'village_return_explore',
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
@@ -101,6 +100,39 @@ export const ACT1_NODES: readonly StoryNode[] = [
         ],
       },
     ],
+    next: 'mira_rubbing',
+  },
+  /*
+   * The rubbing from the driller's plate changes hands (#628). Mira routes to
+   * `mira_rubbing_kept` once she has it, so a second visit never asks again.
+   */
+  {
+    id: 'mira_rubbing',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'Is that the rubbing? Hold that corner flat for me.',
+      'Republic City. Somebody paid to bring that machine a long way. It goes in the report, and the province can tell me who.',
+    ],
+    next: 'mira_rubbing_given',
+  },
+  {
+    id: 'mira_rubbing_given',
+    kind: 'flags',
+    set: { rubbing_given: true },
+    next: 'village_return_explore',
+  },
+  {
+    id: 'mira_rubbing_kept',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'The rubbing is folded into the province report. Dorin asked to copy the maker’s mark into his watch book first.',
+      'Go and eat. Gao has kept bowls for you.',
+    ],
+    next: 'village_return_explore',
   },
   {
     id: 'gao_friendly',
@@ -486,6 +518,18 @@ export const ACT1_NODES: readonly StoryNode[] = [
     ],
     next: 'cutting_after_explore',
   },
+  {
+    // Ruon waits in the Cutting after the ambush (#628); tapping him gets this.
+    id: 'ruon_cutting',
+    kind: 'dialogue',
+    speaker: 'Captain Ruon',
+    portrait: 'portrait.ruon',
+    lines: [
+      'The quarry floor is east, past the ore cart. I’ll keep to the back.',
+      'If Jin sends anyone else, they reach me first. That was the arrangement.',
+    ],
+    next: 'cutting_after_explore',
+  },
 
   /* ------------------------------------------------------ Branch B: trade */
   /*
@@ -587,21 +631,32 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'flags',
     set: { act1_complete: true },
     residentProfiles: RETURNING_PROFILES,
-    phase: 'evening',
     next: 'act1_epilogue',
   },
   {
+    /*
+     * The workers are free: a beat, not the ending. The walk home follows, and
+     * the demo closes in Ba Dan (`welcome_home_mira` in return.ts).
+     */
     id: 'act1_epilogue',
-    kind: 'end',
-    title: 'The Quarry of Ba Dan',
+    kind: 'dialogue',
+    speaker: 'The Quarry',
+    portrait: 'portrait.narrator',
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
       'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
       'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
-    teaser:
-      'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+    next: 'act1_evening',
+  },
+  {
+    // Evening falls as the walk home begins. A phase change rests at an explore
+    // node, never in a conversation, so it follows the beat rather than leading it.
+    id: 'act1_evening',
+    kind: 'flags',
+    set: {},
+    phase: 'evening',
     next: 'quarry_after_explore',
   },
 ];

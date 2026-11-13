@@ -10,7 +10,7 @@ test('setup portraits stay large and Confirm remains reachable at 600x900 Huge t
 
   await page.getByRole('button', { name: /new game/i }).click();
   await page.getByRole('button', { name: '1 player' }).click();
-  await page.getByRole('button', { name: /^Continue$/ }).click();
+  await page.getByRole('button', { name: 'Choose your own', exact: true }).click();
   await page.locator('input[type=text]').fill('Aster');
   await page.getByRole('button', { name: /^Next$/ }).click();
   await page.locator('.pick-card').first().click();

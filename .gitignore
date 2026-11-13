@@ -33,3 +33,7 @@ __pycache__/
 
 # Headless combat soak report
 soak-report.json
+
+# Informational, dispatch-only Lighthouse output; uploaded with one-day retention.
+/lighthouse-report/
+/.lighthouse-report-*/

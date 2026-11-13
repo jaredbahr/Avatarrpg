@@ -64,3 +64,13 @@ contact shadow, selection ring, and move ghost remain on the footprint diamond.
   during cast steam/debris and the held knockout facing in both directions.
 - Option A is the approved shipping tuning; human capture review remains part
   of final acceptance.
+
+## Amendment (2026-11-12, #632): base HP 80
+
+The owner's demo direction caps a fight at about six minutes. At base HP 130 a
+three-player party needed 8.5 simulated rounds (about 28 turns) and a
+four-player party 11.1, so the Driller now starts at **80 HP**. Move 4 and the
+rest of Option A stand, and `rules/difficulty.ts` still scales it with the
+table. The same change caps the quarry bender at 2 AP. With both, the default
+balance run (80 trials) measures 5.7 rounds at three players and 6.2 at four
+(6.9 and 5.4 on Jin's roster), with every simulated trial won.

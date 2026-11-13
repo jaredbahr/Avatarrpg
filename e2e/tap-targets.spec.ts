@@ -205,7 +205,7 @@ async function statusTooltip(page: Page): Promise<void> {
 }
 
 /** The existing capped HUD must reveal its complete actions through real scrolling. */
-async function reachableCombatActions(page: Page): Promise<void> {
+async function reachableCombatActions(page: Page, mobileWebKit: boolean): Promise<void> {
   const observe = () =>
     page.evaluate(() => {
       const app = window.fnt!.app;
@@ -259,11 +259,16 @@ async function reachableCombatActions(page: Page): Promise<void> {
   const before = await observe();
   const needsScroll = before.targets.some((target) => target.bottom > before.hud.visibleBottom);
   if (needsScroll) {
-    await page.mouse.move(
-      (before.hud.left + before.hud.right) / 2,
-      (Math.max(before.hud.top, 0) + before.hud.visibleBottom) / 2,
-    );
-    await page.mouse.wheel(0, before.hud.scrollHeight);
+    if (mobileWebKit) {
+      // Playwright cannot send wheel input to mobile WebKit.
+      await page.locator('.combat-scene .hud').evaluate((hud) => hud.scrollTo(0, hud.scrollHeight));
+    } else {
+      await page.mouse.move(
+        (before.hud.left + before.hud.right) / 2,
+        (Math.max(before.hud.top, 0) + before.hud.visibleBottom) / 2,
+      );
+      await page.mouse.wheel(0, before.hud.scrollHeight);
+    }
   }
   await expect
     .poll(async () =>
@@ -285,29 +290,45 @@ async function reachableCombatActions(page: Page): Promise<void> {
 
 async function setup(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'New game', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Who is playing?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose your party' })).toBeVisible();
   await audit(page, 'setup-count', ['.count-row button', '.setup-footer button']);
   await page.getByRole('button', { name: '2 players', exact: true }).click();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  for (const name of ['Aster', 'River']) {
+  await page.getByRole('button', { name: 'Choose your own', exact: true }).click();
+  const names = ['Aster', 'River'];
+  for (const [index, name] of names.entries()) {
     await expect(page.getByRole('heading', { name: 'Pass the tablet along' })).toBeVisible();
     await audit(page, `setup-handoff-${name}`, ['.handoff button']);
     await page.getByRole('button', { name: "I've got it", exact: true }).click();
     await audit(page, `setup-name-${name}`, ['input[aria-label="Your name"]']);
     await page.getByRole('textbox', { name: 'Your name' }).fill(name);
     await page.getByRole('button', { name: 'Next', exact: true }).click();
+    if (index + 1 < names.length)
+      await expect(page.getByRole('heading', { name: 'Pass the tablet along' })).toBeVisible();
+  }
+  const heroes = [
+    { owner: 'Aster', element: 'fire' },
+    { owner: 'River', element: 'water' },
+    { owner: 'Aster', element: 'earth' },
+  ];
+  for (const [index, hero] of heroes.entries()) {
+    await expect(page.getByRole('heading', { name: 'Pass the tablet along' })).toBeVisible();
+    await audit(page, `setup-hero-handoff-${index + 1}`, ['.handoff button']);
+    await page.getByRole('button', { name: "I've got it", exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Pick your path' })).toBeVisible();
-    await audit(page, `setup-element-${name}`, ['.pick-card', '.setup-footer button:disabled']);
-    await page.locator('.pick-card').first().click();
-    await audit(page, `setup-selected-element-${name}`, ['.pick-card.selected']);
+    await audit(page, `setup-element-${hero.owner}`, [
+      '.pick-card',
+      '.setup-footer button:disabled',
+    ]);
+    await page.locator(`.pick-card.element-${hero.element}`).click();
+    await audit(page, `setup-selected-element-${hero.owner}`, ['.pick-card.selected']);
     await page.getByRole('button', { name: 'Next', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Pick your character' })).toBeVisible();
-    await audit(page, `setup-character-${name}`, [
+    await audit(page, `setup-character-${hero.owner}`, [
       '.character-card',
       '.setup-footer button:disabled',
     ]);
     await page.locator('.character-card:not(:disabled)').first().click();
-    await audit(page, `setup-selected-character-${name}`, ['.character-card.selected']);
+    await audit(page, `setup-selected-character-${hero.owner}`, ['.character-card.selected']);
     await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   }
   await expect(page.getByRole('heading', { name: 'The party', exact: true })).toBeVisible();
@@ -339,6 +360,8 @@ for (const viewport of [
 ]) {
   for (const largeText of ['off', 'on'] as const) {
     test(`all screens meet --tap: ${viewport.name}, ${largeText === 'on' ? 'Large' : 'Normal'} text`, async ({
+      browserName,
+      isMobile,
       page,
     }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -458,7 +481,9 @@ for (const viewport of [
         '.map-canvas',
       ]);
       await statusTooltip(page);
-      if (viewport.width === 390 && largeText === 'on') await reachableCombatActions(page);
+      if (viewport.width === 390 && largeText === 'on') {
+        await reachableCombatActions(page, browserName === 'webkit' && isMobile);
+      }
       // Only the phone has the disclosure; viewport choice is explicit, not a skipped census.
       if (viewport.width === 390) {
         await page.getByRole('button', { name: 'More', exact: true }).click();
@@ -547,8 +572,8 @@ for (const viewport of [
 
       await enterNode(page, 'act1_epilogue');
       await audit(page, 'ending-interlude', ['.interlude-scene button']);
-      await page.getByRole('button', { name: 'Read summary', exact: true }).click();
-      await expect(page.locator('.end-panel')).toContainText('The Quarry of Ba Dan');
+      await enterNode(page, 'demo_complete');
+      await expect(page.locator('.end-panel')).toContainText('Home to Ba Dan');
       await audit(page, 'ending-summary', ['.end-panel button']);
     });
   }

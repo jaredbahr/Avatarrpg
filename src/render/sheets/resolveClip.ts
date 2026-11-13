@@ -18,9 +18,12 @@ import type { ClipDef, ClipName } from '../../content/assets/clips';
  * walk falls back through its front or back pose to the side clip; a
  * heading's rest is that heading's idle, then the same; and a fighting stance
  * is the idle of a sheet that authors none (ADR 0052). A jog is asked only of
- * a sheet that has one (ADR 0095).
+ * a sheet that has one (ADR 0095). A top-down action falls back to the
+ * legacy cast or knockout.
  */
 function fallbacks(clip: ClipName): readonly ClipName[] {
+  // A top-down action not loaded (yet) is the legacy cast, or the legacy knockout (ADR 0104).
+  if (clip.includes('@')) return clip.startsWith('ko@') ? ['ko', 'hit', 'idle'] : ['cast', 'idle'];
   const [, base = '', ns = '', ew = ''] = /^([a-z]+)(North|South)?(East|West)?$/.exec(clip) ?? [];
   if (!ns && !ew)
     return clip === 'idle'

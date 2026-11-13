@@ -41,8 +41,6 @@ import { HEADINGS, headingClip } from './clips';
 import { BANDITS_G1_TRIMS } from './banditsG1';
 import { residentGrid } from './residentGrid';
 import { PARTY_G1_TRIMS } from './partyG1';
-import { WORLD_PARTY, type WorldPartyName } from './worldParty';
-import { WORLD_STYLE_TEST, type WorldStyleName } from './worldStyleTest';
 import { TOPDOWN_SHEETS, type TopdownName } from './topdownSheets';
 
 export type AssetEntry =
@@ -90,10 +88,15 @@ export type AssetEntry =
       readonly clipData?: string;
       /**
        * The per-heading ability poses of a top-down sheet (ADR 0104), as a JSON of clips by pose name
-       * and then heading, relative to the site root, whose cels live on the pages above. Nothing plays
-       * them before the top-down combat slice (T4); the legacy `cast` stands in until then.
+       * and then heading, relative to the site root, whose cels live on the pages above. Combat plays
+       * them by `actionMap`, each heading as drawn; while they load, the legacy `cast` stands in.
        */
       readonly actions?: string;
+      /**
+       * Which pose of `actions` plays: `cast` for an ability `abilities` does not list (ability id to
+       * pose), and `idle`, when set, as the idle loop in each heading (the Driller's rumble).
+       */
+      readonly actionMap?: TopdownActionMap;
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet; 40 on the top-down board. */
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
@@ -428,161 +431,67 @@ function cuttingSheet(name: string, palette: string): SheetEntry {
   };
 }
 
-/**
- * The world-style figure test (art/source/style-test-world-chars, not shipped by
- * default): Kaya, Sura, Bo and Gao redrawn in the Ba Dan painting's own
- * rendering, about 74 art px tall, with a designed six-cel walk in the four
- * diagonals (the cardinals borrow the nearest one). Shown only with
- * `?style=world` (`useWorldStyleTest`). The atlas says 80 px a tile so that the
- * oblique figure scale (1.25) lands one art px on exactly one world px: crisp
- * at every integer zoom, with no resample. Locomotion only; anything else asks
- * the idle (ADR 0003's fallback).
- */
-function worldStyleSheet(name: WorldStyleName, key: string, palette: string): SheetEntry {
-  const t = WORLD_STYLE_TEST[name];
-  const frames = (clip: string, count: number) =>
-    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
-  const drawn: Readonly<Record<Heading, string>> = {
-    east: 'walkSouthEast',
-    southEast: 'walkSouthEast',
-    south: 'walkSouthWest',
-    southWest: 'walkSouthWest',
-    west: 'walkSouthWest',
-    northWest: 'walkNorthWest',
-    north: 'walkNorthWest',
-    northEast: 'walkNorthEast',
-  };
-  const clips: Partial<Record<ClipName, ClipDef>> = {};
-  const msPerTile = {} as Record<Heading, number>;
-  HEADINGS.forEach((heading, i) => {
-    const own = drawn[heading].slice('walk'.length);
-    clips[headingClip('idle', heading)] = {
-      frames: frames(`idle${own}`, 2),
-      fps: 1,
-      loop: true,
-      frameMs: t.idleMs,
-    };
-    clips[headingClip('rest', heading)] = { frames: frames(`idle${own}`, 1), fps: 1, loop: true };
-    clips[headingClip('walk', heading)] = {
-      frames: frames(`walk${own}`, t.walkCels),
-      fps: 1000 / t.walkCelMs,
-      loop: true,
-    };
-    msPerTile[heading] = t.walkMsPerTile[i] ?? t.walkCels * t.walkCelMs;
-  });
-  return {
-    kind: 'sheet',
-    atlas: `art/units/style-test/${name}.json`,
-    pixelsPerTile: 80,
-    frameSize: { w: 128, h: 128 },
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: t.anchorY },
-    facing: 'both',
-    locomotion: {
-      headings: 8,
-      walkMsPerTile: msPerTile,
-      walkStartMs: t.walkStartCel * t.walkCelMs,
-      walkCycleMs: t.walkCels * t.walkCelMs,
-      authoredBob: true,
-    },
-    palette,
-    clips,
-  };
+export interface TopdownActionMap {
+  readonly cast: string;
+  readonly idle?: string;
+  readonly abilities?: Readonly<Record<string, string>>;
 }
 
-/**
- * Kaya, Sura and Bo in the world's rendering, phase 2a (art/source/party-world): the curated party-g1 roots restyled
- * as #317 restyled them, every heading drawn (Bo's three west-facing ones mirror his east-facing ones), and every clip
- * the party plays: idle and rest, the designed six-cel walk, the fighting stance, the hits and knockouts (from the clip
- * file, at the shipped sheets' own timing), and the bends (party-g1's shipped bend sets on these cels). 80 px a tile, so
- * the oblique figure scale puts one art px on one world px. Every clip the party plays is drawn, but
- * they draw only under `?style=world` until the owner has seen them (ADR 0097): switching the default retires the G1
- * sheets that the art tests pin, which is its own change.
- */
-/** The 192 px cels' size and foot point: the knockouts', the legacy KO's and the cast's. */
-const WIDE = { frameSize: { w: 192, h: 192 }, anchor: { x: 0.5, y: 151 / 192 } } as const;
+const HEAL = ['healing_stream', 'healing_hands', 'purifying_mist', 'life_tide'];
+const GUST = ['gust', 'cyclone', 'tornado', 'deafening_shout', 'air_shield', 'air_scooter'];
 
-function worldPartySheet(name: WorldPartyName, key: string, palette: string): SheetEntry {
-  const t = WORLD_PARTY[name];
-  const frames = (clip: string, count: number) =>
-    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
-  const clips: Partial<Record<ClipName, ClipDef>> = {
-    // The legacy clips, on the 192 px page as party-g1 packs them: the one-cel KO a non-diagonal fall asks for (the
-    // south-east knockout's last cel) and the mirrored cast non-bend abilities play (the east bend's stance, wind-up
-    // and strike).
-    ko: { frames: frames('ko', 1), fps: 1, loop: false, ...WIDE },
-    cast: { frames: frames('cast', 3), fps: 8, loop: false, ...WIDE },
-  };
-  const msPerTile = {} as Record<Heading, number>;
-  HEADINGS.forEach((heading, i) => {
-    const add = (base: HeadingClipBase, count: number, def: Omit<ClipDef, 'frames'>) => {
-      const clip = headingClip(base, heading);
-      clips[clip] = { frames: frames(clip, count), ...def };
-    };
-    add('idle', 2, { fps: 1, loop: true, frameMs: t.idleMs });
-    add('rest', 1, { fps: 1, loop: true });
-    add('walk', t.walkCels, { fps: 1000 / t.walkCelMs, loop: true });
-    add('stance', 2, { fps: 1, loop: true, frameMs: t.idleMs });
-    msPerTile[heading] = t.walkMsPerTile[i] ?? t.walkCels * t.walkCelMs;
-  });
-  // The riverside draws Kaya and Sura from this sheet too (ADR 0054): their wave and seated tea, the G1 cels carried
-  // onto this grid (not redrawn).
-  if (name === 'kaya' || name === 'sura') {
-    clips.wave = { frames: frames('wave', 2), fps: 4, loop: true };
-    clips.tea = { frames: frames('tea', 2), fps: 0.25, loop: true };
-  }
-  return {
-    kind: 'sheet',
-    atlas: `art/units/world/${name}.json`,
-    // Page 2: the knockouts, 192 px cels; their clips and the hits' arrive with the clip file.
-    atlasPages: [`art/units/world/${name}-2.json`],
-    clipData: `art/units/world/${name}-clips.json`,
-    ...(t.bend && {
-      bend: `art/units/world/${name}-bend.json`,
-      bendPages: [`art/units/world/${name}-bend-page.json`],
-    }),
-    pixelsPerTile: 80,
-    frameSize: { w: 128, h: 128 },
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: t.anchorY },
-    facing: 'both',
-    locomotion: {
-      headings: 8,
-      walkMsPerTile: msPerTile,
-      walkStartMs: t.walkStartCel * t.walkCelMs,
-      walkCycleMs: t.walkCels * t.walkCelMs,
-      authoredBob: true,
+/**
+ * The pose each top-down sheet plays for an ability (ADR 0104), by pose: the first entry is the pose any
+ * ability not listed plays, and each other pose lists its abilities. `idle` loops in place of the idle.
+ */
+const TOPDOWN_ACTIONS: Partial<
+  Record<TopdownName, { cast: string; idle?: string; by?: Record<string, readonly string[]> }>
+> = {
+  kaya: {
+    cast: 'jab',
+    by: {
+      whip: ['flame_arc'],
+      blast: ['fire_blast', 'dragon_breath', 'lightning_storm'],
+      stomp: ['fire_step', 'fire_wall', 'heat_shield'],
     },
-    palette,
-    clips,
-  };
-}
-
-const WORLD_PARTY_KEYS: Readonly<Record<string, readonly [WorldPartyName, string]>> = {
-  'unit.fire.kaya': ['kaya', 'fire'],
-  'unit.water.sura': ['sura', 'water'],
-  'unit.earth.bo': ['bo', 'earth'],
+  },
+  tenzo: {
+    cast: 'attack',
+    by: { blast: ['fire_blast', 'flame_arc', 'dragon_breath', 'lightning_storm', 'fire_wall'] },
+  },
+  nilak: { cast: 'attack', by: { heal: HEAL } },
+  sura: {
+    cast: 'attack',
+    by: {
+      ice: ['ice_path', 'ice_spikes', 'ice_shield', 'tidal_wave', 'octopus_form'],
+      heal: HEAL,
+    },
+  },
+  bo: {
+    cast: 'attack',
+    by: {
+      wall: ['earth_wall', 'shockwave', 'raise_rubble', 'mudslide', 'fissure'],
+      stance: ['stone_stance', 'metal_armor', 'seismic_sense'],
+    },
+  },
+  linmei: {
+    cast: 'attack',
+    by: { throw: ['rock_throw', 'boulder', 'metal_cable', 'metalbending'] },
+  },
+  nima: { cast: 'attack', by: { gust: GUST } },
+  jinu: { cast: 'attack', by: { gust: GUST } },
+  riko: { cast: 'attack', by: { block: ['chi_block', 'pressure_points'] } },
+  wen: { cast: 'attack', by: { spark: ['gauntlet_spark', 'electrified_glove', 'shock_mine'] } },
+  deserter: { cast: 'attack', by: { throw: ['oil_flask', 'torch_toss'] } },
+  driller: { cast: 'slam', idle: 'rumble' },
 };
-const WORLD_STYLE_KEYS: Readonly<Record<string, readonly [WorldStyleName, string]>> = {
-  'npc.shopkeeper': ['gao', 'earth'],
-};
-let worldStyle: Readonly<Record<string, AssetEntry>> | undefined;
 
-/**
- * `?style=world`: draw the world-style figures instead of the shipped sheets (a comparison, not yet the default): the
- * party's phase 2a sheets (ADR 0097) and #317's Gao.
- */
-export function useWorldStyleTest(): void {
-  worldStyle = Object.fromEntries([
-    ...Object.entries(WORLD_PARTY_KEYS).map(([key, [name, palette]]) => [
-      key,
-      worldPartySheet(name, key, palette),
-    ]),
-    ...Object.entries(WORLD_STYLE_KEYS).map(([key, [name, palette]]) => [
-      key,
-      worldStyleSheet(name, key, palette),
-    ]),
-  ]);
+/** A sheet's `actionMap`, from `TOPDOWN_ACTIONS` (its own `attack` for a sheet not listed there). */
+function topdownActionMap(name: TopdownName): TopdownActionMap {
+  const { by = {}, ...rest } = TOPDOWN_ACTIONS[name] ?? { cast: 'attack' };
+  const abilities: Record<string, string> = {};
+  for (const [pose, ids] of Object.entries(by)) for (const id of ids) abilities[id] = pose;
+  return { ...rest, abilities };
 }
 
 /**
@@ -591,9 +500,10 @@ export function useWorldStyleTest(): void {
  * top-down tile, PixelLab's eight drawn headings (never mirrored) and eight-way locomotion. Idle, walk
  * and rest share the sheet's frame and foot anchor; the idle plays the prototype's calm cels there and
  * back. The hits (eight headings) and knockouts (the four diagonals the clip vocabulary asks for) arrive
- * with the clip file; every heading of every ability, and all eight knockouts, are in the actions file
- * for the combat slice (T4). The legacy mirrored `cast` is the main ability's east heading. A figure the
- * prototype never walked (Mira, Hanru) holds its idle's first cel as its walk; the Driller walks on its tread loop (T5).
+ * with the clip file; every heading of every ability, and all eight knockouts, are in the actions file,
+ * which combat plays per heading and ability by `actionMap`. The legacy mirrored `cast` (the main
+ * ability's east heading) stands in while it loads. A figure the prototype never walked (Mira, Hanru)
+ * holds its idle's first cel as its walk; the Driller walks on its tread loop (T5).
  */
 export function topdownSheet(name: TopdownName, key: string, palette: string): SheetEntry {
   const t = TOPDOWN_SHEETS[name];
@@ -642,7 +552,10 @@ export function topdownSheet(name: TopdownName, key: string, palette: string): S
       ),
     }),
     ...(t.clipData && { clipData: `art/topdown/${name}-clips.json` }),
-    ...(t.actions && { actions: `art/topdown/${name}-actions.json` }),
+    ...(t.actions && {
+      actions: `art/topdown/${name}-actions.json`,
+      actionMap: topdownActionMap(name),
+    }),
     pixelsPerTile: 40,
     frameSize: t.frame,
     footprint: { w: t.footprint, h: t.footprint },
@@ -691,6 +604,9 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'npc.household': ['household', 'earth'],
   'npc.hanru': ['hanru', 'nonbender'],
   'npc.guard': ['guard', 'earth'],
+  // T10: Dema, the road keeper, and Sen, the tea keeper, in their own clothes.
+  'npc.dema': ['dema', 'earth'],
+  'npc.sen': ['sen', 'earth'],
 };
 
 /**
@@ -725,9 +641,9 @@ function topdownObject(key: string, size: { readonly w: number; readonly h: numb
 let topDownStyle: Readonly<Record<string, AssetEntry>> | undefined;
 
 /**
- * `?style=topdown`: the top-down PixelLab direction (ADR 0104), beside `?style=world`. Phase T2 hangs
- * the `topdownSheet` figures on it (the party, the forest bandits, the Driller and the Ba Dan residents);
- * T3 onwards the maps; it switches to the default at T6.
+ * The top-down PixelLab figures (ADR 0104), laid over `ASSETS`: the game's only look since T7, so
+ * `main.ts` turns it on at boot. `ASSETS` still holds the retired G1 sheets the art and animation
+ * tests pin until they are migrated.
  */
 export function useTopDownStyle(): void {
   topDownStyle = Object.fromEntries([
@@ -739,7 +655,7 @@ export function useTopDownStyle(): void {
   ]);
 }
 
-/** Whether `?style=topdown` is on for this page (`useTopDownStyle`). */
+/** Whether the top-down figures are on (`useTopDownStyle`). */
 export function topDownStyleActive(): boolean {
   return topDownStyle !== undefined;
 }
@@ -812,10 +728,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
-  // The residents' G sheets (issue #284). Dema and the shrine figure share Mira's,
-  // and Sen Gao's, as they shared the old images (owner decision pending).
+  // The residents' G sheets (issue #284). The shrine figure shares Mira's.
   'npc.elder': residentGSheet('mira', 'npc.elder', 'neutral'),
   'npc.shopkeeper': residentGSheet('gao', 'npc.shopkeeper', 'earth'),
+  // Dema and Sen have their own top-down sheets (T10). A G sheet's cels carry its own key, so the oblique
+  // look, until T7 deletes it, draws them as the painted elder and shopkeeper, as they were before #284.
+  'npc.dema': painter('villager', 'earth', 'elder'),
+  'npc.sen': painter('villager', 'earth', 'shopkeeper'),
   'world.turtle_ducks': image('art/world/turtle-ducks-nest.webp', 'earth'),
   'world.runoff_marker': image('art/world/runoff-marker.png', 'neutral'),
   'world.tea_station': image('art/props/tea-station.png', 'earth'),
@@ -845,7 +764,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.enemy.quarrybender': image('art/portraits/enemy.quarrybender.png', 'earth'),
   'portrait.enemy.crossbow': image('art/portraits/enemy.crossbow.png', 'enemy'),
   'portrait.enemy.thug': image('art/portraits/enemy.thug.png', 'enemy'),
-  'portrait.enemy.deserter': image('art/portraits/enemy.deserter.webp', 'fire'),
+  'portrait.enemy.deserter': image('art/portraits/enemy.deserter.png', 'fire'),
   'portrait.enemy.driller': image('art/portraits/enemy.grumbler.png', 'enemy'),
   'portrait.kaya': image('art/portraits/kaya.png', 'fire'),
   'portrait.tenzo': image('art/portraits/tenzo.png', 'fire'),
@@ -858,13 +777,16 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.riko': image('art/portraits/riko.png', 'nonbender'),
   'portrait.wen': image('art/portraits/wen.png', 'nonbender'),
 
-  'portrait.narrator': painter('portrait', 'neutral', 'narrator'),
+  'portrait.narrator': image('art/portraits/narrator.png', 'neutral'),
   'portrait.mira': image('art/portraits/mira.png', 'earth'),
   'portrait.gao': image('art/portraits/gao.png', 'earth'),
+  'portrait.hanru': image('art/portraits/hanru.png', 'nonbender'),
   'portrait.pella': image('art/portraits/pella.png', 'air'),
   'portrait.dorin': image('art/portraits/dorin.png', 'earth'),
   'portrait.ruon': image('art/portraits/ruon.png', 'neutral'),
   'portrait.jin': image('art/portraits/jin.png', 'nonbender'),
+  'portrait.dema': image('art/portraits/dema.png', 'neutral'),
+  'portrait.sen': image('art/portraits/sen.png', 'neutral'),
 
   /* ------------------------------------------------------------ Probe */
   /*
@@ -905,7 +827,7 @@ export function sheetLocomotion(key: string | undefined): LocomotionDef | undefi
  * manifest edit, while overriding one still can.
  */
 export function resolveAsset(key: string): AssetEntry {
-  const explicit = topDownStyle?.[key] ?? worldStyle?.[key] ?? ASSETS[key];
+  const explicit = topDownStyle?.[key] ?? ASSETS[key];
   if (explicit) return explicit;
 
   if (key.startsWith('fx.')) {

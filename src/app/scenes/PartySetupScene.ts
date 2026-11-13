@@ -14,17 +14,23 @@
  */
 
 import type { App, Scene } from '../App';
-import type { CharacterDef, ElementId } from '../../core/types';
+import type { CharacterDef, Difficulty, ElementId } from '../../core/types';
+import { DEFAULT_DIFFICULTY } from '../../core/rules/difficulty';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { defaultPlayerName } from '../session';
+import { DIFFICULTY_CHOICES, difficultyHint } from '../ui/difficultyText';
 import { loadLastTitleArt } from '../storage/localSaves';
 import { titleArtById, type TitleArtDef } from '../titleArt';
 
 type Step = 'count' | 'handoff' | 'name' | 'element' | 'character' | 'summary';
 
-interface Draft {
+interface PersonDraft {
   name: string;
+}
+
+interface HeroDraft {
+  ownerIndex: number;
   element: ElementId | null;
   characterId: string | null;
 }
@@ -34,11 +40,20 @@ export class PartySetupScene implements Scene {
 
   private host: HTMLElement | null = null;
   private step: Step = 'count';
-  private playerCount = 2;
+  private playerCount = 1;
   private current = 0;
-  private drafts: Draft[] = [];
+  private phase: 'names' | 'heroes' = 'names';
+  private people: PersonDraft[] = [];
+  private heroes: HeroDraft[] = [];
+  private resumeHeroIndex: number | null = null;
+  private difficulty: Difficulty = DEFAULT_DIFFICULTY;
 
-  constructor(private app: App) {}
+  constructor(
+    private app: App,
+    playerCount = 1,
+  ) {
+    this.playerCount = Math.min(6, Math.max(1, Math.round(playerCount) || 1));
+  }
 
   mount(host: HTMLElement): void {
     this.host = host;
@@ -61,7 +76,7 @@ export class PartySetupScene implements Scene {
 
   private takenCharacterIds(): Set<string> {
     return new Set(
-      this.drafts
+      this.heroes
         .map((d, index) => (index === this.current ? null : d.characterId))
         .filter((id): id is string => id !== null),
     );
@@ -73,7 +88,9 @@ export class PartySetupScene implements Scene {
     clear(host);
 
     // The backdrop takes the colour of the path being chosen.
-    this.app.setMood(this.drafts[this.current]?.element ?? 'neutral');
+    this.app.setMood(
+      this.phase === 'heroes' ? (this.heroes[this.current]?.element ?? 'neutral') : 'neutral',
+    );
 
     const scene = el('div', { class: 'scene setup-scene' });
     const panel = el('div', { class: 'panel setup-panel scroll' });
@@ -156,7 +173,7 @@ export class PartySetupScene implements Scene {
   /* ---------------------------------------------------------------- */
 
   private renderCount(panel: HTMLElement): void {
-    panel.appendChild(el('h1', { text: 'Who is playing?' }));
+    panel.appendChild(el('h1', { text: 'Choose your party' }));
     panel.appendChild(
       el('p', {
         class: 'muted',
@@ -185,37 +202,108 @@ export class PartySetupScene implements Scene {
         class: 'muted tiny',
         text:
           this.playerCount === 1
-            ? 'Playing alone: hand-off cards are skipped, and fights are scaled down to match.'
-            : `${this.playerCount} players: each fight brings enough enemies to be a real fight.`,
+            ? 'You own all three heroes. Combat hand-offs are skipped.'
+            : this.playerCount <= 3
+              ? `${this.playerCount} people share three heroes and the story rotation. Hero ownership cycles in order.`
+              : `${this.playerCount} people share three heroes and the story rotation. The first three own one hero each.`,
+      }),
+    );
+
+    panel.appendChild(el('h2', { class: 'setup-subhead', text: 'How tough are the fights?' }));
+    const levels = el('div', {
+      class: 'row row-wrap count-row',
+      attrs: { role: 'radiogroup', 'aria-label': 'Difficulty' },
+    });
+    for (const choice of DIFFICULTY_CHOICES) {
+      const active = choice.value === this.difficulty;
+      const node = button(
+        choice.label,
+        () => {
+          this.difficulty = choice.value;
+          this.render();
+        },
+        { class: active ? 'btn-primary btn-difficulty' : 'btn-difficulty' },
+      );
+      node.setAttribute('role', 'radio');
+      node.setAttribute('aria-checked', String(active));
+      levels.appendChild(node);
+    }
+    panel.appendChild(levels);
+    panel.appendChild(
+      el('p', {
+        class: 'muted tiny',
+        text: `${difficultyHint(this.difficulty)} You can change it in Settings.`,
       }),
     );
 
     panel.appendChild(
       el(
         'div',
-        { class: 'row setup-footer' },
+        { class: 'row row-wrap setup-footer' },
         button('Back', () => this.app.start(), { class: 'btn-ghost' }),
         el('div', { class: 'spacer' }),
-        button('Continue', () => this.startDrafting(), { class: 'btn-primary btn-large' }),
+        button('Choose your own', () => this.startDrafting(), { class: 'btn-ghost btn-large' }),
+        button('Start with the suggested party', () => this.beginSuggested(), {
+          class: 'btn-primary btn-large',
+        }),
       ),
     );
   }
 
   private startDrafting(): void {
-    this.drafts = Array.from({ length: this.playerCount }, (_, index) => ({
+    this.people = Array.from({ length: this.playerCount }, (_, index) => ({
       name: defaultPlayerName(index),
+    }));
+    this.heroes = Array.from({ length: 3 }, (_, index) => ({
+      ownerIndex: index % this.playerCount,
       element: null,
       characterId: null,
     }));
+    this.phase = 'names';
+    this.resumeHeroIndex = null;
     this.current = 0;
     this.step = this.playerCount > 1 ? 'handoff' : 'name';
     this.render();
   }
 
+  private beginSuggested(): void {
+    const participants = Array.from({ length: this.playerCount }, (_, index) => ({
+      id: `player-${index + 1}`,
+      name: defaultPlayerName(index),
+    }));
+    const characterIds = ['kaya', 'sura', 'bo'];
+    const players = characterIds.map((_, index) => {
+      const owner = participants[index % participants.length]!;
+      return { name: owner.name, unitId: '', participantId: owner.id };
+    });
+    this.app.newGame(
+      players,
+      characterIds.map((characterId) => ({ characterId })),
+      undefined,
+      participants,
+      this.difficulty,
+    );
+  }
+
+  private activePersonIndex(): number {
+    return this.phase === 'heroes' ? (this.heroes[this.current]?.ownerIndex ?? 0) : this.current;
+  }
+
+  private activeName(): string {
+    const index = this.activePersonIndex();
+    return this.people[index]?.name ?? defaultPlayerName(index);
+  }
+
   private renderHandoff(panel: HTMLElement): void {
     panel.classList.add('handoff');
     panel.appendChild(
-      el('p', { class: 'muted', text: `Player ${this.current + 1} of ${this.playerCount}` }),
+      el('p', {
+        class: 'muted',
+        text:
+          this.phase === 'heroes'
+            ? `Hero ${this.current + 1} of 3 · ${this.activeName()}`
+            : `Player ${this.current + 1} of ${this.playerCount}`,
+      }),
     );
     panel.appendChild(el('h1', { text: 'Pass the tablet along' }));
     panel.appendChild(el('p', { text: 'Next person: tap when you have it.' }));
@@ -223,16 +311,17 @@ export class PartySetupScene implements Scene {
       button(
         "I've got it",
         () => {
-          this.step = 'name';
+          this.step = this.phase === 'heroes' ? 'element' : 'name';
           this.render();
         },
         { class: 'btn-primary btn-large' },
       ),
     );
+    panel.appendChild(button('Back', () => this.goBack(), { class: 'btn-ghost' }));
   }
 
   private renderName(panel: HTMLElement): void {
-    const draft = this.drafts[this.current];
+    const draft = this.people[this.current];
     if (!draft) return;
 
     panel.appendChild(
@@ -249,7 +338,10 @@ export class PartySetupScene implements Scene {
         draft.name = (event.target as HTMLInputElement).value;
       },
       onKeyDown: (event) => {
-        if (event.key === 'Enter' && !event.isComposing) this.finishName(input);
+        if (event.key === 'Enter' && !event.isComposing) {
+          event.preventDefault();
+          this.finishName(input);
+        }
       },
     });
     panel.appendChild(el('div', { class: 'stack' }, input));
@@ -271,19 +363,33 @@ export class PartySetupScene implements Scene {
   }
 
   private finishName(input: HTMLInputElement): void {
-    const draft = this.drafts[this.current];
+    const draft = this.people[this.current];
     if (!draft) return;
     const typed = input.value.trim();
     draft.name = typed.length > 0 ? typed : defaultPlayerName(this.current);
-    this.step = 'element';
+    if (this.resumeHeroIndex !== null) {
+      this.phase = 'heroes';
+      this.current = this.resumeHeroIndex;
+      this.resumeHeroIndex = null;
+      this.step = 'element';
+    } else if (this.current + 1 < this.playerCount) {
+      this.current += 1;
+      this.step = 'handoff';
+    } else {
+      this.phase = 'heroes';
+      this.current = 0;
+      this.step = this.playerCount > 1 ? 'handoff' : 'element';
+    }
     this.render();
   }
 
   private renderElement(panel: HTMLElement): void {
-    const draft = this.drafts[this.current];
+    const draft = this.heroes[this.current];
     if (!draft) return;
 
-    panel.appendChild(el('p', { class: 'muted', text: draft.name }));
+    panel.appendChild(
+      el('p', { class: 'muted', text: `Hero ${this.current + 1} of 3 · ${this.activeName()}` }),
+    );
     panel.appendChild(el('h1', { text: 'Pick your path' }));
 
     const grid = el('div', { class: 'card-grid' });
@@ -340,7 +446,7 @@ export class PartySetupScene implements Scene {
   }
 
   private renderCharacter(panel: HTMLElement): void {
-    const draft = this.drafts[this.current];
+    const draft = this.heroes[this.current];
     if (!draft?.element) return;
 
     const taken = this.takenCharacterIds();
@@ -348,7 +454,9 @@ export class PartySetupScene implements Scene {
       (c) => c.element === draft.element,
     );
 
-    panel.appendChild(el('p', { class: 'muted', text: draft.name }));
+    panel.appendChild(
+      el('p', { class: 'muted', text: `Hero ${this.current + 1} of 3 · ${this.activeName()}` }),
+    );
     panel.appendChild(el('h1', { text: 'Pick your character' }));
 
     const grid = el('div', { class: 'card-grid' });
@@ -386,7 +494,7 @@ export class PartySetupScene implements Scene {
     character: CharacterDef,
     selected: boolean,
     taken: boolean,
-    draft: Draft,
+    draft: HeroDraft,
   ): HTMLElement {
     const card = el(
       'button',
@@ -416,9 +524,9 @@ export class PartySetupScene implements Scene {
   }
 
   private confirmPlayer(): void {
-    if (this.current + 1 < this.playerCount) {
+    if (this.current + 1 < this.heroes.length) {
       this.current += 1;
-      this.step = 'handoff';
+      this.step = this.playerCount > 1 ? 'handoff' : 'element';
     } else {
       this.step = 'summary';
     }
@@ -431,26 +539,48 @@ export class PartySetupScene implements Scene {
         this.step = 'element';
         break;
       case 'element':
+        this.resumeHeroIndex = this.current;
+        this.current = this.heroes[this.current]?.ownerIndex ?? 0;
+        this.phase = 'names';
         this.step = 'name';
         break;
       case 'name':
-        if (this.current > 0) {
+        if (this.resumeHeroIndex !== null) {
+          if (this.resumeHeroIndex > 0) {
+            this.phase = 'heroes';
+            this.current = this.resumeHeroIndex - 1;
+            this.step = 'character';
+          } else {
+            this.phase = 'names';
+            this.current = this.playerCount - 1;
+            this.step = 'name';
+          }
+          this.resumeHeroIndex = null;
+        } else if (this.current > 0) {
           this.current -= 1;
-          this.step = 'character';
+          this.step = 'name';
         } else {
           this.step = 'count';
         }
         break;
       case 'handoff':
-        if (this.current > 0) {
+        if (this.phase === 'heroes' && this.current > 0) {
           this.current -= 1;
           this.step = 'character';
+        } else if (this.phase === 'heroes') {
+          this.phase = 'names';
+          this.current = this.playerCount - 1;
+          this.step = 'name';
+        } else if (this.current > 0) {
+          this.current -= 1;
+          this.step = 'name';
         } else {
           this.step = 'count';
         }
         break;
       case 'summary':
-        this.current = this.playerCount - 1;
+        this.phase = 'heroes';
+        this.current = this.heroes.length - 1;
         this.step = 'character';
         break;
       default:
@@ -467,7 +597,7 @@ export class PartySetupScene implements Scene {
     );
 
     const list = el('div', { class: 'card-grid' });
-    for (const draft of this.drafts) {
+    for (const draft of this.heroes) {
       const character = draft.characterId
         ? this.app.content.characters.get(draft.characterId)
         : undefined;
@@ -481,13 +611,22 @@ export class PartySetupScene implements Scene {
             'div',
             { class: 'character-copy' },
             el('h3', { text: character.name }),
-            el('p', { class: 'tagline', text: draft.name }),
+            el('p', {
+              class: 'tagline',
+              text: this.people[draft.ownerIndex]?.name ?? defaultPlayerName(draft.ownerIndex),
+            }),
             el('span', { class: 'chip element-chip', text: character.element }),
           ),
         ),
       );
     }
     panel.appendChild(list);
+    panel.appendChild(
+      el('p', {
+        class: 'muted tiny',
+        text: `${this.playerCount} people share the story rotation. Hero owners: ${this.heroes.map((hero) => this.people[hero.ownerIndex]?.name ?? defaultPlayerName(hero.ownerIndex)).join(', ')}.`,
+      }),
+    );
 
     panel.appendChild(
       el(
@@ -501,16 +640,24 @@ export class PartySetupScene implements Scene {
   }
 
   private begin(): void {
-    const players = this.drafts.map((draft) => ({ name: draft.name, unitId: '' }));
-    const slots = this.drafts
-      .filter((draft): draft is Draft & { characterId: string } => draft.characterId !== null)
+    const participants = this.people.map((person, index) => ({
+      id: `player-${index + 1}`,
+      name: person.name,
+    }));
+    const players = this.heroes.map((hero) => ({
+      name: this.people[hero.ownerIndex]?.name ?? defaultPlayerName(hero.ownerIndex),
+      unitId: '',
+      participantId: participants[hero.ownerIndex]?.id,
+    }));
+    const slots = this.heroes
+      .filter((draft): draft is HeroDraft & { characterId: string } => draft.characterId !== null)
       .map((draft) => ({ characterId: draft.characterId }));
 
-    if (slots.length !== this.drafts.length) {
+    if (slots.length !== this.heroes.length) {
       this.app.toasts.show('Somebody still needs to pick a character.', 'warn');
       return;
     }
 
-    this.app.newGame(players, slots);
+    this.app.newGame(players, slots, undefined, participants, this.difficulty);
   }
 }

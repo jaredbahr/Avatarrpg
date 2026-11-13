@@ -192,6 +192,9 @@ function assertSemanticAcceptance(
     case 'wait':
       accepted = hasEventType(result, ['phaseChanged']);
       break;
+    case 'setDifficulty':
+      accepted = result.state.difficulty === command.difficulty;
+      break;
   }
   if (!accepted) {
     throw new Error(`${context}: no semantic acceptance proof for ${JSON.stringify(command)}`);

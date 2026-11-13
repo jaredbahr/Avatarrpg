@@ -489,6 +489,11 @@ export interface EncounterDef {
   readonly variants: readonly EncounterVariant[];
   /** Area obscurement (sandstorm); weather is derived from this and the round. */
   readonly weather?: EncounterWeather;
+  /**
+   * What Hard does differently in this fight: these fields replace the shared
+   * Hard profile's (`rules/difficulty.ts`). Story never reads it.
+   */
+  readonly hard?: Partial<DifficultyProfile>;
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -741,6 +746,8 @@ export interface BackgroundRole {
 
 export interface MapExit {
   readonly pos: Vec2;
+  /** Direction of the top-down map marker at the route's mouth. */
+  readonly direction?: MapEdgeSide;
   /**
    * Multi-tile entrance (M2): the leader triggers the exit from any of these
    * cells. Absent means the single `pos` tile. When present it must contain
@@ -814,8 +821,14 @@ export interface MapDef {
    */
   readonly restSpots?: readonly { readonly pos: Vec2; readonly label: string }[];
   readonly objective?: string;
-  /** First matching objective wins; the plain objective is the fallback. */
-  readonly objectiveVariants?: readonly { readonly when: Condition; readonly text: string }[];
+  /** Unique authored npc or exit destination for the map fallback objective. */
+  readonly objectiveTargetId?: string;
+  /** First matching objective wins; its target also replaces the plain objective target. */
+  readonly objectiveVariants?: readonly {
+    readonly when: Condition;
+    readonly text: string;
+    readonly objectiveTargetId?: string | null;
+  }[];
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
   /**
@@ -1182,13 +1195,13 @@ export type StoryNode =
       readonly kind: 'explore';
       readonly mapId: string;
       readonly objective: string;
-      /** Optional structured target for objective-aware map guidance. */
-      readonly objectiveNpcId?: string;
+      /** Unique authored npc or exit destination for objective guidance. */
+      readonly objectiveTargetId?: string;
       /** First matching objective text/target wins after the node is revisited. */
       readonly objectiveVariants?: readonly {
         readonly when: Condition;
         readonly text: string;
-        readonly objectiveNpcId?: string | null;
+        readonly objectiveTargetId?: string | null;
       }[];
       /** Entered when the player reaches the map's exit marker. */
       readonly next: string;
@@ -1224,7 +1237,18 @@ export type StoryNode =
       readonly teaser: string;
       /** Explore node offered after this chapter's summary; absent for a terminal ending. */
       readonly next?: string;
+      /** The demo's closing card: the party, the choices it made, and a way to play again. */
+      readonly recap?: EndRecap;
     };
+
+/** What an ending card says about the play-through it closes. */
+export interface EndRecap {
+  /** The card's kicker, above the title ("Demo complete"). */
+  readonly label: string;
+  readonly thanks: string;
+  /** Every line whose condition holds is listed, in order. */
+  readonly choices: readonly { readonly when: Condition; readonly text: string }[];
+}
 
 export interface StoryState {
   readonly nodeId: string | null;
@@ -1268,6 +1292,12 @@ export interface BattleState {
   readonly props: readonly PropInstance[];
   /** Incremented for every unit created, so ids never collide across a battle. */
   readonly nextUnitSerial: number;
+  /**
+   * The RNG state the battle was built from (#620). The party, flags and story
+   * do not change while a fight runs, so this alone rebuilds the opening board
+   * exactly for "Try again". Null on a save written before it existed.
+   */
+  readonly openingRng: RngState | null;
 }
 
 /**
@@ -1320,12 +1350,35 @@ export const RUNOFF_STATES = ['unresolved', 'inspected', 'repaired'] as const;
 
 export type RunoffState = (typeof RUNOFF_STATES)[number];
 
+/**
+ * How hard the table asked the fights to be (ADR 0110). Story is the forgiving
+ * default; Hard is for players who want the fights to push back. Only
+ * `rules/difficulty.ts` reads it.
+ */
+export const DIFFICULTIES = ['story', 'hard'] as const;
+
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** What a difficulty does on top of the table scaling (`rules/difficulty.ts`). */
+export interface DifficultyProfile {
+  /** Multiplies every enemy's max HP after the table scaling. */
+  readonly hp: number;
+  /** Multiplies a boss's max HP after the table scaling, instead of `hp`. */
+  readonly bossHp: number;
+  /** Added to every enemy's power. */
+  readonly power: number;
+  /** Added to every enemy's max AP. */
+  readonly ap: number;
+}
+
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */
   readonly version: number;
   readonly seed: number;
   readonly rng: RngState;
   readonly screen: Screen;
+  /** Chosen at party setup, changeable in Settings; old saves load as `story`. */
+  readonly difficulty: Difficulty;
   /** The canonical party. HP and XP persist between battles. */
   readonly party: readonly Unit[];
   readonly battle: BattleState | null;
@@ -1352,6 +1405,11 @@ export interface GameState {
   };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];
+  /**
+   * Combo rule ids this save has seen fire (#622), in discovery order. Until a
+   * rule is here the confirm step only hints at it; afterwards it is named.
+   */
+  readonly discoveredCombos: readonly string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -1374,10 +1432,12 @@ export type Command =
   | { readonly type: 'endTurn'; readonly unitId: string }
   | { readonly type: 'runAiTurn' }
   | { readonly type: 'resolveBattle' }
+  | { readonly type: 'retryBattle' }
   | { readonly type: 'chooseLevelUp'; readonly unitId: string; readonly abilityId: string }
   | { readonly type: 'chooseDiscipline'; readonly unitId: string; readonly disciplineId: string }
   | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> }
-  | { readonly type: 'wait'; readonly until: DayPhase };
+  | { readonly type: 'wait'; readonly until: DayPhase }
+  | { readonly type: 'setDifficulty'; readonly difficulty: Difficulty };
 
 export type GameEvent =
   | { readonly type: 'message'; readonly text: string }
@@ -1441,6 +1501,8 @@ export type GameEvent =
       readonly from: SurfaceId | null;
       readonly to: SurfaceId | null;
       readonly label: string;
+      /** The combo rule (or 'paint', 'spread', 'expire') behind the change. */
+      readonly comboId?: string;
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
@@ -1509,6 +1571,8 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
+  /** A combo rule fired for the first time in this save (#622). */
+  | { readonly type: 'comboDiscovered'; readonly comboId: string }
   | { readonly type: 'screenChanged'; readonly screen: Screen }
   | {
       readonly type: 'phaseChanged';

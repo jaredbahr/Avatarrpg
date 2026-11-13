@@ -15,6 +15,8 @@ levels up across a branching story.
 
 ## Quick start
 
+Use Node.js 22.19 or newer for the project tools.
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173
@@ -33,6 +35,7 @@ Other scripts:
 | `npm run docs:story`          | regenerate the [story route diagrams](docs/story/README.md) from source content   |
 | `npm run build`               | production build into `dist/` (includes service worker + manifest)                |
 | `npm run e2e`                 | Playwright touch-mode end-to-end suite against the built site                     |
+| `npm run lighthouse`          | informational mobile Lighthouse report with HTML and JSON output                  |
 | `npm run lint:fix`            | autofix lint + layering violations where possible                                 |
 | `npm run format`              | Prettier over the repo                                                            |
 

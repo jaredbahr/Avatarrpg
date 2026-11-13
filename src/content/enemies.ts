@@ -22,7 +22,9 @@ import type { EnemyDef } from '../core/types';
 export const ENEMIES: readonly EnemyDef[] = [
   {
     id: 'bandit_thug',
-    name: 'Bandit',
+    // The story calls them quarry workers (#630); the id keeps its old name.
+    name: 'Quarry Worker',
+    shortName: 'Worker',
     element: 'nonbender',
     size: 1,
     stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
@@ -48,7 +50,8 @@ export const ENEMIES: readonly EnemyDef[] = [
   },
   {
     id: 'bandit_bruiser',
-    name: 'Bruiser',
+    name: 'Quarry Hauler',
+    shortName: 'Hauler',
     element: 'nonbender',
     size: 1,
     stats: { maxHp: 42, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
@@ -64,7 +67,17 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Bender',
     element: 'earth',
     size: 1,
-    stats: { maxHp: 36, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
+    /*
+     * Two AP, so one throw and rubble, or two throws, a turn (#632). It borrows the
+     * heroes' one-AP Rock Throw, so at four AP it was the last uncapped enemy
+     * attack, the bug `club_swing` documents: four stones a turn, about 35 damage
+     * onto one hero between two of their turns. On the bluffed gate that took
+     * the waterbender down by round 2 in 28 of 30 trials, and at a four-player
+     * quarry floor, where the reinforcement draws the party's fire and the bender
+     * lives longer, it put 2.1 of the party on the floor and dragged the boss
+     * fight to 11 rounds.
+     */
+    stats: { maxHp: 36, maxAp: 2, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
     abilities: ['rock_throw', 'raise_rubble'],
     ai: 'cautious',
     xp: 150,
@@ -78,7 +91,13 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Deserter',
     element: 'fire',
     size: 1,
-    stats: { maxHp: 34, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
+    /*
+     * Three AP: a blast or the oil flask, plus the torch (#632). At four he
+     * opened with two Fire Blasts into a party still bunched at the gate, about
+     * 34 damage before most of it had acted. The oil and the torch are the
+     * lesson; the double blast was only a spike.
+     */
+    stats: { maxHp: 34, maxAp: 3, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['fire_blast', 'oil_flask', 'torch_toss'],
     ai: 'cautious',
     xp: 200,
@@ -98,8 +117,16 @@ export const ENEMIES: readonly EnemyDef[] = [
      * it still wins every simulated trial, in about four rounds, keeping
      * 80 / 58 / 70% at one, three and six players
      * (docs/proposals/early-fight-difficulty.md; Jared, 2026-10-03).
+     *
+     * The blade alone is back down, 50 -> 32 (Jared, 2026-11-13: "Trim it").
+     * A scripted bot with no thinking time took four rounds and 5.75 minutes
+     * here, and a table thinks between moves. Three players plus Ruon face
+     * three blades, so the blade is most of the fight's HP; at 32 the sim's
+     * three-player fight drops from 3.7 rounds and 21 turns to 3.3 and 17. The
+     * crossbow keeps its 39 because the Driller's traded-Ruon variant uses it,
+     * and nothing else fields a blade, so no other fight moves.
      */
-    stats: { maxHp: 50, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
+    stats: { maxHp: 32, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['merc_blade'],
     ai: 'aggressive',
     xp: 150,
@@ -136,18 +163,26 @@ export const ENEMIES: readonly EnemyDef[] = [
   },
   {
     id: 'grumbler',
-    name: 'Grumbler',
+    // The machine is what the party fights; Grumbler is the man inside (#630).
+    name: 'The Driller',
+    shortName: 'Driller',
     element: 'earth',
     size: 2,
     /* Option A restores square-footprint pressure through mobility and
-     * endurance without increasing any individual hit (ADR 0070). */
-    stats: { maxHp: 130, maxAp: 5, maxMove: 4, power: 7, defense: 5, speed: 4, focus: 5 },
+     * endurance without increasing any individual hit (ADR 0070).
+     *
+     * 130 -> 80 HP (#632): no fight should run past about six minutes, and at
+     * 130 a three-player party took 8.5 rounds (28 turns) to bring it down,
+     * past six minutes once people think between moves. At 80 it is about 5.5
+     * rounds and 20 turns at three players, about 6 at four, and still wins
+     * every simulated trial. `rules/difficulty.ts` still grows it with the table. */
+    stats: { maxHp: 80, maxAp: 5, maxMove: 4, power: 7, defense: 5, speed: 4, focus: 5 },
     abilities: ['driller_slam', 'driller_debris', 'driller_spray', 'driller_churn', 'raise_rubble'],
     ai: 'boss',
     xp: 360,
     sprite: 'unit.enemy.driller',
     description:
-      'A quartermaster at the controls of a four-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
+      'Grumbler, the quarry quartermaster, at the controls of a four-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
   },
 
   /* --------------------------------------------------------------------- */

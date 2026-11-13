@@ -328,10 +328,8 @@ export function generateQuarryCheckpoints(custody: QuarryCustody): QuarryCheckpo
   walk({ x: 17, y: 5 });
   story();
   fight('enc_grumbler');
-  if (state.screen === 'ended' && state.story.nodeId === 'act1_epilogue') {
-    // The end summary's Continue exploring control enters its authored next node.
-    issue({ type: 'enterNode', nodeId: 'quarry_after_explore' });
-  }
+  // The workers-are-free beat reads through to the walk home on the quarry floor.
+  if (state.story.nodeId === 'act1_epilogue') story();
   const afterDriller = checkpoint('afterDriller');
   return { gate, afterDriller };
 }

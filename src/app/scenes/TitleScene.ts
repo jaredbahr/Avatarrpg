@@ -94,7 +94,7 @@ export class TitleScene implements Scene {
       button('New game', () => this.app.goToSetup(), {
         class: hasAuto ? '' : 'btn-primary btn-large',
       }),
-      button('Explore the riverside', () => this.app.startVillagePreview(), { class: 'btn-large' }),
+      button('Explore the riverside', () => this.app.startVillagePreview()),
       button('Load a save', () => this.openLoad()),
       this.settingsButton,
     );
@@ -115,7 +115,7 @@ export class TitleScene implements Scene {
         el('h1', { text: GAME_TITLE }),
         el('p', {
           class: 'muted tagline',
-          text: 'A hot-seat tactical RPG for one to six players, set after Korra.',
+          text: 'Play alone or pass the iPad around. A tactical RPG set after Korra.',
         }),
         actions,
         el(

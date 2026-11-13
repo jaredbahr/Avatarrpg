@@ -15,6 +15,14 @@
  */
 
 import type { ClipDef, ClipName, Heading, MeleeDirection } from '../../content/assets/clips';
+import {
+  actionClip,
+  headingClip,
+  hitClip,
+  HEADINGS,
+  KO_HEADINGS,
+  koClip,
+} from '../../content/assets/clips';
 import type { SheetEntry } from '../../content/assets/manifest';
 // Types only: the bend schemas stay out of the bundle (ADR 0055).
 import type { BendSetDef, BendSocket } from '../../content/bends';
@@ -186,6 +194,59 @@ export function atlasFeet(
         }
       }
   return feet;
+}
+
+/** A top-down sheet's actions file (ADR 0104): clips by pose, then by heading. */
+export type SheetActions = Readonly<Record<string, Readonly<Partial<Record<Heading, ClipDef>>>>>;
+
+/**
+ * A top-down sheet's clips with its actions in (ADR 0104): each pose as `pose@heading`, each ability its
+ * `actionMap` names as `abilityId@heading` and any other as `cast@heading`, and the map's idle pose looping
+ * in place of the idle. Every heading's hits, knockouts and actions stand on the ground its idle is planted
+ * on (`plantAnchor`, which moves the idle a pixel or two onto its soles), so the figure does not hop when
+ * one starts or ends: they are cut round the same foot point as the idle.
+ */
+export function withActions(
+  entry: SheetEntry,
+  clips: SheetClips,
+  actions: SheetActions,
+  feet: ReadonlyMap<string, FrameFeet>,
+  frameOf: (name: string) => AtlasFrame | undefined,
+): SheetClips {
+  const out: Partial<Record<ClipName, ClipDef>> = { ...clips };
+  const map = entry.actionMap;
+  for (const heading of HEADINGS) {
+    const idle = headingClip('idle', heading);
+    const name = clips[idle]?.frames[0];
+    const frame = name === undefined ? undefined : frameOf(name);
+    const lift = frame
+      ? (plantAnchor(idle, entry.anchor, frame, feet.get(name ?? ''), entry.pixelsPerTile).y -
+          entry.anchor.y) *
+        frame.h
+      : 0;
+    const planted = (def: ClipDef | undefined): ClipDef | undefined =>
+      def?.anchor && def.frameSize && lift
+        ? { ...def, anchor: { x: def.anchor.x, y: def.anchor.y + lift / def.frameSize.h } }
+        : def;
+    const own = [hitClip(heading), ...KO_HEADINGS.filter((ko) => ko === heading).map(koClip)];
+    for (const clip of own) {
+      const def = planted(clips[clip]);
+      if (def) out[clip] = def;
+    }
+    for (const [pose, byHeading] of Object.entries(actions)) {
+      const def = planted(byHeading[heading]);
+      if (def) out[actionClip(pose, heading)] = def;
+    }
+    const cast = out[actionClip(map?.cast ?? '', heading)];
+    if (cast) out[actionClip('cast', heading)] = cast;
+    for (const [ability, pose] of Object.entries(map?.abilities ?? {})) {
+      const def = out[actionClip(pose, heading)];
+      if (def) out[actionClip(ability, heading)] = def;
+    }
+    const loop = out[actionClip(map?.idle ?? '', heading)];
+    if (loop) out[idle] = { ...loop, loop: true };
+  }
+  return out;
 }
 
 /** Baked pixels kept, across every sheet: 48 MB is well under the iOS cap with sprites beside it. */
@@ -495,20 +556,33 @@ export class SheetStore {
             return undefined;
           })
       : Promise.resolve(undefined);
+    // A top-down sheet's actions (ADR 0104) are optional the same way: without them, the legacy cast plays.
+    const actionsPromise = entry.actions
+      ? fetchText(entry.actions)
+          .then((text) => JSON.parse(text) as SheetActions)
+          .catch((reason: unknown) => {
+            console.warn(`Sheet "${key}" actions failed; drawing its cast.`, reason);
+            return undefined;
+          })
+      : Promise.resolve(undefined);
     // Only a page failure rejects here; the clip data already caught its own.
-    const loading = Promise.all([pages, clipsPromise])
-      .then(([pages, fetched]) => {
+    const loading = Promise.all([pages, clipsPromise, actionsPromise])
+      .then(([pages, fetched, actions]) => {
         const clips: SheetClips = fetched ? { ...entry.clips, ...fetched } : entry.clips;
+        const feet = new Map(
+          pages.flatMap((page) => [...atlasFeet(entry, page.atlas, page.image, clips)]),
+        );
         this.loaded.set(key, {
           pages,
-          clips,
+          // The bar's envelope and the measured feet stay those of the clips before the actions.
+          clips: actions
+            ? withActions(entry, clips, actions, feet, (name) => findFrame({ pages }, name)?.frame)
+            : clips,
           headroom: Math.min(
             entry.uiHeadroomCap ?? Number.POSITIVE_INFINITY,
             Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips))),
           ),
-          feet: new Map(
-            pages.flatMap((page) => [...atlasFeet(entry, page.atlas, page.image, clips)]),
-          ),
+          feet,
         });
         if (this.bendsWanted.has(key)) this.bend(key, entry);
         return true;

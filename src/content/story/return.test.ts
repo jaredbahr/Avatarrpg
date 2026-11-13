@@ -8,7 +8,9 @@ import {
   npcNode,
   resolveDialogue,
 } from '../../core/story/storyEngine';
-import { worldObjective } from '../../core/story/world';
+import { visibleNpcs, worldObjective } from '../../core/story/world';
+import { resolveResidents } from '../../core/story/residents';
+import { evaluate } from '../../core/story/conditions';
 import type { ContentIndex, GameState, ResidentProfile, StoryNode } from '../../core/types';
 
 function game(flags: GameState['flags'] = {}): GameState {
@@ -48,6 +50,9 @@ const HOMECOMINGS = [
   ['ambush_road', 'rest_keeper', 'sen_home'],
 ] as const;
 
+/** Where a homecoming routes once it has been heard, when that differs. */
+const REVISITS: Readonly<Record<string, string>> = { elder_mira: 'mira_rubbing_kept' };
+
 describe('the authored walk home', () => {
   it('keeps the opening objective directional after Mira has answered', () => {
     const state = finish(apply(CONTENT, game(), { type: 'enterNode', nodeId: 'mira_intro' }).state);
@@ -57,11 +62,11 @@ describe('the authored walk home', () => {
     );
   });
 
-  it('offers the quarry exit after victory and keeps defeat terminal', () => {
+  it('frees the workers into the walk home after victory and keeps defeat terminal', () => {
     const victory = CONTENT.story.get('act1_epilogue');
     const defeat = CONTENT.story.get('act1_epilogue_lost');
-    if (victory?.kind !== 'end' || defeat?.kind !== 'end') throw new Error('Missing endings');
-    expect(victory.next).toBe('quarry_after_explore');
+    if (victory?.kind !== 'dialogue' || defeat?.kind !== 'end') throw new Error('Missing endings');
+    expect(victory.next).toBe('act1_evening');
     expect(defeat.next).toBeUndefined();
     const lost = enterStoryNode(CONTENT, game(), 'act1_lost').state;
     expect(lost.world.residentProfiles).toEqual({});
@@ -98,6 +103,82 @@ describe('the authored walk home', () => {
     expect(arrived.world.residentProfiles).toEqual(profiles('resting'));
     expect(arrived.location.mapId).toBe('ba_dan_village');
     expect(arrived.story.nodeId).toBe('village_return_explore');
+  });
+
+  it('ends the demo with a welcome home on the first step into Ba Dan', () => {
+    const victory = enterStoryNode(CONTENT, game({ ruon_spared: true }), 'act1_victory').state;
+    const onRoad: GameState = {
+      ...victory,
+      screen: 'explore',
+      location: { mapId: 'forest_road', pos: { x: 1, y: 4 } },
+      story: { ...victory.story, nodeId: 'forest_return_explore' },
+    };
+    let home = enterStoryNode(CONTENT, onRoad, 'forest_return_arrival').state;
+    for (let count = 0; home.screen === 'dialogue' && count < 4; count++)
+      home = advanceDialogue(CONTENT, home).state;
+    expect(home.location.mapId).toBe('ba_dan_village');
+    expect(home.screen).toBe('explore');
+    const at = { ...home, location: { ...home.location, pos: { x: 22, y: 7 } } };
+
+    const welcomed = apply(CONTENT, at, { type: 'walkTo', pos: { x: 18, y: 7 } }).state;
+    expect(welcomed.story.nodeId).toBe('welcome_home_mira');
+    expect(welcomed.location.pos).toEqual({ x: 20, y: 7 });
+
+    let card = welcomed;
+    const speakers: string[] = [];
+    for (let count = 0; card.screen === 'dialogue' && count < 12; count++) {
+      const node = CONTENT.story.get(card.story.nodeId ?? '');
+      if (node?.kind === 'dialogue' && !speakers.includes(node.speaker))
+        speakers.push(node.speaker);
+      card = advanceDialogue(CONTENT, card).state;
+    }
+    expect(speakers).toEqual(['Elder Mira', 'Gao the Shopkeeper', 'Gate Guard Dorin']);
+    expect(card.screen).toBe('ended');
+    expect(card.story.nodeId).toBe('demo_complete');
+
+    // The card leads on to free roam, and the welcome never plays twice.
+    const roam = apply(CONTENT, card, {
+      type: 'enterNode',
+      nodeId: 'village_return_explore',
+    }).state;
+    expect(roam.screen).toBe('explore');
+    const again = apply(CONTENT, roam, { type: 'walkTo', pos: { x: 22, y: 8 } }).state;
+    const back = apply(CONTENT, again, { type: 'walkTo', pos: { x: 18, y: 7 } }).state;
+    expect(back.screen).toBe('explore');
+  });
+
+  it('pays off the gate and Ruon choices in the welcome home and the recap', () => {
+    const ending = CONTENT.story.get('demo_complete');
+    if (ending?.kind !== 'end' || !ending.recap) throw new Error('Missing the demo ending');
+    const recap = ending.recap;
+    const choices = (flags: GameState['flags']) =>
+      recap.choices.filter((choice) => evaluate(game(flags), choice.when)).map((c) => c.text);
+    const line = (nodeId: string, flags: GameState['flags'], index: number) =>
+      resolveDialogue(game(flags), CONTENT.story.get(nodeId) as never).lines[index];
+
+    const gates = [
+      [{}, 'knocked', 'knocked'],
+      [{ gate_talked_through: true }, 'talked Captain Ruon', 'talked the quarry gate open'],
+      [{ gate_fire_bluff: true }, 'bluffed the deserter', 'stared the deserter'],
+      [{ gate_fire_bluff: true, lost_quarry_gate: true }, 'drove you back', 'chased you down'],
+    ] as const;
+    for (const [flags, recapText, dorinText] of gates) {
+      const gate = choices(flags).filter((text) => text.startsWith('At the quarry gate'));
+      expect(gate).toHaveLength(1);
+      expect(gate[0]).toContain(recapText);
+      expect(line('welcome_home_dorin', flags, 0)).toContain(dorinText);
+    }
+
+    expect(choices({ ruon_spared: true })).toContain(
+      'You brought Captain Ruon home to answer to the families.',
+    );
+    expect(choices({ ruon_traded: true })).toContain(
+      'You traded Captain Ruon to Jin for the quarry key.',
+    );
+    expect(line('welcome_home_gao', { ruon_spared: true }, 1)).toContain('beside you');
+    expect(line('welcome_home_gao', { ruon_traded: true }, 1)).toContain('Jin has him now');
+    expect(line('welcome_home_mira', { pella_asked: true }, 1)).toContain('Pella reached Bo-shan');
+    expect(line('welcome_home_mira', {}, 1)).toContain('soup');
   });
 
   it('allows an explicit later liberation without clearing the loss history', () => {
@@ -155,10 +236,34 @@ describe('the authored walk home', () => {
         expect(state.party).toEqual(before.party);
         expect(state.flags.act1_complete).toBe(true);
         expect(worldObjective(CONTENT, state)).toBeTruthy();
-        expect(npcNode(CONTENT, state, map, npc)).toBe(node);
+        // Mira's first homecoming takes the maker-plate rubbing (#628); every
+        // later visit is the settled conversation, never the request again.
+        expect(npcNode(CONTENT, state, map, npc)).toBe(REVISITS[npc] ?? node);
       }
     },
   );
+
+  it('hands the maker-plate rubbing to Mira once, behind a flag', () => {
+    for (const custody of ['ruon_spared', 'ruon_traded'] as const) {
+      let state = game({ act1_complete: true, [custody]: true });
+      expect(npcNode(CONTENT, state, 'ba_dan_village', 'elder_mira')).toBe('mira_epilogue');
+      state = apply(CONTENT, state, { type: 'enterNode', nodeId: 'mira_epilogue' }).state;
+      expect(state.flags.rubbing_given).toBeUndefined();
+      const ask = CONTENT.story.get('mira_epilogue');
+      if (ask?.kind !== 'dialogue') throw new Error('Missing Mira return');
+      expect(ask.next).toBe('mira_rubbing');
+      const handOver = CONTENT.story.get('mira_rubbing');
+      if (handOver?.kind !== 'dialogue') throw new Error('Missing the rubbing hand-over');
+      expect(handOver.lines.join(' ')).toContain('rubbing');
+      state = finish(apply(CONTENT, state, { type: 'enterNode', nodeId: 'mira_rubbing' }).state);
+      expect(state.flags.rubbing_given).toBe(true);
+      expect(state.story.nodeId).toBe('village_return_explore');
+      expect(npcNode(CONTENT, state, 'ba_dan_village', 'elder_mira')).toBe('mira_rubbing_kept');
+      const kept = CONTENT.story.get('mira_rubbing_kept');
+      if (kept?.kind !== 'dialogue') throw new Error('Missing Mira after the rubbing');
+      expect(kept.lines.join(' ')).not.toMatch(/bring me/i);
+    }
+  });
 
   it('keeps Gao’s custody objection after rescue and Mira remembers both decisions', () => {
     const spared = game({ act1_complete: true, ruon_spared: true });
@@ -304,5 +409,58 @@ describe('the authored walk home', () => {
       expect(worldObjective(CONTENT, after)).not.toBe(worldObjective(CONTENT, before));
       expect(worldObjective(CONTENT, after)).toBeTruthy();
     }
+  });
+});
+
+describe('staging the quarry dialogue (#628)', () => {
+  const visit = (state: GameState, ...nodeIds: string[]): GameState => ({
+    ...state,
+    story: { ...state.story, visited: [...state.story.visited, ...nodeIds] },
+  });
+
+  it('stands Ruon in the Cutting from his aftermath until the descent', () => {
+    const cutting = CONTENT.maps.get('ambush_road');
+    if (!cutting) throw new Error('Missing the Cutting');
+    const ruonOn = (state: GameState) =>
+      visibleNpcs(CONTENT, cutting, state).some((npc) => npc.id === 'ruon_cutting');
+    const spared = game({ ruon_spared: true });
+    expect(ruonOn(spared)).toBe(false);
+    expect(ruonOn(visit(spared, 'after_ambush'))).toBe(true);
+    expect(ruonOn(visit(spared, 'after_ambush', 'quarry_descent'))).toBe(false);
+    expect(ruonOn(visit(game({ ruon_traded: true }), 'trade_chosen'))).toBe(false);
+    const ruon = visibleNpcs(CONTENT, cutting, visit(spared, 'after_ambush')).find(
+      (npc) => npc.id === 'ruon_cutting',
+    );
+    expect(npcNode(CONTENT, visit(spared, 'after_ambush'), 'ambush_road', 'ruon_cutting')).toBe(
+      'ruon_cutting',
+    );
+    expect(ruon?.sprite).toBe('unit.ally.ruon');
+  });
+
+  it('walks three freed workers into Ba Dan until the welcome home has played', () => {
+    const village = CONTENT.maps.get('ba_dan_village');
+    if (!village) throw new Error('Missing Ba Dan');
+    const walkers = (state: GameState) =>
+      resolveResidents(CONTENT, state)
+        .placements.filter(
+          (p) => (RETURNEE_IDS as readonly string[]).includes(p.id) && p.mapId === village.id,
+        )
+        .map((p) => p.id)
+        .sort();
+    const arrived = enterStoryNode(
+      CONTENT,
+      visit(game({ act1_complete: true }), 'forest_return_arrival'),
+      'forest_return_arrived',
+    ).state;
+    expect(arrived.world.residentProfiles).toEqual(profiles('resting'));
+    expect(walkers(arrived)).toEqual(['lw.npc.amri', 'lw.npc.bo_shan', 'lw.npc.leto']);
+    // Each stands on a walkable cell at the east-road mouth the party walks in by.
+    for (const placement of resolveResidents(CONTENT, arrived).placements) {
+      if (!walkers(arrived).includes(placement.id)) continue;
+      expect(placement.pos?.x).toBeGreaterThanOrEqual(20);
+      const key = placement.pos ? village.rows[placement.pos.y]?.[placement.pos.x] : undefined;
+      expect(key && village.legend[key]?.blocked).toBeFalsy();
+    }
+    expect(walkers(visit(arrived, 'demo_complete'))).toEqual([]);
   });
 });

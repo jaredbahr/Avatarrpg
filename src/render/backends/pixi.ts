@@ -2733,7 +2733,13 @@ export class PixiBackend implements RenderBackend {
         this.appendPixelMarks(
           this.pixelExitLayer,
           camera,
-          [exitMark(anchor, cueOpacity(view.time, 420, view.reducedMotion))],
+          [
+            exitMark(
+              anchor,
+              cueOpacity(view.time, 420, view.reducedMotion),
+              camera.projection === 'topdown' ? exit.direction : undefined,
+            ),
+          ],
           view.cameraNudge,
         );
       }
@@ -3241,9 +3247,10 @@ export class PixiBackend implements RenderBackend {
                 scale,
                 driller: {
                   ...pose,
+                  // The static view (its rest cel): its idle loops the rumble (ADR 0104).
                   frame: sheets.frame(
                     unit.sprite,
-                    headingClip('idle', pose.heading),
+                    headingClip('rest', pose.heading),
                     0,
                     0,
                     px * scale,

@@ -2,11 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Grid, MapScene, SceneScenery, Tile, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { ALL_MAPS, CONTENT } from '../content';
-import { FOREST_ROAD } from '../content/maps/combat';
-import { positionHasCover } from '../core/rules/damage';
-import { buildGrid, tileAt, withSurface } from '../core/rules/grid';
-import { applyImpact } from '../core/rules/surfaces';
+import { readFileSync } from 'node:fs';
+import { TOPDOWN_SCENES } from '../content/topdown';
 import {
   SCENE_IMAGE_CAP,
   sceneDrawable,
@@ -492,46 +489,20 @@ it('fades connected slices together only while an actual occupant occludes a mem
  * scene's count passed the old sixteen: the piece count is content, and this
  * is where content has to notice.
  */
+
 describe('scene image residency', () => {
-  for (const map of ALL_MAPS) {
-    const scene = map.scene;
-    if (!scene || scene.groundMode !== 'partial') continue;
-    it(`${map.id} holds every ground and scenery image under the cap`, () => {
-      // The flock's strip counts too: it is asked for once per scene and must not be evicted.
+  for (const [id, { url }] of TOPDOWN_SCENES) {
+    it(`${id} holds every ground and scenery image under the cap`, () => {
+      const scene = JSON.parse(readFileSync(`public/${url}`, 'utf8')) as MapScene;
       const distinct = new Set(
         [...scene.ground, ...scene.scenery, ...(scene.flock ? [scene.flock] : [])].map(
           (piece) => piece.url,
         ),
       );
       expect(scene.ground.length).toBeGreaterThan(0);
-      expect(
-        distinct.size,
-        `${map.id} asks for ${distinct.size} distinct scene images; SCENE_IMAGE_CAP is ${SCENE_IMAGE_CAP}`,
-      ).toBeLessThanOrEqual(SCENE_IMAGE_CAP);
+      expect(distinct.size, `${id}: SCENE_IMAGE_CAP is ${SCENE_IMAGE_CAP}`).toBeLessThanOrEqual(
+        SCENE_IMAGE_CAP,
+      );
     });
-  }
-});
-
-it('keeps a registered heap drawn on its own cell while the surface changes under it', () => {
-  // The forest heap cell is authored `r`: rubble on spoil, whose cover is
-  // granted by the live surface rather than a permanent tile flag. The painted
-  // heap is registered ground art for that cell, so it stays drawn whatever
-  // surface lands on it (water paints the mud wash over it); what the rules
-  // stop doing is giving the cell cover once the rubble is gone.
-  const authored = FOREST_ROAD.scene!;
-  const HEAP = { x: 7, y: 3 };
-  const heap = authored.ground.find(
-    (piece) =>
-      /\/rubble(-\d)?\.webp$/.test(piece.url) && piece.x === 768 + (HEAP.x - HEAP.y - 1) * 64,
-  );
-  expect(heap).toBeDefined();
-  let grid = applyImpact(CONTENT, buildGrid(FOREST_ROAD), [HEAP], 'water').grid;
-  expect(tileAt(grid, HEAP)?.surface?.id).toBe('mud');
-  const muddy = grid;
-  // The mud's expiry: its duration runs out and the cell is bare.
-  grid = withSurface(grid, HEAP, null);
-  for (const state of [muddy, grid]) {
-    expect(positionHasCover(CONTENT, state, HEAP)).toBe(false);
-    expect(sceneForGrid(authored, state).ground).toContain(heap);
   }
 });
