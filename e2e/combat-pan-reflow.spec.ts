@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { RngCursor } from '../src/core/rng';
-import { reachable } from '../src/core/rules/grid';
+import { occupiedCells, reachable, samePos } from '../src/core/rules/grid';
 import { BattleDraft } from '../src/core/state/battleDraft';
 import { allowSoftwareWebgl } from './budget';
 import {
@@ -102,16 +102,45 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await page.getByRole('button', { name: 'Recentre', exact: true }).click();
     await settleLayout(page);
     const initialView = await page.evaluate((p) => {
+      const app = window.fnt?.app;
       const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-      const camera = window.fnt?.app.rendererCamera();
-      if (!canvas || !camera) return null;
+      const camera = app?.rendererCamera();
+      const battle = app?.state?.battle;
+      if (!app || !canvas || !camera || !battle) return null;
+      const scene = (
+        app as unknown as {
+          scene: {
+            resolvePointer(
+              x: number,
+              y: number,
+              intent: 'inspect',
+            ): { tile: { x: number; y: number }; unit?: unknown } | null;
+          };
+        }
+      ).scene;
       const rect = canvas.getBoundingClientRect();
+      const origins = [0.6, 0.7, 0.8].flatMap((y) =>
+        [0.6, 0.7, 0.8].map((x) => {
+          const point = { x: rect.left + rect.width * x, y: rect.top + rect.height * y };
+          const resolved = scene.resolvePointer(point.x - rect.left, point.y - rect.top, 'inspect');
+          return {
+            point,
+            tile: resolved?.tile ?? null,
+            bodyHit: resolved?.unit !== undefined,
+            hitCanvas: document.elementFromPoint(point.x, point.y) === canvas,
+          };
+        }),
+      );
       const m = camera.groundTransform;
       const x = (p.x + 0.5) * 64,
         y = (p.y + 0.5) * 64,
         dpr = window.devicePixelRatio || 1;
       return {
         camera,
+        origins,
+        grid: { width: battle.grid.width, height: battle.grid.height },
+        units: battle.units.map(({ pos, size }) => ({ pos, size })),
+        props: battle.props.map((prop) => prop.pos),
         box: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
         point: {
           x: rect.left + ((m.a * x + m.c * y + m.tx) * rect.width) / (canvas.width / dpr),
@@ -130,10 +159,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         const snapshot: {
           camera: typeof camera;
           state: string;
+          dialogs: number;
           target?: { point: { x: number; y: number }; hitCanvas: boolean };
         } = {
           camera,
           state: JSON.stringify(window.fnt?.app.state?.battle),
+          dialogs: document.querySelectorAll('[role="dialog"][aria-modal="true"]').length,
         };
         if (p) {
           const m = camera.groundTransform;
@@ -153,9 +184,45 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         return snapshot;
       }, target);
     };
-    const from = { x: box.x + box.width * 0.7, y: box.y + box.height * 0.7 };
+    const originalFrom = { x: box.x + box.width * 0.7, y: box.y + box.height * 0.7 };
     const dx = box.x + box.width / 2 - point.x;
     const dy = box.y + box.height / 2 - point.y;
+    const inside = (point: { x: number; y: number }) =>
+      point.x > box.x + 8 &&
+      point.x < box.x + box.width - 8 &&
+      point.y > box.y + 8 &&
+      point.y < box.y + box.height - 8;
+    const occupied = [
+      ...initialView.units.flatMap((unit) => occupiedCells(unit)),
+      ...initialView.props,
+    ];
+    // A slow native drag may hold before its first move. Start on empty ground
+    // so that a genuine long press cannot open an inspector over the action bar.
+    const origin = initialView.origins
+      .filter(
+        ({ point, tile, bodyHit, hitCanvas }) =>
+          tile !== null &&
+          tile.x >= 0 &&
+          tile.y >= 0 &&
+          tile.x < initialView.grid.width &&
+          tile.y < initialView.grid.height &&
+          !bodyHit &&
+          hitCanvas &&
+          !occupied.some((cell) => samePos(cell, tile)) &&
+          inside(point) &&
+          inside({ x: point.x + dx, y: point.y + dy }),
+      )
+      .sort(
+        (a, b) =>
+          Math.hypot(a.point.x - originalFrom.x, a.point.y - originalFrom.y) -
+          Math.hypot(b.point.x - originalFrom.x, b.point.y - originalFrom.y),
+      )[0];
+    if (!origin) throw new Error('No empty inspect-safe canvas origin for the original drag.');
+    const from = origin.point;
+    expect(inside(from), 'Drag origin stays inside the canvas').toBe(true);
+    expect(inside({ x: from.x + dx, y: from.y + dy }), 'Drag end stays inside the canvas').toBe(
+      true,
+    );
     await page.mouse.move(from.x, from.y);
     await page.mouse.down();
     // One intermediate move is enough to exercise the real drag recognizer;
@@ -166,6 +233,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await page.mouse.up();
     const afterDrag = await readPanSnapshot();
     if (!afterDrag) throw new Error('Missing battlefield');
+    expect(afterDrag.dialogs, 'Dragging empty ground must not open an inspector').toBe(0);
+    await test.info().attach('manual-pan-origin', {
+      body: JSON.stringify({ origin, originalFrom, delta: { x: dx, y: dy } }),
+      contentType: 'application/json',
+    });
     const panned = afterDrag.camera;
     expect(Math.abs(panned.offsetX - initial.offsetX)).toBeGreaterThan(20);
     expect(panned.tilePx).toBe(initial.tilePx);

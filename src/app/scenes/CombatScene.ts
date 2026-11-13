@@ -828,7 +828,9 @@ export class CombatScene implements Scene {
       const frameKey = `${window.innerWidth}x${window.innerHeight}:${visualWidth}x${visualHeight}:${this.app.settings.largeText}`;
       const hudAllowance = this.app.settings.largeText === 'huge' ? 220 : 200;
       const decisionHeight = camera.viewport.height - hudAllowance;
-      const compact = decisionHeight < 360;
+      // A shorter initiative strip must not promote a short tablet's idle frame:
+      // 834px stays compact; 912px can use the roomy frame, as before.
+      const compact = Math.min(window.innerHeight, visualHeight) < 840 || decisionHeight < 360;
       const preferredTilePx = compact
         ? this.app.settings.largeText === 'huge' || window.innerWidth < 600
           ? 40
