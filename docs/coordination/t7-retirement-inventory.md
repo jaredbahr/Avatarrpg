@@ -1,6 +1,6 @@
 # T7 retirement inventory (ADR 0104)
 
-Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `4e9b044cce71cfb415fcc87e7c81dd349220ed50` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
+Issue #467 records the dependencies and build measurements for T7. The current status is pinned to main `0899fb0f3da6d814f596523c5e4abe48006f293e` (2026-11-13). The historical size, literal and compiler reference inventory remains pinned to `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07).
 
 ## Retirement status on 2026-11-13
 
@@ -23,6 +23,12 @@ The renderer PR lists coverage to migrate for ground pixels, whole-board picking
 The #720 merge `4e9b044c` has the same tree as hosted preview `f02dac65`. It deletes 12,204 source-art files (83,050,561 B) and 74 public-art files (3,789,566 B), measured from the deleted Git blobs. It preserves `art/source/forest-road-g1/` as combat-prop provenance and retains the older non-G1 sheets outside this step. These blob totals describe the source diff.
 
 Compared with its exact first parent `d6887867`, the hosted preview reduced shipped JavaScript from 399,808 to 391,484 gzip bytes, a reduction of 8,324 B. Workbox reported 16,986.79 to 13,265.93 KiB, a reduction of 3,720.86 KiB, and 325 to 251 entries. Both builds and budgets passed. The preview passed 4,044 tests in 310 files and balance. The browser and gallery verification jobs passed under the PR policy, and their actual suites skipped. Each checkout embeds its own build revision. [Baseline Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43493276984/job/132119705577) · [G1 Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43498459760/job/132137647412)
+
+## Legacy unit sheet retirement preview
+
+PR #721's hosted preview `c25cae9a` over `4e9b044c` removes the remaining legacy unit sheets under `public/art/units/` and their packers. The original asset keys reference top-down sheets directly. This is an additional cleanup after the G1 removal.
+
+Compared with the #720 tree, shipped JavaScript fell from 391,484 to 390,660 gzip bytes (824 B). Workbox reported 13,265.93 to 10,633.10 KiB (2,632.83 KiB) and 251 to 225 entries. The preview passed 4,040 tests in 305 files, build, budgets and balance. The browser and gallery verification jobs passed under the PR policy, and the runtime matrices skipped. [Baseline Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43498459760/job/132137647412) · [Legacy sheets Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43505949001/job/132163532527)
 
 ## Measured savings from the first two T7 steps
 
