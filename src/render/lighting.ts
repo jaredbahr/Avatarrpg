@@ -206,7 +206,7 @@ export function figureShadow(tilePx: number, key: CastKey, widthTiles = 1): Figu
 
 /**
  * Whether a figure or prop gets a contact under it: any that casts, in a scene
- * with a contact layer, which every oblique board has (ADR 0093). Nothing else
+ * with a contact layer, which every board has (ADR 0093). Nothing else
  * grounds a figure; one that casts nothing draws no shadow at all.
  */
 export function contactBand(
@@ -214,57 +214,6 @@ export function contactBand(
   castStrength: number,
 ): boolean {
   return grounding.contact > 0 && castStrength > 0;
-}
-
-export interface ShadowProjection {
-  readonly a: number;
-  readonly b: number;
-  readonly c: number;
-  readonly d: number;
-  readonly e: number;
-  readonly f: number;
-}
-
-export interface ShadowCell {
-  readonly blocked: boolean;
-  readonly elevation: number;
-}
-
-/**
- * The part of a tile that stands up and so casts. Only a `wall` is a block of
- * its own; other blocked tiles (water, a pit, a tree's or a house's footprint)
- * are flat, or are drawn by scenery that casts its own silhouette.
- */
-export function tileShadowCell(
-  tile:
-    { readonly terrain: string; readonly blocked: boolean; readonly elevation: number } | undefined,
-): ShadowCell | undefined {
-  return tile && { blocked: tile.blocked && tile.terrain === 'wall', elevation: tile.elevation };
-}
-
-export interface StructureShadowPolygon {
-  readonly source: { readonly x: number; readonly y: number };
-  readonly receiver: { readonly x: number; readonly y: number };
-  readonly points: readonly { readonly x: number; readonly y: number }[];
-}
-
-/** Canvas/Pixi affine coefficients; `(footX, footY)` remains fixed. */
-export function silhouetteProjection(
-  footX: number,
-  footY: number,
-  key: CastKey = CAST_PER_PIXEL,
-): ShadowProjection {
-  // Horizontal coordinates already remain anchored under this shear; retaining
-  // footX in the API makes the two-dimensional anchor contract explicit.
-  void footX;
-  return {
-    a: 1,
-    b: 0,
-    c: -key.x,
-    d: -key.y,
-    e: key.x * footY,
-    f: footY * (1 + key.y),
-  };
 }
 
 export function projectShadowPoint(
@@ -319,144 +268,6 @@ export function shadowGrid(
     width: Math.ceil((viewport.width - originX) / texel),
     height: Math.ceil((viewport.height - originY) / texel),
   };
-}
-
-/**
- * Shadow swept from a renderer-drawn raised edge. `edge` is the top lip and
- * `height` its screen-space rise above the receiving ground. Keeping this
- * primitive independent of either backend makes procedural height answer the
- * same key as sprite silhouettes.
- */
-export function projectRaisedEdgeShadow(
-  edge: readonly [
-    { readonly x: number; readonly y: number },
-    { readonly x: number; readonly y: number },
-  ],
-  height: number,
-): readonly { x: number; y: number }[] {
-  const dx = Math.max(0, height) * CAST_PER_PIXEL.x;
-  const dy = Math.max(0, height) * CAST_PER_PIXEL.y;
-  const [a, b] = edge;
-  return [a, b, { x: b.x + dx, y: b.y + dy }, { x: a.x + dx, y: a.y + dy }];
-}
-
-function clipConvexPolygon(
-  subject: readonly { readonly x: number; readonly y: number }[],
-  clip: readonly { readonly x: number; readonly y: number }[],
-): readonly { x: number; y: number }[] {
-  let output = [...subject];
-  const area = clip.reduce((sum, a, index) => {
-    const b = clip[(index + 1) % clip.length] ?? a;
-    return sum + a.x * b.y - b.x * a.y;
-  }, 0);
-  const inside = (
-    point: { readonly x: number; readonly y: number },
-    a: { readonly x: number; readonly y: number },
-    b: { readonly x: number; readonly y: number },
-  ) =>
-    (area >= 0 ? 1 : -1) * ((b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x)) >= -1e-6;
-  const intersection = (
-    start: { readonly x: number; readonly y: number },
-    end: { readonly x: number; readonly y: number },
-    a: { readonly x: number; readonly y: number },
-    b: { readonly x: number; readonly y: number },
-  ) => {
-    const rx = end.x - start.x;
-    const ry = end.y - start.y;
-    const sx = b.x - a.x;
-    const sy = b.y - a.y;
-    const denominator = rx * sy - ry * sx;
-    if (Math.abs(denominator) < 1e-9) return end;
-    const t = ((a.x - start.x) * sy - (a.y - start.y) * sx) / denominator;
-    return { x: start.x + t * rx, y: start.y + t * ry };
-  };
-  for (let index = 0; index < clip.length && output.length; index += 1) {
-    const a = clip[index];
-    const b = clip[(index + 1) % clip.length];
-    if (!a || !b) continue;
-    const input = output;
-    output = [];
-    let start = input[input.length - 1];
-    if (!start) continue;
-    for (const end of input) {
-      if (inside(end, a, b)) {
-        if (!inside(start, a, b)) output.push(intersection(start, end, a, b));
-        output.push(end);
-      } else if (inside(start, a, b)) output.push(intersection(start, end, a, b));
-      start = end;
-    }
-  }
-  return output;
-}
-
-/** How far a tier's top rises on screen, in tiles (geometry/elevation.ts TIER_LIFT). */
-const TIER_RISE = 0.25;
-/** How high a procedural blocked cell stands above its ground, in tiles. */
-const BLOCK_RISE = 0.72;
-
-/**
- * Casts only exposed south/east structure boundaries onto the cell they face.
- * Internal tier edges never stack, a crown never shades itself, and the
- * receiver diamond stops a cast at the next ground boundary. A raised
- * receiver is drawn lifted, so its diamond and the cast on it lift with it.
- * Cells outside the grid are empty, never the next row's first cell.
- */
-export function structureShadowPolygons(
-  width: number,
-  height: number,
-  cellAt: (x: number, y: number) => ShadowCell | undefined,
-  project: (point: { readonly x: number; readonly y: number }) => {
-    readonly x: number;
-    readonly y: number;
-  },
-  skipBlocked: ReadonlySet<string> = new Set(),
-  pixelsPerTile = 64,
-): readonly StructureShadowPolygon[] {
-  const result: StructureShadowPolygon[] = [];
-  const at = (x: number, y: number) =>
-    x < 0 || y < 0 || x >= width || y >= height ? undefined : cellAt(x, y);
-  /** Screen rise of a cell's walkable surface, and of its top (a block stands on its ground). */
-  const lift = (cell: ShadowCell) => (cell.blocked ? 0 : Math.max(0, cell.elevation) * TIER_RISE);
-  const top = (cell: ShadowCell) => lift(cell) + (cell.blocked ? BLOCK_RISE : 0);
-  for (let y = 0; y < height; y += 1)
-    for (let x = 0; x < width; x += 1) {
-      const source = at(x, y);
-      if (!source || (source.blocked && skipBlocked.has(`${x},${y}`))) continue;
-      const sourceTop = top(source);
-      if (sourceTop <= 0) continue;
-      for (const edge of [
-        { dx: 0, dy: 1, a: { x, y: y + 1 }, b: { x: x + 1, y: y + 1 } },
-        { dx: 1, dy: 0, a: { x: x + 1, y }, b: { x: x + 1, y: y + 1 } },
-      ]) {
-        const rx = x + edge.dx;
-        const ry = y + edge.dy;
-        const receiver = at(rx, ry);
-        if (!receiver || receiver.blocked) continue;
-        const surface = lift(receiver);
-        if (surface >= sourceTop) continue;
-        const raise = surface * pixelsPerTile;
-        const place = (point: { readonly x: number; readonly y: number }) => {
-          const screen = project(point);
-          return { x: screen.x, y: screen.y - raise };
-        };
-        const receiverDiamond = [
-          place({ x: rx, y: ry }),
-          place({ x: rx + 1, y: ry }),
-          place({ x: rx + 1, y: ry + 1 }),
-          place({ x: rx, y: ry + 1 }),
-        ];
-        const points = clipConvexPolygon(
-          projectRaisedEdgeShadow(
-            [place(edge.a), place(edge.b)],
-            (sourceTop - surface) * pixelsPerTile,
-          ),
-          receiverDiamond,
-        );
-        if (points.length >= 3)
-          result.push({ source: { x, y }, receiver: { x: rx, y: ry }, points });
-      }
-    }
-  return result;
 }
 
 /** Opaque masks use max coverage; fixed alpha is applied only when composited. */
@@ -563,36 +374,6 @@ const FOOT_TOLERANCE = 3;
  * or `null` where the footprint does not reach: what `groundProfile` takes as feet.
  */
 export type GroundSpan = (x: number) => { readonly top: number; readonly bottom: number } | null;
-
-/**
- * The `GroundSpan` of a footprint in a piece's art: each cell's ground diamond, from its four corners in the art's
- * pixels (`corner` maps a logical ground point there).
- */
-export function footprintSpan(
-  cells: readonly { readonly x: number; readonly y: number }[],
-  corner: (point: { readonly x: number; readonly y: number }) => { x: number; y: number },
-): GroundSpan {
-  const diamonds = cells.map((c) => [
-    corner({ x: c.x, y: c.y }),
-    corner({ x: c.x + 1, y: c.y }),
-    corner({ x: c.x + 1, y: c.y + 1 }),
-    corner({ x: c.x, y: c.y + 1 }),
-  ]);
-  return (x) => {
-    const X = x + 0.5;
-    let top = Infinity;
-    let bottom = -Infinity;
-    for (const d of diamonds)
-      d.forEach((a, i) => {
-        const b = d[(i + 1) % d.length];
-        if (!b || a.x === b.x || X < Math.min(a.x, b.x) || X > Math.max(a.x, b.x)) return;
-        const y = a.y + ((b.y - a.y) * (X - a.x)) / (b.x - a.x);
-        top = Math.min(top, y);
-        bottom = Math.max(bottom, y);
-      });
-    return top <= bottom ? { top, bottom } : null;
-  };
-}
 
 /** A prop's cast as a mask in its art's pixels, from its own ground (`groundProfile`). */
 export interface GroundedCast {

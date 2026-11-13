@@ -34,13 +34,7 @@ import { Timeline } from './anim/timeline';
 import { easeOutQuad } from './anim/easing';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
-import {
-  directionalClip,
-  walkDirection,
-  walkHeading,
-  verticalClip,
-  screenDirection,
-} from './anim/direction';
+import { directionalClip, walkDirection, walkHeading, verticalClip } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
 import { topdownVfx } from '../content/assets/topdownVfx';
 import { shotSprite } from '../render/topdown/shots';
@@ -145,8 +139,6 @@ export interface AnimatorOptions {
    * the legacy one.
    */
   readonly bends?: () => BendSources | undefined;
-  /** How far the ground lifts a unit's drawing at a tile, in tiles, so a bend aims from and at the drawn feet. */
-  readonly liftOf?: (pos: Vec2) => number;
 }
 
 /** Everything the renderer needs to draw a unit mid-playback. */
@@ -319,7 +311,6 @@ export class Animator {
       headingOf: (unitId) => this.headingAfterCues(unitId),
       shots: topdownVfx() !== null,
       ...(bends ? { bends } : {}),
-      ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
       ...(options.waterSources ? { waterSources: options.waterSources } : {}),
     });
     for (const event of events) {
@@ -497,13 +488,11 @@ export class Animator {
   private headingAfterCues(unitId: string): Heading | undefined {
     const cue = this.pendingHeadings.filter((each) => each.unitId === unitId).pop();
     if (!cue) return this.headings.get(unitId);
-    return walkHeading(
-      cue.screenSpace ? cue.tangent : screenDirection(cue.tangent, this.projection),
-    );
+    return walkHeading(cue.screenSpace ? cue.tangent : cue.tangent);
   }
 
   private rememberDirection(unitId: string, tangent: Vec2, screenSpace = false): void {
-    const screen = screenSpace ? tangent : screenDirection(tangent, this.projection);
+    const screen = screenSpace ? tangent : tangent;
     this.directions.set(unitId, walkDirection(screen, this.directions.get(unitId)));
     this.headings.set(unitId, walkHeading(screen, this.headings.get(unitId)));
     if (Math.abs(screen.x) > TURN_THRESHOLD) this.facings.set(unitId, screen.x > 0 ? 1 : -1);
@@ -599,12 +588,10 @@ export class Animator {
     if (cached) return cached;
     const curve = track.curve;
     const turns: number[] = [];
-    let anchor = walkHeading(screenDirection(sampleAt(curve, 0).tangent, this.projection));
+    let anchor = walkHeading(sampleAt(curve, 0).tangent);
     for (let i = 1; i < curve.points.length; i++) {
       const at = curve.cumulative[i - 1] ?? 0;
-      const heading = walkHeading(
-        screenDirection(sampleAt(curve, at + 1e-6).tangent, this.projection),
-      );
+      const heading = walkHeading(sampleAt(curve, at + 1e-6).tangent);
       const steps = Math.abs(HEADINGS.indexOf(anchor) - HEADINGS.indexOf(heading));
       if (Math.min(steps, 8 - steps) < 2) continue;
       turns.push(at);
@@ -671,7 +658,7 @@ export class Animator {
     // The sheet's clip time a tile is fitted to its art at one art px a world px
     // (ADR 0095). Drawn larger, its feet cover more ground a loop, so the loop
     // plays over more of it and the planted foot stays planted at any figure scale.
-    const scale = partyScale(this.projection);
+    const scale = partyScale();
     // At the brisk stroll a native-G1 walk plays at BRISK_WALK_CEL_MS a cel,
     // never slower than its fitted rate; an amble keeps the fit (ADR 0095).
     const brisk =
@@ -682,8 +669,7 @@ export class Animator {
       gait.walkStartMs +
       (this.walkPhaseFractions.get(travel.track.unitId) ?? 0) * gait.walkCycleMs +
       integrateAlong(travel.track.curve, travel.distance, (tangent) => {
-        const fitted =
-          gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] / scale;
+        const fitted = gait.walkMsPerTile[walkHeading(tangent)] / scale;
         return Math.min(fitted, brisk);
       })
     );

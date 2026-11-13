@@ -53,7 +53,7 @@ it.each(['fire_blast', 'oil_flask'])(
             cursor: 0,
             rate,
             pushIndex: 0,
-            projection: 'oblique',
+            projection: 'orthographic',
           });
         const current = play(id),
           prior = play(legacy.id);
@@ -95,7 +95,7 @@ it.each(['fire_blast', 'oil_flask'])(
         const p = release.ease((flight.start - release.start) / release.duration);
         // The socket rides the drawn body: the pose's scale at the deserter's oblique body scale.
         expect(flight.attachments!.from!.scale).toBeCloseTo(
-          enemyScale(caster.sprite, 1, 'oblique') *
+          enemyScale(caster.sprite, 1) *
             (release.scale.from + (release.scale.to - release.scale.from) * p),
           9,
         );

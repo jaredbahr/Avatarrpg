@@ -169,7 +169,7 @@ describe('combat camera glide', () => {
     const camera = new Camera(
       { width: 360, height: 260, dpr: 1.25 },
       { width: 12, height: 12 },
-      'oblique',
+      'topdown',
     );
     camera.integerZoom = true;
     for (const now of [1000, 1040, 1125, 1210, 1300, 1419, 1420]) {

@@ -24,15 +24,13 @@ import { resolveAsset } from '../../content/assets/manifest';
 import type { BendFxIndex } from '../../render/fx/bendFx';
 import { BEND_FX_PX_PER_TILE } from '../../render/fx/bendFxSample';
 import type { Point } from '../../render/fx/trajectory';
-import type { Projection } from '../../render/projection';
-import { projectGround } from '../../render/projection';
 import { FOOT_LINE } from '../../render/sheets/bake';
-import { renderFoot } from '../../render/renderFoot';
+import { footprintFoot } from '../../core/rules/footprint';
 import type { ResolvedBendFrame } from '../../render/sheets/store';
 import { partyScale } from './actorScale';
 import type { BendPlan } from './bendChoreo';
 import { bendSceneAt, planBend } from './bendChoreo';
-import { screenDirection, walkHeading } from './direction';
+import { walkHeading } from './direction';
 
 /** See the module comment. */
 export function isBendingAttack(unit: Unit, ability: Ability): boolean {
@@ -58,22 +56,11 @@ export function partyBendSprites(units: readonly Unit[]): string[] {
 
 /**
  * Where a unit's cel stands, in board units: the foot point both backends
- * place a sheet frame's anchor on (`Camera.spriteBox` plus `FOOT_LINE`),
- * lifted by `lift` tiles for the ground it stands on.
+ * place a sheet frame's anchor on (`Camera.spriteBox` plus `FOOT_LINE`).
  */
-export function unitFoot(
-  pos: Vec2,
-  size: 1 | 2,
-  projection: Projection,
-  lift = 0,
-  square = SQUARE_FOOTPRINTS,
-): Point {
-  const point = renderFoot(pos, size, square, projection);
-  if (projection === 'oblique') {
-    const ground = projectGround(point, 'oblique');
-    return { x: ground.x, y: ground.y - 0.86 + FOOT_LINE - lift };
-  }
-  return { x: point.x, y: point.y - 0.5 + FOOT_LINE - lift };
+export function unitFoot(pos: Vec2, size: 1 | 2, square = SQUARE_FOOTPRINTS): Point {
+  const point = footprintFoot(pos, size, square);
+  return { x: point.x, y: point.y - 0.5 + FOOT_LINE };
 }
 
 /** What the bend lookups answer; all of it must be in, or the cast is legacy. */
@@ -110,21 +97,19 @@ export function planBendCast(
   ability: Ability,
   target: Vec2,
   struck: { readonly pos: Vec2; readonly size: number } | undefined,
-  projection: Projection,
-  lift: (pos: Vec2) => number = () => 0,
   square = SQUARE_FOOTPRINTS,
 ): BendCast | undefined {
   if (!sources || !isBendingAttack(caster, ability)) return undefined;
   const set = sources.setOf(caster.sprite);
   if (!set || set.unitAsset !== caster.sprite) return undefined;
-  const from = renderFoot(casterPos, caster.size, square, projection);
+  const from = footprintFoot(casterPos, caster.size, square);
   const to = struck
-    ? renderFoot(struck.pos, struck.size as 1 | 2, square, projection)
+    ? footprintFoot(struck.pos, struck.size as 1 | 2, square)
     : { x: target.x + 0.5, y: target.y + 0.5 };
   const vector = { x: to.x - from.x, y: to.y - from.y };
   const tiles = Math.max(Math.abs(target.x - casterPos.x), Math.abs(target.y - casterPos.y));
   if (tiles === 0 || Math.hypot(vector.x, vector.y) < 1e-9) return undefined;
-  const heading = walkHeading(screenDirection(vector, projection));
+  const heading = walkHeading(vector);
   const facing = set.facings[heading];
   const attack = facing?.attacks[0];
   const effect = attack ? sources.fx.effect(attack.effectId) : undefined;
@@ -132,17 +117,15 @@ export function planBendCast(
   const cel = (index: number) => sources.frameOf(caster.sprite, heading, index);
   if (facing.frames.some((_, index) => cel(index) === null)) return undefined;
 
-  const scale = partyScale(projection);
-  const landing = struck
-    ? unitFoot(struck.pos, struck.size as 1 | 2, projection, lift(struck.pos), square)
-    : unitFoot(target, 1, projection, lift(target));
+  const scale = partyScale();
+  const landing = struck ? unitFoot(struck.pos, struck.size as 1 | 2, square) : unitFoot(target, 1);
   const plan = planBend(sources.fx, {
     heading,
     facing,
     attack,
     effect,
     cel,
-    foot: unitFoot(casterPos, caster.size, projection, lift(casterPos), square),
+    foot: unitFoot(casterPos, caster.size, square),
     to: {
       x: landing.x + (effect.impact.offsetPx.x / BEND_FX_PX_PER_TILE) * scale,
       y: landing.y + (effect.impact.offsetPx.y / BEND_FX_PX_PER_TILE) * scale,

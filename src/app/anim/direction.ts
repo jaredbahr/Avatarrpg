@@ -1,18 +1,8 @@
 import type { Vec2 } from '../../core/types';
-import { projectGround } from '../../render/projection';
-import type { Projection } from '../../render/projection';
 import { HEADINGS } from '../../content/assets/clips';
 import type { ClipName, Heading, MeleeDirection } from '../../content/assets/clips';
 
 export type WalkDirection = 'north' | 'south' | 'east' | 'west';
-
-/** A unit heading in screen axes; translation never belongs in a direction. */
-export function screenDirection(tangent: Vec2, projection: Projection): Vec2 {
-  if (projection !== 'oblique') return tangent;
-  const projected = projectGround(tangent, projection);
-  const length = Math.hypot(projected.x, projected.y);
-  return length === 0 ? projected : { x: projected.x / length, y: projected.y / length };
-}
 
 /** Select an authored melee contact by its projected screen direction. */
 export function screenMeleeDirection(screen: Vec2): MeleeDirection | undefined {

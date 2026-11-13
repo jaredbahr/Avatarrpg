@@ -36,10 +36,8 @@ it.each(['thug', 'slinger', 'bruiser', 'quarrybender'])(
     expect(Math.abs(enemy - (await standing('unit.fire.kaya', 'idleSouth')))).toBeLessThanOrEqual(
       8 / 128,
     );
-    for (const projection of ['oblique', 'orthographic'] as const) {
-      expect(enemyScale(key, 1, projection)).toBe(partyScale(projection));
-      expect(enemyScale(key, 0.9, projection)).toBeCloseTo(partyScale(projection, 0.9));
-    }
+    expect(enemyScale(key, 1)).toBe(partyScale());
+    expect(enemyScale(key, 0.9)).toBeCloseTo(partyScale(0.9));
     expect(await validateSheets('public', { [key]: ASSETS[key]! })).toEqual([]);
   },
   60_000,
@@ -50,11 +48,10 @@ it('validates the live lossless Driller sheet and its UI headroom cap', async ()
   expect(
     await validateSheets('public', { 'unit.enemy.driller': ASSETS['unit.enemy.driller']! }),
   ).toEqual([]);
-  expect(enemyScale('unit.enemy.driller', 1, 'orthographic')).toBe(1);
-  expect(enemyScale('unit.enemy.driller', 1, 'oblique')).toBe(2);
+  expect(enemyScale('unit.enemy.driller', 1)).toBe(1);
 });
 
-it('keeps the legacy route crossbow near party height without changing its pixels or feet', async () => {
+it('keeps the legacy route crossbow scale without changing its pixels or feet', async () => {
   for (const name of ['crossbow']) {
     const key = `unit.enemy.${name}`;
     const entry = ASSETS[key];
@@ -67,10 +64,8 @@ it('keeps the legacy route crossbow near party height without changing its pixel
       crop(pixels, { x: standing.x, y: standing.y, width: standing.w, height: standing.h }),
     );
     if (!body) throw new Error('Empty standing frame');
-    const height = (body.height / entry.pixelsPerTile) * enemyScale(key, 1, 'oblique');
-    const adult = (121 / 128) * partyScale('oblique');
-    expect(height / adult).toBeGreaterThan(0.95);
-    expect(height / adult).toBeLessThan(1.04);
+    // Its 1.23 kept it level with the oblique board's 1.25 party; that board retired at T7.
+    expect(enemyScale(key, 1)).toBeCloseTo(1.23, 12);
     expect(body.height).toBe(121);
     expect(entry.pixelsPerTile).toBe(128);
     expect(entry.footprint).toEqual({ w: 1, h: 1 });

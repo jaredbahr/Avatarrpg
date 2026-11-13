@@ -17,16 +17,11 @@
  */
 
 import type { BendTrajectory } from '../../content/bends';
-import type { Projection } from '../projection';
 
 export interface Point {
   readonly x: number;
   readonly y: number;
 }
-
-/** One board step's screen length in board units: the length of one grid move on screen. */
-export const boardStep = (projection: Projection): number =>
-  projection === 'oblique' ? Math.hypot(1, 0.5) : 1;
 
 /**
  * The unit the effect data's "tiles" are in, as board units, for a character
