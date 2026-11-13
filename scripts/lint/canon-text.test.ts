@@ -58,6 +58,16 @@ describe('fan-work copy guard', () => {
     ]);
   });
 
+  it('reports decoded names alongside plain names in one literal without duplicate diagnostics', () => {
+    const file = 'mixed.ts';
+    const text = 'const line = "Korra and So\\u006bka and Ko\\u0072ra";';
+    expect(scanTypeScript(text, file, denylist.canonNames)).toEqual([
+      { file, line: 1, column: 15, name: 'Korra' },
+      { file, line: 1, column: 14, name: 'Sokka' },
+      { file, line: 1, column: 14, name: 'Korra' },
+    ]);
+  });
+
   it('finds no canon names in shipped player-facing copy', () => {
     const hits = collectPlayerFacingHits(root, denylist.canonNames);
     expect(hits, hits.map(formatCanonHit).join('\n')).toEqual([]);

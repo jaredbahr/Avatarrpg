@@ -78,12 +78,23 @@ export function scanTypeScript(text: string, file: string, names: readonly strin
         const at = source.getLineAndCharacterOfPosition(node.getStart(source) + match.start);
         hits.push({ file, line: at.line + 1, column: at.character + 1, name: match.name });
       }
-      // Escaped strings still become player text. The opening line is the best
-      // available source location when decoded characters have no raw offset.
-      if (!direct.length) {
-        for (const match of matches(node.text, rules)) {
+      // Pair decoded matches with their raw counterparts by name. Escaped
+      // names can share a literal with plain names, including the same name.
+      // The opening quote is the source location when the decoded characters
+      // have no direct raw offset.
+      const rawCounts = new Map<string, number>();
+      for (const match of direct) {
+        rawCounts.set(match.name, (rawCounts.get(match.name) ?? 0) + 1);
+      }
+      const reportedEscapes = new Set<string>();
+      for (const match of matches(node.text, rules)) {
+        const rawCount = rawCounts.get(match.name) ?? 0;
+        if (rawCount > 0) {
+          rawCounts.set(match.name, rawCount - 1);
+        } else if (!reportedEscapes.has(match.name)) {
           const at = source.getLineAndCharacterOfPosition(node.getStart(source));
           hits.push({ file, line: at.line + 1, column: at.character + 1, name: match.name });
+          reportedEscapes.add(match.name);
         }
       }
     }
