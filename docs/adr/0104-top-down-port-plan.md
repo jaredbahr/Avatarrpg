@@ -291,12 +291,18 @@ its own:
   `maps/combat.ts`). The oblique scene modules (`scenes/baDan*.ts`, `forestRoad*.ts`, `quarryGate.ts`,
   `quarryProjected.ts` and their helpers) and their art pipelines (`scripts/art/ba-dan-regions/`, the forest G1 and
   quarry packers) are deleted with their tests.
-- **Not yet:** the shipped oblique map art and its sources (next step), then the oblique projection in the renderer
-  (the lift pass, the diamond camera and its painted-ring and hull clamps) and the G1 sheets in `ASSETS`, which the art
-  and animation tests still pin and whose dormant mechanics (bends, stance, jog, brisk cadence) need their own
-  migration.
+- **The oblique map art is deleted**: the five maps' backdrops and scene pages under `public/art/maps/` (only the
+  riverside's backdrop stays), the world-style figures (`public/art/units/world/`, `style-test/`), their sources
+  (`art/source/ba-dan-*` but the riverside, `grounding/`, `figure-scale/`, `party-world/`,
+  `style-test-world-chars/`) and their NOTICE entries. `art/source/forest-road-g1/` stays: it is the provenance of
+  the shipped combat props. `PRECACHE_IGNORES` is empty again, so the whole game is precached.
+- **Not yet:** the oblique projection in the renderer (the lift pass, the diamond camera and its painted-ring and hull
+  clamps) and the G1 sheets in `ASSETS`, which the art and animation tests still pin and whose dormant mechanics
+  (bends, stance, jog, brisk cadence) need their own migration.
 
-Measured on the build: JavaScript 410.0 KB before, 402.4 KB after (budget 410, unchanged).
+Measured on the build: JavaScript 410.0 KB before, 402.1 KB after (budget 410, unchanged). Precache 17.44 MB
+before, with 97 files left for run time; 16.57 MB after, with 4 (the streamed music). The maps family went from
+5.47 MB to 0.42 MB and units from 7.02 MB to 6.17 MB.
 
 ## Driller grounding implementation (#469)
 
