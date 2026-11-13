@@ -1,0 +1,37 @@
+{
+  "canonNames": [
+    "Aang",
+    "Katara",
+    "Sokka",
+    "Toph",
+    "Zuko",
+    "Azula",
+    "Iroh",
+    "Ozai",
+    "Suki",
+    "Korra",
+    "Mako",
+    "Bolin",
+    "Asami",
+    "Tenzin",
+    "Jinora",
+    "Lin Beifong",
+    "Fire Nation",
+    "Earth Kingdom",
+    "Water Tribe",
+    "Air Nomads",
+    "United Republic",
+    "Republic City",
+    "Ba Sing Se",
+    "Avatar: The Last Airbender",
+    "The Legend of Korra"
+  ],
+  "allowedGenericWords": {
+    "$comment": "These are ordinary element, terrain, or UI words, not names. The full canon proper nouns above remain denied.",
+    "air": "An element and terrain term.",
+    "earth": "An element and terrain term.",
+    "fire": "An element and terrain term.",
+    "water": "An element and terrain term.",
+    "avatar": "A common software term; the exact show title is denied."
+  }
+}
