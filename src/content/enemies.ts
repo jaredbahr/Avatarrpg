@@ -117,8 +117,16 @@ export const ENEMIES: readonly EnemyDef[] = [
      * it still wins every simulated trial, in about four rounds, keeping
      * 80 / 58 / 70% at one, three and six players
      * (docs/proposals/early-fight-difficulty.md; Jared, 2026-10-03).
+     *
+     * The blade alone is back down, 50 -> 32 (Jared, 2026-11-13: "Trim it").
+     * A scripted bot with no thinking time took four rounds and 5.75 minutes
+     * here, and a table thinks between moves. Three players plus Ruon face
+     * three blades, so the blade is most of the fight's HP; at 32 the sim's
+     * three-player fight drops from 3.7 rounds and 21 turns to 3.3 and 17. The
+     * crossbow keeps its 39 because the Driller's traded-Ruon variant uses it,
+     * and nothing else fields a blade, so no other fight moves.
      */
-    stats: { maxHp: 50, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
+    stats: { maxHp: 32, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['merc_blade'],
     ai: 'aggressive',
     xp: 150,
