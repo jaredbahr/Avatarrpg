@@ -382,7 +382,7 @@ export class ExploreScene implements Scene {
       const trail = this.ensureTrail(state, grid, event.from);
       const before = trail.positions(state.party.length);
       const plan =
-        this.map?.projection === 'oblique' || this.map?.projection === 'topdown'
+        this.map?.projection === 'topdown'
           ? trail.planWalk(event.path, state.party.length, grid, this.standing(state))
           : null;
       if (plan) {
@@ -1265,7 +1265,7 @@ export class ExploreScene implements Scene {
     this.renderer = new Renderer(canvas, { width: map.width, height: map.height });
     this.renderer.resize({ width: map.width, height: map.height });
     this.renderer.camera.projection = map.projection ?? 'orthographic';
-    // The oblique and top-down maps are pixel art: whole device pixels per world pixel (ADR 0088, 0104).
+    // The top-down maps are pixel art: whole device pixels per world pixel (ADR 0088, 0104).
     this.renderer.camera.integerZoom = usesIntegerZoom(map.projection ?? 'orthographic');
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
@@ -1307,9 +1307,7 @@ export class ExploreScene implements Scene {
           this.hover = null;
           return;
         }
-        this.hover = point
-          ? (this.renderer?.camera.pickTile(point.x, point.y, this.grid) ?? null)
-          : null;
+        this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
       },
     });
   }
@@ -1383,7 +1381,7 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     if (!renderer || !state) return;
     // A tap on someone walks to them, wherever their figure is drawn.
-    const tile = this.figureAt(x, y) ?? renderer.camera.pickTile(x, y, this.grid);
+    const tile = this.figureAt(x, y) ?? renderer.camera.toTile(x, y);
     // Ground taps can plan the next stroll without interrupting the current animation.
     if (this.app.animator.busy(performance.now())) {
       this.requestWalk(tile);
@@ -1528,16 +1526,9 @@ export class ExploreScene implements Scene {
           return;
         }
       }
-      if (
-        this.needsSettle &&
-        (map.projection === 'oblique' || map.projection === 'topdown') &&
-        !this.departing &&
-        !dialogOpen
-      ) {
+      if (this.needsSettle && map.projection === 'topdown' && !this.departing && !dialogOpen) {
         this.needsSettle = false;
-        const routes = trail.settle(grid, this.standing(state), {
-          beside: map.projection === 'topdown',
-        });
+        const routes = trail.settle(grid, this.standing(state), { beside: true });
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
         this.animatePartyBatches(batches, state, now);
@@ -1571,7 +1562,7 @@ export class ExploreScene implements Scene {
       this.app.audio.updateEnvironment(
         courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
       );
-    const scale = partyScale(map.projection);
+    const scale = partyScale();
     const units: RenderUnit[] = state.party.map((member, index) => {
       // A practising bender draws their bend's cels, as combat does (ADR 0055).
       const bend = animator.bendPose(now, member.id);
@@ -1618,7 +1609,7 @@ export class ExploreScene implements Scene {
           pos: npc.pos,
           sprite: npc.sprite,
           name: npc.name,
-          scale: npcPresentationScale(npc.sprite, map.projection),
+          scale: npcPresentationScale(npc.sprite),
           // Someone at a post on a G sheet faces the camera on its idle loop.
           ...(sheetLocomotion(npc.sprite)?.headings === 8
             ? { clip: 'idleSouthEast' as const, clipTime: now + idlePhase(npc.id) }
@@ -1630,7 +1621,7 @@ export class ExploreScene implements Scene {
         pos: who.pos ?? who.drawPos,
         sprite: who.sprite,
         name: who.name,
-        scale: npcPresentationScale(who.sprite, map.projection),
+        scale: npcPresentationScale(who.sprite),
         renderPos: who.drawPos,
         offset: who.offset,
         facing: who.facing,
@@ -1651,7 +1642,7 @@ export class ExploreScene implements Scene {
                 pos,
                 sprite: trigger.sprite,
                 name: trigger.label,
-                scale: triggerPresentationScale(map, trigger.sprite),
+                scale: triggerPresentationScale(trigger.sprite),
               },
             ]
           : [];

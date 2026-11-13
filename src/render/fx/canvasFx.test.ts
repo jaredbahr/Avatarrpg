@@ -87,7 +87,7 @@ describe('CanvasFxLayer', () => {
       const log: number[][] = [];
       // The scene builds new instances every frame; the cache keys on what they hold.
       const emitters = ambientEmitters(village ?? null, grid, frame * 16, chimneys, true);
-      layer.draw(context(log), emitters, 'over', { x: 0, y: 0 }, 64, true);
+      layer.draw(context(log), emitters, 'over', { x: 0, y: 0 }, 64);
       frames.push(log);
     }
     expect(sample).toHaveBeenCalledTimes(4);
@@ -103,7 +103,6 @@ describe('CanvasFxLayer', () => {
       'over',
       { x: 0, y: 0 },
       64,
-      true,
     );
     expect(sample).toHaveBeenCalledTimes(4);
     expect(fresh).toEqual(frames[0]);

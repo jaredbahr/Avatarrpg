@@ -19,7 +19,7 @@
  * follows the action and pans. Recentre zooms out to the whole board, at the
  * largest whole scale that shows it, and only where that would drop a tile
  * under a fingertip does it stop at N = dpr, centre on whoever is acting and
- * pan. The oblique and orthographic boards keep the rule above.
+ * pan. The orthographic board keeps the rule above.
  *
  * Explore maps are larger than the viewport and pan by drag, clamped so the
  * map edge never leaves the frame.
@@ -27,14 +27,12 @@
 
 import type { Grid, Vec2 } from '../core/types';
 import { SQUARE_FOOTPRINTS, footprintFoot } from '../core/rules/footprint';
-import { TILE, groundBounds, projectGround, tileSize, unprojectGround } from './projection';
+import { TILE, tileSize } from './projection';
 import type { Projection } from './projection';
-import { pickCell } from './geometry/elevation';
-import { renderFoot } from './renderFoot';
 
 /**
- * Logical tile size before the fit scale is applied, on the oblique and
- * orthographic boards. Anything that may meet a top-down board reads
+ * Logical tile size before the fit scale is applied, on the orthographic
+ * board. Anything that may meet a top-down board reads
  * `Camera.tile` (or `tileSize(projection)`) instead.
  */
 export { TILE };
@@ -57,9 +55,6 @@ export interface ScreenPoint {
   readonly x: number;
   readonly y: number;
 }
-
-/** A convex polygon in screen/world coordinates, closed implicitly. */
-export type ConvexPolygon = readonly ScreenPoint[];
 
 /** How to put a continuous scale on the integer device-pixel grid. */
 export type ScaleSnap = 'nearest' | 'floor' | 'ceil';
@@ -90,103 +85,9 @@ export function wholeDeviceScale(scale: number, dpr: number, mode: ScaleSnap): n
   return Math.max(1, whole);
 }
 
-const PAN_FOCUS_MARGIN_TILES = 0.5;
-const OFFSET_WRITE_EPSILON = 1e-6;
-
 function clampOffset(offset: number, slack: number): number {
   return slack <= 0 ? slack / 2 : Math.max(0, Math.min(slack, offset));
 }
-
-function cross(a: ScreenPoint, b: ScreenPoint, point: ScreenPoint): number {
-  return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
-}
-
-function convexHull(points: readonly ScreenPoint[]): ScreenPoint[] {
-  const sorted = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
-  const unique = sorted.filter(
-    (point, index) =>
-      index === 0 || point.x !== sorted[index - 1]?.x || point.y !== sorted[index - 1]?.y,
-  );
-  if (unique.length <= 1) return unique;
-
-  const half = (ordered: readonly ScreenPoint[]) => {
-    const result: ScreenPoint[] = [];
-    for (const point of ordered) {
-      while (
-        result.length >= 2 &&
-        cross(result[result.length - 2] ?? point, result[result.length - 1] ?? point, point) <= 0
-      )
-        result.pop();
-      result.push(point);
-    }
-    return result;
-  };
-  const lower = half(unique);
-  const upper = half([...unique].reverse());
-  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
-}
-
-function nearestPointOnSegment(
-  point: ScreenPoint,
-  start: ScreenPoint,
-  end: ScreenPoint,
-): ScreenPoint {
-  const dx = end.x - start.x;
-  const dy = end.y - start.y;
-  const lengthSquared = dx * dx + dy * dy;
-  const t = lengthSquared
-    ? Math.max(
-        0,
-        Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared),
-      )
-    : 0;
-  return { x: start.x + dx * t, y: start.y + dy * t };
-}
-
-function clampToConvexHull(point: ScreenPoint, hull: ConvexPolygon): ScreenPoint {
-  const first = hull[0];
-  if (!first) return point;
-  if (hull.length === 1) return first;
-  const second = hull[1];
-  if (!second) return first;
-  if (hull.length === 2) {
-    // A fitted axis makes M an axis-aligned segment. Keep the free coordinate
-    // on clampOffset's arithmetic path so this face is bit-identical to clamp().
-    if (first.x === second.x)
-      return { x: first.x, y: clampOffset(point.y - first.y, second.y - first.y) + first.y };
-    if (first.y === second.y)
-      return { x: clampOffset(point.x - first.x, second.x - first.x) + first.x, y: first.y };
-    return nearestPointOnSegment(point, first, second);
-  }
-  if (
-    hull.every((start, index) => cross(start, hull[(index + 1) % hull.length] ?? start, point) >= 0)
-  )
-    return point;
-
-  let nearest = first;
-  let nearestDistance = Number.POSITIVE_INFINITY;
-  for (let index = 0; index < hull.length; index += 1) {
-    const start = hull[index];
-    const end = hull[(index + 1) % hull.length];
-    if (!start || !end) continue;
-    const candidate = nearestPointOnSegment(point, start, end);
-    const distance = (candidate.x - point.x) ** 2 + (candidate.y - point.y) ** 2;
-    if (distance < nearestDistance) {
-      nearest = candidate;
-      nearestDistance = distance;
-    }
-  }
-  return nearest;
-}
-
-export interface CameraClampRing {
-  readonly top: number;
-  readonly right: number;
-  readonly bottom: number;
-  readonly left: number;
-}
-
-const NO_CLAMP_RING: CameraClampRing = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export class Camera {
   /** Screen (CSS) pixels per world pixel; a tile is `tile * scale` CSS pixels. */
@@ -210,8 +111,8 @@ export class Camera {
    * Integer zoom (ADR 0088): every fit, refit and zoom lands on a whole number
    * of device pixels per world pixel, and the offsets on the device-pixel
    * grid, so pixel art drawn at one art pixel per world pixel covers exactly
-   * N x N device pixels. Set for the oblique pixel-art boards; the
-   * orthographic boards keep their continuous fit.
+   * N x N device pixels. Set for the top-down pixel-art board; the
+   * orthographic board keeps its continuous fit.
    */
   integerZoom = false;
 
@@ -222,8 +123,6 @@ export class Camera {
     public viewport: Viewport,
     public grid: { width: number; height: number },
     public projection: Projection = 'orthographic',
-    /** Painted ground outside the grid that may remain visible while panning. */
-    public clampRingTiles: CameraClampRing = NO_CLAMP_RING,
   ) {}
 
   /**
@@ -293,11 +192,10 @@ export class Camera {
   /**
    * The smallest whole device scale any integer-zoom stop may take. The
    * top-down board never goes under a fingertip (N >= dpr, ADR 0104), so a
-   * pinch out stops there and it has no smoothed overview; the oblique board
-   * may zoom out to one device pixel, or to its overview below that.
+   * pinch out stops there.
    */
   private get floorDeviceScale(): number {
-    return this.projection === 'topdown' ? this.tappableDeviceScale : 1;
+    return this.tappableDeviceScale;
   }
 
   /** The smallest whole device scale that keeps the view inside `viewExtent` (1 without one). */
@@ -307,27 +205,9 @@ export class Camera {
       : 1;
   }
 
-  /**
-   * Below one device pixel per world pixel there is no whole scale, so a board
-   * that only fits there gets one stop of its own: the continuous fit, drawn
-   * smoothed (`pixelSampling`), which keeps "zoom out to the whole board" and
-   * Recentre's fitted state. Null when the fit is at or above one device pixel
-   * or a painted extent stops the zoom first.
-   */
-  private get overviewScale(): number | null {
-    if (this.projection === 'topdown') return null;
-    const fit = Math.max(Math.min(this.fitScale(), this.maxScale), this.minContinuousExtentScale);
-    return fit * this.viewport.dpr < 1 - WHOLE_EPSILON ? fit : null;
-  }
-
-  /**
-   * True when `resnap` should leave the scale alone: a whole device scale, or
-   * anything under one device pixel. The overview drawn there is smoothed
-   * anyway, and a HUD reflow that moves the fit must not pull a zoomed-out
-   * board in (`raiseToFit` handles a fit that grew).
-   */
+  /** True when `resnap` should leave the scale alone: a whole device scale. */
   private get onIntegerStop(): boolean {
-    return this.onWholeDevicePixels || this.deviceScale < 1 - WHOLE_EPSILON;
+    return this.onWholeDevicePixels;
   }
 
   /** Sets a CSS scale anchored on a screen point. */
@@ -341,15 +221,9 @@ export class Camera {
     this.scale = scale;
   }
 
-  /**
-   * The integer-zoom stop nearest a continuous `scale` (by ratio): a whole
-   * device scale inside the limits, or the overview below one device pixel.
-   */
+  /** The integer-zoom stop nearest a continuous `scale` (by ratio): a whole device scale inside the limits. */
   private integerStop(scale: number): number {
     const dpr = this.viewport.dpr;
-    const overview = this.overviewScale;
-    if (overview !== null && scale * dpr < 1)
-      return scale < Math.sqrt(overview / dpr) ? overview : 1 / dpr;
     const low = Math.max(
       wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
       this.extentDeviceScale,
@@ -378,15 +252,14 @@ export class Camera {
   /**
    * Raises a zoomed-out board back to its fit after the viewport grew, keeping
    * a closer zoom as it is. Under integer zoom the fit is the whole scale at or
-   * under the continuous one (so the board still fits), or the overview.
+   * under the continuous one (so the board still fits), never under a fingertip.
    */
   raiseToFit(): void {
     const fit = this.integerZoom
-      ? (this.overviewScale ??
-        Math.max(
+      ? Math.max(
           this.snapScale(this.fitScale(), 'floor'),
           this.floorDeviceScale / this.viewport.dpr,
-        ))
+        )
       : this.fitScale();
     if (this.scale < fit) {
       this.zoomIntent = null;
@@ -396,8 +269,6 @@ export class Camera {
     this.clampToPanBounds();
   }
 
-  /** Opts irregular maps into the manual-pan hull reachable by programmatic centring. */
-  clampToProgrammaticReachableSet = false;
   /** When present, keeps the viewport centre inside the map plus this tile margin. */
   centreMargin?: number;
   /**
@@ -407,24 +278,20 @@ export class Camera {
    */
   viewExtent?: { x: number; y: number; width: number; height: number };
 
-  private get bounds() {
-    return groundBounds(this.grid.width, this.grid.height, this.projection);
-  }
-
   get worldWidth(): number {
-    return this.bounds.width * this.tile * this.scale;
+    return this.grid.width * this.tile * this.scale;
   }
 
   get worldHeight(): number {
-    return this.bounds.height * this.tile * this.scale;
+    return this.grid.height * this.tile * this.scale;
   }
 
   /** The scale at which the whole grid fits inside the viewport with a margin. */
   fitScale(margin = 12): number {
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
-    const scaleX = usableWidth / (this.bounds.width * this.tile);
-    const scaleY = usableHeight / (this.bounds.height * this.tile);
+    const scaleX = usableWidth / (this.grid.width * this.tile);
+    const scaleY = usableHeight / (this.grid.height * this.tile);
     return Math.max(this.minScale, Math.min(this.maxScale, Math.min(scaleX, scaleY)));
   }
 
@@ -466,8 +333,8 @@ export class Camera {
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
     const fitScale = Math.min(
-      usableWidth / (this.bounds.width * this.tile),
-      usableHeight / (this.bounds.height * this.tile),
+      usableWidth / (this.grid.width * this.tile),
+      usableHeight / (this.grid.height * this.tile),
     );
     this.zoomIntent = null;
     if (this.integerZoom) {
@@ -507,35 +374,9 @@ export class Camera {
     this.clampToExtent();
   }
 
-  /** Manual gestures may expose authored paint, but only on an overflowing axis. */
+  /** The clamp after a manual gesture (a pan, a pinch, the wheel): the same bounds as `clamp`. */
   clampToPanBounds(): void {
-    if (this.clampCentre()) {
-      this.clampToExtent();
-      return;
-    }
-    const slackX = this.worldWidth - this.viewport.width;
-    const slackY = this.worldHeight - this.viewport.height;
-    if (this.clampToProgrammaticReachableSet) {
-      this.clampToReachableSet();
-      this.clampToExtent();
-      return;
-    }
-    const pixels = (tiles: number) => Math.max(0, tiles) * this.tile * this.scale;
-    this.rawX =
-      slackX <= 0
-        ? slackX / 2
-        : Math.max(
-            -pixels(this.clampRingTiles.left),
-            Math.min(slackX + pixels(this.clampRingTiles.right), this.rawX),
-          );
-    this.rawY =
-      slackY <= 0
-        ? slackY / 2
-        : Math.max(
-            -pixels(this.clampRingTiles.top),
-            Math.min(slackY + pixels(this.clampRingTiles.bottom), this.rawY),
-          );
-    this.clampToExtent();
+    this.clamp();
   }
 
   /**
@@ -592,115 +433,6 @@ export class Camera {
     return true;
   }
 
-  /** Exact convex hull of offsets reachable by programmatic focus within F. */
-  programmaticReachableHull(): ConvexPolygon {
-    const slackX = this.worldWidth - this.viewport.width;
-    const slackY = this.worldHeight - this.viewport.height;
-    const focus = [
-      { x: PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
-      { x: this.grid.width - PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
-      {
-        x: this.grid.width - PAN_FOCUS_MARGIN_TILES,
-        y: this.grid.height - PAN_FOCUS_MARGIN_TILES,
-      },
-      { x: PAN_FOCUS_MARGIN_TILES, y: this.grid.height - PAN_FOCUS_MARGIN_TILES },
-    ].map((point) => this.groundPoint(point));
-    const candidates = focus.map((point) => ({
-      x: clampOffset(point.x * this.scale - this.viewport.width / 2, slackX),
-      y: clampOffset(point.y * this.scale - this.viewport.height / 2, slackY),
-    }));
-    const emitBreakCrossings = (axis: 'x' | 'y', breakLine: number, brokenOffset: number) => {
-      for (let index = 0; index < focus.length; index += 1) {
-        const start = focus[index];
-        const end = focus[(index + 1) % focus.length];
-        if (!start || !end) continue;
-        if (!(
-          (start[axis] < breakLine && end[axis] > breakLine) ||
-          (start[axis] > breakLine && end[axis] < breakLine)
-        ))
-          continue;
-        const t = (breakLine - start[axis]) / (end[axis] - start[axis]);
-        const crossing = {
-          x: start.x + (end.x - start.x) * t,
-          y: start.y + (end.y - start.y) * t,
-        };
-        candidates.push(
-          axis === 'x'
-            ? {
-                x: brokenOffset,
-                y: clampOffset(crossing.y * this.scale - this.viewport.height / 2, slackY),
-              }
-            : {
-                x: clampOffset(crossing.x * this.scale - this.viewport.width / 2, slackX),
-                y: brokenOffset,
-              },
-        );
-      }
-    };
-
-    if (slackX > 0) {
-      emitBreakCrossings('x', this.viewport.width / (2 * this.scale), 0);
-      emitBreakCrossings(
-        'x',
-        this.bounds.width * this.tile - this.viewport.width / (2 * this.scale),
-        slackX,
-      );
-    }
-    if (slackY > 0) {
-      emitBreakCrossings('y', this.viewport.height / (2 * this.scale), 0);
-      emitBreakCrossings(
-        'y',
-        this.bounds.height * this.tile - this.viewport.height / (2 * this.scale),
-        slackY,
-      );
-    }
-
-    // T clamps each coordinate independently. Its affine subdivision of F has
-    // vertices not only on F's boundary, but also where an x and y break line
-    // meet inside F. Their images are required for exactly conv(T(F)); without
-    // them the hull can lose a real corner as a break line enters/leaves F.
-    const xBreaks =
-      slackX > 0
-        ? [
-            this.viewport.width / (2 * this.scale),
-            this.bounds.width * this.tile - this.viewport.width / (2 * this.scale),
-          ]
-        : [];
-    const yBreaks =
-      slackY > 0
-        ? [
-            this.viewport.height / (2 * this.scale),
-            this.bounds.height * this.tile - this.viewport.height / (2 * this.scale),
-          ]
-        : [];
-    for (const x of xBreaks)
-      for (const y of yBreaks) {
-        const point = { x, y };
-        if (
-          focus.every(
-            (start, index) =>
-              cross(start, focus[(index + 1) % focus.length] ?? start, point) >= -1e-9,
-          )
-        )
-          candidates.push({
-            x: clampOffset(x * this.scale - this.viewport.width / 2, slackX),
-            y: clampOffset(y * this.scale - this.viewport.height / 2, slackY),
-          });
-      }
-
-    return convexHull(candidates);
-  }
-
-  private clampToReachableSet(): void {
-    const next = clampToConvexHull(
-      { x: this.rawX, y: this.rawY },
-      this.programmaticReachableHull(),
-    );
-    if (Math.hypot(next.x - this.rawX, next.y - this.rawY) <= OFFSET_WRITE_EPSILON) return;
-    this.rawX = next.x;
-    this.rawY = next.y;
-  }
-
   panBy(dx: number, dy: number): void {
     this.rawX -= dx;
     this.rawY -= dy;
@@ -732,13 +464,11 @@ export class Camera {
    * Integer-zoom pinch and wheel: the gesture moves a continuous request, and
    * the board steps to the whole device scale nearest it (by ratio), anchored
    * on the pointer. Out stops at the whole scale that still shows the fitted
-   * board, or, where that is under one device pixel, at the overview.
+   * board, and never under a fingertip.
    */
   private zoomIntegerAt(at: ScreenPoint, factor: number): void {
     const dpr = this.viewport.dpr;
-    const overview = this.overviewScale;
     const low =
-      overview ??
       Math.max(
         wholeDeviceScale(Math.min(this.fitScale(), this.maxScale), dpr, 'floor'),
         this.extentDeviceScale,
@@ -766,15 +496,15 @@ export class Camera {
     this.clamp();
   }
 
-  /** Continuous logical ground coordinate -> unscaled projected world pixels. */
+  /** Continuous logical ground coordinate -> unscaled world pixels. */
   groundPoint(pos: Vec2): ScreenPoint {
-    return this.boardPoint(projectGround(pos, this.projection));
+    const tile = this.tile;
+    return { x: pos.x * tile, y: pos.y * tile };
   }
 
-  /** A point already in board units (projected tiles) -> unscaled world pixels. */
+  /** A point in board units (tiles) -> unscaled world pixels; the same as `groundPoint`. */
   boardPoint(point: Vec2): ScreenPoint {
-    const tile = this.tile;
-    return { x: (point.x - this.bounds.minX) * tile, y: (point.y - this.bounds.minY) * tile };
+    return this.groundPoint(point);
   }
 
   /** The single forward transform shared by rendering, markers and pointer tests. */
@@ -784,22 +514,17 @@ export class Camera {
   }
 
   unproject(pos: ScreenPoint): Vec2 {
-    return unprojectGround(
-      {
-        x: (pos.x + this.offsetX) / (this.tile * this.scale) + this.bounds.minX,
-        y: (pos.y + this.offsetY) / (this.tile * this.scale) + this.bounds.minY,
-      },
-      this.projection,
-    );
+    return {
+      x: (pos.x + this.offsetX) / (this.tile * this.scale),
+      y: (pos.y + this.offsetY) / (this.tile * this.scale),
+    };
   }
 
   /** Affine transform of logical world pixels, not of upright art. */
   groundMatrix() {
     const s = this.scale;
     const origin = this.project({ x: 0, y: 0 });
-    return this.projection === 'oblique'
-      ? { a: s, b: s / 2, c: -s, d: s / 2, tx: origin.x, ty: origin.y }
-      : { a: s, b: 0, c: 0, d: s, tx: origin.x, ty: origin.y };
+    return { a: s, b: 0, c: 0, d: s, tx: origin.x, ty: origin.y };
   }
 
   /** A centre-compatible box. For ground geometry use project(), not its square bounds. */
@@ -815,31 +540,23 @@ export class Camera {
     footprint: 1 | 2 = 1,
     square = SQUARE_FOOTPRINTS,
   ): { x: number; y: number; size: number } {
-    if (this.projection !== 'oblique') {
-      return this.toScreen(
-        square ? { x: pos.x, y: footprintFoot(pos, footprint, true).y - 0.5 } : pos,
-      );
-    }
-    const size = this.tile * this.scale;
-    const foot = this.project(renderFoot(pos, footprint, square, this.projection));
-    return { x: foot.x - (size * footprint) / 2, y: foot.y - size * 0.86, size };
+    return this.toScreen(
+      square ? { x: pos.x, y: footprintFoot(pos, footprint, true).y - 0.5 } : pos,
+    );
   }
 
+  /** The tile under a pointer. Every tap, hover and long press goes through this. */
   toTile(screenX: number, screenY: number): Vec2 {
     const point = this.unproject({ x: screenX, y: screenY });
     return { x: Math.floor(point.x), y: Math.floor(point.y) };
   }
 
   /**
-   * The tile drawn under a pointer: like `toTile`, but a raised tile's lifted
-   * top and faces pick that tile rather than the flat one they cover
-   * (`pickCell`). Every tap, hover and long press goes through this.
+   * The tile drawn under a pointer: `toTile`, now that no board lifts its tiers (ADR 0104 T7). The
+   * grid argument is kept for the callers that still pass one.
    */
-  pickTile(screenX: number, screenY: number, grid: Grid | null | undefined): Vec2 {
-    const point = this.unproject({ x: screenX, y: screenY });
-    return grid
-      ? pickCell(grid, point, this.projection)
-      : { x: Math.floor(point.x), y: Math.floor(point.y) };
+  pickTile(screenX: number, screenY: number, _grid?: Grid | null): Vec2 {
+    return this.toTile(screenX, screenY);
   }
 
   /** True when any part of the tile is on screen. Used to skip drawing. */

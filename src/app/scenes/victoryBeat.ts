@@ -1,9 +1,8 @@
-import type { Grid, Unit, Vec2 } from '../../core/types';
+import type { Unit, Vec2 } from '../../core/types';
 import { isAlive } from '../../core/rules/stats';
 import { SQUARE_FOOTPRINTS } from '../../core/rules/footprint';
 import type { Camera } from '../../render/camera';
 import { actorBodyBounds, actorSilhouetteGeometry } from '../../render/geometry/actorSilhouette';
-import { liftAlong } from '../../render/geometry/elevation';
 
 export interface VictoryBeatClock {
   readonly remainingMs: number;
@@ -70,14 +69,12 @@ export function victoryActorBounds(
   camera: Camera,
   unit: Unit,
   presentation: VictoryActorPresentation,
-  grid?: Grid,
 ): VictoryActorBounds {
   const box = camera.spriteBox(presentation.pos, unit.size, SQUARE_FOOTPRINTS);
   if (presentation.offset) {
     box.x += presentation.offset.x * box.size;
     box.y += presentation.offset.y * box.size;
   }
-  if (grid) box.y -= liftAlong(grid, presentation.pos, camera.projection) * box.size;
 
   const scale = presentation.scale * 1.02;
   const heightTiles = SQUARE_FOOTPRINTS ? unit.size : 1;

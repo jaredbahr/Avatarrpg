@@ -5,7 +5,6 @@ import type { WalkDirection } from './direction';
 import { ASSETS } from '../../content/assets/manifest';
 import type { ClipName } from '../../content/assets/clips';
 import type { Vec2 } from '../../core/types';
-import { partyScale } from './actorScale';
 import { Animator } from '../animator';
 import type { ContentIndex } from '../../core/types';
 
@@ -106,84 +105,6 @@ describe('screen-facing melee contacts', () => {
   });
 });
 
-describe('oblique screen headings', () => {
-  for (const reduced of [false, true]) {
-    for (const [dx, dy, clip, facing] of [
-      [1, 0, 'walk', 1],
-      [0, 1, 'walk', -1],
-      [-1, 0, 'walk', -1],
-      [0, -1, 'walk', 1],
-      [1, 1, 'walkSouth', 1],
-      [-1, -1, 'walkNorth', 1],
-    ] as const) {
-      it(`faces screen travel for (${dx},${dy}), reduced=${reduced}`, () => {
-        const a = new Animator(content, { motionReduced: () => reduced });
-        a.setProjection('oblique');
-        a.push(
-          0,
-          [
-            {
-              type: 'partyWalked',
-              unitId: 'p',
-              from: { x: 4, y: 4 },
-              path: [1, 2, 3, 4].map((step) => ({ x: 4 + dx * step, y: 4 + dy * step })),
-            },
-          ],
-          [],
-        );
-        const halfway = a.finishesAt / 2;
-        expect(a.locomotion(halfway, 'p')).toEqual({ clip, facing });
-        const pos = a.renderPos(halfway, 'p');
-        expect(pos).toBeDefined();
-        // Positions remain logical, so projection cannot alter the travelled route.
-        if (dx === 0) expect(pos?.x).toBe(4);
-        if (dy === 0) expect(pos?.y).toBe(4);
-        const done = a.finishesAt + 1;
-        a.prune(done);
-        // The stop settles on the walked heading before the ready stance.
-        expect(a.locomotion(done, 'p')).toEqual({ clip: clip.replace('walk', 'rest'), facing });
-        expect(a.locomotion(done + 300, 'p')).toEqual({
-          clip: clip.replace('walk', 'idle'),
-          facing,
-        });
-      });
-    }
-  }
-
-  it('changes projection without changing playback duration or logical motion', () => {
-    const a = new Animator(content, { motionReduced: () => false });
-    a.push(
-      0,
-      [
-        {
-          type: 'partyWalked',
-          unitId: 'p',
-          from: { x: 4, y: 4 },
-          path: [
-            { x: 4, y: 5 },
-            { x: 4, y: 6 },
-          ],
-        },
-      ],
-      [],
-    );
-    const finish = a.finishesAt;
-    const pos = a.renderPos(200, 'p');
-    expect(a.locomotion(200, 'p').clip).toBe('walkSouth');
-    a.setProjection('oblique');
-    expect(a.finishesAt).toBe(finish);
-    expect(a.renderPos(200, 'p')).toEqual(pos);
-    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walk', facing: -1 });
-    a.setProjection('orthographic');
-    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walkSouth', facing: 1 });
-  });
-});
-
-/*
- * The four-way choice exactly as it shipped before eight-way sheets existed,
- * kept verbatim as the oracle: a sheet that does not declare eight-way
- * locomotion must keep choosing precisely these clips.
- */
 function legacyWalkDirection(tangent: Vec2, previous?: WalkDirection): WalkDirection {
   const x = Math.abs(tangent.x),
     y = Math.abs(tangent.y);
@@ -347,35 +268,12 @@ describe('heading vocabulary is a declared sheet capability', () => {
         ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * sheet.locomotion.walkMsPerTile.south,
       );
     });
-
-    it(`phases ${sprite}'s oblique eight-way walk by logical distance`, () => {
-      const sheet = ASSETS[sprite];
-      if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
-      const { walkMsPerTile } = sheet.locomotion;
-      // Projection chooses the heading; the oblique board's figure scale stretches
-      // the clip over the ground the larger feet cover (ADR 0095).
-      for (const [to, rate] of [
-        [{ x: 8, y: 4 }, walkMsPerTile.southEast],
-        [{ x: 8, y: 8 }, walkMsPerTile.south],
-        [{ x: 8, y: 0 }, walkMsPerTile.east],
-      ] as const) {
-        const a = new Animator(content, { motionReduced: () => false, amble: true });
-        a.setProjection('oblique');
-        a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
-        const pose = a.unitPose(300, 'u', sprite);
-        const legacy = a.unitPose(300, 'u', FOUR_WAY);
-        const expected = rate / partyScale('oblique');
-        expect((pose?.clipTime ?? 0) - sheet.locomotion.walkStartMs).toBeCloseTo(
-          ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected,
-        );
-      }
-    });
   }
 });
 
 describe('Mira never jogs (ADR 0095)', () => {
   it('draws her sheet’s walk at any pace, and never resolves to a jog', () => {
-    for (const projection of ['orthographic', 'oblique'] as const) {
+    for (const projection of ['orthographic'] as const) {
       const a = new Animator(content, { motionReduced: () => false });
       a.setProjection(projection);
       a.push(
@@ -458,18 +356,18 @@ describe('the fighting stance (ADR 0052)', () => {
   });
 });
 
-describe('eight-way oblique headings for a declaring sheet', () => {
+describe('eight-way headings for a declaring sheet', () => {
   for (const [dx, dy, clip] of [
-    [1, 0, 'SouthEast'],
-    [0, 1, 'SouthWest'],
-    [-1, 0, 'NorthWest'],
-    [0, -1, 'NorthEast'],
-    [1, 1, 'South'],
-    [-1, -1, 'North'],
+    // East is the sheet's own side clip (`walk`, `idle`), the one every heading falls back to.
+    [1, 0, ''],
+    [0, 1, 'South'],
+    [-1, 0, 'West'],
+    [0, -1, 'North'],
+    [1, 1, 'SouthEast'],
+    [-1, -1, 'NorthWest'],
   ] as const) {
-    it(`walks, settles and idles ${clip} for (${dx},${dy})`, () => {
+    it(`walks, settles and idles ${clip || 'East'} for (${dx},${dy})`, () => {
       const a = new Animator(content, { motionReduced: () => false });
-      a.setProjection('oblique');
       a.push(
         0,
         [

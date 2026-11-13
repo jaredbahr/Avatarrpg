@@ -221,23 +221,15 @@ const SPRITES: readonly BendFxSprite[] = [
 ];
 
 const cameras = (): Camera[] => {
-  const oblique = new Camera(
-    { width: 1368, height: 700, dpr: 1 },
-    { width: 12, height: 10 },
-    'oblique',
-  );
-  oblique.fit();
-  const zoomed = new Camera(
-    { width: 1024, height: 768, dpr: 2 },
-    { width: 12, height: 10 },
-    'oblique',
-  );
+  const wide = new Camera({ width: 1368, height: 700, dpr: 1 }, { width: 12, height: 10 });
+  wide.fit();
+  const zoomed = new Camera({ width: 1024, height: 768, dpr: 2 }, { width: 12, height: 10 });
   zoomed.fit();
   zoomed.zoomAt({ x: 300, y: 500 }, 2.3);
   zoomed.panBy(-120, 45);
   const square = new Camera({ width: 800, height: 600, dpr: 1 }, { width: 8, height: 8 });
   square.fit();
-  return [oblique, zoomed, square];
+  return [wide, zoomed, square];
 };
 
 describe('bend effects on Canvas 2D and WebGL', () => {

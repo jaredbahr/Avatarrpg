@@ -25,8 +25,8 @@ export interface RevealTint {
   readonly rim: readonly [number, number, number, number];
   readonly fill: readonly [number, number, number, number];
 }
-/** The oblique boards' tint, as ADR 0096 shipped it. */
-const OBLIQUE_TINT: RevealTint = { rim: [255, 238, 196, 255], fill: [255, 226, 160, 120] };
+/** The orthographic board's tint, as ADR 0096 shipped it for the oblique boards. */
+const FLAT_TINT: RevealTint = { rim: [255, 238, 196, 255], fill: [255, 226, 160, 120] };
 /**
  * The top-down boards' tint (ADR 0104): the same pale hue, quieter. At the top-down zoom a figure
  * behind a roof covers more of the roof, and the full-strength rim with a 120 fill read as a ghost
@@ -35,7 +35,7 @@ const OBLIQUE_TINT: RevealTint = { rim: [255, 238, 196, 255], fill: [255, 226, 1
 const TOPDOWN_TINT: RevealTint = { rim: [255, 238, 196, 190], fill: [255, 226, 160, 64] };
 /** The tint each projection's boards use. */
 export const revealTint = (projection: Camera['projection']): RevealTint =>
-  projection === 'topdown' ? TOPDOWN_TINT : OBLIQUE_TINT;
+  projection === 'topdown' ? TOPDOWN_TINT : FLAT_TINT;
 
 /** Only the party is revealed; a resident or an enemy behind a house is simply hidden. */
 export const revealsUnit = (unit: Pick<RenderUnit, 'faction' | 'fallen'>): boolean =>
@@ -91,7 +91,7 @@ export function revealPixels(
   cover: Uint8ClampedArray,
   w: number,
   h: number,
-  tint: RevealTint = OBLIQUE_TINT,
+  tint: RevealTint = FLAT_TINT,
 ): Uint8ClampedArray | null {
   const solid = (x: number, y: number) =>
     x >= 0 && y >= 0 && x < w && y < h && (figure[(y * w + x) * 4 + 3] ?? 0) >= SOLID;

@@ -7,7 +7,7 @@ import type { Projection } from '../../render/projection';
 import { Animator, BRISK_WALK_CEL_MS, WALK_MS_PER_TILE } from '../animator';
 import { TIMING } from './choreography';
 import { partyScale } from './actorScale';
-import { screenDirection, walkHeading } from './direction';
+import { walkHeading } from './direction';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
 const KAYA = 'unit.fire.kaya';
@@ -25,9 +25,9 @@ function gait() {
 }
 
 /** Kaya's clip ms per logical tile along `tangent`, as the sheet declares it. */
-function kayaRate(tangent: Vec2, projection: Projection): number {
+function kayaRate(tangent: Vec2, _projection: Projection): number {
   // The animator stretches the sheet's clip by the figure's scale (ADR 0095).
-  return gait()[walkHeading(screenDirection(tangent, projection))] / partyScale(projection);
+  return gait()[walkHeading(tangent)] / partyScale();
 }
 
 /** An ambling walker: it plays each heading's fitted rate, which a brisk move only caps. */
@@ -94,15 +94,15 @@ describe('eight-way walk phase across a turn', () => {
     for (const [key, entry] of Object.entries(ASSETS)) {
       if (entry?.kind !== 'sheet' || !entry.locomotion?.walkCelMs) continue;
       const { walkCelMs, walkMsPerTile, walkStartMs } = entry.locomotion;
-      for (const projection of ['orthographic', 'oblique'] as const) {
+      for (const projection of ['orthographic'] as const) {
         for (const amble of [false, true]) {
           const a = new Animator(content, { motionReduced: () => false, amble });
           a.setProjection(projection);
           a.push(0, [{ type: 'partyWalked', unitId: 'p', from: FROM, path: [{ x: 8, y: 4 }] }], []);
           const pose = a.unitPose(300, 'p', key);
           const legacy = a.unitPose(300, 'p', FOUR_WAY)?.clipTime ?? 0;
-          const heading = walkHeading(screenDirection({ x: 1, y: 0 }, projection));
-          const fitted = walkMsPerTile[heading] / partyScale(projection);
+          const heading = walkHeading({ x: 1, y: 0 });
+          const fitted = walkMsPerTile[heading] / partyScale();
           const brisk = (walkCelMs * TIMING.strollStep) / BRISK_WALK_CEL_MS;
           // A brisk move holds each cel BRISK_WALK_CEL_MS at the stroll, unless its fit is slower still.
           expect((pose?.clipTime ?? 0) - walkStartMs, `${key} ${projection} ${amble}`).toBeCloseTo(
@@ -129,8 +129,8 @@ describe('eight-way walk phase across a turn', () => {
     for (const [projection, to] of [
       ['orthographic', { x: 5, y: 4 }],
       ['orthographic', { x: 4, y: 3 }],
-      ['oblique', { x: 5, y: 4 }],
-      ['oblique', { x: 3, y: 3 }],
+      ['orthographic', { x: 5, y: 3 }],
+      ['orthographic', { x: 3, y: 3 }],
     ] as const) {
       const a = walker(projection, FROM, [to]);
       const tangent = { x: to.x - FROM.x, y: to.y - FROM.y };
@@ -152,7 +152,7 @@ describe('eight-way walk phase across a turn', () => {
       const pose = a.unitPose(t, 'p', KAYA);
       expect(pose === undefined || pose.clipTime === 0, `${t}`).toBe(true);
     }
-    const still = walker('oblique', FROM, [FROM]);
+    const still = walker('orthographic', FROM, [FROM]);
     for (let t = 0; t <= still.finishesAt + 1; t += 10) {
       const pose = still.unitPose(t, 'p', KAYA);
       expect(pose === undefined || pose.clipTime === 0, `${t}`).toBe(true);
@@ -160,7 +160,7 @@ describe('eight-way walk phase across a turn', () => {
   });
 
   it('leaves four-way art at its fixed cadence through the same turn', () => {
-    for (const projection of ['orthographic', 'oblique'] as const) {
+    for (const projection of ['orthographic'] as const) {
       const path = tiles(FROM, E, E, E, N, N, N);
       const a = walker(projection, FROM, path);
       for (const sprite of [FOUR_WAY, 'unit.water.nilak', undefined]) {
