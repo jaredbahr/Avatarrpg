@@ -220,7 +220,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         ({ state, session }) => {
           const app = window.fnt?.app;
           if (!app) throw new Error('Missing app before adoption');
-          app.updateSettings({ reduceMotion: false });
+          // Every step below asserts the GameState is the checkpoint's, byte for
+          // byte. A combat tip, once shown, writes its `guidance.tip.` flag into
+          // that state (App bookkeeping, not a reducer change), so tips stay off
+          // here; combat-guidance specs cover them.
+          app.updateSettings({ reduceMotion: false, combatGuidance: false });
           app.adoptSave(state, session);
         },
         { state: checkpoint.state, session: checkpoint.session },
