@@ -15,7 +15,7 @@
 
 import type { Ability, ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
 import { isBendingAttack } from '../anim/bendHandoff';
-import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/scenes/baDan';
+import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/maps/baDanLayout';
 
 // Preserve the practice module's established export while sharing the easing
 // primitive with other presentation systems.

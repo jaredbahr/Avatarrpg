@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as sceneArt from '../scene';
 import { Canvas2DBackend } from './canvas2d';
-import { BA_DAN_ACTOR_GROUNDING } from '../../content/scenes/baDan';
 import {
   DEFAULT_ACTOR_GROUNDING,
   DEFAULT_SHADOW_INK,
@@ -279,33 +278,6 @@ describe('Canvas shadow union in a scene with its own grounding', () => {
       { level: 0.5, x: 16, w: 20 },
     ]);
     near(at(20), shaded(0.5));
-  });
-
-  it("lands Ba Dan's figure shadows on the painting's own shadow tone", () => {
-    // objects.py multiplies the ground by SHADOW (0.70) under a cast and CONTACT (0.50) under the
-    // contact line, cooled by COOL; on the mean ground its shadows fall on, the runtime ink must agree.
-    const ground = [118, 110, 73];
-    const cool = [0.93, 0.96, 1.06];
-    const grounding = { ...DEFAULT_ACTOR_GROUNDING, ...BA_DAN_ACTOR_GROUNDING };
-    const bg = (canvas: FakeCanvas) => {
-      const c = canvas.getContext();
-      c.fillStyle = `rgb(${ground.join(', ')})`;
-      c.fillRect(0, 0, W, H);
-    };
-    const at = run(
-      grounding,
-      [
-        { level: grounding.cast, x: 4, w: 10 },
-        { level: grounding.contact, x: 20, w: 10 },
-      ],
-      bg,
-    );
-    const painted = (m: number) => ground.map((v, k) => Math.round(v * m * (cool[k] ?? 1)));
-    for (const [x, m] of [
-      [8, 0.7],
-      [24, 0.5],
-    ] as const)
-      painted(m).forEach((v, k) => expect(Math.abs((at(x)[k] ?? 0) - v)).toBeLessThanOrEqual(3));
   });
 });
 

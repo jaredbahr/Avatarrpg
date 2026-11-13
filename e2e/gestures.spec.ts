@@ -4,7 +4,6 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import {
   enterNode,
-  pinObliqueStyle,
   resetStorage,
   settleLayout,
   settleMapCanvas,
@@ -12,9 +11,6 @@ import {
   takeTurn,
   waitForIdle,
 } from './helpers';
-
-// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 /**
  * Pinch, pan and Recentre.
@@ -47,11 +43,6 @@ async function centreTile(page: Page): Promise<{ point: Point; tile: Point }> {
   const tile = groundTile(cam, mid);
   const point = groundPoint(cam, { x: tile.x + 0.5, y: tile.y + 0.5 });
   return { point, tile };
-}
-
-async function tileAt(page: Page, point: Point): Promise<Point> {
-  const cam = await camera(page);
-  return groundTile(cam, point);
 }
 
 /** Two fingers travelling from `from` to `to`, in canvas-local pixels. */
@@ -276,73 +267,6 @@ test('a distant release without its final move sample does not walk the party', 
 });
 
 test.describe('zoom and pan', () => {
-  test('normal-text combat framing reserves room for the decision dock', async ({ page }) => {
-    // Integer zoom (ADR 0088): the compact frame stays at 64 CSS px at both
-    // project DPRs. The roomy 96 px preference floors to 64 at DPR 1, while
-    // DPR 2 can retain all 96 CSS px on its whole-device-pixel grid.
-    for (const profile of [
-      { width: 1194, height: 834, tilePxAtDpr1: 64, tilePxAtDpr2: 64 },
-      { width: 1368, height: 912, tilePxAtDpr1: 64, tilePxAtDpr2: 96 },
-    ]) {
-      await page.setViewportSize({ width: profile.width, height: profile.height });
-      await openFight(page);
-      await settleLayout(page);
-      const initial = await camera(page);
-      const dpr = await page.evaluate(() => window.devicePixelRatio);
-      expect([1, 2], 'the configured Surface and iPad project DPRs').toContain(dpr);
-      expect(initial.projection).toBe('oblique');
-      expect(initial.tilePx).toBeCloseTo(
-        dpr === 2 ? profile.tilePxAtDpr2 : profile.tilePxAtDpr1,
-        3,
-      );
-      expect(initial.fitted).toBe(false);
-      const canvas = await page.locator('.map-canvas').boundingBox();
-      expect(canvas).not.toBeNull();
-      if (!canvas) throw new Error('no combat canvas');
-      // These are rendered canvas measurements, not the viewport or the
-      // camera's internal dimensions. Preserve a usable tactical view.
-      await test.info().attach(`combat-frame-${profile.width}x${profile.height}`, {
-        body: JSON.stringify({ viewport: profile, dpr, canvas, camera: initial }),
-        contentType: 'application/json',
-      });
-      expect(canvas.width).toBeGreaterThan(1000);
-      expect(canvas.height).toBeGreaterThan(300);
-      await expectActorOnScreen(page);
-    }
-  });
-
-  test('a pinch zooms in around the fingers and offers Recentre', async ({ page }) => {
-    await openFight(page);
-    const before = await camera(page);
-    expect(before.fitted).toBe(false);
-    // Normal-text tablet framing is 64px on a short decision canvas and
-    // 96px when there is room. The fixed-profile regression above checks
-    // those exact frames; this test checks the gesture from either frame.
-    expect(before.tilePx).toBeGreaterThanOrEqual(64);
-    const { point, tile } = await centreTile(page);
-    const recentre = page.getByRole('button', { name: /^Recentre$/ });
-    await expect(recentre).toBeVisible();
-
-    await pinch(
-      page,
-      [
-        { x: point.x - 40, y: point.y },
-        { x: point.x + 40, y: point.y },
-      ],
-      [
-        { x: point.x - 100, y: point.y },
-        { x: point.x + 100, y: point.y },
-      ],
-    );
-
-    const after = await camera(page);
-    expect(after.tilePx).toBeGreaterThan(before.tilePx * 1.5);
-    expect(after.fitted).toBe(false);
-    // The tile that was under the pinch is still under it.
-    expect(await tileAt(page, point)).toEqual(tile);
-    await expect(recentre).toBeVisible();
-  });
-
   test('a drag pans only once the board no longer fits', async ({ page }) => {
     // The Cutting now starts in readable oblique framing. Explicitly fit it
     // through the real pinch gesture before checking the fitted-board contract.
@@ -385,32 +309,6 @@ test.describe('zoom and pan', () => {
     expect(panned.tilePx).toBeCloseTo(zoomed.tilePx, 3);
     expect(panned.offsetX).toBeGreaterThan(zoomed.offsetX);
     expect(panned.offsetY).toBeGreaterThan(zoomed.offsetY);
-  });
-
-  test('Recentre restores readable oblique combat framing', async ({ page }) => {
-    await openFight(page);
-    const fitted = await camera(page);
-    const { point } = await centreTile(page);
-    await pinch(
-      page,
-      [
-        { x: point.x - 30, y: point.y },
-        { x: point.x + 30, y: point.y },
-      ],
-      [
-        { x: point.x - 90, y: point.y },
-        { x: point.x + 90, y: point.y },
-      ],
-    );
-    const recentre = page.getByRole('button', { name: /^Recentre$/ });
-    await expect(recentre).toBeVisible();
-    expect((await camera(page)).fitted).toBe(false);
-
-    await recentre.click();
-    const back = await camera(page);
-    expect(back.fitted).toBe(false);
-    expect(back.tilePx).toBeCloseTo(fitted.tilePx, 3);
-    await expect(recentre).toBeVisible();
   });
 
   test('a trackpad pinch (ctrl+wheel) zooms too', async ({ page }) => {

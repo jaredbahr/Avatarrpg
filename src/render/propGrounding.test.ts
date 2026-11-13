@@ -18,7 +18,6 @@ import {
   groundedCast,
   projectShadowPoint,
 } from './lighting';
-import { FOREST_ROAD_SCENE } from '../content/scenes/forestRoad';
 
 const art = (rows: string[]) => ({
   alpha: (x: number, y: number) => (rows[y]?.[x] === '#' ? 255 : 0),
@@ -166,26 +165,5 @@ describe("why props do not use the figures' foot projection", () => {
       if (lowest >= 0 && !cast.has(`${x},${lowest + 1}`) && lowest < foot.y - 8) gaps += 1;
     }
     expect(gaps).toBeGreaterThan(png.width / 8);
-  });
-});
-
-describe('solid forest scenery stands on its own base', () => {
-  const pieces = FOREST_ROAD_SCENE.scenery;
-  it('casts the cottage and every roadside prop but the lantern from its base', () => {
-    const based = pieces.filter((p) => p.castFrom === 'base').map((p) => p.id);
-    expect(based).toContain('forest-keeper-lodge');
-    for (const id of [
-      'signpost',
-      'fence-a',
-      'fence-b',
-      'fence-c',
-      'woodpile',
-      'milestone',
-      'quarry-blocks',
-    ])
-      expect(based).toContain(`forest-roadside-${id}`);
-    // A hanging lamp and a canopy are not on the ground: they keep the foot projection.
-    expect(based).not.toContain('forest-roadside-lantern');
-    expect(based.filter((id) => /pine|alder|tree/.test(id))).toEqual([]);
   });
 });

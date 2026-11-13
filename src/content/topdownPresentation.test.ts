@@ -31,7 +31,7 @@ const PRESENTATION_FIELDS = new Set([
 
 const PRESENTATION: TopDownPresentation = { projection: 'topdown', scene: TOPDOWN_FIXTURE_SCENE };
 
-/** Ba Dan and the Forest Road: both oblique, painted, with a scene and a centre margin. */
+/** Ba Dan and the Forest Road: their own scenes hold only the rules' fields until the swap. */
 const IDS = ['ba_dan_village', 'forest_road'] as const;
 
 function registered(
@@ -117,13 +117,13 @@ describe('withTopDownMaps', () => {
     }
   });
 
-  it('changes only the presentation: the top-down projection and scene, no oblique art', () => {
+  it("changes only the presentation: the top-down scene, keeping the rules' painted rubble", () => {
     const swapped = withTopDownMaps(CONTENT, registered());
     for (const id of IDS) {
       const before = map(id);
       const after = map(id, swapped);
-      expect(before.projection).toBe('oblique');
-      expect(before.backdrop).toBeDefined();
+      expect(before.projection).toBe('topdown');
+      expect(before.backdrop).toBeUndefined();
       expect(after.projection).toBe('topdown');
       expect(after.scene).toMatchObject(TOPDOWN_FIXTURE_SCENE);
       expect(after.scene?.paintedRubble).toEqual(before.scene?.paintedRubble);
@@ -138,7 +138,6 @@ describe('withTopDownMaps', () => {
       // The map's own centre margin stays unless the presentation sets one.
       expect(after.cameraCentreMargin).toBe(before.cameraCentreMargin);
     }
-    expect(map('forest_road').cameraPaint).toBeDefined();
     const margined = withTopDownMaps(CONTENT, registered({ cameraCentreMargin: 0.5 }));
     for (const id of IDS) expect(map(id, margined).cameraCentreMargin).toBe(0.5);
   });
@@ -152,7 +151,7 @@ describe('withTopDownMaps', () => {
     for (const key of Object.keys(CONTENT) as (keyof typeof CONTENT)[])
       if (key !== 'maps') expect(swapped[key], key).toBe(CONTENT[key]);
     // The shipped index is never touched.
-    expect(map('ba_dan_village').projection).toBe('oblique');
+    expect(map('ba_dan_village').scene).toBeUndefined();
   });
 
   it('swaps a single map the same way', () => {
@@ -160,6 +159,7 @@ describe('withTopDownMaps', () => {
     const after = topDownMap(before, PRESENTATION);
     expect(after.rows).toBe(before.rows);
     expect(after.projection).toBe('topdown');
-    expect(before.projection).toBe('oblique');
+    expect(after.scene).toBe(PRESENTATION.scene);
+    expect(before.scene).toBeUndefined();
   });
 });

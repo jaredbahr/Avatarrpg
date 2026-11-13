@@ -5,7 +5,7 @@ import { CONTENT } from '../../content';
 import type { Heading } from '../../content/assets/clips';
 import type { BendEffectDef, BendSetDef } from '../../content/bends';
 import { BEND_FX } from '../../content/fxCels';
-import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/scenes/baDan';
+import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/maps/baDanLayout';
 import { buildGrid, tileAt } from '../../core/rules/grid';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';

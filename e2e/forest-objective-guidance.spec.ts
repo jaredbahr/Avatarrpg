@@ -138,7 +138,7 @@ async function load(
   page: Page,
   renderer: string,
   fixture: Fixture,
-  style: 'topdown' | 'oblique' = 'topdown',
+  style: 'topdown' = 'topdown',
 ): Promise<void> {
   const json = serialize(fixture.state, {
     label: 'Slot 1',
@@ -276,7 +276,7 @@ async function mapControl(page: Page) {
 async function checkEastRouteCue(
   page: Page,
   renderer: 'canvas' | 'webgl',
-  style: 'topdown' | 'oblique',
+  style: 'topdown',
 ): Promise<void> {
   allowSoftwareWebgl(test, renderer);
   const fixture = outbound('map');
@@ -366,34 +366,6 @@ async function checkEastRouteCue(
       break;
   }
   expect((await readTarget()).target).not.toEqual(beforePan);
-  if (style === 'oblique') {
-    // The oblique board can clamp a zoomed camera before the far edge is
-    // visible. Verify the cue still points at the projected route after panning.
-    const { target } = await readTarget();
-    const camera = (await snapshot(page)).camera;
-    if (!camera) throw new Error('Missing oblique camera');
-    const radius = camera.tilePx / 2;
-    if (
-      target.x + radius < box.x ||
-      target.x - radius > box.x + box.width ||
-      target.y + radius < box.y ||
-      target.y - radius > box.y + box.height
-    ) {
-      await expect(cue).toBeVisible();
-      const pointingAtRoute = await cue.evaluate((node, point) => {
-        const rect = node.getBoundingClientRect();
-        const rotation = new DOMMatrix(getComputedStyle(node, '::before').transform);
-        const dx = point.x - (rect.left + rect.width / 2);
-        const dy = point.y - (rect.top + rect.height / 2);
-        return (dx * rotation.a + dy * rotation.b) / Math.hypot(dx, dy);
-      }, target);
-      expect(pointingAtRoute).toBeGreaterThan(0.99);
-    } else {
-      await expect(cue).toBeHidden();
-    }
-    expect((await snapshot(page)).state).toEqual(fixture.state);
-    return;
-  }
   const visible = (await readTarget()).target;
   expect(visible.x).toBeGreaterThan(box.x);
   expect(visible.x).toBeLessThan(box.x + box.width);
@@ -405,7 +377,6 @@ async function checkEastRouteCue(
 
 for (const [renderer, style] of [
   ['canvas', 'topdown'],
-  ['canvas', 'oblique'],
   ['webgl', 'topdown'],
 ] as const) {
   test(`the locked east route has an off-screen cue that follows the exploration camera (${renderer}, ${style})`, async ({
