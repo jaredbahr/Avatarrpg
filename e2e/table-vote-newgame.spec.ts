@@ -29,6 +29,7 @@ async function newFirstChoice(page: Page) {
   await page.getByRole('button', { name: 'New game', exact: true }).tap();
   await page.getByRole('button', { name: '2 players', exact: true }).tap();
   await page.getByRole('button', { name: 'Start with the suggested party', exact: true }).tap();
+  await page.getByRole('button', { name: 'Skip', exact: true }).tap();
   const advance = page.getByRole('button', { name: /^(Next|Continue)$/ });
   await expect(advance).toBeVisible();
   expect(await page.evaluate(() => window.fnt!.app.state!.story.nodeId)).toBe('act1_open');
