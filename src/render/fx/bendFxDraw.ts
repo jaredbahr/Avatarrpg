@@ -1,17 +1,12 @@
 /**
- * Drawing painted bend effects (ADR 0055, step 5): where a resolved sprite
- * lands, for both backends, and the Canvas 2D draw.
- *
- * A flashed sprite draws its cel brightened (`bendFlash.ts`), a copy of
- * that one cel: never the unit's white mask, which Canvas 2D builds for a
- * whole page.
+ * Drawing painted effect cels (the top-down shots, #588): where a resolved
+ * sprite lands, for both backends, and the Canvas 2D draw.
  */
 
 import { BackdropStore } from '../backdrops';
 import type { Camera } from '../camera';
 import { tileSize } from '../projection';
 import type { BendFxSprite } from '../view';
-import { flashedCel } from './bendFlash';
 
 /** The effect pages, decoded once through the loader the paintings use. */
 export const bendFxPages = new BackdropStore(4, 'Bend effect page', 'drawing without it');
@@ -38,20 +33,13 @@ export function bendFxPlacement(sprite: BendFxSprite, camera: Camera) {
   };
 }
 
-/**
- * What a sprite draws from: its page and rectangle, or, flashed, its
- * brightened cel whole. Null until the page has loaded.
- */
+/** What a sprite draws from: its page and rectangle. Null until the page has loaded. */
 export function bendFxSource(
   sprite: BendFxSprite,
 ): { image: HTMLImageElement | HTMLCanvasElement; frame: BendFxSprite['frame'] } | null {
   const page = bendFxPages.get(sprite.image);
   if (!page) return null;
-  const { frame, flash } = sprite;
-  const cel = flash > 0 ? flashedCel(page, sprite.image, frame, flash) : null;
-  return cel
-    ? { image: cel, frame: { x: 0, y: 0, w: frame.w, h: frame.h } }
-    : { image: page, frame };
+  return { image: page, frame: sprite.frame };
 }
 
 /** Canvas 2D: the sprites under the actors, or over them, in order. */

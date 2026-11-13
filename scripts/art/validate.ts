@@ -10,16 +10,12 @@
  * entry promises, points at a PNG or WebP that exists at the size the JSON
  * claims, stays inside 2048 px, and keeps the art bible's clear margin on
  * every frame's border. A lossy WebP sheet is checked on its decoded pixels:
- * the margin, a pin per cel written by the sheet's build
- * script (a hand-edited or re-encoded cel fails), and, for a sheet declaring
- * eight-way locomotion, feet on the anchor's foot line, a rest cel's feet under
- * the column and each walk's and stance's mean foot row level with its idle's.
+ * the margin and a pin per cel written by the sheet's build
+ * script (a hand-edited or re-encoded cel fails).
  * A sheet's further atlas pages (ADR 0052) are held to all of it, page by
  * page, and a frame may live on only one of them; the pins cover the cels on
  * a sheet's lossy pages; a VP8L WebP or lossless PNG page is its own source
- * record and needs no decoded-cel pin. The bend pages beside the G sheets (ADR 0055)
- * are held to the same page rules and pins, and their bend sets to the bend
- * contract (`validateBends`). Every `image` entry's file exists, is the PNG or WebP its
+ * record and needs no decoded-cel pin. Every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
  * 160x160), because the loader falls back to the drawn placeholder on a
  * missing file and a typo would otherwise ship green; and every map's
@@ -31,14 +27,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { ALL_MAPS } from '../../src/content';
-import {
-  CLIP_NAMES,
-  HEADINGS,
-  KO_HEADINGS,
-  headingClip,
-  hitClip,
-  koClip,
-} from '../../src/content/assets/clips';
+import { CLIP_NAMES } from '../../src/content/assets/clips';
 import type { ClipDef, ClipName } from '../../src/content/assets/clips';
 import type { AssetEntry } from '../../src/content/assets/manifest';
 import { clipSetSchema, sheetClipProblems } from '../../src/content/schemas';
@@ -47,18 +36,10 @@ import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { MARGIN } from './lib/align';
 import type { Image } from './lib/image';
 import { imageSize, readPng } from './lib/image';
-import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
+import { crop } from './lib/trim';
 import { decodeWebp, isLosslessWebp, webpSize } from './lib/webp';
-import { BEND_FX, CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
+import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
 import { CEL_MARGIN } from './fx-g1';
-import type { BendEffectDef } from '../../src/content/bends';
-import {
-  bendEffectDefSchema,
-  bendSetDefSchema,
-  validateBendSets,
-  validateEffectCels,
-} from '../../src/content/bends';
-import { parseBendFxPage } from '../../src/render/fx/bendFx';
 
 /** The largest texture every device in the matrix takes. */
 const MAX_ATLAS = 2048;
@@ -69,83 +50,17 @@ export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: numbe
 };
 
 /**
- * Lossy sheets and the pin files their build scripts write: the G build's,
- * and the knockout build's for the page it adds (ADR 0059). A WebP
- * sheet without one fails: its cels cannot be compared with a lossless
- * reference.
+ * Lossy sheets and the pin files their build scripts write. A WebP sheet
+ * without one fails: its cels cannot be compared with a lossless reference.
+ * The G sheets that had them went in T7 (ADR 0104); no shipped sheet is lossy.
  */
-export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
-  // The party at native G1 (ADR 0089, `party-g1.ts`).
-  'unit.fire.kaya': ['art/source/party-g1/pins/kaya.json'],
-  'unit.water.sura': ['art/source/party-g1/pins/sura.json'],
-  'unit.earth.bo': ['art/source/party-g1/pins/bo.json'],
-  // The forest bandits and the Ba Dan residents at native G1 (ADR 0091, `residents-g1.ts`).
-  'unit.enemy.thug': ['art/source/residents-g1/pins/thug.json'],
-  'unit.enemy.slinger': ['art/source/residents-g1/pins/slinger.json'],
-  'unit.enemy.bruiser': ['art/source/residents-g1/pins/bruiser.json'],
-  'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
-  'npc.household': ['art/source/residents-g1/pins/household.json'],
-  'npc.guard': ['art/source/residents-g1/pins/watch.json'],
-  'npc.elder': ['art/source/residents-g1/pins/mira.json'],
-  'npc.shopkeeper': ['art/source/residents-g1/pins/gao.json'],
-  'npc.kid': ['art/source/residents-g1/pins/pella.json'],
-  'npc.dorin': ['art/source/residents-g1/pins/dorin.json'],
-};
-
-/** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
-export const STAND_TOLERANCE = 6;
-/**
- * The envelope for walk and settle cels: a lifted stride, never a floating or
- * sunk figure. The grounded walks measure 10 px above to 10 px below the line
- * (a screen-vertical stride lifts the trailing foot), so 12 above now catches
- * the earlier floating east and west walks, whose feet sat 12-16 px above it.
- *
- * The lift is measured from where she stands in that heading: the anchor's
- * foot line, or her idle cel 0's feet when those stand higher (Kaya's south
- * idle stands 4 px above the line, inside `STAND_TOLERANCE`). A walk placed level
- * with that idle lifts its feet relative to that idle, not to the line; the
- * sunk bound stays on the line.
- */
-export const STRIDE_ABOVE = 12;
-export const STRIDE_BELOW = 10;
-/**
- * A jog's envelope (ADR 0095). Its flight cels leave the ground, lifting the
- * lowest sole up to 13 px at G1 (the bruiser's south-west), and its long stride
- * carries the lowest foot up to 26.5 px from the column; its contacts are set
- * on idle's sole by registration (`assemble.py`), so it has no clip-level
- * foot row bound: in a back view the trailing foot, nearer the camera, draws
- * below the planted sole. It sinks no further than a walk.
- */
-export const JOG_ABOVE = 28;
-export const JOG_CENTRE = 56;
-/**
- * How far the feet's centre may sit from the anchor column, standing and
- * mid-stride. A full 13 px/cel stride on a down-screen diagonal carries the
- * lowest (leading) foot up to 29 px from the column while the body stays on it.
- */
-export const STAND_CENTRE = 16;
-export const STRIDE_CENTRE = 32;
-/**
- * A rest cel is the one pose between the last stride and idle, so its feet
- * stand under the figure: a stop on a lone leading foot 16 px off the column
- * reads as a slide.
- */
-export const REST_CENTRE = 12;
-/**
- * How far a walk, rest or stance clip's mean lowest opaque row may sit from
- * idle cel 0's in the same heading. Per cel the lowest row swings with the
- * stride; over the cycle it stays where she stands, or the figure bobs up or
- * down at every start and stop. A fighting stance stands feet apart, so it is
- * held to the stride's envelope per cel and to this per clip (ADR 0052).
- */
-export const FOOT_ROW_TOLERANCE = 4;
+export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {};
 
 /**
- * The bounds above, and the art bible's clear margin, are measured on the
- * 128 px-a-tile G grid. A sheet on a coarser grid (the party at the world's
- * native G1, 64 px a tile, ADR 0089) is held to the same bounds in tiles: each
- * pixel figure scales by its pixels a tile over 128. A finer sheet keeps the
- * 128 px figures, so no sheet that passed before is held tighter.
+ * The art bible's clear margin is measured on the 128 px-a-tile G grid. A sheet
+ * on a coarser grid is held to the same margin in tiles: it scales by its
+ * pixels a tile over 128. A finer sheet keeps the 128 px figure, so no sheet
+ * that passed before is held tighter.
  */
 export function gridScale(pixelsPerTile: number): number {
   return Math.min(1, pixelsPerTile / 128);
@@ -158,21 +73,6 @@ export function celHash(
 ): string {
   const cel = crop(image, { x: frame.x, y: frame.y, width: frame.w, height: frame.h });
   return createHash('sha256').update(cel.data).digest('hex');
-}
-
-/** The x centre of the opaque pixels in the lowest `rows` rows of a cel. */
-export function footCentre(cel: Image, rows = 6): number | null {
-  const bottom = lowestOpaqueRow(cel);
-  let sum = 0;
-  let count = 0;
-  for (let y = Math.max(0, bottom - rows + 1); y <= bottom; y++) {
-    for (let x = 0; x < cel.width; x++) {
-      if ((cel.data[(y * cel.width + x) * 4 + 3] ?? 0) < 8) continue;
-      sum += x;
-      count++;
-    }
-  }
-  return count === 0 ? null : sum / count;
 }
 
 /** Larger than this and it is not the flat-shaded picture the packs ask for. */
@@ -245,6 +145,8 @@ export async function validateSheets(
   const problems: string[] = [];
   for (const [key, entry] of Object.entries(entries)) {
     if (entry.kind !== 'sheet') continue;
+    // A top-down sheet (ADR 0104) is held by its own packer's checks (`scripts/art/topdown/`).
+    if (entry.atlas.startsWith('art/topdown/')) continue;
     const pages: Page[] = [];
     for (const path of [entry.atlas, ...(entry.atlasPages ?? [])]) {
       const page = await readPage(publicDir, key, path);
@@ -373,121 +275,6 @@ export async function validateSheets(
         if (!used.has(name)) problems.push(`${key}: pinned cel "${name}" is not in a clip`);
       }
     }
-    if (entry.locomotion) {
-      const line = Math.round(entry.anchor.y * wantH);
-      const column = entry.anchor.x * wantW;
-      for (const heading of HEADINGS) {
-        const idleName = clips[headingClip('idle', heading)]?.frames[0];
-        const idleFound = idleName ? find(idleName) : undefined;
-        const idleCel = idleFound
-          ? crop(idleFound.image, {
-              x: idleFound.frame.x,
-              y: idleFound.frame.y,
-              width: idleFound.frame.w,
-              height: idleFound.frame.h,
-            })
-          : undefined;
-        // Never more than the standing tolerance above the line, so an idle
-        // that itself floats cannot lift its walk's envelope with it.
-        const stands = Math.max(
-          line - STAND_TOLERANCE * g,
-          Math.min(line, idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : line),
-        );
-        for (const base of ['idle', 'walk', 'jog', 'rest', 'stance'] as const) {
-          const clip = headingClip(base, heading);
-          const rows: number[] = [];
-          for (const name of clips[clip]?.frames ?? []) {
-            const found = find(name);
-            if (!found) continue;
-            const { image, frame } = found;
-            const cel = crop(image, { x: frame.x, y: frame.y, width: frame.w, height: frame.h });
-            if (!alphaBounds(cel)) {
-              problems.push(`${key}: cel "${name}" is empty`);
-              continue;
-            }
-            const foot = lowestOpaqueRow(cel);
-            rows.push(foot);
-            const centre = footCentre(cel) ?? -1;
-            const standing = base === 'idle';
-            const grounded = standing
-              ? Math.abs(foot - line) <= STAND_TOLERANCE * g
-              : foot >= stands - (base === 'jog' ? JOG_ABOVE : STRIDE_ABOVE) * g &&
-                foot <= line + STRIDE_BELOW * g;
-            if (!grounded) {
-              problems.push(
-                `${key}: cel "${name}" puts its feet at row ${foot}, off the foot line ${line}`,
-              );
-            }
-            // A guard stance stands feet apart, a stride's width (ADR 0052).
-            const centred =
-              (standing
-                ? STAND_CENTRE
-                : base === 'rest'
-                  ? REST_CENTRE
-                  : base === 'jog'
-                    ? JOG_CENTRE
-                    : STRIDE_CENTRE) * g;
-            if (Math.abs(centre - column) > centred) {
-              problems.push(
-                `${key}: cel "${name}" centres its feet at x ${centre.toFixed(1)}, off the anchor ${column}`,
-              );
-            }
-          }
-          const idleRow = idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : undefined;
-          if (base !== 'idle' && base !== 'jog' && idleRow !== undefined && rows.length > 0) {
-            const mean = rows.reduce((sum, row) => sum + row, 0) / rows.length;
-            if (Math.abs(mean - idleRow) > FOOT_ROW_TOLERANCE * g) {
-              problems.push(
-                `${key}: clip "${clip}" has its mean foot row at ${mean.toFixed(2)}, ` +
-                  `${(mean - idleRow).toFixed(2)} px from idle's ${idleRow}`,
-              );
-            }
-          }
-        }
-      }
-      // A G knockout or hit starts on the stance's feet at its size: placed by
-      // its own anchor, frame 0 has the stance cel's exact alpha (ADR 0059,
-      // ADR 0063). A hit's last frame is that same cel, held.
-      const foot = { x: column, y: entry.anchor.y * wantH };
-      const registered = [
-        ...KO_HEADINGS.map((heading) => [koClip(heading), heading] as const),
-        ...HEADINGS.map((heading) => [hitClip(heading), heading] as const),
-      ];
-      for (const [clip, heading] of registered) {
-        const def = clips[clip];
-        if (!def?.anchor) continue;
-        // An enemy has no fighting stance: its idle's first cel is the stance
-        // its hits and knockouts start and end on (`residents-g1.ts`, ADR 0091).
-        const stanceClip = headingClip('stance', heading);
-        const stanceFound = find(
-          `${key}/${clips[stanceClip] ? stanceClip : headingClip('idle', heading)}/0`,
-        );
-        if (!stanceFound) {
-          problems.push(`${key}: no ${heading} stance cel to register ${clip} on`);
-          continue;
-        }
-        const stance = crop(stanceFound.image, {
-          x: stanceFound.frame.x,
-          y: stanceFound.frame.y,
-          width: stanceFound.frame.w,
-          height: stanceFound.frame.h,
-        });
-        const name = def.frames[0];
-        if (clip.startsWith('hit') && def.frames[def.frames.length - 1] !== name)
-          problems.push(`${key}: ${clip} does not end on its first cel, the stance`);
-        const found = name ? find(name) : undefined;
-        if (!found) continue;
-        const cel = crop(found.image, {
-          x: found.frame.x,
-          y: found.frame.y,
-          width: found.frame.w,
-          height: found.frame.h,
-        });
-        const differ = stanceAlphaMismatch(cel, foot, def.anchor, stance);
-        if (differ > 0)
-          problems.push(`${key}: ${clip} frame "${name}" is ${differ} alpha px off the stance cel`);
-      }
-    }
     for (const [direction, frames] of Object.entries(entry.meleeDirections ?? {})) {
       if (!frames) continue;
       for (const name of frames) {
@@ -510,285 +297,6 @@ export async function validateSheets(
       }
     }
   }
-  return problems;
-}
-
-/**
- * The bend pages on each G sheet and the bend set they draw (ADR 0055). The
- * manifest registers the pages as the sheet's `bendPages`, never among its
- * `atlasPages`, and the set as its `bend`, and the runtime reads the set
- * without its schema, so this is where the set is checked: the registration
- * against this table (a bend page among `atlasPages` fails it), the same page
- * rules and decoded-cel pins as a sheet's pages, the set against its schema and
- * `validateBendSets` against the painted effects (`validateBendFx`), and every
- * heading's first and last frame on the stance cel's exact alpha, so the bend
- * starts and ends on its feet.
- */
-export const BEND_SHEETS: Readonly<
-  Record<
-    string,
-    { readonly pins: string; readonly data: string; readonly pages: readonly string[] }
-  >
-> = {
-  'unit.fire.kaya': {
-    pins: 'art/source/party-g1/pins/kaya-bend.json',
-    data: 'art/units/kaya-bend.json',
-    pages: ['art/units/kaya-g-bend.json'],
-  },
-  'unit.water.sura': {
-    pins: 'art/source/party-g1/pins/sura-bend.json',
-    data: 'art/units/sura-bend.json',
-    pages: ['art/units/sura-g-bend.json'],
-  },
-  'unit.earth.bo': {
-    pins: 'art/source/party-g1/pins/bo-bend.json',
-    data: 'art/units/bo-bend.json',
-    pages: ['art/units/bo-g-bend.json'],
-  },
-};
-
-/** Alpha pixels that differ between a bend cel placed by its anchor and the stance cel. */
-function stanceAlphaMismatch(
-  bend: Image,
-  foot: { x: number; y: number },
-  anchor: { x: number; y: number },
-  stance: Image,
-): number {
-  const ox = Math.round(foot.x - anchor.x * bend.width);
-  const oy = Math.round(foot.y - anchor.y * bend.height);
-  let differ = 0;
-  const alpha = (image: Image, x: number, y: number) =>
-    x < 0 || y < 0 || x >= image.width || y >= image.height
-      ? 0
-      : (image.data[(y * image.width + x) * 4 + 3] ?? 0);
-  const x0 = Math.min(0, ox);
-  const y0 = Math.min(0, oy);
-  const x1 = Math.max(stance.width, ox + bend.width);
-  const y1 = Math.max(stance.height, oy + bend.height);
-  for (let y = y0; y < y1; y++)
-    for (let x = x0; x < x1; x++) if (alpha(bend, x - ox, y - oy) !== alpha(stance, x, y)) differ++;
-  return differ;
-}
-
-export async function validateBends(
-  publicDir = 'public',
-  sheets: typeof BEND_SHEETS = BEND_SHEETS,
-  entries: Readonly<Record<string, AssetEntry>> = ASSETS,
-): Promise<string[]> {
-  const problems: string[] = [];
-  for (const [key, entry] of Object.entries(entries)) {
-    if (entry.kind === 'sheet' && entry.bend && !sheets[key])
-      problems.push(`${key}: its bend ${entry.bend} has no pins or pages to check it against`);
-  }
-  for (const [key, bend] of Object.entries(sheets)) {
-    const registered = entries[key];
-    if (registered?.kind === 'sheet') {
-      if (registered.bend !== bend.data)
-        problems.push(
-          `${key}: the manifest's bend is ${registered.bend ?? 'unset'}, not ${bend.data}`,
-        );
-      for (const path of bend.pages)
-        if (!registered.bendPages?.includes(path) || registered.atlasPages?.includes(path))
-          problems.push(`${key}: the manifest does not load the bend page ${path} as a bend page`);
-    }
-    const pages: Page[] = [];
-    for (const path of bend.pages) {
-      const page = await readPage(publicDir, key, path);
-      if (typeof page === 'string') problems.push(page);
-      else pages.push(page);
-    }
-    if (pages.length !== bend.pages.length) continue;
-    const where = new Map<string, Page>();
-    for (const page of pages) {
-      for (const name of page.frames.keys()) {
-        const other = where.get(name);
-        if (other)
-          problems.push(`${key}: bend frame "${name}" is on both ${other.path} and ${page.path}`);
-        where.set(name, page);
-      }
-    }
-    const cel = (name: string): Image | undefined => {
-      const page = where.get(name);
-      const frame = page?.frames.get(name);
-      return page && frame
-        ? crop(page.image, { x: frame.x, y: frame.y, width: frame.w, height: frame.h })
-        : undefined;
-    };
-
-    const dataPath = resolve(publicDir, bend.data);
-    if (!existsSync(dataPath)) {
-      problems.push(`${key}: ${bend.data} is missing under ${publicDir}/`);
-      continue;
-    }
-    const parsed = bendSetDefSchema.safeParse(JSON.parse(readFileSync(dataPath, 'utf8')));
-    if (!parsed.success) {
-      problems.push(`${key}: ${bend.data} fails the bend schema: ${parsed.error.message}`);
-      continue;
-    }
-    const set = parsed.data;
-    if (set.unitAsset !== key) problems.push(`${key}: ${bend.data} draws ${set.unitAsset}`);
-    const known = Object.keys(entries);
-    const names = [...where.keys()];
-    let effects: BendEffectDef[] = [];
-    try {
-      effects = readBendEffects(publicDir);
-    } catch (error) {
-      problems.push(`${key}: ${error instanceof Error ? error.message : String(error)}`);
-    }
-    for (const problem of validateBendSets([set], effects, known, names))
-      problems.push(`${key}: ${problem}`);
-
-    const pinned = existsSync(bend.pins)
-      ? (JSON.parse(readFileSync(bend.pins, 'utf8')) as { frames?: Record<string, string> }).frames
-      : undefined;
-    if (!pinned) problems.push(`${key}: ${bend.pins} pins no bend cels`);
-    const used = new Set<string>();
-    for (const heading of HEADINGS) {
-      const facing = set.facings[heading];
-      for (const name of facing.frames) {
-        used.add(name);
-        const page = where.get(name);
-        const frame = page?.frames.get(name);
-        if (!page || !frame) continue;
-        const { width, height } = facing.frameSize;
-        if (frame.w !== width || frame.h !== height)
-          problems.push(
-            `${key}: bend frame "${name}" is ${frame.w}x${frame.h}, expected ${width}x${height}`,
-          );
-        const unit = entries[key];
-        const margin = Math.round(
-          MARGIN * gridScale(unit?.kind === 'sheet' ? unit.pixelsPerTile : 128),
-        );
-        if (borderTouched(page.image, frame, margin))
-          problems.push(`${key}: bend frame "${name}" has art inside the ${margin} px margin`);
-      }
-    }
-    for (const name of where.keys()) {
-      const page = where.get(name);
-      const frame = page?.frames.get(name);
-      if (!used.has(name)) problems.push(`${key}: bend frame "${name}" is in no heading`);
-      if (pinned && page && frame && pinned[name] !== celHash(page.image, frame))
-        problems.push(`${key}: decoded bend cel "${name}" does not match its pin`);
-    }
-    for (const name of Object.keys(pinned ?? {}))
-      if (!where.has(name)) problems.push(`${key}: pinned bend cel "${name}" is on no page`);
-
-    // Registration: the first and last frames stand exactly on the stance cel,
-    // which is on the sheet's own pages; its bend pages are in `bendPages`.
-    const entry = entries[key];
-    if (entry?.kind !== 'sheet') {
-      problems.push(`${key}: the bend's unit is not a sheet`);
-      continue;
-    }
-    const sheetPages: Page[] = [];
-    for (const path of [entry.atlas, ...(entry.atlasPages ?? [])]) {
-      const page = await readPage(publicDir, key, path);
-      if (typeof page !== 'string') sheetPages.push(page);
-    }
-    const w = entry.frameSize?.w ?? entry.pixelsPerTile * entry.footprint.w;
-    const h = entry.frameSize?.h ?? entry.pixelsPerTile * 1.5;
-    const foot = { x: entry.anchor.x * w, y: entry.anchor.y * h };
-    for (const heading of HEADINGS) {
-      const facing = set.facings[heading];
-      const stanceName = `${key}/${headingClip('stance', heading)}/0`;
-      const stancePage = sheetPages.find((page) => page.frames.has(stanceName));
-      const stanceFrame = stancePage?.frames.get(stanceName);
-      if (!stancePage || !stanceFrame) {
-        problems.push(`${key}: no stance cel "${stanceName}" to register the ${heading} bend on`);
-        continue;
-      }
-      const stance = crop(stancePage.image, {
-        x: stanceFrame.x,
-        y: stanceFrame.y,
-        width: stanceFrame.w,
-        height: stanceFrame.h,
-      });
-      const ends = [facing.frames[0], facing.frames[facing.frames.length - 1]];
-      for (const [end, name] of ends.entries()) {
-        const image = name ? cel(name) : undefined;
-        if (!image) continue;
-        const differ = stanceAlphaMismatch(image, foot, facing.anchor, stance);
-        if (differ > 0)
-          problems.push(
-            `${key}: ${heading} bend ${end === 0 ? 'first' : 'last'} frame "${name}" is ${differ} alpha px off the stance cel`,
-          );
-      }
-    }
-  }
-  return problems;
-}
-
-/** The painted bend effects `BEND_FX` registers, held to their schema; throws on any fault. */
-export function readBendEffects(
-  publicDir = 'public',
-  path: string = BEND_FX.data,
-): BendEffectDef[] {
-  const file = resolve(publicDir, path);
-  if (!existsSync(file)) throw new Error(`${path} is missing under ${publicDir}/`);
-  const raw = JSON.parse(readFileSync(file, 'utf8')) as unknown;
-  if (!Array.isArray(raw)) throw new Error(`${path} is not a list of effects`);
-  return raw.map((entry, index) => {
-    const parsed = bendEffectDefSchema.safeParse(entry);
-    if (!parsed.success)
-      throw new Error(`${path} effect ${index} fails the effect schema: ${parsed.error.message}`);
-    return parsed.data;
-  });
-}
-
-/** The effect atlas's pin file: the decoded cels `scripts/art/bend-effects.ts` wrote. */
-export const BEND_FX_PINS = 'art/source/bend-effects/pins.json';
-
-/**
- * The painted bend effects (ADR 0055): the data parses and passes the effect
- * rules, every cel a layer times is on a registered page and no page carries
- * a cel no layer draws, every cel keeps the art bible's clear margin and a
- * readable pivot, and every decoded cel matches the pin its build wrote.
- */
-export async function validateBendFx(
-  publicDir = 'public',
-  registration: { readonly data: string; readonly pages: readonly string[] } = BEND_FX,
-  pinsPath = BEND_FX_PINS,
-): Promise<string[]> {
-  const problems: string[] = [];
-  let effects: BendEffectDef[];
-  try {
-    effects = readBendEffects(publicDir, registration.data);
-  } catch (error) {
-    return [`bend effects: ${error instanceof Error ? error.message : String(error)}`];
-  }
-  for (const problem of validateBendSets([], effects, []))
-    problems.push(`bend effects: ${problem}`);
-  const pinned = existsSync(pinsPath)
-    ? (JSON.parse(readFileSync(pinsPath, 'utf8')) as { frames?: Record<string, string> }).frames
-    : undefined;
-  if (!pinned) problems.push(`bend effects: ${pinsPath} pins no effect cels`);
-  const names: string[] = [];
-  for (const path of registration.pages) {
-    const page = await readPage(publicDir, 'bend effects', path);
-    if (typeof page === 'string') {
-      problems.push(page);
-      continue;
-    }
-    try {
-      parseBendFxPage(readFileSync(resolve(publicDir, path), 'utf8'), path);
-    } catch (error) {
-      problems.push(
-        `bend effects: ${path}: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-    for (const [name, frame] of page.frames) {
-      if (names.includes(name)) problems.push(`bend effects: cel "${name}" is on two pages`);
-      names.push(name);
-      if (borderTouched(page.image, frame, MARGIN))
-        problems.push(`bend effects: cel "${name}" has art inside the ${MARGIN} px margin`);
-      if (pinned && pinned[name] !== celHash(page.image, frame))
-        problems.push(`bend effects: decoded cel "${name}" does not match its pin`);
-    }
-  }
-  for (const name of Object.keys(pinned ?? {}))
-    if (!names.includes(name)) problems.push(`bend effects: pinned cel "${name}" is on no page`);
-  for (const problem of validateEffectCels(effects, names))
-    problems.push(`bend effects: ${problem}`);
   return problems;
 }
 
@@ -946,8 +454,6 @@ export function validateFxCels(publicDir = 'public'): string[] {
 if (process.argv[1]?.endsWith('validate.ts')) {
   const problems = [
     ...(await validateSheets()),
-    ...(await validateBends()),
-    ...(await validateBendFx()),
     ...validateImages(),
     ...validateBackdrops(),
     ...validateFlocks(),

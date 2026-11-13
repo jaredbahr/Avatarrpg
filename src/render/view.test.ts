@@ -72,7 +72,7 @@ describe('the fallen fade (ADR 0059)', () => {
     expect(fallenAlpha({ fallen: false, clip: 'koSouthEast' })).toBe(1);
     expect(fallenAlpha({ fallen: true })).toBe(FALLEN_ALPHA);
     expect(fallenAlpha({ fallen: true, clip: 'ko' })).toBe(FALLEN_ALPHA);
-    expect(fallenAlpha({ fallen: true, clip: 'stance' })).toBe(FALLEN_ALPHA);
+    expect(fallenAlpha({ fallen: true, clip: 'idle' })).toBe(FALLEN_ALPHA);
     for (const clip of ['koSouthEast', 'koSouthWest', 'koNorthEast', 'koNorthWest'] as const)
       expect(fallenAlpha({ fallen: true, clip })).toBe(FALLEN_KNOCKOUT_ALPHA);
     expect(FALLEN_KNOCKOUT_ALPHA).toBeGreaterThan(FALLEN_ALPHA);

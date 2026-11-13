@@ -63,35 +63,4 @@ describe('Cutting character art', () => {
       ).toBe(true);
     });
   }
-  it('keeps undeclared hero frames exact and matches their oblique adult height', async () => {
-    for (const [name, key] of [
-      ['sura', 'unit.water.sura'],
-      ['kaya', 'unit.fire.kaya'],
-    ]) {
-      if (!name || !key) throw new Error('Invalid hero reference');
-      const entry = ASSETS[key];
-      if (entry?.kind !== 'sheet') throw new Error('Missing hero sheet');
-      expect(entry.frameSize).toBeUndefined();
-      expect(await validateSheets('public', { [key]: entry })).toEqual([]);
-      const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
-      const rect = atlas.frames.get(`${key}/idle/0`);
-      if (!rect) throw new Error('Missing hero standing pose');
-      if (atlas.image.endsWith('.webp')) {
-        // The PixelLab G party (ADR 0050, ADR 0051), on the world's G1 grid (ADR 0089).
-        expect(['kaya', 'sura', 'bo']).toContain(name);
-        expect([rect.w, rect.h]).toEqual([64, 96]);
-        expect(entry.pixelsPerTile).toBe(64);
-        expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
-      } else {
-        const frame = crop(readPng(`public/art/units/${atlas.image}`), {
-          x: rect.x,
-          y: rect.y,
-          width: rect.w,
-          height: rect.h,
-        });
-        const height = alphaBounds(frame)?.height ?? 0;
-        expect(Math.abs(height * 1.25 - 151)).toBeLessThan(1);
-      }
-    }
-  });
 });
