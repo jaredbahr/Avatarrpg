@@ -1,6 +1,8 @@
 # T7 retirement reference appendix
 
-Historical scan pinned to head `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07); TypeScript 5.9.3; 801 configured files. Main has since advanced to `477443a817431c01e9193bf0918ade674a8ab1ec`, including the #606 surface-readability follow-up and #616 budget change; this appendix is not an exhaustive current-main reference scan. Rerun the path and semantic-reference audits on the post-T6 deletion candidate before removing files. `findReferences` counts include declarations. Literal/path grep: 1,234 matching lines across 376 tracked files. The grouped listing below preserves every matched file and line, with reference-family labels where recognizable; source text and payloads are omitted. Full raw command/output and SHA map are in validation evidence.
+The historical scan is pinned to head `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07), with TypeScript 5.9.3 and 801 configured files. The [inventory](t7-retirement-inventory.md) records the paths retired and the build measurements for the first two T7 steps as of main `a999058812c8d0cbeb7eaa91ea628aea44eaecb0` (2026-11-13). Rerun the path and semantic-reference audits on the remaining G1 and projection deletion candidate before removing files.
+
+`findReferences` counts include declarations. The literal/path grep found 1,234 matching lines across 376 tracked files. The grouped listing preserves each historical file and line, with reference-family labels where recognizable. Full raw commands, output and the SHA map are in the validation evidence.
 
 ## TypeScript semantic references
 
