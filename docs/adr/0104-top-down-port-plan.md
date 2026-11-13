@@ -276,6 +276,28 @@ for run time), 21.01 MB after (93 oblique files left for run time), of 25 MB. Ja
 the precache manifest in `sw.js` included. `scripts/precache.test.ts` pins that every map drawing ignored art is a
 swapped one. T7 deletes those files.
 
+## T7, first half: the style switch and the oblique maps (2026-11-13)
+
+The owner approved T7 after an end-to-end top-down playthrough found no blockers. It lands in steps, each green on
+its own:
+
+- **The style switch is gone.** `src/app/style.ts`, `?style=oblique` and `?style=world` (the world-style figure test,
+  ADR 0097) are deleted; `main.ts` always turns on the top-down figures and fetches the scenes. A `?style=` in an old
+  link is ignored. A scene that fails to load leaves its map on the bare board (there is no oblique fallback).
+- **The route maps are top-down in the content itself.** Ba Dan, the Forest Road, the quarry gate, the Cutting and the
+  Driller floor declare `projection: 'topdown'` and `cameraCentreMargin: 1`, with no `backdrop` or `cameraPaint`; their
+  own `scene` carries only the rules' `paintedRubble` until the fetched scene replaces it. The rule layout that lived in
+  the oblique scene modules moved beside the maps (`maps/baDanLayout.ts`; the roadside and rubble cells in
+  `maps/combat.ts`). The oblique scene modules (`scenes/baDan*.ts`, `forestRoad*.ts`, `quarryGate.ts`,
+  `quarryProjected.ts` and their helpers) and their art pipelines (`scripts/art/ba-dan-regions/`, the forest G1 and
+  quarry packers) are deleted with their tests.
+- **Not yet:** the shipped oblique map art and its sources (next step), then the oblique projection in the renderer
+  (the lift pass, the diamond camera and its painted-ring and hull clamps) and the G1 sheets in `ASSETS`, which the art
+  and animation tests still pin and whose dormant mechanics (bends, stance, jog, brisk cadence) need their own
+  migration.
+
+Measured on the build: JavaScript 410.0 KB before, 402.4 KB after (budget 410, unchanged).
+
 ## Driller grounding implementation (#469)
 
 The Driller packer records each static heading's tread span, center offset and baseline from

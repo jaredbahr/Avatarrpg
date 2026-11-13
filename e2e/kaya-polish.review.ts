@@ -10,7 +10,7 @@
  *
  * Local review fixture only: not a playthrough, not a CI check.
  *
- * FNT_KP_LABEL=after FNT_KP_QUERY='&style=world' npx playwright test -c playwright.kaya-polish.config.ts
+ * FNT_KP_LABEL=after npx playwright test -c playwright.kaya-polish.config.ts
  * (FNT_KP_ONLY=walk|fight runs one; FNT_KP_TILE_PX and FNT_KP_FIGHT_TILE_PX set the zooms.)
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -19,7 +19,7 @@ import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 const LABEL = process.env.FNT_KP_LABEL ?? 'current';
-const QUERY = process.env.FNT_KP_QUERY ?? '&style=world';
+const QUERY = process.env.FNT_KP_QUERY ?? '';
 const FOLDER = `${process.env.FNT_KP_DIR ?? '.shots/kaya-polish'}/${LABEL}`;
 const ONLY = process.env.FNT_KP_ONLY;
 

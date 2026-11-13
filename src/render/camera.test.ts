@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { COMBAT_CAMERA_RING_TILES, FOREST_ROAD } from '../content/maps/combat';
+import { FOREST_ROAD } from '../content/maps/combat';
+
+/** The oblique quarry boards' painted ring, in tiles past the grid (retired with their art at T7). */
+const RING = { top: 8.75, right: 5, bottom: 1.25, left: 5 } as const;
+const COMBAT_CAMERA_RING_TILES = {
+  quarry_gate: RING,
+  ambush_road: RING,
+  quarry_floor: RING,
+} as const;
+/** The oblique forest's fade polygon (2.2 tiles of apron), retired with its art at T7. */
+const FOREST_HULL = [
+  { x: 0, y: -2.2 },
+  { x: 24.4, y: 10 },
+  { x: 8, y: 18.2 },
+  { x: -16.4, y: 6 },
+];
 import type { Projection } from './projection';
 import { Camera, MIN_TILE_PX, TILE } from './camera';
 import type { Viewport } from './camera';
@@ -232,8 +247,8 @@ describe('Camera centre clamp', () => {
       name: 'forest road',
       width: FOREST_ROAD.width,
       height: FOREST_ROAD.height,
-      projection: FOREST_ROAD.projection ?? 'orthographic',
-      cameraCentreMargin: FOREST_ROAD.cameraCentreMargin,
+      projection: 'oblique',
+      cameraCentreMargin: -0.609375,
     },
   ] as const;
   const viewports = [
@@ -1112,7 +1127,7 @@ describe('Camera.clamp programmatic-reachable hull', () => {
   });
 });
 
-const FOREST_FADE_HULL = FOREST_ROAD.cameraPaint!.points.map((point) =>
+const FOREST_FADE_HULL = FOREST_HULL.map((point) =>
   new Camera(NARROW, GRID, 'oblique').boardPoint(point),
 );
 

@@ -65,7 +65,6 @@ import {
   weatherChipText,
 } from '../../core/rules/obscurementPresentation';
 import { CONTENT } from '../../content';
-import { COMBAT_CAMERA_RING_TILES } from '../../content/maps/combat';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
@@ -1053,15 +1052,7 @@ export class CombatScene implements Scene {
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
-    this.renderer.camera.clampRingTiles =
-      this.renderer.camera.projection === 'topdown'
-        ? { top: 0, right: 0, bottom: 0, left: 0 }
-        : (COMBAT_CAMERA_RING_TILES[battle.mapId as keyof typeof COMBAT_CAMERA_RING_TILES] ?? {
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-          });
+    this.renderer.camera.clampRingTiles = { top: 0, right: 0, bottom: 0, left: 0 };
     // The oblique and top-down boards are pixel art at one art px per world px
     // (ADR 0085, 0104): they draw at a whole number of device pixels per world
     // pixel (ADR 0088), at N >= dpr on the top-down board.
