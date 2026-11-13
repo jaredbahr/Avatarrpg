@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { HEADINGS } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import type { BendSetDef } from '../../content/bends';
@@ -191,7 +191,10 @@ describe('a bend on its sheet (ADR 0055)', () => {
   });
 
   const data = JSON.parse(shipped(BEND_DATA)) as BendSetDef;
-  const fetchStub = () => globalThis.fetch as unknown as ReturnType<typeof vi.fn>;
+  type FetchPage = (
+    url: string,
+  ) => Promise<{ ok: boolean; status: number; text: () => Promise<string> }> | undefined;
+  const fetchStub = () => globalThis.fetch as unknown as Mock<FetchPage>;
   const fetched = (path: string): number =>
     fetchStub().mock.calls.filter(([url]) => String(url).endsWith(path)).length;
   /** Answers `path` with `response` from now on. */
