@@ -70,10 +70,6 @@ import { ExploreScene } from './scenes/ExploreScene';
 import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
-import { BEND_FX } from '../content/fxCels';
-import { loadBendFx } from '../render/fx/bendFx';
-import type { BendFxIndex } from '../render/fx/bendFx';
-import { bendFxPages } from '../render/fx/bendFxDraw';
 import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
 
@@ -256,8 +252,6 @@ export class App {
     null;
   private resizeQueued = false;
   private routeTimer: number | null = null;
-  private bendFx: BendFxIndex | undefined;
-  private bendFxLoading = false;
 
   /**
    * Consumed by CombatScene at mount. This is intentionally ephemeral: a
@@ -278,28 +272,6 @@ export class App {
 
   get curtainBusy(): boolean {
     return this.curtain.busy;
-  }
-
-  /**
-   * Combat warms the painted bend effects at its start, and a map with a
-   * bending practice ground on arrival: the data, then every
-   * page decoded, and only then may a cast bend (ADR 0055, step 7). Until
-   * then, and for the session if any of it fails, casts stay legacy.
-   */
-  preloadBendFx(): void {
-    if (this.bendFx || this.bendFxLoading) return;
-    this.bendFxLoading = true;
-    void loadBendFx(BEND_FX, import.meta.env.BASE_URL)
-      .then(async (fx) => {
-        const pages = await Promise.all(fx.images.map((url) => bendFxPages.whenLoaded(url)));
-        if (pages.every(Boolean)) this.bendFx = fx;
-      })
-      .catch(() => undefined);
-  }
-
-  /** Whether the painted bend effects are in, so a cast may bend (see `preloadBendFx`). */
-  get bendFxReady(): boolean {
-    return this.bendFx !== undefined;
   }
 
   private cancelRoute(): void {
@@ -410,18 +382,6 @@ export class App {
       ...(overrides.timingProfile ? { timingProfile: overrides.timingProfile } : {}),
       // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
       sheetClips: (sprite) => sheets.clips(sprite),
-      bends: () => {
-        const fx = this.bendFx;
-        return fx
-          ? {
-              fx,
-              // Asking a bend that has not been preloaded must not load it.
-              setOf: (sprite) =>
-                sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
-              frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
-            }
-          : undefined;
-      },
     });
   }
 

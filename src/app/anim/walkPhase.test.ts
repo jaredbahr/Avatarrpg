@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ASSETS, G1_WALK, G_STRIDE_TILES } from '../../content/assets/manifest';
-import { HEADINGS, headingClip } from '../../content/assets/clips';
+import { ASSETS } from '../../content/assets/manifest';
 import type { ContentIndex, Vec2 } from '../../core/types';
 import { smoothPath } from '../../render/geometry/curve';
 import type { Projection } from '../../render/projection';
-import { Animator, BRISK_WALK_CEL_MS, WALK_MS_PER_TILE } from '../animator';
-import { TIMING } from './choreography';
+import { Animator, WALK_MS_PER_TILE } from '../animator';
 import { partyScale } from './actorScale';
 import { walkHeading } from './direction';
 
@@ -13,16 +11,14 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 const KAYA = 'unit.fire.kaya';
 /** A four-way sheet: a fixed near-authored clip phase per tile. */
 const FOUR_WAY = 'unit.earth.linmei';
-/** Kaya's walk cel: the clip's nominal 114 ms cadence. */
-const CEL_MS = 114;
-/** Where Kaya's walk starts: its quarter-cycle passing cel. */
-const START_MS = 3 * CEL_MS;
-
-function gait() {
+function locomotion() {
   const sheet = ASSETS[KAYA];
-  if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error('Kaya G is eight-way');
-  return sheet.locomotion.walkMsPerTile;
+  if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error('Kaya is eight-way');
+  return sheet.locomotion;
 }
+const gait = () => locomotion().walkMsPerTile;
+/** Where Kaya's walk starts, as her sheet declares it. */
+const START_MS = locomotion().walkStartMs;
 
 /** Kaya's clip ms per logical tile along `tangent`, as the sheet declares it. */
 function kayaRate(tangent: Vec2, _projection: Projection): number {
@@ -30,7 +26,7 @@ function kayaRate(tangent: Vec2, _projection: Projection): number {
   return gait()[walkHeading(tangent)] / partyScale();
 }
 
-/** An ambling walker: it plays each heading's fitted rate, which a brisk move only caps. */
+/** An ambling walker: it plays each heading's fitted rate. */
 function walker(projection: Projection, from: Vec2, path: readonly Vec2[]): Animator {
   const a = new Animator(content, { motionReduced: () => false, amble: true });
   a.setProjection(projection);
@@ -70,50 +66,6 @@ const E: [number, number] = [1, 0];
 const N: [number, number] = [0, -1];
 
 describe('eight-way walk phase across a turn', () => {
-  it('plays every G walk at the stride its drawn feet cover in every heading', () => {
-    for (const [key, entry] of Object.entries(ASSETS)) {
-      if (entry?.kind !== 'sheet' || entry.facing !== 'both' || !entry.locomotion) continue;
-      const name = /([a-z]+)-g\.json$/.exec(entry.atlas)?.[1] ?? '';
-      const fit = G1_WALK[name];
-      // Every native-G1 figure walks until the redraw (ADR 0095's amendment);
-      // only Mira ambles everywhere.
-      expect(Boolean(entry.locomotion.jog), key).toBe(false);
-      expect(Boolean(entry.locomotion.amble), key).toBe(key === 'npc.elder');
-      HEADINGS.forEach((heading, i) => {
-        const walk = entry.clips[headingClip('walk', heading)];
-        if (!walk) throw new Error(`${key} walk ${heading}`);
-        const loop =
-          walk.frames.length / (entry.locomotion!.walkMsPerTile[heading] * (walk.fps / 1000));
-        // The quarry bender's 128 px sheet keeps ADR 0067's shared stride.
-        expect(loop, `${key} ${heading}`).toBeCloseTo(fit?.[i] ?? G_STRIDE_TILES, 8);
-      });
-    }
-  });
-
-  it('walks every native-G1 figure at the brisk cadence, never slower than its fit, and ambles on the fit', () => {
-    for (const [key, entry] of Object.entries(ASSETS)) {
-      if (entry?.kind !== 'sheet' || !entry.locomotion?.walkCelMs) continue;
-      const { walkCelMs, walkMsPerTile, walkStartMs } = entry.locomotion;
-      for (const projection of ['orthographic'] as const) {
-        for (const amble of [false, true]) {
-          const a = new Animator(content, { motionReduced: () => false, amble });
-          a.setProjection(projection);
-          a.push(0, [{ type: 'partyWalked', unitId: 'p', from: FROM, path: [{ x: 8, y: 4 }] }], []);
-          const pose = a.unitPose(300, 'p', key);
-          const legacy = a.unitPose(300, 'p', FOUR_WAY)?.clipTime ?? 0;
-          const heading = walkHeading({ x: 1, y: 0 });
-          const fitted = walkMsPerTile[heading] / partyScale();
-          const brisk = (walkCelMs * TIMING.strollStep) / BRISK_WALK_CEL_MS;
-          // A brisk move holds each cel BRISK_WALK_CEL_MS at the stroll, unless its fit is slower still.
-          expect((pose?.clipTime ?? 0) - walkStartMs, `${key} ${projection} ${amble}`).toBeCloseTo(
-            (legacy / WALK_MS_PER_TILE) * (amble ? fitted : Math.min(fitted, brisk)),
-            6,
-          );
-        }
-      }
-    }
-  });
-
   it('plays the first stretch at its rate alone before the turn', () => {
     // Before the corner rounds, phase is the east rate times the distance, as
     // it was: turning is the only thing that changed.

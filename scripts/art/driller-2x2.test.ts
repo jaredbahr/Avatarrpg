@@ -3,7 +3,7 @@ import { expect, it, vi } from 'vitest';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { pixelAt, readPng } from './lib/image';
-import { decodeWebp, encodeWebpLossless, isLosslessWebp } from './lib/webp';
+import { decodeWebp, encodeWebp, encodeWebpLossless, isLosslessWebp } from './lib/webp';
 import {
   DRILLER_CLIPS,
   DRILLER_FRAME_SIZE,
@@ -41,9 +41,8 @@ it('ships the deterministic lossless 32-frame atlas with the shadowed stills rem
   const packed = packDriller();
   const encoded = await encodeWebpLossless(packed.image);
   expect(isLosslessWebp(encoded)).toBe(true);
-  expect(isLosslessWebp(new Uint8Array(readFileSync('public/art/units/quarrybender-g.webp')))).toBe(
-    false,
-  );
+  // A lossy encode of the same pixels reads as lossy: the check tells the two apart.
+  expect(isLosslessWebp(await encodeWebp(packed.image, 80))).toBe(false);
   expect(encoded).toEqual(new Uint8Array(readFileSync(DRILLER_WEBP)));
   expect(await decodeWebp(encoded)).toEqual(packed.image);
   expect(packed.json).toBe(readFileSync(DRILLER_JSON, 'utf8'));

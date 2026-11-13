@@ -31,14 +31,14 @@ export function walkHeading(tangent: Vec2, previous?: Heading): Heading {
   return HEADINGS[(octant + 8) % 8] ?? 'east';
 }
 
-/** Actions retain their authored side poses; only locomotion and the stance have front/back art. */
+/** Actions retain their authored side poses; only locomotion has front/back art. */
 export function directionalClip(clip: ClipName, direction?: WalkDirection): ClipName {
-  if (clip !== 'walk' && clip !== 'idle' && clip !== 'rest' && clip !== 'stance') return clip;
+  if (clip !== 'walk' && clip !== 'idle' && clip !== 'rest') return clip;
   if (direction === 'north') return `${clip}North`;
   if (direction === 'south') return `${clip}South`;
   return clip;
 }
 
 export function verticalClip(clip: ClipName): boolean {
-  return /^(walk|idle|rest|stance)(North|South)$/.test(clip);
+  return /^(walk|idle|rest)(North|South)$/.test(clip);
 }

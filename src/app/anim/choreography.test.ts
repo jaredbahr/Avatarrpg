@@ -1042,7 +1042,7 @@ describe('choreograph', () => {
     } as Unit;
     // Kaya's knockouts arrive with her sheet, as the store fetches them.
     const kayaClips = JSON.parse(
-      readFileSync('public/art/units/kaya-g-clips.json', 'utf8'),
+      readFileSync('src/app/anim/fixtures/kaya-g-clips.json', 'utf8'),
     ) as SheetClips;
     const loaded = (sprite: string) => (sprite === kaya.sprite ? kayaClips : undefined);
     const at = (events: GameEvent[], rate = 1, clipsOf: typeof loaded | null = loaded) =>
@@ -1272,7 +1272,7 @@ describe('choreograph', () => {
 
 describe('G hit timing', () => {
   const kayaClips = JSON.parse(
-    readFileSync('public/art/units/kaya-g-clips.json', 'utf8'),
+    readFileSync('src/app/anim/fixtures/kaya-g-clips.json', 'utf8'),
   ) as SheetClips;
   const kaya = {
     ...unit('p0', 1, 3),
@@ -1410,9 +1410,9 @@ describe('G hit timing', () => {
 
   it('shows a plain melee hit for at least 100 ms on each G party sheet', () => {
     const partySheets = [
-      ['unit.fire.kaya', 'public/art/units/kaya-g-clips.json'],
-      ['unit.water.sura', 'public/art/units/sura-g-clips.json'],
-      ['unit.earth.bo', 'public/art/units/bo-g-clips.json'],
+      ['unit.fire.kaya', 'src/app/anim/fixtures/kaya-g-clips.json'],
+      ['unit.water.sura', 'src/app/anim/fixtures/sura-g-clips.json'],
+      ['unit.earth.bo', 'src/app/anim/fixtures/bo-g-clips.json'],
     ] as const;
 
     for (const [sprite, path] of partySheets) {
