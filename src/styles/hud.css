@@ -4497,4 +4497,35 @@ html[data-contrast='high'] .hud-panel::after {
   html[data-large-text='huge'] .combat-scene .combat-bar > .spacer {
     display: none;
   }
+
+  /* Keep the opening caption over the board. The card can use the space
+     below it even when the battlefield reaches its minimum height. */
+  html[data-large-text='huge']
+    .combat-scene
+    .combat-overlays:has(> .handoff-banner:not(.result-banner)) {
+    background: var(--scrim-strong);
+  }
+
+  html[data-large-text='huge'] .combat-scene .handoff-banner:not(.result-banner) {
+    position: fixed;
+    inset: auto 0 0;
+    display: flex;
+    justify-content: center;
+    max-height: 100dvh;
+    overflow-y: auto;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  html[data-large-text='huge'] .combat-scene .handoff-banner:not(.result-banner) > .panel {
+    min-width: 0;
+    max-width: min(34rem, 100%);
+    pointer-events: auto;
+  }
+
+  html[data-large-text='huge'] .combat-scene .handoff-banner:not(.result-banner) h1 {
+    max-width: 100%;
+    font-size: var(--fs-2xl);
+    overflow-wrap: anywhere;
+  }
 }
