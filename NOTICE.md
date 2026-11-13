@@ -9,13 +9,13 @@ Anything not listed here was made for this project.
 
 ## Third-party work
 
-| What | Work | By | Licence | Source |
-| --- | --- | --- | --- | --- |
-| The heading typeface | Shippori Mincho 700, Latin subset | The Shippori Mincho Project Authors | SIL Open Font License 1.1 | [link](https://github.com/fontdasu/ShipporiMincho) |
-| The action icons | Game Icons | the Game Icons contributors | CC BY 3.0 | [link](https://github.com/game-icons/icons) |
-| The sound effects | Impact Sounds 1.0 and Interface Sounds 1.0 | Kenney (kenney.nl) | CC0 1.0 | [link](https://kenney.nl) |
-| The motion of the party’s, residents’ and bandits’ walks, jogs, breathing, hits and knockouts, and the party’s stance and bends | CMU Graphics Lab Motion Capture Database, subjects 8, 9, 12, 76, 77, 79, 90, 135 and 143 | Carnegie Mellon University Graphics Lab | CMU Motion Capture Database terms | [link](https://mocap.cs.cmu.edu) |
-| The motion of the quarry bender’s walk | Mixamo “Unarmed Walk Forward” | Adobe Mixamo | Adobe Mixamo terms | [link](https://www.mixamo.com) |
+| What                                                                                                                            | Work                                                                                     | By                                      | Licence                           | Source                                             |
+| ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- | --------------------------------- | -------------------------------------------------- |
+| The heading typeface                                                                                                            | Shippori Mincho 700, Latin subset                                                        | The Shippori Mincho Project Authors     | SIL Open Font License 1.1         | [link](https://github.com/fontdasu/ShipporiMincho) |
+| The action icons                                                                                                                | Game Icons                                                                               | the Game Icons contributors             | CC BY 3.0                         | [link](https://github.com/game-icons/icons)        |
+| The sound effects                                                                                                               | Impact Sounds 1.0 and Interface Sounds 1.0                                               | Kenney (kenney.nl)                      | CC0 1.0                           | [link](https://kenney.nl)                          |
+| The motion of the party’s, residents’ and bandits’ walks, jogs, breathing, hits and knockouts, and the party’s stance and bends | CMU Graphics Lab Motion Capture Database, subjects 8, 9, 12, 76, 77, 79, 90, 135 and 143 | Carnegie Mellon University Graphics Lab | CMU Motion Capture Database terms | [link](https://mocap.cs.cmu.edu)                   |
+| The motion of the quarry bender’s walk                                                                                          | Mixamo “Unarmed Walk Forward”                                                            | Adobe Mixamo                            | Adobe Mixamo terms                | [link](https://www.mixamo.com)                     |
 
 These licences ask for the author to be named wherever the work is used,
 which is why the game carries the same list on its own Credits screen:
