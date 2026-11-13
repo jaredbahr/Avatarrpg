@@ -11,7 +11,7 @@ import type { Command, GameState } from '../src/core/types';
 import { loadQuarryCheckpoint } from '../scripts/e2e/quarry-checkpoints';
 import { returningWorkerCheckpoint } from '../scripts/e2e/returning-worker-checkpoint';
 import { allowSoftwareWebgl } from './budget';
-import { resetStorage, settleLayout, waitForIdle } from './helpers';
+import { settleLayout, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
 
 interface Fixture {
@@ -20,6 +20,11 @@ interface Fixture {
   transcript: readonly Command[];
   limits: string;
 }
+
+test.beforeEach(async ({ page }) => {
+  // Clear the next document before boot so a reload cannot interrupt its asset requests.
+  await page.addInitScript(() => localStorage.clear());
+});
 
 function issue(state: GameState, command: Command): GameState {
   const result = apply(CONTENT, state, command);
@@ -143,7 +148,8 @@ async function load(
   });
   expect(loadQuarryCheckpoint(json)).toEqual(fixture.state);
   await page.setViewportSize({ width: 1180, height: 820 });
-  await resetStorage(page, `?style=${style}&renderer=${renderer}`);
+  await page.goto(`/?style=${style}&renderer=${renderer}`);
+  await page.waitForFunction(() => Boolean(window.fnt?.app));
   await page.evaluate((saved) => {
     window.fnt!.app.updateSettings({ reduceMotion: true });
     localStorage.setItem('fnt.save.slot1', saved);

@@ -31,6 +31,12 @@ describe('off-screen objective pointer placement', () => {
     expect(east?.angle).toBeCloseTo(Math.atan2(-182, 152));
   });
 
+  it('keeps an east cue beside a follow-party map that fills a short board', () => {
+    const corner = { offsetLeft: 640, offsetTop: 16, offsetWidth: 164, offsetHeight: 175 };
+    const placement = objectivePointerPlacement({ x: 920, y: 70, size: 20 }, 820, 191, corner);
+    expect(placement).toMatchObject({ side: 'east', x: 608, y: 80, angle: 0 });
+  });
+
   it.each([
     [{ x: 100, y: 100, size: 0 }, 1_000, 600],
     [{ x: 0, y: 0, size: 0 }, 1_000, 600],

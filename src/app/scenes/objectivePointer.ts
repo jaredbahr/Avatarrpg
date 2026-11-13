@@ -83,9 +83,9 @@ export function objectivePointerPlacement(
     const left = corner.offsetLeft - inset;
     const bottom = corner.offsetTop + corner.offsetHeight + inset;
     if (x > left && y < bottom) {
-      // Stay on the same edge, clear of the follow-party map in the corner.
-      if (side === 'north' && left >= inset) x = left;
-      else if (side === 'east' && bottom <= height - inset) y = bottom;
+      // A short board can have room beside the map but none below it.
+      if (side === 'east' && bottom <= height - inset) y = bottom;
+      else if (left >= inset) x = left;
       else return null;
     }
   }
