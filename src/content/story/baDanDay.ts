@@ -19,8 +19,7 @@ const both = (...of: Condition[]): Condition => ({ kind: 'all', of });
 const GAO = 'Gao the Shopkeeper';
 const DORIN = 'Gate Guard Dorin';
 const HANRU = 'Hanru';
-/** No Hanru portrait until A1 (it needs a prompt pack); the narrator's stands in. */
-const HANRU_FACE = 'portrait.narrator';
+const HANRU_FACE = 'portrait.hanru';
 const FLOAT =
   'A model parade float sits in the cupboard behind the post. Its little roof sticks out past the door.';
 
