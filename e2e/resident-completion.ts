@@ -1,8 +1,7 @@
-import { FADE_MS, RESIDENT_AMBLE } from '../src/app/world/residentMotion';
-import { STROLL_REFERENCE_MS, TIMING } from '../src/app/anim/choreography';
+import { FADE_MS } from '../src/app/world/residentMotion';
+import { TIMING } from '../src/app/anim/choreography';
 import { strollTiming } from '../src/app/anim/stroll';
 import { smoothPath } from '../src/render/geometry/curve';
-import { sheetLocomotion } from '../src/content/assets/manifest';
 import type { Vec2 } from '../src/core/types';
 
 export const RESIDENT_COMPLETION_STEP_MS = 60;
@@ -70,11 +69,8 @@ export function residentCompletionPlan(snapshot: ResidentPlanSnapshot): Resident
       if (!finitePosition(motion.from) || motion.path.some((position) => !finitePosition(position)))
         throw new Error('Resident route coordinates must be finite');
       const curveLength = smoothPath(motion.from, motion.path).length;
-      const amble = sheetLocomotion(motion.who.sprite)?.amble;
-      const timing = strollTiming(curveLength, amble ? STROLL_REFERENCE_MS : TIMING.strollStep);
-      const pace = amble ? RESIDENT_AMBLE : 1;
-      duration =
-        timing.duration * pace + (motion.enter ? FADE_MS : 0) + (motion.leave ? FADE_MS : 0);
+      const timing = strollTiming(curveLength, TIMING.strollStep);
+      duration = timing.duration + (motion.enter ? FADE_MS : 0) + (motion.leave ? FADE_MS : 0);
     }
 
     if (!Number.isFinite(duration) || duration < 0)

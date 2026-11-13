@@ -130,24 +130,24 @@ describe('heading vocabulary is a declared sheet capability', () => {
     expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
   });
 
-  it('only the G sheets (the party, the thug, the quarry bandits and the Ba Dan residents) declare eight-way locomotion today', () => {
+  it('only the top-down sheets in `ASSETS` (the party, the bandits, the quarry bender and the Ba Dan residents) declare eight-way locomotion today', () => {
     const eightWay = Object.entries(ASSETS).flatMap(([key, entry]) =>
       entry.kind === 'sheet' && entry.locomotion?.headings === 8 ? [[key, entry.atlas]] : [],
     );
     expect(eightWay).toEqual([
-      ['unit.fire.kaya', 'art/units/kaya-g.json'],
-      ['unit.water.sura', 'art/units/sura-g.json'],
-      ['unit.earth.bo', 'art/units/bo-g.json'],
-      ['unit.enemy.thug', 'art/units/thug-g.json'],
-      ['unit.enemy.slinger', 'art/units/slinger-g.json'],
-      ['unit.enemy.bruiser', 'art/units/bruiser-g.json'],
-      ['unit.enemy.quarrybender', 'art/units/quarrybender-g.json'],
-      ['npc.elder', 'art/units/mira-g.json'],
-      ['npc.shopkeeper', 'art/units/gao-g.json'],
-      ['npc.kid', 'art/units/pella-g.json'],
-      ['npc.dorin', 'art/units/dorin-g.json'],
-      ['npc.guard', 'art/units/watch-g.json'],
-      ['npc.household', 'art/units/household-g.json'],
+      ['unit.fire.kaya', 'art/topdown/kaya.json'],
+      ['unit.water.sura', 'art/topdown/sura.json'],
+      ['unit.earth.bo', 'art/topdown/bo.json'],
+      ['unit.enemy.thug', 'art/topdown/thug.json'],
+      ['unit.enemy.slinger', 'art/topdown/slinger.json'],
+      ['unit.enemy.bruiser', 'art/topdown/bruiser.json'],
+      ['unit.enemy.quarrybender', 'art/topdown/quarrybender.json'],
+      ['npc.elder', 'art/topdown/mira.json'],
+      ['npc.shopkeeper', 'art/topdown/gao.json'],
+      ['npc.kid', 'art/topdown/pella.json'],
+      ['npc.dorin', 'art/topdown/dorin.json'],
+      ['npc.guard', 'art/topdown/guard.json'],
+      ['npc.household', 'art/topdown/household.json'],
     ]);
   });
 
@@ -271,35 +271,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
   }
 });
 
-describe('Mira never jogs (ADR 0095)', () => {
-  it('draws her sheet’s walk at any pace, and never resolves to a jog', () => {
-    for (const projection of ['orthographic'] as const) {
-      const a = new Animator(content, { motionReduced: () => false });
-      a.setProjection(projection);
-      a.push(
-        0,
-        [{ type: 'partyWalked', unitId: 'm', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
-        [],
-      );
-      const clips = new Set<string>();
-      for (let t = 0; t <= a.finishesAt + 400; t += 10)
-        clips.add(a.locomotion(t, 'm', 'rest', 'npc.elder').clip);
-      expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
-      expect([...clips].filter((clip) => clip.startsWith('jog'))).toEqual([]);
-    }
-    const mira = ASSETS['npc.elder'];
-    expect(mira?.kind === 'sheet' && mira.locomotion?.amble).toBe(true);
-  });
-});
-
-describe('the fighting stance (ADR 0052)', () => {
-  it('turns the stance like idle for four-way art, which falls back to its idle', () => {
-    expect(directionalClip('stance', 'north')).toBe('stanceNorth');
-    expect(directionalClip('stance', 'south')).toBe('stanceSouth');
-    expect(directionalClip('stance', 'east')).toBe('stance');
-    expect(directionalClip('stance', undefined)).toBe('stance');
-  });
-
+describe('standing between moves', () => {
   for (const [dx, dy, heading] of [
     [1, 0, ''],
     [1, 1, 'SouthEast'],
@@ -310,7 +282,7 @@ describe('the fighting stance (ADR 0052)', () => {
     [0, -1, 'North'],
     [1, -1, 'NorthEast'],
   ] as const) {
-    it(`walks, settles, then stands guard ${heading || 'East'} for (${dx},${dy})`, () => {
+    it(`walks, settles, then idles ${heading || 'East'} for (${dx},${dy})`, () => {
       for (const sprite of G_PARTY) {
         const a = new Animator(content, { motionReduced: () => false });
         a.push(
@@ -325,18 +297,13 @@ describe('the fighting stance (ADR 0052)', () => {
           ],
           [],
         );
-        // The brisk stroll walks (ADR 0095's amendment).
-        expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
+        expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', sprite).clip).toBe(`walk${heading}`);
         const done = a.finishesAt + 1;
         a.prune(done);
         // The stop holds a planted walk cel for the settle window (not a stride
-        // frame, not the guard); the guard follows once it ends.
-        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
-        const guard = a.locomotion(done + 300, 'p', 'stance', sprite);
-        // Authored for each side, so drawn unflipped whichever way she faces.
-        expect(guard.clip).toBe(`stance${heading}`);
-        const entry = ASSETS[sprite];
-        expect(entry?.kind === 'sheet' && entry.clips[guard.clip]?.frames).toHaveLength(8);
+        // frame, not the idle); the idle follows once it ends.
+        expect(a.locomotion(done, 'p', 'idle', sprite).clip).toBe(`walk${heading}`);
+        expect(a.locomotion(done + 300, 'p', 'idle', sprite).clip).toBe(`idle${heading}`);
       }
     });
   }
@@ -350,9 +317,7 @@ describe('the fighting stance (ADR 0052)', () => {
     );
     const done = a.finishesAt + 400;
     a.prune(done);
-    expect(a.locomotion(done, 'p', 'stance', FOUR_WAY).clip).toBe('stanceNorth');
-    const entry = ASSETS[FOUR_WAY];
-    expect(entry?.kind === 'sheet' && entry.clips.stanceNorth).toBeFalsy();
+    expect(a.locomotion(done, 'p', 'idle', FOUR_WAY).clip).toBe('idleNorth');
   });
 });
 

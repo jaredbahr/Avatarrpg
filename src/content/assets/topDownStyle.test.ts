@@ -65,14 +65,33 @@ function allClips(entry: SheetEntry): Partial<Record<ClipName, ClipDef>> {
 const actionsOf = (entry: SheetEntry): Record<string, Record<string, ClipDef>> =>
   entry.actions ? read(entry.actions) : {};
 
+/** The keys whose G1 sheets T7 retired: `ASSETS` holds their top-down sheet itself (ADR 0104). */
+const G1_RETIRED = [
+  'unit.fire.kaya',
+  'unit.water.sura',
+  'unit.earth.bo',
+  'unit.enemy.thug',
+  'unit.enemy.slinger',
+  'unit.enemy.bruiser',
+  'unit.enemy.quarrybender',
+  'npc.elder',
+  'npc.shopkeeper',
+  'npc.kid',
+  'npc.dorin',
+  'npc.guard',
+  'npc.household',
+];
+
 describe('?style=topdown (ADR 0104)', () => {
   it('is off until asked for, and then changes only the top-down keys', () => {
     expect(topDownStyleActive()).toBe(false);
     const before = Object.fromEntries(Object.keys(ASSETS).map((key) => [key, resolveAsset(key)]));
     for (const key of Object.keys(TOPDOWN_KEYS)) {
       const entry = resolveAsset(key);
+      // The keys whose G sheets T7 retired hold their top-down sheet already; the rest do not yet.
       // Hanru is still the painted figure by default.
-      if (entry.kind === 'sheet') expect(entry.atlas).not.toMatch(/^art\/topdown\//);
+      if (entry.kind === 'sheet')
+        expect(entry.atlas.startsWith('art/topdown/'), key).toBe(G1_RETIRED.includes(key));
     }
     useTopDownStyle();
     expect(topDownStyleActive()).toBe(true);

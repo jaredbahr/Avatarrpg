@@ -477,7 +477,7 @@ export class PixiBackend implements RenderBackend {
   private pavedCells: readonly Vec2[] | undefined;
   private castSprites = new Map<string, Sprite>();
   private castLive = new Set<string>();
-  /** Painted bend effects under and over the actors (ADR 0055). */
+  /** Painted effect cels (the top-down shots, #588) under and over the actors. */
   private bendUnder = new Container();
   private bendOver = new Container();
   private climbCues = new Container();
@@ -1895,10 +1895,7 @@ export class PixiBackend implements RenderBackend {
     const scale = target?.scale ?? 1;
     const frame =
       this.squareFootprints && target
-        ? (target.bend
-            ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
-            : null) ||
-          sheets.frame(
+        ? sheets.frame(
             target.sprite,
             target.clip ?? 'idle',
             target.clipTime ?? view.time + idlePhase(target.id),
@@ -2418,20 +2415,16 @@ export class PixiBackend implements RenderBackend {
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
-      // A bend cel (ADR 0055) stands by its heading's own anchor and is never mirrored.
-      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
-      const frame =
-        bend ||
-        sheets.frame(
-          unit.sprite,
-          unit.clip ?? 'idle',
-          unit.clipTime ?? view.time + idlePhase(unit.id),
-          unit.clipFrame,
-          px * scale,
-          unit.size,
-          unit.meleeDirection,
-          heightTiles,
-        );
+      const frame = sheets.frame(
+        unit.sprite,
+        unit.clip ?? 'idle',
+        unit.clipTime ?? view.time + idlePhase(unit.id),
+        unit.clipFrame,
+        px * scale,
+        unit.size,
+        unit.meleeDirection,
+        heightTiles,
+      );
       const silhouette = combatActorSilhouetteGeometry(
         { x, y, size: this.tile, width },
         heightTiles,
@@ -2447,11 +2440,11 @@ export class PixiBackend implements RenderBackend {
         const placed = placeFrame(frame, 0, 0, this.tile * scale);
         sprite.width = placed.w;
         sprite.height = placed.h;
-        sprite.scale.x = Math.abs(sprite.scale.x) * (bend ? 1 : drawFacing);
+        sprite.scale.x = Math.abs(sprite.scale.x) * drawFacing;
         this.sampleArt(sprite, camera.scale);
         if (revealsUnit(unit) && drawsScene(camera.projection)) {
           const footX = x + width / 2;
-          const flip = !bend && drawFacing === -1;
+          const flip = drawFacing === -1;
           revealFigures.push({
             source: frame.source,
             rect: frame.frame,
@@ -2489,7 +2482,7 @@ export class PixiBackend implements RenderBackend {
                 drawFacing === -1,
               );
               return {
-                drawn: frame && !bend && asset.kind === 'sheet' ? frame : null,
+                drawn: frame && asset.kind === 'sheet' ? frame : null,
                 resting: null,
                 flip: pose.mirror,
                 scale,
@@ -2509,7 +2502,7 @@ export class PixiBackend implements RenderBackend {
                 },
               };
             })()
-          : frame && !bend && asset.kind === 'sheet'
+          : frame && asset.kind === 'sheet'
             ? {
                 drawn: frame,
                 resting: sheets.frame(
