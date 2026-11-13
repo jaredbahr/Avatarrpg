@@ -59,7 +59,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           if (!element) throw new Error(`Missing ${selector}`);
           return element;
         }
-        function box(element: HTMLElement) {
+        function box(element: Element) {
           const { left, top, right, bottom, width, height } = element.getBoundingClientRect();
           return { left, top, right, bottom, width, height };
         }
