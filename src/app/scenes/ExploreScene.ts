@@ -1045,6 +1045,11 @@ export class ExploreScene implements Scene {
       seat || (moving && !this.practising) ? null : practiceAt(this.map?.id, state.location.pos);
     const ready = ground ? this.practiceReady(state) : false;
     this.practiceShown = ground ? ready : null;
+    // Departure playback may still draw the area the party has already left.
+    const canLookAround = () => {
+      const current = this.app.state;
+      return current?.screen === 'explore' && current.location.mapId === this.map?.id;
+    };
     const look = seat
       ? button(
           'Wait',
@@ -1060,9 +1065,14 @@ export class ExploreScene implements Scene {
         : button(
             'Look around',
             () => {
+              if (!canLookAround()) return;
               new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
             },
-            { class: 'action-button', title: 'Find nearby people and places along this path' },
+            {
+              class: 'action-button',
+              title: 'Find nearby people and places along this path',
+              disabled: !canLookAround(),
+            },
           );
     look.prepend(mark(seat ? UI_MARKS.wait : ground ? ABILITY_MARKS.gust : UI_MARKS.talk));
     if (seat) look.appendChild(el('span', { class: 'action-sub', text: seat.label }));
