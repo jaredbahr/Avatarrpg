@@ -1,0 +1,33 @@
+.objective-edge-pointer {
+  position: absolute;
+  z-index: var(--z-banner);
+  display: grid;
+  /* Keep this passive cue inside the 32 CSS-pixel placement inset at large text. */
+  width: min(var(--tap), 62px);
+  height: min(var(--tap), 62px);
+  place-items: center;
+  border: var(--hairline) solid var(--c-gold-deep);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-1) 96%, transparent);
+  box-shadow: 0 0 var(--sp-2) var(--scrim);
+  color: var(--c-ink);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.objective-edge-pointer[hidden],
+.riverside-scene .objective-edge-pointer,
+:root:has([role='dialog']) .objective-edge-pointer {
+  display: none;
+}
+
+.objective-edge-pointer::before {
+  content: '→';
+  font-size: var(--fs-lg);
+  line-height: 1;
+  transform: rotate(var(--objective-edge-angle, 0deg));
+}
+
+html[data-contrast='high'] .objective-edge-pointer {
+  outline: var(--hairline) solid var(--c-ink-line);
+}
