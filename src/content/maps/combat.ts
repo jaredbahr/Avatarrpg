@@ -19,29 +19,55 @@
 
 import type { MapDef, PropPlacement, Vec2 } from '../../core/types';
 import { LEGEND } from './legend';
-import { FOREST_ROAD_SCENE } from '../scenes/forestRoad';
-import { QUARRY_GATE_SCENE } from '../scenes/quarryGate';
-import {
-  CUTTING_SCENE,
-  DRILLER_FLOOR_SCENE,
-  QUARRY_SURROUND_EXTENTS_TILES,
-} from '../scenes/quarryProjected';
-import { FOREST_APRON_PAINTED_EXTENTS_TILES, FOREST_ROADSIDE_PROPS } from '../scenes/forestRoad';
 
-/** Painted surroundings available to the combat camera beyond the full grid. */
-export const COMBAT_CAMERA_RING_TILES = {
-  quarry_gate: QUARRY_SURROUND_EXTENTS_TILES,
-  ambush_road: QUARRY_SURROUND_EXTENTS_TILES,
-  quarry_floor: QUARRY_SURROUND_EXTENTS_TILES,
-} as const;
+/**
+ * The roadside props' cells (the signpost, the fences, the woodpile, the cart wheel, the milestone,
+ * the lantern, the quarry blocks and the mushroom log): the top-down scene draws them, the rules
+ * close their cells (`ROADSIDE_BLOCKING_KEYS`).
+ */
+export const FOREST_ROADSIDE_CELLS: readonly Vec2[] = [
+  { x: 4, y: 2 },
+  { x: 2, y: 2 },
+  { x: 1, y: 2 },
+  { x: 4, y: 3 },
+  { x: 2, y: 1 },
+  { x: 12, y: 2 },
+  { x: 14, y: 2 },
+  { x: 14, y: 3 },
+  { x: 17, y: 3 },
+  { x: 2, y: 10 },
+];
 
-/** Forest's projected fade polygon, retained for exact blank-area validation. */
-const FOREST_CAMERA_PAINT_HULL = [
-  { x: 0, y: -FOREST_APRON_PAINTED_EXTENTS_TILES.top },
-  { x: 20 + FOREST_APRON_PAINTED_EXTENTS_TILES.right, y: 10 },
-  { x: 8, y: 16 + FOREST_APRON_PAINTED_EXTENTS_TILES.bottom },
-  { x: -12 - FOREST_APRON_PAINTED_EXTENTS_TILES.left, y: 6 },
-] as const;
+/**
+ * The cover heaps drawn into each route board's ground (`MapScene.paintedRubble`): cover the art
+ * already shows, so a fight leaves no rubble prop there and the party is never seated on one
+ * (`battleReturnTile`).
+ */
+export const FOREST_RUBBLE_CELLS: readonly Vec2[] = [
+  { x: 7, y: 3 },
+  { x: 8, y: 9 },
+];
+export const CUTTING_RUBBLE_CELLS: readonly Vec2[] = [
+  { x: 6, y: 2 },
+  { x: 13, y: 3 },
+  { x: 6, y: 8 },
+  { x: 13, y: 8 },
+];
+export const DRILLER_RUBBLE_CELLS: readonly Vec2[] = [
+  { x: 8, y: 1 },
+  { x: 11, y: 1 },
+  { x: 2, y: 4 },
+  { x: 2, y: 7 },
+  { x: 8, y: 10 },
+  { x: 11, y: 10 },
+];
+
+/** A route map's own scene before its top-down presentation arrives: the rules' painted rubble. */
+const ruleScene = (paintedRubble: readonly Vec2[]) => ({
+  ground: [],
+  scenery: [],
+  paintedRubble,
+});
 
 /** Shared because every combat map uses the same staggered party entrance. */
 const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
@@ -91,9 +117,7 @@ export const FOREST_GROUND_ROWS: readonly string[] = [
  * the tile changes, so the prop stays decoration until the rules adopt it.
  */
 export const ROADSIDE_BLOCKING_KEYS: Readonly<Record<string, string>> = { ',': 'f', '^': 'b' };
-const FOREST_ROADSIDE_BLOCKERS = new Set(
-  FOREST_ROADSIDE_PROPS.map(({ cell }) => `${cell.x},${cell.y}`),
-);
+const FOREST_ROADSIDE_BLOCKERS = new Set(FOREST_ROADSIDE_CELLS.map(({ x, y }) => `${x},${y}`));
 const FOREST_RULE_ROWS: readonly string[] = FOREST_GROUND_ROWS.map((row, y) =>
   [...row]
     .map((key, x) =>
@@ -104,11 +128,10 @@ const FOREST_RULE_ROWS: readonly string[] = FOREST_GROUND_ROWS.map((row, y) =>
 
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
-  projection: 'oblique',
-  // The 390px viewport at maximum zoom leaves exactly one diamond visible at either side.
-  cameraCentreMargin: -0.609375,
-  scene: FOREST_ROAD_SCENE,
-  backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 80 },
+  projection: 'topdown',
+  // The plate runs two cells past the grid either side and three above (the pine margin).
+  cameraCentreMargin: 1,
+  scene: ruleScene(FOREST_RUBBLE_CELLS),
   name: 'The Forest Road',
   kind: 'combat',
   width: 20,
@@ -169,14 +192,12 @@ export const FOREST_ROAD: MapDef = {
     { side: 'east', span: [9, 9], treatment: 'band' },
   ],
   edgeContract: 'enforce',
-  cameraPaint: { kind: 'convex-hull', points: FOREST_CAMERA_PAINT_HULL },
 };
 
 export const QUARRY_GATE: MapDef = {
   id: 'quarry_gate',
-  projection: 'oblique',
-  scene: QUARRY_GATE_SCENE,
-  backdrop: { url: 'art/maps/quarry_gate.webp', pixelsPerTile: 80 },
+  projection: 'topdown',
+  cameraCentreMargin: 1,
   name: 'The Quarry Gate',
   kind: 'combat',
   width: 20,
@@ -247,9 +268,9 @@ export const QUARRY_GATE: MapDef = {
 
 export const AMBUSH_ROAD: MapDef = {
   id: 'ambush_road',
-  projection: 'oblique',
-  scene: CUTTING_SCENE,
-  backdrop: { url: 'art/maps/ambush_road.webp', pixelsPerTile: 80 },
+  projection: 'topdown',
+  cameraCentreMargin: 1,
+  scene: ruleScene(CUTTING_RUBBLE_CELLS),
   name: 'The Cutting',
   kind: 'combat',
   width: 20,
@@ -315,9 +336,9 @@ export const AMBUSH_ROAD: MapDef = {
 
 export const QUARRY_FLOOR: MapDef = {
   id: 'quarry_floor',
-  projection: 'oblique',
-  scene: DRILLER_FLOOR_SCENE,
-  backdrop: { url: 'art/maps/quarry_floor.webp', pixelsPerTile: 80 },
+  projection: 'topdown',
+  cameraCentreMargin: 1,
+  scene: ruleScene(DRILLER_RUBBLE_CELLS),
   name: 'The Quarry Floor',
   kind: 'combat',
   width: 20,

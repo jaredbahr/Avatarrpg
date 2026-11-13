@@ -6,7 +6,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGrid } from '../core/rules/grid';
 import { FOREST_ROAD, QUARRY_FLOOR } from '../content/maps/combat';
-import { BA_DAN_VILLAGE } from '../content/maps/village';
 import { Camera, MIN_TILE_PX, TILE, isWholeScale, wholeDeviceScale } from './camera';
 import type { Viewport } from './camera';
 import { liftAt } from './geometry/elevation';
@@ -70,30 +69,6 @@ describe('wholeDeviceScale', () => {
 
 describe('integer zoom: the settled views', () => {
   for (const viewport of VIEWPORTS) {
-    it(`explores Ba Dan on whole device pixels (${viewport.name})`, () => {
-      const camera = integerCamera(viewport, BA_DAN_VILLAGE);
-      camera.centreMargin = BA_DAN_VILLAGE.cameraCentreMargin;
-      camera.viewExtent = BA_DAN_VILLAGE.scene?.paintExtent;
-      camera.fitExplore(96);
-      camera.centreOn({ x: 7, y: 6 });
-      expectSettled(camera);
-      expect(TILE * camera.scale).toBeGreaterThanOrEqual(MIN_TILE_PX);
-      // Within one whole step, by ratio, of the 96 px tile the view was tuned for.
-      const ratio = (TILE * camera.scale) / 96;
-      const step = (camera.deviceScale + 1) / camera.deviceScale;
-      expect(Math.max(ratio, 1 / ratio)).toBeLessThanOrEqual(step + 1e-9);
-      // The painting's edge never shows.
-      const extent = camera.viewExtent!;
-      expect(camera.offsetX).toBeGreaterThanOrEqual(extent.x * camera.scale - 1e-9);
-      expect(camera.offsetY).toBeGreaterThanOrEqual(extent.y * camera.scale - 1e-9);
-      expect(camera.offsetX + viewport.width).toBeLessThanOrEqual(
-        (extent.x + extent.width) * camera.scale + 1e-9,
-      );
-      expect(camera.offsetY + viewport.height).toBeLessThanOrEqual(
-        (extent.y + extent.height) * camera.scale + 1e-9,
-      );
-    });
-
     it(`frames the oblique combat board on whole device pixels (${viewport.name})`, () => {
       for (const preferred of [96, 64, 40]) {
         const camera = integerCamera(viewport, FOREST_ROAD);

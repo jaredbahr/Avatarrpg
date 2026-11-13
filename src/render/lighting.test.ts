@@ -1,8 +1,5 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BA_DAN_ACTOR_GROUNDING, BA_DAN_SCENE } from '../content/scenes/baDan';
-import { FOREST_ROAD_SCENE } from '../content/scenes/forestRoad';
-import { QUARRY_GATE_SCENE } from '../content/scenes/quarryGate';
 import {
   CAST_PER_PIXEL,
   CAST_SHADOW_ALPHA,
@@ -187,21 +184,8 @@ describe('scene actor grounding', () => {
       ink: DEFAULT_SHADOW_INK,
     });
     expect(actorGrounding({})).toBe(DEFAULT_ACTOR_GROUNDING);
-    expect(actorGrounding(FOREST_ROAD_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
-    expect(actorGrounding(QUARRY_GATE_SCENE)).toBe(DEFAULT_ACTOR_GROUNDING);
     expect(DEFAULT_CONTACT_ALPHA).toBeGreaterThan(CAST_SHADOW_ALPHA);
     expect(shadowCeiling(DEFAULT_ACTOR_GROUNDING)).toBe(DEFAULT_CONTACT_ALPHA);
-  });
-
-  it("gives Ba Dan its painting's shadow ink and a contact layer, tinted at the strongest of them", () => {
-    const grounding = actorGrounding(BA_DAN_SCENE);
-    expect(grounding).toEqual(BA_DAN_ACTOR_GROUNDING);
-    expect(grounding.ink).not.toEqual(DEFAULT_SHADOW_INK);
-    expect(grounding.contact).toBeGreaterThan(grounding.cast);
-    expect(shadowCeiling(grounding)).toBe(grounding.contact);
-    // Every caster writes its alpha as a fraction of the ceiling, never above it.
-    for (const alpha of [CAST_SHADOW_ALPHA, grounding.cast, grounding.contact])
-      expect(alpha / shadowCeiling(grounding)).toBeLessThanOrEqual(1);
   });
 
   it('fills only the keys a scene sets', () => {
@@ -233,7 +217,7 @@ describe('scene actor grounding', () => {
 });
 
 describe("a figure's ground shadow (ADR 0093, figure amendment)", () => {
-  const key = BA_DAN_ACTOR_GROUNDING.castKey;
+  const key = DEFAULT_ACTOR_GROUNDING.castKey;
   const at = (shadow: ReturnType<typeof figureShadow>, x: number, y: number) =>
     shadow.mask[(shadow.footY + y) * shadow.width + shadow.footX + x] ?? 0;
   const cells = (shadow: ReturnType<typeof figureShadow>) =>

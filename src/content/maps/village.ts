@@ -12,20 +12,17 @@
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
 import {
-  BA_DAN_SCENE,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
   BA_DAN_DRESSING_FOOTPRINTS,
-} from '../scenes/baDan';
+} from './baDanLayout';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
-  projection: 'oblique',
-  // The 390px viewport at maximum zoom leaves exactly one diamond visible at either side.
-  cameraCentreMargin: -0.609375,
-  scene: BA_DAN_SCENE,
-  backdrop: { url: 'art/maps/ba_dan_village.webp', pixelsPerTile: 64 },
+  projection: 'topdown',
+  // The top-down plate runs three tiles past the grid into the rim; `paintExtent` keeps the view inside it.
+  cameraCentreMargin: 1,
   name: 'Ba Dan Village',
   kind: 'explore',
   width: 24,
@@ -85,8 +82,7 @@ export const BA_DAN_VILLAGE: MapDef = {
   partySpawns: [{ x: 3, y: 7 }],
   exit: { pos: { x: 23, y: 7 }, label: 'The east road, toward the quarry' },
   /*
-   * The walkable north rim ends at a dry-stone tea terrace
-   * (`BA_DAN_NORTH_TERRACE`); the south lawn continues into the exterior
+   * The walkable north rim ends at a dry-stone tea terrace; the south lawn continues into the exterior
    * meadow band without a second, unrelated canal. Every
    * other rim cell is a tree, the ford, or an exit mouth: the east road's two
    * cells, and the river path's three at (18..20,15), which run on south off

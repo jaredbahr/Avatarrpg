@@ -7,7 +7,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../src/content';
-import { TOPDOWN_SCENES } from '../src/content/topdown';
 import { PRECACHE_IGNORES, STREAMED, isPrecacheIgnored } from './precache.mjs';
 
 describe('the precache', () => {
@@ -33,7 +32,7 @@ describe('the precache', () => {
     expect(PRECACHE_IGNORES.every((pattern) => pattern.startsWith('art/maps/'))).toBe(true);
   });
 
-  it('leaves out only art that a top-down map no longer draws', () => {
+  it('precaches every image a map draws (ADR 0104 T7: no map draws oblique art)', () => {
     const urls = (value: unknown): string[] =>
       typeof value === 'string'
         ? [value]
@@ -42,16 +41,12 @@ describe('the precache', () => {
           : value && typeof value === 'object'
             ? Object.values(value).flatMap(urls)
             : [];
-    const swapped = new Set<string>();
     for (const map of CONTENT.maps.values()) {
       const ignored = urls({ backdrop: map.backdrop, scene: map.scene })
         .map((url) => url.replace(/^\//, ''))
         .filter((url) => url.startsWith('art/') && isPrecacheIgnored(url));
-      // Any map that draws ignored art in the default style must be one the top-down swap replaces.
-      if (ignored.length) expect(TOPDOWN_SCENES.has(map.id), `${map.id}: ${ignored[0]}`).toBe(true);
-      if (ignored.length) swapped.add(map.id);
+      expect(ignored, map.id).toEqual([]);
     }
-    expect([...swapped].sort()).toEqual([...TOPDOWN_SCENES.keys()].sort());
   });
 
   it('streams the area music rather than precaching it, and precaches every other sound', () => {
