@@ -53,6 +53,14 @@ const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
   { x: 3, y: 8 },
 ];
 
+/**
+ * The Forest Road moves the first hero off (1,3), where the split-rail fence at
+ * (4,3) and the hero at (3,4) boxed in the guided fight's first mover: a
+ * two-tile step east left her only moves back west (#697). From (2,5) the road
+ * east is open whatever the table size.
+ */
+const FOREST_PARTY_SPAWNS: readonly Vec2[] = [{ x: 2, y: 5 }, ...COMBAT_PARTY_SPAWNS.slice(1)];
+
 /** Compact authored placement form for the prop-heavy quarry maps. */
 const propAt = (propId: string, x: number, y: number): PropPlacement => ({
   propId,
@@ -124,7 +132,7 @@ export const FOREST_ROAD: MapDef = {
    * are the only other interactables.
    */
   rows: FOREST_RULE_ROWS,
-  partySpawns: COMBAT_PARTY_SPAWNS,
+  partySpawns: FOREST_PARTY_SPAWNS,
   npcs: [],
   /*
    * Two of the catalogue's toys, both on the bandits' side of the road, which
