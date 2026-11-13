@@ -327,10 +327,39 @@ transform, so:
   `groundedCastArt` for props drawn from a sprite; the orthographic cliff bands (`boardRelief`); the riverside backdrop.
 
 The oblique figure scale (`OBLIQUE_FIGURE_SCALE`, ADR 0094) went with the projection: `partyScale` is the pose's own
-scale on both boards. The G1 sheets themselves are the next step.
+scale on both boards. The G1 sheets went next (below).
 
 Measured on the build: JavaScript 402.2 KB before, 389.2 KB after (budget 410, unchanged). Precache 16.67 MB before,
 16.63 MB after (325 entries both).
+
+## T7, last pass: the G1 sheets and their dormant mechanics (2026-11-13)
+
+Every G1 key was already drawn top-down (`useTopDownStyle` lays the top-down sheets over `ASSETS`), so the G1 sheets
+were reached only by tests. They are retired:
+
+- **The G1 sheets:** `public/art/units/*-g*` and `*-bend.json` (the party, the three bandits, the quarry bender and
+  the six Ba Dan residents), their packers (`party-g1`, `residents-g1`, `g-sprites`, `g-clips`, `enemy-g`,
+  `bandits-g`), their sources under `art/source/` (`party-g1`, `residents-g1`, `jog-g1`, `quarrybender-g` and the
+  per-character `-g`, `-actions`, `-bend`, `-clips`, `-hits` and `-riverside` folders) and the manifest's G1 builders
+  (`gSheet`, `enemyGSheet`, `residentGSheet`, `PARTY_G1_TRIMS`, `BANDITS_G1_TRIMS`, `residentGrid`). Those keys now
+  hold their top-down sheet in `ASSETS` itself, so a test reading `ASSETS` sees what the game draws. The CMU and
+  Mixamo credits covered only these sheets and leave the credits with them.
+- **The bends (ADR 0055):** the bend sets and the store's bend loading, `bendChoreo`, `bendHandoff`, the bend track,
+  the painted bend effects page (`public/art/fx/bend-*`, `bend-effects.ts`, `bend-sprites.ts`, the bend half of
+  `fx-g1.ts`) and the bend flash. Only a sheet with a `bend` could play one, and no top-down sheet has one. The
+  painted-cel layer they drew on stays: the top-down shots (#588) draw through it on both backends. Bending practice
+  in Ba Dan keeps playing each bender's combat cast; it no longer waits for the bend pages, and the open-water draw
+  that only a bend played is gone.
+- **The fighting stance (ADR 0052), the jog (ADR 0095), the brisk cadence (`BRISK_WALK_CEL_MS`, `walkCelMs`) and
+  `G1_WALK`:** only G1 sheets authored them. A party unit idles by heading between moves, which is what a sheet with
+  no stance already drew. Mira's own everywhere-amble (`LocomotionDef.amble`) was G1-only too; errands still amble.
+
+Tests that measured the G sheets' own art (their walk fit, stance, jog, bend sets and pins) are deleted with it; the
+hit and knockout timing tests keep the G Kaya, Sura, Bo and thug clip files as fixtures
+(`src/app/anim/fixtures/`), because the rules they hold still run for any sheet whose hit leads with a stance cel.
+
+Measured on the build: JavaScript 390.4 KB before, 382.3 KB after (budget 410, unchanged). Precache 16.63 MB before,
+12.99 MB after (325 entries before, 251 after).
 
 ## Driller grounding implementation (#469)
 
