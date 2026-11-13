@@ -862,9 +862,9 @@ export class CombatScene implements Scene {
   private syncRecentre(): void {
     const button = this.recentreButton;
     if (!button) return;
-    const fitted = this.renderer?.camera.fitted ?? true;
-    if (button.hidden !== fitted) button.hidden = fitted;
-    if (this.actorButton) this.actorButton.hidden = fitted;
+    const whole = this.renderer?.camera.showsWholeGrid ?? true;
+    if (button.hidden !== whole) button.hidden = whole;
+    if (this.actorButton) this.actorButton.hidden = whole;
   }
 
   private frameVictoryParty(camera: Camera, battle: BattleState): Vec2 | null {
@@ -1730,7 +1730,7 @@ export class CombatScene implements Scene {
       },
     );
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
-    recentre.hidden = this.renderer?.camera.fitted ?? true;
+    recentre.hidden = this.renderer?.camera.showsWholeGrid ?? true;
     recentre.dataset.key = 'recentre';
     this.recentreButton = recentre;
     more.appendChild(recentre);
@@ -1746,7 +1746,7 @@ export class CombatScene implements Scene {
         disabled: victoryBeat,
       },
     );
-    actor.hidden = this.renderer?.camera.fitted ?? true;
+    actor.hidden = this.renderer?.camera.showsWholeGrid ?? true;
     actor.dataset.key = 'actor';
     this.actorButton = actor;
     more.appendChild(actor);
