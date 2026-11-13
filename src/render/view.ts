@@ -308,6 +308,8 @@ export function placeFloaters(
 export interface NpcMarker {
   /** Stable per person (resident, role, NpcDef or trigger), so a walk keeps one sprite. */
   readonly id: string;
+  /** The map-owned NpcDef represented by a resident-bound marker, when any. */
+  readonly npcId?: string;
   readonly pos: Vec2;
   readonly sprite: string;
   readonly name: string;

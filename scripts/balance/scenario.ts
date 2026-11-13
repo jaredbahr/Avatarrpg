@@ -63,17 +63,18 @@ const encounterOverrideSchema = z
     enemies: z.array(encounterPlacementSchema).optional(),
     addEnemies: z.array(encounterPlacementSchema).optional(),
     /** Private per-encounter copies, so a proposal never changes another fight. */
-    enemyStats: z.record(enemyStatsSchema).optional(),
+    enemyStats: z.record(z.string(), enemyStatsSchema).optional(),
     expectedLevel: z.number().int().min(1).max(10).optional(),
   })
   .strict();
 
 export const balanceScenarioSchema = z
   .object({
-    props: z.record(propOverrideSchema).optional(),
-    encounters: z.record(encounterOverrideSchema).optional(),
+    props: z.record(z.string(), propOverrideSchema).optional(),
+    encounters: z.record(z.string(), encounterOverrideSchema).optional(),
     placements: z
       .record(
+        z.string(),
         z
           .object({
             add: z.array(placementSchema).optional(),

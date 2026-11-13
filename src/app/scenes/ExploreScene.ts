@@ -17,7 +17,7 @@ import {
   backgroundFigures,
   visibleNpcs,
   worldObjective,
-  worldObjectiveNpcId,
+  worldObjectiveTargetId,
 } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
@@ -34,6 +34,7 @@ import { authoredForBothSides } from '../../content/assets/clips';
 import { FOOT_LINE } from '../../render/sheets/bake';
 import { placeFrame } from '../../render/sheets/placement';
 import { npcClip } from '../../render/view';
+import { npcPipLift } from '../../render/npcPip';
 import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
@@ -50,7 +51,7 @@ import { WaitDialog } from '../ui/WaitDialog';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
-import { nearbyExits, nearbyExploreTarget } from '../world/guidance';
+import { nearbyExits, nearbyExploreTarget, TALK_RANGE } from '../world/guidance';
 import { partyWalkPhase } from '../animator';
 import {
   createExploreObjectivePresentation,
@@ -58,6 +59,7 @@ import {
   toggleExploreObjective,
   walkExploreObjective,
 } from './exploreObjective';
+import { drawObjectivePointer, resolveObjectivePointerTarget } from './objectivePointer';
 import { handoverBark } from '../world/barks';
 import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
@@ -121,6 +123,7 @@ export class ExploreScene implements Scene {
   private cancelNext: HTMLButtonElement | null = null;
   /** The last canvas box, so a reflow keeps the same world point in view. */
   private viewSize: { width: number; height: number } | null = null;
+  private framingArrival = false;
   /** True while a registered world conversation sits over this map. */
   private conversationMode = false;
   /**
@@ -146,6 +149,9 @@ export class ExploreScene implements Scene {
   /** Objective presentation is ephemeral and keyed by objective text, never saved. */
   private objectivePresentation = createExploreObjectivePresentation();
   private objectiveButton: HTMLButtonElement | null = null;
+  private objectivePointer: HTMLDivElement | null = null;
+  private npcNames: HTMLDivElement | null = null;
+  private mapCorner: HTMLDivElement | null = null;
   private pauseButton: HTMLButtonElement | null = null;
 
   constructor(private app: App) {}
@@ -167,8 +173,15 @@ export class ExploreScene implements Scene {
   }
 
   firstFrameSheetKeys(): readonly string[] {
+    const { content, state } = this.app;
+    const map = this.map;
+    if (!state || !map) return [];
+    // In-place travel asks before the first draw of the destination.
     return [
-      ...(this.app.state?.party.map((member) => member.sprite) ?? []),
+      ...state.party.map((member) => member.sprite),
+      ...visibleNpcs(content, map, state).map((npc) => npc.sprite),
+      ...backgroundFigures(content, map, state).map((role) => role.sprite),
+      ...activeTriggers(map, state).map((trigger) => trigger.sprite),
       ...this.lastNpcs.map((npc) => npc.sprite),
     ];
   }
@@ -204,7 +217,16 @@ export class ExploreScene implements Scene {
           'div',
           { class: 'map-wrap' },
           canvas,
-          el('div', { class: 'explore-map-corner' }),
+          (this.objectivePointer = el('div', {
+            class: 'objective-edge-pointer',
+            hidden: true,
+            attrs: { role: 'img' },
+          })),
+          (this.npcNames = el('div', {
+            class: 'explore-npc-names',
+            attrs: { 'aria-hidden': 'true' },
+          })),
+          (this.mapCorner = el('div', { class: 'explore-map-corner' })),
           el('div', { class: 'explore-conversation', hidden: true }),
         ),
       ),
@@ -242,14 +264,19 @@ export class ExploreScene implements Scene {
     this.feedbackText = null;
     this.cancelNext = null;
     this.viewSize = null;
+    this.framingArrival = false;
     this.localMap = null;
     this.life?.destroy();
     this.life = null;
     this.lastLife = null;
+    this.lastNpcs = [];
     this.practising = false;
     this.practiceCamera = null;
     this.practiceShown = null;
     this.objectiveButton = null;
+    this.objectivePointer = null;
+    this.npcNames = null;
+    this.mapCorner = null;
     this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
     // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
@@ -301,6 +328,7 @@ export class ExploreScene implements Scene {
       this.departing = null;
       this.app.animator.clear();
       this.map = map;
+      this.lastNpcs = [];
       this.app.animator.setProjection(map.projection ?? 'orthographic');
       this.practising = false;
       this.practiceCamera = null;
@@ -319,7 +347,7 @@ export class ExploreScene implements Scene {
       this.renderer?.camera.fitExplore(
         exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
       );
-      this.renderer?.camera.centreOn(state.location.pos);
+      this.frameArrival(state);
       this.rememberViewSize();
     }
     this.setConversationMode(conversation);
@@ -508,6 +536,7 @@ export class ExploreScene implements Scene {
     // A dpr change (a window dragged to another screen) leaves the zoom off the
     // device-pixel grid; put it back on the nearest whole scale.
     camera.resnap();
+    if (this.framingArrival && this.app.state) this.frameArrival(this.app.state);
     this.frameConversationSpeaker();
     this.rememberViewSize();
     this.redrawLife();
@@ -630,7 +659,7 @@ export class ExploreScene implements Scene {
   }
 
   /** DOM, all of it, rebuilt whenever the state changes: it is cheap and it is right. */
-  private renderChrome(restoreFocus = this.preserveFocus()): void {
+  private renderChrome(restoreFocus: () => void): void {
     this.renderBanner();
     this.renderRoster();
     this.renderHud();
@@ -642,9 +671,9 @@ export class ExploreScene implements Scene {
     const banner = this.host?.querySelector<HTMLElement>('.explore-bar-main');
     if (!banner) return;
     clear(banner);
-    const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
+    const state = this.app.state;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
-    const clock = this.app.state?.world.clock;
+    const clock = state?.world.clock;
     append(banner, [
       el(
         'div',
@@ -699,9 +728,8 @@ export class ExploreScene implements Scene {
       { class: 'explore-header-action' },
     );
     banner.append(this.pauseButton);
-    this.renderObjective(objective);
-    const corner = this.host?.querySelector<HTMLElement>('.explore-map-corner');
-    const state = this.app.state;
+    this.renderObjective(state ? worldObjective(this.app.content, state) : null);
+    const corner = this.mapCorner;
     if (corner && state && this.map && this.grid) {
       clear(corner);
       corner.hidden = this.conversationMode || !!this.life;
@@ -720,46 +748,39 @@ export class ExploreScene implements Scene {
     }
   }
 
-  private renderObjective(
-    objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null,
-  ): void {
+  private renderObjective(objective: string | null): void {
     const button = this.objectiveButton;
     if (!button) return;
     this.objectivePresentation = syncExploreObjective(this.objectivePresentation, objective);
-    const gate = this.atGate();
-    const visible = Boolean(objective) && !this.conversationMode && this.map?.id !== RIVERSIDE_ID;
-    button.hidden = !visible;
+    button.hidden = !objective || this.conversationMode || !!this.life;
     // Riverside and conversations hide the chip, but its text still follows the
     // story, so it is current the moment it shows again.
-    if (!objective) {
-      clear(button);
-      return;
-    }
+    clear(button);
+    if (!objective) return;
 
+    const gate = this.atGate();
     const expanded = this.objectivePresentation.expanded;
     button.setAttribute('aria-expanded', String(expanded));
     button.setAttribute('aria-label', `Current objective: ${objective}${gate ? `. ${gate}` : ''}`);
     button.title = expanded ? 'Hide objective details' : 'Show the full objective';
     button.classList.toggle('is-collapsed', !expanded);
-    clear(button);
-    if (expanded) {
+    if (expanded)
       button.append(
         el('strong', { class: 'explore-objective-label tiny', text: 'Current objective' }),
-        el('span', { class: 'title-plate-objective', text: objective }),
       );
-      if (gate)
-        button.append(el('span', { class: 'explore-objective-gate tiny muted', text: gate }));
-    } else {
-      button.append(el('span', { class: 'title-plate-objective', text: objective }));
-      if (gate)
-        button.append(
-          el('span', { class: 'explore-objective-gate tiny muted', text: ` · ${gate}` }),
-        );
-    }
+    button.append(el('span', { class: 'title-plate-objective', text: objective }));
+    if (gate)
+      button.append(
+        el('span', {
+          class: 'explore-objective-gate tiny muted',
+          text: expanded ? gate : ` · ${gate}`,
+        }),
+      );
   }
 
   private toggleObjective(): void {
-    const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
+    const state = this.app.state;
+    const objective = state ? worldObjective(this.app.content, state) : null;
     this.objectivePresentation = toggleExploreObjective(this.objectivePresentation, objective);
     if (!objective) return;
     this.renderObjective(objective);
@@ -900,8 +921,74 @@ export class ExploreScene implements Scene {
     return true;
   }
 
+  private drawNpcNames(npcs: readonly NpcMarker[], pos: Vec2 | null): void {
+    const layer = this.npcNames;
+    const camera = this.renderer?.camera;
+    if (!layer || !camera) return;
+    let count = 0;
+    if (pos && camera.projection === 'topdown') {
+      for (const npc of npcs) {
+        if (
+          npc.quiet ||
+          (npc.alpha ?? 1) < 1 ||
+          npc.id.startsWith('trigger:') ||
+          npc.sprite.startsWith('world.') ||
+          distance(pos, npc.pos) > TALK_RANGE
+        )
+          continue;
+        const { x, y, size } = camera.spriteBox(npc.renderPos ?? npc.pos);
+        const left = x + size / 2;
+        const top = y + (FOOT_LINE - npcPipLift(npc.sprite, npc.scale ?? 1)) * size;
+        if (
+          left < 0 ||
+          left > camera.viewport.width ||
+          y + FOOT_LINE * size < 0 ||
+          y > camera.viewport.height
+        )
+          continue;
+        const tag = layer.children[count] as HTMLElement | undefined;
+        const label = tag ?? layer.appendChild(el('span'));
+        if (label.textContent !== npc.name) label.textContent = npc.name;
+        const half = label.offsetWidth / 2;
+        const labelX = Math.max(half, Math.min(left, camera.viewport.width - half));
+        const labelY = Math.max(top, label.offsetHeight + 6);
+        const corner = this.mapCorner;
+        if (corner && labelX + half > corner.offsetLeft && labelY < corner.offsetHeight + 6) {
+          label.remove();
+          continue;
+        }
+        label.style.translate = `${labelX}px ${labelY}px`;
+        count++;
+      }
+    }
+    while (layer.children.length > count) layer.lastElementChild?.remove();
+  }
+
+  private frameArrival(state: GameState): void {
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    const { mapId, pos } = state.location;
+    this.framingArrival =
+      camera.projection === 'topdown' &&
+      mapId === 'forest_road' &&
+      pos.x === 1 &&
+      pos.y === 4 &&
+      !state.story.visited.includes('road_depart');
+    if (this.framingArrival) {
+      // Fit Dema and the party between the objective and dock, keeping whole
+      // pixel zoom and the camera's normal minimum tile size.
+      const { width, height, dpr } = camera.viewport;
+      const tilePx = (Math.floor((height * dpr) / (4.25 * camera.tile)) * camera.tile) / dpr;
+      camera.fitExplore(Math.min(exploreTilePx('topdown', width), tilePx));
+    }
+    const vergeFits =
+      this.framingArrival && camera.viewport.height >= 4.25 * camera.tile * camera.scale;
+    camera.centreOn(vergeFits ? { x: pos.x, y: 2.25 } : pos);
+  }
+
   private followParty(): void {
     if (this.conversationMode) return;
+    this.framingArrival = false;
     const state = this.departing ?? this.app.state;
     if (!state) return;
     const leader = state.party[0];
@@ -1098,7 +1185,7 @@ export class ExploreScene implements Scene {
           this.partyPositions() ?? [state.location.pos],
           (pos) => this.requestWalk(pos),
           () => this.followParty(),
-          worldObjectiveNpcId(this.app.content, state),
+          worldObjectiveTargetId(this.app.content, state),
         ).open(this.overlayHost());
       },
       { class: 'action-button', title: 'Local map and routes' },
@@ -1136,16 +1223,13 @@ export class ExploreScene implements Scene {
       return;
     }
     host.appendChild(panel);
-    const target = refocusNext
-      ? (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+    if (refocusNext) {
+      const target =
+        host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
         host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
-        panel)
-      : refocusPanel
-        ? panel
-        : (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
-          host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
-          panel);
-    if (refocusNext || refocusPanel) target?.focus({ preventScroll: true });
+        panel;
+      target.focus({ preventScroll: true });
+    } else if (refocusPanel) panel.focus({ preventScroll: true });
   }
 
   private talkTo(npc: PlacedNpc | null): void {
@@ -1189,7 +1273,7 @@ export class ExploreScene implements Scene {
     this.renderer.camera.fitExplore(
       exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
     );
-    this.renderer.camera.centreOn(state.location.pos);
+    this.frameArrival(state);
     this.rememberViewSize();
 
     // The chrome round the map can still grow — a late web font, a longer
@@ -1204,15 +1288,18 @@ export class ExploreScene implements Scene {
       onTap: (point) => this.handleTap(point.x, point.y),
       onDrag: (delta) => {
         if (this.conversationMode) return;
+        this.framingArrival = false;
         this.renderer?.camera.panBy(delta.x, delta.y);
       },
       onPinch: (gesture) => {
         if (this.conversationMode) return;
+        this.framingArrival = false;
         this.renderer?.camera.zoomAt(gesture.centre, gesture.step);
         this.renderer?.camera.panBy(gesture.delta.x, gesture.delta.y);
       },
       onWheel: (wheel) => {
         if (this.conversationMode) return;
+        this.framingArrival = false;
         this.renderer?.camera.zoomAt(wheel.point, wheelZoomFactor(wheel));
       },
       onHover: (point) => {
@@ -1402,11 +1489,11 @@ export class ExploreScene implements Scene {
     if (!renderer || !state || !map || !grid) return;
 
     const now = performance.now();
+    const animator = this.app.animator;
     // Long roaming sessions must retire old walk tracks just as combat does.
-    this.app.animator.prune(now);
-    const held = Boolean(
-      this.conversationMode || document.hidden || document.querySelector('[role="dialog"]'),
-    );
+    animator.prune(now);
+    const dialogOpen = !!document.querySelector('[role="dialog"]');
+    const held = this.conversationMode || document.hidden || dialogOpen;
     // Never carry queued intent through a menu, a loaded save, a story/map
     // change, or a world conversation.
     if (held) this.clearNextWalk();
@@ -1415,16 +1502,17 @@ export class ExploreScene implements Scene {
     const residents = this.app.residents;
     residents.tick(now, held);
     const live = !this.departing && !this.conversationMode && state.screen === 'explore';
-    const party = this.ensureTrail(state, grid).positions(state.party.length);
+    const trail = this.ensureTrail(state, grid);
+    let seats = trail.positions(state.party.length);
     // A routine keeps clear of the party: its tiles, where it is drawn, the way it walks.
-    const clear = [...party, ...(this.walking?.path ?? [])];
+    const clear = [...seats, ...(this.walking?.path ?? [])];
     for (const member of state.party) {
-      const drawn = this.app.animator.renderPos(now, member.id);
+      const drawn = animator.renderPos(now, member.id);
       if (drawn) clear.push({ x: Math.round(drawn.x), y: Math.round(drawn.y) });
     }
     // A follower on a tile someone is walking to steps aside.
-    if (residents.update(map, state, party, live, clear)) this.needsSettle = true;
-    if (!this.app.animator.busy(now)) {
+    if (residents.update(map, state, seats, live, clear)) this.needsSettle = true;
+    if (!animator.busy(now)) {
       if (!this.conversationMode) {
         if (this.walking) {
           this.walking = null;
@@ -1444,20 +1532,20 @@ export class ExploreScene implements Scene {
         this.needsSettle &&
         (map.projection === 'oblique' || map.projection === 'topdown') &&
         !this.departing &&
-        !document.querySelector('[role="dialog"]')
+        !dialogOpen
       ) {
         this.needsSettle = false;
-        const trail = this.ensureTrail(state, grid);
         const routes = trail.settle(grid, this.standing(state), {
           beside: map.projection === 'topdown',
         });
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
         this.animatePartyBatches(batches, state, now);
+        seats = trail.positions(seats.length);
       }
     }
     if (!this.conversationMode && this.life?.update(now, renderer.camera)) return;
-    if (this.practising && !this.app.animator.busy(now)) {
+    if (this.practising && !animator.busy(now)) {
       this.practising = false;
       if (this.practiceCamera)
         this.practiceCamera = {
@@ -1468,7 +1556,7 @@ export class ExploreScene implements Scene {
         };
     }
     if (
-      this.hudMoving !== this.app.animator.busy(now) ||
+      this.hudMoving !== animator.busy(now) ||
       (this.practiceShown !== null && this.practiceShown !== this.practiceReady(state))
     )
       this.renderHud();
@@ -1477,23 +1565,17 @@ export class ExploreScene implements Scene {
     // The whole party walks the village: the leader on the rules' tile, the
     // others in a line behind, each their own figure.
     const leader = state.party[0];
-    const walking = leader ? this.app.animator.renderPos(now, leader.id) : undefined;
+    const walking = leader ? animator.renderPos(now, leader.id) : undefined;
     if (document.hidden) this.app.audio.clearEnvironment();
     else
       this.app.audio.updateEnvironment(
         courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
       );
-    const seats = this.ensureTrail(state, grid).positions(state.party.length);
-    this.localMap?.update(
-      seats.map(
-        (seat, index) =>
-          this.app.animator.renderPos(now, state.party[index]?.id ?? '') ??
-          (index === 0 ? state.location.pos : seat),
-      ),
-    );
+    const scale = partyScale(map.projection);
     const units: RenderUnit[] = state.party.map((member, index) => {
       // A practising bender draws their bend's cels, as combat does (ADR 0055).
-      const bend = this.app.animator.bendPose(now, member.id);
+      const bend = animator.bendPose(now, member.id);
+      const pose = animator.unitPose(now, member.id, member.sprite);
       const unit: RenderUnit = {
         id: member.id,
         pos: index === 0 ? state.location.pos : (seats[index] ?? state.location.pos),
@@ -1508,23 +1590,22 @@ export class ExploreScene implements Scene {
         // A health bar over someone strolling round a village is noise.
         showHealth: false,
         shadow: true,
-        scale: partyScale(map.projection),
-        renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
-        offset: this.app.animator.offset(now, member.id, member.sprite),
-        clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
-        ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
+        scale,
+        renderPos: index === 0 ? walking : animator.renderPos(now, member.id),
+        offset: animator.offset(now, member.id, member.sprite),
+        clipTime: pose?.clipTime,
+        ...animator.locomotion(now, member.id, 'rest', member.sprite),
       };
       if (!bend) return unit;
       return {
         ...unit,
         facing: 1,
         clip: 'stance',
-        bend: { heading: bend.heading, index: bend.index },
-        ...(this.app.animator.unitPose(now, member.id, member.sprite)?.flash
-          ? { flash: this.app.animator.unitPose(now, member.id, member.sprite)?.flash }
-          : {}),
+        bend,
+        flash: pose?.flash,
       };
     });
+    this.localMap?.update(units.map((unit) => unit.renderPos ?? unit.pos));
 
     // Residents and background roles come from the walks, in their drawn
     // places; signs and other unbound NpcDefs stand where they are defined.
@@ -1545,17 +1626,18 @@ export class ExploreScene implements Scene {
         })),
       ...people.map((who) => ({
         id: who.id,
+        npcId: who.npcId ?? undefined,
         pos: who.pos ?? who.drawPos,
         sprite: who.sprite,
         name: who.name,
         scale: npcPresentationScale(who.sprite, map.projection),
         renderPos: who.drawPos,
-        ...(who.offset ? { offset: who.offset } : {}),
+        offset: who.offset,
         facing: who.facing,
         alpha: who.alpha,
         clipTime: who.clipTime,
         walking: who.walking,
-        ...(who.clip ? { clip: who.clip } : {}),
+        clip: who.clip,
         poseScale: who.poseScale,
         lean: who.lean,
         quiet: !who.npcId || !who.pos,
@@ -1589,7 +1671,10 @@ export class ExploreScene implements Scene {
         const to = glide.back ? (walking ?? state.location.pos) : glide.to;
         renderer.camera.centreOn(glidePoint(glide.from, to, now - glide.start, ms));
         if (glide.back && now - glide.start >= ms) this.practiceCamera = null;
-      } else if (walking) renderer.camera.centreOn(walking);
+      } else if (walking) {
+        this.framingArrival = false;
+        renderer.camera.centreOn(walking);
+      }
     }
 
     // The air over the village and the light on its painted canal are fidelity,
@@ -1636,14 +1721,14 @@ export class ExploreScene implements Scene {
       calmPath: true,
       aimArc: null,
       // A practice's casts (issue #284) play their own effects over the ambience.
-      emitters: [...ambient, ...this.app.animator.emitters(now)],
-      bendFx: this.app.animator.bendFx(now),
+      emitters: [...ambient, ...animator.emitters(now)],
+      bendFx: animator.bendFx(now),
       floaters: [],
-      cameraNudge: this.app.animator.cameraNudge(now),
+      cameraNudge: animator.cameraNudge(now),
       activeUnitId: leader?.id ?? null,
       selectedUnitId: null,
       hoverTile: this.hover,
-      exit: map.exit ? { pos: map.exit.pos, label: map.exit.label } : null,
+      exit: map.exit ?? null,
       exits: map.exits,
       hatch: this.app.settings.hatchSurfaces,
       gridLines: showGridLines(this.app.settings),
@@ -1658,5 +1743,15 @@ export class ExploreScene implements Scene {
     renderer.draw(view);
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
+    this.drawNpcNames(npcs, !held && live && !this.life ? state.location.pos : null);
+    const target =
+      !held && live && !this.practiceCamera && this.objectiveButton?.hidden === false
+        ? resolveObjectivePointerTarget(
+            worldObjectiveTargetId(this.app.content, state),
+            map.exits,
+            npcs,
+          )
+        : null;
+    drawObjectivePointer(this.objectivePointer, this.mapCorner, renderer.camera, target);
   };
 }

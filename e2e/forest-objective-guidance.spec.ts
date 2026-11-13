@@ -11,7 +11,7 @@ import type { Command, GameState } from '../src/core/types';
 import { loadQuarryCheckpoint } from '../scripts/e2e/quarry-checkpoints';
 import { returningWorkerCheckpoint } from '../scripts/e2e/returning-worker-checkpoint';
 import { allowSoftwareWebgl } from './budget';
-import { resetStorage, settleLayout, waitForIdle } from './helpers';
+import { settleLayout, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
 
 interface Fixture {
@@ -20,6 +20,11 @@ interface Fixture {
   transcript: readonly Command[];
   limits: string;
 }
+
+test.beforeEach(async ({ page }) => {
+  // Clear the next document before boot so a reload cannot interrupt its asset requests.
+  await page.addInitScript(() => localStorage.clear());
+});
 
 function issue(state: GameState, command: Command): GameState {
   const result = apply(CONTENT, state, command);
@@ -129,7 +134,12 @@ async function snapshot(page: Page) {
   });
 }
 
-async function load(page: Page, renderer: string, fixture: Fixture): Promise<void> {
+async function load(
+  page: Page,
+  renderer: string,
+  fixture: Fixture,
+  style: 'topdown' | 'oblique' = 'topdown',
+): Promise<void> {
   const json = serialize(fixture.state, {
     label: 'Slot 1',
     summary: 'Forest objective guidance',
@@ -138,7 +148,8 @@ async function load(page: Page, renderer: string, fixture: Fixture): Promise<voi
   });
   expect(loadQuarryCheckpoint(json)).toEqual(fixture.state);
   await page.setViewportSize({ width: 1180, height: 820 });
-  await resetStorage(page, `?style=topdown&renderer=${renderer}`);
+  await page.goto(`/?style=${style}&renderer=${renderer}`);
+  await page.waitForFunction(() => Boolean(window.fnt?.app));
   await page.evaluate((saved) => {
     window.fnt!.app.updateSettings({ reduceMotion: true });
     localStorage.setItem('fnt.save.slot1', saved);
@@ -155,7 +166,7 @@ async function load(page: Page, renderer: string, fixture: Fixture): Promise<voi
   const actual = await snapshot(page);
   expect(actual.state).toEqual(fixture.state);
   expect(actual.session).toEqual(fixture.session);
-  expect(actual.camera?.projection).toBe('topdown');
+  expect(actual.camera?.projection).toBe(style);
 }
 
 async function readObjective(page: Page) {
@@ -260,6 +271,148 @@ async function mapControl(page: Page) {
   const after = await snapshot(page);
   expect(after).toEqual(before);
   return { before, after, eastAllowed };
+}
+
+async function checkEastRouteCue(
+  page: Page,
+  renderer: 'canvas' | 'webgl',
+  style: 'topdown' | 'oblique',
+): Promise<void> {
+  allowSoftwareWebgl(test, renderer);
+  const fixture = outbound('map');
+  await load(page, renderer, fixture, style);
+  const exit = CONTENT.maps.get('forest_road')?.exits?.find((e) => e.toMapId === 'quarry_gate');
+  if (!exit) throw new Error('Missing east quarry exit');
+  expect(evaluate(fixture.state, exit.requires)).toBe(false);
+
+  const canvas = page.locator('.map-canvas');
+  const follow = page.getByRole('button', { name: 'Follow party', exact: true });
+  const cue = page.getByRole('img', { name: /Quarry Gate is off screen/ });
+  const readTarget = async () => {
+    const box = await canvas.boundingBox();
+    const target = await paintedTileCentre(page, exit.pos);
+    if (!box || !target) throw new Error('Missing painted road');
+    return { box, target };
+  };
+  const initial = await readTarget();
+  await canvas.dispatchEvent('wheel', {
+    clientX: initial.box.x + initial.box.width / 2,
+    clientY: initial.box.y + initial.box.height / 2,
+    deltaY: -500,
+    bubbles: true,
+    cancelable: true,
+  });
+  await follow.click();
+
+  for (const width of [1_000, 820]) {
+    await page.setViewportSize({ width, height: 700 });
+    await settleLayout(page);
+    const { box, target } = await readTarget();
+    expect(target.x).toBeGreaterThan(box.x + box.width);
+    await expect(cue).toBeVisible();
+    await expect(cue).toHaveAccessibleName(/to the east\.$/);
+    const arrow = await cue.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const rotation = new DOMMatrix(getComputedStyle(node, '::before').transform);
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        dx: rotation.a,
+        dy: rotation.b,
+        right: rect.right,
+        top: rect.top,
+      };
+    });
+    const minimap = await follow.boundingBox();
+    if (!minimap) throw new Error('Missing follow-party map');
+    expect(arrow.right).toBeLessThanOrEqual(box.x + box.width);
+    expect(arrow.top).toBeGreaterThanOrEqual(box.y);
+    expect(box.x + box.width - arrow.x).toBeLessThan(64);
+    const dx = target.x - arrow.x;
+    const dy = target.y - arrow.y;
+    expect((dx * arrow.dx + dy * arrow.dy) / Math.hypot(dx, dy)).toBeGreaterThan(0.99);
+    expect(arrow.right <= minimap.x || arrow.top >= minimap.y + minimap.height).toBe(true);
+  }
+
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Local map', exact: true });
+  await expect(dialog).toBeVisible();
+  await expect(cue).toBeHidden();
+  await dialog.getByRole('button', { name: 'Close map', exact: true }).click();
+  await expect(cue).toBeVisible();
+
+  const { box } = await readTarget();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const beforePan = (await readTarget()).target;
+  for (let pan = 0; pan < 8; pan++) {
+    const { target } = await readTarget();
+    const dx = Math.max(-box.width / 3, Math.min(box.width / 3, target.x - x));
+    const dy = Math.max(-box.height / 3, Math.min(box.height / 3, target.y - y));
+    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) break;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - dx, y - dy, { steps: 5 });
+    await page.mouse.up();
+    await settleLayout(page);
+    const moved = (await readTarget()).target;
+    if (Math.hypot(moved.x - target.x, moved.y - target.y) < 1) break;
+    if (
+      moved.x > box.x + 20 &&
+      moved.x < box.x + box.width - 20 &&
+      moved.y > box.y + 20 &&
+      moved.y < box.y + box.height - 20
+    )
+      break;
+  }
+  expect((await readTarget()).target).not.toEqual(beforePan);
+  if (style === 'oblique') {
+    // The oblique board can clamp a zoomed camera before the far edge is
+    // visible. Verify the cue still points at the projected route after panning.
+    const { target } = await readTarget();
+    const camera = (await snapshot(page)).camera;
+    if (!camera) throw new Error('Missing oblique camera');
+    const radius = camera.tilePx / 2;
+    if (
+      target.x + radius < box.x ||
+      target.x - radius > box.x + box.width ||
+      target.y + radius < box.y ||
+      target.y - radius > box.y + box.height
+    ) {
+      await expect(cue).toBeVisible();
+      const pointingAtRoute = await cue.evaluate((node, point) => {
+        const rect = node.getBoundingClientRect();
+        const rotation = new DOMMatrix(getComputedStyle(node, '::before').transform);
+        const dx = point.x - (rect.left + rect.width / 2);
+        const dy = point.y - (rect.top + rect.height / 2);
+        return (dx * rotation.a + dy * rotation.b) / Math.hypot(dx, dy);
+      }, target);
+      expect(pointingAtRoute).toBeGreaterThan(0.99);
+    } else {
+      await expect(cue).toBeHidden();
+    }
+    expect((await snapshot(page)).state).toEqual(fixture.state);
+    return;
+  }
+  const visible = (await readTarget()).target;
+  expect(visible.x).toBeGreaterThan(box.x);
+  expect(visible.x).toBeLessThan(box.x + box.width);
+  expect(visible.y).toBeGreaterThan(box.y);
+  expect(visible.y).toBeLessThan(box.y + box.height);
+  await expect(cue).toBeHidden();
+  expect((await snapshot(page)).state).toEqual(fixture.state);
+}
+
+for (const [renderer, style] of [
+  ['canvas', 'topdown'],
+  ['canvas', 'oblique'],
+  ['webgl', 'topdown'],
+] as const) {
+  test(`the locked east route has an off-screen cue that follows the exploration camera (${renderer}, ${style})`, async ({
+    page,
+  }) => {
+    await checkEastRouteCue(page, renderer, style);
+  });
 }
 
 for (const renderer of ['canvas', 'webgl'] as const) {

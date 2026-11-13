@@ -2093,10 +2093,28 @@ export class CombatScene implements Scene {
     }
   }
 
+  /**
+   * The guide's stage as shown. Stage 1 asks for an attack only once an enemy
+   * is in reach; until then it is cue 4, which points at End turn (#697): the
+   * Forest Road opens with the bandits out of every hero's range.
+   */
   private guideStage(): number | null {
-    return this.app.settings?.combatGuidance && this.app.state
-      ? firstFightStage(this.app.state)
-      : null;
+    const stage =
+      this.app.settings?.combatGuidance && this.app.state ? firstFightStage(this.app.state) : null;
+    const unit = stage === 1 ? this.active() : undefined;
+    const battle = this.battle();
+    const content = this.app.content;
+    return unit?.faction === 'party' &&
+      battle &&
+      !knownAbilities(content, unit).some(
+        (ability) =>
+          canUseAbility(content, unit, ability).ok &&
+          targetableTiles(content, battle, unit, ability).some(
+            (tile) => unitAt(battle.units, tile)?.faction === 'enemy',
+          ),
+      )
+      ? 4
+      : stage;
   }
 
   private firstFightGuidance(): HTMLElement | null {
@@ -2106,6 +2124,7 @@ export class CombatScene implements Scene {
       'Choose an ability, then tap an enemy.',
       "When you're done, End turn.",
       'The strip above shows whose turn comes next.',
+      'No enemy is in reach yet. Move closer, or End turn.',
     ][stage ?? -1];
     if (!copy) return null;
     if (stage === 3) this.scheduleGuideRelease();
@@ -2323,12 +2342,13 @@ export class CombatScene implements Scene {
     bar.appendChild(this.abilityHeader(unit));
     const row = el('div', { class: 'action-row' });
     const interactive = unit.faction === 'party' && this.isPlayerTurn();
+    const cue = this.guideStage();
 
     const moveActive = this.mode.kind === 'move';
     const movementReason = this.movementBlockReason(unit);
     const canMoveNow = unit.move > 0 && !movementReason;
     const moveButton = button(`Move`, () => this.selectMove(), {
-      class: `action-button${moveActive ? ' selected' : ''}${this.guideStage() === 0 ? ' guidance-target' : ''}`,
+      class: `action-button${moveActive ? ' selected' : ''}${cue === 0 ? ' guidance-target' : ''}`,
       disabled: !interactive || !canMoveNow,
       title: !interactive
         ? 'Player controls are locked while another unit acts'
@@ -2347,7 +2367,7 @@ export class CombatScene implements Scene {
     }
 
     const endButton = button('End turn', () => this.endTurn(unit), {
-      class: `action-button end-turn${this.guideStage() === 2 ? ' guidance-target' : ''}`,
+      class: `action-button end-turn${cue === 2 || cue === 4 ? ' guidance-target' : ''}`,
       title: 'Finish this turn. One unused AP carries over.',
       disabled: !interactive,
     });
@@ -2355,7 +2375,7 @@ export class CombatScene implements Scene {
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
     row.appendChild(endButton);
-    if (this.guideStage() === 1) row.classList.add('guidance-target');
+    if (cue === 1) row.classList.add('guidance-target');
 
     bar.appendChild(row);
     return bar;
@@ -2465,7 +2485,8 @@ export class CombatScene implements Scene {
   }
 
   private endTurn(unit: Unit): void {
-    if (unit.ap > 0 && !this.confirmedEndTurn) {
+    // The guide's own End turn cue takes one tap; spare AP is not a slip there.
+    if (unit.ap > 0 && !this.confirmedEndTurn && this.guideStage() !== 4) {
       this.confirmedEndTurn = true;
       const confirmation = this.app.toasts.show(
         `${unit.name} still has ${unit.ap} AP. Tap End turn again to finish anyway.`,
