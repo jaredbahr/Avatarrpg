@@ -2916,11 +2916,13 @@ export class CombatScene implements Scene {
   private handoffBanner(): HTMLElement {
     const unit = this.active();
     if (!unit) return el('div');
-    const player = this.app.session.playerFor(unit.id);
+    // The one place the optional names from setup appear; without one this is
+    // the player name the card has always shown.
+    const who = this.app.session.handoffNameFor(unit.id) ?? unit.name;
 
     if (this.bannerShownFor !== unit.id) {
       this.bannerShownFor = unit.id;
-      announce(`Hand the tablet to ${player?.name ?? unit.name}.`);
+      announce(`Hand the tablet to ${who}.`);
     }
 
     return el(
@@ -2930,7 +2932,7 @@ export class CombatScene implements Scene {
         'div',
         { class: 'panel center' },
         el('p', { class: 'muted', text: 'Hand the tablet to' }),
-        el('h1', { text: player?.name ?? unit.name }),
+        el('h1', { text: who }),
         el('p', { class: 'muted', text: `Playing ${unit.name}` }),
         button(
           "I'm ready",

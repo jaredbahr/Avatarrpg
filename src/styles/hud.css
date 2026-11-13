@@ -831,6 +831,26 @@ html[data-contrast='high'] .title-card .tagline {
   min-height: 3.5rem;
 }
 
+/* The suggested party's optional names: one field per seat, two or three across on an iPad. */
+.table-names {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--sp-3);
+}
+
+.table-name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+  color: var(--c-ink-dim);
+}
+
+.table-name input {
+  width: 100%;
+  font-size: var(--fs-lg);
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
