@@ -1,5 +1,12 @@
-import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import { expect, test, type Page } from '@playwright/test';
+import { generateQuarryCheckpoints } from '../scripts/e2e/quarry-checkpoints';
+import {
+  completeAuthoredPlayback,
+  enterNode,
+  resetStorage,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 /**
  * Area music, end to end (ADR 0108).
@@ -76,4 +83,42 @@ test('the title tap starts the title theme, Ba Dan switches it, and Off stops it
 
   // Sound effects are untouched by the music setting.
   expect(await page.evaluate(() => window.fnt?.app.settings.volume)).toBe(0.7);
+});
+
+async function takeRoute(page: Page, label: string, mapId: string): Promise<void> {
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
+  await page.getByRole('button', { name: label, exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
+  await completeAuthoredPlayback(page);
+}
+
+test('walking off one area onto the next switches the track without a scene change', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const fixture = generateQuarryCheckpoints('escort').afterDriller;
+  await resetStorage(page, '?renderer=canvas&style=topdown');
+  await page.evaluate((json) => {
+    window.fnt?.app.updateSettings({ reduceMotion: true });
+    localStorage.setItem('fnt.save.slot1', json);
+  }, fixture.json);
+  await page.reload();
+  await page.getByRole('button', { name: /load a save/i }).click();
+  await page
+    .locator('.slot')
+    .filter({ hasText: 'Slot 1' })
+    .getByRole('button', { name: /^Load$/ })
+    .click();
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId))
+    .toBe('quarry_floor');
+  await expect.poll(() => page.evaluate(() => window.fnt?.app.music.track)).toBe('quarry');
+
+  await takeRoute(page, 'West → The Cutting', 'ambush_road');
+  await takeRoute(page, 'West → Quarry Gate', 'quarry_gate');
+  expect(await page.evaluate(() => window.fnt?.app.state?.screen)).toBe('explore');
+  await takeRoute(page, 'West → Forest Road', 'forest_road');
+  // The explore scene swapped its board in place: the road theme takes over all the same.
+  expect(await page.evaluate(() => window.fnt?.app.state?.screen)).toBe('explore');
+  await expect.poll(() => page.evaluate(() => window.fnt?.app.music.track)).toBe('road');
 });
