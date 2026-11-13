@@ -211,6 +211,7 @@ function assertReaction(combo: ComboRule, observed: ObservedReaction, target: Ve
     from: combo.existing,
     to: combo.result,
     label: combo.label,
+    comboId: combo.id,
   });
   expect(tileAt(reaction.grid, target)?.surface).toEqual(
     combo.result
@@ -385,6 +386,7 @@ function witness(combo: ComboRule) {
       from: combo.existing,
       to: combo.result,
       label: combo.label,
+      comboId: combo.id,
     });
     if (combo.chainThroughExisting) {
       const neighbour = required(
@@ -453,6 +455,7 @@ function witness(combo: ComboRule) {
           from: tileAt(battle.grid, pos)?.surface?.id ?? null,
           to: 'fire',
           label: 'The fire spreads!',
+          comboId: 'spread',
         });
         expect(tileAt(required(state.battle, 'battle').grid, pos)?.surface).toEqual({
           id: 'fire',
