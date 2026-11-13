@@ -705,8 +705,9 @@ export class App {
     this.showScene(new TitleScene(this));
   }
 
-  goToSetup(): void {
-    this.showScene(new PartySetupScene(this));
+  /** Party setup, starting from `playerCount` people (the table that just finished, on Play again). */
+  goToSetup(playerCount = 1): void {
+    this.showScene(new PartySetupScene(this, playerCount));
   }
 
   /* ---------------------------------------------------------------- */
