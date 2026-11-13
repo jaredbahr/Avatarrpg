@@ -965,9 +965,9 @@ export function bridgeCast(p: Placed, classes: Uint8Array, off = { x: 6, y: 4 })
 function walkway(g: RgbaImage, o: Placed, src: Sources): void {
   const pureC = src.wang.gc.get('1111');
   if (!pureC) throw new Error('missing cobble');
-  // Keep the full deck and its far cap inside the plate. Before this, the sprite extended 33 px
-  // past the right edge, leaving a cropped bridge stub over the void.
-  const deckX = Math.min(o.x, g.width - o.w);
+  // Carry the complete deck to the plate's east edge. The layout's centre-based x left a dark gap
+  // after the far cap, and the void fade below obscured the end of the bridge.
+  const deckX = Math.max(o.x, g.width - o.w);
   const x0 = rightV(16) * T - 10,
     x1 = deckX + 6,
     w = x1 - x0,
