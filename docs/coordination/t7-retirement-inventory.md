@@ -17,6 +17,12 @@ The merged PR head `4d5107a7` passed hosted Verify in merge preview `2217582e` o
 
 The renderer PR lists coverage to migrate for ground pixels, whole-board picking, canvas reflow, top-down zoom and grounding. The final measurement still requires the G1 retirement and a qualified comparison with replacement Riverside clips available.
 
+## G1 retirement preview
+
+[#720](https://github.com/jaredbahr/Avatarrpg/pull/720) proposes retiring the G1 sheets, their packers, bend tracks and effects, and the unused stance, jog and brisk cadence paths. Its exact merge preview `f02dac65` over `d6887867` deletes 12,204 source-art files (83,050,561 B) and 74 public-art files (3,789,566 B), measured from the deleted Git blobs. It preserves `art/source/forest-road-g1/` as combat-prop provenance. These blob totals describe the source diff.
+
+The PR reports local builds of 390.4 to 382.3 KiB of JavaScript gzip and 16.63 to 12.99 MiB precached, with 325 to 251 entries. Exact hosted verification and its independently recorded build figures are pending. The preview leaves the Riverside tea and wave replacement clips open. It also retains the older non-G1 sheets, which are outside this step. [Hosted Verify](https://github.com/jaredbahr/Avatarrpg/actions/runs/43498459760/job/132137647412)
+
 ## Measured savings from the first two T7 steps
 
 The existing hosted Verify jobs built the following clean revisions with Node 22.23.4 and npm 10.9.9. Each passed the unchanged 410 KiB JavaScript and 25 MiB asset budget checks. Workbox reports its precache total rounded to two decimal places.
