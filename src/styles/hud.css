@@ -17,6 +17,18 @@
   pointer-events: none;
 }
 
+/*
+ * A staged conversation owns the top bar while the world waits behind its
+ * veil, so the veiled exploration header, objective, map corner and dock step
+ * aside rather than ghosting through under the speaker label (#698), as a Talk
+ * conversation's do. Hidden, not removed: the map keeps the box it was fitted to.
+ */
+.scene-host.has-dialogue-backdrop
+  > .explore-scene
+  :is(.explore-bar, .explore-map-corner, .explore-dock) {
+  visibility: hidden;
+}
+
 .dialogue-layer {
   position: absolute;
   inset: 0;
