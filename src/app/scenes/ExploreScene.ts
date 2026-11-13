@@ -123,6 +123,7 @@ export class ExploreScene implements Scene {
   private cancelNext: HTMLButtonElement | null = null;
   /** The last canvas box, so a reflow keeps the same world point in view. */
   private viewSize: { width: number; height: number } | null = null;
+  private framingArrival = false;
   /** True while a registered world conversation sits over this map. */
   private conversationMode = false;
   /**
@@ -263,6 +264,7 @@ export class ExploreScene implements Scene {
     this.feedbackText = null;
     this.cancelNext = null;
     this.viewSize = null;
+    this.framingArrival = false;
     this.localMap = null;
     this.life?.destroy();
     this.life = null;
@@ -534,6 +536,7 @@ export class ExploreScene implements Scene {
     // A dpr change (a window dragged to another screen) leaves the zoom off the
     // device-pixel grid; put it back on the nearest whole scale.
     camera.resnap();
+    if (this.framingArrival && this.app.state) this.frameArrival(this.app.state);
     this.frameConversationSpeaker();
     this.rememberViewSize();
     this.redrawLife();
@@ -965,20 +968,27 @@ export class ExploreScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return;
     const { mapId, pos } = state.location;
-    // At the west arrival, make room above the party for Dema on the verge.
-    // Use the party view on short boards and after the road narration.
-    const frameVerge =
+    this.framingArrival =
       camera.projection === 'topdown' &&
       mapId === 'forest_road' &&
       pos.x === 1 &&
       pos.y === 4 &&
-      !state.story.visited.includes('road_depart') &&
-      camera.viewport.height >= 4.25 * camera.tile * camera.scale;
-    camera.centreOn(frameVerge ? { x: pos.x, y: 2.25 } : pos);
+      !state.story.visited.includes('road_depart');
+    if (this.framingArrival) {
+      // Fit Dema and the party between the objective and dock, keeping whole
+      // pixel zoom and the camera's normal minimum tile size.
+      const { width, height, dpr } = camera.viewport;
+      const tilePx = (Math.floor((height * dpr) / (4.25 * camera.tile)) * camera.tile) / dpr;
+      camera.fitExplore(Math.min(exploreTilePx('topdown', width), tilePx));
+    }
+    const vergeFits =
+      this.framingArrival && camera.viewport.height >= 4.25 * camera.tile * camera.scale;
+    camera.centreOn(vergeFits ? { x: pos.x, y: 2.25 } : pos);
   }
 
   private followParty(): void {
     if (this.conversationMode) return;
+    this.framingArrival = false;
     const state = this.departing ?? this.app.state;
     if (!state) return;
     const leader = state.party[0];
@@ -1278,15 +1288,18 @@ export class ExploreScene implements Scene {
       onTap: (point) => this.handleTap(point.x, point.y),
       onDrag: (delta) => {
         if (this.conversationMode) return;
+        this.framingArrival = false;
         this.renderer?.camera.panBy(delta.x, delta.y);
       },
       onPinch: (gesture) => {
         if (this.conversationMode) return;
+        this.framingArrival = false;
         this.renderer?.camera.zoomAt(gesture.centre, gesture.step);
         this.renderer?.camera.panBy(gesture.delta.x, gesture.delta.y);
       },
       onWheel: (wheel) => {
         if (this.conversationMode) return;
+        this.framingArrival = false;
         this.renderer?.camera.zoomAt(wheel.point, wheelZoomFactor(wheel));
       },
       onHover: (point) => {
@@ -1658,7 +1671,10 @@ export class ExploreScene implements Scene {
         const to = glide.back ? (walking ?? state.location.pos) : glide.to;
         renderer.camera.centreOn(glidePoint(glide.from, to, now - glide.start, ms));
         if (glide.back && now - glide.start >= ms) this.practiceCamera = null;
-      } else if (walking) renderer.camera.centreOn(walking);
+      } else if (walking) {
+        this.framingArrival = false;
+        renderer.camera.centreOn(walking);
+      }
     }
 
     // The air over the village and the light on its painted canal are fidelity,
