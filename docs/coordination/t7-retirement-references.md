@@ -1,6 +1,6 @@
 # T7 retirement reference appendix
 
-The historical scan is pinned to head `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07), with TypeScript 5.9.3 and 801 configured files. The [inventory](t7-retirement-inventory.md) records the paths retired and the build measurements for the first two T7 steps as of main `a999058812c8d0cbeb7eaa91ea628aea44eaecb0` (2026-11-13). Rerun the path and semantic-reference audits on the remaining G1 and projection deletion candidate before removing files.
+The historical scan is pinned to head `a28bd55053187ea4d4d20752e2a9f97632722d6e` (2026-11-07), with TypeScript 5.9.3 and 801 configured files. The [inventory](t7-retirement-inventory.md) records the later code, art, renderer and G1 removals and their build measurements. Read the file and line references below at the historical head, where the retired files still exist.
 
 `findReferences` counts include declarations. The literal/path grep found 1,234 matching lines across 376 tracked files. The grouped listing preserves each historical file and line, with reference-family labels where recognizable. Full raw commands, output and the SHA map are in the validation evidence.
 
