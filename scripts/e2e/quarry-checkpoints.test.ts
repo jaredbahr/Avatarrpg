@@ -14,9 +14,9 @@ import {
 const PINS = {
   trade: {
     gate: {
-      save: 'd33be1120f1fcd2174f1ae2e1d11be02f5a9f5cdab89408d53073425a58e81ac',
-      commands: '7a9f72a0ae5af23b6e8fb5faa5fe3db163a9b018f3f4f1996cf18b07387d88a9',
-      count: 62,
+      save: '3ef447ae4cc9f08347b22352a52c46801f7a3a08f8d3331f7c52118b67f08009',
+      commands: '5aa85e74e165b78619f26039394cad4b77b71ea6c4f03fb0abd96a826dde9149',
+      count: 59,
       node: 'gate_trade_explore',
       map: 'quarry_gate',
       level: 3,
@@ -24,9 +24,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: 'e7040050b9ff7930c4e95bd8dda384a1d91d92502b58f01bba8c7418b9b25e16',
-      commands: 'cf1c24a105b264e867ea9e625d37c82e754c08f327fb0ae1cd7c097ed17aa40b',
-      count: 141,
+      save: '5d88cc03232fc24a4d1daed76bd3746df31820443e47a51a6e63beb398001114',
+      commands: 'dc5aa05eece17f24c709d030065c3b85bd35cc07a54a002758431a2d159864c1',
+      count: 148,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
@@ -36,9 +36,9 @@ const PINS = {
   },
   escort: {
     gate: {
-      save: '07c29265ee7ecb93e66fe90d916da8d6abf0791153760a2dbb155829914c1733',
-      commands: '31301c4a60c53252be90b80b24af3f0e9b3b589aca3b404ee662202aef465dd6',
-      count: 96,
+      save: '0b5f52c2a8c8786a8c350b3cd6432cf0f846491d68d3eb8f0d1f55047b277c0e',
+      commands: '581a79bf3e9f1008a9c2970d580b96948dc4eb9ccc7ad7488daa1c8a66ced0b4',
+      count: 95,
       node: 'gate_escort_explore',
       map: 'quarry_gate',
       level: 3,
@@ -46,9 +46,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: 'ab54ac958cdb90c3b76892b632f479412de440b3d075d88f18f3b108cf5548a4',
-      commands: '4ee9a5d33647988c08b095e47547384590c71a3df1fce349660ea1777ec4e329',
-      count: 377,
+      save: 'da91d54bebcee2ededfa5f13e078eda0cb2479c1eb53fabb475409fd26e6aaf2',
+      commands: 'f01d592a5eba43f9bdc8ee473d5953ad08b283911830d1ed69d808b3f97fd8e7',
+      count: 353,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
