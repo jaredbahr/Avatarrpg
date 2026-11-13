@@ -140,16 +140,16 @@ describe('the reach follows the 8-way rule', () => {
     expect(centre(m, grid, { x: 3, y: 3 })).toBe(0);
   });
 
-  it('lays the prototype dithered rim and its faint inside', () => {
+  it('lays a solid 1 px rim round a tinted inside (#699)', () => {
     const image = washImage(
       washSpec({ ...view, units: [], path: [], pathFrom: null, hoverTile: null }),
     );
     const W = image.width;
     const a = (p: Vec2) => image.data[(p.y * W + p.x) * 4 + 3];
-    expect(a({ x: CS + 20, y: CS + 20 })).toBe(46);
+    expect(a({ x: CS + 20, y: CS + 20 })).toBe(96);
     const seen = new Set<number>();
     for (let i = 3; i < image.data.length; i += 4) if (image.data[i]) seen.add(image.data[i] ?? 0);
-    expect([...seen].sort((x, y) => x - y)).toEqual([46, 60, 90, 190]);
+    expect([...seen].sort((x, y) => x - y)).toEqual([96, 255]);
   });
 });
 

@@ -22,6 +22,21 @@ import type { EmitterInstance } from '../../render/view';
 
 /** Loops run at once per emitter, spaced evenly through the period. */
 const LOOPS = 2;
+/**
+ * The most canopies that shed leaves at once. Every canopy holds three or four leaves in the air, so
+ * a scene with many trees (top-down Ba Dan has 21) would push the village past the Canvas 2D cap of
+ * 96 particles (ADR 0004); past this many, an evenly spread, fixed subset of the canopies sheds.
+ */
+export const MAX_SHEDDING_CANOPIES = 10;
+
+/** An evenly spread, deterministic subset of at most `cap` canopies, each with its own index. */
+function sheddingCanopies(canopies: readonly Vec2[], cap: number): [Vec2, number][] {
+  if (canopies.length <= cap) return canopies.map((at, index) => [at, index]);
+  return Array.from({ length: cap }, (_, i) => {
+    const index = Math.floor((i * canopies.length) / cap);
+    return [canopies[index] as Vec2, index];
+  });
+}
 /** The moment a still wisp is frozen at: the village smoke's fullest column. */
 const STILL_MS = 2400;
 /** Ripples a painted water cell can show at once, and the span each slot repeats in. */
@@ -282,7 +297,7 @@ export function ambientEmitters(
   if (smoke) chimneys.forEach((at, index) => loop(smoke, 100 + index, at, at));
   if (!still)
     recipe.canopy?.forEach((leaves, kind) =>
-      canopies.forEach((at, index) =>
+      sheddingCanopies(canopies, MAX_SHEDDING_CANOPIES).forEach(([at, index]) =>
         loop(leaves, 200 + kind * 20 + index, { x: at.x - 3, y: at.y - 3 }, at),
       ),
     );

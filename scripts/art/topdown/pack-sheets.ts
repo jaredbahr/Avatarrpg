@@ -45,10 +45,21 @@ export function shippedFiles(): string[] {
   const top = existsSync(OUT) ? readdirSync(OUT) : [];
   const objects = existsSync(OBJECTS_OUT) ? readdirSync(OBJECTS_OUT) : [];
   return [
-    // The boards' folders (`ba-dan/`, `forest-road/`) are the ground packer's (`pack-ground.ts`) and
-    // `props/` the prop packer's (`pack-props.ts`), each held by its own test.
+    // The boards' folders (`ba-dan/`, `forest-road/`, the quarry's three) are the ground packer's
+    // (`pack-ground.ts`) and `props/` the prop packer's (`pack-props.ts`), each held by its own test.
     ...top
-      .filter((f) => f !== 'objects' && f !== 'ba-dan' && f !== 'forest-road' && f !== 'props')
+      .filter(
+        (f) =>
+          ![
+            'objects',
+            'ba-dan',
+            'forest-road',
+            'quarry-gate',
+            'cutting',
+            'quarry-floor',
+            'props',
+          ].includes(f),
+      )
       .map((f) => `${OUT}/${f}`),
     ...objects.map((f) => `${OBJECTS_OUT}/${f}`),
   ];
@@ -56,6 +67,46 @@ export function shippedFiles(): string[] {
 
 /** The VFX packer owns exactly these two shared-directory outputs. */
 export const VFX_OUTPUTS = [`${OUT}/vfx.webp`, `${OUT}/vfx.json`] as const;
+
+/**
+ * The striking hand of an action in one heading, in frame px of its trimmed cels, on its hit cel: where its attached
+ * effects start. Of the pixels the strike drew that its first cel did not (all of the hit cel's, if under four), above
+ * 60% of the figure's height (so not the stepping feet), the one reaching furthest from the chest along the aim, plus
+ * half its distance from the chest and a little height, since a hand raised for an overhead throw is still the hand;
+ * the middle of those within a pixel of the best. A hand hidden behind the body (a punch facing north) lands on the
+ * nearest drawn reach: the shoulders or the head.
+ */
+export function strikeHand(
+  first: Image,
+  hit: Image,
+  anchor: { x: number; y: number },
+  heading: Heading,
+): { x: number; y: number } {
+  const angle = (HEADINGS.indexOf(heading) * Math.PI) / 4;
+  const [dx, dy] = [Math.cos(angle), Math.sin(angle)];
+  const ax = anchor.x * hit.width;
+  const ay = anchor.y * hit.height;
+  let top = hit.height;
+  for (let i = 0; i < first.width * first.height; i++)
+    if (alphaAt(first, i % first.width, Math.floor(i / first.width)))
+      top = Math.min(top, Math.floor(i / first.width));
+  const chest = top + 0.35 * (ay - top);
+  const band: [number, number, boolean][] = [];
+  for (let y = 0; y < hit.height && y + 0.5 <= top + 0.6 * (ay - top); y++)
+    for (let x = 0; x < hit.width; x++)
+      if (alphaAt(hit, x, y)) band.push([x, y, !alphaAt(first, x, y)]);
+  const drawn = band.filter((p) => p[2]);
+  const pts = drawn.length >= 4 ? drawn : band;
+  const score = ([x, y]: [number, number, boolean]) => {
+    const vx = x + 0.5 - ax;
+    const vy = y + 0.5 - chest;
+    return vx * dx + vy * dy + 0.5 * Math.hypot(vx, vy) - 0.4 * vy;
+  };
+  const best = Math.max(...pts.map(score));
+  const near = pts.filter((p) => score(p) >= best - 1);
+  const mean = (i: 0 | 1) => Math.round(near.reduce((sum, p) => sum + p[i], 0) / near.length);
+  return { x: mean(0), y: mean(1) };
+}
 
 /** The game's headings (`HEADINGS` order) and PixelLab's direction names for them. */
 const HEADINGS = [
@@ -113,8 +164,26 @@ export interface FigureSpec {
   readonly stride: number;
   readonly hit?: string;
   readonly ko?: string;
-  /** Ability poses: pose name -> animation key, with how many frames the prototype plays (Kaya's jab: 11). */
-  readonly actions: Readonly<Record<string, { readonly anim: string; readonly frames?: number }>>;
+  /**
+   * Knockout headings that end earlier than `KO_CELS`: how many cels they keep, the last one held. Jinu's south and
+   * north knockouts spread the cape into wings from the seventh cel, so they hold the sixth.
+   */
+  readonly koCels?: Partial<Record<Heading, number>>;
+  /**
+   * Ability poses: pose name -> animation key, with how many frames the prototype plays (Kaya's jab: 11). `mirror`
+   * draws a heading from another heading's cels flipped about the anchor column (the hand swaps), for a heading whose
+   * own take is unusable: Wen's gauntlet turned into a hook or a rope in the west and north-west of her punch.
+   */
+  readonly actions: Readonly<
+    Record<
+      string,
+      {
+        readonly anim: string;
+        readonly frames?: number;
+        readonly mirror?: Partial<Record<Heading, Heading>>;
+      }
+    >
+  >;
   /** The pose the legacy mirrored `cast` plays (its east heading). */
   readonly cast?: string;
   readonly timing: Timing;
@@ -361,6 +430,126 @@ const ROSTER: readonly FigureSpec[] = [
     cast: 'attack',
     timing: 'blow',
   },
+  // T8: the heroes the tutorial does not cast, made like Sura and Bo by `tools/t8heroes.py`: idle, walk, hit,
+  // knockout and a pose for each of the level-1 and level-2 abilities; the cast is the level-1 ability's.
+  {
+    name: 'tenzo',
+    key: 'unit.fire.tenzo',
+    folder: 't8_tenzo',
+    idle: 'custom-standing at rest in a ready st@c8ecc4',
+    walk: 'walking-8-frames@fc70f0',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @f0afab',
+    ko: 'custom-knocked out: staggers back one@4723e3',
+    actions: {
+      attack: { anim: 'custom-a martial-arts punch: draws th@653c55' },
+      blast: { anim: 'custom-a martial-arts double palm str@eb5022' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'nilak',
+    key: 'unit.water.nilak',
+    folder: 't8_nilak',
+    idle: 'custom-standing at rest in a ready st@56042a',
+    walk: 'walking-8-frames@3d44ae',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @844649',
+    ko: 'custom-knocked out: staggers back one@878a53',
+    actions: {
+      attack: { anim: 'custom-a whip-like arm sweep: swings @ee28e1' },
+      heal: { anim: 'custom-a calm healing gesture: brings@3b80c6' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'linmei',
+    key: 'unit.earth.linmei',
+    folder: 't8_linmei',
+    idle: 'custom-standing at rest in a ready st@21cddd',
+    walk: 'walking-8-frames@66c98b',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @f714e5',
+    ko: 'custom-knocked out: staggers back one@c21184',
+    actions: {
+      attack: { anim: 'custom-a martial-arts stomp and punch@1dbef8' },
+      throw: { anim: 'custom-a heavy two-handed throw: crou@ea198c' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'nima',
+    key: 'unit.air.nima',
+    folder: 't8_nima',
+    idle: 'custom-standing at rest in a ready st@cf3549',
+    walk: 'walking-8-frames@beb4a3',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @84431d',
+    ko: 'custom-knocked out: staggers back one@616959',
+    actions: {
+      attack: { anim: 'custom-a martial-arts open palm push:@3ec356' },
+      gust: { anim: 'custom-a wide sweeping two-arm swing:@acd49d' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'jinu',
+    key: 'unit.air.jinu',
+    folder: 't8_jinu',
+    idle: 'custom-standing at rest in a ready st@a43971',
+    walk: 'walking-8-frames@60c286',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @62f5fc',
+    ko: 'custom-knocked out: staggers back one@5a0a37',
+    // The seventh and eighth cels spread her cape into wings in the south and north: those hold the sixth.
+    koCels: { south: 6, north: 6 },
+    actions: {
+      attack: { anim: 'custom-a martial-arts open palm push:@dd511a' },
+      gust: { anim: 'custom-a wide sweeping two-arm swing:@789b1a' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'riko',
+    key: 'unit.non.riko',
+    folder: 't8_riko',
+    idle: 'custom-standing at rest in a ready st@099cc8',
+    walk: 'walking-8-frames@705043',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @479af0',
+    ko: 'custom-knocked out: staggers back one@bab294',
+    actions: {
+      attack: { anim: 'custom-a quick boxing combination: st@363f04' },
+      block: { anim: 'custom-a precise finger strike: darts@5ed79c' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'wen',
+    key: 'unit.non.wen',
+    folder: 't8_wen',
+    idle: 'custom-standing at rest in a ready st@3a8ec0',
+    walk: 'walking-8-frames@655aec',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @3bbc70',
+    ko: 'custom-knocked out: staggers back one@c886be',
+    actions: {
+      // West and north-west turned the gauntlet into a hook or a rope (twice): drawn as east and north-east, mirrored.
+      attack: {
+        anim: 'custom-a heavy hook punch: winds the @0e1997',
+        mirror: { west: 'east', northWest: 'northEast' },
+      },
+      spark: { anim: 'custom-thrusts the right arm with the@c4e7db' },
+    },
+    cast: 'attack',
+    timing: 'blow',
+  },
   // T3: the town guard (the relief watch and a returnee), made like the residents: idle and walk, eight headings.
   {
     name: 'guard',
@@ -368,6 +557,28 @@ const ROSTER: readonly FigureSpec[] = [
     folder: 't3_guard',
     idle: 'custom-standing at rest: the chest an@e13bd6',
     walk: 'walking-8-frames@9bfadc',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  // T10: the road keeper Dema and Sen, the Cutting's tea keeper, who borrowed Mira's and Gao's sheets, made as the
+  // guard was (`tools/t10residents.py`): idle and walk, eight headings.
+  {
+    name: 'dema',
+    key: 'npc.dema',
+    folder: 't10_dema',
+    idle: 'custom-standing at rest: the chest an@571e1f',
+    walk: 'walking-8-frames@73450f',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'sen',
+    key: 'npc.sen',
+    folder: 't10_sen',
+    idle: 'custom-standing at rest: the chest an@3b94f2',
+    walk: 'walking-8-frames@ca010f',
     stride: 30,
     actions: {},
     timing: 'blow',
@@ -524,6 +735,18 @@ function png(path: string): Image {
 }
 
 /** A figure frame: hard alpha, cleaned, centred on the 80 px basis. */
+/** A placed cel flipped about the basis' anchor column: basis pixel x lands on `BASIS - 1 - x`. */
+function mirrored(cel: Placed): Placed {
+  const { width: w, height: h } = cel.image;
+  const image = newImage(w, h);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const from = (y * w + x) * 4;
+      image.data.set(cel.image.data.subarray(from, from + 4), (y * w + (w - 1 - x)) * 4);
+    }
+  return { image, ox: BASIS - cel.ox - w, oy: cel.oy };
+}
+
 function figureCel(folder: string, file: string): Placed {
   const raw = png(join(SOURCE, 'chars', folder, file));
   return {
@@ -617,6 +840,7 @@ interface ClipOut {
   events?: { hit: number };
   frameSize?: { w: number; h: number };
   anchor?: { x: number; y: number };
+  hand?: { x: number; y: number };
 }
 
 /** What the manifest's builder reads for one sheet (`topdownSheets.ts`). */
@@ -734,9 +958,12 @@ function figureSheet(spec: FigureSpec): Sheet {
     cels: readonly Placed[],
     frameMs: number[],
     extra: Partial<ClipOut> = {},
+    aim?: Heading,
   ): ClipOut => {
     const t = trimmed(cels, anchorPoint);
     t.images.forEach((im, i) => add(clip, i, im));
+    const first = t.images[0];
+    const hit = t.images[extra.events?.hit ?? -1];
     return {
       frames: t.images.map((_, i) => `${spec.key}/${clip}/${i}`),
       fps: 10,
@@ -745,6 +972,7 @@ function figureSheet(spec: FigureSpec): Sheet {
       ...extra,
       frameSize: t.frameSize,
       anchor: { x: round6(t.anchor.x), y: round6(t.anchor.y) },
+      ...(aim && first && hit && { hand: strikeHand(first, hit, t.anchor, aim) }),
     };
   };
   if (spec.hit) {
@@ -762,9 +990,13 @@ function figureSheet(spec: FigureSpec): Sheet {
     const ko = anim(spec.ko);
     actions.ko = {};
     for (const h of HEADINGS) {
-      const cels = load((ko[DIR[h]] ?? []).slice(0, KO_CELS));
+      const cels = load((ko[DIR[h]] ?? []).slice(0, spec.koCels?.[h] ?? KO_CELS));
       const clip = sided('ko', h, false);
-      const def = trimClip(clip, cels, timed(KO_MS, cels.length));
+      // A shortened knockout still lies still on its last cel for the full hold.
+      const ms = timed(KO_MS, cels.length).map((v, i, all) =>
+        i === all.length - 1 ? (KO_MS[KO_MS.length - 1] ?? v) : v,
+      );
+      const def = trimClip(clip, cels, ms);
       actions.ko[h] = def;
       if (DIAGONALS.includes(h)) clips[clip] = def;
     }
@@ -773,12 +1005,18 @@ function figureSheet(spec: FigureSpec): Sheet {
     const last = se[se.length - 1];
     if (last) clips.ko = trimClip('ko', [last], [1000]);
   }
-  for (const [pose, { anim: id, frames }] of Object.entries(spec.actions)) {
+  for (const [pose, { anim: id, frames, mirror }] of Object.entries(spec.actions)) {
     const a = anim(id);
+    /** A heading's cels: its own, or (`mirror`) another heading's flipped. */
+    const celsOf = (h: Heading): Placed[] => {
+      const from = mirror?.[h];
+      const own = load((a[DIR[from ?? h]] ?? []).slice(0, frames));
+      return from ? own.map(mirrored) : own;
+    };
     actions[pose] = {};
     // One shared 3D motion per move, so the strike is measured once (`moves4.py`, `build_b3.py`).
     const reach = (h: Heading, pick: (b: Box) => number) => {
-      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      const cels = celsOf(h);
       let best = 0;
       cels.forEach((c, i) => {
         const b = inkBox(c);
@@ -797,14 +1035,18 @@ function figureSheet(spec: FigureSpec): Sheet {
             ? reach('south', (b) => b.y0)
             : reach('east', (b) => b.x1);
     for (const h of HEADINGS) {
-      const cels = load((a[DIR[h]] ?? []).slice(0, frames));
+      const cels = celsOf(h);
       const t =
         spec.timing === 'bend'
           ? bendTiming(pose, cels.length, strike ?? 0)
           : blowTiming(cels.length);
-      actions[pose][h] = trimClip(`${pose}${sided('', h, false)}`, cels, t.frameMs, {
-        events: { hit: t.hit },
-      });
+      actions[pose][h] = trimClip(
+        `${pose}${sided('', h, false)}`,
+        cels,
+        t.frameMs,
+        { events: { hit: t.hit } },
+        h,
+      );
     }
   }
   let cast: ClipOut | null = null;
@@ -1141,8 +1383,21 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
   return files;
 }
 
-async function dataModule(data: Record<string, SheetData>): Promise<string> {
+export async function dataModule(data: Record<string, SheetData>): Promise<string> {
   const names = Object.keys(data);
+  let compact = JSON.stringify(data);
+  for (const sheet of Object.values(data)) {
+    const frames = sheet.cast?.frames;
+    if (!frames?.length) continue;
+    const prefix = frames[0]?.replace(/\/0$/, '');
+    if (!prefix || !frames.every((frame, index) => frame === `${prefix}/${index}`)) continue;
+    const original = `"frames":${JSON.stringify(frames)}`;
+    if (!compact.includes(original)) throw new Error(`Missing cast frames for ${prefix}`);
+    compact = compact.replace(
+      original,
+      `"frames":castFrames(${JSON.stringify(prefix)},${frames.length})`,
+    );
+  }
   const text = [
     '/**',
     ' * Generated by `scripts/art/topdown/pack-sheets.ts`; do not edit by hand.',
@@ -1153,6 +1408,9 @@ async function dataModule(data: Record<string, SheetData>): Promise<string> {
     ' * its actions file, both beside its atlas under `public/art/topdown/`.',
     ' */',
     "import type { ClipDef } from './clips';",
+    '',
+    'const castFrames = (prefix: string, count: number): string[] =>',
+    '  Array.from({ length: count }, (_, index) => `${prefix}/${index}`);',
     '',
     `export type TopdownName = ${names.map((n) => `'${n}'`).join(' | ')};`,
     '',
@@ -1172,7 +1430,7 @@ async function dataModule(data: Record<string, SheetData>): Promise<string> {
     '  readonly treadGrounding?: readonly { readonly spanPx: number; readonly centerXFromAnchorPx: number; readonly baselineYFromAnchorPx: number }[];',
     '}',
     '',
-    `export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = ${JSON.stringify(data)};`,
+    `export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = ${compact};`,
     '',
   ].join('\n');
   // Formatted as `format:check` wants it, so the shipped file is the packer's output byte for byte.

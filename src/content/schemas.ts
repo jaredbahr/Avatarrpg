@@ -233,7 +233,7 @@ export const statusSchema = z.object({
     move: z.number(),
     ap: z.number(),
     accuracy: z.number(),
-    incomingMultiplier: z.record(z.number().positive()),
+    incomingMultiplier: z.record(z.string(), z.number().positive()),
   }),
   clears: z.array(statusId),
   upgradeFrom: z.array(statusId).nullable(),
@@ -536,7 +536,7 @@ export const mapSchema = z
     width: z.number().int().min(4).max(64),
     height: z.number().int().min(4).max(64),
     rows: z.array(z.string()).min(1),
-    legend: z.record(tileTemplate),
+    legend: z.record(z.string(), tileTemplate),
     partySpawns: z.array(vec2).min(1),
     npcs: z.array(
       z
@@ -560,8 +560,15 @@ export const mapSchema = z
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
     objective: z.string().min(1).optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
-      .array(z.object({ when: conditionSchema, text: z.string().min(1) }))
+      .array(
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveTargetId: id.nullable().optional(),
+        }),
+      )
       .optional(),
     exits: z
       .array(
@@ -886,7 +893,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
           label: z.string().min(1),
           detail: z.string().min(1),
           next: id,
-          setFlags: z.record(flagValue).optional(),
+          setFlags: z.record(z.string(), flagValue).optional(),
           requires: conditionSchema.optional(),
           speaker: z
             .object({ element: elementId.optional(), characterId: id.optional() })
@@ -905,13 +912,13 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('explore'),
     mapId: id,
     objective: z.string().min(1),
-    objectiveNpcId: id.optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
       .array(
         z.object({
           when: conditionSchema,
           text: z.string().min(1),
-          objectiveNpcId: id.nullable().optional(),
+          objectiveTargetId: id.nullable().optional(),
         }),
       )
       .optional(),
@@ -920,8 +927,8 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
     kind: z.literal('flags'),
-    set: z.record(flagValue),
-    residentProfiles: z.record(z.enum(RESIDENT_PROFILES)).optional(),
+    set: z.record(z.string(), flagValue),
+    residentProfiles: z.record(z.string(), z.enum(RESIDENT_PROFILES)).optional(),
     grantXp: z.number().int().min(0).max(2000).optional(),
     phase: dayPhaseId.optional(),
     next: id,
@@ -934,6 +941,13 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     lines: z.array(z.string().min(1)).min(1),
     teaser: z.string().min(1),
     next: id.optional(),
+    recap: z
+      .object({
+        label: z.string().min(1),
+        thanks: z.string().min(1),
+        choices: z.array(z.object({ when: conditionSchema, text: z.string().min(1) })).min(1),
+      })
+      .optional(),
   }),
 ]);
 
@@ -1072,6 +1086,13 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
     actions: z
       .string()
       .regex(/\.json$/, 'must point at the actions JSON')
+      .optional(),
+    actionMap: z
+      .object({
+        cast: z.string().min(1),
+        idle: z.string().min(1).optional(),
+        abilities: z.record(z.string(), z.string().min(1)).optional(),
+      })
       .optional(),
     // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body. 64 is
     // the world's native G1 grid, one art pixel a world pixel (ADR 0089). 40 is
@@ -1661,6 +1682,7 @@ const topDownObjectSchema = z
     depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
     fadeWhenOccluding: z.boolean().optional(),
     revealOccluded: z.boolean().optional(),
+    flip: z.boolean().optional(),
   })
   .strict();
 
@@ -1673,6 +1695,12 @@ const STANDING: readonly (readonly [number, number])[] = [
   [0, -8],
   [0, 8],
 ];
+/**
+ * A shelf's cut face may hang over the top of the cell below it by this much, in world px (one
+ * tier of the quarry's `Q_FACE`, ADR 0104 §3): a figure's head there stands in front of the wall's
+ * foot. Never over the cell's centre.
+ */
+export const TOPDOWN_FACE_OVERHANG = 13;
 /** How far apart the mouth check samples its walk to the rim, in world px. */
 const MOUTH_STEP = 4;
 
@@ -1692,8 +1720,9 @@ const outward: Readonly<Record<MapEdgeSide, Vec2>> = {
  * - an object's footprint is on the map unless the object is `exterior`;
  * - a solid object stands only on blocked cells, and every blocked cell is a solid object's
  *   footprint or blocked terrain (its centre is water, cliff or void), so what reads blocked is;
- * - no walkable cell's centre, nor where a figure stands about it, is void, cliff or water, unless
- *   a deck carries it;
+ * - no walkable cell's centre, nor where a figure stands about it, is void, cliff, water, a rock
+ *   face or rock, unless a deck carries it; a face may hang over the cell's top
+ *   `TOPDOWN_FACE_OVERHANG` px, never over its centre;
  * - every exit cell (the map's exit, each exit's cells, every `exit` edge) is a cell of a rim mouth,
  *   and every mouth cell runs on a road or path, with nothing solid on it, out to the rim within
  *   the layout's reach;
@@ -1785,9 +1814,15 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
           problems.push(`${where} walkable (${x},${y}) has its centre on ${ground}`);
         // Where a figure stands is ground too: the cell's middle, a figure's width each way.
         else if (!deckCells.has(key(x, y))) {
-          const wet = STANDING.map(([dx, dy]) =>
-            layout.terrain.classify((x + 0.5) * TOPDOWN_CELL + dx, (y + 0.5) * TOPDOWN_CELL + dy),
-          ).find((at) => at.ground !== 'ground');
+          const wet = STANDING.map(([dx, dy]) => ({
+            at: layout.terrain.classify(
+              (x + 0.5) * TOPDOWN_CELL + dx,
+              (y + 0.5) * TOPDOWN_CELL + dy,
+            ),
+            top: TOPDOWN_CELL / 2 + dy < TOPDOWN_FACE_OVERHANG,
+          }))
+            .filter(({ at, top }) => at.ground !== 'ground' && !(at.ground === 'face' && top))
+            .map(({ at }) => at)[0];
           if (wet)
             problems.push(`${where} walkable (${x},${y}) has ${wet.ground} where a figure stands`);
         }
@@ -2062,6 +2097,30 @@ export function validateContent(
   const statusIds = new Set(bundle.statuses.map((s) => s.id));
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
   const propIds = new Set(bundle.props.map((p) => p.id));
+
+  const checkObjectiveTarget = (
+    map: MapDef,
+    source: {
+      readonly objectiveTargetId?: string | null;
+    },
+    label: string,
+  ): void => {
+    const targetId = source.objectiveTargetId;
+    if (!targetId) return;
+    const matches =
+      map.npcs.filter((npc) => npc.id === targetId).length +
+      (map.exits ?? []).filter((exit) => exit.toMapId === targetId).length;
+    if (matches === 0)
+      problems.push(`${label} targets unknown npc or exit "${targetId}" on map "${map.id}"`);
+    else if (matches > 1)
+      problems.push(`${label} target "${targetId}" is ambiguous on map "${map.id}"`);
+  };
+
+  for (const map of bundle.maps) {
+    checkObjectiveTarget(map, map, `map "${map.id}" objective`);
+    for (const [index, variant] of (map.objectiveVariants ?? []).entries())
+      checkObjectiveTarget(map, variant, `map "${map.id}" objective variant ${index}`);
+  }
 
   /* --- abilities reference real statuses and surfaces --------------- */
   for (const a of bundle.abilities) {
@@ -2574,21 +2633,10 @@ export function validateContent(
       const map = bundle.maps.find((candidate) => candidate.id === node.mapId);
       if (!map) {
         problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
-      } else if (node.objectiveNpcId && !map.npcs.some((npc) => npc.id === node.objectiveNpcId)) {
-        problems.push(
-          `story node "${node.id}" targets unknown npc "${node.objectiveNpcId}" on map "${node.mapId}"`,
-        );
       } else {
-        for (const variant of node.objectiveVariants ?? []) {
-          if (
-            variant.objectiveNpcId &&
-            !map.npcs.some((npc) => npc.id === variant.objectiveNpcId)
-          ) {
-            problems.push(
-              `story node "${node.id}" objective variant targets unknown npc "${variant.objectiveNpcId}" on map "${node.mapId}"`,
-            );
-          }
-        }
+        checkObjectiveTarget(map, node, `story node "${node.id}"`);
+        for (const variant of node.objectiveVariants ?? [])
+          checkObjectiveTarget(map, variant, `story node "${node.id}" objective variant`);
       }
     }
   }
@@ -2710,10 +2758,11 @@ export function validateContent(
         queue.push(to);
       }
     }
-    // NPC nodes are entered by tapping, not by a link, so they count as roots.
+    // NPC and trigger nodes are entered by tapping or walking, not by a link, so they count as roots.
     for (const m of bundle.maps) {
-      for (const npc of m.npcs) {
-        for (const nodeId of [npc.node, ...(npc.routes ?? []).map((r) => r.node)]) {
+      for (const npc of [...m.npcs, ...(m.triggers ?? [])]) {
+        const routes = 'routes' in npc ? (npc.routes ?? []) : [];
+        for (const nodeId of [npc.node, ...routes.map((r) => r.node)]) {
           if (!nodeId || reachable.has(nodeId)) continue;
           reachable.add(nodeId);
           queue.push(nodeId);

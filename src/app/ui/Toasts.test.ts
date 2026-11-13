@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Toasts } from './Toasts';
+import { Toasts, readingMs } from './Toasts';
 
 class FakeElement {
   className = '';
@@ -154,5 +154,15 @@ describe('toast ownership and dismissal', () => {
     toasts.clear();
     expect(cleared).toHaveBeenCalledOnce();
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe('readingMs', () => {
+  it('keeps short nudges quick and gives a two-line caption time to be read', () => {
+    expect(readingMs('Needs 2 AP, has 1')).toBe(2600);
+    const caption =
+      'Figures step out from the pines at the bend, clubs in hand. They have been waiting here for somebody.';
+    expect(readingMs(caption)).toBeGreaterThan(6000);
+    expect(readingMs('x'.repeat(1000))).toBe(7000);
   });
 });

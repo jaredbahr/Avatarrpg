@@ -271,3 +271,49 @@ describe('Pixi stands them through the same path', () => {
     );
   });
 });
+
+describe('a rising Earth Wall (#590)', () => {
+  const at = (rise?: number) =>
+    propLayer.topdownPropArt({
+      kind: 'earth_wall',
+      pos: RAISED,
+      ...(rise === undefined ? {} : { rise }),
+    });
+
+  it('carries how far the wall is out of the ground onto its prop', () => {
+    const [wall] = topdownStructures(base({ raisedWalls: [{ ...RAISED, rise: 0.5 }] }));
+    expect(wall).toMatchObject({ kind: 'earth_wall', pos: RAISED, rise: 0.5 });
+    expect(topdownStructures(base())[0]).not.toHaveProperty('rise');
+  });
+
+  it('stands its top rows on its base in eighths, hidden until it starts', () => {
+    fakeDocument();
+    expect(at(0)).toBeNull();
+    const half = at(0.5);
+    expect(half?.url).toBe(`${WALL_URL}#4`);
+    expect(half?.image).toMatchObject({ width: 44, height: 34 });
+    expect(half?.box).toEqual(at()?.box);
+    expect(at(0.01)?.url).toBe(`${WALL_URL}#1`);
+    expect(at(0.8)?.url).toBe(`${WALL_URL}#7`);
+    expect(at(0.9)?.url).toBe(WALL_URL);
+  });
+
+  it('is the standing drawing, and seats on the same shadow, on its final frame', () => {
+    fakeDocument();
+    const whole = at();
+    expect(at(1)).toEqual(whole);
+    expect(at(1)?.url).toBe(WALL_URL);
+    const props = (rise?: number) =>
+      withStructures({
+        grid: board(),
+        raisedWalls: [rise === undefined ? RAISED : { ...RAISED, rise }],
+        props: [],
+      } as unknown as MapView).props;
+    propLayer.resetPropShadows();
+    const rising = propLayer.propShadows(props(0.5), undefined).key;
+    const final = propLayer.propShadows(props(1), undefined).key;
+    expect(rising).toContain(`${WALL_URL}#4@`);
+    expect(final).toBe(propLayer.propShadows(props(), undefined).key);
+    expect(final).not.toContain('#');
+  });
+});

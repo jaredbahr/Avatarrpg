@@ -106,6 +106,15 @@ describe('actor attachment geometry', () => {
     }
   });
 
+  it('starts a drawn top-down action at its measured hand, not the legacy palm', () => {
+    const sprite = 'unit.fire.kaya';
+    for (const socket of ['cast-gather', 'cast-release'] as const)
+      expect(socketOffset({ ...actor, sprite, socket }, frame, { x: 30, y: 20 })).toEqual({
+        x: (30 - 64) / 128,
+        y: (20 - 0.85 * 192) / 128,
+      });
+  });
+
   it('keeps the ground origin at the feet and reads Sura gear independently of her palm', () => {
     const source = { ...actor, sprite: 'unit.water.sura', socket: 'waterskin' as const };
     expect(socketOffset(source, frame)).toEqual({

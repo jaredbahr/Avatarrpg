@@ -90,7 +90,7 @@ describe('quarry bandit G sheets (ADR 0062)', () => {
       expect(Object.keys(pins.frames).sort()).toEqual([...new Set(drawn)].sort());
       const counts = enemyCounts(def);
       for (const [clip, count] of Object.entries(counts))
-        expect(entry.clips[clip as keyof typeof counts]?.frames, clip).toHaveLength(count);
+        expect(entry.clips[clip as keyof typeof counts]?.frames, clip).toHaveLength(count ?? -1);
     },
   );
 

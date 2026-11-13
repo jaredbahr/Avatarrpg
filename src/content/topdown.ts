@@ -30,8 +30,8 @@ export interface TopDownSceneSource {
 }
 
 /**
- * The maps that have a top-down presentation, by map id: Ba Dan (T3); the Forest Road (T4) and the
- * quarry (T5) follow. A map not listed keeps its oblique (or orthographic) look.
+ * The maps that have a top-down presentation, by map id: Ba Dan (T3), the Forest Road (T4) and the
+ * quarry's three boards (T5). A map not listed keeps its oblique (or orthographic) look.
  */
 export const TOPDOWN_SCENES: ReadonlyMap<string, TopDownSceneSource> = new Map([
   // The oblique margin (-0.61) was fitted to one diamond at either side; the top-down plate runs
@@ -39,6 +39,10 @@ export const TOPDOWN_SCENES: ReadonlyMap<string, TopDownSceneSource> = new Map([
   ['ba_dan_village', { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 }],
   // The forest plate runs two cells past the grid either side and three above (the pine margin).
   ['forest_road', { url: 'art/topdown/forest-road/scene.json', cameraCentreMargin: 1 }],
+  // The quarry's plates run the same two cells past the grid either side and three above (T5).
+  ['quarry_gate', { url: 'art/topdown/quarry-gate/scene.json', cameraCentreMargin: 1 }],
+  ['ambush_road', { url: 'art/topdown/cutting/scene.json', cameraCentreMargin: 1 }],
+  ['quarry_floor', { url: 'art/topdown/quarry-floor/scene.json', cameraCentreMargin: 1 }],
 ]);
 
 /**

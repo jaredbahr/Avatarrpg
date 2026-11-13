@@ -49,7 +49,7 @@ describe('sounds', () => {
   it('give an fx key its element without a row of its own', () => {
     // The whole point of the family fallback: no ability needs an entry.
     const fire = resolveSound('fx.fire.blast');
-    expect(fire?.kind).toBe('voice');
+    expect(fire?.kind).toBe('sample');
     expect(fire).toEqual(soundSchema.parse(SOUND_FAMILIES.fire));
     // A key no one has ever written down still lands on its element.
     expect(resolveSound('fx.water.invented')).toEqual(soundSchema.parse(SOUND_FAMILIES.water));

@@ -3,6 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { version } from './package.json';
+import { PRECACHE_IGNORES } from './scripts/precache.mjs';
 
 // Stamp the code being built so even an offline cached bundle identifies itself.
 function buildRevision(): string {
@@ -342,11 +343,14 @@ export default defineConfig({
     },
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: 'script-defer',
       // No includeAssets or manifest icons: globPatterns already precaches every
       // icon, and listing them again put each one in the manifest twice.
       includeManifestIcons: false,
       workbox: {
+        // The fixed registration mode needs the autoUpdate worker settings explicitly.
+        skipWaiting: true,
+        clientsClaim: true,
         /*
          * Sound effects precache: the whole set is well under a tenth of a
          * megabyte, and a footstep that arrives on the second walk is worse
@@ -355,9 +359,10 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
-        // ADR 0104 VFX recipes are fetched only by the opted-in ?style=topdown loader.
-        // Keep the JSON in dist for that request, but don't precache it eagerly.
-        globIgnores: ['art/topdown/vfx.json'],
+        // ADR 0104 T6: top-down is the default and precached; the oblique art of the maps that
+        // draw a top-down scene is requested only under ?style=oblique, so it stays in dist for
+        // that request but is not precached (`scripts/precache.mjs`, which the asset budget reads too).
+        globIgnores: [...PRECACHE_IGNORES],
         /*
          * The precache manifest is inlined in sw.js, which the JavaScript gate
          * counts (ADR 0048), and two hundred 32-digit md5 revisions do not

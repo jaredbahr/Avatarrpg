@@ -1,10 +1,10 @@
 /**
  * `schema.ts` against zod itself.
  *
- * The runtime validator promises zod's behaviour for the combinators it has, so
- * the test does not describe that behaviour a second time: it loads the real
- * save, fx and sound modules twice, once as shipped and once with zod
- * standing in for `schema.ts`, and holds the two to the same verdict, the same
+ * The runtime validator preserves the Zod 3 behavior that existing saves use.
+ * Load the real save, fx and sound modules twice, once as shipped and once with
+ * patched Zod 4 standing in for `schema.ts`. The reference adapts the few
+ * combinators whose behavior changed. Compare the verdict, the
  * parsed data (key order included, since a save is written back out) and the
  * same issue paths in the same order. `deserialize` names the first of those
  * paths to the player.
@@ -26,12 +26,63 @@ import { apply } from './state/reducer';
 import { createBattle, createGame } from './state/createGame';
 import type { GameState } from './types';
 
+// Reference semantics checked against the original Zod 3.25.76 fixtures.
+// A legacy number can be infinite, and an integer need not be safe.
+const legacyNumericType = z.custom<number>(
+  (value) => typeof value === 'number' && !Number.isNaN(value),
+);
+function legacyNumber(schema = legacyNumericType) {
+  return Object.assign(schema.clone(), {
+    int: () => legacyNumber(schema.refine(Number.isInteger)),
+    min: (bound: number) => legacyNumber(schema.refine((value) => value >= bound)),
+    max: (bound: number) => legacyNumber(schema.refine((value) => value <= bound)),
+    positive: () => legacyNumber(schema.refine((value) => value > 0)),
+  });
+}
+
+function legacyString() {
+  const schema = z.string();
+  return Object.assign(schema, {
+    min: (bound: number) => schema.refine((value) => value.length >= bound),
+  });
+}
+
+function legacyArray<T extends z.ZodType>(
+  item: T,
+  bounds: readonly ((length: number) => boolean)[] = [],
+) {
+  const array = z.array(item);
+  // Legacy arrays report length bounds before every child issue, including
+  // when an oversized array contains children that abort.
+  const schema =
+    bounds.length === 0
+      ? array
+      : z.transform((value, ctx) => {
+          if (Array.isArray(value)) {
+            for (const allows of bounds) {
+              if (!allows(value.length))
+                ctx.issues.push({ code: 'custom', input: value, continue: true });
+            }
+          }
+          const parsed = array.safeParse(value);
+          if (parsed.success) return parsed.data;
+          for (const { path, message } of parsed.error.issues) {
+            ctx.addIssue({ code: 'custom', input: value, path, message, continue: false });
+          }
+          return z.NEVER;
+        });
+  return Object.assign(schema, {
+    min: (bound: number) => legacyArray(item, [...bounds, (length) => length >= bound]),
+    max: (bound: number) => legacyArray(item, [...bounds, (length) => length <= bound]),
+  });
+}
+
 interface Parser {
   safeParse(
     value: unknown,
   ):
     | { success: true; data: unknown }
-    | { success: false; error: { issues: readonly { path: readonly (string | number)[] }[] } };
+    | { success: false; error: { issues: readonly { path: readonly PropertyKey[] }[] } };
 }
 
 interface Modules {
@@ -44,7 +95,13 @@ let zodBuilt: Modules;
 
 beforeAll(async () => {
   vi.resetModules();
-  vi.doMock('./schema', () => ({ ...z }));
+  vi.doMock('./schema', () => ({
+    ...z,
+    number: legacyNumber,
+    string: legacyString,
+    array: legacyArray,
+    record: (value: z.ZodType) => z.record(z.string(), value),
+  }));
   zodBuilt = {
     save: await import('./save/serialize'),
     fx: await import('../content/fx'),
@@ -59,7 +116,7 @@ function verdict(schema: Parser, value: unknown): unknown {
   const result = schema.safeParse(value);
   return result.success
     ? { ok: true, data: JSON.stringify(result.data), shape: result.data }
-    : { ok: false, paths: result.error.issues.map((issue) => issue.path.join('.')) };
+    : { ok: false, paths: result.error.issues.map((issue) => issue.path.map(String).join('.')) };
 }
 
 function expectSameVerdict(shipped: Parser, zod: Parser, value: unknown, label: string): boolean {
@@ -249,7 +306,7 @@ const MALFORMED_SAVE_CORPUS: readonly unknown[] = [
   { magic: 'four-nations-tactics', format: 5, summary: null },
 ];
 
-describe('the runtime validator matches zod', () => {
+describe('the runtime validator preserves its Zod 3 contract', () => {
   it('validates every array index, including sparse holes', () => {
     const sparse = new Array<string>(2);
     sparse[1] = 'present';
@@ -371,13 +428,45 @@ describe('the runtime validator matches zod', () => {
     for (const json of [malformedJson, validJson]) {
       const parsed = JSON.parse(json) as { state: { flags: Record<string, unknown> } };
       expect(Object.hasOwn(parsed.state.flags, '__proto__')).toBe(true);
-      expect(saveShipped.deserialize(json)).toEqual(zodBuilt.save.deserialize(json));
-      expect((Object.prototype as { polluted?: unknown }).polluted).toBeUndefined();
     }
-
+    // Zod 4 skips the reserved key before checking the value. The shipped
+    // validator preserves the exact historical error for a malformed value.
+    expect(saveShipped.deserialize(malformedJson)).toEqual({
+      ok: false,
+      error: 'This save looks damaged (state.flags.__proto__).',
+    });
     const result = saveShipped.deserialize(validJson);
+    expect(result).toEqual(zodBuilt.save.deserialize(validJson));
+    expect((Object.prototype as { polluted?: unknown }).polluted).toBeUndefined();
     expect(result.ok).toBe(true);
     if (result.ok) expect(Object.hasOwn(result.blob.state.flags, '__proto__')).toBe(false);
+  });
+
+  it('preserves the historical issue order for an oversized sound with bad voices', () => {
+    const voice = { kind: 'voice', from: 100, to: 200 };
+    const layers = { kind: 'layers', voices: [{ ...voice, decay: 0 }, voice, voice, {}] };
+    const expected = {
+      ok: false,
+      paths: ['voices', 'voices.0.decay', 'voices.3.kind', 'voices.3.from', 'voices.3.to'],
+    };
+    expect(verdict(soundsShipped.soundSchema, layers)).toStrictEqual(expected);
+    expect(verdict(zodBuilt.sounds.soundSchema, layers)).toStrictEqual(expected);
+  });
+
+  it('preserves legacy numbers and sample defaults', () => {
+    const positiveInfinity = Number.POSITIVE_INFINITY;
+    const hugeInteger = Number.MAX_SAFE_INTEGER + 1;
+    expect(schemaShipped.number().positive().parse(positiveInfinity)).toBe(positiveInfinity);
+    expect(legacyNumber().positive().parse(positiveInfinity)).toBe(positiveInfinity);
+    expect(schemaShipped.number().int().parse(hugeInteger)).toBe(hugeInteger);
+    expect(legacyNumber().int().parse(hugeInteger)).toBe(hugeInteger);
+    const input = { kind: 'sample', url: 'audio/test.ogg' };
+    const expected = { ...input, variants: [], gain: 1, rate: 1 };
+    const first = soundsShipped.sampleSchema.parse(input);
+    const second = soundsShipped.sampleSchema.parse(input);
+    expect(first).toStrictEqual(expected);
+    expect(zodBuilt.sounds.sampleSchema.parse(input)).toStrictEqual(expected);
+    expect(first.variants).not.toBe(second.variants);
   });
 
   it('gives what the shipped modules export the same values', () => {

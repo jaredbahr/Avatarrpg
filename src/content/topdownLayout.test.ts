@@ -187,6 +187,28 @@ describe('the top-down layout rules', () => {
     ]);
   });
 
+  it("lets a rock face hang over a cell's top 13 px, never over its centre or a figure's sides", () => {
+    // the quarry's cut face (ADR 0104 §3): drawn over the top of the cell below its shelf
+    const face = (depth: number) =>
+      terrain((x, y) => (x >= 80 && x < 120 && y < depth ? 'face' : null));
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: face(13) }))).toEqual([]);
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: face(21) }))).toEqual([
+      'map "fixture.topdown-layout" top-down layout walkable (2,0) has its centre on face',
+    ]);
+    // a face only beside the centre, where a figure's side stands, is no better
+    const side = terrain((x, y) => (x >= 88 && x < 94 && y < 22 ? 'face' : null));
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: side }))).toEqual([
+      'map "fixture.topdown-layout" top-down layout walkable (2,0) has face where a figure stands',
+    ]);
+    // the top of rock the rules block is blocked terrain, and no ground to stand on
+    const shelf = terrain((x, y) => (x >= 40 && x < 80 && y >= 40 && y < 80 ? 'rock' : null));
+    expect(validateTopDownLayout(FIXTURE, layout({ objects: [], terrain: shelf }))).toEqual([]);
+    const onRock = terrain((x, y) => (x >= 80 && x < 120 && y < 40 ? 'rock' : null));
+    expect(validateTopDownLayout(FIXTURE, layout({ terrain: onRock }))).toEqual([
+      'map "fixture.topdown-layout" top-down layout walkable (2,0) has its centre on rock',
+    ]);
+  });
+
   it('rejects an exit that is not on a rim mouth', () => {
     const closed = { ...terrain(), mouths: [] };
     expect(validateTopDownLayout(FIXTURE, layout({ terrain: closed }))).toEqual([

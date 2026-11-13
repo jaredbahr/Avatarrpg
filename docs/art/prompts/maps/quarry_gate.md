@@ -1,10 +1,10 @@
 # Map painting: The Quarry Gate (`quarry_gate`)
 
-**Deliver** one PNG of 1600×960 pixels or a whole multiple of it (3200×1920 is the comfortable size to generate at), landscape 5:3, saved as `art/raw/maps/quarry_gate.png`. `art:map` downsizes it with a box filter and never upscales.
+**Deliver** one PNG of 1920×1152 pixels or a whole multiple of it (3840×2304 is the comfortable size to generate at), landscape 5:3, saved as `art/raw/maps/quarry_gate.png`. `art:map` downsizes it with a box filter and never upscales.
 
-**Ships as** `public/art/maps/quarry_gate.webp`, 80 px a tile, under 1 MB.
+**Ships as** `public/art/maps/quarry_gate.webp`, 96 px a tile, under 1 MB.
 
-**Map** `backdrop: { url: 'art/maps/quarry_gate.webp', pixelsPerTile: 80 },` on the map's definition in `src/content/maps/`.
+**Map** `backdrop: { url: 'art/maps/quarry_gate.webp', pixelsPerTile: 96 },` on the map's definition in `src/content/maps/`.
 
 **Layout** `quarry_gate-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
@@ -51,7 +51,7 @@ Legend: `X` cut quarry rock, two steps up; `#` stone walls; `G` barred timber ga
 
 **Live surfaces:** the layout marks water, oil, mud and rubble that the game draws. Paint dry earth beneath water and mud, clean flat stone beneath oil, and only the fixed cover silhouette beneath rubble. Do not bake liquid, flame or smoke into the painting. Keep interactable props separate. Village houses are open cutaways: walls fill their blocking cells and plank interiors remain visible and clear.
 
-> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A yard of hard-packed pale earth with a two-lane road of flagstones crossing it left to right through the middle. A stripe of clean flat grey stone two tiles wide runs top to bottom across the middle of the yard, stepping one tile to the right where it crosses the road; the game draws oil over it. Two gatehouses of dressed grey stone stand at the top and two at the bottom: each a hollow rectangle of wall round a small floor of earth. Between each pair a barred gate of upright timber planks strapped with iron closes the gap, set into the stone of the gatehouses either side. All four corners are cut quarry rock standing two steps above the yard, each fronted by a one-step stone ledge that runs a short way along the left and right edges. Four wooden crates stand as cover on the earth, two above the road and two below. Flat noon light; dust on everything, no shadows longer than a tile. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 5:3, 3200×1920.
+> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A yard of hard-packed pale earth with a two-lane road of flagstones crossing it left to right through the middle. A stripe of clean flat grey stone two tiles wide runs top to bottom across the middle of the yard, stepping one tile to the right where it crosses the road; the game draws oil over it. Two gatehouses of dressed grey stone stand at the top and two at the bottom: each a hollow rectangle of wall round a small floor of earth. Between each pair a barred gate of upright timber planks strapped with iron closes the gap, set into the stone of the gatehouses either side. All four corners are cut quarry rock standing two steps above the yard, each fronted by a one-step stone ledge that runs a short way along the left and right edges. Four wooden crates stand as cover on the earth, two above the road and two below. Flat noon light; dust on everything, no shadows longer than a tile. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 5:3, 3840×2304.
 
 ## Negative prompt
 
@@ -60,7 +60,7 @@ Legend: `X` cut quarry rock, two steps up; `#` stone walls; `G` barred timber ga
 ## Commands
 
 ```
-npm run art:map -- --map quarry_gate --px 80
+npm run art:map -- --map quarry_gate --px 96
 npm run art:validate
 npm run check:assets
 ```

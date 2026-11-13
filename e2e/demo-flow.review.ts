@@ -182,7 +182,7 @@ test('the demo, played through', async ({ page }, info) => {
   await page.waitForTimeout(600);
   await page.getByRole('button', { name: '3 players' }).click();
   await beat('setup-players');
-  await page.getByRole('button', { name: /^Continue$/ }).click();
+  await page.getByRole('button', { name: 'Choose your own', exact: true }).click();
   for (const [i, member] of PARTY.entries()) {
     const ready = page.getByRole('button', { name: /I've got it/i });
     if (await ready.count()) {
@@ -191,6 +191,10 @@ test('the demo, played through', async ({ page }, info) => {
     }
     await page.locator('input[type=text]').fill(member.player);
     await page.getByRole('button', { name: /^Next$/ }).click();
+  }
+  await page.getByRole('button', { name: "I've got it", exact: true }).click();
+  for (const [i, member] of PARTY.entries()) {
+    if (i > 0) await page.getByRole('button', { name: "I've got it", exact: true }).click();
     await page.locator(`.pick-card.element-${member.element}`).first().click();
     if (i === 0) await beat('setup-element');
     await page.getByRole('button', { name: /^Next$/ }).click();

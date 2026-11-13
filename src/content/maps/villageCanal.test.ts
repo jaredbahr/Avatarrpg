@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../index';
 import { BA_DAN_VILLAGE } from './village';
-import { BA_DAN_WATER_CELLS } from '../scenes/baDan';
+import { BA_DAN_WATER_CELLS } from './baDanLayout';
 import { BA_DAN_ROUTINES, PARKED_ROUTINES } from '../residents/routines';
 import { PartyTrail, placeParty } from '../../app/anim/trail';
 import { buildGrid, findPath, pathCost, posKey, tileAt } from '../../core/rules/grid';

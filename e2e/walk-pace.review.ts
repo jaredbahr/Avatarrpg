@@ -18,7 +18,7 @@ type ReviewWindow = Window & { paceReview: Probe };
 type ReviewApp = { scene: { renderer: Renderer; firstFrameReady(): Promise<unknown> } };
 
 for (const renderer of ['canvas', 'webgl'] as const) {
-  for (const style of ['default', 'world'] as const) {
+  for (const style of ['default'] as const) {
     test(`Ba Dan continuous walk: ${renderer}, ${style}`, async ({ page }, info) => {
       test.setTimeout(120_000);
       allowSoftwareWebgl(test, renderer);
@@ -27,7 +27,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       page.on('console', (message) => {
         if (message.type() === 'error') errors.push(message.text());
       });
-      await resetStorage(page, `?renderer=${renderer}${style === 'world' ? '&style=world' : ''}`);
+      await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['One', 'Two', 'Three'], ['kaya', 'sura', 'bo'], 'walk-pace-383', {
         reduceMotion: false,
       });

@@ -19,13 +19,19 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
-import { choreograph, STROLL_REFERENCE_MS, TIMING } from './anim/choreography';
+import {
+  choreograph,
+  DEFAULT_PRESENTATION_TIMING,
+  STROLL_REFERENCE_MS,
+  TIMING,
+} from './anim/choreography';
 import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
-import type { HealthChange, SoundCue } from './anim/choreography';
+import type { HealthChange, PresentationTimingProfile, SoundCue } from './anim/choreography';
 import { partyScale } from './anim/actorScale';
 import { Timeline } from './anim/timeline';
+import { easeOutQuad } from './anim/easing';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
 import {
@@ -36,7 +42,9 @@ import {
   screenDirection,
 } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
-import { headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
+import { topdownVfx } from '../content/assets/topdownVfx';
+import { shotSprite } from '../render/topdown/shots';
+import { actionClip, headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
 import type { Heading, LocomotionDef, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
 import type { SheetClips } from '../render/sheets/store';
@@ -104,6 +112,10 @@ export interface UnitHealthPresentation {
 }
 
 export interface AnimatorOptions {
+  /** Scene-specific timings; the default is unchanged for shared App playback. */
+  readonly timingProfile?: PresentationTimingProfile;
+  /** Opt in to action-ready queueing for the private top-down combat Animator. */
+  readonly actionQueue?: boolean;
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
   /**
@@ -235,6 +247,19 @@ export class Animator {
     return this.timeline.finishesAt;
   }
 
+  /** Action horizon; visual-only tracks may remain live after this. */
+  get actionReadyAt(): number {
+    return this.timeline.actionReadyAt;
+  }
+
+  actionBusy(now: number): boolean {
+    return this.timeline.actionBusy(now);
+  }
+
+  actorFinishesAt(unitId: string): number {
+    return this.timeline.actorFinishesAt(unitId);
+  }
+
   /**
    * Schedules playback for a batch of events.
    *
@@ -259,9 +284,21 @@ export class Animator {
       waterSources?: Readonly<Record<string, Vec2>>;
     } = {},
   ): void {
-    const base = options.alongside
-      ? Math.max(now, this.lastCursor)
-      : Math.max(now, this.timeline.finishesAt);
+    const actionActors = this.options.actionQueue
+      ? events.flatMap((event) =>
+          event.type === 'unitMoved' || event.type === 'partyWalked' || event.type === 'abilityUsed'
+            ? [event.unitId]
+            : [],
+        )
+      : [];
+    const actorSettle = actionActors.reduce(
+      (end, unitId) => Math.max(end, this.timeline.actorFinishesAt(unitId)),
+      0,
+    );
+    const queueEnd = this.options.actionQueue
+      ? Math.max(this.timeline.actionReadyAt, actorSettle)
+      : this.timeline.finishesAt;
+    const base = options.alongside ? Math.max(now, this.lastCursor) : Math.max(now, queueEnd);
     // Followers each delay from the same batch anchor, never from the previous delay.
     this.lastCursor = base;
     const rate = this.rate;
@@ -273,11 +310,14 @@ export class Animator {
       unitsBefore,
       cursor,
       rate,
+      timingProfile: this.options.timingProfile ?? DEFAULT_PRESENTATION_TIMING,
       pushIndex: this.pushes++,
       silentSteps: options.silentSteps ?? options.alongside,
       amble: this.options.amble,
       projection: this.projection,
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
+      headingOf: (unitId) => this.headingAfterCues(unitId),
+      shots: topdownVfx() !== null,
       ...(bends ? { bends } : {}),
       ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
       ...(options.waterSources ? { waterSources: options.waterSources } : {}),
@@ -332,15 +372,21 @@ export class Animator {
           });
         }
       }
-      if (track.kind === 'pose' && track.facing !== undefined)
+      if (track.kind === 'pose' && (track.heading || track.facing !== undefined)) {
+        // A top-down action turns the unit to the heading it is drawn in (ADR 0104).
+        const rad = (HEADINGS.indexOf(track.heading ?? 'east') * Math.PI) / 4;
         this.pendingHeadings.push({
           unitId: track.unitId,
           at: track.start,
-          tangent: { x: track.facing, y: 0 },
+          tangent: track.heading
+            ? { x: Math.cos(rad), y: Math.sin(rad) }
+            : { x: track.facing ?? 1, y: 0 },
           screenSpace: true,
         });
+      }
     }
     this.pendingHeadings.sort((a, b) => a.at - b.at);
+    this.timeline.holdActionUntil(result.actionReadyAt);
     this.timeline.holdUntil(result.cursor);
     // The cues carry animator-clock times; `now` lets the sink convert them to
     // its own clock, which for Web Audio is the only one that schedules exactly.
@@ -372,9 +418,24 @@ export class Animator {
 
   /** Every live bend's painted effect at `now`, in play order. */
   bendFx(now: number): BendFxSprite[] {
-    return this.timeline
-      .active(now, 'bend')
-      .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start));
+    return [
+      ...this.timeline
+        .active(now, 'bend')
+        .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start)),
+      // The top-down shots in flight draw as painted cels too (#588).
+      ...this.timeline.active(now, 'shot').flatMap((track) => shotSprite(track, now, topdownVfx())),
+    ];
+  }
+
+  /**
+   * How far a top-down Earth Wall on `pos` is out of the ground at `now` (#590): 0 until its rise
+   * plays, eased to 1; undefined when no rise is queued or playing there.
+   */
+  wallRise(now: number, pos: Vec2): number | undefined {
+    const track = this.timeline
+      .unfinished(now, 'rise')
+      .find((t) => t.pos.x === pos.x && t.pos.y === pos.y);
+    return track && easeOutQuad(Math.max(0, Timeline.progress(track, now)));
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
@@ -430,6 +491,15 @@ export class Animator {
       count++;
     }
     if (count > 0) this.pendingHeadings.splice(0, count);
+  }
+
+  /** The heading a unit will face once every queued turn has played: what a new push starts from. */
+  private headingAfterCues(unitId: string): Heading | undefined {
+    const cue = this.pendingHeadings.filter((each) => each.unitId === unitId).pop();
+    if (!cue) return this.headings.get(unitId);
+    return walkHeading(
+      cue.screenSpace ? cue.tangent : screenDirection(cue.tangent, this.projection),
+    );
   }
 
   private rememberDirection(unitId: string, tangent: Vec2, screenSpace = false): void {
@@ -754,8 +824,12 @@ export class Animator {
     if ((clip !== 'ko' && clip !== 'hit') || !sprite || sheetLocomotion(sprite)?.headings !== 8)
       return clip;
     const heading = this.heading(unitId, restFacing) ?? 'east';
-    const authored = clip === 'ko' ? koClip(heading) : hitClip(heading);
-    return this.options.sheetClips?.(sprite)?.[authored] ? authored : clip;
+    const clips = this.options.sheetClips?.(sprite);
+    // A top-down sheet falls in its own heading (ADR 0104); a G sheet on the diagonal `koClip` gives.
+    const authored = (
+      clip === 'ko' ? [actionClip('ko', heading), koClip(heading)] : [hitClip(heading)]
+    ).find((name) => clips?.[name]);
+    return authored ?? clip;
   }
 
   /**

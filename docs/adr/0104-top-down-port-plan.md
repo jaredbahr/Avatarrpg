@@ -242,6 +242,62 @@ The seating rule is measurable and applies to every board and every runtime obje
 - the cast joined to the contact;
 - no hover.
 
+## Amendment: the JS budget for the demo (owner, 2026-11-11)
+
+The follow camera and combat pacing (#500) took the shipped JavaScript to 396.7 KB, 0.7 KB over the 396 set above:
+other work landed in the room it was sized for. The rest of the demo to the quarry and back still owes code: action
+clips per heading and ability (#587), in-flight projectiles (#588) and the Earth Wall rise (#590), about 3–5 KB.
+`npm run bundle:report` shows no dead module worth that; the largest unmapped block is Pixi, which WebGL needs, and a
+lazy chunk counts against the gate anyway (ADR 0057).
+
+Asked, the owner raised the budget to **404 KB** gzipped (`scripts/check-bundle-size.mjs`). Like the 396 raise, it is
+permanent: the oblique code T7 removes frees room under it and does not lower it.
+
+## Note: the top-down family is not precached (orchestrator, 2026-11-10)
+
+The quarry's three plates (#593) took the service-worker precache to 25.07 MB of 25, as §3 foresaw while the old and
+new art ship side by side. No budget is raised. The top-down family is runtime-fetched, not precached, until T6
+switches the default: it is only ever requested under `?style=topdown`. `scripts/precache.mjs` lists `art/topdown/**`;
+workbox ignores it and `check-asset-budget.mjs` leaves it out of the precache total, while the `topdown` family keeps
+its own 6 MiB budget. `scripts/precache.test.ts` pins it. T6 revisits it.
+
+## T6: top-down is the default (2026-11-11)
+
+A page with no `style` parameter, an unknown one or `?style=topdown` boots top-down (`src/app/style.ts`); the
+style stays a URL choice and never enters a save (§4), so a fresh link and a Continue both land in it.
+`?style=oblique` keeps the old look for one release and `?style=world` stays the figure test on it.
+
+The 2026-11-10 note above is reversed: the top-down family is precached, so the game plays offline after a first
+visit. No budget moves. What the service worker leaves for run time is now the oblique art of the five maps that draw
+a top-down scene (Ba Dan's continuous painting, the forest G1 pages, the quarry's projected pages and the five
+backdrops): only `?style=oblique`, or a failed top-down scene load, ever requests it. The riverside keeps its
+backdrop, since it has no top-down scene. Measured on the build: precache 21.47 MB before (125 top-down files left
+for run time), 21.01 MB after (93 oblique files left for run time), of 25 MB. JavaScript 399.3 KB of 404 KB gzipped,
+the precache manifest in `sw.js` included. `scripts/precache.test.ts` pins that every map drawing ignored art is a
+swapped one. T7 deletes those files.
+
+## T7, first half: the style switch and the oblique maps (2026-11-13)
+
+The owner approved T7 after an end-to-end top-down playthrough found no blockers. It lands in steps, each green on
+its own:
+
+- **The style switch is gone.** `src/app/style.ts`, `?style=oblique` and `?style=world` (the world-style figure test,
+  ADR 0097) are deleted; `main.ts` always turns on the top-down figures and fetches the scenes. A `?style=` in an old
+  link is ignored. A scene that fails to load leaves its map on the bare board (there is no oblique fallback).
+- **The route maps are top-down in the content itself.** Ba Dan, the Forest Road, the quarry gate, the Cutting and the
+  Driller floor declare `projection: 'topdown'` and `cameraCentreMargin: 1`, with no `backdrop` or `cameraPaint`; their
+  own `scene` carries only the rules' `paintedRubble` until the fetched scene replaces it. The rule layout that lived in
+  the oblique scene modules moved beside the maps (`maps/baDanLayout.ts`; the roadside and rubble cells in
+  `maps/combat.ts`). The oblique scene modules (`scenes/baDan*.ts`, `forestRoad*.ts`, `quarryGate.ts`,
+  `quarryProjected.ts` and their helpers) and their art pipelines (`scripts/art/ba-dan-regions/`, the forest G1 and
+  quarry packers) are deleted with their tests.
+- **Not yet:** the shipped oblique map art and its sources (next step), then the oblique projection in the renderer
+  (the lift pass, the diamond camera and its painted-ring and hull clamps) and the G1 sheets in `ASSETS`, which the art
+  and animation tests still pin and whose dormant mechanics (bends, stance, jog, brisk cadence) need their own
+  migration.
+
+Measured on the build: JavaScript 410.0 KB before, 402.4 KB after (budget 410, unchanged).
+
 ## Driller grounding implementation (#469)
 
 The Driller packer records each static heading's tread span, center offset and baseline from

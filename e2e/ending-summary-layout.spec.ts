@@ -30,13 +30,13 @@ for (const layout of layouts) {
 
     // Jump directly to the real ending node; this spec is about its rendered
     // summary, not the route or the interlude's playback.
-    await enterNode(page, 'act1_epilogue');
-    await page.getByRole('button', { name: 'Read summary' }).click();
+    await enterNode(page, 'demo_complete');
 
     const stage = page.locator('.stage[data-kind="end"]');
     const panel = stage.locator('.end-panel');
-    await expect(panel.getByRole('heading', { name: 'The Quarry of Ba Dan' })).toBeVisible();
-    await expect(panel).toContainText('It is time to take the news home to Ba Dan.');
+    await expect(panel.getByRole('heading', { name: 'Home to Ba Dan' })).toBeVisible();
+    await expect(panel).toContainText('Demo complete');
+    await expect(panel).toContainText('Kaya, level');
     await page.evaluate(() => document.fonts.ready);
 
     const bounds = await page.evaluate(() => {
@@ -130,10 +130,10 @@ for (const layout of layouts) {
       ).toBeGreaterThan(0);
     }
 
-    await panel.getByRole('button', { name: 'Continue exploring' }).click();
+    await panel.getByRole('button', { name: 'Keep exploring' }).click();
     await expect
       .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
-      .toBe('quarry_after_explore');
+      .toBe('village_return_explore');
     expect(errors).toEqual([]);
   });
 }
