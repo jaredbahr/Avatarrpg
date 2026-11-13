@@ -1,15 +1,11 @@
+import { deepStrictEqual } from 'node:assert';
+import { performance } from 'node:perf_hooks';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { backgroundFigures, exitCells, visibleNpcs } from '../story/world';
 import { RngCursor, seedFromString } from '../rng';
 import type { Command, GameState, MapDef, Vec2 } from '../types';
-import {
-  canUseAbility,
-  isValidTarget,
-  resolveAim,
-  targetableTiles,
-  usableAbilities,
-} from '../rules/abilities';
+import { isValidTarget, resolveAim, targetableTiles, usableAbilities } from '../rules/abilities';
 import { buildGrid, posKey, reachable, type MoveContext } from '../rules/grid';
 import { isAlive, canMove } from '../rules/stats';
 import { BattleDraft } from './battleDraft';
@@ -51,8 +47,12 @@ function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object
 
   if (object instanceof Map) {
     for (const [key, entry] of object.entries()) {
-      deepFreezeStateGraph(key, `${path}<map-key>`, seen);
-      deepFreezeStateGraph(entry, `${path}<map-value>`, seen);
+      if (key !== null && typeof key === 'object') {
+        deepFreezeStateGraph(key, `${path}<map-key>`, seen);
+      }
+      if (entry !== null && typeof entry === 'object') {
+        deepFreezeStateGraph(entry, `${path}<map-value>`, seen);
+      }
     }
     Object.defineProperties(object, {
       set: {
@@ -81,7 +81,11 @@ function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object
       },
     });
   } else if (object instanceof Set) {
-    for (const entry of object.values()) deepFreezeStateGraph(entry, `${path}<set-value>`, seen);
+    for (const entry of object.values()) {
+      if (entry !== null && typeof entry === 'object') {
+        deepFreezeStateGraph(entry, `${path}<set-value>`, seen);
+      }
+    }
     Object.defineProperties(object, {
       add: {
         configurable: false,
@@ -112,7 +116,10 @@ function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object
     for (const key of Reflect.ownKeys(object)) {
       const descriptor = Object.getOwnPropertyDescriptor(object, key);
       if (descriptor && 'value' in descriptor) {
-        deepFreezeStateGraph(descriptor.value, `${path}${pathPart(key)}`, seen);
+        const child = descriptor.value;
+        if (child !== null && typeof child === 'object') {
+          deepFreezeStateGraph(child, `${path}${pathPart(key)}`, seen);
+        }
       }
     }
   }
@@ -123,6 +130,14 @@ function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object
 
 function describeError(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+}
+
+function assertInputUnchanged(actual: unknown, before: unknown, context: string): void {
+  try {
+    deepStrictEqual(actual, before);
+  } catch (error) {
+    throw new Error(`${context}: input differs from its pre-call snapshot`, { cause: error });
+  }
 }
 
 function hasEventType(result: ReturnType<typeof apply>, types: readonly string[]): boolean {
@@ -219,11 +234,7 @@ function applyWithoutMutation(
     thrown = error;
   }
 
-  try {
-    expect(protectedInput, `${context}: apply mutated its frozen input`).toEqual(before);
-  } catch (error) {
-    throw new Error(`${context}: input differs from its pre-call snapshot`, { cause: error });
-  }
+  assertInputUnchanged(protectedInput, before, context);
   if (thrown !== undefined) {
     throw new Error(`${context}: apply threw for a legal command: ${describeError(thrown)}`, {
       cause: thrown,
@@ -270,7 +281,6 @@ function chooseBattleCommand(state: GameState, chooser: RngCursor): Command {
 
   const abilities: Command[] = [];
   for (const ability of usableAbilities(CONTENT, unit)) {
-    if (!canUseAbility(CONTENT, unit, ability).ok) continue;
     const targets = new Map<string, Vec2>();
     for (const tapped of targetableTiles(CONTENT, battle, unit, ability)) {
       const target = resolveAim(CONTENT, battle, unit, ability, tapped);
@@ -486,6 +496,7 @@ function runSequence(tableSize: (typeof TABLE_SIZES)[number], trial: number): Ph
 
 describe('reducer input immutability', () => {
   it('preserves every frozen state across mixed exploration and combat sequences', () => {
+    const startedAt = performance.now();
     let sequenceCount = 0;
     let acceptedCount = 0;
     let resolvedBattleCount = 0;
@@ -520,6 +531,10 @@ describe('reducer input immutability', () => {
       continuedExploreCount,
       'corpus includes post-resolution exploration walks',
     ).toBeGreaterThan(0);
+    expect(
+      performance.now() - startedAt,
+      'the full 204-sequence property must complete in under 20 seconds',
+    ).toBeLessThan(20_000);
   }, 20_000);
 
   it('guards nested objects, arrays, Maps, Sets, and their contents', () => {
@@ -563,28 +578,73 @@ describe('reducer input immutability', () => {
   });
 
   it('uses the structural oracle to catch an intrinsic Map.set bypass', () => {
+    const context = 'intrinsic Map.set bypass';
     const state = { lookup: new Map([['key', { value: 1 }]]) };
     const before = structuredClone(state);
     deepFreezeStateGraph(state);
+    assertInputUnchanged(state, before, context);
 
     Map.prototype.set.call(state.lookup, 'bypassed', { value: 2 });
 
-    expect(state).not.toEqual(before);
+    expect(() => assertInputUnchanged(state, before, context)).toThrow(
+      `${context}: input differs from its pre-call snapshot`,
+    );
   });
 
   it('uses the structural oracle to catch an intrinsic Set.add bypass', () => {
+    const context = 'intrinsic Set.add bypass';
     const state = { tags: new Set([{ label: 'original' }]) };
     const before = structuredClone(state);
     deepFreezeStateGraph(state);
+    assertInputUnchanged(state, before, context);
 
     Set.prototype.add.call(state.tags, { label: 'bypassed' });
 
-    expect(state).not.toEqual(before);
+    expect(() => assertInputUnchanged(state, before, context)).toThrow(
+      `${context}: input differs from its pre-call snapshot`,
+    );
   });
 
   it('rejects unsupported binary views with their graph path', () => {
-    expect(() => deepFreezeStateGraph({ nested: { bytes: new Uint8Array([1, 2]) } })).toThrow(
-      /Unsupported binary state value at \$\.nested\.bytes/,
-    );
+    const fixtures = [
+      {
+        label: 'nested object',
+        value: { nested: { bytes: new Uint8Array([1, 2]) } },
+        path: '$.nested.bytes',
+      },
+      {
+        label: 'array member object',
+        value: [{ bytes: new Uint8Array([1, 2]) }],
+        path: '$.0.bytes',
+      },
+      {
+        label: 'Map key object',
+        value: new Map([[{ bytes: new Uint8Array([1, 2]) }, 'value']]),
+        path: '$<map-key>.bytes',
+      },
+      {
+        label: 'Map value object',
+        value: new Map([['key', { bytes: new Uint8Array([1, 2]) }]]),
+        path: '$<map-value>.bytes',
+      },
+      {
+        label: 'Set value object',
+        value: new Set([{ bytes: new Uint8Array([1, 2]) }]),
+        path: '$<set-value>.bytes',
+      },
+    ] as const;
+
+    for (const fixture of fixtures) {
+      let thrown: unknown;
+      try {
+        deepFreezeStateGraph(fixture.value);
+      } catch (error) {
+        thrown = error;
+      }
+      expect(thrown, fixture.label).toBeInstanceOf(TypeError);
+      expect(thrown, fixture.label).toMatchObject({
+        message: `Unsupported binary state value at ${fixture.path}`,
+      });
+    }
   });
 });
