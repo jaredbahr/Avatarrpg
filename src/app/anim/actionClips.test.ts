@@ -269,7 +269,7 @@ describe('the animator with top-down actions', () => {
     a.setProjection('topdown');
     a.push(1000, [used('kaya', 'fire_jab', { x: 5, y: 1 })], roster);
     expect(a.unitPose(1100, 'kaya', kaya.sprite)?.clip).toBe('cast@north');
-    expect(a.locomotion(9000, 'kaya', 'stance', kaya.sprite).clip).toBe('stanceNorth');
+    expect(a.locomotion(9000, 'kaya', 'idle', kaya.sprite).clip).toBe('idleNorth');
   });
 
   it('knocks the Driller out in its own heading and holds the last cel', () => {

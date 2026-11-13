@@ -7,9 +7,6 @@ import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { frameIndex, resolveClip } from '../../src/render/sheets/resolveClip';
 import { readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
-import { decodeWebp } from './lib/webp';
-import { MARGIN } from './lib/align';
-import { STRIDE_ABOVE, STRIDE_BELOW, validateSheets } from './validate';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -26,39 +23,8 @@ describe('hero lateral walk art', () => {
       const oldAtlas = parseAtlasJson(readFileSync(`${oldStem}.json`, 'utf8'));
       const oldImage = readPng(`${oldStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
-      if (atlas.image.endsWith('.webp')) {
-        // The PixelLab G party (ADR 0050, ADR 0051), on the world's 64 px G1
-        // grid since ADR 0089: every bound below is in 128 px G figures, scaled.
-        expect(['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo']).toContain(key);
-        const g = entry.pixelsPerTile / 128;
-        const walk = resolveClip(entry.clips, 'walk');
-        expect(walk?.exact).toBe(true);
-        expect(walk?.def.frames).toHaveLength(12);
-        expect(walk?.def.fps).toBeCloseTo(1000 / 114);
-        expect(await validateSheets('public', { [key]: entry })).toEqual([]);
-        const decoded = await decodeWebp(
-          new Uint8Array(readFileSync(`public/art/units/${atlas.image}`)),
-        );
-        const hashes = new Set<string>();
-        for (const id of walk?.def.frames ?? []) {
-          const rect = atlas.frames.get(id);
-          if (!rect) throw new Error(`Missing cel ${id}`);
-          expect([rect.w, rect.h], id).toEqual([128 * g, 192 * g]);
-          const frame = crop(decoded, { x: rect.x, y: rect.y, width: rect.w, height: rect.h });
-          const bounds = alphaBounds(frame);
-          if (!bounds) throw new Error(`Empty cel ${id}`);
-          const foot = lowestOpaqueRow(frame);
-          const line = Math.round(0.85 * 192 * g);
-          expect(foot, id).toBeGreaterThanOrEqual(line - STRIDE_ABOVE * g);
-          expect(foot, id).toBeLessThanOrEqual(line + STRIDE_BELOW * g);
-          expect(bounds.x).toBeGreaterThanOrEqual(MARGIN * g);
-          expect(bounds.x + bounds.width).toBeLessThanOrEqual(128 * g - MARGIN * g);
-          expect(bounds.y).toBeGreaterThanOrEqual(MARGIN * g);
-          hashes.add(createHash('sha256').update(frame.data).digest('hex'));
-        }
-        expect(hashes.size, `${key} needs twelve distinct cels`).toBe(12);
-        continue;
-      }
+      // The party draws top-down since T7 retired its G sheets (ADR 0104); its packer holds that art.
+      if (entry.atlas.startsWith('art/topdown/')) continue;
       const image = readPng(`public/art/units/${atlas.image}`);
       const extract = (im: typeof image, r: { x: number; y: number; w: number; h: number }) =>
         crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });

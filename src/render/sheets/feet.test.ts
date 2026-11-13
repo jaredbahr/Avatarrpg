@@ -276,7 +276,7 @@ describe('the feet of a cel', () => {
     expect(plantAnchor('idle', { x: 0.5, y: 0.85 }, { h: 160 }, feet ?? undefined, 64).y).toBe(
       0.85,
     );
-    expect(standsOnSoles('stanceSouth')).toBe(true);
+    expect(standsOnSoles('restSouth')).toBe(true);
     expect(standsOnSoles('koSouthEast')).toBe(false);
   });
 
@@ -298,6 +298,6 @@ describe('the feet of a cel', () => {
     expect(poolOffset(resting, true).x).toBeCloseTo(-4 / 80, 6);
     expect(poolOffset(null, false)).toEqual({ x: 0, y: 0 });
     expect(restingClip('walkNorthWest')).toBe('idleNorthWest');
-    expect(restingClip('stanceSouth')).toBe('idleSouth');
+    expect(restingClip('restSouth')).toBe('idleSouth');
   });
 });

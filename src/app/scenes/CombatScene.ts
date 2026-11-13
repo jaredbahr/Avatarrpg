@@ -90,7 +90,6 @@ import { UnitInspector } from '../ui/UnitInspector';
 import { PropInspector } from '../ui/PropInspector';
 import type { ToastHandle } from '../ui/Toasts';
 import { enemyScale, partyScale } from '../anim/actorScale';
-import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
 import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
@@ -573,8 +572,6 @@ export class CombatScene implements Scene {
     this.renderer = null;
     this.canvas = null;
     this.host = null;
-    // Outside combat only a practice ground bends, and it warms its own: let the decoded bend pages go (ADR 0055).
-    sheets.releaseBends();
   }
 
   suspend(): void {
@@ -874,11 +871,10 @@ export class CombatScene implements Scene {
     const now = this.presentationNow();
     return frameLivingParty(camera, battle.units, (unit) => {
       const pose = this.poseFields(now, unit.id, 1, true, unit.sprite, false);
-      const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
       return victoryActorBounds(camera, unit, {
         pos: this.animatorForBoard.renderPos(now, unit.id) ?? unit.pos,
         scale: pose.scale ?? partyScale(),
-        frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
+        frameHeadroom: sheets.silhouetteHeadroom(unit.sprite),
         ...(pose.offset ? { offset: pose.offset } : {}),
       });
     });
@@ -983,11 +979,6 @@ export class CombatScene implements Scene {
     if (!canvas || !battle) return;
 
     this.renderer = new Renderer(canvas, { width: battle.grid.width, height: battle.grid.height });
-    // Bends are owned by party unit assets. Preload only those at the combat
-    // boundary so the first eligible cast does not arrive mid-clip; enemies
-    // and legacy-only units stay untouched (ADR 0055, step 7).
-    for (const sprite of partyBendSprites(battle.units)) sheets.preloadBend(sprite);
-    this.app.preloadBendFx();
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
@@ -1189,12 +1180,11 @@ export class CombatScene implements Scene {
           box.x += pose.offset.x * box.size;
           box.y += pose.offset.y * box.size;
         }
-        const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
         return {
           unit,
           scale,
           box,
-          frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
+          frameHeadroom: sheets.silhouetteHeadroom(unit.sprite),
         };
       });
     const actors = geometryFor(eligible);
@@ -3300,19 +3290,16 @@ export class CombatScene implements Scene {
       box.x += pose.offset.x * box.size;
       box.y += pose.offset.y * box.size;
     }
-    const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
-    const frame =
-      bend ||
-      sheets.frame(
-        unit.sprite,
-        pose.clip ?? 'idle',
-        pose.clipTime ?? now + idlePhase(unit.id),
-        pose.clipFrame,
-        box.size * renderer.viewport.dpr * scale,
-        unit.size,
-        pose.meleeDirection,
-        unit.size,
-      );
+    const frame = sheets.frame(
+      unit.sprite,
+      pose.clip ?? 'idle',
+      pose.clipTime ?? now + idlePhase(unit.id),
+      pose.clipFrame,
+      box.size * renderer.viewport.dpr * scale,
+      unit.size,
+      pose.meleeDirection,
+      unit.size,
+    );
     const body = actorBodyBounds(
       { ...box, width: box.size * unit.size },
       unit.size,
@@ -3466,33 +3453,14 @@ export class CombatScene implements Scene {
     | 'scale'
     | 'alpha'
     | 'flash'
-    | 'bend'
   > {
     const pose = this.animatorForBoard.unitPose(now, unitId, sprite);
-    // A bend draws its own cels at the party's scale, where the plan put its sockets.
-    const bend = this.animatorForBoard.bendPose(now, unitId);
-    if (bend) {
-      return {
-        facing: 1,
-        clip: 'stance',
-        bend: { heading: bend.heading, index: bend.index },
-        scale: partyScale(),
-        ...(pose ? { flash: pose.flash } : {}),
-      };
-    }
     const walked = this.animatorForBoard.facing(unitId);
-    // The party stands in its fighting stance between moves (ADR 0052); an
-    // enemy on an eight-way sheet (the thug, ADR 0059) idles and walks by
-    // heading the same way.
+    // The party idles and walks by heading between moves, and so does an enemy
+    // on an eight-way sheet (ADR 0059).
     const movement =
       directional || sheetLocomotion(sprite)?.headings === 8
-        ? this.animatorForBoard.locomotion(
-            now,
-            unitId,
-            directional ? 'stance' : 'idle',
-            sprite,
-            restFacing,
-          )
+        ? this.animatorForBoard.locomotion(now, unitId, 'idle', sprite, restFacing)
         : undefined;
     const scale = directional ? partyScale(pose?.scale) : enemyScale(sprite, pose?.scale);
     // Once a G knockout has played, the body stays where it fell (ADR 0059).

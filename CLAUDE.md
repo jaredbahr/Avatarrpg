@@ -65,8 +65,8 @@ tutorial, Ba Dan to the Forest Road to the quarry and the Driller.
 scenes at boot (`src/content/topdown.ts`); the riverside stays on its orthographic backdrop. T7's first half removed the
 style switch, the oblique map scenes, their art pipelines and their art; its second half removed the `'oblique'`
 projection from the renderer (the lift pass, the diamond camera and its painted-ring and hull clamps, the runtime scene
-grounding). The G1 sheets that `ASSETS` still lists for the art and animation tests are what remains, and the bullets
-below that name them describe that legacy code only.
+grounding); a last pass retired the G1 sheets, their bends, fighting stance, jog and brisk walk cadence, and their art
+pipelines. The keys those sheets held now hold their top-down sheet in `ASSETS` itself.
 
 - **Read `docs/art-lessons.md` first.** It records every failed attempt (isometric painting with AI-redrawn
   characters, the cel-shaded test, 3D-to-pixel, #411's walk, the code motion layer) so nobody repeats them.
@@ -302,27 +302,20 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   already passed through and nothing lights.
 - `previewAbility` consumes no RNG, and the AI's `scoreAbility` must not either.
   That is why damage to props is flat, with no to-hit roll or crit.
-- **Legacy (T7 retires it): every native-G1 figure still walks at 625 ms a tile** (ADR 0095's
-  2026-11-01 amendment, owner feedback: walking is a bit slow). Combat stays at 720. The jog read as legs
-  growing, so no sheet's locomotion sets `jog`; its cels stay unplayed. Do not turn the jog back on.
-  `walkMsPerTile` stays fitted per family and heading to the drawn feet (`G1_WALK`, from `walk_stride.py`),
-  and `Animator.walkClipTime` divides it by figure scale (1.25 on oblique boards). The brisk cadence retains
-  the accepted **750 ms/tile / 70 ms/cel reference**, including its known stance slide: `BRISK_WALK_CEL_MS`
-  scales with live exploration pace (58⅓ at 625), preserving clip phase per ground distance and combat's
-  cadence. Never retune `G1_WALK` to change travel speed. Errands and every Mira move retain the complete
-  original 2 s/tile amble: `AnimatorOptions.amble` selects `STROLL_REFERENCE_MS` (750) internally, and
-  `RESIDENT_AMBLE = 2000 / STROLL_REFERENCE_MS` slows that private clock. This keeps ramps, turns,
-  settling and fades unchanged. The legacy four-way walk keeps `WALK_MS_PER_TILE` (475). Refit only after
-  a redraw with `walk_stride.py <family> <name> walk --manifest --scale 1.25`; measure the reference with
-  `--pace 750 --cadence 70`, or the live candidate with `--pace 625 --cadence 58.333333333333336`.
+- **Exploration cruises at 625 ms a tile; combat at 720** (ADR 0095's 2026-11-01 amendment, owner feedback: walking
+  is a bit slow). A top-down sheet walks at its own fitted `walkMsPerTile` (the prototype's 130 px/s, about 308 ms a
+  tile), so each cel keeps time with the ground. Errands retain the complete original 2 s/tile amble:
+  `AnimatorOptions.amble` selects `STROLL_REFERENCE_MS` (750) internally, and
+  `RESIDENT_AMBLE = 2000 / STROLL_REFERENCE_MS` slows that private clock, which keeps ramps, turns, settling and
+  fades unchanged. The legacy four-way walk keeps `WALK_MS_PER_TILE` (475).
 - **Shadows are drawn on the world-pixel grid** (ADR 0093). The shared union is one texel per world pixel, its edges
   on `shadowGrid`'s origin, casters sampled into it nearest and the mask laid over the board nearest; a caster that
   smooths, or a mask at screen resolution, brings back the soft edge the pass removed. A **figure's shadow is a calm
   pool, never its silhouette** (ADR 0093's figure amendment; owner, 2026-10-28: "the shadows make them look off"):
   `figureShadow` rasterises an ellipse under the feet swept a short way along the scene's `castKey` (a quarter of
   the figure's height at most) at the cast level, with a smaller core under the soles at the contact level. It reads
-  nothing of the figure's art, so it is the same shape on every cel, clip and bend; do not bring back a sole band
-  or a sheared silhouette for figures. Every idle, walk, jog, rest and stance cel **stands on its own lowest sole**:
+  nothing of the figure's art, so it is the same shape on every cel and clip; do not bring back a sole band
+  or a sheared silhouette for figures. Every idle, walk and rest cel **stands on its own lowest sole**:
   the store measures each cel when its atlas loads (`sheets/feet.ts`) and moves its anchor's foot line there, the
   pool centres on the heading's resting feet, and a 1–2 px contact line in the contact tone sits under each planted
   sole; `feet.test.ts` holds every shipped cel to ±1 world px. The swept pool is the orthographic board's (the

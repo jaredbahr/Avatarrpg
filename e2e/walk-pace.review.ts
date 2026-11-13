@@ -97,9 +97,6 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         frame.units.filter((unit) => unit.clip?.startsWith('walk')),
       );
       expect(moving.length, 'native renderer received walking frames').toBeGreaterThan(2);
-      expect(
-        frames.flatMap((frame) => frame.units).some((unit) => /^jog/.test(unit.clip ?? '')),
-      ).toBe(false);
       expect(errors.filter((message) => !/favicon/i.test(message))).toEqual([]);
       await page.screenshot({ path: info.outputPath('settled.png') });
       writeFileSync(

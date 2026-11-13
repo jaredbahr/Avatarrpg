@@ -36,25 +36,6 @@ describe('exploration pace without a combat gait change', () => {
     expect(exploration.renderPos(2619, 'p')?.x).toBeCloseTo(8, 4);
   });
 
-  it('keeps the calibrated native-G1 clip advance for the same distance in exploration and combat', () => {
-    const gait = sheetLocomotion(sprite);
-    if (!gait) throw new Error('Kaya has a declared gait');
-    // One tile at cruising pace: 625 + 60 ms in exploration, 720 + 60 in combat.
-    for (const [event, time] of [
-      [walked, 685],
-      [moved, 780],
-    ] as const) {
-      const animator = animate(event);
-      expect(animator.renderPos(time, 'p')?.x).toBeCloseTo(5, 9);
-      expect((animator.unitPose(time, 'p', sprite)?.clipTime ?? 0) - gait.walkStartMs)
-        // ADR 0095's accepted 70 ms cel at the original 750 ms/tile.
-        .toBeCloseTo((114 * 750) / 70, 8);
-      const a = animator.unitPose(time, 'p', sprite)?.clipTime ?? 0;
-      const b = animator.unitPose(time + 70, 'p', sprite)?.clipTime ?? 0;
-      expect(b - a).toBeCloseTo(((114 * 750) / 70) * (70 / (event === walked ? 625 : 720)), 8);
-    }
-  });
-
   it('keeps reduced-motion movement locks and places each audible step on its traveled tile', () => {
     for (const event of [walked, moved]) {
       expect(animate(event, true).finishesAt).toBeCloseTo(8.8, 9);
@@ -84,7 +65,6 @@ describe('the top-down walk (ADR 0104)', () => {
     useTopDownStyle();
     const gait = sheetLocomotion(sprite);
     if (!gait) throw new Error('top-down Kaya has a declared gait');
-    expect(gait.walkCelMs).toBeUndefined();
     const pace = gait.walkMsPerTile.east;
     expect(pace).toBeCloseTo(307.7, 1);
     const animator = new Animator(content, { motionReduced: () => false });

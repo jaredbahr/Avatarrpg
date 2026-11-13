@@ -249,7 +249,7 @@ export interface ResidentFigure {
 }
 
 /** The idle a heading clip settles into. */
-const idleOf = (clip: ClipName): ClipName => clip.replace(/^(walk|jog|rest)/, 'idle') as ClipName;
+const idleOf = (clip: ClipName): ClipName => clip.replace(/^(walk|rest)/, 'idle') as ClipName;
 /** One idle loop: four cels at 4 fps. */
 const G_IDLE_CYCLE_MS = 1000;
 
@@ -274,8 +274,7 @@ const WORK_LEAN_RAD = 0.03;
 export const RESIDENT_STRIDE_MS = 500;
 /**
  * How much slower a routine errand goes than the reference stroll (ADR 0095): 2 s a
- * tile. Every other move (a placement, a call home) keeps the brisk pace,
- * except Mira's, who ambles everywhere. The ambling animator is read on a clock
+ * tile. Every other move (a placement, a call home) keeps the brisk pace. The ambling animator is read on a clock
  * slowed this much. Keep its base pace and this factor fixed together so brisk
  * exploration tuning changes neither its ramps nor its reduced-motion timing.
  */
@@ -643,8 +642,7 @@ export class ResidentWalks {
     const id = motion.who.id;
     const fade = FADE_MS * (this.reduced() ? 0.02 : 1);
     const at = this.clock;
-    // Mira walks everywhere at the amble (ADR 0095).
-    const amble = errand || sheetLocomotion(motion.who.sprite)?.amble === true;
+    const amble = errand === true;
     const slow = amble ? RESIDENT_AMBLE : 1;
     const animator = new Animator(this.content, { motionReduced: this.reduced, amble });
     animator.setProjection(map.projection ?? 'orthographic');
@@ -765,8 +763,7 @@ export class ResidentWalks {
     // An errand's animator runs on its own slowed clock.
     const t = track.amble ? start + (c - start) / RESIDENT_AMBLE : c;
     const drawPos = animator?.renderPos(t, who.id) ?? (c < walkEnd ? motion.from : end);
-    const moving = animator?.locomotion(t, who.id, 'rest', who.sprite).clip ?? 'rest';
-    const clip = (track.amble ? moving.replace('jog', 'walk') : moving) as ClipName;
+    const clip = animator?.locomotion(t, who.id, 'rest', who.sprite).clip ?? 'rest';
     const facing = animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1;
     const clipTime = animator?.unitPose(t, who.id, who.sprite)?.clipTime ?? 0;
     // A G sheet plants an idle cel at a turn, as the party's does (ADR 0067);
