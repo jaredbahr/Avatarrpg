@@ -363,16 +363,6 @@ test.describe('zoom and pan', () => {
     page,
   }) => {
     const target = await openWaterFight(page);
-    // The oblique camera starts with readable tiles larger than the
-    // whole-board fit at 1280x720. Use a wide
-    // landscape for that policy so the regression reaches the exact fitted
-    // state; the orthographic policy keeps the normal viewport coverage.
-    const viewport = page.viewportSize();
-    const initialCamera = await camera(page);
-    if (initialCamera.projection === 'oblique' && viewport && viewport.width < 1600) {
-      await page.setViewportSize({ width: 1600, height: 900 });
-      await settleLayout(page);
-    }
     const { point } = await centreTile(page);
 
     // First establish a manual frame, then zoom back out to the whole-board

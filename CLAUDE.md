@@ -15,7 +15,7 @@ their interpretation and the staged delivery plan.
 Everything on the route (Ba Dan, the Forest Road, the quarry gate, the Cutting, the Driller and the walk home) runs
 in the top-down style, the default since T6. The owner's direction for finishing it:
 
-- **Audience:** a playable link people open on their own device (the GitHub Pages build), plus a short video. The
+- **Audience:** a playable link people open on their own device (the GitHub Pages build). The
   first ten minutes must hold up for a stranger: onboarding, saves and what-to-do-next are part of the demo.
 - **Device:** tuned first for **iPad, landscape**: tap targets, camera zoom, text size and the HUD.
 - **What "finished" means:** **combat juice** (an action clip per heading and ability, impact effects, projectiles,
@@ -63,9 +63,10 @@ tutorial, Ba Dan to the Forest Road to the quarry and the Driller.
 **Top-down is the only style (ADR 0104 T6, T7).** Every link boots top-down; `?style=` is ignored, so an old
 `?style=oblique` or `?style=topdown` link still works. The five route maps declare `projection: 'topdown'` and fetch their
 scenes at boot (`src/content/topdown.ts`); the riverside stays on its orthographic backdrop. T7's first half removed the
-style switch, the oblique map scenes, their art pipelines and their art; the oblique projection in the renderer (lifted tiers, the
-diamond camera) and the G1 sheets that `ASSETS` still lists for the art and animation tests are what remains, and the
-bullets below that name them describe that legacy code only.
+style switch, the oblique map scenes, their art pipelines and their art; its second half removed the `'oblique'`
+projection from the renderer (the lift pass, the diamond camera and its painted-ring and hull clamps, the runtime scene
+grounding). The G1 sheets that `ASSETS` still lists for the art and animation tests are what remains, and the bullets
+below that name them describe that legacy code only.
 
 - **Read `docs/art-lessons.md` first.** It records every failed attempt (isometric painting with AI-redrawn
   characters, the cel-shaded test, 3D-to-pixel, #411's walk, the code motion layer) so nobody repeats them.
@@ -272,11 +273,6 @@ Never run `npx playwright install` in the dev container — Chromium is already 
     do not span an object that runs off screen.
   - Assigning `filter.resources` after construction does not rebuild the bind
     group; create the texture before the filter and update it in place.
-- **Legacy (T7 retires it): a raised tile is drawn a quarter tile a tier up the screen** on the oblique
-  board (ADR 0065); the top-down board lifts nothing and picks flat, so a pointer must go through `camera.pickTile(x, y, grid)`,
-  never `toTile`, or a tap on a bench's far corner acts on the cell behind it.
-  Ground art that already paints height declares it in `MapScene.reliefLift`;
-  anything that stands on a tile lifts by `liftAt` / `liftAlong`.
 - Taps on the battlefield are ignored while the animator is playing. That is
   intentional, and it is why the e2e helpers have `waitForIdle`.
 - Statuses that skip a turn are read _before_ statuses tick, so a 1-round Freeze
@@ -329,11 +325,10 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   or a sheared silhouette for figures. Every idle, walk, jog, rest and stance cel **stands on its own lowest sole**:
   the store measures each cel when its atlas loads (`sheets/feet.ts`) and moves its anchor's foot line there, the
   pool centres on the heading's resting feet, and a 1–2 px contact line in the contact tone sits under each planted
-  sole; `feet.test.ts` holds every shipped cel to ±1 world px. On the top-down board `feetBlob` replaces the swept
-  pool and the static shadows are baked into the plates (ADR 0104 §2). Every prop
-  gets a 2 world px contact line and a cast from its own base (`groundedCast`), so no ground shows between a box's
-  side edges and its shadow. Solid scenery (a building, a fence, a sign) says `castFrom: 'base'` and is grounded
-  the same way, its feet only inside its footprint; a tree or a hanging lamp does not.
+  sole; `feet.test.ts` holds every shipped cel to ±1 world px. The swept pool is the orthographic board's (the
+  riverside); on the top-down board `feetBlob` replaces it and the static shadows are baked into the plates (ADR 0104
+  §2), so no scene is grounded at run time. Every prop drawn from a sprite gets a 2 world px contact line and a cast
+  from its own base (`groundedCast`), so no ground shows between a box's side edges and its shadow.
   `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
@@ -345,12 +340,13 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   changes that box on most turns. `CombatScene.refit()` refits only when the
   board was fitted, or a rotation has left it smaller than it could be, and
   otherwise clamps; never wire `onViewportChange` straight to `camera.fit()`.
-- **The pixel-art boards draw at integer zoom** (ADR 0088, and N ≥ dpr on the top-down board, ADR 0104): `camera.integerZoom` puts a whole number of device pixels on
+- **The top-down board draws at integer zoom** (ADR 0088, at N ≥ dpr, ADR 0104): `camera.integerZoom` puts a whole number of device pixels on
   each world pixel and reads the offsets back on the device-pixel grid, and art is sampled nearest only where one of
   its pixels covers a whole number of device pixels (`src/render/pixelSampling.ts`, both backends). Never write
   `camera.scale` from a scene to a computed value; go through `fit`, `fitExplore`, `zoomAt`, `raiseToFit` or
   `snapScale` (the battle opening's ease is the one deliberate exception), or the board resamples. Map art ships
-  at 1 art px per world px: a density that does not divide every N is smoothed.
+  at 1 art px per world px: a density that does not divide every N is smoothed. The orthographic board (the
+  riverside) keeps the continuous fit.
 - **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
   the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
   tappable tile and pans instead; that is the one exception to "combat never

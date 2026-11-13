@@ -304,6 +304,34 @@ Measured on the build: JavaScript 410.0 KB before, 402.1 KB after (budget 410, u
 before, with 97 files left for run time; 16.57 MB after, with 4 (the streamed music). The maps family went from
 5.47 MB to 0.42 MB and units from 7.02 MB to 6.17 MB.
 
+## T7, second half: the oblique projection in the renderer (2026-11-13)
+
+The renderer now knows two boards: `'topdown'` and the riverside's `'orthographic'`. Both are the identity ground
+transform, so:
+
+- **`'oblique'` is gone from `Projection`** and from the map schema (`projection: 'topdown'` or unset; a backdrop no
+  longer says `projection`). `projectGround`, `unprojectGround`, `groundBounds`, `renderFoot` and the animator's
+  `screenDirection` were identity on both boards and are deleted; callers use the ground point and
+  `footprintFoot` directly.
+- **The lift pass is gone** (`geometry/lift.ts`, `geometry/elevation.ts`: `liftAt`, `liftAlong`, `pickCell`, the
+  lift layer and its `liftCost` probe on both backends, `MapScene.reliefLift`). No shipped board lifted anything: the
+  top-down board never did, and the riverside has no raised ground. `Camera.pickTile` is `toTile` (kept for callers).
+- **The camera's oblique clamps are gone**: the painted ring (`clampRingTiles`), the programmatic-reachable convex hull
+  (`clampToProgrammaticReachableSet`, `MapDef.cameraPaint`) and the sub-device-pixel overview. Integer zoom is the
+  top-down board's alone, so its floor is always N ≥ dpr.
+- **Runtime scene grounding is gone**: `groundsSceneAtRuntime`, `grounding.ts`/`groundingLayer.ts` (the contact
+  wash), the structure and scenery shadow masks (`structureShadowPolygons`, `pieceArt`, `pieceFeet`,
+  `footprintSpan`), and on WebGL the partial-scene ground overlay and its raised-stone base, which only an oblique
+  `groundMode: 'partial'` scene ever showed. A top-down scene's shadows are baked into its plates (§2).
+- **Kept:** the figure shadow pool (`figureShadowArt`), which still grounds figures on the orthographic riverside;
+  `groundedCastArt` for props drawn from a sprite; the orthographic cliff bands (`boardRelief`); the riverside backdrop.
+
+The oblique figure scale (`OBLIQUE_FIGURE_SCALE`, ADR 0094) went with the projection: `partyScale` is the pose's own
+scale on both boards. The G1 sheets themselves are the next step.
+
+Measured on the build: JavaScript 402.2 KB before, 389.2 KB after (budget 410, unchanged). Precache 16.67 MB before,
+16.63 MB after (325 entries both).
+
 ## Driller grounding implementation (#469)
 
 The Driller packer records each static heading's tread span, center offset and baseline from

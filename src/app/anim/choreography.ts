@@ -23,7 +23,7 @@ import { easeInOutSine, easeOutQuad } from './easing';
 import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
-import { screenDirection, screenMeleeDirection, walkHeading } from './direction';
+import { screenMeleeDirection, walkHeading } from './direction';
 import type { Heading, MeleeDirection } from '../../content/assets/clips';
 import {
   HEADINGS,
@@ -35,7 +35,7 @@ import {
 } from '../../content/assets/clips';
 import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
-import { renderFoot } from '../../render/renderFoot';
+import { footprintFoot } from '../../core/rules/footprint';
 import { attachmentPoint } from '../../render/geometry/actorAttachments';
 import { TOPDOWN_TILE } from '../../render/projection';
 import { SHOT_PX_PER_S } from '../../render/topdown/shots';
@@ -164,8 +164,6 @@ export interface ChoreographyInput {
    * for a cast `planBendCast` turns down, the cast is the legacy one exactly.
    */
   readonly bends?: BendSources;
-  /** How far the ground lifts a unit's drawing at a tile, in tiles; flat without it. */
-  readonly liftOf?: (pos: Vec2) => number;
   /**
    * Open water a water bender draws from, by unit id (issue #284's practice
    * by Ba Dan's canal). A water bend from a unit listed here lifts its water
@@ -298,7 +296,7 @@ function explorePace(input: ChoreographyInput, unitId: string, strollStep: numbe
   const gait = sheetLocomotion(sprite);
   if (!gait || gait.walkCelMs) return strollStep;
   const paces = Object.values(gait.walkMsPerTile);
-  return paces.reduce((a, b) => a + b, 0) / paces.length / partyScale(input.projection);
+  return paces.reduce((a, b) => a + b, 0) / paces.length / partyScale();
 }
 
 export function choreograph(input: ChoreographyInput): Choreography {
@@ -333,12 +331,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
     const pos = positions.get(id);
     if (!pos) return undefined;
     const size = sizes.get(id) ?? 1;
-    return renderFoot(
-      pos,
-      size as 1 | 2,
-      input.squareFootprints ?? SQUARE_FOOTPRINTS,
-      input.projection ?? 'orthographic',
-    );
+    return footprintFoot(pos, size as 1 | 2, input.squareFootprints ?? SQUARE_FOOTPRINTS);
   };
   /** Geometric footprint centre for effects attached to a unit. */
   const unitEffectCentre = (id: string, pos: Vec2): Vec2 => {
@@ -509,15 +502,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         }
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
-        headings.set(
-          event.unitId,
-          walkHeading(
-            screenDirection(
-              sampleAt(curve, curve.length).tangent,
-              input.projection ?? 'orthographic',
-            ),
-          ),
-        );
+        headings.set(event.unitId, walkHeading(sampleAt(curve, curve.length).tangent));
         cursor += duration;
         readyBy(cursor);
         pending = null;
@@ -576,7 +561,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ability.targeting.shape === 'self' ||
           (event.target.x === casterPos.x && event.target.y === casterPos.y);
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
-        const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
+        const screenDir = dir;
         const meleeDirection = melee ? screenMeleeDirection(screenDir) : undefined;
         const attached = ['fire_jab', 'water_whip', 'air_blast'].includes(ability.id);
         // Lobbed oil and area fire leave a palm, but still land on the ground.
@@ -664,8 +649,6 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 ability,
                 event.target,
                 victim && { pos: positions.get(victim.id) ?? victim.pos, size: victim.size },
-                input.projection ?? 'orthographic',
-                input.liftOf,
                 input.squareFootprints ?? SQUARE_FOOTPRINTS,
               )
             : undefined;
@@ -697,7 +680,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
                   size: casterUnit.size,
                   socket: 'cast-gather',
                   facing: source.x + 0.5 < caster.x ? -1 : 1,
-                  scale: partyScale(input.projection),
+                  scale: partyScale(),
                   offset: still,
                 },
               },
@@ -731,8 +714,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 facing: poseFacing ?? (unit.faction === 'enemy' ? -1 : 1),
                 scale:
                   unit.faction === 'party'
-                    ? partyScale(input.projection, poseScale)
-                    : enemyScale(unit.sprite, poseScale, input.projection),
+                    ? partyScale(poseScale)
+                    : enemyScale(unit.sprite, poseScale),
                 offset,
                 // The caster's hand on its drawn action, which is never mirrored.
                 ...(drawnHand && unit === casterUnit && socket.startsWith('cast')
@@ -887,10 +870,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
             };
           const from =
             hand && drawnHand && geometry
-              ? attachmentPoint(hand, 'topdown', 0, geometry, undefined, drawnHand)
+              ? attachmentPoint(hand, geometry, undefined, drawnHand)
               : { x: caster.x, y: caster.y - 0.5 };
           const chest = snapshot(victim, 'torso');
-          const to = chest ? attachmentPoint(chest, 'topdown', 0) : target;
+          const to = chest ? attachmentPoint(chest) : target;
           const flight = look
             ? (Math.hypot(to.x - from.x, to.y - from.y) * TOPDOWN_TILE * 1000) / SHOT_PX_PER_S
             : Math.max(
@@ -1114,10 +1097,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
               ? unitCentre(event.sourceId)
               : undefined;
           const away = source
-            ? screenDirection(
-                direction(source, unitEffectCentre(event.unitId, pos)),
-                input.projection ?? 'orthographic',
-              )
+            ? direction(source, unitEffectCentre(event.unitId, pos))
             : { x: 0, y: -1 };
           const out = scaled(away, RECOIL * (event.crit ? 1.5 : 1));
           const recoilAt = hit.at + hit.hitStop;
@@ -1227,10 +1207,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         cue('miss', at, 7, eventIndex);
         if (pos) {
           const away = attacker
-            ? screenDirection(
-                direction(attacker, unitEffectCentre(event.targetId, pos)),
-                input.projection ?? 'orthographic',
-              )
+            ? direction(attacker, unitEffectCentre(event.targetId, pos))
             : { x: 0, y: -1 };
           const out = scaled(away, DODGE);
           pose(

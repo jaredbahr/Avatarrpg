@@ -202,7 +202,7 @@ describe('a top-down action', () => {
 describe('a top-down shot (#588)', () => {
   const crossbow = unit('xbow', 'unit.enemy.crossbow', 5, 2, 'enemy');
   const victim = unit('victim', 'unit.fire.kaya', 5, 7);
-  const shoot = (rate = 1, projection: 'topdown' | 'oblique' = 'topdown', shots = true) =>
+  const shoot = (rate = 1, projection: 'topdown' | 'orthographic' = 'topdown', shots = true) =>
     choreograph({
       content,
       events: [
@@ -256,7 +256,7 @@ describe('a top-down shot (#588)', () => {
   });
 
   it('skips the flight under reduce motion, on the oblique board and before the cels load', () => {
-    for (const out of [shoot(0.02), shoot(1, 'oblique'), shoot(1, 'topdown', false)])
+    for (const out of [shoot(0.02), shoot(1, 'orthographic'), shoot(1, 'topdown', false)])
       expect(out.tracks.some((t) => t.kind === 'shot')).toBe(false);
   });
 });

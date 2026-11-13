@@ -1,10 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Grid } from '../../core/types';
 import type { ActorAttachment, EmitterInstance } from '../view';
 import { Camera } from '../camera';
-import { projectGround } from '../projection';
 import { BUILDS, FOOT, figureScale, poseFor, solve } from '../painters/figure';
-import { FOOT_LINE } from '../sheets/bake';
 import { sheets } from '../sheets/store';
 import type { ResolvedFrame } from '../sheets/store';
 import { attachmentPoint, resolveActorEmitters, socketOffset } from './actorAttachments';
@@ -26,24 +23,11 @@ const actor: ActorAttachment = {
   offset: { x: 0.1, y: -0.04 },
 };
 
-const flatGrid = (): Grid => ({
-  width: 20,
-  height: 12,
-  tiles: Array.from({ length: 240 }, () => ({
-    terrain: 'grass',
-    elevation: 0,
-    blocked: false,
-    blocksSight: false,
-    cover: false,
-    surface: null,
-  })),
-});
-
 afterEach(() => vi.restoreAllMocks());
 
 describe('actor attachment geometry', () => {
   it('lands on measured Kaya and Tenzo palms through the actual upright camera geometry', () => {
-    for (const projection of ['orthographic', 'oblique'] as const) {
+    for (const projection of ['orthographic', 'topdown'] as const) {
       const camera = new Camera(
         { width: 1200, height: 800, dpr: 2 },
         { width: 20, height: 12 },
@@ -63,10 +47,10 @@ describe('actor attachment geometry', () => {
           for (const facing of [-1, 1] as const) {
             for (const scale of [0.93, 1.25, 1.35]) {
               const a = { ...actor, sprite, socket, facing, scale };
-              const actual = camera.project(attachmentPoint(a, projection, 0.12, frame));
+              const actual = camera.project(attachmentPoint(a, frame));
               const box = camera.spriteBox(a.pos, a.size);
               const footX = box.x + box.size / 2 + a.offset.x * box.size;
-              const footY = box.y + 0.85 * box.size + (a.offset.y - 0.12) * box.size;
+              const footY = box.y + 0.85 * box.size + a.offset.y * box.size;
               expect(actual.x).toBeCloseTo(footX + ((x - 64) / 128) * box.size * facing * scale, 8);
               expect(actual.y).toBeCloseTo(footY + ((y - 0.85 * 192) / 128) * box.size * scale, 8);
             }
@@ -91,18 +75,10 @@ describe('actor attachment geometry', () => {
         x: (x - 64) / 128,
         y: (y - 0.85 * 192) / 128,
       });
-      for (const projection of ['orthographic', 'oblique'] as const) {
-        const right = projectGround(
-          attachmentPoint({ ...actor, sprite, socket }, projection, 0, frame),
-          projection,
-        );
-        const left = projectGround(
-          attachmentPoint({ ...actor, sprite, socket, facing: -1 }, projection, 0, frame),
-          projection,
-        );
-        expect(right.y).toBeCloseTo(left.y, 9);
-        expect(right.x - left.x).toBeCloseTo(((2 * (x - 64)) / 128) * actor.scale, 9);
-      }
+      const right = attachmentPoint({ ...actor, sprite, socket }, frame);
+      const left = attachmentPoint({ ...actor, sprite, socket, facing: -1 }, frame);
+      expect(right.y).toBeCloseTo(left.y, 9);
+      expect(right.x - left.x).toBeCloseTo(((2 * (x - 64)) / 128) * actor.scale, 9);
     }
   });
 
@@ -135,38 +111,12 @@ describe('actor attachment geometry', () => {
     );
   });
 
-  it('raises an oblique socket vertically without an unintended horizontal shift', () => {
-    const low = projectGround(attachmentPoint(actor, 'oblique', 0, frame), 'oblique');
-    const high = projectGround(attachmentPoint(actor, 'oblique', 0.18, frame), 'oblique');
-    expect(high.x).toBeCloseTo(low.x, 9);
-    expect(high.y - low.y).toBeCloseTo(-0.18, 9);
-  });
-
   it('anchors a gated size-2 attachment on the 2x2 footprint centre', () => {
     const boss = { ...actor, pos: { x: 4, y: 3 }, size: 2 as const, offset: { x: 0, y: 0 } };
-    const legacy = projectGround(
-      attachmentPoint(boss, 'orthographic', 0, frame, false),
-      'orthographic',
-    );
-    const square = projectGround(
-      attachmentPoint(boss, 'orthographic', 0, frame, true),
-      'orthographic',
-    );
+    const legacy = attachmentPoint(boss, frame, false);
+    const square = attachmentPoint(boss, frame, true);
     expect(square.x - legacy.x).toBeCloseTo(0);
     expect(square.y - legacy.y).toBeCloseTo(1);
-  });
-
-  it('anchors an oblique gated size-2 attachment on the front cell centre', () => {
-    const boss = {
-      ...actor,
-      pos: { x: 4, y: 3 },
-      size: 2 as const,
-      offset: { x: 0, y: 0 },
-    };
-    const point = projectGround(attachmentPoint(boss, 'oblique', 0, frame, true), 'oblique');
-    const socket = socketOffset(boss, frame);
-    expect(point.x).toBeCloseTo(1 + socket.x * boss.facing * boss.scale);
-    expect(point.y).toBeCloseTo(5 + FOOT_LINE - 0.86 + socket.y * boss.scale);
   });
 
   it('uses the baked figure rig and its growth instead of bitmap pixel sockets', () => {
@@ -219,11 +169,10 @@ describe('actor attachment geometry', () => {
       offset: { x: 0, y: 0 },
     };
     const impact = { ...ground, attachments: { from: torso, translateTogether: true } };
-    const grid = flatGrid();
-    const resolved = resolveActorEmitters([ground, impact], grid, 'oblique', 96);
+    const resolved = resolveActorEmitters([ground, impact], 96);
     expect(resolved[0]).toBe(ground);
     const hit = resolved[1]!;
-    expect(hit.from).toEqual(attachmentPoint(torso, 'oblique', 0, frame));
+    expect(hit.from).toEqual(attachmentPoint(torso, frame));
     expect(hit.to.x - hit.from.x).toBeCloseTo(1, 9);
     expect(hit.to.y - hit.from.y).toBeCloseTo(0, 9);
     expect(impact.from).toEqual({ x: 13.5, y: 5.5 });
@@ -247,10 +196,9 @@ describe('actor attachment geometry', () => {
       arc: 0,
       attachments: { from: source },
     };
-    const grid = flatGrid();
-    const first = resolveActorEmitters([emitter], grid, 'oblique', 64)[0];
+    const first = resolveActorEmitters([emitter], 64)[0];
     lookup.mockReturnValue(frame as ResolvedFrame);
-    const later = resolveActorEmitters([{ ...emitter, elapsed: 120 }], grid, 'oblique', 144)[0];
+    const later = resolveActorEmitters([{ ...emitter, elapsed: 120 }], 144)[0];
     expect(later?.from).toEqual(first?.from);
     expect(later?.to).toEqual(first?.to);
     expect(lookup).toHaveBeenCalledTimes(1);
@@ -258,8 +206,6 @@ describe('actor attachment geometry', () => {
     // another track's fallback socket cache.
     const next = resolveActorEmitters(
       [{ ...emitter, attachments: { from: { ...source } } }],
-      grid,
-      'oblique',
       144,
     )[0];
     expect(next?.from).not.toEqual(first?.from);

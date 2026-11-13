@@ -1,6 +1,6 @@
 /** Persistent presentation for a prop whose fuel clock is running. */
 
-import { OBLIQUE_UP, ORTHOGRAPHIC_UP, resolveFx } from '../../content/fx';
+import { ORTHOGRAPHIC_UP, resolveFx } from '../../content/fx';
 import type { ParticleEmitterDef } from '../../content/fx';
 import type { Projection } from '../../render/projection';
 import { particleSpan } from '../../render/fx/simulate';
@@ -24,7 +24,6 @@ const FLAT_FLAMES: readonly ParticleEmitterDef[] = particleDefs().map((def) => (
 }));
 /** The top-down ground is flat too (ADR 0104), so it takes the flat recipe until T4 draws its own fire. */
 const FLAMES: Readonly<Record<Projection, readonly ParticleEmitterDef[]>> = {
-  oblique: particleDefs().map((def) => ({ ...def, spread: OBLIQUE_UP })),
   orthographic: FLAT_FLAMES,
   topdown: FLAT_FLAMES,
 };
@@ -40,7 +39,6 @@ const HEARTH = 0.08;
  * is straight up the screen in each projection.
  */
 const LIFT: Readonly<Record<Projection, { readonly x: number; readonly y: number }>> = {
-  oblique: { x: -0.22, y: -0.22 },
   orthographic: { x: 0, y: -0.22 },
   topdown: { x: 0, y: -0.22 },
 };

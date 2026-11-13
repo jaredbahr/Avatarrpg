@@ -184,7 +184,7 @@ describe('practice playback', () => {
       cursor: 0,
       rate,
       pushIndex: 0,
-      projection: 'oblique',
+      projection: 'orthographic',
       bends: loaded,
       ...(waterSources ? { waterSources } : {}),
     });
@@ -233,7 +233,6 @@ describe('practice playback', () => {
       motionReduced: () => false,
       bends: () => loaded,
     });
-    animator.setProjection('oblique');
     animator.push(0, practiceEvents(casts), practiceUnits(state.party, STANDING), {
       waterSources: practiceSources(casts),
     });

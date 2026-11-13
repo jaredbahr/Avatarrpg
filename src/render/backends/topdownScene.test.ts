@@ -1,9 +1,8 @@
 /**
  * Both backends draw a top-down map's scene (ADR 0104, phase T3): its ground plates at the identity
  * ground transform, 40 world px a tile, in place of the procedural terrain once every plate and
- * piece has loaded; its scenery in one depth order with the figures (`boardDepth`); and none of the
- * oblique board's runtime grounding (no contact wash, no lift), since the top-down shadows are baked
- * into the plates. CI takes the Canvas 2D path, so it is driven through a whole `draw` here; Pixi's
+ * piece has loaded; and its scenery in one depth order with the figures (`boardDepth`). Its shadows
+ * are baked into the plates. CI takes the Canvas 2D path, so it is driven through a whole `draw` here; Pixi's
  * scene pass is run on a stage built without a WebGL renderer.
  */
 import type { Sprite } from 'pixi.js';
@@ -12,8 +11,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildGrid } from '../../core/rules/grid';
 import type { Vec2 } from '../../core/types';
 import { Camera } from '../camera';
-import * as groundingLayer from '../groundingLayer';
-import * as liftModule from '../geometry/lift';
 import { sceneImages } from '../scene';
 import { TOPDOWN_FIXTURE, TOPDOWN_FIXTURE_SCENE } from '../topdown.fixture';
 import type { MapView, RenderUnit } from '../view';
@@ -208,15 +205,6 @@ describe('Canvas 2D draws a top-down scene', () => {
     expect(painted).toHaveLength((shown.x1 - shown.x0 + 1) * (shown.y1 - shown.y0 + 1));
   });
 
-  it('runs none of the oblique runtime grounding or lift', () => {
-    artLoaded(true);
-    const grounding = vi.spyOn(groundingLayer, 'sceneGrounding');
-    const lift = vi.spyOn(liftModule, 'liftPlan');
-    canvasFrame('topdown');
-    expect(grounding).not.toHaveBeenCalled();
-    expect(lift).not.toHaveBeenCalled();
-  });
-
   it('leaves the orthographic board without a scene, as before', () => {
     artLoaded(true);
     const { drawn } = canvasFrame('orthographic');
@@ -259,31 +247,23 @@ function pixiScene(projection: 'topdown' | 'orthographic') {
       get: (piece: { url: string }) => (IMAGES[piece.url] ? texture : null),
     },
   });
-  const grounding = vi
-    .spyOn(
-      PixiBackend.prototype as unknown as Record<string, (...args: never[]) => void>,
-      'syncGrounding',
-    )
-    .mockImplementation(() => undefined);
   const cam = camera(projection);
   const complete = (
     backend.syncScene as (this: unknown, view: MapView, camera: Camera) => boolean
   ).call(backend, view(), cam);
-  return { complete, groundChunks, scenerySprites, grounding, camera: cam };
+  return { complete, groundChunks, scenerySprites, camera: cam };
 }
 
 describe('Pixi draws a top-down scene', () => {
-  it('places the plate and the piece in world px, and grounds nothing at run time', () => {
+  it('places the plate and the piece in world px', () => {
     artLoaded(true);
-    const { complete, groundChunks, scenerySprites, grounding } = pixiScene('topdown');
+    const { complete, groundChunks, scenerySprites } = pixiScene('topdown');
     expect(complete).toBe(true);
     const plate = groundChunks.get('0');
     expect([plate?.x, plate?.y, plate?.width, plate?.height]).toEqual([0, 0, 360, 240]);
     const rock = scenerySprites.get('fixture.rock');
     expect([rock?.x, rock?.y, rock?.width, rock?.height]).toEqual([200, 120, 40, 80]);
     expect(rock?.anchor.y).toBe(1);
-    // The scene is drawn, but its contact wash is the oblique board's alone.
-    expect(grounding).toHaveBeenCalledWith(undefined, expect.anything());
   });
 
   it('sorts the piece among the figures as Canvas 2D does', () => {

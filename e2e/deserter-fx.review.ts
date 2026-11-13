@@ -134,7 +134,7 @@ for (const renderer of ['canvas', 'webgl'] as const)
               cursor: 0,
               rate: reduced ? 0.02 : 1,
               pushIndex: 0,
-              projection: 'oblique',
+              projection: 'topdown',
             });
             app.state = state;
             app.animator.clear();
