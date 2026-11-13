@@ -89,11 +89,11 @@ describe('sample loading across the audio clock and mute', () => {
   it('schedules material layers together and coalesces the whole cue', () => {
     const bus = new AudioBus({ volume: () => 1 });
     bus.unlock();
-    const material = { ...cue, key: 'fx.fire.jab' };
+    const material = { ...cue, key: 'fx.surface.fire' };
     bus.play([material, { ...material, at: 510 }], 0);
     const ctx = TestContext.instances[0]!;
-    expect(ctx.starts).toEqual([10.5, 10.5]);
-    expect(ctx.stops).toHaveLength(2);
+    expect(ctx.starts).toEqual([10.5, 10.5, 10.5]);
+    expect(ctx.stops).toHaveLength(3);
     expect(ctx.stops.every((at) => at > 10.5 && at < 11)).toBe(true);
     expect(bus.scheduled).toBe(1);
   });
@@ -101,11 +101,11 @@ describe('sample loading across the audio clock and mute', () => {
   it('does not schedule material layers before unlock or while muted', () => {
     let volume = 1;
     const bus = new AudioBus({ volume: () => volume });
-    bus.play([{ ...cue, key: 'fx.earth.rock' }], 0);
+    bus.play([{ ...cue, key: 'fx.surface.fire' }], 0);
     expect(TestContext.instances).toHaveLength(0);
     bus.unlock();
     volume = 0;
-    bus.play([{ ...cue, key: 'fx.earth.rock' }], 0);
+    bus.play([{ ...cue, key: 'fx.surface.fire' }], 0);
     expect(TestContext.instances[0]!.starts).toEqual([]);
   });
 
