@@ -14,9 +14,9 @@ import {
 const PINS = {
   trade: {
     gate: {
-      save: '4cb66dac975ae90cf097367db277496b833354b38f1b2e29ab508d71e466aa5d',
-      commands: '4bb8fd0522782dddd89072d4d920561440701f5ce3146ba39eb68ae46d7cb2e5',
-      count: 55,
+      save: '085ea1ec2ae70f9fb6510da7f074c2b60fbd615f644e063dd81706c6e2a06d64',
+      commands: '1fdc58ce7e46bdfb1bd06866a1b29694238b23b6bb8b51c87d7cd228826dc168',
+      count: 58,
       node: 'gate_trade_explore',
       map: 'quarry_gate',
       level: 3,
@@ -24,9 +24,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '20209ddb928e30d133b293bc7f5da87a220924b5efd3ba0fe547a466c21542c4',
-      commands: '4f6c37f3b7cd01bc072b83b71e74f16b8505be4d6f510693e0d93c3112346a9c',
-      count: 141,
+      save: 'f2392516358713cb7f2104cca53397bf6b248186aa7c314db5b2ba0b203eca64',
+      commands: '0119129ad5c6683e5e191f47425f0e4f89c265c398c93ba2e74dd43f3bc8359b',
+      count: 144,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
