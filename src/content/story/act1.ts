@@ -583,7 +583,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
       'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
       'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
-      'Jin’s mercenaries keep the inner gate. Jin holds a provincial bounty on me, and she will pay whoever hands me over.',
+      'Jin’s mercenaries keep the inner gate. Jin’s client wants me, and what I signed for. She will pay whoever hands me over.',
     ],
     next: 'ruon_choice',
   },
@@ -624,7 +624,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.ruon',
     lines: [
       'Ba Dan, then, once the galleries are open.',
-      "Jin will not let her bounty walk down the hill. She'll send people after us.",
+      "Jin has a client waiting on me. She won't let me walk down the hill. She'll send people after us.",
       "If they catch us in the cutting, I'll need my sabre. You can take it back afterwards.",
     ],
     next: 'gate_escort_explore',
@@ -709,7 +709,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
   {
     id: 'trade_payment',
     kind: 'flags',
-    set: { ruon_paid: true },
+    // Jin's client pays for Ruon and the papers he signed for (C-03).
+    set: { ruon_paid: true, jin_has_satchel: true },
     grantXp: 150,
     next: 'trade_chosen',
   },
@@ -720,8 +721,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.jin',
     lines: [
       'The inner gate key, as agreed. Your payment is in the pouch.',
-      'Captain. Hands where I can see them.',
-      'The province wants him alive. Keep the receipt if anyone asks who took him.',
+      'Captain. Hands where I can see them. The satchel too.',
+      'My client wants him alive, and his papers with him. Keep the receipt if anyone asks who took him.',
       'My crew is in the quarry securing the equipment. The key gets you through the gate. It does not give you a claim on the machinery.',
     ],
     next: 'gate_trade_explore',
