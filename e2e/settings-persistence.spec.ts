@@ -361,6 +361,11 @@ for (const change of changes) {
     page,
     context,
   }, info) => {
+    // Five boots (start, reload, relaunch, reload, relaunch), each entering the
+    // village. Chromium needs about 33 s; CI's iPad WebKit still ran past 60 s
+    // after #752 cut the boot's readbacks, so the suite default failed the case
+    // on cost, never on a hang: every step keeps its own 10 s wait.
+    test.setTimeout(180_000);
     const errors: string[] = [];
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     // Clear persisted settings before the app's first boot, so its startup

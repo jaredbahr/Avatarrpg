@@ -30,37 +30,37 @@ flowchart TD
   n40["forest_return_explore<br/>Explore forest_road: The five workers are returning. Continue w…"]:::entry
   n43["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
   n44["gao_home_cold<br/>Gao the Shopkeeper: The workers are home. I am glad of that. Th…"]:::entry
-  n49["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]
+  n49["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]:::entry
   n71["pella_home<br/>Pella: My brother is home. Bo-shan. He came through the gate an…"]:::entry
-  n83["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
-  n96["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
-  n105["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n148["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n149["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n150["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n151["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
-  n152["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
-  n93["riverside_explore — exit to riverside / part 1"]:::external
+  n84["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
+  n116["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
+  n125["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
+  n168["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n169["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n170["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n171["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n172["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
+  n113["riverside_explore — exit to riverside / part 1"]:::external
   n12 -->|"Next"| n26
   n17 -->|"Legacy/audit exit (live map exits differ)"| n49
   n25 -->|"Next"| n40
-  n26 -->|"Continue after ending"| n148
-  n31 -->|"Next"| n148
+  n26 -->|"Continue after ending"| n168
+  n31 -->|"Next"| n168
   n38 -->|"Next"| n39
-  n39 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n148
+  n39 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n168
   n40 -->|"Legacy/audit exit (live map exits differ)"| n38
-  n43 -->|"Next"| n148
-  n44 -->|"Next"| n148
+  n43 -->|"Next"| n168
+  n44 -->|"Next"| n168
   n49 -->|"Legacy/audit exit (live map exits differ)"| n40
-  n71 -->|"Next"| n148
-  n83 -->|"Legacy/audit exit (live map exits differ)"| n17
-  n96 -->|"Next"| n93
-  n105 -->|"Next"| n17
-  n148 -->|"Legacy/audit exit (live map exits differ)"| n151
-  n149 -->|"Next"| n152
-  n150 -->|"Next"| n149
-  n151 -->|"Next"| n150
-  n152 -->|"Next"| n12
+  n71 -->|"Next"| n168
+  n84 -->|"Legacy/audit exit (live map exits differ)"| n17
+  n116 -->|"Next"| n113
+  n125 -->|"Next"| n17
+  n168 -->|"Legacy/audit exit (live map exits differ)"| n171
+  n169 -->|"Next"| n172
+  n170 -->|"Next"| n169
+  n171 -->|"Next"| n170
+  n172 -->|"Next"| n12
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

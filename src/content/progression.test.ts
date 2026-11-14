@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
+import { CONTENT, CONTENT_BUNDLE, STORY_PROLOGUE } from './index';
 import { levelForXp, xpForLevel } from '../core/rules/leveling';
 import { xpRoster } from '../core/state/createGame';
 import { evaluate } from '../core/story/conditions';
@@ -97,7 +97,8 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
   const reached: DecisionPoint[] = [];
   let xp = 0;
   let losses = 0;
-  let nodeId: string | null = STORY_ENTRY;
+  // A new game opens on the prologue, which leads into STORY_ENTRY.
+  let nodeId: string | null = STORY_PROLOGUE;
   let truncated = false;
   let endedAt: string | null = null;
 

@@ -1,7 +1,15 @@
 import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CONTENT_BUNDLE } from '../index';
-import { INTERLUDES, INTERLUDE_ART, interludeHoldMs } from './interludes';
+import { ACT1_NODES } from './act1';
+import { STORY_ENTRY, STORY_PROLOGUE } from '../entry';
+import {
+  INTERLUDES,
+  INTERLUDE_ART,
+  INTERLUDE_CARDS,
+  interludeHoldMs,
+  isCardStill,
+} from './interludes';
 
 describe('illustrated story continuity', () => {
   for (const [id, scene] of Object.entries(INTERLUDES)) {
@@ -15,7 +23,10 @@ describe('illustrated story continuity', () => {
         for (const variant of node.variants ?? [])
           expect(variant.lines).toHaveLength(node.lines.length);
       for (const shot of scene.shots) {
-        expect(existsSync(`public/art/interludes/${INTERLUDE_ART[shot].file}`)).toBe(true);
+        const art = INTERLUDE_ART[shot];
+        // A placeholder card is drawn by the stylesheet; a painting must ship.
+        if (isCardStill(art)) expect(INTERLUDE_CARDS).toContain(art.card);
+        else expect(existsSync(`public/art/interludes/${art.file}`)).toBe(true);
       }
     });
   }
@@ -45,6 +56,27 @@ describe('illustrated story continuity', () => {
       'rescue',
       'rescue',
     ]);
+  });
+
+  it('opens a new game on the storm, then cuts to Ba Dan', () => {
+    expect(STORY_PROLOGUE).toBe('prologue_storm');
+    const prologue = ACT1_NODES.find((node) => node.id === STORY_PROLOGUE);
+    expect(prologue?.kind === 'dialogue' && prologue.next).toBe(STORY_ENTRY);
+    // The storm is cards until the art batch; the cut to the bowls is Ba Dan's own painting.
+    const shots = INTERLUDES.prologue_storm?.shots ?? [];
+    expect(shots.slice(0, -1).every((shot) => isCardStill(INTERLUDE_ART[shot]))).toBe(true);
+    expect(isCardStill(INTERLUDE_ART[shots.at(-1) ?? 'village'])).toBe(false);
+  });
+
+  it('keeps the prologue nameless (the reveal ladder)', () => {
+    const prologue = ACT1_NODES.find((node) => node.id === 'prologue_storm');
+    const text = [
+      INTERLUDES.prologue_storm?.title ?? '',
+      ...(prologue?.kind === 'dialogue' ? prologue.lines : []),
+      ...(INTERLUDES.prologue_storm?.shots ?? []).map((shot) => INTERLUDE_ART[shot].alt),
+    ].join(' ');
+    for (const name of ['Veyra', 'Sen', 'Stillwater', 'Works', 'Commonworks', 'Rusk', 'Keeper'])
+      expect(text).not.toMatch(new RegExp(`\\b${name}\\b`));
   });
 
   it('gives long captions enough time to read', () => {

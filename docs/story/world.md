@@ -37,8 +37,8 @@ flowchart TD
   n8["battle_ambush — exit to act1 / part 1"]:::external
   n9["battle_forest_road — exit to act1 / part 1"]:::external
   n48["gate_parley — exit to act1 / part 1"]:::external
-  n85["quarry_descent — exit to act1 / part 1"]:::external
-  n13 -->|"Legacy/audit exit (live map exits differ)"| n85
+  n86["quarry_descent — exit to act1 / part 1"]:::external
+  n13 -->|"Legacy/audit exit (live map exits differ)"| n86
   n14 -->|"Next"| n15
   n15 -->|"Next"| n13
   n16 -->|"Legacy/audit exit (live map exits differ)"| n8
