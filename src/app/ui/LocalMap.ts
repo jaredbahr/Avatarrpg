@@ -1,10 +1,35 @@
 import type { ContentIndex, Grid, MapDef, MapExit, Vec2, GameState } from '../../core/types';
 import { distance } from '../../core/rules/grid';
 import { evaluate } from '../../core/story/conditions';
-import { exitCells, visibleNpcs } from '../../core/story/world';
+import { activeTriggers, exitCells, visibleNpcs } from '../../core/story/world';
 import { previewWalk } from '../world/walking';
 import { Dialog } from './Dialog';
 import { button, el } from './dom';
+
+/**
+ * Where to walk to meet a story crossing on this map (#753): the reachable cell
+ * of each armed trigger whose walk stops on that trigger, nearest first. A
+ * pointer player meets it by walking across its line; this gives the keyboard
+ * the same legal walk, and leaves every exit lock where it is.
+ */
+export function triggerDestinations(
+  content: ContentIndex,
+  map: MapDef,
+  state: GameState,
+): { readonly label: string; readonly pos: Vec2 }[] {
+  const out: { label: string; pos: Vec2; steps: number }[] = [];
+  for (const trigger of activeTriggers(map, state)) {
+    let best: { pos: Vec2; steps: number } | null = null;
+    for (const cell of trigger.area) {
+      const preview = previewWalk(content, state, cell);
+      if (preview.refusal || preview.label !== trigger.label || !preview.path.length) continue;
+      if (!best || preview.path.length < best.steps)
+        best = { pos: cell, steps: preview.path.length };
+    }
+    if (best) out.push({ label: trigger.label, ...best });
+  }
+  return out.sort((a, b) => a.steps - b.steps).map(({ label, pos }) => ({ label, pos }));
+}
 
 /** The mouth cell nearest the party, so a widened exit is entered from the near side. */
 export function nearestExitCell(exit: MapExit, from: Vec2): Vec2 {
@@ -149,6 +174,14 @@ export class LocalMapDialog extends Dialog {
           }),
         );
       }
+    }
+    for (const crossing of triggerDestinations(this.content, this.map, this.state)) {
+      routes.append(
+        button(`Walk to ${crossing.label}`, () => {
+          this.close();
+          this.walk(crossing.pos);
+        }),
+      );
     }
     for (const exit of this.map.exits ?? []) {
       const open = evaluate(this.state, exit.requires);
