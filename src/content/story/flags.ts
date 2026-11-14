@@ -333,6 +333,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: [],
   },
   {
+    key: 'jin_has_satchel',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Jin holds Ruon’s dispatch satchel, his orders and every delivery he signed for: seized in the Cutting, or handed over with him in the trade.',
+    arc: 'Demo · The Cutting',
+    status: 'reserved',
+    note: 'Story bible C-10. The Cutting loss and the trade will set it; MQ-02’s paper trail should read it.',
+    setBy: [],
+    readBy: [],
+  },
+  {
     key: 'world.tea_shared',
     type: 'boolean',
     values: [true],
