@@ -59,7 +59,12 @@ export const INTERLUDES: Readonly<Record<string, InterludeDef>> = {
   act1_epilogue: { title: 'A Road Home', shots: ['rescue', 'rescue', 'rescue', 'rescue'] },
   act1_epilogue_lost: {
     title: 'The Table Stays Open',
-    shots: ['village', 'mira', 'gate', 'quarry', 'bay'],
+    shots: ['village', 'mira', 'gate', 'quarry', 'village', 'village', 'bay'],
+  },
+  // Bo-shan takes the reins (C-32): the empty-cart painting stands in until the art batch.
+  cart_departure: {
+    title: 'The Reins',
+    shots: ['village', 'village', 'village', 'village', 'village', 'village', 'village'],
   },
 };
 

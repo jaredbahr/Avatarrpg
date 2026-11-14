@@ -154,7 +154,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
       'The crew says you knocked on the quarry gate and fought your way in. When I knocked, I came straight home.',
       'I’m putting all of it in the watch book, so it’s done properly. Does “mecha-driller” have a dash in it?',
     ],
-    next: 'demo_complete',
+    next: 'welcome_home_supper',
     variants: [
       {
         when: { kind: 'flag', key: 'gate_talked_through', op: 'set' },
@@ -179,16 +179,77 @@ export const RETURN_STORY: readonly StoryNode[] = [
       },
     ],
   },
+  /*
+   * The supper, and the boot (saga outline, decision 23; story bible C-30): a
+   * worker's lost boot comes back to a Ba Dan doorstep with a river shell in
+   * it, and nobody explains it. Latch returns the other boot in MQ-07. It is
+   * Hesra's, which plants her outsider's background in passing (C-33): she is
+   * a hill-farm girl lodging at the mason's yard as an apprentice. Pella's
+   * lost shoe (`pella_home`) is a different story and stays one.
+   */
+  {
+    id: 'welcome_home_supper',
+    kind: 'dialogue',
+    speaker: 'Ba Dan',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Lamps come on along the canal. Gao carries out a pot of soup big enough to sit in, and the whole village squeezes around Mira’s table.',
+      'Somewhere under the noise, Bo-shan is explaining that he could have lifted the driller by himself.',
+      'Late that night, Hesra finds a boot on the step of the mason’s yard, where she lodges.',
+      'It is the one she lost in the galleries, hobnailed the hill-farm way. She walked home in the other boot and a sock.',
+      'She tips it up. A river shell drops into her palm, still wet, with sand in its ridges.',
+      'She looks up the lane and down it. Then she sets the shell on the windowsill and the boot by the door.',
+    ],
+    next: 'cart_departure',
+  },
+  /*
+   * Bo-shan takes the reins (saga outline, decisions 8 and 9; story bible
+   * C-32). He gets the bigger life he wanted, and it costs Pella. The cart is
+   * the one Pella told the party to look for, home from the quarry floor.
+   * Leto, Ba Dan's cart driver hired from the coast, and Amri, who came from
+   * Saltstep about five years ago, each get one passing detail (C-33). Staged
+   * as an interlude on the empty-cart painting until the art batch.
+   */
+  {
+    id: 'cart_departure',
+    kind: 'dialogue',
+    speaker: 'Ba Dan',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. It takes four days to mend.',
+      'Gao finds an axle pin at the back of his shop. Leto, who drove the coast road before Mira hired him, rehangs the harness the coast way, and nobody argues.',
+      'Bo-shan loads the cart himself, piled higher than anyone thinks is sensible.',
+      'Amri brings him a letter for Saltstep, addressed to a street she has not lived on for five years. He tucks it under the seat.',
+      'He climbs up and takes the reins. Half the village has come to the east gate to see him off.',
+      'Pella has not. Her shutter is open the width of a hand.',
+      'Bo-shan looks at the shutter for a long moment. Then he shakes the reins, and the ostrich horse leans into the harness.',
+    ],
+    variants: [
+      {
+        // SQ-01's persistent change: he has learned to stack, mostly.
+        when: SQ01_RESOLVED,
+        lines: [
+          'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. It takes four days to mend.',
+          'Gao finds an axle pin at the back of his shop. Leto, who drove the coast road before Mira hired him, rehangs the harness the coast way, and nobody argues.',
+          'Bo-shan loads the cart himself, low and even. Then he sets one enormous cabbage on the very top.',
+          'Amri brings him a letter for Saltstep, addressed to a street she has not lived on for five years. He tucks it under the seat.',
+          'He climbs up and takes the reins. Half the village has come to the east gate to see him off.',
+          'Pella has not. Her shutter is open the width of a hand.',
+          'Bo-shan looks at the shutter for a long moment. Then he shakes the reins, and the ostrich horse leans into the harness.',
+        ],
+      },
+    ],
+    next: 'demo_complete',
+  },
   {
     id: 'demo_complete',
     kind: 'end',
     title: 'Home to Ba Dan',
     lines: [
-      'Lamps come on along the canal. Gao carries out a pot of soup big enough to sit in, and the whole village squeezes around Mira’s table.',
-      'Somewhere under the noise, Bo-shan is explaining that he could have lifted the driller by himself.',
+      'The cart rattles down to the coast road. There is room in the back, and you are in it, wedged between the sacks.',
     ],
     teaser:
-      'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+      'Across the bay, in a Fire Nation outpost that has been dark for nine years, the lamps come on, one by one.',
     recap: {
       label: 'Demo complete',
       thanks:
