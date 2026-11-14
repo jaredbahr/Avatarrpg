@@ -148,53 +148,125 @@ function oilSimpleEdge(m: Uint8Array, BW: number, x: number, y: number): boolean
   }
 }
 
-/**
- * Stagger the trim peaks, shifting their offset with the world-coordinate
- * noise so flat banks do not acquire evenly spaced teeth.
- */
-function oilTrimPriority(x: number, y: number, phase: number): number {
-  const across = Math.floor((x + y) / 9);
-  const along = Math.floor((x - y) / 9);
-  const jitter = Math.floor(4 * hash2(across, along, 197));
-  const peakX = (x + phase + (jitter & 1)) % 2 === 0;
-  const peakY = (y + phase + (jitter >> 1)) % 2 === 0;
-  const shape = 0.65 * vnoise(x, y, 181, 11) + 0.35 * vnoise(x, y, 183, 4);
-  return (peakX && peakY ? 1 : 0) + shape + 0.22 * hash2(x, y, 191 + phase);
+const OIL_MAX_CUT = 6;
+const OIL_SHADING_DEPTH = 6;
+const OIL_SHAPE_PASSES = 5;
+const OIL_FLAT_PASSES = 2;
+const OIL_FLAT_RADIUS = 3;
+const OIL_PARITY_GROUPS = 4;
+const OIL_SHAPE_REACH = OIL_SHAPE_PASSES * OIL_PARITY_GROUPS;
+const OIL_FLAT_REACH = OIL_FLAT_PASSES * (OIL_FLAT_RADIUS + OIL_PARITY_GROUPS);
+const OIL_PAINT_REACH = OIL_SHAPE_REACH + OIL_FLAT_REACH + OIL_MAX_CUT + OIL_SHADING_DEPTH;
+
+/** Remove marked simple edge pixels in four parity groups, with independent 3×3 checks. */
+function trimOilEdges(
+  paint: Uint8Array,
+  trim: Uint8Array,
+  width: number,
+  height: number,
+  own: Region,
+  reach: number,
+): void {
+  for (let group = 0; group < OIL_PARITY_GROUPS; group++) {
+    const r = grow(own, reach - group, width, height);
+    const firstX = Math.max(1, r.x0);
+    const firstY = Math.max(1, r.y0);
+    for (let y = firstY + ((firstY ^ (group >> 1)) & 1); y < Math.min(height - 1, r.y1); y += 2)
+      for (let x = firstX + ((firstX ^ group) & 1); x < Math.min(width - 1, r.x1); x += 2)
+        if (trim[y * width + x] && oilSimpleEdge(paint, width, x, y)) paint[y * width + x] = 0;
+  }
+}
+
+const OIL_EDGE_DIRECTIONS = [
+  [1, 0, 0, -1],
+  [1, 0, 0, 1],
+  [0, 1, -1, 0],
+  [0, 1, 1, 0],
+] as const;
+
+function oilFlatBank(paint: Uint8Array, width: number, height: number, x: number, y: number) {
+  for (const [dx, dy, nx, ny] of OIL_EDGE_DIRECTIONS) {
+    let flat = true;
+    for (let j = -OIL_FLAT_RADIUS; j <= OIL_FLAT_RADIUS && flat; j++) {
+      const px = x + j * dx;
+      const py = y + j * dy;
+      if (px < 0 || px >= width || py < 0 || py >= height || !paint[py * width + px]) {
+        flat = false;
+        break;
+      }
+      const neighbourX = px + nx;
+      const neighbourY = py + ny;
+      flat =
+        neighbourX < 0 ||
+        neighbourX >= width ||
+        neighbourY < 0 ||
+        neighbourY >= height ||
+        !paint[neighbourY * width + neighbourX];
+    }
+    if (flat) return true;
+  }
+  return false;
 }
 
 /**
- * Three snapshot passes form shallow, irregular lobes inside the canonical oil.
- * Eight-neighbour priority peaks cannot invalidate one another's connection checks.
- * Their shrinking halos leave the exact six pixels read by shading within the
- * existing nine-pixel repaint apron.
+ * Carve continuous scallops inside the canonical oil. A world-coordinate
+ * depth field keeps adjacent cuts coherent, including where the canonical
+ * edge follows a cliff. Short finishing passes round off residual flats.
+ * Both stages preserve paths and existing dry holes by deleting simple
+ * boundary pixels only.
  */
-function oilPaintMask(canonical: Uint8Array, BW: number, BH: number, own: Region): Uint8Array {
-  let previous = canonical;
-  for (let phase = 0; phase < 3; phase++) {
-    const region = grow(own, 8 - phase, BW, BH);
-    const next = new Uint8Array(BW * BH);
-    for (let y = region.y0; y < region.y1; y++)
-      next.set(previous.subarray(y * BW + region.x0, y * BW + region.x1), y * BW + region.x0);
-    for (let y = Math.max(1, region.y0); y < Math.min(BH - 1, region.y1); y++)
-      for (let x = Math.max(1, region.x0); x < Math.min(BW - 1, region.x1); x++) {
-        const i = y * BW + x;
-        if (!previous[i]) continue;
-        const priority = oilTrimPriority(x, y, phase);
-        let highest = true;
-        for (let dy = -1; dy <= 1 && highest; dy++)
-          for (let dx = -1; dx <= 1; dx++) {
-            if (!dx && !dy) continue;
-            const neighbour = oilTrimPriority(x + dx, y + dy, phase);
-            if (neighbour > priority || (neighbour === priority && (dy < 0 || (!dy && dx < 0)))) {
-              highest = false;
-              break;
-            }
-          }
-        if (highest && oilSimpleEdge(previous, BW, x, y)) next[i] = 0;
-      }
-    previous = next;
+function oilPaintMask(
+  canonical: Uint8Array,
+  width: number,
+  height: number,
+  own: Region,
+): Uint8Array {
+  const bounds = grow(own, OIL_PAINT_REACH, width, height);
+  const paint = new Uint8Array(width * height);
+  const trim = new Uint8Array(width * height);
+  for (let y = bounds.y0; y < bounds.y1; y++) {
+    paint.set(
+      canonical.subarray(y * width + bounds.x0, y * width + bounds.x1),
+      y * width + bounds.x0,
+    );
   }
-  return previous;
+  const depth = insideDist(canonical, width, height, OIL_MAX_CUT + 1, bounds);
+  let reach = OIL_SHAPE_REACH + OIL_FLAT_REACH + OIL_SHADING_DEPTH;
+  for (let pass = 0; pass < OIL_SHAPE_PASSES; pass++) {
+    const r = grow(own, reach - 1, width, height);
+    for (let y = Math.max(1, r.y0); y < Math.min(height - 1, r.y1); y++) {
+      for (let x = Math.max(1, r.x0); x < Math.min(width - 1, r.x1); x++) {
+        const i = y * width + x;
+        const exposed =
+          paint[i] && (!paint[i - 1] || !paint[i + 1] || !paint[i - width] || !paint[i + width]);
+        if (!exposed) {
+          trim[i] = 0;
+          continue;
+        }
+        const relief = Math.round(
+          1.4 + 3.2 * vnoise(x, y, 181, 12) + 1.25 * vnoise(x, y, 183, 5) + 1.15 * hash2(x, y, 191),
+        );
+        trim[i] = (depth[i] ?? 0) <= Math.min(OIL_SHAPE_PASSES, relief) ? 1 : 0;
+      }
+    }
+    trimOilEdges(paint, trim, width, height, own, reach - 1);
+    reach -= OIL_PARITY_GROUPS;
+  }
+  for (let pass = 0; pass < OIL_FLAT_PASSES; pass++) {
+    reach -= OIL_FLAT_RADIUS + 1;
+    const r = grow(own, reach, width, height);
+    for (let y = Math.max(1, r.y0); y < Math.min(height - 1, r.y1); y++)
+      for (let x = Math.max(1, r.x0); x < Math.min(width - 1, r.x1); x++) {
+        const i = y * width + x;
+        trim[i] =
+          paint[i] && (depth[i] ?? 0) <= OIL_MAX_CUT && oilFlatBank(paint, width, height, x, y)
+            ? 1
+            : 0;
+      }
+    trimOilEdges(paint, trim, width, height, own, reach);
+    reach -= OIL_PARITY_GROUPS - 1;
+  }
+  return paint;
 }
 
 /** Oil has a darker core, a thin still catch, and one lit pixel at its upper-left rim. */
@@ -441,7 +513,7 @@ function changed(a: ReadonlySet<number> | undefined, b: ReadonlySet<number> | un
 /**
  * The surfaces of one board, kept between frames. `update(grid)` recomputes only what changed:
  * per material, the masks over the dirty rectangle of its changed cells; the painted layer over the
- * union of those, grown by the 9 px the material painters read; the flame and steam sites when
+ * union of those, expanded by the material painters' read bounds. Flame and steam sites change when
  * fire or steam changed. The blocked and ground layout is the board's: a new board (another size,
  * another set of blocked cells) starts over.
  */
@@ -505,6 +577,7 @@ export class TopdownSurfaces {
     const isBlocked = (x: number, y: number): boolean =>
       at(this.blocked, y * this.board.w + x) === 1;
     let dirty: Region | null = null;
+    let oilDirty: Region | null = null;
     for (const m of MATERIALS) {
       const was = this.cells.get(m),
         now = next.get(m);
@@ -513,6 +586,7 @@ export class TopdownSurfaces {
       if (!rect) continue;
       const mask = this.masks.get(m) as Uint8Array;
       maskInto(mask, this.board, now ?? new Set(), SEED[m], EDGE(m), this.ground, isBlocked, rect);
+      if (m === 'oil') oilDirty = rect;
       if (m === 'fire') {
         maskInto(
           this.glowMask,
@@ -540,7 +614,12 @@ export class TopdownSurfaces {
     const fireChanged = !sameSet(this.cells.get('fire'), next.get('fire'));
     const steamChanged = !sameSet(this.cells.get('steam'), next.get('steam'));
     this.cells = next;
-    if (dirty) this.paint(grow(dirty, 9, this.BW, this.BH));
+    if (dirty) {
+      const layer = grow(dirty, 9, this.BW, this.BH);
+      this.paint(
+        (oilDirty && union(layer, grow(oilDirty, OIL_PAINT_REACH, this.BW, this.BH))) ?? layer,
+      );
+    }
     if (fireChanged) this.siteFlames();
     if (steamChanged) this.siteSteam();
     this.lastDirty = dirty;
@@ -569,7 +648,7 @@ export class TopdownSurfaces {
       // the chamfer reads 8 px in, so it is measured 9 px past the region it paints
       const D =
         sid === 'oil'
-          ? insideDist(m, BW, BH, 6, grow(own, 6, BW, BH))
+          ? insideDist(m, BW, BH, OIL_SHADING_DEPTH, grow(own, OIL_SHADING_DEPTH, BW, BH))
           : insideDist(m, BW, BH, 8, grow(own, 9, BW, BH));
       for (let y = Math.max(1, own.y0); y < Math.min(BH - 1, own.y1); y++)
         for (let x = Math.max(1, own.x0); x < Math.min(BW - 1, own.x1); x++) {

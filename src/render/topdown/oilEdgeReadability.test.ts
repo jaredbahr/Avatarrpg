@@ -4,7 +4,7 @@ import { buildGrid } from '../../core/rules/grid';
 import type { Grid, SurfaceId } from '../../core/types';
 import type { RgbaImage } from '../shadow/hardShadowMask';
 import { TOPDOWN_FIXTURE } from '../topdown.fixture';
-import { CS, groundOk } from './organic';
+import { CS, FACE_PX, groundOk } from './organic';
 import { EDGE, maskInto, SEED, TopdownSurfaces } from './surfaces';
 
 type Cell = readonly [number, number];
@@ -16,7 +16,7 @@ type Footprint = { width: number; height: number; mask: Uint8Array };
 // levels separate a darker liquid core from its shoulder without fixing RGB.
 const MAX_FLAT_RUN = Math.floor(CS / 3);
 const CORE_DROP = 4;
-const MAX_INWARD_CUT = 3;
+const MAX_INWARD_CUT = 6;
 // Reuse the existing readability suite's relative highlight threshold solely
 // to identify sheen pixels. A four-pixel connected mark with no solid 2x2
 // block is a thin streak, rather than an isolated fleck or a moss-like patch.
@@ -271,6 +271,39 @@ describe('oil liquid edges and core (#598 follow-up)', () => {
     }
   });
 
+  it('cuts several-pixel bays into the cliff-aligned north-east oil bank', () => {
+    const grid = oilOnly(buildGrid(QUARRY_FLOOR));
+    const { width, mask } = footprint(fresh(grid).art.layer);
+    const original = canonical(grid).mask;
+    const relief: number[] = [];
+    for (let x = 11 * CS + 6; x < 12 * CS + 4; x++) {
+      const cliffBank = 2 * CS + FACE_PX;
+      if (!original[cliffBank * width + x] || original[(cliffBank - 1) * width + x]) continue;
+      let y = cliffBank;
+      while (y < cliffBank + CS && !mask[y * width + x]) y++;
+      relief.push(y - cliffBank);
+    }
+    expect(relief.length, 'authored straight cliff bank').toBeGreaterThan(20);
+    expect(Math.max(...relief) - Math.min(...relief)).toBeGreaterThanOrEqual(4);
+    expect(
+      relief.some(
+        (depth, i) => depth >= 3 && (relief[i + 1] ?? 0) >= 3 && (relief[i + 2] ?? 0) >= 3,
+      ),
+      'one coherent bay across adjacent pixels',
+    ).toBe(true);
+  });
+
+  it('repaints the clipped banks identically after adding and removing oil', () => {
+    const original = oilOnly(buildGrid(QUARRY_FLOOR));
+    const painter = fresh(original);
+    for (const grid of [changed(original, [[11, 2, null]]), original]) {
+      expect(painter.update(grid)).toBe(true);
+      expect(
+        Buffer.from(painter.art.layer.data).equals(Buffer.from(fresh(grid).art.layer.data)),
+      ).toBe(true);
+    }
+  });
+
   for (const { name, grid } of fixtures) {
     it(`${name}: breaks long straight tops and square sides into pixel contours`, () => {
       const shape = footprint(fresh(grid).art.layer);
@@ -312,7 +345,7 @@ describe('oil liquid edges and core (#598 follow-up)', () => {
       // The unchanged canonical gate already separates adjacent authored oil
       // centres; the Driller mask also has two detached depth-four fragments.
       // Preserve those identities instead of requiring impossible new joins or
-      // removal beyond the three-pixel trim. No new split or join is permitted.
+      // removal beyond the six-pixel trim. No new split or join is permitted.
       for (const a of centres)
         for (const b of centres) {
           expect(foreground.labels[a] === foreground.labels[b], `centre pair ${a},${b}`).toBe(
