@@ -14,7 +14,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 <a id="part-1"></a>
 
-## Part 1: entry `act1_open`
+## Part 1: entry `act1_evening`
 
 45 owned nodes.
 
@@ -22,7 +22,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 flowchart TD
   n0["act1_epilogue<br/>The Quarry: The drill jams in the quarry floor. Grumbler tries …"]
   n1(["act1_epilogue_lost<br/>The Quarry Keeps Running"])
-  n2["act1_evening<br/>Set flags"]
+  n2["act1_evening<br/>Set flags"]:::entry
   n3["act1_lost<br/>Set flags"]
   n4["act1_open<br/>Ba Dan: Ba Dan lies below a limestone quarry, its houses built …"]:::entry
   n5["act1_victory<br/>Set flags"]
@@ -58,25 +58,26 @@ flowchart TD
   n80["prologue_storm<br/>The Storm: Rain hammers on an iron roof, somewhere far overhead."]:::entry
   n82["quarry_assessment<br/>The Quarry: Workers bang on the barred gallery doors. One shout…"]
   n83["quarry_descent<br/>The Quarry: Stone ledges step down to the quarry floor. Below t…"]:::entry
-  n98["road_depart<br/>The East Road: The road climbs between the pines. Rainwater fil…"]:::entry
-  n99["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
-  n100["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
-  n101["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
-  n142["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
-  n143["trade_payment<br/>Set flags"]
-  n144["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
+  n117["road_depart<br/>The East Road: The road climbs between the pines. Rainwater fil…"]:::entry
+  n118["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
+  n119["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
+  n120["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
+  n161["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
+  n162["trade_payment<br/>Set flags"]
+  n163["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
   n12["cutting_after_explore — exit to world / part 1"]:::external
   n30["forest_after_explore — exit to world / part 1"]:::external
   n34["forest_explore — exit to world / part 1"]:::external
   n43["gate_escort_explore — exit to world / part 1"]:::external
   n48["gate_trade_explore — exit to world / part 1"]:::external
   n81["quarry_after_explore — exit to return / part 1"]:::external
-  n110["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
-  n146["village_return_explore — exit to return / part 1"]:::external
-  n0 -->|"Next"| n2
+  n84["quarry_ledger — exit to reasons / part 1"]:::external
+  n129["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
+  n165["village_return_explore — exit to return / part 1"]:::external
+  n0 -->|"Next"| n84
   n2 -->|"set: (none); phase: evening"| n81
   n3 -->|"set: act1_lost=true"| n1
-  n4 -->|"Next"| n144
+  n4 -->|"Next"| n163
   n5 -->|"set: act1_complete=true; resident profiles: lw.npc.amri=#quot;returning#quot;, lw.npc.bo_shan=#quot;returning#quot;, lw.npc.hesra=#quot;returning#quot;, lw.npc.leto=#quot;returning#quot;, lw.npc.senn_messenger=#quot;returning#quot;"| n0
   n6 -->|"Next"| n12
   n7 -->|"Next"| n30
@@ -86,44 +87,44 @@ flowchart TD
   n9 -->|"Defeat"| n20
   n10 -->|"Victory"| n5
   n10 -->|"Defeat"| n19
-  n11 -->|"Victory"| n101
+  n11 -->|"Victory"| n120
   n11 -->|"Defeat"| n21
   n18 -->|"Next"| n58
   n19 -->|"Next"| n3
   n20 -->|"Next"| n59
   n21 -->|"Next"| n60
-  n27 -->|"Next"| n144
+  n27 -->|"Next"| n163
   n29 -->|"Next"| n43
-  n38 -->|"Next"| n144
-  n39 -->|"Next"| n144
+  n38 -->|"Next"| n163
+  n39 -->|"Next"| n163
   n42 -->|"set: gate_fire_bluff=true"| n11
   n44 -->|"Next"| n47
   n45 -->|"Walk up and knock"| n11
   n45 -->|"Let the firebender do the talking; requires: you have a firebender; standing deltas: earth=-1, fire=1"| n42
   n45 -->|"Let the earthbender speak — these are quarry workers; requires: you have an earthbender; standing deltas: earth=2"| n44
-  n47 -->|"set: gate_talked_through=true, ruon_respects_you=true; grant XP: 150"| n101
+  n47 -->|"set: gate_talked_through=true, ruon_respects_you=true; grant XP: 150"| n120
   n58 -->|"set: lost_ambush=true, ruon_carried_you=true; grant XP: 150"| n6
   n59 -->|"set: lost_forest_road=true; grant XP: 100"| n7
-  n60 -->|"set: lost_quarry_gate=true; grant XP: 150"| n101
+  n60 -->|"set: lost_quarry_gate=true; grant XP: 150"| n120
   n61 -->|"Next"| n63
-  n62 -->|"Next"| n144
+  n62 -->|"Next"| n163
   n63 -->|"Next"| n64
-  n64 -->|"set: rubbing_given=true"| n146
-  n65 -->|"Next"| n146
-  n66 -->|"Next"| n144
-  n67 -->|"set: pella_asked=true"| n110
+  n64 -->|"set: rubbing_given=true"| n165
+  n65 -->|"Next"| n165
+  n66 -->|"Next"| n163
+  n67 -->|"set: pella_asked=true"| n129
   n69 -->|"Next"| n67
   n80 -->|"Next"| n4
   n82 -->|"Next"| n10
   n83 -->|"Next"| n82
-  n98 -->|"Next"| n34
-  n99 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n29
-  n99 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n143
-  n100 -->|"Next"| n12
-  n101 -->|"Next"| n99
-  n142 -->|"Next"| n48
-  n143 -->|"set: ruon_paid=true; grant XP: 150"| n142
-  n144 -->|"Legacy/audit exit (live map exits differ)"| n98
+  n117 -->|"Next"| n34
+  n118 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n29
+  n118 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n162
+  n119 -->|"Next"| n12
+  n120 -->|"Next"| n118
+  n161 -->|"Next"| n48
+  n162 -->|"set: ruon_paid=true; grant XP: 150"| n161
+  n163 -->|"Legacy/audit exit (live map exits differ)"| n117
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
@@ -137,5 +138,6 @@ Continuations:
 - `gate_escort_explore` → [world, part 1](./world.md#part-1)
 - `gate_trade_explore` → [world, part 1](./world.md#part-1)
 - `quarry_after_explore` → [return, part 1](./return.md#part-1)
+- `quarry_ledger` → [reasons, part 1](./reasons.md#part-1)
 - `sq01_packing_list` → [sq01-cabbages, part 1](./sq01-cabbages.md#part-1)
 - `village_return_explore` → [return, part 1](./return.md#part-1)
