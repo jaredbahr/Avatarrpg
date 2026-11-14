@@ -131,7 +131,7 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
     'aria-label',
     'The Forest Road map',
   );
-  await pressControl(page, button(page, 'Talk Dema, road keeper'), 'Enter', 'Shift+Tab');
+  await pressControl(page, button(page, 'Talk Lanfen, road keeper'), 'Enter', 'Shift+Tab');
   await expectNode(page, 'forest_dema');
   await advanceLines(page, next, 3);
   await expectNode(page, 'forest_explore');
