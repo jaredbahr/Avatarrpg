@@ -74,6 +74,8 @@ Read with:
 - **Trial scope: two tracks.** Track 1 does Ba Dan's side stories SQ-01 to SQ-03, plus MQ-02's shipping hook and
   one return visit (the bible's "first playable story slice"). Track 2 builds Saltstep and Emberwatch (MQ-02) as
   the pipeline-proof region (`docs/pipeline-proof-plan.md`, section 6).
+- **Story build order:** Ba Dan's side stories SQ-01 to SQ-03 come first, ahead of the rest of both tracks;
+  they are being drafted separately (owner, 2026-11-14).
 - **Story workflow:** Claude drafts each mission's scenes and dialogue from the bible as a draft PR with a short,
   readable summary. The owner approves or redirects; then it merges.
 - **Small gaps:** fill them here as **proposed** entries for the owner to approve with the rest, collected in
