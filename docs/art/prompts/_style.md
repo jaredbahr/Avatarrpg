@@ -13,9 +13,10 @@ complete copy-and-paste. This is the reference copy, with the reasoning.
 
 ## Why each clause is there
 
-- **Hand-drawn animated series** names a register without naming a franchise.
-  Never add a title, a studio or a character name to steer the generator: the
-  art bible forbids it and the prompt test fails on it.
+- **Hand-drawn animated series** names a register; a prompt may also say "the
+  animated Avatar style" as a style reference. Never add a studio or a character
+  name to steer the generator: the art bible forbids it and the prompt test
+  fails on it.
 - **Uniform dark-brown ink** is the single most recognisable rule of the look.
   Generators default to black and to tapered "sketch" lines; both read wrong
   next to the game's own drawn placeholders, which use the same brown.
