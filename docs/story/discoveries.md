@@ -20,7 +20,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n24["discover_duck_nest<br/>Turtle-duck nest: A turtle-duck stands over a nest lined with r…"]:::entry
+  n24["discover_duck_nest<br/>Turtle duck nest: A turtle duck stands over a nest lined with r…"]:::entry
   n25["discover_runoff_marker<br/>Runoff measuring stone: Flood marks are cut into the stone besi…"]:::entry
   n26["discover_tea_station<br/>Workers’ tea station: Six cups stand beside the kettle. A seven…"]:::entry
   n55{"leave_duck_nest<br/>Branch: act1_complete"}
@@ -29,7 +29,7 @@ flowchart TD
   n102["remember_duck_nest<br/>Set flags"]
   n103["remember_runoff_marker<br/>Set flags"]
   n104["remember_tea_station<br/>Set flags"]
-  n105["revisit_duck_nest<br/>Turtle-duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
+  n105["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
   n106["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
   n107["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
   n13["cutting_explore — exit to world / part 1"]:::external

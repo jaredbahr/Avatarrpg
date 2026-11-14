@@ -4,7 +4,7 @@ import { DISCOVERIES } from '../maps/discoveries';
 const TEXT = {
   duck_nest: {
     first: [
-      'A turtle-duck stands over a nest lined with reeds and a woollen sock. Three ducklings crowd into the heel.',
+      'A turtle duck stands over a nest lined with reeds and a woollen sock. Three ducklings crowd into the heel.',
       'She spreads her wings when you get close. You step back. One duckling carries on pulling at a loose thread.',
       'Down by the stream, white silt has dried over the old nest. The reeds are bent flat, and a wooden clothes peg is stuck in the crust.',
     ],
@@ -31,7 +31,7 @@ const TEXT = {
   tea_station: {
     first: [
       'Six cups stand beside the kettle. A seventh sits in the washing bowl with a tea leaf stuck to the bottom.',
-      'Both quarry shifts have scratched their names into the bench. Under the foreman’s name: “Wash your own cup, Hesh.”',
+      'Both quarry shifts have scratched their names into the bench. Under the foreman’s name: “Wash your own cup, Dunmo.”',
       'You rinse the seventh cup and set it beside the others. The handle has been mended with wire.',
     ],
     again: [
