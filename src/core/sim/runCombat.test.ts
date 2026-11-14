@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createCombatCasePool } from '../../../scripts/test-support/runCombatCases';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
@@ -8,6 +8,9 @@ import type { ContentIndex, EncounterDef } from '../types';
 import type { TestContext } from 'vitest';
 
 const combatCases = createCombatCasePool();
+// Bundling the worker and loading the content into every lane is pool
+// start-up, not a test's work: pay it here, under the hook's own deadline.
+beforeAll(() => combatCases.warm(), 30_000);
 afterAll(async () => {
   await combatCases.close();
 });
@@ -34,7 +37,15 @@ describe('combat simulation', () => {
   });
 
   for (const encounterId of encounterIds) {
-    it(`terminates cleanly: ${encounterId}`, async (ctx) => {
+    /*
+     * The boss runs through the worker pool and is its first batch, so it
+     * pays each lane's JIT warm-up on twelve six-player fights (3.4-5.4 s of
+     * CPU in one thread, warm to cold). Hosted runs on the 5 s default (13-14
+     * Nov 2026): 3.2-3.7 s on the faster runner type, 4.3-5.0 s on the slower
+     * one, where it timed out once. Ten seconds is twice the slowest run.
+     */
+    const timeout = encounterId === 'enc_grumbler' ? 10_000 : undefined;
+    it(`terminates cleanly: ${encounterId}`, { timeout }, async (ctx) => {
       const cases = Array.from({ length: 12 }, (_, trial) => ({
         seed: seedFor(`terminate-${encounterId}`, trial),
         encounterId,
@@ -114,6 +125,15 @@ describe('combat simulation', () => {
     }
   });
 
+  /*
+   * Eighty boss fights are the work here, and they need more than the default
+   * 5 s on a slow hosted runner even with every worker started and warm. Hosted
+   * 4-vCPU runs of this test on the 5 s default (13-14 Nov 2026): 2.9-3.8 s on
+   * the faster runner type, 4.6-5.0 s on the slower one, where it timed out on
+   * six PR runs. The same 80 fights take 7.4-8 s of warmed CPU in one thread,
+   * so four lanes cannot honestly bring the slow runner under 4 s. Ten seconds
+   * is twice the slowest run; pool start-up is not in it (`beforeAll`).
+   */
   it('keeps the quarry winnable with every character in a three-person party', async (ctx) => {
     const cases = [...CONTENT.characters.values()].map((character) => {
       const companions =
@@ -154,7 +174,7 @@ describe('combat simulation', () => {
       }
       expect(victories, `${id} in the quarry`).toBeGreaterThan(0);
     }
-  });
+  }, 10_000);
 });
 
 describe('encounter rosters', () => {

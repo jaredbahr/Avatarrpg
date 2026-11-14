@@ -108,8 +108,11 @@ pipelines, and then the older four-way hero sheets, the 128 px quarry and Cuttin
    story nodes live in `src/content/` and are validated by zod schemas in
    `src/content/schemas.ts`. Adding an ability — or a whole discipline — should
    never require touching `src/core/`.
-4. **Non-commercial fan work.** Original characters only — no canon names. Keep
-   the disclaimer in `README.md` intact.
+4. **Non-commercial fan work.** Original characters only: no canon character ever
+   appears or speaks. In-game text may refer to canon places and history as the era
+   (Republic City, the time after Korra), and art prompts may cite the animated
+   style (owner, 2026-11-14; `docs/story-bible.md`). Keep the disclaimer in
+   `README.md` intact.
 
 ## Layout
 

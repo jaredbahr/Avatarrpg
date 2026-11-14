@@ -327,6 +327,27 @@ export function groundShaderFrame(
   };
 }
 
+/**
+ * True when the ground pass would leave every pixel clear, so it need not run. Over a painting the
+ * pass starts transparent and draws only what a map texel asks for: a surface (whose hatch and
+ * firelight come with it), a dry patch over painted water, or the grid. With none of those it is a
+ * screen-sized filter whose output is all zero, and on a software rasteriser that one pass cost
+ * more than the rest of the frame (about 130 ms a frame in Ba Dan). `texels` is the map texture's
+ * RGBA data, red packed as (terrain + dry offset) * 8 + surface, as `GROUND_FRAGMENT` reads it.
+ */
+export function groundPassIsBlank(
+  painted: boolean,
+  gridLines: boolean,
+  texels: ArrayLike<number>,
+): boolean {
+  if (!painted || gridLines) return false;
+  for (let i = 0; i < texels.length; i += 4) {
+    const packed = texels[i] ?? 0;
+    if (packed % 8 !== 0 || Math.floor(packed / 8) >= DRY_PATCH_TERRAIN_OFFSET) return false;
+  }
+  return true;
+}
+
 /** Tile-unit points to the flat pixel list Graphics wants, at `tile` world px a tile. */
 function flatten(points: readonly Vec2[], tile: number): number[] {
   const out: number[] = [];
@@ -524,6 +545,8 @@ export class PixiBackend implements RenderBackend {
   private mapCanvas = document.createElement('canvas');
   private mapTexture: Texture;
   private mapSignature = '';
+  /** The red channel of the last map upload, kept so a frame can tell whether the pass draws anything. */
+  private mapTexels: Uint8ClampedArray = new Uint8ClampedArray(0);
 
   /** Sprite pools, keyed so a unit keeps its object across frames. */
   private healthBarStagger = new HealthBarStagger();
@@ -1477,6 +1500,9 @@ export class PixiBackend implements RenderBackend {
     uniforms.uGridLines = view.gridLines ? 1 : 0;
     uniforms.uSurfaces = 1;
     uniforms.uBackdrop = painted ? 1 : 0;
+    // Nothing for the pass to lay over the painting: skip the whole filter rather than run it to
+    // produce a clear frame. The map texture is current, so it resumes the frame a mark appears.
+    this.groundSprite.visible = !groundPassIsBlank(painted, view.gridLines, this.mapTexels);
 
     /*
      * UniformGroup.uniforms is a plain object, not a proxy: neither assigning a
@@ -1560,6 +1586,7 @@ export class PixiBackend implements RenderBackend {
     }
 
     ctx.putImageData(image, 0, 0);
+    this.mapTexels = image.data;
 
     // Update the bound source in place rather than swapping in a new texture,
     // which would leave the filter's bind group pointing at the old one.
