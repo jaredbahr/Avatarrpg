@@ -299,6 +299,10 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `toBlob` writes through an unchecked cast, so a forgotten field serialises fine,
   parses back as `undefined`, and crashes only on a loaded mid-battle save.
   `serialize.test.ts` deep-compares a real mid-battle round trip to catch it.
+- **Content ids are forever.** A story node, map, NPC, trigger, encounter, flag, ability or any other id a save can
+  hold is in `src/content/ids.ledger.json` for good. Run `npm run ids:ledger` after adding content; to rename or
+  remove an id, leave the ledger alone and add a row to `src/content/idAliases.ts`, which `applyIdAliases` applies
+  first on load. `savedIds.test.ts` fails on a shipped id that vanished without one.
 - **Shipped code validates with `src/core/schema.ts`, not zod** (ADR 0060). It
   is zod's v3 API for the combinators the save, fx, sound and tuning schemas use,
   and `schema.test.ts` holds it to zod's verdicts, data and issue paths. A shipped

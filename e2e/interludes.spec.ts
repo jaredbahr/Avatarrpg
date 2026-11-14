@@ -183,6 +183,12 @@ test('act1_victory frees the workers and walks on home without an end card', asy
   await expect(page.locator('.line-count')).toHaveText('1 of 4');
   await expect(page.getByRole('button', { name: 'Read summary' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Skip scene', exact: true }).click();
+  // Bo-shan's delivery book turns up in the Driller's cab (C-31), then the walk home.
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('quarry_ledger');
+  for (let line = 0; line < 4; line++)
+    await page.locator('.dialogue-panel button.btn-primary').click();
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('quarry_after_explore');
@@ -294,4 +300,17 @@ test('a saved cutscene resumes at its caption with playback paused', async ({ pa
     .click();
   await expect(page.locator('.line-count')).toHaveText('2 of 3');
   await expect(page.getByRole('button', { name: 'Play scene', exact: true })).toBeVisible();
+});
+
+test('a new game opens on the storm prologue and skips straight to Ba Dan', async ({ page }) => {
+  await startGame(page, ['Reader'], ['wen'], 'prologue', { prologue: true });
+  await expect(page.locator('.interlude-stage[data-interlude="prologue_storm"]')).toBeVisible();
+  await expect(page.locator('.line-count')).toHaveText('1 of 9');
+  // A placeholder card stands in for the painting and still carries its alt text.
+  await expect(page.getByRole('img', { name: /rain streaks/ })).toBeVisible();
+  await page.locator('[data-interlude-control="next"]').click();
+  await expect(page.locator('.line-count')).toHaveText('2 of 9');
+  await page.getByRole('button', { name: 'Skip scene' }).click();
+  expect((await snapshot(page)).node).toBe('act1_open');
+  await expect(page.locator('.line-count')).toHaveText('1 of 3');
 });

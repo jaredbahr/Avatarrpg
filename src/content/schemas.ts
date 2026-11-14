@@ -60,6 +60,7 @@ import type {
   WorldAnchor,
 } from '../core/types';
 import { SQUARE_FOOTPRINT_CONTENT_DEFAULT } from './footprint';
+import { STORY_ENTRY, STORY_PROLOGUE } from './entry';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
 import {
   FORBIDDEN_BINDINGS,
@@ -2739,12 +2740,14 @@ export function validateContent(
   );
 
   /* --- reachability: every node must be reachable from the entry ----- */
-  const entry = 'act1_open';
+  const entry = STORY_ENTRY;
   if (!storyIds.has(entry)) {
     problems.push(`story has no entry node "${entry}"`);
   } else {
-    const reachable = new Set<string>([entry]);
-    const queue = [entry];
+    // A new game from the title opens on the prologue, which leads into the entry.
+    const roots = storyIds.has(STORY_PROLOGUE) ? [STORY_PROLOGUE, entry] : [entry];
+    const reachable = new Set<string>(roots);
+    const queue = [...roots];
     while (queue.length > 0) {
       const current = queue.shift();
       if (!current) break;
