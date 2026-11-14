@@ -29,6 +29,24 @@ Never stated (canon rule: no morals, no "what we learned"). Each theme has a rec
 | Fairness       | Who does the work, who gets paid, who gets asked                              | The two bowls: one to eat, one to carry to someone  |
 | Balance        | Movement that is cared for, not frozen; power shared, not seized or abandoned | Water that "says things twice" until it is let go   |
 
+## The writing standard (owner, 2026-11-14)
+
+**A family game is not a lesser game.** Write to the standard of the best all-ages stories, the kind adults
+rewatch for themselves. Do not soften writing to appease younger players:
+
+- **Full emotional range.** Grief, guilt, anger, betrayal and moral compromise get room to land. The canon's tone
+  limits (no gore, no torture, no child-death stakes) are content limits, not limits on depth.
+- **Antagonists with a real case.** Veyra must be right about enough that a thoughtful adult half agrees with
+  her. Rusk is frightening because he is calm and reasonable-sounding, not because he is loud.
+- **Unresolved is allowed.** Some choices have no clean answer, some apologies are not accepted, and some
+  relationships end the game still mending.
+- **Subtext over explanation.** Kids read subtext better than writers assume. Never add a line that explains what
+  a scene already showed.
+- **Vocabulary and ideas at full strength.** Precise words, real institutions, real arguments. A child who misses
+  a layer the first time finds it on the replay; that is a feature.
+- **Kid-friendliness lives in the interface, not the story.** Big text, clear turns, forgiving difficulty and
+  tap targets (CLAUDE.md) are how the game welcomes kids. The writing does not pay that cost.
+
 ## Owner-chosen upgrades (2026-11-14)
 
 1. **Depth: sharpen the spine.** Keep the canon's premise, regions, cast and endings. Add throughlines,
@@ -44,7 +62,9 @@ Never stated (canon rule: no morals, no "what we learned"). Each theme has a rec
    Act III does: the echo is the Still Keeper's repeated current, and the boot is Latch, who mistakes "lost" for
    "unclaimed".
 5. **Civic beats become set-pieces.** Every hearing, archive or assembly beat is staged as physical play: a chase,
-   a heist, a crowd rescue, a race against a seizure squad. The theme lives in what people do.
+   a heist, a crowd rescue, a race against a seizure squad. This is dramatic craft, not simplification: the theme
+   lives in what people do. The argument itself stays whole. When the assembly debates, the debate is real, the
+   other side's best case is heard in full, and it takes as long as it needs.
 6. **The cart is the party's spine.** Bo-shan's produce cart, pulled by **Parcel the ostrich horse** (canon),
    is repaired after Act I. It becomes the party's caravan, and it gains one practical upgrade per act. The
    canon's final image, a public cart stopping at a town erased from the map, is that cart.
@@ -176,8 +196,8 @@ Each act ends on a quiet meal and a view (canon tone rule: follow intensity with
   region pipeline's cost per region is measured.
 - **The echo phase may need engine work.** "Every action echoes next round" is likely a new effect kind, so it
   touches `src/core/` and needs an ADR. Prove it on a small Act III encounter (MQ-07) before the finale relies on it.
-- **Policy talk and kids aged 7–12.** The set-piece rule (upgrade 5) is the guard. Any beat that needs more than
-  about 35 seconds of reading before play gets split or staged.
+- **Dense scenes.** The cure for a slow scene is better writing (sharper conflict, a cut line, a scene that is
+  staged instead of explained), never a simpler idea or a reading-time cap.
 - **Veyra in MQ-02 is new presence, not a new reveal.** Her name, not her role, is known early. Writers must not
   give her lines that hint at her title before MQ-03.
 - **Hooks for a party of one.** Each hero's reason must work alone. The neutral cart thread must carry the story
