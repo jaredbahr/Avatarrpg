@@ -83,7 +83,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The road bends, and Ba Dan is below: cooking smoke, the canal, the gate with someone sitting beside it.',
-      'They stand up so fast that the stool goes over. Then the gate bell starts, and it does not stop.',
+      'They stand up so fast that the stool goes over. Then the gate bell starts, and Pella is out through the gate and running before it has rung twice.',
     ],
     next: 'forest_return_arrived',
   },
@@ -117,7 +117,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
         when: { kind: 'flag', key: 'pella_asked', op: 'set' },
         lines: [
           'There you are! Dorin rang the gate bell so hard that half the street came out still holding their spoons.',
-          'Pella reached Bo-shan before I did. She told him about his chores first. Then she held on to him and would not let go.',
+          'Pella reached Bo-shan before I did, before any of us. She has not let go of his sleeve since, and he has not asked her to.',
           'Sit down, all of you. Nobody carries anything else tonight.',
         ],
       },
@@ -154,7 +154,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
       'The crew says you knocked on the quarry gate and fought your way in. When I knocked, I came straight home.',
       'I’m putting all of it in the watch book, so it’s done properly. Does “mecha-driller” have a dash in it?',
     ],
-    next: 'welcome_home_supper',
+    next: 'reunion_table',
     variants: [
       {
         when: { kind: 'flag', key: 'gate_talked_through', op: 'set' },
@@ -178,6 +178,111 @@ export const RETURN_STORY: readonly StoryNode[] = [
         ],
       },
     ],
+  },
+  /*
+   * The reunion (bible DLG-07; story bible C-14): the opening promised Pella her
+   * brother, and until now the village only reported it. It plays at the table,
+   * after the welcome and before the supper. Her run is in the arrival narration.
+   * It ends on sitting down: no reward tally, no reveal, no joke on top of it.
+   * Bo-shan has no portrait yet, so he speaks from the narrator frame.
+   */
+  {
+    id: 'reunion_table',
+    kind: 'dialogue',
+    speaker: 'Ba Dan',
+    portrait: 'portrait.narrator',
+    lines: [
+      'At the long table, Pella still has hold of Bo-shan’s sleeve. His hands will not keep still on the wood.',
+    ],
+    next: 'reunion_all_right',
+  },
+  {
+    id: 'reunion_all_right',
+    kind: 'dialogue',
+    speaker: 'Bo-shan',
+    portrait: 'portrait.narrator',
+    lines: ['I’m all right.'],
+    next: 'reunion_shaking',
+  },
+  {
+    id: 'reunion_shaking',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['You’re shaking.'],
+    next: 'reunion_sit',
+  },
+  {
+    id: 'reunion_sit',
+    kind: 'dialogue',
+    speaker: 'Bo-shan',
+    portrait: 'portrait.narrator',
+    lines: ['I know. Let me sit down a minute.'],
+    next: 'reunion_tuesday',
+  },
+  {
+    id: 'reunion_tuesday',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['You said Tuesday.'],
+    next: 'reunion_i_did',
+  },
+  {
+    id: 'reunion_i_did',
+    kind: 'dialogue',
+    speaker: 'Bo-shan',
+    portrait: 'portrait.narrator',
+    lines: ['I did.'],
+    next: 'reunion_waited',
+  },
+  {
+    id: 'reunion_waited',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['I waited by the road.'],
+    next: 'reunion_sorry',
+  },
+  {
+    id: 'reunion_sorry',
+    kind: 'dialogue',
+    speaker: 'Bo-shan',
+    portrait: 'portrait.narrator',
+    lines: ['I’m sorry.'],
+    next: 'reunion_covered_bowl',
+  },
+  {
+    id: 'reunion_covered_bowl',
+    kind: 'dialogue',
+    speaker: 'Ba Dan',
+    portrait: 'portrait.narrator',
+    lines: ['Mira sets a covered bowl down in front of him.'],
+    next: 'reunion_bowl',
+  },
+  {
+    id: 'reunion_bowl',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: ['Careful. It’s hot.'],
+    next: 'reunion_thanks',
+  },
+  {
+    id: 'reunion_thanks',
+    kind: 'dialogue',
+    speaker: 'Bo-shan',
+    portrait: 'portrait.narrator',
+    lines: ['Thank you.'],
+    next: 'reunion_kept_making',
+  },
+  {
+    id: 'reunion_kept_making',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['She kept making it. In case you came back hungry.'],
+    next: 'welcome_home_supper',
   },
   /*
    * The supper, and the boot (saga outline, decision 23; story bible C-30): a

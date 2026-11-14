@@ -129,14 +129,25 @@ describe('the authored walk home', () => {
 
     let card = welcomed;
     const speakers: string[] = [];
-    for (let count = 0; card.screen === 'dialogue' && count < 30; count++) {
+    for (let count = 0; card.screen === 'dialogue' && count < 45; count++) {
       const node = CONTENT.story.get(card.story.nodeId ?? '');
       if (node?.kind === 'dialogue' && !speakers.includes(node.speaker))
         speakers.push(node.speaker);
       card = advanceDialogue(CONTENT, card).state;
     }
     // Then the narrator: the supper and the boot, and Bo-shan taking the reins.
-    expect(speakers).toEqual(['Elder Mira', 'Gao the Shopkeeper', 'Gate Guard Dorin', 'Ba Dan']);
+    // Between the welcomes and the supper, the reunion at the table (DLG-07):
+    // Pella and Bo-shan speak for themselves.
+    expect(speakers).toEqual([
+      'Elder Mira',
+      'Gao the Shopkeeper',
+      'Gate Guard Dorin',
+      'Ba Dan',
+      'Bo-shan',
+      'Pella',
+    ]);
+    const last = CONTENT.story.get('reunion_kept_making');
+    expect(last?.kind === 'dialogue' && last.next).toBe('welcome_home_supper');
     expect(card.screen).toBe('ended');
     expect(card.story.nodeId).toBe('demo_complete');
 

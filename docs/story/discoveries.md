@@ -29,9 +29,9 @@ flowchart TD
   n106["remember_duck_nest<br/>Set flags"]
   n107["remember_runoff_marker<br/>Set flags"]
   n108["remember_tea_station<br/>Set flags"]
-  n109["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
-  n110["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
-  n111["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
+  n121["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
+  n122["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
+  n123["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
   n16["cutting_explore — exit to world / part 1"]:::external
   n17["cutting_return_explore — exit to return / part 1"]:::external
   n37["forest_explore — exit to world / part 1"]:::external
@@ -48,9 +48,9 @@ flowchart TD
   n106 -->|"set: world.discovered.duck_nest=true"| n58
   n107 -->|"set: world.discovered.runoff_marker=true"| n59
   n108 -->|"set: world.discovered.tea_station=true"| n60
-  n109 -->|"Next"| n58
-  n110 -->|"Next"| n59
-  n111 -->|"Next"| n60
+  n121 -->|"Next"| n58
+  n122 -->|"Next"| n59
+  n123 -->|"Next"| n60
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

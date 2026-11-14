@@ -92,6 +92,16 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await nextLine(page);
   await nextLine(page);
 
+  // The reunion at the table (DLG-07): twelve one-line turns before the supper.
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('reunion_table');
+  for (let turn = 0; turn < 4; turn++) await nextLine(page);
+  await expect(line).toContainText('You said Tuesday.');
+  for (let turn = 0; turn < 7; turn++) await nextLine(page);
+  await expect(line).toContainText('In case you came back hungry.');
+  await nextLine(page);
+
   // The supper, and a boot on a doorstep with a river shell in it (C-30).
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
