@@ -1,3 +1,11 @@
+/**
+ * A placeholder still drawn by the stylesheet (`.interlude-card-<card>`), for a
+ * scene whose painting is still on the art list. It carries the same alt text a
+ * painting would, so a screen reader hears the shot either way.
+ */
+export const INTERLUDE_CARDS = ['rain', 'flood', 'alarm', 'valve', 'ripple', 'black'] as const;
+export type InterludeCard = (typeof INTERLUDE_CARDS)[number];
+
 /** Presentation only. Story text, choices and outcomes remain in the story graph. */
 export const INTERLUDE_ART = {
   village: {
@@ -42,7 +50,48 @@ export const INTERLUDE_ART = {
     focus: '42% 40%',
     portraitFocus: '32% 36%',
   },
+  /*
+   * The prologue's storm (C-28): placeholder cards until the art batch paints
+   * them. No faces, nothing legible; the hand at the valve is the one figure.
+   */
+  storm_roof: {
+    card: 'rain',
+    alt: 'Placeholder: rain streaks across a dark iron roof, high overhead.',
+  },
+  storm_flood: {
+    card: 'flood',
+    alt: 'Placeholder: dark water rising under a steel door, lit by a swinging lantern.',
+  },
+  storm_turbine: {
+    card: 'alarm',
+    alt: 'Placeholder: a turbine housing in the dark, shaking.',
+  },
+  storm_gallery: {
+    card: 'alarm',
+    alt: 'Placeholder: red warning lamps flashing down a flooded gallery.',
+  },
+  storm_valve: {
+    card: 'valve',
+    alt: 'Placeholder: a hand on a large iron valve wheel, half in shadow.',
+  },
+  storm_ripple: {
+    card: 'ripple',
+    alt: 'Placeholder: two rings spreading on dark water from a single drop.',
+  },
+  storm_black: {
+    card: 'black',
+    alt: 'Black. Only rain.',
+  },
 } as const;
+
+export type InterludeStill = (typeof INTERLUDE_ART)[keyof typeof INTERLUDE_ART];
+
+/** The shots that still need a painting: every card, listed for the art batch. */
+export function isCardStill(
+  art: InterludeStill,
+): art is Extract<InterludeStill, { readonly card: InterludeCard }> {
+  return 'card' in art;
+}
 
 export type InterludeArt = keyof typeof INTERLUDE_ART;
 
@@ -53,6 +102,20 @@ export interface InterludeDef {
 }
 
 export const INTERLUDES: Readonly<Record<string, InterludeDef>> = {
+  prologue_storm: {
+    title: 'Inside the Storm',
+    shots: [
+      'storm_roof',
+      'storm_flood',
+      'storm_turbine',
+      'storm_gallery',
+      'storm_valve',
+      'storm_valve',
+      'storm_ripple',
+      'storm_black',
+      'mira',
+    ],
+  },
   act1_open: { title: 'The Empty Road', shots: ['village', 'village', 'mira'] },
   road_depart: { title: 'Into the Pines', shots: ['road', 'road'] },
   quarry_descent: { title: 'The Bottom of the Quarry', shots: ['quarry', 'quarry', 'quarry'] },

@@ -23,6 +23,33 @@ const RETURNING_PROFILES = Object.fromEntries(
 ) as Readonly<Record<(typeof RETURNEE_IDS)[number], ResidentProfile>>;
 
 export const ACT1_NODES: readonly StoryNode[] = [
+  /* --------------------------------------------------------------- Prologue */
+  /*
+   * The flash-forward (saga outline, decision 3; story bible C-28): a storm
+   * inside a machine, long after Act I. No names and no faces, and nothing
+   * that names the place or the woman at the valve (the reveal ladder). The
+   * final battle replays it with names. Its stills are placeholder cards
+   * until the art batch (`interludes.ts`); the last line cuts to Ba Dan.
+   */
+  {
+    id: 'prologue_storm',
+    kind: 'dialogue',
+    speaker: 'The Storm',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Rain hammers on an iron roof, somewhere far overhead.',
+      'Below the roof, water comes in under a steel door. Ankle-deep. Then deeper. A lantern swings on its hook and throws the shadows around.',
+      'Somewhere in the dark a turbine is screaming. The sound climbs past anything a machine is meant to make.',
+      'Red lamps flash down a gallery, one after another. A gauge needle leans hard against its pin and shivers there.',
+      'A hand closes on a valve wheel. A woman’s hand, the knuckles scraped, a ring of grease worn into the thumb.',
+      'She leans her whole weight on the wheel. It does not move.',
+      'A drop falls from a pipe into the water at her feet. The water ripples once. A breath later, it ripples again.',
+      'Then only the rain.',
+      'Morning, far from there. In Ba Dan, someone has set bowls along an outdoor table, more than anyone will eat from today.',
+    ],
+    next: 'act1_open',
+  },
+
   /* ---------------------------------------------------------------- Opening */
   {
     id: 'act1_open',

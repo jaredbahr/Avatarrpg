@@ -12,7 +12,7 @@ import './styles/interludes.css';
 import './styles/objective-pointer.css';
 import './styles/a11y.css';
 
-import { STORY_ENTRY } from './content/entry';
+import { STORY_PROLOGUE } from './content/entry';
 import { App } from './app/App';
 import { loadIcons } from './app/ui/icons';
 import { bakeReview } from './render/sheets/review';
@@ -80,7 +80,8 @@ function bootRegion(): string {
 
 function boot(): void {
   if (!root) return;
-  const app = new App(regions.content, root, STORY_ENTRY, regions);
+  // A new game from the title opens on the flash-forward prologue (C-28).
+  const app = new App(regions.content, root, STORY_PROLOGUE, regions);
   app.start();
   window.fnt = { app, bakeReview, loadedFxCels };
   // New game and the riverside preview start in the start region; fetch it while the title shows.
