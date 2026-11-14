@@ -15,6 +15,7 @@ import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
 import { DIFFICULTY_CHOICES, difficultyHint } from './difficultyText';
+import { nextRadioIndex } from './radioKeys';
 
 /**
  * Four steps rather than a slider: `choiceRow` is already a row of real
@@ -202,6 +203,16 @@ export class SettingsPanel extends Dialog {
     this.overlay?.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
   }
 
+  private focusRadioChoice(label: string): void {
+    for (const group of this.overlay?.querySelectorAll<HTMLElement>('[role="radiogroup"]') ?? []) {
+      if (group.getAttribute('aria-label') !== label) continue;
+      group
+        .querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')
+        ?.focus({ preventScroll: true });
+      return;
+    }
+  }
+
   private toggleRow(
     label: string,
     hint: string,
@@ -244,7 +255,7 @@ export class SettingsPanel extends Dialog {
       class: 'row row-wrap',
       attrs: { role: 'radiogroup', 'aria-label': label },
     });
-    for (const choice of choices) {
+    for (const [index, choice] of choices.entries()) {
       const active = choice.value === value;
       const node = button(
         choice.label,
@@ -256,6 +267,15 @@ export class SettingsPanel extends Dialog {
       );
       node.setAttribute('role', 'radio');
       node.setAttribute('aria-checked', String(active));
+      node.addEventListener('keydown', (event) => {
+        const next = nextRadioIndex(index, event.key, choices.length);
+        if (next === null) return;
+        event.preventDefault();
+        event.stopPropagation();
+        // Keep the button's existing settings update, sound and heading-focus guard.
+        group.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next]?.click();
+        this.focusRadioChoice(label);
+      });
       group.appendChild(node);
     }
 

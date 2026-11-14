@@ -11,6 +11,7 @@ import type { App } from '../App';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
+import { blockedStorageNote } from './saveNotes';
 import { savedWhen, slotLines } from './slotText';
 import type { SlotId } from '../storage/localSaves';
 import {
@@ -55,7 +56,7 @@ export class SaveMenu extends Dialog {
       body.appendChild(
         el('p', {
           class: 'warn-note',
-          text: 'This browser is blocking site data, so slots are unavailable. Export to a file instead.',
+          text: blockedStorageNote(this.app.state !== null),
         }),
       );
     }
