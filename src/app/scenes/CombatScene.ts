@@ -124,6 +124,7 @@ import {
   combatTipEvents,
   combatTipFeatures,
   firstFightStage,
+  isGuidedFight,
   nextFirstFightStage,
   unseenCombatTips,
   type CombatTipFeature,
@@ -483,7 +484,9 @@ export class CombatScene implements Scene {
     this.syncPresentationClock();
     this.host = host;
     if (this.app.state)
-      this.queueCombatTips(combatTipFeatures(this.app.state, this.app.content.props));
+      this.queueCombatTips(
+        combatTipFeatures(this.app.state, this.app.content.props, this.app.content.encounters),
+      );
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     const approach = this.freshBattleEntry
       ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
@@ -1448,7 +1451,7 @@ export class CombatScene implements Scene {
     if (
       !this.app.settings?.combatGuidance ||
       battle.phase !== 'active' ||
-      battle.encounterId === 'enc_forest_road'
+      isGuidedFight(battle, this.app.content.encounters)
     ) {
       this.guidanceTipQueue = [];
       if (this.guidanceTipTimer != null && typeof window !== 'undefined')
@@ -2008,7 +2011,9 @@ export class CombatScene implements Scene {
    */
   private guideStage(): number | null {
     const stage =
-      this.app.settings?.combatGuidance && this.app.state ? firstFightStage(this.app.state) : null;
+      this.app.settings?.combatGuidance && this.app.state
+        ? firstFightStage(this.app.state, this.app.content.encounters)
+        : null;
     const unit = stage === 1 ? this.active() : undefined;
     const battle = this.battle();
     const content = this.app.content;
@@ -2083,7 +2088,7 @@ export class CombatScene implements Scene {
     before: GameState | null,
   ): void {
     if (!before || !this.app.settings.combatGuidance) return;
-    const stage = firstFightStage(before);
+    const stage = firstFightStage(before, this.app.content.encounters);
     if (stage === null) return;
     const next = nextFirstFightStage(stage, command, events, before);
     if (next !== null) {
@@ -2099,7 +2104,7 @@ export class CombatScene implements Scene {
       !state ||
       !state.battle ||
       state.battle.phase !== 'active' ||
-      state.battle.encounterId === 'enc_forest_road' ||
+      isGuidedFight(state.battle, this.app.content.encounters) ||
       !this.app.settings?.combatGuidance
     )
       return;
@@ -2129,7 +2134,7 @@ export class CombatScene implements Scene {
       !this.host ||
       !state?.battle ||
       state.battle.phase !== 'active' ||
-      state.battle.encounterId === 'enc_forest_road' ||
+      isGuidedFight(state.battle, this.app.content.encounters) ||
       this.guidanceTipQueue.length === 0
     ) {
       this.guidanceTipQueue = [];
