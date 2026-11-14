@@ -55,7 +55,7 @@ test('names typed after the suggested party appear on the hand-off card only', a
     .getByRole('textbox', { name: 'Player 3 name', exact: true })
     .fill('<b>Theo</b> the Tremendous');
   await page.getByRole('button', { name: 'Start', exact: true }).click();
-  await page.waitForFunction(() => window.fnt?.app.state?.story.nodeId === 'act1_open');
+  await page.waitForFunction(() => window.fnt?.app.state?.story.nodeId === 'prologue_storm');
 
   const session = await page.evaluate(() => ({
     participants: window.fnt!.app.session.participants,
@@ -82,7 +82,7 @@ test('Skip starts the game with the hand-off card it always had', async ({ page 
   await newTable(page, 2);
   await page.getByRole('textbox', { name: 'Player 1 name', exact: true }).fill('Ignored');
   await page.getByRole('button', { name: 'Skip', exact: true }).click();
-  await page.waitForFunction(() => window.fnt?.app.state?.story.nodeId === 'act1_open');
+  await page.waitForFunction(() => window.fnt?.app.state?.story.nodeId === 'prologue_storm');
   expect(await page.evaluate(() => window.fnt!.app.session.participants)).toEqual([
     { id: 'player-1', name: 'Player 1' },
     { id: 'player-2', name: 'Player 2' },

@@ -91,7 +91,7 @@ export const CONTENT: ContentIndex = {
   universalAbilities: CORE_INDEX.universalAbilities,
 };
 
-export { STORY_ENTRY } from './entry';
+export { STORY_ENTRY, STORY_PROLOGUE } from './entry';
 
 export {
   CHARACTERS,

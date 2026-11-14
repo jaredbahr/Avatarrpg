@@ -34,6 +34,96 @@
   background: var(--c-bg-deep);
 }
 
+/*
+ * Placeholder stills (C-28) until the art batch paints them: simple shapes in
+ * the palette, nothing legible and no faces. `.interlude-card-<card>` matches
+ * `INTERLUDE_CARDS` in `src/content/story/interludes.ts`.
+ */
+.interlude-card {
+  --card-deep: color-mix(in srgb, var(--c-bg-deep) 88%, var(--c-water));
+  --card-water: color-mix(in srgb, var(--c-water) 45%, var(--c-bg-deep));
+  --card-glint: color-mix(in srgb, var(--c-water-soft) 55%, transparent);
+  background: var(--card-deep);
+}
+
+.interlude-card-rain {
+  background:
+    repeating-linear-gradient(
+      100deg,
+      transparent 0 1.6rem,
+      color-mix(in srgb, var(--c-water-soft) 22%, transparent) 1.6rem 1.7rem
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--c-ink-dim) 30%, var(--card-deep)) 0 18%,
+      var(--card-deep) 18%
+    );
+}
+
+.interlude-card-flood {
+  background:
+    radial-gradient(
+      30% 22% at 50% 22%,
+      color-mix(in srgb, var(--c-gold-soft) 45%, transparent),
+      transparent
+    ),
+    linear-gradient(180deg, var(--card-deep) 0 56%, var(--card-water) 56% 100%);
+}
+
+.interlude-card-alarm {
+  background:
+    radial-gradient(
+      14% 22% at 22% 30%,
+      color-mix(in srgb, var(--c-danger) 70%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      10% 16% at 52% 34%,
+      color-mix(in srgb, var(--c-danger) 50%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      7% 11% at 76% 37%,
+      color-mix(in srgb, var(--c-danger) 32%, transparent),
+      transparent
+    ),
+    linear-gradient(180deg, var(--card-deep) 0 64%, var(--card-water) 64% 100%);
+}
+
+.interlude-card-valve {
+  background:
+    radial-gradient(
+      circle at 50% 46%,
+      transparent 0 7%,
+      var(--c-ink-faint) 7% 9%,
+      transparent 9% 24%,
+      var(--c-ink-dim) 24% 27%,
+      transparent 27%
+    ),
+    linear-gradient(180deg, var(--card-deep) 0 70%, var(--card-water) 70% 100%);
+}
+
+.interlude-card-ripple {
+  background:
+    radial-gradient(
+      ellipse 34% 12% at 50% 66%,
+      transparent 0 88%,
+      var(--card-glint) 90% 93%,
+      transparent 95%
+    ),
+    radial-gradient(
+      ellipse 18% 6% at 50% 66%,
+      transparent 0 82%,
+      var(--card-glint) 85% 92%,
+      transparent 95%
+    ),
+    linear-gradient(180deg, var(--card-deep) 0 40%, var(--card-water) 40% 100%);
+}
+
+.interlude-card-black {
+  background: var(--c-bg-deep);
+}
+
 .interlude-caption {
   position: absolute;
   z-index: 1;
