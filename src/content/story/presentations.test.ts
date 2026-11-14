@@ -206,4 +206,48 @@ describe('world conversation presentations', () => {
     );
     expect(problems).toContain('story presentation "missing_node" points to a missing story node');
   });
+
+  it('reads a presentation the node declares itself, and rejects declaring it twice', () => {
+    const registered = CONTENT_BUNDLE.story.find((node) => node.id === 'mira_intro');
+    if (registered?.kind !== 'dialogue') throw new Error('mira_intro moved');
+    const { mira_intro: _entry, ...rest } = STORY_PRESENTATIONS;
+    const declared: StoryNode = {
+      ...registered,
+      presentation: { mapId: 'ba_dan_village', stage: { npc: 'nobody_here' } },
+    };
+    const story = CONTENT_BUNDLE.story.map((node) => (node.id === 'mira_intro' ? declared : node));
+    const deferred = new Set(placeholderProblems());
+    expect(
+      validateStoryPresentations(rest, story, CONTENT_BUNDLE.maps).filter(
+        (problem) => !deferred.has(problem),
+      ),
+    ).toEqual([
+      'story presentation "mira_intro" stages unknown npc "nobody_here" on "ba_dan_village"',
+    ]);
+    expect(validateStoryPresentations(STORY_PRESENTATIONS, story, CONTENT_BUNDLE.maps)).toContain(
+      'story presentation "mira_intro" is declared on the node and registered',
+    );
+
+    const content = {
+      ...CONTENT,
+      story: new Map([
+        ...CONTENT.story,
+        [
+          'region_hello',
+          {
+            ...registered,
+            id: 'region_hello',
+            presentation: { mapId: 'forest_road' },
+          } as StoryNode,
+        ],
+      ]),
+    };
+    expect(worldConversationFor(content, conversation('region_hello', 'forest_road'))).toEqual({
+      kind: 'world',
+      mapId: 'forest_road',
+    });
+    expect(worldConversationFor(content, conversation('region_hello', 'ba_dan_village'))).toBe(
+      undefined,
+    );
+  });
 });

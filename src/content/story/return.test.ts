@@ -129,13 +129,14 @@ describe('the authored walk home', () => {
 
     let card = welcomed;
     const speakers: string[] = [];
-    for (let count = 0; card.screen === 'dialogue' && count < 12; count++) {
+    for (let count = 0; card.screen === 'dialogue' && count < 30; count++) {
       const node = CONTENT.story.get(card.story.nodeId ?? '');
       if (node?.kind === 'dialogue' && !speakers.includes(node.speaker))
         speakers.push(node.speaker);
       card = advanceDialogue(CONTENT, card).state;
     }
-    expect(speakers).toEqual(['Elder Mira', 'Gao the Shopkeeper', 'Gate Guard Dorin']);
+    // Then the narrator: the supper and the boot, and Bo-shan taking the reins.
+    expect(speakers).toEqual(['Elder Mira', 'Gao the Shopkeeper', 'Gate Guard Dorin', 'Ba Dan']);
     expect(card.screen).toBe('ended');
     expect(card.story.nodeId).toBe('demo_complete');
 

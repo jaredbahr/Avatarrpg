@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { CONTENT_BUNDLE } from '../index';
 import { ACT1_NODES } from './act1';
 import { STORY_ENTRY, STORY_PROLOGUE } from '../entry';
 import {
@@ -13,10 +14,14 @@ import {
 describe('illustrated story continuity', () => {
   for (const [id, scene] of Object.entries(INTERLUDES)) {
     it(`${id} covers every authored line with shipped art`, () => {
-      const node = ACT1_NODES.find((candidate) => candidate.id === id);
+      const node = CONTENT_BUNDLE.story.find((candidate) => candidate.id === id);
       expect(node && (node.kind === 'dialogue' || node.kind === 'end')).toBe(true);
       if (!node || (node.kind !== 'dialogue' && node.kind !== 'end')) return;
       expect(scene.shots).toHaveLength(node.lines.length + (node.kind === 'end' ? 1 : 0));
+      // A variant swaps the words, never the number of stills.
+      if (node.kind === 'dialogue')
+        for (const variant of node.variants ?? [])
+          expect(variant.lines).toHaveLength(node.lines.length);
       for (const shot of scene.shots) {
         const art = INTERLUDE_ART[shot];
         // A placeholder card is drawn by the stylesheet; a painting must ship.
@@ -28,7 +33,7 @@ describe('illustrated story continuity', () => {
 
   it('holds the outpost reveal until the final teaser in either ending', () => {
     for (const [id, scene] of Object.entries(INTERLUDES)) {
-      const node = ACT1_NODES.find((candidate) => candidate.id === id);
+      const node = CONTENT_BUNDLE.story.find((candidate) => candidate.id === id);
       if (node?.kind === 'end') {
         expect(scene.shots.at(-1)).toBe('bay');
         expect(scene.shots.slice(0, -1)).not.toContain('bay');
@@ -39,7 +44,7 @@ describe('illustrated story continuity', () => {
   it('never shows liberation on the loss route or interrupts a choice', () => {
     expect(INTERLUDES.act1_epilogue_lost?.shots).not.toContain('rescue');
     expect(INTERLUDES.act1_epilogue?.shots).toContain('rescue');
-    for (const node of ACT1_NODES.filter((candidate) => candidate.kind === 'choice')) {
+    for (const node of CONTENT_BUNDLE.story.filter((candidate) => candidate.kind === 'choice')) {
       expect(INTERLUDES[node.id]).toBeUndefined();
     }
   });
