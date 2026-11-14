@@ -5,9 +5,15 @@ import { apply } from '../src/core/state/reducer';
 import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
 import type { LargeText } from './helpers';
 
-// The owner reproduced #664 on an iPad landscape viewport. Chromium supplies
-// coding coverage here; physical iPad/Safari acceptance remains separate.
-test.use({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2 });
+// The owner reproduced #664 on an iPad landscape viewport; an iPad held
+// upright has to fit the same vote too. Chromium supplies coding coverage
+// here; physical iPad/Safari acceptance remains separate. Phones scroll the
+// vote, which e2e/long-conversation-layout.spec.ts covers.
+test.use({ deviceScaleFactor: 2 });
+const VIEWPORTS = [
+  { name: '', size: { width: 1180, height: 820 } },
+  { name: ' upright', size: { width: 820, height: 1180 } },
+] as const;
 
 /** Measure before any option click can scroll its clipped answer into view. */
 async function expectVoteFits(page: Page, phase: string): Promise<void> {
@@ -19,7 +25,9 @@ async function expectVoteFits(page: Page, phase: string): Promise<void> {
     };
     const controls = [
       ...element.querySelectorAll(
-        '.vote-banner, .vote-banner > *, .choice-option, .choice-option > *',
+        // The speaker stays in view beside the prompt, so the table knows who asks.
+        '.conversation-compact-head, .conversation-compact-speaker strong, ' +
+          '.vote-banner, .vote-banner > *, .choice-option, .choice-option > *',
       ),
     ].map((node) => {
       const clips = [];
@@ -109,68 +117,78 @@ async function expectVoteFits(page: Page, phase: string): Promise<void> {
   }
 }
 
-for (const size of ['off', 'on', 'huge'] as const satisfies readonly LargeText[]) {
-  for (const kind of ['gate', 'chair', 'custody'] as const) {
-    test(`${kind} table vote fits every step at ${size} text`, async ({ page }) => {
-      await resetStorage(page, '?renderer=canvas');
-      const names = kind === 'custody' ? ['Ava', 'Ben'] : ['Ava', 'Ben', 'Cleo'];
-      await startGame(page, names, ['kaya', 'nilak', 'riko'], 'vote-layout', {
-        storyChoices: 'vote',
-      });
-      await setLargeText(page, size);
-      expect(await page.evaluate(() => window.fnt!.app.settings.largeText)).toBe(size);
-      await enterNode(page, kind === 'chair' ? 'village_explore' : 'gate_escort_explore');
-      const node =
-        kind === 'gate' ? 'gate_parley' : kind === 'chair' ? 'plant_chair_talk' : 'ruon_choice';
-      await enterNode(page, node);
-      const panel = page.locator('.choice-panel');
-      await expect(panel).toHaveClass(
-        kind === 'custody'
-          ? /choice-panel(?!.*conversation-panel-compact)/
-          : /conversation-panel-compact/,
-      );
-      await expect(page.locator('.stage[data-kind="choice"]')).toHaveCount(
-        kind === 'custody' ? 1 : 0,
-      );
-      const before = await page.evaluate(() => window.fnt!.app.state!);
-      const sessionBefore = await page.evaluate(() => window.fnt!.app.session.toMeta());
-      const picks = kind === 'gate' ? [0, 1, 0] : kind === 'chair' ? [0, 1, 2] : [0, 1];
-      for (let voter = 0; voter < names.length; voter++) {
-        await expect(panel).toHaveAttribute('data-vote', 'pick');
-        await expect(panel.locator('.choice-option')).toHaveCount(kind === 'custody' ? 2 : 3);
-        await expect(panel.locator('.vote-names')).toHaveCount(0);
-        await expect(panel.locator('.vote-banner strong')).toHaveText(names[voter] + ', your pick');
-        if (kind === 'gate') await expect(panel.locator('.choice-option').nth(2)).toBeDisabled();
-        await expectVoteFits(page, 'pick-' + (voter + 1));
-        await panel.locator('.choice-option').nth(picks[voter]!).tap();
-        if (voter < names.length - 1) {
-          await expect(panel).toHaveAttribute('data-vote', 'pass');
-          await expect(panel.locator('.choice-option')).toHaveCount(0);
-          const ready = panel.getByRole('button', { name: "I'm ready", exact: true });
-          await expect(ready).toBeFocused();
-          await expectVoteFits(page, 'pass-' + (voter + 1));
-          await ready.tap();
-        }
+for (const view of VIEWPORTS) {
+  test.describe(() => {
+    test.use({ viewport: view.size });
+    for (const size of ['off', 'on', 'huge'] as const satisfies readonly LargeText[]) {
+      for (const kind of ['gate', 'chair', 'custody'] as const) {
+        test(`${kind} table vote fits every step at ${size} text${view.name}`, async ({ page }) => {
+          await resetStorage(page, '?renderer=canvas');
+          const names = kind === 'custody' ? ['Ava', 'Ben'] : ['Ava', 'Ben', 'Cleo'];
+          await startGame(page, names, ['kaya', 'nilak', 'riko'], 'vote-layout', {
+            storyChoices: 'vote',
+          });
+          await setLargeText(page, size);
+          expect(await page.evaluate(() => window.fnt!.app.settings.largeText)).toBe(size);
+          await enterNode(page, kind === 'chair' ? 'village_explore' : 'gate_escort_explore');
+          const node =
+            kind === 'gate' ? 'gate_parley' : kind === 'chair' ? 'plant_chair_talk' : 'ruon_choice';
+          await enterNode(page, node);
+          const panel = page.locator('.choice-panel');
+          await expect(panel).toHaveClass(
+            kind === 'custody'
+              ? /choice-panel(?!.*conversation-panel-compact)/
+              : /conversation-panel-compact/,
+          );
+          await expect(page.locator('.stage[data-kind="choice"]')).toHaveCount(
+            kind === 'custody' ? 1 : 0,
+          );
+          const before = await page.evaluate(() => window.fnt!.app.state!);
+          const sessionBefore = await page.evaluate(() => window.fnt!.app.session.toMeta());
+          const picks = kind === 'gate' ? [0, 1, 0] : kind === 'chair' ? [0, 1, 2] : [0, 1];
+          for (let voter = 0; voter < names.length; voter++) {
+            await expect(panel).toHaveAttribute('data-vote', 'pick');
+            await expect(panel.locator('.choice-option')).toHaveCount(kind === 'custody' ? 2 : 3);
+            await expect(panel.locator('.vote-names')).toHaveCount(0);
+            await expect(panel.locator('.vote-banner strong')).toHaveText(
+              names[voter] + ', your pick',
+            );
+            if (kind === 'gate')
+              await expect(panel.locator('.choice-option').nth(2)).toBeDisabled();
+            await expectVoteFits(page, 'pick-' + (voter + 1));
+            await panel.locator('.choice-option').nth(picks[voter]!).tap();
+            if (voter < names.length - 1) {
+              await expect(panel).toHaveAttribute('data-vote', 'pass');
+              await expect(panel.locator('.choice-option')).toHaveCount(0);
+              const ready = panel.getByRole('button', { name: "I'm ready", exact: true });
+              await expect(ready).toBeFocused();
+              await expectVoteFits(page, 'pass-' + (voter + 1));
+              await ready.tap();
+            }
+          }
+          // Casting votes is presentation-only until the table confirms its answer.
+          expect(await page.evaluate(() => window.fnt!.app.state!)).toEqual(before);
+          expect(await page.evaluate(() => window.fnt!.app.session.toMeta())).toEqual(
+            sessionBefore,
+          );
+          const result = kind === 'gate' ? 'result' : 'tie';
+          await expect(panel).toHaveAttribute('data-vote', result);
+          await expectVoteFits(page, result);
+          if (kind === 'gate') {
+            await expect(panel.locator('.choice-option.is-winner')).toHaveCount(1);
+            await expect(panel.locator('.choice-option.is-winner')).toContainText('Ava, Cleo');
+            const go = panel.getByRole('button', { name: 'Continue', exact: true });
+            await expect(go).toBeFocused();
+            await go.tap();
+          } else {
+            await expect(panel.locator('.choice-option.is-tied')).toHaveCount(names.length);
+            await panel.locator('.choice-option').first().tap();
+          }
+          expect(await page.evaluate(() => window.fnt!.app.state!.story)).toEqual(
+            apply(CONTENT, before, { type: 'chooseOption', optionIndex: 0 }).state.story,
+          );
+        });
       }
-      // Casting votes is presentation-only until the table confirms its answer.
-      expect(await page.evaluate(() => window.fnt!.app.state!)).toEqual(before);
-      expect(await page.evaluate(() => window.fnt!.app.session.toMeta())).toEqual(sessionBefore);
-      const result = kind === 'gate' ? 'result' : 'tie';
-      await expect(panel).toHaveAttribute('data-vote', result);
-      await expectVoteFits(page, result);
-      if (kind === 'gate') {
-        await expect(panel.locator('.choice-option.is-winner')).toHaveCount(1);
-        await expect(panel.locator('.choice-option.is-winner')).toContainText('Ava, Cleo');
-        const go = panel.getByRole('button', { name: 'Continue', exact: true });
-        await expect(go).toBeFocused();
-        await go.tap();
-      } else {
-        await expect(panel.locator('.choice-option.is-tied')).toHaveCount(names.length);
-        await panel.locator('.choice-option').first().tap();
-      }
-      expect(await page.evaluate(() => window.fnt!.app.state!.story)).toEqual(
-        apply(CONTENT, before, { type: 'chooseOption', optionIndex: 0 }).state.story,
-      );
-    });
-  }
+    }
+  });
 }

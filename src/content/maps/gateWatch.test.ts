@@ -5,6 +5,8 @@ import { visibleNpcs } from '../../core/story/world';
 import { buildGrid, tileAt } from '../../core/rules/grid';
 import type { GameState } from '../../core/types';
 import { GATE_WATCHERS } from './gateWatch';
+import { TOPDOWN_KEYS, topdownSheet } from '../assets/manifest';
+import { headingClip } from '../assets/clips';
 
 function game(): GameState {
   return createGame(CONTENT, {
@@ -77,5 +79,23 @@ describe('the quarry gate watchers (#696)', () => {
         'gate_return_explore',
       ]),
     ).toEqual([]);
+  });
+
+  it('face the party coming up to the gate, on their own top-down idle', () => {
+    // The parley is read with the leader on (8, 5), below the wall: due south of
+    // the hauler and a little east of south from the worker.
+    const party = { x: 8, y: 5 };
+    for (const watcher of GATE_WATCHERS) {
+      expect(watcher.faces).toBe('south');
+      const pos = watcher.pos;
+      expect(pos).toBeDefined();
+      if (!pos) continue;
+      expect(party.y - pos.y).toBeGreaterThan(2 * Math.abs(party.x - pos.x) - 1);
+      const sheet = TOPDOWN_KEYS[watcher.sprite];
+      expect(sheet).toBeDefined();
+      if (!sheet) continue;
+      const entry = topdownSheet(sheet[0], watcher.sprite, sheet[1]);
+      expect(entry.clips[headingClip('idle', 'south')]?.frames.length).toBeGreaterThan(0);
+    }
   });
 });

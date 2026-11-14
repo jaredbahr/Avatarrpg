@@ -10,22 +10,33 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
-## Current goal: a playable demo, Ba Dan to the quarry and back (owner, 2026-11-11)
+## Current goal: an internal technical demo, Ba Dan to the quarry and back (owner, 2026-11-11; reframed 2026-11-14)
 
-Everything on the route (Ba Dan, the Forest Road, the quarry gate, the Cutting, the Driller and the walk home) runs
-in the top-down style, the default since T6. The owner's direction for finishing it:
+The game is meant to be an **epic, long saga with beautiful storytelling** (think Final Fantasy) that the owner plays
+with his son, his family and a few friends. It is not for the public. The demo route (Ba Dan, the Forest Road, the
+quarry gate, the Cutting, the Driller and the walk home) is an **internal technical demo**: its job is to prove that
+the owner and Claude have a workflow good enough to build the whole game, region after region. Judge work by
+"would this hold up across forty hours of game", not by "would a stranger get it in ten minutes".
 
-- **Audience:** a playable link people open on their own device (the GitHub Pages build). The
-  first ten minutes must hold up for a stranger: onboarding, saves and what-to-do-next are part of the demo.
-- **Device:** tuned first for **iPad, landscape**: tap targets, camera zoom, text size and the HUD.
-- **What "finished" means:** **combat juice** (an action clip per heading and ability, impact effects, projectiles,
-  hit-stop, the follow camera) and **story presentation** (dialogue, portraits, scene transitions, and the walk
-  home landing as an ending).
-- **One style:** top-down is the only style (T6 made it the default; T7 is deleting the oblique art and code).
-  Don't spend effort on oblique-only paths.
-- **Players:** families and tactics fans, layered: easy to pick up for kids (about 7–12), with depth (combos, a
-  harder difficulty) for experienced players. Usually **3–4 players** share the iPad, so whose turn it is and the
-  hand-offs must always be clear.
+- **What the demo must prove before new regions start:**
+  - **Content pipeline:** a new region (map, NPCs, story, fights) is built mostly as data in `src/content/`, quickly,
+    without touching `src/core/`.
+  - **Art pipeline:** characters, maps, portraits and animations come out consistent and on-model every time, at a
+    known PixelLab cost per region.
+  - **Story workflow:** the owner writes or approves story beats and Claude turns them into scenes, choices and
+    dialogue reliably, keeping a long-running plot, its characters and its flags consistent.
+  - **Scale and saves:** the engine loads per area rather than as one ever-growing bundle, and saves survive years of
+    updates (migrations, never a wiped campaign).
+- **Players and devices:** the owner's family on **one shared tablet** (hot-seat; iPad landscape first), so whose turn
+  it is and the hand-offs must always be clear. For friends far away the owner plans to run it on his **PC and share it
+  through Steam Remote Play**, so a PC window with mouse and keyboard must work too.
+- **Polish is family-level only:** keep what helps the kids play (clear turns, big text, tap targets, forgiving
+  difficulty). Stranger onboarding, public-release polish and a public link are not goals.
+- **What "finished" means for the demo:** **combat juice** (an action clip per heading and ability, impact effects,
+  projectiles, hit-stop, the follow camera) and **story presentation** (dialogue, portraits, scene transitions, and the
+  walk home landing as an ending).
+- **One style:** top-down is the only style (ADR 0104 T6, T7).
+- **Players' ages:** easy to pick up for kids (about 7–12), with depth (combos, a harder difficulty) for the adults.
 - **Tone:** a warm adventure, with humour and friendship and real stakes but nothing grim. Bandits are people with
   reasons (`docs/writing-guide.md`).
 - **Difficulty:** forgiving by default (most first-time players win if they try), plus a harder option.
@@ -33,12 +44,10 @@ in the top-down style, the default since T6. The owner's direction for finishing
   (#620).
 - **Story choices:** a table vote, with ties going to the rotating decider (#621).
 - **Combos:** hinted first ("something here reacts to fire"), then named and shown openly once discovered (#622).
-- **Length:** one play-through of the demo takes about 30–40 minutes; trim any fight that drags past about 6.
-- **First ten minutes:**
-  - Party setup offers a one-tap suggested party (Kaya, Sura, Bo), with "Choose your own" for the full roster.
-  - The Forest Road ambush is a guided first fight (move, attack, end turn), then lets go. Later fights only show a
-    tip when something new appears.
-  - The game autosaves at every scene and fight start, the title shows Continue, and manual slots stay in the menu.
+- **Fight length:** trim any fight that drags past about 6 minutes.
+- **Starting a game:** party setup offers a one-tap suggested party (Kaya, Sura, Bo), with "Choose your own" for the
+  full roster and optional player names. The game autosaves at every scene and fight start, and the title shows
+  Continue. The title menu stays as it is (owner, 2026-11-14).
 - **Effects:** punchy but readable: strong impact frames, a small shake, hit-stop and bold elemental bursts, never
   covering who got hit or the damage number.
 - **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
@@ -50,8 +59,7 @@ in the top-down style, the default since T6. The owner's direction for finishing
   the B description with the character's own features, seed 11); each is checked at 3x before it ships. A portrait
   fix or new portrait made with that recipe merges on the orchestrator's 3x check without waiting for the owner, and
   the result is sent to him afterwards (owner, 2026-11-13).
-- **After the demo:** release polish (install to home screen, saves, settings, accessibility, performance) before
-  new content or regions.
+- **After the demo:** prove the four pipelines above on a real next region, then build the saga region by region.
 
 ## Current state: top-down art direction (read first, 2026-11-05)
 
