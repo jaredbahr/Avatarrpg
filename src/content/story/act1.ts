@@ -283,7 +283,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
         lines: [
           'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
-          'Dorin is taking Ruon’s statement. Bring me the maker-plate rubbing too; I’ll attach both to the province report.',
+          'Dorin is taking Ruon’s statement for the hearing. Bring me the maker-plate rubbing too.',
           'You can stay too. Gao has food ready, and I will find you a bed.',
         ],
       },
@@ -291,8 +291,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
         lines: [
           'Bo-shan and all four messengers are home. Thank you for bringing them out.',
-          'I wish Ruon were here to answer their questions. I will write to the province and ask where Jin delivered him.',
-          'Bring me the maker-plate rubbing too; the province should know what the quarry was running. For now, go and eat.',
+          'I wish Ruon were here to answer their questions. I will ask at every office on the coast road where Jin took him, until one of them tells me.',
+          'Bring me the maker-plate rubbing too. For now, go and eat.',
         ],
       },
     ],
@@ -309,7 +309,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'Is that the rubbing? Hold that corner flat for me.',
-      'Republic City. Somebody paid to bring that machine a long way. It goes in the report, and the province can tell me who.',
+      'Republic City. Somebody paid to bring that machine a long way, and nobody in Ba Dan was asked.',
+      'The province can have a copy. This one stays here until I know who paid.',
     ],
     next: 'mira_rubbing_given',
   },
@@ -325,7 +326,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'The rubbing is folded into the province report. Dorin asked to copy the maker’s mark into his watch book first.',
+      'The rubbing is pinned up inside my door. The province has a copy. Dorin copied the maker’s mark into his watch book first.',
       'Go and eat. Gao has kept bowls for you.',
     ],
     next: 'village_return_explore',
@@ -983,7 +984,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
       'You pull the bars from the gallery doors. Leto, Amri, Hesra and Senn come out first, then the crews. Bo-shan follows them and asks where Pella is.',
-      'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
+      'The driller bears a Republic City maker’s plate. Sealed crates wait beside it for loading, under a stencil none of the workers know. You take a rubbing of the plate for Mira.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
     // The cart's delivery book, the party-neutral reason to keep going (reasons.ts).

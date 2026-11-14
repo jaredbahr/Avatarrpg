@@ -139,7 +139,8 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     mapId: 'quarry_floor',
     title: 'The maker’s plate',
     hint: 'Look the driller over once it stops moving.',
-    found: 'The driller carries a maker’s plate. Took a rubbing for Mira’s report to the province.',
+    found:
+      'The driller carries a Republic City maker’s plate. The crates beside it bore a stencil none of the workers knew. Took a rubbing of the plate for Mira.',
     when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
 ];
