@@ -1,10 +1,11 @@
 # Four Nations Tactics: Echoes of Stillwater — saga outline
 
-**Status: decided by the owner in interactive review on 2026-11-14 and recorded in
-[story-bible.md](story-bible.md#the-saga-outline-2026-11-14).** This page sharpens the approved canon ([`docs/story/the-common-current-bible.md`](story/the-common-current-bible.md),
-reconciled in [`docs/story-bible.md`](story-bible.md), both from PR #735). It keeps the canon's premise, regions,
-core cast, endings and reveal ladder, and adds the decisions below. `docs/story-bible.md` lists them in short
-under its owner decisions; this page holds the full record.
+**Status: approved by the owner, 2026-11-14,** with this title, all 24 decisions, the beat outline and the
+writing standard, and recorded in [story-bible.md](story-bible.md#owner-decisions-2026-11-14-saga-outline). This
+page sharpens the approved canon ([`docs/story/the-common-current-bible.md`](story/the-common-current-bible.md),
+reconciled in [`docs/story-bible.md`](story-bible.md); both merged in PR #735). It keeps the canon's premise,
+regions, core cast, endings and reveal ladder, and adds the decisions below. `docs/story-bible.md` lists them in
+short under its owner decisions; this page holds the full record.
 
 ## The story in one breath
 
