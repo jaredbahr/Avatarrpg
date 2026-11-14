@@ -64,7 +64,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   // Publish a diagnostic report promptly after a reproducible failure.
   // A successful run still executes the complete suite.
-  maxFailures: process.env.CI ? 1 : 0,
+  maxFailures: 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: ORIGIN,
