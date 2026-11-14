@@ -119,6 +119,19 @@ other region's chunk (`assets/region-<folder>-*`) and art are left out of the pr
 every region, which is simpler but grows the install with the saga. This is follow-up work; the
 demo, a single start region, needs none of it.
 
+**Implemented (2026-11-14).** `scripts/region-cache.mjs` derives everything from the region list, so a
+new region needs no edit: `PRECACHE_IGNORES` gains `assets/region-<folder>-*.js` (folder = the
+camelCased id) and `<scene folder>/**` for every region but the start region, workbox gets one
+`runtimeCaching` route (`CacheFirst`, matching those chunks and art folders) and the asset budget's
+precache total follows the same list. No message from `RegionStore` is needed: it imports the chunk
+and reads the scenes, and the worker caches what those fetches return, so the cache fills on the
+first visit. The cache is named for the build (`fnt-regions-<version>-<revision>`) and
+`region-cache-cleanup.js`, imported by the worker, deletes every older `fnt-regions-*` cache on
+activate; a hashed chunk would be safe alone, but scenes keep their names, so an update must not
+serve last build's. A later region is therefore fetched again once after an update. Music stays
+streamed: an `<audio>` element sends Range requests and a cached 206 cannot be kept. With one region
+the list is empty, so `sw.js` and the precache are unchanged.
+
 ### 4. Budgets (accepted by the owner, 2026-11-14)
 
 One total per kind grows with every region and would need raising each time. Instead: a budget for
