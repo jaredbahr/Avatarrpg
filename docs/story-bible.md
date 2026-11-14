@@ -6,6 +6,23 @@ every place where the two disagree as a work list, and records every gap filled 
 [Gap-fills approved 2026-11-14](#gap-fills-approved-2026-11-14). A new gap waits under
 [Proposed — awaiting owner](#proposed--awaiting-owner). It changes only with the owner's yes.
 
+## Core themes
+
+The game's core messages are **responsibility**, **belonging**, **balance**, **racial and social equality**,
+**equality among all people** and **respect for each other's differences** (owner, 2026-11-14). Bible Part 01
+§4–8 already defines them: responsibility (§4); equality, which covers equal worth, social and racial equality and
+nationality, element and occupation as separate facts (§5); balance (§6); and belonging, carried by the tone,
+agency and cooperation rules (§7–8). Two rules govern how a story carries them:
+
+1. **Subtle, never on the nose.** Themes come through what people do and the situations they face. No stated
+   morals, no lessons spelled out, no "what we learned" lines, no closing speech that names the theme. Trust the
+   players, including the kids aged 7–12 ([writing-guide.md](writing-guide.md#let-the-themes-stay-unspoken)).
+2. **A theme card per scene.** Every mission, side story or scene draft carries a short theme card: which themes
+   it carries and how, said through the action, plus a checklist (no nation, element or culture stereotype; a
+   real route for every valid party, non-benders included; no instant forgiveness; the other side's reasons
+   shown; the theme never stated; absent heroes never voiced). The template is in
+   [writing-guide.md](writing-guide.md#theme-card); a story PR fills it in the PR template.
+
 ## Order of authority
 
 1. **The owner's direct instructions**, including the decisions recorded below.
@@ -62,6 +79,11 @@ Read with:
 - **Community trust replaces nation standing** (question 10): trust held by specific communities (Ba Dan,
   Saltstep, the quarry workers, Commonworks and so on). Story lines read it; it never locks the main plot.
   `standing.nonbender` goes away. The engine, save and registry work is row C-25.
+
+### Themes
+
+- **The core themes and their two rules** (subtle, never on the nose; a theme card per scene) are recorded under
+  [Core themes](#core-themes) (owner, 2026-11-14).
 
 ### Canon names
 
@@ -468,6 +490,8 @@ Canon owns these (01 §7; Part 07; `writing-guide.md`); in short:
 9. **Fan-work and originality:** original names only, checked against the party, the cast, canon's NPC list,
    `identity.ts` and canon Avatar names; run the originality summary test (01 §3).
 10. **Gates** go through `Condition`, never a bare flag. Community trust is read by lines, never a main-plot lock.
+11. **Theme card:** every scene draft carries one ([Core themes](#core-themes); the template is in
+    [writing-guide.md](writing-guide.md#theme-card)), and nothing in the scene states its theme outright.
 
 ## Gap-fills approved 2026-11-14
 
