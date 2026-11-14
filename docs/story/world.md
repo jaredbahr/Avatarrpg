@@ -6,7 +6,7 @@
 
 Source: [world.ts](../../src/content/story/world.ts).
 
-12 nodes; 0 fights; 0 branches; 0 choices
+14 nodes; 0 fights; 0 branches; 0 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -16,38 +16,42 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `cutting_after_explore`
 
-12 owned nodes.
+14 owned nodes.
 
 ```mermaid
 flowchart TD
-  n12["cutting_after_explore<br/>Explore ambush_road: Follow the east path down to the quarry fl…"]:::entry
-  n13["cutting_explore<br/>Explore ambush_road: Explore the cutting with Ruon. Jin’s peopl…"]:::entry
-  n15["cutting_tea<br/>Sen: Cup? Mind the handle on the blue one. It comes off."]:::entry
-  n16["cutting_tea_again<br/>Sen: Back already? I've put fresh water on."]:::entry
-  n17["cutting_tea_shared<br/>Set flags"]
-  n30["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
-  n31["forest_dema<br/>Dema: Mind your feet. There are ducklings under that fern. Yes,…"]:::entry
-  n32["forest_dema_again<br/>Dema: She has brought the ducklings over. I suppose the washing…"]:::entry
-  n33["forest_ducks_seen<br/>Set flags"]
-  n34["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
-  n43["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
-  n48["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
+  n13["cutting_after_explore<br/>Explore ambush_road: Follow the east path down to the quarry fl…"]:::entry
+  n14["cutting_culvert<br/>The Cutting: The pool drains under the road through a culvert, …"]:::entry
+  n15["cutting_culvert_ripple<br/>The Cutting: The water ripples once. A breath later, it ripples…"]
+  n16["cutting_explore<br/>Explore ambush_road: Explore the cutting with Ruon. Jin’s peopl…"]:::entry
+  n18["cutting_tea<br/>Sen: Cup? Mind the handle on the blue one. It comes off."]:::entry
+  n19["cutting_tea_again<br/>Sen: Back already? I've put fresh water on."]:::entry
+  n20["cutting_tea_shared<br/>Set flags"]
+  n33["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
+  n34["forest_dema<br/>Dema: Mind your feet. There are ducklings under that fern. Yes,…"]:::entry
+  n35["forest_dema_again<br/>Dema: She has brought the ducklings over. I suppose the washing…"]:::entry
+  n36["forest_ducks_seen<br/>Set flags"]
+  n37["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
+  n46["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
+  n51["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
   n8["battle_ambush — exit to act1 / part 1"]:::external
   n9["battle_forest_road — exit to act1 / part 1"]:::external
-  n45["gate_parley — exit to act1 / part 1"]:::external
-  n82["quarry_descent — exit to act1 / part 1"]:::external
-  n12 -->|"Legacy/audit exit (live map exits differ)"| n82
-  n13 -->|"Legacy/audit exit (live map exits differ)"| n8
-  n15 -->|"Next"| n17
-  n16 -->|"Next"| n12
-  n17 -->|"set: world.tea_shared=true"| n12
-  n30 -->|"Legacy/audit exit (live map exits differ)"| n45
-  n31 -->|"Next"| n33
-  n32 -->|"Next"| n34
-  n33 -->|"set: world.ducks_seen=true"| n34
-  n34 -->|"Legacy/audit exit (live map exits differ)"| n9
-  n43 -->|"Legacy/audit exit (live map exits differ)"| n13
-  n48 -->|"Legacy/audit exit (live map exits differ)"| n12
+  n48["gate_parley — exit to act1 / part 1"]:::external
+  n85["quarry_descent — exit to act1 / part 1"]:::external
+  n13 -->|"Legacy/audit exit (live map exits differ)"| n85
+  n14 -->|"Next"| n15
+  n15 -->|"Next"| n13
+  n16 -->|"Legacy/audit exit (live map exits differ)"| n8
+  n18 -->|"Next"| n20
+  n19 -->|"Next"| n13
+  n20 -->|"set: world.tea_shared=true"| n13
+  n33 -->|"Legacy/audit exit (live map exits differ)"| n48
+  n34 -->|"Next"| n36
+  n35 -->|"Next"| n37
+  n36 -->|"set: world.ducks_seen=true"| n37
+  n37 -->|"Legacy/audit exit (live map exits differ)"| n9
+  n46 -->|"Legacy/audit exit (live map exits differ)"| n16
+  n51 -->|"Legacy/audit exit (live map exits differ)"| n13
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
