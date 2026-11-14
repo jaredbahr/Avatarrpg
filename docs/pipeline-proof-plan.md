@@ -173,7 +173,7 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 
 ### Plan: load per region
 
-- [ ] Split content into a **core bundle** (rules, abilities, party, shared UI) and **one data chunk per region**
+- [x] (ADR 0111 §2) Split content into a **core bundle** (rules, abilities, party, shared UI) and **one data chunk per region**
       (`import()` of the region manifest from section 1), loaded on entering the region and when a save is loaded.
 - [ ] Scenes, figures and portraits: load the current region's and its neighbours' instead of all at boot.
 - [ ] **Offline:** precache the core and the current region; runtime-cache the rest on first visit
