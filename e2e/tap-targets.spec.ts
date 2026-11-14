@@ -364,6 +364,10 @@ for (const viewport of [
       isMobile,
       page,
     }) => {
+      // Every screen from the title through a fight in one case: CI's iPad
+      // WebKit ran past the 60 s default mid-fight (main, 2026-11-14), while
+      // each step keeps its own wait, so a hang still fails.
+      test.setTimeout(180_000);
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await observeTargets(page);
       await resetStorage(page, '?renderer=canvas&titleArt=a&titleArtHold=0');
