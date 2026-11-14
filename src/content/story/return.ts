@@ -216,11 +216,11 @@ export const RETURN_STORY: readonly StoryNode[] = [
     speaker: 'Ba Dan',
     portrait: 'portrait.narrator',
     lines: [
-      'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. It takes four days to mend.',
+      'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. Gao and Bo-shan mend it by lamplight, and by morning it runs true.',
       'Gao finds an axle pin at the back of his shop. Leto, who drove the coast road before Mira hired him, rehangs the harness the coast way, and nobody argues.',
       'Bo-shan loads the cart himself, piled higher than anyone thinks is sensible.',
       'Amri brings him a letter for Saltstep, addressed to a street she has not lived on for five years. He tucks it under the seat.',
-      'He climbs up and takes the reins. Half the village has come to the east gate to see him off.',
+      'He climbs up and takes the reins. In the early light, half the village has come to the east gate to see him off.',
       'Pella has not. Her shutter is open the width of a hand.',
       'Bo-shan looks at the shutter for a long moment. Then he shakes the reins, and the ostrich horse leans into the harness.',
     ],
@@ -229,11 +229,11 @@ export const RETURN_STORY: readonly StoryNode[] = [
         // SQ-01's persistent change: he has learned to stack, mostly.
         when: SQ01_RESOLVED,
         lines: [
-          'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. It takes four days to mend.',
+          'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. Gao and Bo-shan mend it by lamplight, and by morning it runs true.',
           'Gao finds an axle pin at the back of his shop. Leto, who drove the coast road before Mira hired him, rehangs the harness the coast way, and nobody argues.',
           'Bo-shan loads the cart himself, low and even. Then he sets one enormous cabbage on the very top.',
           'Amri brings him a letter for Saltstep, addressed to a street she has not lived on for five years. He tucks it under the seat.',
-          'He climbs up and takes the reins. Half the village has come to the east gate to see him off.',
+          'He climbs up and takes the reins. In the early light, half the village has come to the east gate to see him off.',
           'Pella has not. Her shutter is open the width of a hand.',
           'Bo-shan looks at the shutter for a long moment. Then he shakes the reins, and the ostrich horse leans into the harness.',
         ],
