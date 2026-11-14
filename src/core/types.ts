@@ -494,6 +494,11 @@ export interface EncounterDef {
    * Hard profile's (`rules/difficulty.ts`). Story never reads it.
    */
   readonly hard?: Partial<DifficultyProfile>;
+  /**
+   * `firstFight`: the guided first fight. The app walks a new table through Move, an attack and End
+   * turn here, and holds back the general combat tips. Presentation only; no rule reads it.
+   */
+  readonly guidance?: 'firstFight';
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */

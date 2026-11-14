@@ -56,8 +56,9 @@ not ticked for them and should be brought up to date.
       look on the ability. Exit test: `grep` for map and encounter ids in `src/app` and `src/render` finds none.
       **Partly done (#767):** the courtyard soundscape, the practice ground and the Forest Road's arrival shot are
       map data (`MapDef.soundscape`, `practice`, `arrivalShot`), and `src/app/contentIdLiterals.test.ts` is the exit
-      test, with an allowlist that may only shrink. What it still lists is the guided first fight
-      (`enc_forest_road`); the projectile look is keyed by ability, not by map, and is unchanged.
+      test, with an allowlist that may only shrink. The guided first fight followed (#780: `EncounterDef.guidance`),
+      so the allowlist is empty and no map or encounter id is left in `src/app` or `src/render`. **Left:** the
+      projectile look (`SHOT_LOOKS` in `src/app/anim/choreography.ts`) is still keyed by ability id in app code.
 - [x] **Region template and generator** (#766): `npm run new:region -- <id> "<Name>"` writes
       `src/content/regions/<camelId>/` (manifest, content, layouts, a placeholder map with one NPC and a two-node
       story, every placeholder marked `TODO(region)`) and appends it to the three region lists; the result passes
