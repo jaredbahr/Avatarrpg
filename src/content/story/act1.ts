@@ -176,7 +176,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
       'My brother took vegetables up before Mira sent the others. Bo-shan. That makes five missing. He was supposed to be back on Tuesday.',
-      'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich-horse, so I would ask someone else.',
+      'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich horse, so I would ask someone else.',
       'Mira says “the missing people” every time. She could say his name. She knows his name.',
       "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
     ],

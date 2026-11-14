@@ -1007,7 +1007,7 @@ export class ExploreScene implements Scene {
       pos.y === 4 &&
       !state.story.visited.includes('road_depart');
     if (this.framingArrival) {
-      // Fit Dema and the party between the objective and dock, keeping whole
+      // Fit Lanfen and the party between the objective and dock, keeping whole
       // pixel zoom and the camera's normal minimum tile size.
       const { width, height, dpr } = camera.viewport;
       const tilePx = (Math.floor((height * dpr) / (4.25 * camera.tile)) * camera.tile) / dpr;

@@ -1,13 +1,13 @@
 /**
  * The identity register (ADR 0047 W0).
  *
- * Reserves the design-key namespace ('lw.npc.<slug>') for every named person
- * the living-world guide expects, whether or not they have a runtime NpcDef
- * yet. Slice A's living cast (Mira, Gao, Pella, Dorin, Hanru) gets its
- * resident ids in a later work item (W4a) — this register exists ahead of
- * that so `validateContent` can already reject content that reaches for an
- * excluded name, or that collides two design identities that must stay
- * distinct (guide §00.5).
+ * Reserves the design-key namespace ('lw.npc.<slug>') for named people the
+ * story expects, whether or not they have a runtime NpcDef yet. Slice A's
+ * living cast (Mira, Gao, Pella, Dorin, Hanru) gets its resident ids in a
+ * later work item (W4a) — this register exists ahead of that so
+ * `validateContent` can already reject content that reaches for an excluded
+ * name, or that collides two design identities that must stay distinct. The
+ * canon for each person is `docs/story-bible.md`.
  *
  * Slice B W2 releases the five returnees (Bo-shan, Leto, Amri, Hesra and Senn
  * the messenger) so a later per-person record may claim their keys. Nothing
@@ -16,11 +16,11 @@
  * `lw.npc.senn` key stays reserved but may never bind a record — the
  * messenger's one canonical key is `lw.npc.senn_messenger`.
  *
- * Today's `dema` and `rest_keeper` NpcDefs (`src/content/maps/world.ts`) wear
- * borrowed names and sprites as placeholders. They are not bound to any entry
- * here, and must never be: `dema` is not `lw.npc.dema_cook`, and
- * `rest_keeper` is not `lw.npc.sen_tea`. `FORBIDDEN_BINDINGS` below records
- * that for W4a, the work item that does the real binding.
+ * Today's `dema` NpcDef (`src/content/maps/world.ts`) is Lanfen, the road
+ * keeper; its runtime id keeps the demo's placeholder spelling so saves stay
+ * valid. It is not bound to any entry here, and must never be bound to
+ * `lw.npc.dema_cook`, canon's Dema (a cook in Causeway). `FORBIDDEN_BINDINGS`
+ * below records that for W4a, the work item that does the real binding.
  *
  * A real runtime `NpcDef.id` is never the design key itself — it looks like
  * `dema` or `elder_mira`, not `lw.npc.dema_cook`. `runtimeSlugs` lists every
@@ -70,13 +70,13 @@ export const RELEASED_RESIDENTS: readonly IdentityEntry[] = [
 
 /**
  * Hesh and Miri stay reserved: no record, NpcDef or placement may claim
- * either. Hesh is the quarry bench carving (`src/content/story/discoveries.ts`),
- * distinct from the released Hesra; Miri is distinct from the bound elder,
- * `lw.npc.mira` below.
+ * either. Hesh is canon NPC-11, the retired rail mechanic who teaches
+ * metalbending, and has no place in the demo yet; he is distinct from the
+ * released Hesra. Miri is distinct from the bound elder, `lw.npc.mira` below.
  */
 export const EXCLUDED_RESIDENTS: readonly IdentityEntry[] = [
-  // The quarry bench carving (`src/content/story/discoveries.ts`) names
-  // "Hesh" without ever placing them — distinct from Hesra.
+  // Canon NPC-11 (`docs/story-bible.md`), not yet written into the game —
+  // distinct from Hesra.
   { id: 'lw.npc.hesh', name: 'Hesh', names: ['Hesh'], runtimeSlugs: ['hesh'] },
   // Distinct from the bound elder, `lw.npc.mira` below.
   { id: 'lw.npc.miri', name: 'Miri', names: ['Miri'], runtimeSlugs: ['miri'] },
@@ -96,12 +96,11 @@ export const LEGACY_RESIDENT_ALIASES: readonly IdentityEntry[] = [
 /**
  * The full register: the five released returnees, the two reserved names
  * (Hesh, Miri) and the superseded Senn key, then every other identity that
- * must stay distinct from a name or sprite already in use elsewhere (guide
- * §00.5). `lw.npc.bo` is not `lw.npc.bo_shan`; the road's "Dema, road keeper"
- * placeholder (`runtimeSlugs: ['dema']`) is not `lw.npc.dema_cook`; the rest
- * stop's "Sen" placeholder is not `lw.npc.sen_tea`, `lw.npc.senn_messenger`
- * or `lw.npc.sena` — those three are three different people who happen to
- * share the coincidence of a name.
+ * must stay distinct from a name or sprite already in use elsewhere.
+ * `lw.npc.bo` is not `lw.npc.bo_shan`; the road keeper Lanfen
+ * (`runtimeSlugs: ['dema']`) is not `lw.npc.dema_cook`; `lw.npc.senn_messenger`
+ * and `lw.npc.sena` are two different people who happen to share the
+ * coincidence of a name.
  */
 export const IDENTITY_REGISTER: readonly IdentityEntry[] = [
   ...RELEASED_RESIDENTS,
@@ -114,12 +113,6 @@ export const IDENTITY_REGISTER: readonly IdentityEntry[] = [
     names: ['Dema (the cook)'],
     runtimeSlugs: [],
   },
-  {
-    id: 'lw.npc.sen_tea',
-    name: 'Sen (the tea keeper)',
-    names: ['Sen (the tea keeper)'],
-    runtimeSlugs: [],
-  },
   { id: 'lw.npc.sena', name: 'Sena', names: ['Sena'], runtimeSlugs: [] },
   // The bound elder — `elder_mira` (village) and `riverside_mira`
   // (riverside) are the same person on two maps. Distinct from Miri above.
@@ -129,11 +122,12 @@ export const IDENTITY_REGISTER: readonly IdentityEntry[] = [
     names: ['Mira', 'Elder Mira'],
     runtimeSlugs: ['elder_mira', 'riverside_mira'],
   },
-  // The forest road's "Dema, road keeper" — distinct from the cook above.
+  // The forest road's Lanfen, under the placeholder runtime id `dema` —
+  // distinct from the cook above.
   {
-    id: 'lw.npc.dema_roadkeeper',
-    name: 'Dema (the road-keeper)',
-    names: ['Dema, road keeper'],
+    id: 'lw.npc.lanfen_roadkeeper',
+    name: 'Lanfen (the road keeper)',
+    names: ['Lanfen, road keeper'],
     runtimeSlugs: ['dema'],
   },
 ];
@@ -146,7 +140,6 @@ export const IDENTITY_REGISTER: readonly IdentityEntry[] = [
  */
 export const FORBIDDEN_BINDINGS: Readonly<Record<string, readonly string[]>> = {
   dema: ['lw.npc.dema_cook'],
-  rest_keeper: ['lw.npc.sen_tea'],
 };
 
 /**

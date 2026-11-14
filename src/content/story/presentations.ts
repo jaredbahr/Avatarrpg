@@ -65,6 +65,21 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   // SQ-01 (sq01Cabbages.ts): Pella's packing list, and her corrected list after the rescue.
   ['sq01_packing_list', 'ba_dan_village'],
   ['sq01_pella_list', 'ba_dan_village'],
+  // SQ-02 (sq02OfficialGate.ts): every conversation node, so the scene keeps its map.
+  ['sq02_hook', 'ba_dan_village'],
+  ['sq02_ask', 'ba_dan_village'],
+  ['sq02_register', 'ba_dan_village'],
+  ['sq02_hen', 'ba_dan_village'],
+  ['sq02_choice', 'ba_dan_village'],
+  ['sq02_quiet', 'ba_dan_village'],
+  ['sq02_public', 'ba_dan_village'],
+  ['sq02_public_after', 'ba_dan_village'],
+  ['sq02_mocked', 'ba_dan_village'],
+  ['sq02_mocked_after', 'ba_dan_village'],
+  ['sq02_shortcut', 'ba_dan_village'],
+  ['sq02_after', 'ba_dan_village'],
+  ['sq02_return', 'ba_dan_village'],
+  ['sq02_return_gate', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],
