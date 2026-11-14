@@ -23,6 +23,11 @@ agency and cooperation rules (§7–8). Two rules govern how a story carries the
    shown; the theme never stated; absent heroes never voiced). The template is in
    [writing-guide.md](writing-guide.md#theme-card); a story PR fills it in the PR template.
 
+**The writing standard: a family game is not a lesser game** (owner, 2026-11-14). The themes are written at full
+strength, to the standard of the best all-ages stories; kid-friendliness lives in the interface, never in softened
+writing ([story-outline.md](story-outline.md#the-writing-standard-owner-2026-11-14);
+[writing-guide.md](writing-guide.md#write-at-full-strength)).
+
 ## Order of authority
 
 1. **The owner's direct instructions**, including the decisions recorded below.
@@ -57,8 +62,9 @@ Read with:
 ### Canon and scope
 
 - **The uploaded docs are canon.** Where they differ from the shipped demo, the uploaded docs win.
-- **Title: _Four Nations Tactics: Echoes of Stillwater_** (decided later the same day; see
-  [The saga outline](#the-saga-outline-2026-11-14)). "The Common Current" stays the network's in-world name.
+- **Title: _Four Nations Tactics: Echoes of Stillwater_** (owner, approved with the saga outline later the same
+  day; see [Owner decisions (2026-11-14, saga outline)](#owner-decisions-2026-11-14-saga-outline)). It replaces
+  "Title: TBD". "The Common Current" stays the network's in-world name.
 - **The demo is Act I**: MQ-01, The Quarry of Ba Dan (bible Part 04, "Act I — Stone").
 - **The next region is RG-02, Saltstep and Emberwatch (MQ-02).** Its story is placeholder until it is drafted
   through the story workflow below.
@@ -119,29 +125,53 @@ Read with:
   [Gap-fills approved 2026-11-14](#gap-fills-approved-2026-11-14).
 - **Hanru stays they/them** (ADR 0047 D7), as the demo and the shipped portrait have it.
 
-### The saga outline (2026-11-14)
+### Owner decisions (2026-11-14, saga outline)
 
-The owner shaped the saga's spine in an interactive review on 2026-11-14. The full record, with the reasoning and
-the beat-by-beat outline, is [story-outline.md](story-outline.md); it ranks with this list, under the owner's
-direct instructions and above the bible where they differ. In short:
+The owner shaped the saga's spine in an interactive review and **approved the outline on 2026-11-14**: the title,
+all 24 decisions, the beat outline and the writing standard. The full record, with the reasoning and the
+beat-by-beat outline, is [story-outline.md](story-outline.md); it ranks with this list, under the owner's direct instructions
+and above the bible where they differ. In short:
 
 - **The writing standard:** a family game is not a lesser game. Full emotional range, antagonists with a real
   case, unresolved endings allowed, subtext over explanation, ideas at full strength. Kid-friendliness lives in the
-  interface, never in softened writing.
-- **Shape:** title _Echoes of Stillwater_; a flash-forward prologue inside the Works; civic beats staged as
-  set-pieces with the arguments kept whole; a fixed low point after MQ-09 (the party branded saboteurs, the cart
-  impounded); three distinct endings by table vote; a multi-phase final battle against the Stillwater Engine, won
-  by opening the route and handing over control.
-- **The cart:** Bo-shan's cart, pulled by Parcel, is the party's spine, and Bo-shan drives it (on the Driller-loss
-  branch Dorin drives until MQ-11). Grumbler upgrades it once per act as supervised restitution; upgrades are story
-  and camp only. Latch rides the tailgate from MQ-07.
-- **People:** the party meets Veyra by name, not role, in MQ-02 and fights beside her once; the reveal ladder is
-  unchanged ("V. Sen, Director" at MQ-03). Her ending target is accountable, still useful. Rusk was the council
-  officer who held rescue equipment back in the Blackreed Flood. Jin is a recurring rival once per act. Mira's
-  flaw lands through the four messengers she sent. Ruon's arc is repair without rank. Each hero finds a personal
-  reason in Act I, paid off by their PQ, with a party-neutral reason always present.
-- **The spirit thread:** Act I seeds (the culvert water ripples twice; a boot returned with a shell), and the Still
-  Keeper heard only as echoes before Act III.
+  interface, never in softened writing ([the standard](story-outline.md#the-writing-standard-owner-2026-11-14)).
+
+[**Shape**](story-outline.md#shape):
+
+1. Title: _Four Nations Tactics: Echoes of Stillwater_; nothing with "Tide" in it.
+2. Sharpen the canon's spine rather than replace it.
+3. A flash-forward prologue inside the Stillwater Works in the storm; no names, no faces.
+4. Civic beats (hearings, archives, assemblies) are staged as physical set-pieces, with the arguments kept whole.
+5. A fixed low point after MQ-09: the party posted as saboteurs, the cart impounded, Parcel held; Act IV opens on
+   foot.
+6. Three distinct endings (E-01 to E-03), chosen by a final table vote.
+7. The final battle is the Stillwater Engine in revolt, won by opening the route and handing over the controls.
+
+[**The cart**](story-outline.md#the-cart):
+
+8. Bo-shan's cart, pulled by Parcel, is the party's spine.
+9. Bo-shan drives it; it costs Pella, who stays home angry and proud. He never fights.
+10. On the Driller-loss branch Dorin drives until MQ-11, and Gao patches the cart.
+11. Grumbler maintains the cart as supervised restitution, one upgrade per act; Pella keeps his ledger.
+12. Upgrades are story and camp only: no stats, no shop.
+13. Latch rides the tailgate from MQ-07, learning lost, given and borrowed; it leaves once.
+
+[**People**](story-outline.md#people):
+
+14. The party meets Veyra by name, not role, at Saltstep (MQ-02).
+15. Veyra fights beside the party once, as an AI-controlled guest at the Saltstep docks, in the trial region.
+16. The reveal ladder holds: "V. Sen, Director" at MQ-03, her face at MQ-04.
+17. Veyra's ending target: accountable, still useful; she has given up command and testified in every ending.
+18. Rusk was the council officer who held rescue equipment behind paperwork in the Blackreed Flood.
+19. Jin is the recurring rival, once per act, never redeemed for free.
+20. Mira's flaw lands in MQ-11 through the four messengers: all outsiders or hired hands (gap-fill 17).
+21. Ruon's arc is repair without rank.
+22. Each hero finds their own reason in Act I, paid off by their PQ; a party-neutral reason always exists.
+
+[**The spirit thread**](story-outline.md#the-spirit-thread):
+
+23. Act I seeds: the culvert water ripples twice; a lost boot returns with a river shell inside.
+24. The Still Keeper is heard only as echoes before Act III; MQ-07 reveals it has been listening.
 
 ## Fan-work rule
 
