@@ -68,7 +68,8 @@ export function scanTypeScript(
   names: readonly string[],
   allowedLiterals: Readonly<Record<string, string>> = {},
 ): CanonHit[] {
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+  const scriptKind = /\.(?:json|webmanifest)$/iu.test(file) ? ts.ScriptKind.JSON : undefined;
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
   const rules = patterns(names);
   const hits: CanonHit[] = [];
   const visit = (node: ts.Node): void => {
@@ -119,7 +120,7 @@ function sourceFiles(directory: string): string[] {
     if (entry.isSymbolicLink()) throw new Error(`Linked player-facing source: ${path}`);
     if (entry.isDirectory()) files.push(...sourceFiles(path));
     else if (
-      /\.(?:[cm]?js|tsx?)$/iu.test(entry.name) &&
+      /\.(?:[cm]?js|tsx?|json)$/iu.test(entry.name) &&
       !/\.(?:test|spec|d)\.(?:[cm]?js|tsx?)$/iu.test(entry.name)
     ) {
       files.push(path);
@@ -158,7 +159,7 @@ export function collectPlayerFacingHits(
     .map((entry) => join(publicDir, entry.name));
   for (const path of manifestFiles) {
     const file = relative(root, path).replaceAll('\\', '/');
-    hits.push(...scanPlainText(readFileSync(path, 'utf8'), file, names));
+    hits.push(...scanTypeScript(readFileSync(path, 'utf8'), file, names));
   }
   return hits.sort(
     (a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.column - b.column,

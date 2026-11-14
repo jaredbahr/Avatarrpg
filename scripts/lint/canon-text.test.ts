@@ -88,6 +88,16 @@ describe('fan-work copy guard', () => {
     ]);
   });
 
+  it('checks decoded player-facing JSON and web manifest strings', () => {
+    const document =
+      '{\n  "name": "So\\u006bka",\n  "description": "Republic City after the war"\n}';
+    for (const file of ['src/content/cast.json', 'public/manifest.webmanifest']) {
+      expect(scanTypeScript(document, file, denylist.canonNames)).toEqual([
+        { file, line: 2, column: 11, name: 'Sokka' },
+      ]);
+    }
+  });
+
   it('finds no canon names in shipped player-facing copy', () => {
     const hits = collectPlayerFacingHits(root, denylist.canonNames, denylist.allowedContext);
     expect(hits, hits.map(formatCanonHit).join('\n')).toEqual([]);
