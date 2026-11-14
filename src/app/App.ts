@@ -62,6 +62,7 @@ import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { SavePersistence, runningStandalone, storageProbe } from './storage/persistence';
+import { ensureStorageBorn, localStore, markCopySaved } from './storage/storageCheck';
 import { Stats } from './ui/Stats';
 import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
@@ -340,6 +341,7 @@ export class App {
     this.toasts = new Toasts(this.overlayHost);
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
     this.curtain = new Curtain(this.overlayHost);
+    ensureStorageBorn(localStore(), Date.now());
     void this.savePersistence.check();
 
     window.addEventListener('resize', () => this.requestResize());
@@ -1140,6 +1142,7 @@ export class App {
       summary: this.saveSummary(),
       session: this.session.toMeta(),
     });
+    if (result.ok) markCopySaved(localStore(), Date.now());
     this.toasts.show(
       result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),
       result.ok ? 'info' : 'warn',

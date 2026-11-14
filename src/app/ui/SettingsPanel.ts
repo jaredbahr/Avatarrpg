@@ -16,6 +16,7 @@ import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
 import { DIFFICULTY_CHOICES, difficultyHint } from './difficultyText';
 import { nextRadioIndex } from './radioKeys';
+import { StorageCheckDialog } from './StorageCheckDialog';
 
 /**
  * Four steps rather than a slider: `choiceRow` is already a row of real
@@ -190,10 +191,17 @@ export class SettingsPanel extends Dialog {
       el(
         'div',
         { class: 'row dialog-footer' },
+        // What this browser says about keeping the saves (#772).
+        button('Storage check', () => this.openStorageCheck(), { class: 'btn-ghost' }),
         el('div', { class: 'spacer' }),
         button('Done', () => this.close(), { class: 'btn-primary' }),
       ),
     );
+  }
+
+  private openStorageCheck(): void {
+    const host = this.overlay?.parentElement;
+    if (host) new StorageCheckDialog(this.app).open(host);
   }
 
   private refreshSettings(): void {

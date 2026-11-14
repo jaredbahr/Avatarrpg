@@ -62,6 +62,7 @@ export class SavePersistence {
   /** The browser's last answer; null until it has given one, or where it cannot. */
   private persisted: boolean | null = null;
   private asked = false;
+  private answer: boolean | null = null;
 
   constructor(
     private readonly probe: PersistenceProbe | null,
@@ -73,6 +74,16 @@ export class SavePersistence {
   /** The line to show, or null. */
   get warning(): string | null {
     return shouldWarnAboutEviction(this.persisted, this.standalone()) ? EVICTION_WARNING : null;
+  }
+
+  /** Whether the browser keeps the storage, as it last said; null where it has not or cannot. */
+  get kept(): boolean | null {
+    return this.persisted;
+  }
+
+  /** What `persist()` answered this run; null until the game has asked and been answered. */
+  get askAnswer(): boolean | null {
+    return this.answer;
   }
 
   /** Reads whether storage is already persistent, without asking for it. */
@@ -92,6 +103,7 @@ export class SavePersistence {
     if (!probe || this.asked || this.persisted === true) return;
     this.asked = true;
     await this.settle(() => probe.persist());
+    this.answer = this.persisted;
   }
 
   private async settle(read: () => Promise<boolean>): Promise<void> {

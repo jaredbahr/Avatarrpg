@@ -525,6 +525,24 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
   margin: 0;
 }
 
+/* The storage check (#772): label over answer, sized to be read off the iPad. */
+.storage-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.storage-check dt {
+  color: var(--c-ink-faint);
+  font-size: var(--fs-sm);
+}
+
+.storage-check dd {
+  margin: 0;
+  font-size: var(--fs-lg);
+}
+
 /* ------------------------------------------------------------------ */
 /* Title                                                               */
 /* ------------------------------------------------------------------ */
