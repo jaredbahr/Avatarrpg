@@ -362,7 +362,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'riverside_shrine_found',
     type: 'boolean',
     values: [true],
-    meaning: 'The party found the riverside shrine (“The river belongs to everyone downstream”).',
+    meaning: 'The party found the riverside shrine and the old high-water line cut into it.',
     arc: 'Demo · Riverside',
     status: 'live',
     setBy: ['story:riverside_shrine_found'],

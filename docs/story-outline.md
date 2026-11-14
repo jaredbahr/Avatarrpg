@@ -74,6 +74,8 @@ Never stated (canon rule: no morals, no "what we learned"). Each theme has a rec
 8. **Bo-shan's cart is the party's spine,** pulled by **Parcel the ostrich horse** (canon).
 9. **Bo-shan drives it.** He gets the bigger life he wanted (canon), and it costs Pella, who stays home angry and
    proud. He is never a fighter; he is at every camp. Their MQ-11 reunion lands on a choice he made, not a rescue.
+   **He leaves at the start of Act II, not the end of Act I** (owner, 2026-11-14, writing review): the demo closes
+   on the welcome home with him at Mira's table.
 10. **On the Driller-loss branch, Dorin drives** (owner had no preference; Claude's call). He leaves his post with
     a travel permit he wrote himself. Canon's arc for him (learning discretion, reporting his own errors) gets road
     time. When Bo-shan is freed in MQ-11, Dorin hands back the reins. On this branch Gao patches the cart until
@@ -186,13 +188,13 @@ Each act ends on a quiet meal and a view (canon tone rule: follow intensity with
 6. **The Driller.** Grumbler's imported machine, a Republic City maker's plate. Victory frees the workers; a loss
    keeps the quarry occupied and the saga continues.
 7. **Evidence.** Off-ledger cargo marks; each present hero finds their reason.
-8. **Welcome home.** Bo-shan and Pella. _Seed:_ a lost boot on a doorstep, with a shell inside. The cart is
-   repaired; Bo-shan takes the reins and Pella will not come out to wave. Across the bay, Emberwatch's dead lamps
-   come on.
+8. **Welcome home.** Bo-shan and Pella. _Seed:_ a lost boot on a doorstep, with a shell inside. Across the bay,
+   Emberwatch's dead lamps come on. The act closes warm, with Bo-shan home (owner, 2026-11-14, writing review).
 
 ### Act II: Sparks (MQ-02 to MQ-05)
 
-9. **Paper and Stone (MQ-02).** The cart's first run, to Saltstep's floating market. Chase a customs stall that
+9. **Paper and Stone (MQ-02).** The act opens in Ba Dan: the cart is repaired, Bo-shan takes the reins and Pella
+   will not come out to wave. Then the cart's first run, to Saltstep's floating market. Chase a customs stall that
    drifts off mid-argument. The party meets Veyra on the docks and fights beside her once. A wage envelope in a
    crate marked "safety materials". _Echo:_ the harbour water repeats Bo-shan's laugh. The table votes: accuse
    publicly or investigate quietly.

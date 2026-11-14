@@ -133,7 +133,7 @@ export const SQ01_STORY: readonly StoryNode[] = [
     speaker: SLED,
     portrait: NARRATOR,
     lines: [
-      'You drag the sled into the bracken and pull ferns over it. Food is worth something to hungry guards. Better to know what the gate wants first.',
+      'You drag the sled into the bracken and pull ferns over it. Ten sacks of cabbage, and a gate up the road full of people who have not been paid.',
       'Bo-shan’s note goes in a pocket.',
       'The round cabbage ends up on top of the ferns. It does not help with the hiding.',
     ],

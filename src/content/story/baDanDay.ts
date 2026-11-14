@@ -36,7 +36,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
-        lines: ['You can sit, if you like. It does not change what I think about Ruon.'],
+        lines: ['Sit if you want. I had a question for Ruon. I still have it.'],
       },
     ],
     options: [
