@@ -31,7 +31,7 @@ const TEXT = {
   tea_station: {
     first: [
       'Six cups stand beside the kettle. A seventh sits in the washing bowl with a tea leaf stuck to the bottom.',
-      'Both quarry shifts have scratched their names into the bench. Under the foreman’s name: “Wash your own cup, Hesh.”',
+      'Both quarry shifts have scratched their names into the bench. Under the foreman’s name: “Wash your own cup, Dunmo.”',
       'You rinse the seventh cup and set it beside the others. The handle has been mended with wire.',
     ],
     again: [

@@ -8,7 +8,7 @@ export const VOICES = [
     character: 'tenzo',
     lines: [
       'That bench is quarry offcut. Someone hauled it up here just to have a seat.',
-      "Sen, keep the kettle on. When we bring the crews through, I'll help you feed them.",
+      "Kuan, keep the kettle on. When we bring the crews through, I'll help you feed them.",
       "I'll wash these cups first. That blue handle looks loose; does it come off?",
     ],
   },
@@ -43,7 +43,7 @@ export const VOICES = [
     node: 'forest_dema',
     character: 'lin_mei',
     lines: [
-      'Dema, the white silt reaches above the reeds. Has it been this high since the rain?',
+      'Lanfen, the white silt reaches above the reeds. Has it been this high since the rain?',
       'I can mark the bank here and compare it with the stone further up. That will show where the runoff is coming in.',
       'Leave the nest in your washing for now. The old nesting ground is still covered.',
     ],
@@ -95,7 +95,7 @@ export const VOICES = [
     node: 'forest_dema_again',
     character: 'sura',
     lines: [
-      'Is this stream any good for fishing, Dema? Back home I pulled one through the ice as long as your washing line.',
+      'Is this stream any good for fishing, Lanfen? Back home I pulled one through the ice as long as your washing line.',
       'Half your washing line. Nothing will bite in water this white, though. Somebody up at that quarry owes you an answer about the runoff.',
     ],
   },

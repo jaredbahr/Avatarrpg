@@ -50,7 +50,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
   {
     id: 'forest_dema',
     kind: 'dialogue',
-    speaker: 'Dema',
+    speaker: 'Lanfen',
     portrait: 'portrait.dema',
     lines: [
       'Mind your feet. There are ducklings under that fern. Yes, the one you are about to step on.',
@@ -68,7 +68,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
   {
     id: 'forest_dema_again',
     kind: 'dialogue',
-    speaker: 'Dema',
+    speaker: 'Lanfen',
     portrait: 'portrait.dema',
     lines: [
       'She has brought the ducklings over. I suppose the washing can wait.',
@@ -79,7 +79,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
   {
     id: 'cutting_tea',
     kind: 'dialogue',
-    speaker: 'Sen',
+    speaker: 'Kuan',
     portrait: 'portrait.sen',
     lines: [
       'Cup? Mind the handle on the blue one. It comes off.',
@@ -97,7 +97,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
   {
     id: 'cutting_tea_again',
     kind: 'dialogue',
-    speaker: 'Sen',
+    speaker: 'Kuan',
     portrait: 'portrait.sen',
     lines: [
       "Back already? I've put fresh water on.",

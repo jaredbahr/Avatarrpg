@@ -41,9 +41,9 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
   {
     id: 'ducks',
     mapId: 'forest_road',
-    title: 'Dema’s unexpected tenants',
+    title: 'Lanfen’s unexpected tenants',
     hint: 'Meet the road keeper on the northwestern verge.',
-    found: 'Dema says quarry runoff has driven the turtle-ducks uphill into her washing.',
+    found: 'Lanfen says quarry runoff has driven the turtle-ducks uphill into her washing.',
     when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
   },
   {
@@ -52,7 +52,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'The crews’ rest stop',
     hint: 'A little workers’ rest sits along the southern verge of the cutting.',
     found:
-      'Two shifts built the bench from offcuts and never agreed on its height. Sen keeps the kettle going in case they come down.',
+      'Two shifts built the bench from offcuts and never agreed on its height. Kuan keeps the kettle going in case they come down.',
     when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
   },
   {
@@ -86,9 +86,9 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     id: 'tea_station',
     mapId: 'ambush_road',
     title: 'The seventh cup',
-    hint: 'Look beside Sen’s rest stop for a shared kettle and mismatched cups.',
+    hint: 'Look beside Kuan’s rest stop for a shared kettle and mismatched cups.',
     found:
-      'Washed the seventh cup, the one with the wire-mended handle. The bench says: “Wash your own cup, Hesh.”',
+      'Washed the seventh cup, the one with the wire-mended handle. The bench says: “Wash your own cup, Dunmo.”',
     when: { kind: 'flag', key: 'world.discovered.tea_station', op: 'set' },
   },
   {

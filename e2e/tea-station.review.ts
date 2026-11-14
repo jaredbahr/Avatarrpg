@@ -71,7 +71,7 @@ for (const renderer of ['canvas', 'webgl'] as const)
       reduceMotion: false,
     });
     await enterNode(page, 'cutting_explore');
-    // Setup only: party near Sen, before inspecting the tea station.
+    // Setup only: party near Kuan, before inspecting the tea station.
     await page.evaluate(() => {
       const app = window.fnt!.app,
         state = app.state!;
@@ -121,7 +121,7 @@ for (const renderer of ['canvas', 'webgl'] as const)
           views,
           errors,
           setup:
-            'Seeded newGame; Cutting fixture near Sen at (4,8). Actual wheel/pan, then ordinary map taps (4,9) and (3,9) to the tea discovery. Reduced-motion screenshot is idle still review.',
+            'Seeded newGame; Cutting fixture near Kuan at (4,8). Actual wheel/pan, then ordinary map taps (4,9) and (3,9) to the tea discovery. Reduced-motion screenshot is idle still review.',
         },
         null,
         2,
