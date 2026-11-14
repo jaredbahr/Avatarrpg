@@ -117,6 +117,8 @@ export interface Scene {
   suspend?(): void;
   /** Restart work after a retained scene becomes current again. */
   resume?(): void;
+  /** Repaint a retained backdrop's still if the story has changed who stands in it. */
+  refreshStill?(): void;
   /** Park a combat scene's enemy dispatch without its dialogue suspension. */
   holdAi?(): void;
   /** Drop the pause hold; re-arm one pending enemy turn if still current. */
@@ -411,6 +413,7 @@ export class App {
     ) {
       if (previousInterlude !== nextInterlude) curtain?.coverCurrent();
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.sync();
       if (previousInterlude !== nextInterlude) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
       return;
@@ -430,6 +433,7 @@ export class App {
       this.scene = scene;
       this.host.dataset.scene = scene.name;
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.mount(this.dialogueHost);
       scene.sync();
       curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
@@ -1078,6 +1082,19 @@ export class App {
   partyPositions(): readonly Vec2[] | null {
     const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };
     return scene?.partyPositions?.() ?? null;
+  }
+
+  /**
+   * Where the map drawn now (the scene, or the world behind a conversation)
+   * stands each follower (#696). Exposed for the e2e suite.
+   */
+  followerPositions(): readonly { readonly id: string; readonly pos: Vec2 }[] | null {
+    type Drawn = {
+      followerPositions?: () => readonly { readonly id: string; readonly pos: Vec2 }[] | null;
+    };
+    const scene = this.scene as unknown as Drawn | null;
+    const backdrop = this.dialogueBackdrop as unknown as Drawn | null;
+    return scene?.followerPositions?.() ?? backdrop?.followerPositions?.() ?? null;
   }
 
   /**
