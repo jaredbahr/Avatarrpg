@@ -1,8 +1,12 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CONTENT } from '../../src/content';
 import { TOPDOWN_SCENES } from '../../src/content/topdown';
+import * as abilityRules from '../../src/core/rules/abilities';
+import * as footprint from '../../src/core/rules/footprint';
+import * as gridRules from '../../src/core/rules/grid';
+import { TIME_BUDGETS, TIME_BUDGET_TAG, expectWorkWithin } from '../test-support/workBounds';
 import {
   BASELINE,
   POLICY,
@@ -17,7 +21,6 @@ import type { BenchBaseline, BenchRow } from './core-bench';
 import frozenBaseline from './core-bench-baseline.json';
 
 // Real fixture construction and validation are outside the measured batches.
-// Each measured row gets its own ordinary Vitest test budget.
 const suite = createCoreBenchSuite();
 
 describe('core benchmark coverage and frozen calibration', () => {
@@ -195,38 +198,133 @@ describe('core benchmark coverage and frozen calibration', () => {
   });
 });
 
-describe('same-process normalized core performance', () => {
-  it.each(suite.cases)('$id stays within its original frozen ceiling', (entry) => {
-    const row = measureCoreBenchCase(entry);
-    expect(row.samples).toHaveLength(11);
-    expect(
-      row.samples.every(
-        (sample) =>
-          Number.isFinite(sample.workMs) &&
-          sample.workMs > 0 &&
-          Number.isFinite(sample.referenceMs) &&
-          sample.referenceMs > 0,
-      ),
-    ).toBe(true);
-    expect(Number.isFinite(row.checksum) && row.checksum > 0).toBe(true);
-    expect(caseBudgetIssues(row)).toEqual([]);
+/*
+ * The always-on half (#796): what each case costs in work, which is the same on every machine.
+ * `footprintCells` is called once for every cell the path search probes, so its call count is
+ * the search's size; an enemy turn adds its target-validity checks and its reachability
+ * searches. Each bound is 1.5 times the count measured on the frozen cases (the first number),
+ * so a search that goes quadratic or an AI that re-searches per candidate fails here on any
+ * machine, while the ratios below stay the fine-grained check of the nightly hosted run.
+ */
+const WORK: Record<string, { probes: number; validity: number; searches: number }> = {
+  'reachable/ambush_road': { probes: 1828, validity: 0, searches: 1 },
+  'findPath/ambush_road': { probes: 4521, validity: 0, searches: 0 },
+  'reachable/forest_road': { probes: 2200, validity: 0, searches: 1 },
+  'findPath/forest_road': { probes: 5094, validity: 0, searches: 0 },
+  'reachable/quarry_floor': { probes: 1818, validity: 0, searches: 1 },
+  'findPath/quarry_floor': { probes: 5020, validity: 0, searches: 0 },
+  'reachable/quarry_gate': { probes: 1924, validity: 0, searches: 1 },
+  'findPath/quarry_gate': { probes: 5168, validity: 0, searches: 0 },
+  'enemyTurn/enc_ambush/base/{}/e2': { probes: 4613, validity: 574, searches: 2 },
+  'enemyTurn/enc_ambush/base/{}/e4': { probes: 7653, validity: 575, searches: 1 },
+  'enemyTurn/enc_ambush/base/{}/e8': { probes: 9718, validity: 911, searches: 3 },
+  'reachable/topdown/ba_dan_village': { probes: 709, validity: 0, searches: 1 },
+  'findPath/topdown/ba_dan_village': { probes: 5619, validity: 0, searches: 0 },
+};
+const HEADROOM = 1.5;
+
+function countWork(workload: () => number) {
+  const probes = vi.spyOn(footprint, 'footprintCells');
+  const validity = vi.spyOn(abilityRules, 'isValidTarget');
+  const searches = vi.spyOn(gridRules, 'reachable');
+  try {
+    const checksum = workload();
+    return {
+      checksum,
+      probes: probes.mock.calls.length,
+      validity: validity.mock.calls.length,
+      searches: searches.mock.calls.length,
+    };
+  } finally {
+    probes.mockRestore();
+    validity.mockRestore();
+    searches.mockRestore();
+  }
+}
+
+describe('core work bounds, identical on every machine', () => {
+  it('has a measured bound for the complete case matrix', () => {
+    expect(Object.keys(WORK).sort()).toEqual(suite.cases.map((entry) => entry.id).sort());
   });
 
-  it('rejects eight actual reachable queries per work operation against the unchanged frozen limit', () => {
-    const entry = suite.cases.find((candidate) => candidate.kind === 'reachable');
-    if (!entry) throw new Error('Missing real reachable slowdown witness');
-    const before = JSON.stringify(BASELINE);
-    const slowed = measureCoreBenchCase({
-      ...entry,
-      workload: () => {
-        let checksum = 0;
-        for (let repetition = 0; repetition < 8; repetition++) checksum += entry.workload();
-        return checksum;
-      },
-    });
-    expect(caseBudgetIssues(slowed)).toEqual([expect.stringContaining('exceeds frozen ceiling')]);
-    expect(JSON.stringify(BASELINE)).toBe(before);
+  it.each(suite.cases)('$id stays within its work bound', (entry) => {
+    const measured = WORK[entry.id];
+    if (!measured) throw new Error(`No measured work for ${entry.id}`);
+    const work = countWork(entry.workload);
+    expect(Number.isFinite(work.checksum) && work.checksum > 0).toBe(true);
+    expect(work.probes, 'the workload reached the real path search').toBeGreaterThan(0);
+    const bound = (count: number) => Math.ceil(count * HEADROOM);
+    expectWorkWithin(
+      `${entry.id}: cells probed by the path search`,
+      work.probes,
+      bound(measured.probes),
+    );
+    expectWorkWithin(
+      `${entry.id}: target-validity checks`,
+      work.validity,
+      bound(measured.validity),
+    );
+    expectWorkWithin(`${entry.id}: reachability searches`, work.searches, bound(measured.searches));
   });
+
+  it('rejects five actual reachable queries per work operation', () => {
+    const entry = suite.cases.find((candidate) => candidate.kind === 'reachable');
+    const measured = entry && WORK[entry.id];
+    if (!entry || !measured) throw new Error('Missing real reachable slowdown witness');
+    const work = countWork(() => {
+      let checksum = 0;
+      for (let repetition = 0; repetition < 5; repetition++) checksum += entry.workload();
+      return checksum;
+    });
+    expect(() =>
+      expectWorkWithin('cells probed', work.probes, Math.ceil(measured.probes * HEADROOM)),
+    ).toThrow(/Work bound exceeded: cells probed: measured \d+, bound \d+/);
+  });
+});
+
+/*
+ * Time is this suite's subject, so its budgets stay, in the nightly hosted run only
+ * (`FNT_TIME_BUDGETS=1`). The ratio to a same-process reference workload absorbs most of a
+ * machine's speed but not a neighbour's bursts, which is why the PR gate does not run it.
+ */
+describe(`same-process normalized core performance ${TIME_BUDGET_TAG}`, () => {
+  it.runIf(TIME_BUDGETS).each(suite.cases)(
+    '$id stays within its original frozen ceiling',
+    (entry) => {
+      const row = measureCoreBenchCase(entry);
+      expect(row.samples).toHaveLength(11);
+      expect(
+        row.samples.every(
+          (sample) =>
+            Number.isFinite(sample.workMs) &&
+            sample.workMs > 0 &&
+            Number.isFinite(sample.referenceMs) &&
+            sample.referenceMs > 0,
+        ),
+      ).toBe(true);
+      expect(Number.isFinite(row.checksum) && row.checksum > 0).toBe(true);
+      expect(caseBudgetIssues(row)).toEqual([]);
+    },
+  );
+
+  it.runIf(TIME_BUDGETS)(
+    'rejects eight actual reachable queries per work operation against the unchanged frozen limit',
+    () => {
+      const entry = suite.cases.find((candidate) => candidate.kind === 'reachable');
+      if (!entry) throw new Error('Missing real reachable slowdown witness');
+      const before = JSON.stringify(BASELINE);
+      const slowed = measureCoreBenchCase({
+        ...entry,
+        workload: () => {
+          let checksum = 0;
+          for (let repetition = 0; repetition < 8; repetition++) checksum += entry.workload();
+          return checksum;
+        },
+      });
+      expect(caseBudgetIssues(slowed)).toEqual([expect.stringContaining('exceeds frozen ceiling')]);
+      expect(JSON.stringify(BASELINE)).toBe(before);
+    },
+  );
 });
 
 describe('paired-ratio and budget controls', () => {
