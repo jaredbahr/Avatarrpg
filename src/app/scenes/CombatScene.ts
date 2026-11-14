@@ -2171,7 +2171,7 @@ export class CombatScene implements Scene {
 
     const apPips = el('div', {
       class: 'pips',
-      attrs: { 'aria-label': `${unit.ap} action points` },
+      attrs: { role: 'img', 'aria-label': `${unit.ap} action points` },
     });
     for (let i = 0; i < Math.max(stats.maxAp, unit.ap); i++) {
       apPips.appendChild(el('span', { class: `pip${i < unit.ap ? ' pip-on' : ''}` }));
