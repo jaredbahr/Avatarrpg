@@ -29,7 +29,7 @@ for (const renderer of ['canvas', 'webgl'] as const)
         let failedImageRequests = 0;
         let failedPortraitRequests = 0;
         if (fallback) {
-          await page.route('**/art/units/deserter.png', async (route) => {
+          await page.route('**/art/topdown/deserter.*', async (route) => {
             failedImageRequests++;
             await route.abort();
           });
@@ -150,7 +150,7 @@ for (const renderer of ['canvas', 'webgl'] as const)
               cursor: 0,
               rate: reduced ? 0.02 : 1,
               pushIndex: 0,
-              projection: 'oblique',
+              projection: 'topdown',
             });
             app.state = state;
             app.animator.clear();

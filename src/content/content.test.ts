@@ -246,35 +246,14 @@ describe('content', () => {
     expect(problems).toContain('asset test: a 2x2 footprint needs a square frameSize');
   });
 
-  it('holds a fighting stance to every heading of declared eight-way locomotion', () => {
-    const sura = CONTENT_BUNDLE.assets?.['unit.water.sura'];
-    const linmei = CONTENT_BUNDLE.assets?.['unit.earth.linmei'];
-    if (sura?.kind !== 'sheet' || linmei?.kind !== 'sheet') throw new Error('Expected sheets');
-    const check = (assets: Record<string, unknown>) =>
-      validateContent({ ...CONTENT_BUNDLE, assets } as ContentBundle).filter((p) =>
-        p.startsWith('asset '),
-      );
-    const { stanceNorthWest: _dropped, ...partial } = sura.clips;
-    expect(check({ 'unit.water.sura': { ...sura, clips: partial } })).toEqual([
-      'asset unit.water.sura: has a stance but no stanceNorthWest clip',
-    ]);
-    expect(
-      check({
-        'unit.earth.linmei': { ...linmei, clips: { ...linmei.clips, stance: sura.clips.stance } },
-      }),
-    ).toContain('asset unit.earth.linmei: a stance needs declared eight-way locomotion');
-    expect(check({ 'unit.water.sura': sura })).toEqual([]);
-  });
-
   it('holds a G knockout to every diagonal and a G hit to every heading, timed cel by cel (ADR 0059, ADR 0063)', () => {
     const bo = CONTENT_BUNDLE.assets?.['unit.earth.bo'];
-    const linmei = CONTENT_BUNDLE.assets?.['unit.earth.linmei'];
-    if (bo?.kind !== 'sheet' || linmei?.kind !== 'sheet') throw new Error('Expected sheets');
-    // Fetched with the sheet, never bundled: the clip data is read from disk.
-    if (!bo.clipData) throw new Error('Expected Bo to fetch his knockouts');
-    const fetched = JSON.parse(readFileSync(`public/${bo.clipData}`, 'utf8')) as Partial<
-      Record<ClipName, ClipDef>
-    >;
+    const probe = CONTENT_BUNDLE.assets?.['unit.test.probe'];
+    if (bo?.kind !== 'sheet' || probe?.kind !== 'sheet') throw new Error('Expected sheets');
+    // The retired G Bo's knockouts and hits, kept as a fixture: a family of each, timed cel by cel.
+    const fetched = JSON.parse(
+      readFileSync('src/app/anim/fixtures/bo-g-clips.json', 'utf8'),
+    ) as Partial<Record<ClipName, ClipDef>>;
     const clips = { ...bo.clips, ...fetched };
     const key = 'unit.earth.bo';
     expect(sheetClipProblems(key, clips, true)).toEqual([]);
@@ -299,10 +278,10 @@ describe('content', () => {
     ]);
     // Sura's south-west knockout holds a cel through an unusable in-between.
     const sura = CONTENT_BUNDLE.assets?.['unit.water.sura'];
-    if (sura?.kind !== 'sheet' || !sura.clipData) throw new Error('Expected Sura’s knockouts');
-    const suraClips = JSON.parse(readFileSync(`public/${sura.clipData}`, 'utf8')) as Partial<
-      Record<ClipName, ClipDef>
-    >;
+    if (sura?.kind !== 'sheet') throw new Error('Expected Sura’s sheet');
+    const suraClips = JSON.parse(
+      readFileSync('src/app/anim/fixtures/sura-g-clips.json', 'utf8'),
+    ) as Partial<Record<ClipName, ClipDef>>;
     const held = suraClips.koSouthWest;
     if (!held) throw new Error('Expected a south-west knockout');
     expect(held.frames[5]).toBe(held.frames[4]);
@@ -329,8 +308,8 @@ describe('content', () => {
       validateContent({ ...CONTENT_BUNDLE, assets } as ContentBundle).filter((p) =>
         p.startsWith('asset '),
       );
-    expect(check({ 'unit.earth.linmei': { ...linmei, clipData: bo.clipData } })).toContain(
-      'asset unit.earth.linmei: clip data needs declared eight-way locomotion',
+    expect(check({ 'unit.test.probe': { ...probe, clipData: bo.clipData } })).toContain(
+      'asset unit.test.probe: clip data needs declared eight-way locomotion',
     );
     expect(check({ 'unit.earth.bo': bo })).toEqual([]);
   });

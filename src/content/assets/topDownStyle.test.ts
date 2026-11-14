@@ -65,14 +65,20 @@ function allClips(entry: SheetEntry): Partial<Record<ClipName, ClipDef>> {
 const actionsOf = (entry: SheetEntry): Record<string, Record<string, ClipDef>> =>
   entry.actions ? read(entry.actions) : {};
 
+/** The keys `ASSETS` draws from a painter until the overlay swaps in their top-down sheet. */
+const PAINTED = ['npc.hanru', 'npc.dema', 'npc.sen'];
+
 describe('?style=topdown (ADR 0104)', () => {
   it('is off until asked for, and then changes only the top-down keys', () => {
     expect(topDownStyleActive()).toBe(false);
     const before = Object.fromEntries(Object.keys(ASSETS).map((key) => [key, resolveAsset(key)]));
     for (const key of Object.keys(TOPDOWN_KEYS)) {
       const entry = resolveAsset(key);
-      // Hanru is still the painted figure by default.
-      if (entry.kind === 'sheet') expect(entry.atlas).not.toMatch(/^art\/topdown\//);
+      // Every key T7 moved holds its top-down sheet already (ADR 0104); Hanru, Dema and Sen are
+      // still the painted figures by default.
+      if (PAINTED.includes(key)) expect(entry.kind, key).toBe('painter');
+      else if (entry.kind === 'sheet') expect(entry.atlas, key).toMatch(/^art\/topdown\//);
+      else throw new Error(`${key} is neither painted nor a sheet`);
     }
     useTopDownStyle();
     expect(topDownStyleActive()).toBe(true);

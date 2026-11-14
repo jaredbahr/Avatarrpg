@@ -2,8 +2,8 @@
  * The top-down presentation swap (ADR 0104, phase T3): under `?style=topdown` a map registered
  * here is drawn in the top-down style, with its own scene, instead of its oblique painting.
  *
- * Presentation only. The swap replaces a map's `projection` and `scene` and drops the fields that
- * describe the oblique art (`backdrop`, `cameraPaint`); every rules field (rows, legend, spawns,
+ * Presentation only. The swap replaces a map's `projection` and `scene` and drops the field that
+ * describes the oblique art (`backdrop`); every rules field (rows, legend, spawns,
  * npcs, props, exits, triggers, edges and the rest) stays the very same object, so the rules, the
  * edge contract and saves never tell the two styles apart. Positions stay whole logical cells.
  *
@@ -12,6 +12,9 @@
  * of it is in the bundle.
  */
 import type { ContentIndex, MapDef, MapScene } from '../core/types';
+import { topDownSceneSchema } from './topdownSceneSchema';
+import { REGION_SCENES } from './regions';
+import type { TopDownSceneSource } from './regions';
 
 /** What a map draws as in the top-down style. */
 export interface TopDownPresentation {
@@ -22,27 +25,14 @@ export interface TopDownPresentation {
   readonly cameraCentreMargin?: number;
 }
 
-/** Where a map's top-down scene is (a `MapScene` as JSON, relative to the site), and its margin. */
-export interface TopDownSceneSource {
-  readonly url: string;
-  readonly cameraCentreMargin?: number;
-}
+export type { TopDownSceneSource };
 
 /**
- * The maps that have a top-down presentation, by map id: Ba Dan (T3), the Forest Road (T4) and the
- * quarry's three boards (T5). A map not listed keeps its oblique (or orthographic) look.
+ * The maps that have a top-down presentation, by map id: each region's `scenes` (ADR 0111), today
+ * Ba Dan (T3), the Forest Road (T4) and the quarry's three boards (T5). A map not listed keeps its
+ * oblique (or orthographic) look.
  */
-export const TOPDOWN_SCENES: ReadonlyMap<string, TopDownSceneSource> = new Map([
-  // The oblique margin (-0.61) was fitted to one diamond at either side; the top-down plate runs
-  // three tiles past the grid into the rim, and `paintExtent` keeps the view inside it.
-  ['ba_dan_village', { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 }],
-  // The forest plate runs two cells past the grid either side and three above (the pine margin).
-  ['forest_road', { url: 'art/topdown/forest-road/scene.json', cameraCentreMargin: 1 }],
-  // The quarry's plates run the same two cells past the grid either side and three above (T5).
-  ['quarry_gate', { url: 'art/topdown/quarry-gate/scene.json', cameraCentreMargin: 1 }],
-  ['ambush_road', { url: 'art/topdown/cutting/scene.json', cameraCentreMargin: 1 }],
-  ['quarry_floor', { url: 'art/topdown/quarry-floor/scene.json', cameraCentreMargin: 1 }],
-]);
+export const TOPDOWN_SCENES: ReadonlyMap<string, TopDownSceneSource> = REGION_SCENES;
 
 /**
  * Every registered map's presentation, its scene read through `load` (a fetch in the browser, a
@@ -54,24 +44,22 @@ export async function loadTopDownPresentations(
 ): Promise<Map<string, TopDownPresentation>> {
   const out = new Map<string, TopDownPresentation>();
   for (const [id, source] of scenes) {
-    const scene = await load(source.url);
-    if (!isScene(scene)) throw new Error(`${source.url} is not a map scene`);
+    const parsed = topDownSceneSchema(source.url).safeParse(await load(source.url));
+    if (!parsed.success) {
+      const details = parsed.error.issues
+        .map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)
+        .join('; ');
+      throw new Error(`${source.url} is not a map scene: ${details}`, { cause: parsed.error });
+    }
     out.set(id, {
       projection: 'topdown',
-      scene,
+      scene: parsed.data,
       ...(source.cameraCentreMargin !== undefined && {
         cameraCentreMargin: source.cameraCentreMargin,
       }),
     });
   }
   return out;
-}
-
-/** The shape check a fetched scene must pass: its ground plates and scenery are lists. */
-function isScene(value: unknown): value is MapScene {
-  if (!value || typeof value !== 'object') return false;
-  const scene = value as { ground?: unknown; scenery?: unknown };
-  return Array.isArray(scene.ground) && Array.isArray(scene.scenery);
 }
 
 /**
@@ -99,13 +87,7 @@ function topDownScene(mapScene: MapScene | undefined, presentationScene: MapScen
 
 /** One map in its top-down presentation: the same rules objects, a new projection and scene. */
 export function topDownMap(map: MapDef, presentation: TopDownPresentation): MapDef {
-  const {
-    backdrop: _backdrop,
-    cameraPaint: _cameraPaint,
-    projection: _projection,
-    scene: _scene,
-    ...rules
-  } = map;
+  const { backdrop: _backdrop, projection: _projection, scene: _scene, ...rules } = map;
   return {
     ...rules,
     projection: presentation.projection,

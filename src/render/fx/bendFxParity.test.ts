@@ -1,5 +1,5 @@
 /**
- * Canvas 2D and WebGL draw a bend effect in the same place (ADR 0055, step 5).
+ * Canvas 2D and WebGL draw a painted effect cel (the top-down shots, #588) in the same place.
  *
  * Runs Canvas 2D's real draw (`drawBendFx`) against a context that records
  * its transform, and the WebGL side's real sync (`syncBendFx`) into Pixi
@@ -28,22 +28,8 @@ class LoadingImage {
   }
 }
 
-/** A stand-in cel canvas for the flash: only its identity matters here. */
-const fakeCanvas = () => ({
-  width: 0,
-  height: 0,
-  getContext: () => ({
-    drawImage: () => undefined,
-    getImageData: (_x: number, _y: number, w: number, h: number) => ({
-      data: new Uint8ClampedArray(w * h * 4),
-    }),
-    putImageData: () => undefined,
-  }),
-});
-
 beforeAll(async () => {
   vi.stubGlobal('Image', LoadingImage);
-  vi.stubGlobal('document', { createElement: fakeCanvas });
   await bendFxPages.whenLoaded(PAGE);
 });
 afterAll(() => {
@@ -193,12 +179,11 @@ const sprite = (overrides: Partial<BendFxSprite>): BendFxSprite => ({
   turn: 0,
   alpha: 1,
   blend: 'normal',
-  flash: 0,
   z: 'overActor',
   ...overrides,
 });
 
-/** Ground, under-actor and over-actor cels, turned, stretched, flashed and added. */
+/** Ground, under-actor and over-actor cels, turned, stretched and added. */
 const SPRITES: readonly BendFxSprite[] = [
   sprite({
     z: 'ground',
@@ -207,7 +192,7 @@ const SPRITES: readonly BendFxSprite[] = [
     width: 100 / 128,
     height: 64 / 128,
   }),
-  sprite({ z: 'underActor', turn: -5.43, flash: 0.75, at: { x: 0.3, y: 1.1 } }),
+  sprite({ z: 'underActor', turn: -5.43, at: { x: 0.3, y: 1.1 } }),
   sprite({ turn: 26.565, at: { x: 2.2, y: 2.9 } }),
   sprite({
     frame: { x: 171, y: 85, w: 105, h: 35 },
@@ -221,23 +206,15 @@ const SPRITES: readonly BendFxSprite[] = [
 ];
 
 const cameras = (): Camera[] => {
-  const oblique = new Camera(
-    { width: 1368, height: 700, dpr: 1 },
-    { width: 12, height: 10 },
-    'oblique',
-  );
-  oblique.fit();
-  const zoomed = new Camera(
-    { width: 1024, height: 768, dpr: 2 },
-    { width: 12, height: 10 },
-    'oblique',
-  );
+  const wide = new Camera({ width: 1368, height: 700, dpr: 1 }, { width: 12, height: 10 });
+  wide.fit();
+  const zoomed = new Camera({ width: 1024, height: 768, dpr: 2 }, { width: 12, height: 10 });
   zoomed.fit();
   zoomed.zoomAt({ x: 300, y: 500 }, 2.3);
   zoomed.panBy(-120, 45);
   const square = new Camera({ width: 800, height: 600, dpr: 1 }, { width: 8, height: 8 });
   square.fit();
-  return [oblique, zoomed, square];
+  return [wide, zoomed, square];
 };
 
 describe('bend effects on Canvas 2D and WebGL', () => {
@@ -263,7 +240,7 @@ describe('bend effects on Canvas 2D and WebGL', () => {
   it('draws the ground and under-actor cels before the actors and the rest after', () => {
     const [camera] = cameras();
     const order = canvasDraws(SPRITES, camera!).map((d) => d.rect[0]);
-    expect(order).toEqual([396, 41, 41, 171, 41, 41].map((x, i) => (i === 1 ? 0 : x)));
+    expect(order).toEqual([396, 41, 41, 171, 41, 41]);
   });
 
   it('mirrors a flipped cel top to bottom about its pivot, on both backends', () => {
@@ -308,12 +285,5 @@ describe('bend effects on Canvas 2D and WebGL', () => {
       expect(b!.x - a!.x).toBeCloseTo((100 / 128) * tile, 6);
       expect(d!.y - a!.y).toBeCloseTo((64 / 128) * tile, 6);
     }
-  });
-
-  it('draws a flashed cel from its own brightened copy, never the page', () => {
-    const [camera] = cameras();
-    const [, flashed] = canvasDraws(SPRITES, camera!);
-    expect(flashed!.rect).toEqual([0, 0, 53, 44]);
-    expect(flashed!.source).not.toBe(canvasDraws(SPRITES, camera!)[0]!.source);
   });
 });

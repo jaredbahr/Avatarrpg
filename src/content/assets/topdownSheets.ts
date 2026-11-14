@@ -3,8 +3,9 @@
  *
  * The top-down figure sheets (ADR 0104 T2): each sheet's pages, its locomotion frame and foot anchor
  * (idle, walk and rest share it), the idle and walk cels per heading (`HEADINGS` order), the walk timing
- * and the legacy cast. The hits and knockouts are in each sheet's clip file, the per-heading abilities in
- * its actions file, both beside its atlas under `public/art/topdown/`.
+ * and the legacy cast, and the riverside's seated tea and wave and Ruon's surrender where a sheet has them. The
+ * hits and knockouts are in each sheet's clip file, the per-heading abilities in its actions file, both beside
+ * its atlas under `public/art/topdown/`.
  */
 import type { ClipDef } from './clips';
 
@@ -55,6 +56,9 @@ export interface TopdownSheetData {
   readonly cast: ClipDef | null;
   readonly clipData: boolean;
   readonly actions: boolean;
+  readonly tea?: ClipDef;
+  readonly wave?: ClipDef;
+  readonly surrender?: ClipDef;
   readonly treadGrounding?: readonly {
     readonly spanPx: number;
     readonly centerXFromAnchorPx: number;
@@ -84,6 +88,20 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+    tea: {
+      frames: ['unit.fire.kaya/tea/0', 'unit.fire.kaya/tea/1'],
+      fps: 0.25,
+      loop: true,
+      frameSize: { w: 26, h: 39 },
+      anchor: { x: 0.5, y: 0.974359 },
+    },
+    wave: {
+      frames: ['unit.fire.kaya/wave/0', 'unit.fire.kaya/wave/1'],
+      fps: 4,
+      loop: true,
+      frameSize: { w: 27, h: 47 },
+      anchor: { x: 0.518519, y: 0.978723 },
+    },
   },
   sura: {
     pages: 1,
@@ -106,6 +124,20 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+    tea: {
+      frames: ['unit.water.sura/tea/0', 'unit.water.sura/tea/1'],
+      fps: 0.25,
+      loop: true,
+      frameSize: { w: 30, h: 36 },
+      anchor: { x: 0.366667, y: 0.972222 },
+    },
+    wave: {
+      frames: ['unit.water.sura/wave/0', 'unit.water.sura/wave/1'],
+      fps: 4,
+      loop: true,
+      frameSize: { w: 32, h: 50 },
+      anchor: { x: 0.46875, y: 0.98 },
+    },
   },
   bo: {
     pages: 1,
@@ -410,6 +442,13 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+    surrender: {
+      frames: ['unit.ally.ruon/surrender/0'],
+      fps: 1,
+      loop: true,
+      frameSize: { w: 41, h: 49 },
+      anchor: { x: 0.317073, y: 0.959184 },
+    },
   },
   tenzo: {
     pages: 1,

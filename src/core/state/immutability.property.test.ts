@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { backgroundFigures, exitCells, visibleNpcs } from '../story/world';
@@ -219,10 +220,9 @@ function applyWithoutMutation(
     thrown = error;
   }
 
-  try {
-    expect(protectedInput, `${context}: apply mutated its frozen input`).toEqual(before);
-  } catch (error) {
-    throw new Error(`${context}: input differs from its pre-call snapshot`, { cause: error });
+  if (!isDeepStrictEqual(protectedInput, before)) {
+    expect(protectedInput, `${context}: apply mutated its frozen input`).toStrictEqual(before);
+    throw new Error(`${context}: input differs from its pre-call snapshot`);
   }
   if (thrown !== undefined) {
     throw new Error(`${context}: apply threw for a legal command: ${describeError(thrown)}`, {
@@ -569,7 +569,7 @@ describe('reducer input immutability', () => {
 
     Map.prototype.set.call(state.lookup, 'bypassed', { value: 2 });
 
-    expect(state).not.toEqual(before);
+    expect(isDeepStrictEqual(state, before)).toBe(false);
   });
 
   it('uses the structural oracle to catch an intrinsic Set.add bypass', () => {
@@ -579,7 +579,7 @@ describe('reducer input immutability', () => {
 
     Set.prototype.add.call(state.tags, { label: 'bypassed' });
 
-    expect(state).not.toEqual(before);
+    expect(isDeepStrictEqual(state, before)).toBe(false);
   });
 
   it('rejects unsupported binary views with their graph path', () => {

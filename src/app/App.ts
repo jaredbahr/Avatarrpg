@@ -70,11 +70,6 @@ import { ExploreScene } from './scenes/ExploreScene';
 import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
-import { BEND_FX } from '../content/fxCels';
-import { loadBendFx } from '../render/fx/bendFx';
-import type { BendFxIndex } from '../render/fx/bendFx';
-import { bendFxPages } from '../render/fx/bendFxDraw';
-import { liftAt } from '../render/geometry/elevation';
 import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
 
@@ -122,6 +117,8 @@ export interface Scene {
   suspend?(): void;
   /** Restart work after a retained scene becomes current again. */
   resume?(): void;
+  /** Repaint a retained backdrop's still if the story has changed who stands in it. */
+  refreshStill?(): void;
   /** Park a combat scene's enemy dispatch without its dialogue suspension. */
   holdAi?(): void;
   /** Drop the pause hold; re-arm one pending enemy turn if still current. */
@@ -257,8 +254,6 @@ export class App {
     null;
   private resizeQueued = false;
   private routeTimer: number | null = null;
-  private bendFx: BendFxIndex | undefined;
-  private bendFxLoading = false;
 
   /**
    * Consumed by CombatScene at mount. This is intentionally ephemeral: a
@@ -279,28 +274,6 @@ export class App {
 
   get curtainBusy(): boolean {
     return this.curtain.busy;
-  }
-
-  /**
-   * Combat warms the painted bend effects at its start, and a map with a
-   * bending practice ground on arrival: the data, then every
-   * page decoded, and only then may a cast bend (ADR 0055, step 7). Until
-   * then, and for the session if any of it fails, casts stay legacy.
-   */
-  preloadBendFx(): void {
-    if (this.bendFx || this.bendFxLoading) return;
-    this.bendFxLoading = true;
-    void loadBendFx(BEND_FX, import.meta.env.BASE_URL)
-      .then(async (fx) => {
-        const pages = await Promise.all(fx.images.map((url) => bendFxPages.whenLoaded(url)));
-        if (pages.every(Boolean)) this.bendFx = fx;
-      })
-      .catch(() => undefined);
-  }
-
-  /** Whether the painted bend effects are in, so a cast may bend (see `preloadBendFx`). */
-  get bendFxReady(): boolean {
-    return this.bendFx !== undefined;
   }
 
   private cancelRoute(): void {
@@ -411,22 +384,6 @@ export class App {
       ...(overrides.timingProfile ? { timingProfile: overrides.timingProfile } : {}),
       // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
       sheetClips: (sprite) => sheets.clips(sprite),
-      bends: () => {
-        const fx = this.bendFx;
-        return fx
-          ? {
-              fx,
-              // Asking a bend that has not been preloaded must not load it.
-              setOf: (sprite) =>
-                sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
-              frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
-            }
-          : undefined;
-      },
-      liftOf: (pos) => {
-        const grid = this.state?.battle?.grid;
-        return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
-      },
     });
   }
 
@@ -456,6 +413,7 @@ export class App {
     ) {
       if (previousInterlude !== nextInterlude) curtain?.coverCurrent();
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.sync();
       if (previousInterlude !== nextInterlude) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
       return;
@@ -475,6 +433,7 @@ export class App {
       this.scene = scene;
       this.host.dataset.scene = scene.name;
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.mount(this.dialogueHost);
       scene.sync();
       curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
@@ -1123,6 +1082,21 @@ export class App {
   partyPositions(): readonly Vec2[] | null {
     const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };
     return scene?.partyPositions?.() ?? null;
+  }
+
+  /**
+   * Where the map drawn now (the scene, or the world behind a conversation)
+   * stands each follower (#696). Exposed for the e2e suite.
+   */
+  followerPositions():
+    readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null {
+    type Drawn = {
+      followerPositions?: () =>
+        readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null;
+    };
+    const scene = this.scene as unknown as Drawn | null;
+    const backdrop = this.dialogueBackdrop as unknown as Drawn | null;
+    return scene?.followerPositions?.() ?? backdrop?.followerPositions?.() ?? null;
   }
 
   /**

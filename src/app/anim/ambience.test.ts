@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FX_AMBIENCE } from '../../content/fx';
-import { BA_DAN_CANOPIES, BA_DAN_CHIMNEYS } from '../../content/scenes/baDan';
+import { readFileSync } from 'node:fs';
+import type { MapScene } from '../../core/types';
 import type { Grid, Tile } from '../../core/types';
 import {
   PARTICLE_STRIDE,
@@ -9,7 +10,10 @@ import {
   sampleParticles,
   sampleStrokes,
 } from '../../render/fx/simulate';
-import { ambientEmitters, waterCells } from './ambience';
+import { MAX_SHEDDING_CANOPIES, ambientEmitters, waterCells } from './ambience';
+
+/** Ba Dan's top-down scene: its chimneys and canopies are what the ambience reads. */
+const BA_DAN = JSON.parse(readFileSync('public/art/topdown/ba-dan/scene.json', 'utf8')) as MapScene;
 
 const grid: Grid = { width: 20, height: 12, tiles: [] };
 
@@ -154,13 +158,25 @@ describe('ambientEmitters', () => {
     });
 
     it('keeps every point of every crescent inside permanent water', () => {
+      const waterColumns = new Map<number, Set<number>>();
+      for (const { x, y } of water) {
+        let rows = waterColumns.get(x);
+        if (!rows) {
+          rows = new Set<number>();
+          waterColumns.set(x, rows);
+        }
+        rows.add(y);
+      }
       const permanentWater = (x: number, y: number) =>
-        water.some((cell) => cell.x === Math.floor(x) && cell.y === Math.floor(y));
+        waterColumns.get(Math.floor(x))?.has(Math.floor(y)) === true;
       for (let time = 0; time < 240_000; time += 137) {
         for (const e of lit(time)) {
           const cx = Math.floor(e.from.x);
-          expect(water.some((c) => c.x === cx && c.y === Math.floor(e.from.y))).toBe(true);
-          expect(cx).not.toBe(6);
+          if (!permanentWater(e.from.x, e.from.y) || cx === 6) {
+            throw new Error(
+              `Ripple starts outside canal water at time ${time}, seed ${e.seed}, point (${e.from.x}, ${e.from.y})`,
+            );
+          }
           // Re-sample each deterministic seed across its life, including moments other than
           // the scene-clock sample above. Both crescents and every polygon point must remain wet.
           for (const elapsed of [
@@ -170,11 +186,17 @@ describe('ambientEmitters', () => {
             glint.duration * 0.83,
             glint.duration,
           ])
-            for (const stroke of sampleStrokes(glint, elapsed, e.seed, e.from, e.to))
-              for (let i = 0; i < stroke.points.length; i += 2)
-                expect(permanentWater(stroke.points[i] ?? -1, stroke.points[i + 1] ?? -1)).toBe(
-                  true,
-                );
+            for (const stroke of sampleStrokes(glint, elapsed, e.seed, e.from, e.to)) {
+              for (let i = 0; i < stroke.points.length; i += 2) {
+                const x = stroke.points[i] ?? -1;
+                const y = stroke.points[i + 1] ?? -1;
+                if (!permanentWater(x, y)) {
+                  throw new Error(
+                    `Ripple point (${x}, ${y}) leaves the canal at time ${time}, seed ${e.seed}, age ${elapsed}, vertex ${i / 2}`,
+                  );
+                }
+              }
+            }
         }
       }
     });
@@ -303,6 +325,22 @@ describe('ambientEmitters', () => {
       expect(slots).toBeLessThanOrEqual(4);
     });
 
+    it("sheds from an evenly spread, fixed subset of a crowded scene's canopies", () => {
+      const many = Array.from({ length: 21 }, (_, i) => ({ x: i + 1, y: (i % 3) + 1 }));
+      const shedding = (time: number) =>
+        new Set(
+          ambientEmitters(village, grid, time, [], false, [], many)
+            .filter((e) => isLeaf(e.def))
+            .map((e) => `${e.to.x},${e.to.y}`),
+        );
+      const first = shedding(4000);
+      expect(first.size).toBe(MAX_SHEDDING_CANOPIES);
+      expect(shedding(61_000)).toEqual(first);
+      // Spread across the list, not bunched at its start.
+      expect(first.has('1,1')).toBe(true);
+      expect([...first].some((key) => Number(key.split(',')[0]) > 18)).toBe(true);
+    });
+
     it('is absent under reduce motion or without trees', () => {
       const still = ambientEmitters(village, grid, 4000, [], true, [], trees);
       expect(still.some((e) => isLeaf(e.def))).toBe(false);
@@ -322,10 +360,10 @@ describe('ambientEmitters', () => {
         village,
         grid,
         time,
-        BA_DAN_CHIMNEYS,
+        BA_DAN.chimneys ?? [],
         false,
         [],
-        BA_DAN_CANOPIES,
+        BA_DAN.canopies ?? [],
       ))
         if (e.def.kind === 'particles')
           live += sampleParticles(e.def, e.elapsed, e.seed, e.from, e.to, out);

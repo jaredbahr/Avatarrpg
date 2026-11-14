@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ASSETS } from './assets/manifest';
+import { ASSETS, topdownSheet } from './assets/manifest';
 import { CHARACTERS } from './characters';
 import { DISCIPLINES } from './disciplines';
 import { ENCOUNTERS } from './encounters';
@@ -174,7 +174,7 @@ describe('content builders preserve their authored values', () => {
     );
   });
 
-  it('preserves all image entries and the helper-backed crossbow sheet', () => {
+  it('preserves all image entries and the crossbow’s top-down sheet', () => {
     const images = Object.entries(ASSETS).flatMap(([key, entry]) =>
       entry.kind === 'image' ? [[key, entry.url, entry.palette]] : [],
     );
@@ -209,6 +209,7 @@ describe('content builders preserve their authored values', () => {
       ['portrait.narrator', 'art/portraits/narrator.png', 'neutral'],
       ['portrait.mira', 'art/portraits/mira.png', 'earth'],
       ['portrait.gao', 'art/portraits/gao.png', 'earth'],
+      ['portrait.hanru', 'art/portraits/hanru.png', 'nonbender'],
       ['portrait.pella', 'art/portraits/pella.png', 'air'],
       ['portrait.dorin', 'art/portraits/dorin.png', 'earth'],
       ['portrait.ruon', 'art/portraits/ruon.png', 'neutral'],
@@ -216,38 +217,9 @@ describe('content builders preserve their authored values', () => {
       ['portrait.dema', 'art/portraits/dema.png', 'neutral'],
       ['portrait.sen', 'art/portraits/sen.png', 'neutral'],
     ]);
-    expect(ASSETS['unit.enemy.crossbow']).toEqual({
-      kind: 'sheet',
-      atlas: 'art/units/crossbow.json',
-      pixelsPerTile: 128,
-      footprint: { w: 1, h: 1 },
-      anchor: { x: 0.5, y: 0.85 },
-      facing: 'mirror',
-      palette: 'enemy',
-      clips: {
-        idle: {
-          frames: ['unit.enemy.crossbow/idle/0', 'unit.enemy.crossbow/idle/1'],
-          fps: 1,
-          loop: true,
-        },
-        walk: {
-          frames: ['unit.enemy.crossbow/walk/0', 'unit.enemy.crossbow/walk/1'],
-          fps: 4,
-          loop: true,
-        },
-        cast: {
-          frames: [
-            'unit.enemy.crossbow/cast/0',
-            'unit.enemy.crossbow/cast/1',
-            'unit.enemy.crossbow/cast/2',
-          ],
-          fps: 8,
-          loop: false,
-        },
-        hit: { frames: ['unit.enemy.crossbow/hit/0'], fps: 1, loop: false },
-        ko: { frames: ['unit.enemy.crossbow/ko/0'], fps: 1, loop: false },
-      },
-    });
+    expect(ASSETS['unit.enemy.crossbow']).toEqual(
+      topdownSheet('crossbow', 'unit.enemy.crossbow', 'enemy'),
+    );
   });
 
   it('materializes every omitted sound property through schema defaults', () => {

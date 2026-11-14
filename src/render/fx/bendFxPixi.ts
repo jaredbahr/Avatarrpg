@@ -1,7 +1,7 @@
 /**
- * The WebGL side of painted bend effects (ADR 0055, step 5): one pooled
+ * The WebGL side of painted effect cels (the top-down shots, #588): one pooled
  * sprite a cel, placed by `bendFxPlacement` and textured from `bendFxSource`,
- * the brightened cel when it flashes, exactly as Canvas 2D draws it.
+ * exactly as Canvas 2D draws it.
  */
 
 import type { Container, Texture } from 'pixi.js';

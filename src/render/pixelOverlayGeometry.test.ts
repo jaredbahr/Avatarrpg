@@ -124,36 +124,4 @@ describe('pixel overlay geometry', () => {
     expect(routeArrow.points[0]?.y).toBe(0);
     expect(aimArrow.points[0]?.y).toBe(boardPixelFromTile(camera, { x: 1, y: 0 }).y);
   });
-
-  it('projects a horizontal route and aim arrow along the oblique board basis', () => {
-    const camera = new Camera(
-      { width: 256, height: 256, dpr: 1 },
-      { width: 4, height: 4 },
-      'oblique',
-    );
-    const route = pathPixelMarks(
-      {
-        path: [{ x: 1, y: 0 }],
-        pathFrom: { x: 0, y: 0 },
-        pathOrigin: null,
-        pathStart: 0,
-        calmPath: false,
-        crispOverlays: false,
-      },
-      camera,
-    );
-    const routeArrow = route.at(-1)?.spec.operations[0];
-    const aimArrow = aimArcPixelMarks(
-      { from: { x: 0, y: 0 }, to: { x: 1, y: 0 }, arc: 0, color: '#fff' },
-      camera,
-    )[0]?.spec.operations.at(-1);
-
-    expect(routeArrow?.kind).toBe('polygon');
-    expect(aimArrow?.kind).toBe('polygon');
-    if (routeArrow?.kind !== 'polygon' || aimArrow?.kind !== 'polygon') return;
-    expect(routeArrow.points[0]?.x).toBeGreaterThan(0);
-    expect(routeArrow.points[0]?.y).toBeGreaterThan(0);
-    expect(aimArrow.points[0]?.x).toBeGreaterThan(0);
-    expect(aimArrow.points[0]?.y).toBeGreaterThan(0);
-  });
 });

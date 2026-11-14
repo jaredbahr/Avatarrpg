@@ -373,7 +373,7 @@ export function pathPixelMarks(
       ),
     );
   } else {
-    const tangent = projectedTangent(end.tangent, camera);
+    const tangent = projectedTangent(end.tangent);
     const polygon = flatPolygonPoints(
       arrowheadPolygon({ x: 0, y: 0 }, tangent, TILE * OVERLAY.pathArrowScale),
     );
@@ -409,7 +409,7 @@ export function aimArcPixelMarks(arc: AimArc, camera: Camera): PixelOverlayCue[]
   ];
   const tip = boardPixelFromTile(camera, raw[raw.length - 1] ?? arc.to);
   const arrow = flatPolygonPoints(
-    arrowheadPolygon({ x: 0, y: 0 }, projectedTangent(arcHeading(raw), camera), TILE),
+    arrowheadPolygon({ x: 0, y: 0 }, projectedTangent(arcHeading(raw)), TILE),
   ).map(({ x, y }) => ({ x: x + tip.x, y: y + tip.y }));
   operations.push({
     kind: 'polygon',
@@ -476,12 +476,8 @@ function flatPolygonPoints(flat: readonly number[]): G1Point[] {
   return snapWorldPoints(points);
 }
 
-function projectedTangent(
-  tangent: { x: number; y: number },
-  camera: Camera,
-): { x: number; y: number } {
-  const x = camera.projection === 'oblique' ? tangent.x - tangent.y : tangent.x;
-  const y = camera.projection === 'oblique' ? (tangent.x + tangent.y) / 2 : tangent.y;
+function projectedTangent(tangent: { x: number; y: number }): { x: number; y: number } {
+  const { x, y } = tangent;
   const length = Math.hypot(x, y) || 1;
   return { x: x / length, y: y / length };
 }

@@ -9,13 +9,11 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { OBLIQUE_FIGURE_SCALE } from '../../app/anim/actorScale';
 import {
   ASSETS,
   TOPDOWN_KEYS,
   resolveAsset,
   useTopDownStyle,
-  useWorldStyleTest,
   type SheetEntry,
 } from '../../content/assets/manifest';
 import { TILE } from '../camera';
@@ -24,6 +22,9 @@ import { poolOffset } from '../figureShadowArt';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
 import { feetFromPixels, plantAnchor, restingClip, standsOnSoles, type FrameFeet } from './feet';
 import { withActions, type SheetActions, type SheetClips } from './store';
+
+/** The oblique board's figure scale the G1 sheets were fitted at (ADR 0094); the board retired at T7. */
+const OBLIQUE_FIGURE_SCALE = 1.25;
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 
@@ -113,7 +114,6 @@ function lowestOpaqueRow(cel: Cel): number {
 const EIGHT_WAY = Object.entries(ASSETS)
   .filter(([, asset]) => asset.kind === 'sheet' && asset.locomotion)
   .map(([key]) => key);
-const WORLD_STYLE = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo', 'npc.shopkeeper'];
 
 function holdsEveryCelOnItsSoles(
   label: string,
@@ -154,11 +154,6 @@ function holdsEveryCelOnItsSoles(
 
 describe('every figure stands on its own soles', () => {
   holdsEveryCelOnItsSoles('shipped eight-way', () => EIGHT_WAY);
-
-  describe('the ?style=world test sheets', () => {
-    beforeAll(() => useWorldStyleTest());
-    holdsEveryCelOnItsSoles('?style=world', () => WORLD_STYLE, /style-test|units\/world\//);
-  });
 
   describe('the ?style=topdown sheets', () => {
     beforeAll(() => useTopDownStyle());
@@ -281,7 +276,7 @@ describe('the feet of a cel', () => {
     expect(plantAnchor('idle', { x: 0.5, y: 0.85 }, { h: 160 }, feet ?? undefined, 64).y).toBe(
       0.85,
     );
-    expect(standsOnSoles('stanceSouth')).toBe(true);
+    expect(standsOnSoles('restSouth')).toBe(true);
     expect(standsOnSoles('koSouthEast')).toBe(false);
   });
 
@@ -303,6 +298,6 @@ describe('the feet of a cel', () => {
     expect(poolOffset(resting, true).x).toBeCloseTo(-4 / 80, 6);
     expect(poolOffset(null, false)).toEqual({ x: 0, y: 0 });
     expect(restingClip('walkNorthWest')).toBe('idleNorthWest');
-    expect(restingClip('stanceSouth')).toBe('idleSouth');
+    expect(restingClip('restSouth')).toBe('idleSouth');
   });
 });

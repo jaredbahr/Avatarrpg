@@ -445,6 +445,12 @@ for (const viewport of [
       await enterNode(page, 'battle_forest_road');
       expect(await takeTurn(page, { settleCamera: false })).toBe(true);
       await waitForIdle(page);
+      // A new game's Forest Road is the guided first fight. On tablet docks at
+      // Large text the coach takes the acting card's place while it speaks
+      // (#695), hiding the status chips: census the coach, then skip it.
+      await audit(page, 'combat-guidance', ['.combat-guidance button']);
+      await page.getByRole('button', { name: 'Skip guidance', exact: true }).click();
+      await expect(page.locator('.combat-guidance')).toHaveCount(0);
       // Layout fixture: guarantee a real clickable tip() status chip is present.
       await page.evaluate(() => {
         const app = window.fnt!.app;

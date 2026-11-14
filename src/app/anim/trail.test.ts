@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { BA_DAN_VILLAGE } from '../../content/maps/village';
-import { BA_DAN_STANDING } from '../../content/scenes/baDan';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { visibleNpcs } from '../../core/story/world';
@@ -56,25 +55,6 @@ describe('placeParty', () => {
 
   it('is the same every time', () => {
     expect(placeParty(grid, spawn, 6)).toEqual(placeParty(grid, spawn, 6));
-  });
-
-  it('never seats a follower on a house plinth, its steps or its yard', () => {
-    // The well stop and the potter's door stop, where the line once stood on the woodcutter's plinth.
-    const houses = BA_DAN_STANDING.filter((piece) => piece.id.endsWith('-house'));
-    for (const lead of [
-      { x: 10, y: 12 },
-      { x: 14, y: 4 },
-    ]) {
-      const seats = placeParty(grid, lead, 4, { awayFrom: exit });
-      for (const seat of seats) {
-        expect(tileAt(grid, seat)?.blocked).toBeFalsy();
-        for (const house of houses)
-          expect(
-            house.footprint.some((cell) => samePos(cell, seat)),
-            `${posKey(seat)}`,
-          ).toBe(false);
-      }
-    }
   });
 
   it('stacks a party larger than the open ground on the last tile taken', () => {
@@ -609,4 +589,64 @@ it('keeps the five-leg courtyard audit separated without the serial cadence regr
   // The canal lengthens legal routes; compare the actual phase schedule with
   // the same routes played serially to guard the five-walker overlap.
   expect(total).toBeLessThan(serialTotal / 2);
+});
+
+describe('a follower joining and leaving the line (#696)', () => {
+  it('seats a newcomer beside the last member without moving anyone already standing', () => {
+    const seats = placeParty(grid, spawn, 3);
+    const trail = new PartyTrail(seats);
+    trail.resize(4, grid);
+    const after = trail.positions(4);
+    expect(trail.size).toBe(4);
+    expect(after.slice(0, 3)).toEqual(seats);
+    const newcomer = after[3];
+    const tail = seats[2];
+    expect(newcomer && tail && distance(newcomer, tail)).toBe(1);
+    expect(new Set(after.map(posKey)).size).toBe(4);
+    expect(newcomer && tileAt(grid, newcomer)?.blocked).toBeFalsy();
+  });
+
+  it('seats a newcomer exactly where placeParty would have seated a member of that line', () => {
+    const trail = new PartyTrail(placeParty(grid, spawn, 2));
+    trail.resize(4, grid);
+    expect(trail.positions(4)).toEqual(placeParty(grid, spawn, 4));
+  });
+
+  it('keeps a newcomer off the tiles it is told to avoid', () => {
+    const seats = placeParty(grid, spawn, 3);
+    const unrestricted = new PartyTrail(seats);
+    unrestricted.resize(4, grid);
+    const usual = unrestricted.positions(4)[3];
+    expect(usual).toBeDefined();
+    const trail = new PartyTrail(seats);
+    trail.resize(4, grid, usual ? [usual] : []);
+    const moved = trail.positions(4)[3];
+    expect(moved && usual && samePos(moved, usual)).toBe(false);
+  });
+
+  it('lets a leaver go from the end of the line and leaves everyone else standing', () => {
+    const seats = placeParty(grid, spawn, 4);
+    const trail = new PartyTrail(seats);
+    trail.resize(3, grid);
+    expect(trail.size).toBe(3);
+    expect(trail.positions(3)).toEqual(seats.slice(0, 3));
+  });
+
+  it('walks a follower on the end of the line one tile behind the last member', () => {
+    const trail = new PartyTrail(placeParty(grid, spawn, 3));
+    trail.resize(4, grid);
+    const before = trail.positions(4);
+    const path = [
+      { x: spawn.x, y: spawn.y + 1 },
+      { x: spawn.x, y: spawn.y + 2 },
+    ];
+    const routes = trail.walk(path, 4);
+    // Two steps on, everyone takes the tile two places ahead of them in the line.
+    expect(routes.some((route) => route.index === 3)).toBe(true);
+    const after = trail.positions(4);
+    expect(after[3]).toEqual(before[1]);
+    const last = after[2];
+    const follower = after[3];
+    expect(last && follower && distance(last, follower)).toBe(1);
+  });
 });

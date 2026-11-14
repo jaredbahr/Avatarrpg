@@ -2,11 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Grid, MapScene, SceneScenery, Tile, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { ALL_MAPS, CONTENT } from '../content';
-import { FOREST_ROAD } from '../content/maps/combat';
-import { positionHasCover } from '../core/rules/damage';
-import { buildGrid, tileAt, withSurface } from '../core/rules/grid';
-import { applyImpact } from '../core/rules/surfaces';
+import { readFileSync } from 'node:fs';
+import { TOPDOWN_SCENES } from '../content/topdown';
 import {
   SCENE_IMAGE_CAP,
   sceneDrawable,
@@ -170,7 +167,7 @@ it('prepares each feathered piece once per decoded image', () => {
   expect(putImageData).toHaveBeenCalledTimes(3);
 });
 
-for (const projection of ['orthographic', 'oblique'] as const satisfies readonly Projection[]) {
+for (const projection of ['orthographic'] as const satisfies readonly Projection[]) {
   describe(`${projection} scenery cutaway`, () => {
     const camera = new Camera(
       { width: 800, height: 600, dpr: 2 },
@@ -301,13 +298,10 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
     });
 
     it('uses the shipped 2x2 footprint centre and animated position', () => {
-      // The orthographic square foot is (3,3.5), one row south of the legacy foot
-      // (3,2.5), so the probe keeps its column (96/128 across the roof). The oblique
-      // foot is the front cell's centre (3.5,3.5), on the diamond's vertical axis:
-      // the same screen column as the one-tile unit at the origin (64/128) but a
-      // tile lower, so only rows below that unit's feet tell the two apart.
-      const column = projection === 'oblique' ? 64 : 96;
-      const fromRow = projection === 'oblique' ? 68 : 0;
+      // The square foot is (3,3.5), one row south of the legacy foot (3,2.5), so the
+      // probe keeps its column (96/128 across the roof).
+      const column = 96;
+      const fromRow = 0;
       installImage((x, y) => (x >= column - 2 && x <= column + 2 && y >= fromRow ? 255 : 0));
       const scene = roof(camera);
       expect(sceneryOpacity(scene, view({ units: [unit(origin)] }), camera)).toBe(1);
@@ -326,9 +320,8 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
     it('lets an injected legacy gate move the shipped 2x2 occlusion foot', () => {
       installImage(() => 255);
       const base = roof(camera);
-      // In oblique projection depth is (x + y) / 2. This point falls between
-      // the legacy 2x1 foot (2.75) and square 2x2 foot (3.25): only the legacy
-      // footprint is behind the roof's depth line and should trigger the cutaway.
+      // This point falls between the legacy 2x1 foot and the square 2x2 foot: only
+      // the legacy footprint is behind the roof's depth line and should trigger the cutaway.
       const scene = { ...base, depth: { x: 3, y: 3 } };
       const state = view({ units: [unit(origin, { size: 2 })] });
       expect(sceneryOpacity(scene, state, camera)).toBe(1);
@@ -342,7 +335,7 @@ it('reuses an image mask across frames and does not load an opted-out roof', () 
   const camera = new Camera(
     { width: 800, height: 600, dpr: 1 },
     { width: 8, height: 8 },
-    'oblique',
+    'orthographic',
   );
   const scene = roof(camera),
     state = view({ units: [unit(origin)] });
@@ -360,7 +353,7 @@ it('leaves an unloaded image opaque without rasterizing', () => {
   const camera = new Camera(
     { width: 800, height: 600, dpr: 1 },
     { width: 8, height: 8 },
-    'oblique',
+    'orthographic',
   );
   expect(sceneryOpacity(roof(camera), view({ units: [unit(origin)] }), camera)).toBe(1);
   expect(raster.createElement).not.toHaveBeenCalled();
@@ -423,7 +416,7 @@ it('cuts away only the opaque slice on a shared page and reuses each cropped mas
   const camera = new Camera(
     { width: 800, height: 600, dpr: 1 },
     { width: 8, height: 8 },
-    'oblique',
+    'orthographic',
   );
   const base = roof(camera),
     state = view({ units: [unit(origin)] });
@@ -449,7 +442,7 @@ it('bounds masks to 32 slice regions per decoded page', () => {
   const camera = new Camera(
     { width: 800, height: 600, dpr: 1 },
     { width: 8, height: 8 },
-    'oblique',
+    'orthographic',
   );
   const base = roof(camera),
     state = view({ units: [unit(origin)] });
@@ -467,7 +460,7 @@ it('fades connected slices together only while an actual occupant occludes a mem
   const camera = new Camera(
     { width: 800, height: 600, dpr: 1 },
     { width: 8, height: 8 },
-    'oblique',
+    'orthographic',
   );
   const a = { ...roof(camera), fadeGroup: 'west' };
   const b = { ...a, id: 'distant-slice', x: a.x + 1000 };
@@ -492,46 +485,20 @@ it('fades connected slices together only while an actual occupant occludes a mem
  * scene's count passed the old sixteen: the piece count is content, and this
  * is where content has to notice.
  */
+
 describe('scene image residency', () => {
-  for (const map of ALL_MAPS) {
-    const scene = map.scene;
-    if (!scene || scene.groundMode !== 'partial') continue;
-    it(`${map.id} holds every ground and scenery image under the cap`, () => {
-      // The flock's strip counts too: it is asked for once per scene and must not be evicted.
+  for (const [id, { url }] of TOPDOWN_SCENES) {
+    it(`${id} holds every ground and scenery image under the cap`, () => {
+      const scene = JSON.parse(readFileSync(`public/${url}`, 'utf8')) as MapScene;
       const distinct = new Set(
         [...scene.ground, ...scene.scenery, ...(scene.flock ? [scene.flock] : [])].map(
           (piece) => piece.url,
         ),
       );
       expect(scene.ground.length).toBeGreaterThan(0);
-      expect(
-        distinct.size,
-        `${map.id} asks for ${distinct.size} distinct scene images; SCENE_IMAGE_CAP is ${SCENE_IMAGE_CAP}`,
-      ).toBeLessThanOrEqual(SCENE_IMAGE_CAP);
+      expect(distinct.size, `${id}: SCENE_IMAGE_CAP is ${SCENE_IMAGE_CAP}`).toBeLessThanOrEqual(
+        SCENE_IMAGE_CAP,
+      );
     });
-  }
-});
-
-it('keeps a registered heap drawn on its own cell while the surface changes under it', () => {
-  // The forest heap cell is authored `r`: rubble on spoil, whose cover is
-  // granted by the live surface rather than a permanent tile flag. The painted
-  // heap is registered ground art for that cell, so it stays drawn whatever
-  // surface lands on it (water paints the mud wash over it); what the rules
-  // stop doing is giving the cell cover once the rubble is gone.
-  const authored = FOREST_ROAD.scene!;
-  const HEAP = { x: 7, y: 3 };
-  const heap = authored.ground.find(
-    (piece) =>
-      /\/rubble(-\d)?\.webp$/.test(piece.url) && piece.x === 768 + (HEAP.x - HEAP.y - 1) * 64,
-  );
-  expect(heap).toBeDefined();
-  let grid = applyImpact(CONTENT, buildGrid(FOREST_ROAD), [HEAP], 'water').grid;
-  expect(tileAt(grid, HEAP)?.surface?.id).toBe('mud');
-  const muddy = grid;
-  // The mud's expiry: its duration runs out and the cell is bare.
-  grid = withSurface(grid, HEAP, null);
-  for (const state of [muddy, grid]) {
-    expect(positionHasCover(CONTENT, state, HEAP)).toBe(false);
-    expect(sceneForGrid(authored, state).ground).toContain(heap);
   }
 });

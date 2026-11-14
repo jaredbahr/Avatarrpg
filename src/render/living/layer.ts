@@ -66,6 +66,8 @@ export class VillageLayer {
   private ctx: CanvasRenderingContext2D;
   /** One small reusable compositing surface; no per-frame texture cache. */
   private tint = document.createElement('canvas');
+  /** The tea and wave cels drawn this frame, as `clip:index`: what the e2e reads to know the pose is playing. */
+  private poses: string[] = [];
   constructor(host: HTMLElement) {
     this.canvas = document.createElement('canvas');
     this.canvas.className = 'village-life-canvas';
@@ -91,6 +93,7 @@ export class VillageLayer {
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, width, height);
     const t = view.reduced ? 0 : view.time / 1000;
+    this.poses = [];
     this.river(camera, t);
     const painting = view.backdrop ? backdrops.get(view.backdrop.url) : null;
     const faded = (actor: VillageActor, draw: () => void) => {
@@ -116,6 +119,8 @@ export class VillageLayer {
     ].sort((a, b) => a.y - b.y);
     for (const entity of entities) entity.draw();
     this.canvas.dataset.teaActors = String(view.actors.filter((a) => a.motion === 'tea').length);
+    // The clip each tea or wave figure actually drew (a sheet without the pose falls back to its idle).
+    this.canvas.dataset.poseCels = this.poses.sort().join(' ');
     this.canvas.dataset.illustratedActors = String(
       view.actors.filter((a) => a.sprite && sheets.loadedFor(a.sprite)).length,
     );
@@ -302,6 +307,8 @@ export class VillageLayer {
     const frame = this.actorFrame(actor, s, camera.viewport.dpr, reduced);
     if (casting && !reduced) paintForm(c, actor, box, false);
     if (frame && !frame.placeholder) {
+      if (actor.motion === 'tea' || actor.motion === 'wave')
+        this.poses.push(`${frame.clip}:${frame.index}`);
       const factor = (s * FIGURE_SCALE) / frame.pixelsPerTile;
       const w = frame.frame.w * factor,
         h = frame.frame.h * factor;

@@ -276,6 +276,103 @@ for run time), 21.01 MB after (93 oblique files left for run time), of 25 MB. Ja
 the precache manifest in `sw.js` included. `scripts/precache.test.ts` pins that every map drawing ignored art is a
 swapped one. T7 deletes those files.
 
+## T7, first half: the style switch and the oblique maps (2026-11-13)
+
+The owner approved T7 after an end-to-end top-down playthrough found no blockers. It lands in steps, each green on
+its own:
+
+- **The style switch is gone.** `src/app/style.ts`, `?style=oblique` and `?style=world` (the world-style figure test,
+  ADR 0097) are deleted; `main.ts` always turns on the top-down figures and fetches the scenes. A `?style=` in an old
+  link is ignored. A scene that fails to load leaves its map on the bare board (there is no oblique fallback).
+- **The route maps are top-down in the content itself.** Ba Dan, the Forest Road, the quarry gate, the Cutting and the
+  Driller floor declare `projection: 'topdown'` and `cameraCentreMargin: 1`, with no `backdrop` or `cameraPaint`; their
+  own `scene` carries only the rules' `paintedRubble` until the fetched scene replaces it. The rule layout that lived in
+  the oblique scene modules moved beside the maps (`maps/baDanLayout.ts`; the roadside and rubble cells in
+  `maps/combat.ts`). The oblique scene modules (`scenes/baDan*.ts`, `forestRoad*.ts`, `quarryGate.ts`,
+  `quarryProjected.ts` and their helpers) and their art pipelines (`scripts/art/ba-dan-regions/`, the forest G1 and
+  quarry packers) are deleted with their tests.
+- **The oblique map art is deleted**: the five maps' backdrops and scene pages under `public/art/maps/` (only the
+  riverside's backdrop stays), the world-style figures (`public/art/units/world/`, `style-test/`), their sources
+  (`art/source/ba-dan-*` but the riverside, `grounding/`, `figure-scale/`, `party-world/`,
+  `style-test-world-chars/`) and their NOTICE entries. `art/source/forest-road-g1/` stays: it is the provenance of
+  the shipped combat props. `PRECACHE_IGNORES` is empty again, so the whole game is precached.
+- **Not yet:** the oblique projection in the renderer (the lift pass, the diamond camera and its painted-ring and hull
+  clamps) and the G1 sheets in `ASSETS`, which the art and animation tests still pin and whose dormant mechanics
+  (bends, stance, jog, brisk cadence) need their own migration.
+
+Measured on the build: JavaScript 410.0 KB before, 402.1 KB after (budget 410, unchanged). Precache 17.44 MB
+before, with 97 files left for run time; 16.57 MB after, with 4 (the streamed music). The maps family went from
+5.47 MB to 0.42 MB and units from 7.02 MB to 6.17 MB.
+
+## T7, second half: the oblique projection in the renderer (2026-11-13)
+
+The renderer now knows two boards: `'topdown'` and the riverside's `'orthographic'`. Both are the identity ground
+transform, so:
+
+- **`'oblique'` is gone from `Projection`** and from the map schema (`projection: 'topdown'` or unset; a backdrop no
+  longer says `projection`). `projectGround`, `unprojectGround`, `groundBounds`, `renderFoot` and the animator's
+  `screenDirection` were identity on both boards and are deleted; callers use the ground point and
+  `footprintFoot` directly.
+- **The lift pass is gone** (`geometry/lift.ts`, `geometry/elevation.ts`: `liftAt`, `liftAlong`, `pickCell`, the
+  lift layer and its `liftCost` probe on both backends, `MapScene.reliefLift`). No shipped board lifted anything: the
+  top-down board never did, and the riverside has no raised ground. `Camera.pickTile` is `toTile` (kept for callers).
+- **The camera's oblique clamps are gone**: the painted ring (`clampRingTiles`), the programmatic-reachable convex hull
+  (`clampToProgrammaticReachableSet`, `MapDef.cameraPaint`) and the sub-device-pixel overview. Integer zoom is the
+  top-down board's alone, so its floor is always N ≥ dpr.
+- **Runtime scene grounding is gone**: `groundsSceneAtRuntime`, `grounding.ts`/`groundingLayer.ts` (the contact
+  wash), the structure and scenery shadow masks (`structureShadowPolygons`, `pieceArt`, `pieceFeet`,
+  `footprintSpan`), and on WebGL the partial-scene ground overlay and its raised-stone base, which only an oblique
+  `groundMode: 'partial'` scene ever showed. A top-down scene's shadows are baked into its plates (§2).
+- **Kept:** the figure shadow pool (`figureShadowArt`), which still grounds figures on the orthographic riverside;
+  `groundedCastArt` for props drawn from a sprite; the orthographic cliff bands (`boardRelief`); the riverside backdrop.
+
+The oblique figure scale (`OBLIQUE_FIGURE_SCALE`, ADR 0094) went with the projection: `partyScale` is the pose's own
+scale on both boards. The G1 sheets went next (below).
+
+Measured on the build: JavaScript 402.2 KB before, 389.2 KB after (budget 410, unchanged). Precache 16.67 MB before,
+16.63 MB after (325 entries both).
+
+## T7, last pass: the G1 sheets and their dormant mechanics (2026-11-13)
+
+Every G1 key was already drawn top-down (`useTopDownStyle` lays the top-down sheets over `ASSETS`), so the G1 sheets
+were reached only by tests. They are retired:
+
+- **The G1 sheets:** `public/art/units/*-g*` and `*-bend.json` (the party, the three bandits, the quarry bender and
+  the six Ba Dan residents), their packers (`party-g1`, `residents-g1`, `g-sprites`, `g-clips`, `enemy-g`,
+  `bandits-g`), their sources under `art/source/` (`party-g1`, `residents-g1`, `jog-g1`, `quarrybender-g` and the
+  per-character `-g`, `-actions`, `-bend`, `-clips`, `-hits` and `-riverside` folders) and the manifest's G1 builders
+  (`gSheet`, `enemyGSheet`, `residentGSheet`, `PARTY_G1_TRIMS`, `BANDITS_G1_TRIMS`, `residentGrid`). Those keys now
+  hold their top-down sheet in `ASSETS` itself, so a test reading `ASSETS` sees what the game draws. The CMU and
+  Mixamo credits covered only these sheets and leave the credits with them.
+- **The bends (ADR 0055):** the bend sets and the store's bend loading, `bendChoreo`, `bendHandoff`, the bend track,
+  the painted bend effects page (`public/art/fx/bend-*`, `bend-effects.ts`, `bend-sprites.ts`, the bend half of
+  `fx-g1.ts`) and the bend flash. Only a sheet with a `bend` could play one, and no top-down sheet has one. The
+  painted-cel layer they drew on stays: the top-down shots (#588) draw through it on both backends. Bending practice
+  in Ba Dan keeps playing each bender's combat cast; it no longer waits for the bend pages, and the open-water draw
+  that only a bend played is gone.
+- **The fighting stance (ADR 0052), the jog (ADR 0095), the brisk cadence (`BRISK_WALK_CEL_MS`, `walkCelMs`) and
+  `G1_WALK`:** only G1 sheets authored them. A party unit idles by heading between moves, which is what a sheet with
+  no stance already drew. Mira's own everywhere-amble (`LocomotionDef.amble`) was G1-only too; errands still amble.
+
+Tests that measured the G sheets' own art (their walk fit, stance, jog, bend sets and pins) are deleted with it; the
+hit and knockout timing tests keep the G Kaya, Sura, Bo and thug clip files as fixtures
+(`src/app/anim/fixtures/`), because the rules they hold still run for any sheet whose hit leads with a stance cel.
+
+Measured on the build: JavaScript 390.4 KB before, 382.3 KB after (budget 410, unchanged). Precache 16.63 MB before,
+12.99 MB after (325 entries before, 251 after).
+
+The legacy unit sheets went after it: the four-way hero sheets (`public/art/units/walking-*`), the 128 px quarry and
+Cutting sheets (the deserter, the crossbow, the mercenary, the sergeant and Ruon) and the old 2x2 `driller` sheet, the
+whole of `public/art/units/`. `useTopDownStyle` already laid a top-down sheet over every one of those keys, so nothing
+drew them; a Playwright run through every route node and fight on both renderers requested none of them. Their keys
+now hold their top-down sheet in `ASSETS`, so every `unit.*` key is top-down and the crossbow's 1.23 scale goes. Their
+packers (`side-walk`, `directional-motion`, `rest-poses`, `riko-directional-contact`, `cutting-characters`,
+`fire-deserter`, `driller-2x2`) and the sources that only fed them (`assets/reference/character-poses`,
+`character-locomotion`, `pose-guides`, `cutting-characters`, the deserter's combat and walk sources,
+`docs/art/sources/riko-directional-contact/`, `media/art-sources/driller-2x2-v1/`) and the Driller's NOTICE entry
+leave with them; four-way tests use the committed probe atlas. JavaScript 382.3 KB before, 381.5 KB after. Precache
+12.99 MB before, 10.42 MB after (251 entries before, 225 after).
+
 ## Driller grounding implementation (#469)
 
 The Driller packer records each static heading's tread span, center offset and baseline from

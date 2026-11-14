@@ -546,6 +546,7 @@ export const mapSchema = z
           pos: vec2.optional(),
           sprite: z.string().min(1),
           interaction: z.literal('route-sign').optional(),
+          faces: z.enum(HEADINGS).optional(),
           when: conditionSchema.optional(),
           node: id,
           routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
@@ -612,7 +613,7 @@ export const mapSchema = z
     cameraCentreMargin: z.number().finite().optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
-    projection: z.enum(['oblique', 'topdown']).optional(),
+    projection: z.literal('topdown').optional(),
     scene: z
       .object({
         paintedWater: z.boolean().optional(),
@@ -642,9 +643,6 @@ export const mapSchema = z
               .optional(),
           })
           .strict()
-          .optional(),
-        reliefLift: z
-          .union([z.number().min(0).max(0.5), z.array(z.number().min(0).max(0.5))])
           .optional(),
         // The rectangle the art covers, in projected world pixels: the camera
         // keeps its whole view inside it.
@@ -728,7 +726,6 @@ export const mapSchema = z
       .object({
         url: z.string().min(1),
         pixelsPerTile: z.number().int().min(32).max(256),
-        projection: z.literal('oblique').optional(),
         padding: z
           .object({
             left: z.number().nonnegative(),
@@ -844,6 +841,16 @@ export const encounterSchema = z.object({
   ),
   reinforcements: z.array(placement),
   weather: encounterWeatherSchema.optional(),
+  hard: z
+    .object({
+      hp: z.number().min(1).max(3),
+      bossHp: z.number().min(1).max(3),
+      power: z.number().int().min(0).max(10),
+      ap: z.number().int().min(0).max(4),
+    })
+    .partial()
+    .strict()
+    .optional(),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),
@@ -1943,17 +1950,6 @@ export function validateContent(
     const eightWayClips = HEADINGS.flatMap((heading) =>
       (['idle', 'walk', 'rest'] as const).map((base) => headingClip(base, heading)),
     );
-    // A fighting stance is optional, but a sheet that authors one authors it
-    // for every heading of its eight-way locomotion (ADR 0052).
-    const stanceClips = HEADINGS.map((heading) => headingClip('stance', heading));
-    const stances = stanceClips.filter((clip) => entry.clips[clip]);
-    if (stances.length > 0 && !entry.locomotion) {
-      problems.push(`asset ${key}: a stance needs declared eight-way locomotion`);
-    } else if (stances.length > 0 && stances.length < stanceClips.length) {
-      for (const clip of stanceClips) {
-        if (!entry.clips[clip]) problems.push(`asset ${key}: has a stance but no ${clip} clip`);
-      }
-    }
     if (entry.locomotion) {
       for (const clip of eightWayClips) {
         if (!entry.clips[clip]) {

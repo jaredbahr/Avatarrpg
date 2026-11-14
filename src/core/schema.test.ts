@@ -14,6 +14,7 @@
  * extra keys added and arrays cut short or grown.
  */
 
+import { isDeepStrictEqual } from 'node:util';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { CONTENT } from '../content';
@@ -119,9 +120,21 @@ function verdict(schema: Parser, value: unknown): unknown {
     : { ok: false, paths: result.error.issues.map((issue) => issue.path.map(String).join('.')) };
 }
 
-function expectSameVerdict(shipped: Parser, zod: Parser, value: unknown, label: string): boolean {
+function expectSameVerdict(
+  shipped: Parser,
+  zod: Parser,
+  value: unknown,
+  context: number | string = 'fixture',
+): boolean {
   const expected = verdict(zod, value);
-  expect(verdict(shipped, value), label).toStrictEqual(expected);
+  const actual = verdict(shipped, value);
+  if (!isDeepStrictEqual(actual, expected)) {
+    const label =
+      typeof context === 'number'
+        ? 'run ' + context + ': ' + JSON.stringify(value)?.slice(0, 400)
+        : context;
+    expect(actual, label).toStrictEqual(expected);
+  }
   return (expected as { ok: boolean }).ok;
 }
 
@@ -172,12 +185,11 @@ const REPLACEMENTS: readonly unknown[] = [
   { x: 1, y: 2 },
 ];
 
-/** A deep copy with one thing changed: a key dropped, value swapped, key added, array resized or hole made. */
-function mutate<T>(value: T, random: () => number): T {
-  const copy = structuredClone(value);
-  const all = containers(copy);
+/** Change one field or array slot in a fresh fixture copy. */
+function mutate(value: unknown, random: () => number): void {
+  const all = containers(value);
   const target = all[Math.floor(random() * all.length)];
-  if (target === undefined) return copy;
+  if (target === undefined) return;
   const pick = <V>(list: readonly V[]): V => list[Math.floor(random() * list.length)] as V;
   const keys = Object.keys(target);
   const roll = random();
@@ -186,7 +198,7 @@ function mutate<T>(value: T, random: () => number): T {
     else if (roll < 0.35) target.push(structuredClone(target[0] ?? pick(REPLACEMENTS)));
     else if (roll < 0.5 && keys.length > 0) delete target[Number(pick(keys))];
     else if (keys.length > 0) target[Number(pick(keys))] = structuredClone(pick(REPLACEMENTS));
-    return copy;
+    return;
   }
   if (roll < 0.25 && keys.length > 0) delete target[pick(keys)];
   // '__proto__' is a no-op here (`target['__proto__'] = 1` runs the setter and adds
@@ -194,19 +206,17 @@ function mutate<T>(value: T, random: () => number): T {
   // The JSON.parse corpus cases cover a real own '__proto__' key.
   else if (roll < 0.35) target[pick(['extra', '__proto__', 'toString', 'kind'])] = 1;
   else if (keys.length > 0) target[pick(keys)] = structuredClone(pick(REPLACEMENTS));
-  return copy;
 }
 
 function fuzz(shipped: Parser, zod: Parser, seeds: readonly unknown[], runs: number, seed: number) {
   const random = lcg(seed);
-  for (const value of seeds) expectSameVerdict(shipped, zod, value, 'authored');
+  for (const value of seeds) expectSameVerdict(shipped, zod, value);
   let passed = 0;
   for (let n = 0; n < runs; n++) {
-    let value = seeds[Math.floor(random() * seeds.length)];
+    const value = structuredClone(seeds[Math.floor(random() * seeds.length)]);
     const depth = 1 + Math.floor(random() * 3);
-    for (let d = 0; d < depth; d++) value = mutate(value, random);
-    const label = `run ${n}: ${JSON.stringify(value)?.slice(0, 400)}`;
-    if (expectSameVerdict(shipped, zod, value, label)) passed++;
+    for (let d = 0; d < depth; d++) mutate(value, random);
+    if (expectSameVerdict(shipped, zod, value, n)) passed++;
   }
   // Neither side of the verdict may be starved, or the comparison proves little.
   expect(passed).toBeGreaterThan(runs * 0.02);
@@ -385,7 +395,7 @@ describe('the runtime validator preserves its Zod 3 contract', () => {
     fuzz(saveShipped.saveBlobSchema, zodBuilt.save.saveBlobSchema, seeds, 3000, 1);
 
     for (const value of [...legacy, legacyProto, ...MALFORMED_SAVE_CORPUS]) {
-      expectSameVerdict(saveShipped.saveBlobSchema, zodBuilt.save.saveBlobSchema, value, 'corpus');
+      expectSameVerdict(saveShipped.saveBlobSchema, zodBuilt.save.saveBlobSchema, value);
       const json = JSON.stringify(value);
       expect(saveShipped.deserialize(json), json).toEqual(zodBuilt.save.deserialize(json));
     }
@@ -399,10 +409,14 @@ describe('the runtime validator preserves its Zod 3 contract', () => {
 
     const random = lcg(2);
     for (let n = 0; n < 500; n++) {
-      const json = JSON.stringify(mutate(seeds[n % 2], random));
-      expect(saveShipped.deserialize(json), json.slice(0, 400)).toEqual(
-        zodBuilt.save.deserialize(json),
-      );
+      const value = structuredClone(seeds[n % 2]);
+      mutate(value, random);
+      const json = JSON.stringify(value);
+      const actual = saveShipped.deserialize(json);
+      const expected = zodBuilt.save.deserialize(json);
+      if (!isDeepStrictEqual(actual, expected)) {
+        expect(actual, json.slice(0, 400)).toEqual(expected);
+      }
     }
   });
 

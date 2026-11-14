@@ -1,5 +1,15 @@
 # Ba Dan Lane — top-down PixelLab test
 
+## Riverside tea and wave (2026-11-13)
+- **Tool:** `tools/t14riverside.py` (the T2 method of `t2clips.py`; cap 80 under the `t14_` prefix; 42 used).
+- **Kaya and Sura** (`kaya2`, `fc_sura`): a seated tea (skeleton-v3, 6 frames, east and south-east) and a friendly wave, for the
+  riverside's `tea` and `wave` clips that the oblique G1 sheets used to carry. The packer takes two cels of one take in one
+  heading (`riverside` in its spec) and stands each pose on its own lowest ink row, so the seated body sits on the foot line.
+- **Picks:** tea in the east (Kaya the retake `@ff3d70` cels 1 and 3, Sura `@2af7bc` cels 3 and 5); wave in the south (Kaya
+  `@9c9d91`, Sura `@782513`, cels 1 and 2). Kaya's first tea (`@8d4e68`) lost her hair ribbon and recoloured the cup on the sip;
+  the first wave (`@e5a08f`, `@62339b`) kept the hand at the chin in the east and south-east, so the second asks for the hand
+  "well above her head" and the south heading reads it best. Neither first take is packed.
+
 ## T8 hero sprites (2026-11-10, ADR 0104 T8)
 - **Tool:** `tools/t8heroes.py` (the T2/T5 method; cap 1,750 under the `t8_` prefix; group ids in `t8/state.json`).
 - **The seven heroes the tutorial does not cast** (`unit.fire.tenzo`, `unit.water.nilak`, `unit.earth.linmei`, `unit.air.nima`,
@@ -455,7 +465,8 @@ It uses the same family, anchors and grounding as Ba Dan; the rules are a demo's
 - **The thug:** a club and a rust headscarf.
 - **The slinger:** hooded, masked, with a sling.
 - **The bruiser:** a 56 px canvas, so bigger, with a cudgel.
-- **Sura and Bo:** from their G1 design descriptions in `art/source/party-g1`.
+- **Sura and Bo:** from their G1 design descriptions in `art/source/party-g1` (retired with the G1 sheets in T7;
+  it is in the history at b525798fde).
 
 Each has an idle, a walk (`walking-8-frames`, skeleton-v3) and an attack (custom skeleton-v3: club swing, sling
 throw, heavy slam, water push, stomp and punch), in four headings. Kaya is v2 with the v4 bends and their fire VFX,

@@ -242,8 +242,11 @@ for (const viewport of [
         }
         expect(measured.dpr).toBe(2);
         expect(measured.rem).toBe(size.rem);
-        expect(measured.portrait.width).toBe(15 * size.rem);
-        expect(measured.portrait.height).toBe(15 * size.rem);
+        // 15rem, except that Largest text keeps the Large-text size (12.5rem
+        // there, 300 px) so a short line gets a shorter panel (owner, 2026-11-14).
+        const portraitRem = size.setting === 'huge' ? 12.5 : 15;
+        expect(measured.portrait.width).toBe(portraitRem * size.rem);
+        expect(measured.portrait.height).toBe(portraitRem * size.rem);
         expect(measured.name.text).toBe(person.name);
         expect(measured.name.scrollWidth).toBeLessThanOrEqual(measured.name.clientWidth + 1);
         for (const bounds of measured.name.textRects) {

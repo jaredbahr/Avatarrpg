@@ -63,7 +63,7 @@ export function feetFromPixels(
 
 /** The clips a figure stands or walks in: those its planted foot is on the ground for. */
 export function standsOnSoles(clip: string): boolean {
-  return /^(idle|walk|jog|rest|stance)/.test(clip);
+  return /^(idle|walk|rest)/.test(clip);
 }
 
 /**
@@ -84,5 +84,5 @@ export function plantAnchor(
 
 /** The idle a moving or standing clip's heading rests in: what its steady pool is centred on. */
 export function restingClip(clip: ClipName): ClipName {
-  return clip.replace(/^(walk|jog|rest|stance)/, 'idle') as ClipName;
+  return clip.replace(/^(walk|rest)/, 'idle') as ClipName;
 }

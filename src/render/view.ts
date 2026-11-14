@@ -8,7 +8,7 @@
 
 import type { Grid, MapBackdrop, MapExit, MapScene, StatusId, Vec2 } from '../core/types';
 import { tileAt } from '../core/rules/grid';
-import type { ClipName, Heading, MeleeDirection } from '../content/assets/clips';
+import type { ClipName, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 import { FLOATING_NUMBER } from './palettes';
 
@@ -54,12 +54,6 @@ export interface RenderUnit {
   readonly alpha?: number;
   /** 0..1 white flash on a hit. */
   readonly flash?: number;
-  /**
-   * A bend cel to draw in place of the clip (ADR 0055): the heading and play
-   * index `SheetStore.bendFrame` resolves, drawn as authored, never mirrored.
-   * A cel that does not resolve draws the clip instead.
-   */
-  readonly bend?: { readonly heading: Heading; readonly index: number };
 }
 
 /** How far the fallen fade takes a standing pose: nearly a ghost, under its cross. */
@@ -83,15 +77,10 @@ export function fallenAlpha(unit: Pick<RenderUnit, 'fallen' | 'clip'>): number {
  * stay on the logical ground point. Elevation is applied in actor space for
  * both rendering backends.
  */
-export function unitMarkerGroundPoint(
-  base: Vec2,
-  tileSize: number,
-  elevationLift: number,
-  contactOffset?: Vec2,
-): Vec2 {
+export function unitMarkerGroundPoint(base: Vec2, tileSize: number, contactOffset?: Vec2): Vec2 {
   return {
     x: base.x + (contactOffset?.x ?? 0) * tileSize,
-    y: base.y + ((contactOffset?.y ?? 0) - elevationLift) * tileSize,
+    y: base.y + (contactOffset?.y ?? 0) * tileSize,
   };
 }
 
@@ -201,11 +190,11 @@ export interface EmitterInstance {
 }
 
 /**
- * One painted bend-effect cel, resolved (ADR 0055): the page rectangle, where
- * its pivot lands, and its turn, size, opacity and flash. The caller samples
- * these from its own clock (`sampleBendFx`); both backends draw them as they
- * are and never time, turn, mirror or shake anything themselves. The board
- * shake is the view's `cameraNudge`.
+ * One painted effect cel, resolved: the page rectangle, where its pivot lands,
+ * and its turn, size and opacity. The top-down shots (#588) sample these from
+ * their own clock (`shotSprite`); both backends draw them as they are and never
+ * time, turn, mirror or shake anything themselves. The board shake is the
+ * view's `cameraNudge`.
  */
 export interface BendFxSprite {
   /** The page image, relative to the site root. */
@@ -234,8 +223,6 @@ export interface BendFxSprite {
   readonly alpha: number;
   /** `add` lights what is under the cel instead of covering it. */
   readonly blend: 'normal' | 'add';
-  /** 0..1: the cel added onto itself, its colour times `1 + flash`; not a white flash. */
-  readonly flash: number;
   /** `ground` and `underActor` draw under the upright actors, `overActor` over them. */
   readonly z: 'ground' | 'underActor' | 'overActor';
 }

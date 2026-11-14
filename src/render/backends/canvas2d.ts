@@ -10,15 +10,15 @@
  * context, they never own one.
  */
 
-import type { Grid, MapScene, SceneFlock, SceneImage, SceneScenery, Vec2 } from '../../core/types';
+import type { Grid, MapScene, SceneFlock, SceneImage, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides, headingClip, type Heading } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
-import { Camera, TILE } from '../camera';
-import { drawsScene, groundsSceneAtRuntime, tileSize } from '../projection';
-import type { Viewport } from '../camera';
+import { TILE } from '../camera';
+import { drawsScene } from '../projection';
+import type { Viewport, Camera } from '../camera';
 import type { TileRelief } from '../geometry/board';
-import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
+import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
 import { contourLoops, traceRegions } from '../geometry/contour';
 import {
   activeGroundCue,
@@ -33,18 +33,7 @@ import {
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
-import { liftAlong, liftAt } from '../geometry/elevation';
 import type { Curve } from '../geometry/curve';
-import {
-  clip,
-  identity,
-  liftCost,
-  liftPlan,
-  markedCells,
-  marksSchedule,
-  polyBounds,
-} from '../geometry/lift';
-import type { LiftPlan, Pt, Rect } from '../geometry/lift';
 import { smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
@@ -85,13 +74,10 @@ import {
 import type { PixelOverlayCue } from '../pixelOverlayGeometry';
 import { RevealLayer, revealBox, revealsUnit } from '../reveal';
 import type { RevealFigure } from '../reveal';
-import type { GroundingCanvas } from '../groundingLayer';
-import { sceneGrounding } from '../groundingLayer';
-import { GROUNDING_GRAIN } from '../grounding';
 import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
 import { paintedWaterIsDry, surfaceIsPainted } from '../sceneSurfaces';
 import { HP_CAP, HP_COLORS, MAP_MARGIN_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
-import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
+import { paintTileDecor } from '../painters/board';
 import { paintFloatingNumber } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
 import { placeFrame } from '../sheets/placement';
@@ -113,8 +99,8 @@ import {
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { boardDepth, compareRenderedDepth } from './depthOrder';
-import { renderFoot } from '../renderFoot';
-import { groundedCastArt, pieceArt, pieceFeet } from '../groundedCastArt';
+import { footprintFoot } from '../../core/rules/footprint';
+import { groundedCastArt } from '../groundedCastArt';
 import {
   TOPDOWN_FEET_WIDTH,
   feetBlobArt,
@@ -131,8 +117,6 @@ import {
 import { restingClip } from '../sheets/feet';
 import type { ResolvedFrame } from '../sheets/store';
 import {
-  CAST_PER_PIXEL,
-  CAST_SHADOW_ALPHA,
   CONTACT_LINE,
   DEFAULT_ACTOR_GROUNDING,
   FALLEN_SHADOW_ALPHA,
@@ -141,10 +125,7 @@ import {
   contactBand,
   inkColor,
   type ShadowGrid,
-  structureShadowPolygons,
-  tileShadowCell,
   shadowGrid,
-  silhouetteProjection,
 } from '../lighting';
 
 /** Canvas ordering point, exported so parity can be tested without a drawing context. */
@@ -154,10 +135,7 @@ export function canvasActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return boardDepth(
-    camera.groundPoint(renderFoot(pos, size, square, camera.projection)),
-    camera.projection,
-  );
+  return boardDepth(camera.groundPoint(footprintFoot(pos, size, square)), camera.projection);
 }
 
 /** How far in from the board's edge the shading reaches, in tiles. */
@@ -223,22 +201,9 @@ export class Canvas2DBackend implements RenderBackend {
   private pavedCells: readonly Vec2[] | undefined;
   /** One caster at a time, in the exact-max path (see `castInto`). */
   private castScratch: HTMLCanvasElement | null = null;
-  /** One viewport's static scenery union; live actors and props never enter it. */
-  private sceneryShadow: {
-    key: string;
-    images: (HTMLImageElement | null)[];
-    canvas: HTMLCanvasElement;
-  } | null = null;
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
-  /** The oblique board, where raised ground is lifted rather than banded. */
-  private lifted = false;
-  /** The raised blocks as drawn, cropped to them, and what they were drawn for. */
-  private liftLayer: HTMLCanvasElement | null = null;
-  private liftKey = '';
-  /** While set, the tile painters draw only these cells (a mark on one top). */
-  private only: { x0: number; y0: number; x1: number; y1: number } | null = null;
   /** The flock whose page was last asked for, so a scene change asks once. */
   private flock: SceneFlock | undefined;
 
@@ -263,8 +228,6 @@ export class Canvas2DBackend implements RenderBackend {
     sprites.clear();
     sheets.clear();
     this.pixelMarkDrawables.clear();
-    this.dropLiftLayer();
-    this.sceneryShadow = null;
   }
 
   draw(view: MapView, camera: Camera): void {
@@ -276,15 +239,9 @@ export class Canvas2DBackend implements RenderBackend {
     view = {
       ...view,
       scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
-      emitters: resolveActorEmitters(
-        view.emitters,
-        view.grid,
-        camera.projection,
-        camera.toScreen({ x: 0, y: 0 }).size * dpr,
-      ),
+      emitters: resolveActorEmitters(view.emitters, camera.toScreen({ x: 0, y: 0 }).size * dpr),
     };
 
-    this.lifted = groundsSceneAtRuntime(camera.projection);
     this.organic = false;
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -304,179 +261,56 @@ export class Canvas2DBackend implements RenderBackend {
     // A map's painting takes the terrain's place under everything else, once
     // it has loaded; the decor that marks footing over it comes back only
     // under High contrast, where the rules must read without the picture.
-    const compatible =
-      camera.projection === 'oblique'
-        ? view.backdrop?.projection === 'oblique'
-        : !view.backdrop?.projection;
-    const partialScene = camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
-    const painting =
-      !partialScene && compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    const painting = view.backdrop ? backdrops.get(view.backdrop.url) : null;
     if (painting) this.drawBackdrop(painting, view, camera);
-    let sceneGround = false;
-    let grounding: GroundingCanvas | null = null;
-    let sceneGroundPieces: { piece: SceneImage; image: HTMLImageElement | null }[] = [];
-    if (camera.projection === 'oblique' && view.scene) {
-      const ground = sceneGroundImages(view.scene);
-      sceneGroundPieces = ground;
-      sceneGround = sceneArtLoaded(view.scene, ground);
-      if (sceneGround && !partialScene) this.drawScenePlates(ground, camera);
-      if (sceneGround)
-        grounding = sceneGrounding(view.scene, {
-          toWorld: (pos) => camera.groundPoint(pos),
-        });
-      if (sceneGround && !partialScene) drawGrounding(ctx, grounding, camera);
+    // The raised walls and rubble heaps stand as drawings among the figures (#577).
+    if (camera.projection === 'topdown') view = withStructures(view);
+    // The top-down board (ADR 0104) draws its scene's plates at the identity ground transform:
+    // its shadows are baked into the plates. Until every plate and piece has loaded, the
+    // procedural terrain stands in.
+    const scene = drawsScene(camera.projection) ? view.scene : undefined;
+    let painted = painting !== null;
+    let scenePainted = false;
+    if (scene) {
+      const ground = sceneGroundImages(scene);
+      painted = sceneArtLoaded(scene, ground);
+      scenePainted = painted;
+      if (painted) this.drawScenePlates(ground, camera);
     }
-    if (camera.projection === 'oblique') {
-      // Ground receives one affine transform. Upright scenery and actors never do.
-      const ground = new Camera(
-        { width: view.grid.width * 64, height: view.grid.height * 64, dpr },
-        camera.grid,
-      );
-      const m = camera.groundMatrix();
-      const painted = view.scene ? sceneGround : painting !== null;
-      const plan = liftPlan(
-        view.grid,
-        camera,
-        sceneGround ? (view.scene?.reliefLift ?? 0) : 0,
-        Boolean(view.crispOverlays),
-      );
-      // The ground, then its marks: the ones that change only with the ground
-      // (surfaces, seams and rule markers over art), then the live ones.
-      const onGround = (draw: () => void) => {
-        this.ctx.save();
-        this.ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-        draw();
-        this.ctx.restore();
-      };
-      if (partialScene) {
-        // A local authored region is an overlay, so the grid's procedural
-        // terrain must be painted first and remain visible outside it.
-        onGround(() => {
-          this.drawGround(view, ground, false, true, false);
-          // A complete normal partial scene keeps raised rule terrain below its
-          // authored ground and live surfaces. Full decor handles fallbacks and
-          // High contrast later in the pass.
-          if (sceneGround && !view.crispOverlays) this.drawElevationBase(view, ground);
-        });
-        this.drawScenePlates(sceneGroundPieces, camera);
-        drawGrounding(ctx, grounding, camera);
-      } else if (!painted) {
-        onGround(() => {
-          this.drawGround(view, ground, false);
-          this.drawDecor(view, ground);
-        });
-      }
-      const staticMarks =
-        partialScene || painted
-          ? () => {
-              if (partialScene) {
-                this.drawGround(view, ground, sceneGround, false, true);
-                // A complete partial scene owns its local ground art; accessibility
-                // and unavailable pieces still need all procedural rule markers.
-                if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
-                else this.drawSeams(view, ground, sceneGround);
-              } else {
-                this.drawGround(view, ground, true);
-                if (view.crispOverlays) this.drawDecor(view, ground);
-              }
-            }
-          : null;
-      const liveMarks = () => {
-        this.drawOverlays(view, ground, camera);
-        this.drawPath(view, camera);
-        if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
-        this.drawFxLayer(view, ground, 'under', true);
-        this.drawExit(view, camera, view.cameraNudge);
-      };
-      // The lift layer copies the flat ground, so it is brought up to date
-      // before any mark is drawn over it.
-      const layer = plan.bounds
-        ? this.syncLiftLayer(view, camera, plan, {
-            key: [
-              identity(view.grid),
-              // Not the scene: it is copied whenever its scenery is filtered.
-              identity(view.scene?.ground),
-              identity(grounding?.canvas),
-              sceneGround,
-              sceneGroundPieces.filter(({ image }) => image).length,
-              painting?.src,
-              view.hatch,
-              view.gridLines,
-              view.obscuringTiles !== undefined,
-            ].join('|'),
-            marks: staticMarks && (() => onGround(staticMarks)),
-          })
-        : this.dropLiftLayer();
-      onGround(() => {
-        staticMarks?.();
-        liveMarks();
-      });
-      if (layer && plan.bounds) this.drawLift(view, camera, plan, layer, () => onGround(liveMarks));
-      this.drawSteamPuffs(view, camera);
-      this.drawClimbMarkers(view, camera);
-      this.drawCastShadows(view, camera);
-      this.drawUnitRings(view, camera);
-      drawBendFx(ctx, view.bendFx ?? [], camera, false);
-      this.drawOccupants(view, camera);
-      this.flushHealthBars(camera, view.cameraNudge);
-      this.drawTargetReticle(view, camera);
-      this.drawFlock(view, camera);
-      drawBendFx(ctx, view.bendFx ?? [], camera, true);
-      ctx.save();
-      ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-      this.drawFxLayer(view, ground, 'over', true);
-      ctx.restore();
-    } else {
-      this.dropLiftLayer();
-      // The raised walls and rubble heaps stand as drawings among the figures (#577).
-      if (camera.projection === 'topdown') view = withStructures(view);
-      // The top-down board (ADR 0104) draws its scene's plates at the identity ground transform,
-      // with no lift and no runtime grounding: its shadows are baked into the plates. Until every
-      // plate and piece has loaded, the procedural terrain stands in, as on the oblique board.
-      const scene = drawsScene(camera.projection) ? view.scene : undefined;
-      let painted = painting !== null;
-      let scenePainted = false;
-      if (scene) {
-        const ground = sceneGroundImages(scene);
-        painted = sceneArtLoaded(scene, ground);
-        scenePainted = painted;
-        if (painted) this.drawScenePlates(ground, camera);
-      }
-      this.organic = drawsOrganicSurfaces(view, camera.projection);
-      this.drawGround(view, camera, painted);
-      if (!painted || view.crispOverlays) this.drawDecor(view, camera);
-      const surfaces = this.organic ? surfaceArt(view, painted) : null;
-      if (surfaces) this.drawTopdownSurfaces(surfaces, camera);
-      // A painted scene runs past the grid and carries its own light, so the board-edge falloff
-      // (clipped to the grid) would cut a straight band through it. Pixi skips it the same way.
-      if (view.atmosphere && !scenePainted) this.drawShade(view, camera);
-      if (camera.projection === 'topdown') this.drawTopdownPropShadows(view, camera);
-      const wash = drawsWash(view, camera.projection);
-      if (wash) this.drawTopdownWash(view, camera);
-      this.drawOverlays(view, camera, camera, !wash);
-      if (!surfaces) this.drawSteamPuffs(view, camera);
-      if (!wash) this.drawPath(view, camera);
-      if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
-      this.drawFxLayer(view, camera, 'under');
-      this.drawExit(view, camera, view.cameraNudge);
-      this.drawClimbMarkers(view, camera);
-      this.drawCastShadows(view, camera);
-      this.drawUnitRings(view, camera);
-      drawBendFx(ctx, view.bendFx ?? [], camera, false);
-      // A top-down board sorts its props, walls, flames and figures together even without a scene.
-      if (scene || camera.projection === 'topdown') this.drawOccupants(view, camera, surfaces);
-      else {
-        this.drawNpcs(view, camera);
-        this.drawProps(view, camera);
-        this.drawUnits(view, camera);
-      }
-      if (surfaces) this.drawTopdownSteam(surfaces, camera);
-      this.flushHealthBars(camera, view.cameraNudge);
-      this.drawTargetReticle(view, camera);
-      if (scene) this.drawFlock(view, camera);
-      drawBendFx(ctx, view.bendFx ?? [], camera, true);
-      this.drawFxLayer(view, camera, 'over');
+    this.organic = drawsOrganicSurfaces(view, camera.projection);
+    this.drawGround(view, camera, painted);
+    if (!painted || view.crispOverlays) this.drawDecor(view, camera);
+    const surfaces = this.organic ? surfaceArt(view, painted) : null;
+    if (surfaces) this.drawTopdownSurfaces(surfaces, camera);
+    // A painted scene runs past the grid and carries its own light, so the board-edge falloff
+    // (clipped to the grid) would cut a straight band through it. Pixi skips it the same way.
+    if (view.atmosphere && !scenePainted) this.drawShade(view, camera);
+    if (camera.projection === 'topdown') this.drawTopdownPropShadows(view, camera);
+    const wash = drawsWash(view, camera.projection);
+    if (wash) this.drawTopdownWash(view, camera);
+    this.drawOverlays(view, camera, camera, !wash);
+    if (!surfaces) this.drawSteamPuffs(view, camera);
+    if (!wash) this.drawPath(view, camera);
+    if (view.aimArc) this.drawAimArc(view.aimArc, camera, view.cameraNudge);
+    this.drawFxLayer(view, camera, 'under');
+    this.drawExit(view, camera, view.cameraNudge);
+    this.drawClimbMarkers(view, camera);
+    this.drawCastShadows(view, camera);
+    this.drawUnitRings(view, camera);
+    drawBendFx(ctx, view.bendFx ?? [], camera, false);
+    // A top-down board sorts its props, walls, flames and figures together even without a scene.
+    if (scene || camera.projection === 'topdown') this.drawOccupants(view, camera, surfaces);
+    else {
+      this.drawNpcs(view, camera);
+      this.drawProps(view, camera);
+      this.drawUnits(view, camera);
     }
+    if (surfaces) this.drawTopdownSteam(surfaces, camera);
+    this.flushHealthBars(camera, view.cameraNudge);
+    this.drawTargetReticle(view, camera);
+    if (scene) this.drawFlock(view, camera);
+    drawBendFx(ctx, view.bendFx ?? [], camera, true);
+    this.drawFxLayer(view, camera, 'over');
     this.drawFloaters(view, camera);
 
     ctx.restore();
@@ -486,7 +320,7 @@ export class Canvas2DBackend implements RenderBackend {
   /**
    * Every upright occupant of a scene board in one depth order (`boardDepth`): the scene's scenery
    * (faded where it hides a figure), NPCs, props and units, then the reveal of party members a
-   * piece covers. The oblique and top-down boards both draw through it.
+   * piece covers. The top-down board draws through it.
    */
   private drawOccupants(view: MapView, camera: Camera, surfaces: SurfaceArt | null = null): void {
     const { ctx } = this;
@@ -545,12 +379,7 @@ export class Canvas2DBackend implements RenderBackend {
       })),
       ...this.flameOccupants(surfaces, camera),
       ...view.units.map((unit) => ({
-        pos: renderFoot(
-          unit.renderPos ?? unit.pos,
-          unit.size,
-          this.squareFootprints,
-          camera.projection,
-        ),
+        pos: footprintFoot(unit.renderPos ?? unit.pos, unit.size, this.squareFootprints),
         draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
       })),
     ].sort((a, b) =>
@@ -587,20 +416,6 @@ export class Canvas2DBackend implements RenderBackend {
 
   /** The painting over the whole board's rectangle: one draw, scaled to the camera. */
   private drawBackdrop(image: HTMLImageElement, view: MapView, camera: Camera): void {
-    if (camera.projection === 'oblique') {
-      const padding = view.backdrop?.padding;
-      const scale = (camera.scale * 64) / (view.backdrop?.pixelsPerTile ?? 64);
-      drawArt(this.ctx, 1, scale, () =>
-        this.ctx.drawImage(
-          image,
-          -camera.offsetX - (padding?.left ?? 0) * camera.scale,
-          -camera.offsetY - (padding?.top ?? 0) * camera.scale,
-          image.naturalWidth * scale,
-          image.naturalHeight * scale,
-        ),
-      );
-      return;
-    }
     const origin = camera.toScreen({ x: 0, y: 0 });
     this.ctx.drawImage(
       image,
@@ -650,180 +465,17 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  /**
-   * The lift layer (ADR 0065): every raised block drawn once, on a canvas no
-   * bigger than the blocks on screen, and redrawn only when the plan (camera,
-   * viewport, footing) or the ground it copies changes. Its tops and faces
-   * are copied from the flat ground this frame has just drawn, a block's box
-   * at a time; its static marks are drawn straight onto each top, lifted.
-   */
-  private syncLiftLayer(
-    view: MapView,
-    camera: Camera,
-    plan: LiftPlan,
-    ground: { key: string; marks: (() => void) | null },
-  ): HTMLCanvasElement | null {
-    const rect = plan.bounds;
-    if (!rect) return this.dropLiftLayer();
-    const key = `${plan.key}|${ground.key}`;
-    if (this.liftLayer && key === this.liftKey) return this.liftLayer;
-    const dpr = camera.viewport.dpr;
-    const layer = (this.liftLayer ??= document.createElement('canvas'));
-    const width = Math.round(rect.w * dpr);
-    const height = Math.round(rect.h * dpr);
-    if (layer.width !== width || layer.height !== height) {
-      layer.width = width;
-      layer.height = height;
-    }
-    // A fresh canvas asked only ever for 2D always has one.
-    const out = layer.getContext('2d') as CanvasRenderingContext2D;
-    out.setTransform(1, 0, 0, 1, 0, 0);
-    out.clearRect(0, 0, width, height);
-    out.setTransform(dpr, 0, 0, dpr, -rect.x * dpr, -rect.y * dpr);
-    out.imageSmoothingEnabled = true;
-    out.lineCap = 'round';
-    this.liftKey = key;
-    liftCost.layerBuilds++;
-    liftCost.heldPx = width * height;
-
-    // The board canvas holds the flat ground, shaken; the layer is not.
-    const tilePx = tileSize(camera.projection) * camera.scale;
-    const nudge = { x: view.cameraNudge.x * tilePx, y: view.cameraNudge.y * tilePx };
-    for (const cell of plan.cells)
-      for (const op of cell.ops) {
-        if (op.kind === 'overlay') {
-          if (!ground.marks) continue;
-          out.save();
-          traceInto(out, op.poly);
-          out.clip();
-          out.translate(0, -op.shift);
-          this.drawOnly(out, cell, ground.marks);
-          out.restore();
-        } else if ('shift' in op) {
-          out.save();
-          traceInto(out, op.poly);
-          out.clip();
-          copyRect(out, this.canvas, polyBounds(op.poly, 0), dpr, nudge.x, nudge.y + op.shift);
-          out.restore();
-        } else if (op.kind === 'fill') {
-          out.globalAlpha = op.alpha;
-          out.fillStyle = op.color;
-          traceInto(out, op.poly);
-          out.fill();
-          out.globalAlpha = 1;
-        } else {
-          out.globalAlpha = op.alpha;
-          out.strokeStyle = op.color;
-          out.lineWidth = op.width;
-          out.beginPath();
-          out.moveTo(op.a.x, op.a.y);
-          out.lineTo(op.b.x, op.b.y);
-          out.stroke();
-          out.globalAlpha = 1;
-        }
-      }
-    return layer;
-  }
-
-  /** Lets the lift layer go: nothing raised is on screen, or the board is gone. */
-  private dropLiftLayer(): null {
-    if (this.liftLayer) {
-      // Zero the backing store: iOS frees canvas memory on that, not on GC.
-      this.liftLayer.width = 0;
-      this.liftLayer.height = 0;
-    }
-    this.liftLayer = null;
-    this.liftKey = '';
-    liftCost.heldPx = 0;
-    return null;
-  }
-
-  /** Draws `draw` into `ctx`, with the tile painters kept to the cells round `cell`. */
-  private drawOnly(ctx: CanvasRenderingContext2D, cell: Vec2, draw: () => void): void {
-    const own = this.ctx;
-    this.ctx = ctx;
-    this.only = { x0: cell.x - 2, y0: cell.y - 2, x1: cell.x + 2, y1: cell.y + 2 };
-    draw();
-    this.only = null;
-    this.ctx = own;
-  }
-
-  /**
-   * Raised ground as blocks (ADR 0065). The layer goes over the flat ground
-   * and its marks in one copy, covering each raised block's flat marks; then
-   * the tops with a live mark near them take the marks again, lifted.
-   */
-  private drawLift(
-    view: MapView,
-    camera: Camera,
-    plan: LiftPlan,
-    layer: HTMLCanvasElement,
-    liveMarks: () => void,
-  ): void {
-    const { ctx } = this;
-    const rect = plan.bounds;
-    if (!rect) return;
-    const dpr = camera.viewport.dpr;
-    liftCost.frames++;
-    // The ctx carries the shake, and the layer's rect is in camera space.
-    ctx.drawImage(layer, rect.x, rect.y, rect.w, rect.h);
-    liftCost.copies++;
-    liftCost.copiedPx += layer.width * layer.height;
-    const steps = marksSchedule(plan, view.grid, markedCells(view.grid, view));
-    for (const { cell, recover, marks } of steps) {
-      const box = recover && cell.blockBounds && clip(cell.blockBounds, rect);
-      if (box) {
-        ctx.save();
-        ctx.beginPath();
-        for (const poly of cell.block) traceInto(ctx, poly, false);
-        ctx.clip();
-        copyRect(ctx, layer, box, dpr, -rect.x, -rect.y);
-        ctx.restore();
-      }
-      if (!marks || !cell.top) continue;
-      liftCost.markedTops++;
-      ctx.save();
-      traceInto(ctx, cell.top);
-      ctx.clip();
-      ctx.translate(0, -cell.shift);
-      this.drawOnly(ctx, cell, liveMarks);
-      ctx.restore();
-    }
-  }
-
-  /** The cells the tile painters visit: those on screen, or only those round one top. */
+  /** The cells the tile painters visit: those on screen. */
   private tileBounds(view: MapView, camera: Camera) {
-    const all = camera.visibleBounds(view.grid);
-    const only = this.only;
-    if (!only) return all;
-    return {
-      x0: Math.max(all.x0, only.x0),
-      y0: Math.max(all.y0, only.y0),
-      x1: Math.min(all.x1, only.x1),
-      y1: Math.min(all.y1, only.y1),
-    };
+    return camera.visibleBounds(view.grid);
   }
 
   /** The relief painters read, rebuilt only when the footing or the projection changes. */
   private syncRelief(grid: Grid): void {
-    const signature = decorSignature(grid) + (this.lifted ? '|lifted' : '');
+    const signature = decorSignature(grid);
     if (signature === this.reliefSignature) return;
     this.reliefSignature = signature;
-    this.relief = boardRelief(grid, this.lifted);
-  }
-
-  /** Cliffs, canopies, walls, cover and decals: a second pass so overhangs land on neighbours. */
-  private drawElevationBase(view: MapView, camera: Camera): void {
-    const { ctx } = this;
-    this.syncRelief(view.grid);
-    const bounds = this.tileBounds(view, camera);
-    for (let y = bounds.y0; y <= bounds.y1; y++)
-      for (let x = bounds.x0; x <= bounds.x1; x++) {
-        const index = y * view.grid.width + x;
-        const tile = view.grid.tiles[index];
-        if (!tile) continue;
-        paintElevationBase(ctx, camera.toScreen({ x, y }), tile, { x, y }, this.relief.get(index));
-      }
+    this.relief = boardRelief(grid);
   }
 
   private drawDecor(view: MapView, camera: Camera): void {
@@ -837,37 +489,6 @@ export class Canvas2DBackend implements RenderBackend {
         if (!tile) continue;
         const pos = { x, y };
         paintTileDecor(ctx, camera.toScreen(pos), tile, pos, this.relief.get(index));
-      }
-    }
-  }
-
-  /**
-   * Ground joins over a complete authored scene.
-   *
-   * An authored ground region is painted art, so it has no procedural decor to
-   * carry the join; its material edges are as straight as the tiles under it.
-   * This pass draws only the joins, from the rules grid, so the road still
-   * ends under grass and the pond keeps its bank over the picture.
-   */
-  private drawSeams(view: MapView, camera: Camera, ready: boolean): void {
-    const { ctx } = this;
-    this.syncRelief(view.grid);
-    const bounds = this.tileBounds(view, camera);
-    for (let y = bounds.y0; y <= bounds.y1; y++) {
-      for (let x = bounds.x0; x <= bounds.x1; x++) {
-        const index = y * view.grid.width + x;
-        const tile = view.grid.tiles[index];
-        if (!tile) continue;
-        const pos = { x, y };
-        if (surfaceIsPainted(view, ready, tile, pos)) continue;
-        paintTileSeams(
-          ctx,
-          camera.toScreen(pos),
-          pos,
-          seamMaterial(tile),
-          this.relief.get(index)?.seams ?? null,
-          true,
-        );
       }
     }
   }
@@ -922,11 +543,11 @@ export class Canvas2DBackend implements RenderBackend {
   private drawPixelCues(
     cues: readonly PixelOverlayCue[],
     camera: Camera,
-    plane: 'ground' | 'screen',
+    _plane: 'ground' | 'screen',
     nudge: Vec2 = { x: 0, y: 0 },
   ): void {
     for (const draw of resolvePixelMarkDraws(camera, cues, this.pixelMarkDrawables, nudge)) {
-      drawCanvasPixelMark(this.ctx, camera, draw, nudge, plane);
+      drawCanvasPixelMark(this.ctx, camera, draw, nudge);
     }
   }
 
@@ -1056,7 +677,7 @@ export class Canvas2DBackend implements RenderBackend {
       if (!camera.isVisible(pos)) continue;
       const box = camera.toScreen(pos);
       // Match the upright Pixi base while keeping Canvas vapour static.
-      const base = box.y + box.size * 0.78 - liftAt(view.grid, pos, camera.projection) * box.size;
+      const base = box.y + box.size * 0.78;
       for (let j = 0; j < 4; j++) {
         const seed = steamSeed(pos.x, pos.y, j);
         const width = box.size * (0.66 + seed * 0.24);
@@ -1101,7 +722,7 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.restore();
   }
 
-  /** Upright ground cues: projected anchors, but no oblique ground transform. */
+  /** Upright ground cues: projected anchors, not the ground transform. */
   private drawClimbMarkers(view: MapView, camera: Camera): void {
     const ctx = this.ctx;
     const size = camera.toScreen({ x: 0, y: 0 }).size;
@@ -1111,8 +732,7 @@ export class Canvas2DBackend implements RenderBackend {
     for (const marker of view.climbMarkers ?? []) {
       const box = camera.toScreen(marker.pos);
       const cx = box.x + box.size * 0.4;
-      const cy =
-        box.y - liftAt(view.grid, marker.pos, camera.projection) * box.size + box.size * 0.72;
+      const cy = box.y + box.size * 0.72;
       ctx.beginPath();
       ctx.moveTo(cx - size * 0.1, cy + size * 0.07);
       ctx.lineTo(cx, cy - size * 0.1);
@@ -1152,13 +772,9 @@ export class Canvas2DBackend implements RenderBackend {
         scale,
         target?.size ?? 1,
       );
-      const lift = liftAlong(view.grid, pos, camera.projection);
       const frame =
         this.squareFootprints && target
-          ? (target.bend
-              ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
-              : null) ||
-            sheets.frame(
+          ? sheets.frame(
               target.sprite,
               target.clip ?? 'idle',
               target.clipTime ?? view.time + idlePhase(target.id),
@@ -1170,14 +786,12 @@ export class Canvas2DBackend implements RenderBackend {
             )
           : null;
       const silhouette = actorSilhouetteGeometry(
-        { x: box.x, y: box.y - lift * box.size, size: box.size },
+        { x: box.x, y: box.y, size: box.size },
         heightTiles,
         this.squareFootprints ? (frame?.headroom ?? null) : null,
         scale,
       );
-      const cy = this.squareFootprints
-        ? silhouette.reticleY
-        : box.y - lift * box.size - box.size * 0.04;
+      const cy = this.squareFootprints ? silhouette.reticleY : box.y - box.size * 0.04;
       this.drawPixelCues(
         [targetReticleMark(screenToBoardPixel(camera, { x: cx, y: cy }), cue)],
         camera,
@@ -1242,7 +856,6 @@ export class Canvas2DBackend implements RenderBackend {
       const width = this.npcWidth(npc.sprite);
       const at = npc.renderPos ?? npc.pos;
       const box = camera.spriteBox(at, width, false);
-      box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
       const entry = resolveAsset(npc.sprite);
       const scale = npc.scale ?? 1;
       const alpha = npc.alpha ?? 1;
@@ -1311,7 +924,7 @@ export class Canvas2DBackend implements RenderBackend {
         this.pixelMarkDrawables,
         view.cameraNudge,
       )) {
-        drawCanvasPixelMark(ctx, camera, draw, view.cameraNudge, 'screen');
+        drawCanvasPixelMark(ctx, camera, draw, view.cameraNudge);
       }
     }
   }
@@ -1434,7 +1047,6 @@ export class Canvas2DBackend implements RenderBackend {
     for (const prop of view.props) {
       if (!camera.isVisible(prop.pos)) continue;
       const box = camera.spriteBox(prop.pos);
-      box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       // A top-down board draws the prop's top-down drawing on its own box, once it has loaded.
       const art = camera.projection === 'topdown' ? topdownPropArt(prop) : null;
       if (art) {
@@ -1512,89 +1124,9 @@ export class Canvas2DBackend implements RenderBackend {
     layer.fillStyle = '#000000';
     layer.fillRect(0, 0, width, height);
     this.toShadowTexels(layer, grid);
-    this.drawStructureShadowMask(layer, view, camera);
-
-    // Only scenery is cached, with the viewport and actual loaded art in its
-    // key. Props and actors still rebuild into this frame's exact-max union.
-    if (view.scene && groundsSceneAtRuntime(camera.projection)) {
-      this.drawCachedSceneryShadowMask(layer, view, camera, grid);
-      this.drawPropShadowMask(
-        layer,
-        view.props.filter((prop) => !prop.burning),
-        view,
-        camera,
-      );
-    }
     this.drawLiveShadowMask(layer, view, camera);
     layer.setTransform(1, 0, 0, 1, 0, 0);
     this.compositeExactShadow(layer, view, camera, width, height);
-  }
-
-  private drawCachedSceneryShadowMask(
-    target: CanvasRenderingContext2D,
-    view: MapView,
-    camera: Camera,
-    grid: ShadowGrid,
-  ): void {
-    // The uncached fallback can draw coloured casters when scratch allocation
-    // fails. That is not an opaque grey mask we may retain after recovery.
-    if (!this.castScratch?.getContext('2d')) {
-      this.sceneryShadow = null;
-      this.drawSceneryShadowMask(target, view, camera);
-      return;
-    }
-    const images = (view.scene?.scenery ?? []).map((piece) => sceneImage(piece));
-    // Content can be filtered by the current grid or changed in place by a
-    // fixture. Do not rely on scene identity, and do not reuse a viewport crop
-    // after a pan, zoom, resize or newly streamed/replaced image.
-    const key = JSON.stringify([
-      view.scene,
-      camera.projection,
-      camera.grid,
-      camera.viewport,
-      camera.scale,
-      camera.offsetX,
-      camera.offsetY,
-      grid,
-      images.map((image) =>
-        image ? [image.src, image.currentSrc, image.naturalWidth, image.naturalHeight] : null,
-      ),
-    ]);
-    let cache = this.sceneryShadow;
-    const cachedImages = cache?.images;
-    if (
-      !cache ||
-      cache.key !== key ||
-      images.some((image, index) => image !== cachedImages?.[index])
-    ) {
-      cache ??= { key: '', images: [], canvas: document.createElement('canvas') };
-      cache.key = '';
-      if (cache.canvas.width !== grid.width) cache.canvas.width = grid.width;
-      if (cache.canvas.height !== grid.height) cache.canvas.height = grid.height;
-      const layer = cache.canvas.getContext('2d');
-      if (!layer) {
-        this.sceneryShadow = null;
-        this.drawSceneryShadowMask(target, view, camera);
-        return;
-      }
-      layer.setTransform(1, 0, 0, 1, 0, 0);
-      layer.globalAlpha = 1;
-      layer.globalCompositeOperation = 'source-over';
-      layer.fillStyle = '#000000';
-      layer.fillRect(0, 0, grid.width, grid.height);
-      this.toShadowTexels(layer, grid);
-      this.drawSceneryShadowMask(layer, view, camera);
-      cache.key = key;
-      cache.images = images;
-      this.sceneryShadow = cache;
-    }
-    // Opaque grey masks combine by maximum, just like individual casters.
-    // Copy at identity in mask texels, not through the camera transform.
-    target.save();
-    target.setTransform(1, 0, 0, 1, 0, 0);
-    target.globalCompositeOperation = 'lighten';
-    target.drawImage(cache.canvas, 0, 0);
-    target.restore();
   }
 
   /** A mask context draws in screen CSS px onto world-pixel texels, sampling its casters nearest. */
@@ -1721,56 +1253,12 @@ export class Canvas2DBackend implements RenderBackend {
     layer.globalCompositeOperation = 'source-over';
   }
 
-  /** Procedural wall blocks and raised tiers have no bitmap silhouette. */
-  private drawStructureShadowMask(
-    target: CanvasRenderingContext2D,
-    view: MapView,
-    camera: Camera,
-  ): void {
-    if (!groundsSceneAtRuntime(camera.projection)) return;
-    const authored = new Set(
-      (view.scene?.scenery ?? []).flatMap((piece) =>
-        (piece.footprint ?? []).map((cell) => `${cell.x},${cell.y}`),
-      ),
-    );
-    for (const prop of view.props) authored.add(`${prop.pos.x},${prop.pos.y}`);
-    const polygons = structureShadowPolygons(
-      view.grid.width,
-      view.grid.height,
-      (x, y) => tileShadowCell(view.grid.tiles[y * view.grid.width + x]),
-      (point) => camera.project(point),
-      authored,
-      tileSize(camera.projection) * camera.scale,
-    );
-    if (polygons.length === 0) return;
-    // Opaque and level: the polygons overlap, and the union is one caster.
-    this.castInto(
-      target,
-      CAST_SHADOW_ALPHA,
-      pointBounds(polygons.flatMap((p) => p.points)),
-      (t) => {
-        t.save();
-        t.fillStyle = '#ffffff';
-        for (const { points } of polygons) {
-          t.beginPath();
-          points.forEach((point, index) =>
-            index ? t.lineTo(point.x, point.y) : t.moveTo(point.x, point.y),
-          );
-          t.closePath();
-          t.fill();
-        }
-        t.restore();
-      },
-    );
-  }
-
   private clipShadowGround(ctx: CanvasRenderingContext2D, view: MapView, camera: Camera): void {
-    const ring = camera.clampRingTiles;
     const corners = [
-      { x: -ring.left, y: -ring.top },
-      { x: view.grid.width + ring.right, y: -ring.top },
-      { x: view.grid.width + ring.right, y: view.grid.height + ring.bottom },
-      { x: -ring.left, y: view.grid.height + ring.bottom },
+      { x: 0, y: 0 },
+      { x: view.grid.width, y: 0 },
+      { x: view.grid.width, y: view.grid.height },
+      { x: 0, y: view.grid.height },
     ].map((point) => camera.project(point));
     ctx.beginPath();
     corners.forEach((point, index) => {
@@ -1848,8 +1336,8 @@ export class Canvas2DBackend implements RenderBackend {
       });
       return;
     }
-    // A figure tile of the shipped sheets: the swept pool is the oblique and orthographic
-    // boards' grounding, which `feetBlob` replaces on the top-down board (ADR 0104, T4).
+    // A figure tile of the shipped sheets: the swept pool is the orthographic board's
+    // grounding, which `feetBlob` replaces on the top-down board (ADR 0104, T4).
     const art = figureShadowArt(TILE * scale, this.grounding.castKey, widthTiles);
     if (!art) return;
     // The pool centres on the resting soles; one figure tile is `tile` CSS px.
@@ -1921,87 +1409,6 @@ export class Canvas2DBackend implements RenderBackend {
     );
   }
 
-  private drawSceneryShadowMask(
-    target: CanvasRenderingContext2D,
-    view: MapView,
-    camera: Camera,
-  ): void {
-    for (const piece of view.scene?.scenery ?? []) {
-      if (piece.castShadow === false) continue;
-      const image = sceneImage(piece);
-      if (!image) continue;
-      const x = piece.x * camera.scale - camera.offsetX;
-      const y = piece.y * camera.scale - camera.offsetY;
-      const w = piece.width * camera.scale;
-      const h = piece.height * camera.scale;
-      if (piece.castFrom === 'base') {
-        this.groundSceneryPiece(target, piece, image, { x, y, w, h }, camera);
-        continue;
-      }
-      const foot = { x: x + w / 2, y: y + h };
-      const m = silhouetteProjection(foot.x, foot.y);
-      this.castInto(
-        target,
-        CAST_SHADOW_ALPHA,
-        pointBounds(
-          rectCorners(x, y, w, h).map((p) => ({
-            x: m.a * p.x + m.c * p.y + m.e,
-            y: m.b * p.x + m.d * p.y + m.f,
-          })),
-        ),
-        (t) => {
-          t.save();
-          t.globalAlpha = castShadowStrength(piece.castShadow);
-          t.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-          if (piece.flip) {
-            t.translate(x + w, 0);
-            t.scale(-1, 1);
-            t.translate(-x, 0);
-          }
-          drawSceneImage(t, image, piece, x, y, w, h);
-          t.restore();
-        },
-      );
-    }
-  }
-
-  /**
-   * A solid scenery piece (`castFrom: 'base'`) stands on its whole base as a prop does: its cast from the lower hull
-   * of its own bottom edge along the shared key, and its contact line `CONTACT_LINE` world pixels under its silhouette.
-   */
-  private groundSceneryPiece(
-    target: CanvasRenderingContext2D,
-    piece: SceneScenery,
-    image: HTMLImageElement,
-    placed: { x: number; y: number; w: number; h: number },
-    camera: Camera,
-  ): void {
-    const art = pieceArt(image, piece, (context, width, height) =>
-      drawSceneImage(context, image, piece, 0, 0, width, height),
-    );
-    if (!art) return;
-    const strength = castShadowStrength(piece.castShadow);
-    const cast = groundedCastArt(art, CAST_PER_PIXEL, pieceFeet(piece, camera));
-    if (cast && strength > 0) {
-      const k = placed.w / art.width;
-      const w = cast.width * k;
-      const h = cast.height * k;
-      this.castInto(
-        target,
-        CAST_SHADOW_ALPHA,
-        { x0: placed.x, y0: placed.y, x1: placed.x + w, y1: placed.y + h },
-        (t) => {
-          t.save();
-          t.globalAlpha = strength;
-          t.drawImage(cast, placed.x, placed.y, w, h);
-          t.restore();
-        },
-      );
-    }
-    if (piece.contactShadow !== false)
-      this.projectContactLine(target, art, placed, 1, camera.scale);
-  }
-
   private drawLiveShadowMask(
     target: CanvasRenderingContext2D,
     view: MapView,
@@ -2012,7 +1419,6 @@ export class Canvas2DBackend implements RenderBackend {
       const at = npc.renderPos ?? npc.pos;
       const width = this.npcWidth(npc.sprite);
       const box = camera.spriteBox(at, width, false);
-      box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
       const entry = resolveAsset(npc.sprite);
       const clip = npcClip(npc);
       const scale = npc.scale ?? 1;
@@ -2041,13 +1447,10 @@ export class Canvas2DBackend implements RenderBackend {
     }
     this.drawPropShadowMask(
       target,
-      groundsSceneAtRuntime(camera.projection) && view.scene
-        ? view.props.filter((prop) => Boolean(prop.burning))
-        : camera.projection === 'topdown'
-          ? // A top-down drawing's shadow is in the props' own layer (`drawTopdownPropShadows`).
-            view.props.filter((prop) => prop.sprite && !topdownPropArt(prop))
-          : view.props,
-      view,
+      camera.projection === 'topdown'
+        ? // A top-down drawing's shadow is in the props' own layer (`drawTopdownPropShadows`).
+          view.props.filter((prop) => prop.sprite && !topdownPropArt(prop))
+        : view.props,
       camera,
     );
     for (const unit of view.units) {
@@ -2058,7 +1461,6 @@ export class Canvas2DBackend implements RenderBackend {
         box.x += unit.offset.x * box.size;
         box.y += unit.offset.y * box.size;
       }
-      box.y -= liftAlong(view.grid, pos, camera.projection) * box.size;
       const width = unit.size === 2 ? box.size * 2 : box.size;
       // The foot is the tile's ground, so the walk bob lifts the figure off its shadow
       // instead of dragging the shadow along with it.
@@ -2071,9 +1473,8 @@ export class Canvas2DBackend implements RenderBackend {
       const clip = unit.clip ?? 'idle';
       const asset = resolveAsset(unit.sprite);
       const px = box.size * camera.viewport.dpr * scale;
-      // A bend cel has no measured feet: the pool alone, with its core.
       const cels =
-        asset.kind === 'sheet' && !unit.bend
+        asset.kind === 'sheet'
           ? {
               drawn: sheets.frame(
                 unit.sprite,
@@ -2149,14 +1550,12 @@ export class Canvas2DBackend implements RenderBackend {
   private drawPropShadowMask(
     target: CanvasRenderingContext2D,
     props: MapView['props'],
-    view: MapView,
     camera: Camera,
   ): void {
     const dpr = camera.viewport.dpr;
     for (const prop of props) {
       if (prop.castShadow === false) continue;
       const box = camera.spriteBox(prop.pos);
-      box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
       const placed = { x: box.x, y: box.y, w: box.size, h: box.size };
       const strength = castShadowStrength(prop.castShadow);
@@ -2218,7 +1617,6 @@ export class Canvas2DBackend implements RenderBackend {
       const marker = unitMarkerGroundPoint(
         { x: box.x, y: box.y },
         box.size,
-        liftAlong(view.grid, unit.renderPos ?? unit.pos, camera.projection),
         unit.meleeDirection ? unit.offset : undefined,
       );
       const footprint = this.squareFootprints ? unit.size : 1;
@@ -2310,7 +1708,6 @@ export class Canvas2DBackend implements RenderBackend {
         box.x += unit.offset.x * box.size;
         box.y += unit.offset.y * box.size;
       }
-      box.y -= liftAlong(view.grid, pos, camera.projection) * box.size;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
       const asset = resolveAsset(unit.sprite);
       const locomotion = unit.clip ?? 'idle';
@@ -2328,20 +1725,16 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.globalAlpha = alpha;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at device resolution (ADR 0003); the anchor stands on the foot line.
-      // A bend cel (ADR 0055) stands by its heading's own anchor and is never mirrored.
-      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
-      const frame =
-        bend ||
-        sheets.frame(
-          unit.sprite,
-          unit.clip ?? 'idle',
-          unit.clipTime ?? view.time + idlePhase(unit.id),
-          unit.clipFrame,
-          box.size * dpr * scale,
-          unit.size,
-          unit.meleeDirection,
-          heightTiles,
-        );
+      const frame = sheets.frame(
+        unit.sprite,
+        unit.clip ?? 'idle',
+        unit.clipTime ?? view.time + idlePhase(unit.id),
+        unit.clipFrame,
+        box.size * dpr * scale,
+        unit.size,
+        unit.meleeDirection,
+        heightTiles,
+      );
       const silhouette = combatActorSilhouetteScreenGeometry(
         { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
@@ -2356,7 +1749,7 @@ export class Canvas2DBackend implements RenderBackend {
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
         const { x: drawX, y: drawY, w: fw, h: fh } = placeFrame(frame, ax, ay, box.size * scale);
-        if (drawFacing === -1 && !bend) {
+        if (drawFacing === -1) {
           ctx.translate(ax, 0);
           ctx.scale(-1, 1);
           ctx.translate(-ax, 0);
@@ -2375,19 +1768,16 @@ export class Canvas2DBackend implements RenderBackend {
                 h: fh / camera.scale,
               },
               world(ax, camera.offsetX),
-              drawFacing === -1 && !bend,
+              drawFacing === -1,
             ),
-            flip: drawFacing === -1 && !bend,
-            foot: camera.groundPoint(
-              renderFoot(pos, unit.size, this.squareFootprints, camera.projection),
-            ).y,
+            flip: drawFacing === -1,
+            foot: camera.groundPoint(footprintFoot(pos, unit.size, this.squareFootprints)).y,
           });
         }
         // A sheet pixel on a whole block of device pixels draws nearest (ADR 0088).
         drawArt(ctx, f.w, fw, () => {
           ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
-          // The white mask is a copy of the whole page: never for a bend page.
-          if (unit.flash && unit.flash > 0 && !bend) {
+          if (unit.flash && unit.flash > 0) {
             ctx.globalAlpha *= Math.min(1, unit.flash);
             ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
           }
@@ -2549,15 +1939,10 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.restore();
   }
 
-  private drawFxLayer(
-    view: MapView,
-    camera: Camera,
-    layer: 'under' | 'over',
-    oblique = false,
-  ): void {
+  private drawFxLayer(view: MapView, camera: Camera, layer: 'under' | 'over'): void {
     if (view.emitters.length === 0) return;
     const origin = camera.toScreen({ x: 0, y: 0 });
-    this.fx.draw(this.ctx, view.emitters, layer, origin, origin.size, oblique);
+    this.fx.draw(this.ctx, view.emitters, layer, origin, origin.size);
   }
 
   /** The art as a white silhouette, for the hit flash. */
@@ -2658,46 +2043,6 @@ export function uprightSpriteVisible(
   );
 }
 
-/** Adds a closed polygon in screen pixels to `ctx`'s path, a fresh one unless `begin` is false. */
-function traceInto(ctx: CanvasRenderingContext2D, poly: readonly Pt[], begin = true): void {
-  if (begin) ctx.beginPath();
-  poly.forEach((p, index) => (index ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-  ctx.closePath();
-}
-
-/**
- * Copies `box` (camera pixels) from `from`, a device-pixel canvas whose pixel
- * for camera point q is (q + (dx, dy)) × dpr, reading only what `from` has:
- * a bounded copy, never the whole source for a small clip.
- */
-function copyRect(
-  ctx: CanvasRenderingContext2D,
-  from: HTMLCanvasElement,
-  box: Rect,
-  dpr: number,
-  dx: number,
-  dy: number,
-): void {
-  const x0 = Math.max(0, (box.x + dx) * dpr);
-  const y0 = Math.max(0, (box.y + dy) * dpr);
-  const x1 = Math.min(from.width, (box.x + box.w + dx) * dpr);
-  const y1 = Math.min(from.height, (box.y + box.h + dy) * dpr);
-  if (x1 <= x0 || y1 <= y0) return;
-  ctx.drawImage(
-    from,
-    x0,
-    y0,
-    x1 - x0,
-    y1 - y0,
-    x0 / dpr - dx,
-    y0 / dpr - dy,
-    (x1 - x0) / dpr,
-    (y1 - y0) / dpr,
-  );
-  liftCost.copies++;
-  liftCost.copiedPx += (x1 - x0) * (y1 - y0);
-}
-
 /** A scene's ground plates with the image each has loaded, or null while it has not. */
 function sceneGroundImages(
   scene: MapScene,
@@ -2715,45 +2060,4 @@ function sceneArtLoaded(
     ground.every(({ image }) => image !== null) &&
     scene.scenery.every((piece) => sceneImage(piece) !== null)
   );
-}
-
-/** A grounding raster at its scene rectangle, texel-sharp like the scenery it seats. */
-function drawGrounding(
-  ctx: CanvasRenderingContext2D,
-  layer: GroundingCanvas | null | undefined,
-  camera: Camera,
-): void {
-  if (!layer) return;
-  const smoothing = ctx.imageSmoothingEnabled;
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(
-    layer.canvas,
-    layer.x * camera.scale - camera.offsetX,
-    layer.y * camera.scale - camera.offsetY,
-    layer.canvas.width * GROUNDING_GRAIN * camera.scale,
-    layer.canvas.height * GROUNDING_GRAIN * camera.scale,
-  );
-  ctx.imageSmoothingEnabled = smoothing;
-}
-
-type Bounds = { x0: number; y0: number; x1: number; y1: number };
-
-function rectCorners(x: number, y: number, w: number, h: number): { x: number; y: number }[] {
-  return [
-    { x, y },
-    { x: x + w, y },
-    { x: x + w, y: y + h },
-    { x, y: y + h },
-  ];
-}
-
-function pointBounds(points: readonly { x: number; y: number }[]): Bounds {
-  const b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
-  for (const p of points) {
-    b.x0 = Math.min(b.x0, p.x);
-    b.y0 = Math.min(b.y0, p.y);
-    b.x1 = Math.max(b.x1, p.x);
-    b.y1 = Math.max(b.y1, p.y);
-  }
-  return b;
 }

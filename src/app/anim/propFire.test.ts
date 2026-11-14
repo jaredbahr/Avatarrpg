@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OBLIQUE_UP, ORTHOGRAPHIC_UP } from '../../content/fx';
+import { ORTHOGRAPHIC_UP } from '../../content/fx';
 import { burningPropEmitters } from './propFire';
 import type { RenderProp } from '../../render/view';
 import { particleSpan, sampleParticles } from '../../render/fx/simulate';
@@ -28,9 +28,9 @@ describe('burning prop presentation', () => {
     }
   });
 
-  it('stands up and rises up the screen in both projections, never flat on the ground', () => {
+  it('stands up and rises up the screen on both boards, never flat on the ground', () => {
     for (const [projection, up] of [
-      ['oblique', OBLIQUE_UP],
+      ['topdown', ORTHOGRAPHIC_UP],
       ['orthographic', ORTHOGRAPHIC_UP],
     ] as const) {
       for (const emitter of burningPropEmitters([prop(2)], 700, projection)) {
@@ -73,11 +73,11 @@ describe('burning prop presentation', () => {
   });
 
   it('holds one fixed frame when asked to stay still', () => {
-    const a = burningPropEmitters([prop(2)], 100, 'oblique', true);
-    const b = burningPropEmitters([prop(2)], 9000, 'oblique', true);
+    const a = burningPropEmitters([prop(2)], 100, 'orthographic', true);
+    const b = burningPropEmitters([prop(2)], 9000, 'orthographic', true);
     expect(a).toEqual(b);
     expect(a.every((emitter) => emitter.still === true)).toBe(true);
-    expect(a).toHaveLength(burningPropEmitters([prop(2)], 100, 'oblique').length / 2);
+    expect(a).toHaveLength(burningPropEmitters([prop(2)], 100, 'orthographic').length / 2);
   });
 
   it('keeps a prop flame stable when another prop disappears', () => {

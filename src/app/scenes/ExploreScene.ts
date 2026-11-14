@@ -30,7 +30,7 @@ import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
 import { idlePhase } from '../../render/sheets/store';
 import { resolveAsset, sheetLocomotion } from '../../content/assets/manifest';
-import { authoredForBothSides } from '../../content/assets/clips';
+import { authoredForBothSides, headingClip } from '../../content/assets/clips';
 import { FOOT_LINE } from '../../render/sheets/bake';
 import { placeFrame } from '../../render/sheets/placement';
 import { npcClip } from '../../render/view';
@@ -53,6 +53,8 @@ import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExits, nearbyExploreTarget, TALK_RANGE } from '../world/guidance';
 import { partyWalkPhase } from '../animator';
+import { activeFollowers, followerPose, lineIds, placeFollowers } from '../world/followers';
+import type { PlacedFollowers } from '../world/followers';
 import {
   createExploreObjectivePresentation,
   syncExploreObjective,
@@ -73,14 +75,12 @@ import { sheets } from '../../render/sheets/store';
 import { backdrops } from '../../render/backdrops';
 import { sceneImages } from '../../render/scene';
 import {
-  hasPractice,
   practiceAt,
   PRACTICE_GLIDE_MS,
   glidePoint,
   practiceCasts,
   practiceEvents,
   practiceFrame,
-  practiceSources,
   practiceUnits,
 } from '../world/practice';
 
@@ -112,6 +112,8 @@ export class ExploreScene implements Scene {
    * the leader whenever the party lands somewhere without walking there.
    */
   private trail: PartyTrail | null = null;
+  /** The line (party and followers) the last frame drew, so a still repaints only when it changed. */
+  private paintedLine = '';
   private needsSettle = true;
   private hudMoving = false;
   private departing: GameState | null = null;
@@ -134,8 +136,6 @@ export class ExploreScene implements Scene {
   private targets: { readonly at: Vec2; readonly scale: number; readonly to: Vec2 }[] = [];
   /** The markers drawn last frame; the e2e suite reads them. */
   lastNpcs: readonly NpcMarker[] = [];
-  /** This scene warmed the party's bends for a practice ground, and lets them go on leaving. */
-  private warmedBends = false;
   /** A bending practice is playing (issue #284); presentation only. */
   private practising = false;
   /**
@@ -144,8 +144,6 @@ export class ExploreScene implements Scene {
    * mark while they bend, then returns to the leader.
    */
   private practiceCamera: { from: Vec2; to: Vec2; start: number; back: boolean } | null = null;
-  /** Whether the HUD last drew the practice action ready, so it redraws once the bends are in. */
-  private practiceShown: boolean | null = null;
   /** Objective presentation is ephemeral and keyed by objective text, never saved. */
   private objectivePresentation = createExploreObjectivePresentation();
   private objectiveButton: HTMLButtonElement | null = null;
@@ -179,6 +177,7 @@ export class ExploreScene implements Scene {
     // In-place travel asks before the first draw of the destination.
     return [
       ...state.party.map((member) => member.sprite),
+      ...activeFollowers(state).map((follower) => follower.sprite),
       ...visibleNpcs(content, map, state).map((npc) => npc.sprite),
       ...backgroundFigures(content, map, state).map((role) => role.sprite),
       ...activeTriggers(map, state).map((trigger) => trigger.sprite),
@@ -272,16 +271,12 @@ export class ExploreScene implements Scene {
     this.lastNpcs = [];
     this.practising = false;
     this.practiceCamera = null;
-    this.practiceShown = null;
     this.objectiveButton = null;
     this.objectivePointer = null;
     this.npcNames = null;
     this.mapCorner = null;
     this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
-    // Outside a practice ground nothing here bends: let the decoded pages go (ADR 0055).
-    if (this.warmedBends) sheets.releaseBends();
-    this.warmedBends = false;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.suspended = false;
@@ -332,7 +327,6 @@ export class ExploreScene implements Scene {
       this.app.animator.setProjection(map.projection ?? 'orthographic');
       this.practising = false;
       this.practiceCamera = null;
-      this.warmPractice();
       this.setupLife();
       this.grid = buildGrid(map);
       this.trail = null;
@@ -380,17 +374,18 @@ export class ExploreScene implements Scene {
         };
       }
       const trail = this.ensureTrail(state, grid, event.from);
-      const before = trail.positions(state.party.length);
+      const ids = lineIds(state, placeFollowers(state).walking);
+      const before = trail.positions(ids.length);
       const plan =
-        this.map?.projection === 'oblique' || this.map?.projection === 'topdown'
-          ? trail.planWalk(event.path, state.party.length, grid, this.standing(state))
+        this.map?.projection === 'topdown'
+          ? trail.planWalk(event.path, ids.length, grid, this.standing(state))
           : null;
       if (plan) {
         this.animatePartyBatches(plan.batches, state, now);
         continue;
       }
       this.app.animator.push(now, [event], []);
-      const routes = trail.walk(event.path, state.party.length);
+      const routes = trail.walk(event.path, ids.length);
       if (routes.length === 0) continue;
       const unitsBefore: Unit[] = state.party.map((member, index) => ({
         ...member,
@@ -400,11 +395,11 @@ export class ExploreScene implements Scene {
       // One push per follower: moves in a single push play one after another,
       // and these all start where the leader's did.
       for (const route of routes) {
-        const member = state.party[route.index];
-        if (!member) continue;
+        const unitId = ids[route.index];
+        if (!unitId) continue;
         const move: GameEvent = {
           type: 'partyWalked',
-          unitId: member.id,
+          unitId,
           from: before[route.index] ?? event.from,
           path: route.path,
         };
@@ -427,16 +422,18 @@ export class ExploreScene implements Scene {
     state: GameState,
     now: number,
   ): void {
+    // A follower (#696) walks on the end of the line, after the party.
+    const ids = lineIds(state, placeFollowers(state).walking);
     for (const batch of batches) {
       for (const [index, route] of batch.entries()) {
-        const member = state.party[route.index];
-        if (!member) continue;
+        const unitId = ids[route.index];
+        if (!unitId) continue;
         this.app.animator.push(
           now,
           [
             {
               type: 'partyWalked',
-              unitId: member.id,
+              unitId,
               from: route.from,
               path: route.path,
             },
@@ -459,9 +456,12 @@ export class ExploreScene implements Scene {
    * somewhere the line did not walk to (a loaded save, a story jump).
    */
   private ensureTrail(state: GameState, grid: Grid, head = state.location.pos): PartyTrail {
-    const count = state.party.length;
+    // The party, then whoever follows it (#696).
+    const count = state.party.length + placeFollowers(state).walking.length;
     const current = this.trail;
-    if (current?.head && samePos(current.head, head) && current.positions(count).length === count) {
+    if (current?.head && samePos(current.head, head)) {
+      // A follower joining or leaving changes the end of the line, nobody else's place.
+      if (current.size !== count) current.resize(count, grid, this.standing(state));
       return current;
     }
     const seated = new PartyTrail(
@@ -488,6 +488,7 @@ export class ExploreScene implements Scene {
         (who) => who.pos,
       ),
       ...this.app.residents.errandTiles(),
+      ...placeFollowers(state).standing.map((who) => who.pos),
     ];
   }
 
@@ -513,6 +514,37 @@ export class ExploreScene implements Scene {
     if (!state || !grid) return null;
     const seats = this.ensureTrail(state, grid).positions(state.party.length);
     return seats.map((seat, index) => (index === 0 ? state.location.pos : seat));
+  }
+
+  /**
+   * Where the last frame drew each follower (#696), and the clip it drew, for
+   * the e2e suite: a retained backdrop answers for its still, so a missed
+   * repaint shows.
+   */
+  followerPositions():
+    readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null {
+    const state = this.app.state;
+    const drawn = this.lastLife?.units;
+    if (!state || !drawn) return null;
+    const party = new Set(state.party.map((member) => member.id));
+    return drawn
+      .filter((unit) => !party.has(unit.id))
+      .map((unit) => ({ id: unit.id, pos: unit.pos, clip: unit.clip }));
+  }
+
+  /**
+   * A retained backdrop repaints its still when the story moves on under a
+   * staged conversation and someone has joined or left the line, or changed
+   * the pose they hold: Ruon steps up as he surrenders after a talked-open gate,
+   * picks his sabre back up as the vote is answered, and steps away as Jin
+   * takes him.
+   */
+  refreshStill(): void {
+    const state = this.app.state;
+    if (!this.suspended || !state) return;
+    if (paintedLine(state, placeFollowers(state)) === this.paintedLine) return;
+    this.suspended = false;
+    this.suspend();
   }
 
   resize(): void {
@@ -1130,8 +1162,6 @@ export class ExploreScene implements Scene {
     // stays put, disabled, while the party bends.
     const ground =
       seat || (moving && !this.practising) ? null : practiceAt(this.map?.id, state.location.pos);
-    const ready = ground ? this.practiceReady(state) : false;
-    this.practiceShown = ground ? ready : null;
     const look = seat
       ? button(
           'Wait',
@@ -1141,7 +1171,7 @@ export class ExploreScene implements Scene {
       : ground
         ? button('Practice', () => this.practise(), {
             class: 'action-button practice-button',
-            disabled: !ready || moving,
+            disabled: moving,
             title: `Practice bending by the ${ground.label.toLowerCase()}`,
           })
         : button(
@@ -1157,7 +1187,7 @@ export class ExploreScene implements Scene {
       look.appendChild(
         el('span', {
           class: 'action-sub',
-          text: this.practising ? 'Bending' : ready ? ground.label : 'Getting ready',
+          text: this.practising ? 'Bending' : ground.label,
         }),
       );
     row.appendChild(look);
@@ -1265,7 +1295,7 @@ export class ExploreScene implements Scene {
     this.renderer = new Renderer(canvas, { width: map.width, height: map.height });
     this.renderer.resize({ width: map.width, height: map.height });
     this.renderer.camera.projection = map.projection ?? 'orthographic';
-    // The oblique and top-down maps are pixel art: whole device pixels per world pixel (ADR 0088, 0104).
+    // The top-down maps are pixel art: whole device pixels per world pixel (ADR 0088, 0104).
     this.renderer.camera.integerZoom = usesIntegerZoom(map.projection ?? 'orthographic');
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
@@ -1281,7 +1311,6 @@ export class ExploreScene implements Scene {
     // pixel the camera reports has to keep matching the pixels the backend
     // draws, or taps land a tile out.
     this.renderer.onViewportChange = () => this.refit();
-    this.warmPractice();
     this.setupLife();
 
     this.detach = attachPointer(canvas, {
@@ -1307,32 +1336,8 @@ export class ExploreScene implements Scene {
           this.hover = null;
           return;
         }
-        this.hover = point
-          ? (this.renderer?.camera.pickTile(point.x, point.y, this.grid) ?? null)
-          : null;
+        this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
       },
-    });
-  }
-
-  /**
-   * A map with a bending practice ground loads the party's bends and the
-   * painted effects on arrival, as combat does at its start, so the first
-   * practice does not wait on them (ADR 0055, step 7).
-   */
-  private warmPractice(): void {
-    const state = this.app.state;
-    if (!state || !hasPractice(this.map?.id)) return;
-    for (const member of state.party) sheets.preloadBend(member.sprite);
-    this.app.preloadBendFx();
-    this.warmedBends = true;
-  }
-
-  /** Whether every bend a practice here would play has loaded. */
-  private practiceReady(state: GameState): boolean {
-    if (!this.app.bendFxReady) return false;
-    return state.party.every((member) => {
-      const load = sheets.bendState(member.sprite);
-      return load === 'loaded' || load === 'none' || load === 'failed';
     });
   }
 
@@ -1355,9 +1360,7 @@ export class ExploreScene implements Scene {
       return;
     }
     this.clearNextWalk();
-    this.app.animator.push(now, practiceEvents(casts), practiceUnits(state.party, positions), {
-      waterSources: practiceSources(casts),
-    });
+    this.app.animator.push(now, practiceEvents(casts), practiceUnits(state.party, positions));
     this.practising = true;
     this.practiceCamera = {
       from: state.location.pos,
@@ -1383,7 +1386,7 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     if (!renderer || !state) return;
     // A tap on someone walks to them, wherever their figure is drawn.
-    const tile = this.figureAt(x, y) ?? renderer.camera.pickTile(x, y, this.grid);
+    const tile = this.figureAt(x, y) ?? renderer.camera.toTile(x, y);
     // Ground taps can plan the next stroll without interrupting the current animation.
     if (this.app.animator.busy(performance.now())) {
       this.requestWalk(tile);
@@ -1503,11 +1506,14 @@ export class ExploreScene implements Scene {
     residents.tick(now, held);
     const live = !this.departing && !this.conversationMode && state.screen === 'explore';
     const trail = this.ensureTrail(state, grid);
-    let seats = trail.positions(state.party.length);
+    const followers = placeFollowers(state);
+    const ids = lineIds(state, followers.walking);
+    this.paintedLine = paintedLine(state, followers);
+    let seats = trail.positions(ids.length);
     // A routine keeps clear of the party: its tiles, where it is drawn, the way it walks.
     const clear = [...seats, ...(this.walking?.path ?? [])];
-    for (const member of state.party) {
-      const drawn = animator.renderPos(now, member.id);
+    for (const id of ids) {
+      const drawn = animator.renderPos(now, id);
       if (drawn) clear.push({ x: Math.round(drawn.x), y: Math.round(drawn.y) });
     }
     // A follower on a tile someone is walking to steps aside.
@@ -1528,16 +1534,9 @@ export class ExploreScene implements Scene {
           return;
         }
       }
-      if (
-        this.needsSettle &&
-        (map.projection === 'oblique' || map.projection === 'topdown') &&
-        !this.departing &&
-        !dialogOpen
-      ) {
+      if (this.needsSettle && map.projection === 'topdown' && !this.departing && !dialogOpen) {
         this.needsSettle = false;
-        const routes = trail.settle(grid, this.standing(state), {
-          beside: map.projection === 'topdown',
-        });
+        const routes = trail.settle(grid, this.standing(state), { beside: true });
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
         this.animatePartyBatches(batches, state, now);
@@ -1555,11 +1554,7 @@ export class ExploreScene implements Scene {
           back: true,
         };
     }
-    if (
-      this.hudMoving !== animator.busy(now) ||
-      (this.practiceShown !== null && this.practiceShown !== this.practiceReady(state))
-    )
-      this.renderHud();
+    if (this.hudMoving !== animator.busy(now)) this.renderHud();
     this.app.stats?.frame(now);
 
     // The whole party walks the village: the leader on the rules' tile, the
@@ -1571,10 +1566,8 @@ export class ExploreScene implements Scene {
       this.app.audio.updateEnvironment(
         courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
       );
-    const scale = partyScale(map.projection);
+    const scale = partyScale();
     const units: RenderUnit[] = state.party.map((member, index) => {
-      // A practising bender draws their bend's cels, as combat does (ADR 0055).
-      const bend = animator.bendPose(now, member.id);
       const pose = animator.unitPose(now, member.id, member.sprite);
       const unit: RenderUnit = {
         id: member.id,
@@ -1596,16 +1589,45 @@ export class ExploreScene implements Scene {
         clipTime: pose?.clipTime,
         ...animator.locomotion(now, member.id, 'rest', member.sprite),
       };
-      if (!bend) return unit;
-      return {
-        ...unit,
-        facing: 1,
-        clip: 'stance',
-        bend,
-        flash: pose?.flash,
-      };
+      return unit;
     });
     this.localMap?.update(units.map((unit) => unit.renderPos ?? unit.pos));
+    // Followers (#696) walk on the end of the line: drawn as the party is,
+    // never tapped, never on the local map.
+    const placed = [
+      ...followers.walking.map((follower, index) => ({
+        follower,
+        pos: seats[state.party.length + index] ?? state.location.pos,
+      })),
+      ...followers.standing,
+    ];
+    for (const { follower, pos } of placed) {
+      const pose = animator.unitPose(now, follower.id, follower.sprite);
+      const renderPos = animator.renderPos(now, follower.id);
+      const gait = animator.locomotion(now, follower.id, 'rest', follower.sprite);
+      // Standing still, a follower holds its staged pose (Ruon's surrender); walking, its gait.
+      const held =
+        !renderPos && gait.clip.startsWith('idle') ? followerPose(state, follower) : undefined;
+      units.push({
+        id: follower.id,
+        pos,
+        size: 1,
+        sprite: follower.sprite,
+        name: follower.name,
+        faction: 'ally',
+        hp: 1,
+        maxHp: 1,
+        statuses: [],
+        fallen: false,
+        showHealth: false,
+        shadow: true,
+        scale,
+        renderPos,
+        offset: animator.offset(now, follower.id, follower.sprite),
+        clipTime: held ? now : pose?.clipTime,
+        ...(held ? { clip: held, facing: 1 as const } : gait),
+      });
+    }
 
     // Residents and background roles come from the walks, in their drawn
     // places; signs and other unbound NpcDefs stand where they are defined.
@@ -1618,10 +1640,14 @@ export class ExploreScene implements Scene {
           pos: npc.pos,
           sprite: npc.sprite,
           name: npc.name,
-          scale: npcPresentationScale(npc.sprite, map.projection),
-          // Someone at a post on a G sheet faces the camera on its idle loop.
+          scale: npcPresentationScale(npc.sprite),
+          // Someone at a post on a G sheet faces the camera on its idle loop,
+          // or the way its NpcDef says it faces (the gate's watchers, the party).
           ...(sheetLocomotion(npc.sprite)?.headings === 8
-            ? { clip: 'idleSouthEast' as const, clipTime: now + idlePhase(npc.id) }
+            ? {
+                clip: headingClip('idle', npc.faces ?? 'southEast'),
+                clipTime: now + idlePhase(npc.id),
+              }
             : {}),
         })),
       ...people.map((who) => ({
@@ -1630,7 +1656,7 @@ export class ExploreScene implements Scene {
         pos: who.pos ?? who.drawPos,
         sprite: who.sprite,
         name: who.name,
-        scale: npcPresentationScale(who.sprite, map.projection),
+        scale: npcPresentationScale(who.sprite),
         renderPos: who.drawPos,
         offset: who.offset,
         facing: who.facing,
@@ -1651,7 +1677,7 @@ export class ExploreScene implements Scene {
                 pos,
                 sprite: trigger.sprite,
                 name: trigger.label,
-                scale: triggerPresentationScale(map, trigger.sprite),
+                scale: triggerPresentationScale(trigger.sprite),
               },
             ]
           : [];
@@ -1754,4 +1780,14 @@ export class ExploreScene implements Scene {
         : null;
     drawObjectivePointer(this.objectivePointer, this.mapCorner, renderer.camera, target);
   };
+}
+
+/** Who the frame draws beside the party, and where a staged follower stands (#696). */
+function paintedLine(state: GameState, followers: PlacedFollowers): string {
+  const staged = followers.standing.map(({ follower, pos }) => `${follower.id}@${pos.x},${pos.y}`);
+  // A follower's held pose is part of the still too: Ruon takes his sabre back up as the vote is answered.
+  const poses = [...followers.walking, ...followers.standing.map(({ follower }) => follower)].map(
+    (follower) => `${follower.id}:${followerPose(state, follower) ?? ''}`,
+  );
+  return [...lineIds(state, followers.walking), ...staged, ...poses].join();
 }

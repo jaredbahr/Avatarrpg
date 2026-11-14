@@ -5,7 +5,6 @@ import type { WalkDirection } from './direction';
 import { ASSETS } from '../../content/assets/manifest';
 import type { ClipName } from '../../content/assets/clips';
 import type { Vec2 } from '../../core/types';
-import { partyScale } from './actorScale';
 import { Animator } from '../animator';
 import type { ContentIndex } from '../../core/types';
 
@@ -13,8 +12,8 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 
 /** The eight-way PixelLab G party (ADR 0050, ADR 0051). */
 const G_PARTY = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo'] as const;
-/** A sheet on the legacy four-way cadence contract. */
-const FOUR_WAY = 'unit.earth.linmei';
+/** A sheet on the legacy four-way cadence contract: the committed probe atlas declares no locomotion. */
+const FOUR_WAY = 'unit.test.probe';
 
 describe('directional walking', () => {
   it('keeps a diagonal corner stable, then turns when the route changes axis', () => {
@@ -106,84 +105,6 @@ describe('screen-facing melee contacts', () => {
   });
 });
 
-describe('oblique screen headings', () => {
-  for (const reduced of [false, true]) {
-    for (const [dx, dy, clip, facing] of [
-      [1, 0, 'walk', 1],
-      [0, 1, 'walk', -1],
-      [-1, 0, 'walk', -1],
-      [0, -1, 'walk', 1],
-      [1, 1, 'walkSouth', 1],
-      [-1, -1, 'walkNorth', 1],
-    ] as const) {
-      it(`faces screen travel for (${dx},${dy}), reduced=${reduced}`, () => {
-        const a = new Animator(content, { motionReduced: () => reduced });
-        a.setProjection('oblique');
-        a.push(
-          0,
-          [
-            {
-              type: 'partyWalked',
-              unitId: 'p',
-              from: { x: 4, y: 4 },
-              path: [1, 2, 3, 4].map((step) => ({ x: 4 + dx * step, y: 4 + dy * step })),
-            },
-          ],
-          [],
-        );
-        const halfway = a.finishesAt / 2;
-        expect(a.locomotion(halfway, 'p')).toEqual({ clip, facing });
-        const pos = a.renderPos(halfway, 'p');
-        expect(pos).toBeDefined();
-        // Positions remain logical, so projection cannot alter the travelled route.
-        if (dx === 0) expect(pos?.x).toBe(4);
-        if (dy === 0) expect(pos?.y).toBe(4);
-        const done = a.finishesAt + 1;
-        a.prune(done);
-        // The stop settles on the walked heading before the ready stance.
-        expect(a.locomotion(done, 'p')).toEqual({ clip: clip.replace('walk', 'rest'), facing });
-        expect(a.locomotion(done + 300, 'p')).toEqual({
-          clip: clip.replace('walk', 'idle'),
-          facing,
-        });
-      });
-    }
-  }
-
-  it('changes projection without changing playback duration or logical motion', () => {
-    const a = new Animator(content, { motionReduced: () => false });
-    a.push(
-      0,
-      [
-        {
-          type: 'partyWalked',
-          unitId: 'p',
-          from: { x: 4, y: 4 },
-          path: [
-            { x: 4, y: 5 },
-            { x: 4, y: 6 },
-          ],
-        },
-      ],
-      [],
-    );
-    const finish = a.finishesAt;
-    const pos = a.renderPos(200, 'p');
-    expect(a.locomotion(200, 'p').clip).toBe('walkSouth');
-    a.setProjection('oblique');
-    expect(a.finishesAt).toBe(finish);
-    expect(a.renderPos(200, 'p')).toEqual(pos);
-    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walk', facing: -1 });
-    a.setProjection('orthographic');
-    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walkSouth', facing: 1 });
-  });
-});
-
-/*
- * The four-way choice exactly as it shipped before eight-way sheets existed,
- * kept verbatim as the oracle: a sheet that does not declare eight-way
- * locomotion must keep choosing precisely these clips.
- */
 function legacyWalkDirection(tangent: Vec2, previous?: WalkDirection): WalkDirection {
   const x = Math.abs(tangent.x),
     y = Math.abs(tangent.y);
@@ -209,24 +130,37 @@ describe('heading vocabulary is a declared sheet capability', () => {
     expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
   });
 
-  it('only the G sheets (the party, the thug, the quarry bandits and the Ba Dan residents) declare eight-way locomotion today', () => {
+  it('only the top-down sheets in `ASSETS` (every unit and the Ba Dan residents) declare eight-way locomotion today', () => {
     const eightWay = Object.entries(ASSETS).flatMap(([key, entry]) =>
       entry.kind === 'sheet' && entry.locomotion?.headings === 8 ? [[key, entry.atlas]] : [],
     );
     expect(eightWay).toEqual([
-      ['unit.fire.kaya', 'art/units/kaya-g.json'],
-      ['unit.water.sura', 'art/units/sura-g.json'],
-      ['unit.earth.bo', 'art/units/bo-g.json'],
-      ['unit.enemy.thug', 'art/units/thug-g.json'],
-      ['unit.enemy.slinger', 'art/units/slinger-g.json'],
-      ['unit.enemy.bruiser', 'art/units/bruiser-g.json'],
-      ['unit.enemy.quarrybender', 'art/units/quarrybender-g.json'],
-      ['npc.elder', 'art/units/mira-g.json'],
-      ['npc.shopkeeper', 'art/units/gao-g.json'],
-      ['npc.kid', 'art/units/pella-g.json'],
-      ['npc.dorin', 'art/units/dorin-g.json'],
-      ['npc.guard', 'art/units/watch-g.json'],
-      ['npc.household', 'art/units/household-g.json'],
+      ['unit.fire.kaya', 'art/topdown/kaya.json'],
+      ['unit.fire.tenzo', 'art/topdown/tenzo.json'],
+      ['unit.water.nilak', 'art/topdown/nilak.json'],
+      ['unit.water.sura', 'art/topdown/sura.json'],
+      ['unit.earth.bo', 'art/topdown/bo.json'],
+      ['unit.earth.linmei', 'art/topdown/linmei.json'],
+      ['unit.air.nima', 'art/topdown/nima.json'],
+      ['unit.air.jinu', 'art/topdown/jinu.json'],
+      ['unit.non.riko', 'art/topdown/riko.json'],
+      ['unit.non.wen', 'art/topdown/wen.json'],
+      ['unit.enemy.thug', 'art/topdown/thug.json'],
+      ['unit.enemy.slinger', 'art/topdown/slinger.json'],
+      ['unit.enemy.bruiser', 'art/topdown/bruiser.json'],
+      ['unit.enemy.quarrybender', 'art/topdown/quarrybender.json'],
+      ['unit.enemy.deserter', 'art/topdown/deserter.json'],
+      ['unit.enemy.merc', 'art/topdown/merc.json'],
+      ['unit.enemy.crossbow', 'art/topdown/crossbow.json'],
+      ['unit.enemy.sergeant', 'art/topdown/sergeant.json'],
+      ['unit.enemy.driller', 'art/topdown/driller.json'],
+      ['unit.ally.ruon', 'art/topdown/ruon.json'],
+      ['npc.elder', 'art/topdown/mira.json'],
+      ['npc.shopkeeper', 'art/topdown/gao.json'],
+      ['npc.kid', 'art/topdown/pella.json'],
+      ['npc.dorin', 'art/topdown/dorin.json'],
+      ['npc.guard', 'art/topdown/guard.json'],
+      ['npc.household', 'art/topdown/household.json'],
     ]);
   });
 
@@ -274,7 +208,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
     }
   }
 
-  for (const sprite of ['unit.earth.linmei', 'unit.water.nilak', 'unit.fire.tenzo', undefined]) {
+  for (const sprite of [FOUR_WAY, 'npc.hanru', 'npc.dema', undefined]) {
     it(`keeps the legacy four-way choices exactly for ${sprite ?? 'an unknown sprite'}`, () => {
       let previous: WalkDirection | undefined;
       let facing: 1 | -1 = 1;
@@ -312,7 +246,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
       [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
       [],
     );
-    expect(legacy.locomotion(200, 'u', 'idle', 'unit.earth.linmei')).toEqual({
+    expect(legacy.locomotion(200, 'u', 'idle', FOUR_WAY)).toEqual({
       clip: 'walk',
       facing: 1,
     });
@@ -347,61 +281,10 @@ describe('heading vocabulary is a declared sheet capability', () => {
         ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * sheet.locomotion.walkMsPerTile.south,
       );
     });
-
-    it(`phases ${sprite}'s oblique eight-way walk by logical distance`, () => {
-      const sheet = ASSETS[sprite];
-      if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
-      const { walkMsPerTile } = sheet.locomotion;
-      // Projection chooses the heading; the oblique board's figure scale stretches
-      // the clip over the ground the larger feet cover (ADR 0095).
-      for (const [to, rate] of [
-        [{ x: 8, y: 4 }, walkMsPerTile.southEast],
-        [{ x: 8, y: 8 }, walkMsPerTile.south],
-        [{ x: 8, y: 0 }, walkMsPerTile.east],
-      ] as const) {
-        const a = new Animator(content, { motionReduced: () => false, amble: true });
-        a.setProjection('oblique');
-        a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
-        const pose = a.unitPose(300, 'u', sprite);
-        const legacy = a.unitPose(300, 'u', FOUR_WAY);
-        const expected = rate / partyScale('oblique');
-        expect((pose?.clipTime ?? 0) - sheet.locomotion.walkStartMs).toBeCloseTo(
-          ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected,
-        );
-      }
-    });
   }
 });
 
-describe('Mira never jogs (ADR 0095)', () => {
-  it('draws her sheet’s walk at any pace, and never resolves to a jog', () => {
-    for (const projection of ['orthographic', 'oblique'] as const) {
-      const a = new Animator(content, { motionReduced: () => false });
-      a.setProjection(projection);
-      a.push(
-        0,
-        [{ type: 'partyWalked', unitId: 'm', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
-        [],
-      );
-      const clips = new Set<string>();
-      for (let t = 0; t <= a.finishesAt + 400; t += 10)
-        clips.add(a.locomotion(t, 'm', 'rest', 'npc.elder').clip);
-      expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
-      expect([...clips].filter((clip) => clip.startsWith('jog'))).toEqual([]);
-    }
-    const mira = ASSETS['npc.elder'];
-    expect(mira?.kind === 'sheet' && mira.locomotion?.amble).toBe(true);
-  });
-});
-
-describe('the fighting stance (ADR 0052)', () => {
-  it('turns the stance like idle for four-way art, which falls back to its idle', () => {
-    expect(directionalClip('stance', 'north')).toBe('stanceNorth');
-    expect(directionalClip('stance', 'south')).toBe('stanceSouth');
-    expect(directionalClip('stance', 'east')).toBe('stance');
-    expect(directionalClip('stance', undefined)).toBe('stance');
-  });
-
+describe('standing between moves', () => {
   for (const [dx, dy, heading] of [
     [1, 0, ''],
     [1, 1, 'SouthEast'],
@@ -412,7 +295,7 @@ describe('the fighting stance (ADR 0052)', () => {
     [0, -1, 'North'],
     [1, -1, 'NorthEast'],
   ] as const) {
-    it(`walks, settles, then stands guard ${heading || 'East'} for (${dx},${dy})`, () => {
+    it(`walks, settles, then idles ${heading || 'East'} for (${dx},${dy})`, () => {
       for (const sprite of G_PARTY) {
         const a = new Animator(content, { motionReduced: () => false });
         a.push(
@@ -427,18 +310,13 @@ describe('the fighting stance (ADR 0052)', () => {
           ],
           [],
         );
-        // The brisk stroll walks (ADR 0095's amendment).
-        expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
+        expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', sprite).clip).toBe(`walk${heading}`);
         const done = a.finishesAt + 1;
         a.prune(done);
         // The stop holds a planted walk cel for the settle window (not a stride
-        // frame, not the guard); the guard follows once it ends.
-        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
-        const guard = a.locomotion(done + 300, 'p', 'stance', sprite);
-        // Authored for each side, so drawn unflipped whichever way she faces.
-        expect(guard.clip).toBe(`stance${heading}`);
-        const entry = ASSETS[sprite];
-        expect(entry?.kind === 'sheet' && entry.clips[guard.clip]?.frames).toHaveLength(8);
+        // frame, not the idle); the idle follows once it ends.
+        expect(a.locomotion(done, 'p', 'idle', sprite).clip).toBe(`walk${heading}`);
+        expect(a.locomotion(done + 300, 'p', 'idle', sprite).clip).toBe(`idle${heading}`);
       }
     });
   }
@@ -452,24 +330,22 @@ describe('the fighting stance (ADR 0052)', () => {
     );
     const done = a.finishesAt + 400;
     a.prune(done);
-    expect(a.locomotion(done, 'p', 'stance', FOUR_WAY).clip).toBe('stanceNorth');
-    const entry = ASSETS[FOUR_WAY];
-    expect(entry?.kind === 'sheet' && entry.clips.stanceNorth).toBeFalsy();
+    expect(a.locomotion(done, 'p', 'idle', FOUR_WAY).clip).toBe('idleNorth');
   });
 });
 
-describe('eight-way oblique headings for a declaring sheet', () => {
+describe('eight-way headings for a declaring sheet', () => {
   for (const [dx, dy, clip] of [
-    [1, 0, 'SouthEast'],
-    [0, 1, 'SouthWest'],
-    [-1, 0, 'NorthWest'],
-    [0, -1, 'NorthEast'],
-    [1, 1, 'South'],
-    [-1, -1, 'North'],
+    // East is the sheet's own side clip (`walk`, `idle`), the one every heading falls back to.
+    [1, 0, ''],
+    [0, 1, 'South'],
+    [-1, 0, 'West'],
+    [0, -1, 'North'],
+    [1, 1, 'SouthEast'],
+    [-1, -1, 'NorthWest'],
   ] as const) {
-    it(`walks, settles and idles ${clip} for (${dx},${dy})`, () => {
+    it(`walks, settles and idles ${clip || 'East'} for (${dx},${dy})`, () => {
       const a = new Animator(content, { motionReduced: () => false });
-      a.setProjection('oblique');
       a.push(
         0,
         [

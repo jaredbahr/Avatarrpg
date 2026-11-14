@@ -114,6 +114,14 @@ problem is untouched. Three facts about browsers shape the rest:
 - Music is not built here. It needs the lazy-load and precache exclusion above
   and a second volume control, and it should wait until the effects are judged.
 
+## Amendment, 2026-11-13: recorded bending
+
+The owner picked generated recordings over the described voices for the families players hear most. Fire, water,
+earth, air and lightning, Kaya's jab, the thrown rock, the sling and the crossbow are now `sample` rows playing
+`public/audio/sfx-*.ogg` (PixelLab sound effects, about 10 KB each; sources in `audio/source/sfx/`). Exactly as
+the decision above promised, each swap is one row: the key, the family fallback and the cue timing are unchanged,
+and every other key keeps its described voice. Suno takes were also made and judged; the owner chose PixelLab.
+
 ## Alternatives rejected
 
 - **A chiptune pack for the bending.** Free, reachable, and the wrong genre by

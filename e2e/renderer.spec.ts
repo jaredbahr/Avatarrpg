@@ -1,82 +1,201 @@
 import { expect, test } from '@playwright/test';
-import type { Locator, Page } from '@playwright/test';
+import type { Browser, Page, TestInfo } from '@playwright/test';
+import type { EncounterDef, MapDef, Vec2 } from '../src/core/types';
 import { allowSoftwareWebgl } from './budget';
 import {
   enterNode,
-  pinObliqueStyle,
   resetStorage,
-  settleLayout,
+  settleMapCanvas,
   startGame,
   takeTurn,
   waitForIdle,
 } from './helpers';
-import { average, screenshotPixels } from './pixels';
+import { screenshotPixels } from './pixels';
+import type { Pixels, Rgb } from './pixels';
+import { paintedTileCentre } from './projection';
 
-// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
+type Renderer = 'canvas' | 'webgl';
 
-type CameraSnapshot = {
-  a: number;
-  b: number;
-  c: number;
-  d: number;
-  tx: number;
-  ty: number;
-  tilePx: number;
-};
+/** The staged plate board: a 20x12 top-down fight whose ground is one plate the spec paints itself. */
+const PLATE = { width: 20, height: 12, tile: 40 } as const;
 
-const MAX_STABLE_PROBE_ATTEMPTS = 3;
+/**
+ * Three flat colours laid so a tile's colour is `(x + 2y) mod 3`: a shift of one tile along either
+ * axis, or a stretch that drifts by one somewhere across the board, changes the colour under a probe.
+ */
+const CHECKER: readonly Rgb[] = [
+  { r: 224, g: 48, b: 48 },
+  { r: 48, g: 192, b: 64 },
+  { r: 48, g: 80, b: 224 },
+];
+const checkerIndex = (x: number, y: number) => (x + 2 * y) % 3;
 
-function sameCamera(a: CameraSnapshot, b: CameraSnapshot): boolean {
-  return (
-    a.a === b.a &&
-    a.b === b.b &&
-    a.c === b.c &&
-    a.d === b.d &&
-    a.tx === b.tx &&
-    a.ty === b.ty &&
-    a.tilePx === b.tilePx
+/** One flat colour that no figure wears, so the feet blob's darkening of it can be told apart. */
+const FLAT: Rgb = { r: 210, g: 70, b: 210 };
+
+type Plate = 'checker' | 'flat';
+
+/**
+ * Swap the Forest Road ambush's map for a plain 20x12 top-down board whose single ground plate is
+ * painted here (a data URL, so nothing loads from the network), and its roster for two thugs. The
+ * story encounter still supplies the real combat scene; only its content entries change.
+ */
+async function stagePlateFight(page: Page, plate: Plate, characters: string[]): Promise<void> {
+  await page.evaluate(
+    ({ plate, board, checker, flat, characters }) => {
+      const app = window.fnt?.app;
+      const encounter = app?.content.encounters.get('enc_forest_road');
+      if (!app || !encounter) throw new Error('Forest road encounter unavailable.');
+      const paint = document.createElement('canvas');
+      paint.width = board.width * board.tile;
+      paint.height = board.height * board.tile;
+      const context = paint.getContext('2d');
+      if (!context) throw new Error('No 2D context to paint the plate.');
+      for (let y = 0; y < board.height; y++)
+        for (let x = 0; x < board.width; x++) {
+          const c = plate === 'checker' ? checker[(x + 2 * y) % 3]! : flat;
+          context.fillStyle = `rgb(${c.r}, ${c.g}, ${c.b})`;
+          context.fillRect(x * board.tile, y * board.tile, board.tile, board.tile);
+        }
+      const extent = { x: 0, y: 0, width: paint.width, height: paint.height };
+      const map = {
+        id: encounter.mapId,
+        name: 'Plate board',
+        kind: 'combat',
+        projection: 'topdown',
+        width: board.width,
+        height: board.height,
+        rows: Array.from({ length: board.height }, () => '.'.repeat(board.width)),
+        legend: { '.': { terrain: 'grass' } },
+        partySpawns: [
+          { x: 3, y: 2 },
+          { x: 3, y: 5 },
+          { x: 6, y: 3 },
+        ].slice(0, characters.length),
+        npcs: [],
+        props: [],
+        ambience: 'forest',
+        scene: {
+          ground: [{ url: paint.toDataURL('image/png'), ...extent }],
+          scenery: [],
+          paintExtent: extent,
+        },
+      } as unknown as MapDef;
+      (app.content.maps as Map<string, MapDef>).set(map.id, map);
+      (app.content.encounters as Map<string, EncounterDef>).set(encounter.id, {
+        ...encounter,
+        enemies: [
+          { enemyId: 'bandit_thug', pos: { x: 11, y: 2 } },
+          { enemyId: 'bandit_thug', pos: { x: 13, y: 5 } },
+        ],
+        allies: [],
+        conditionalEnemies: [],
+        reinforcements: [],
+        variants: [],
+      });
+    },
+    { plate, board: PLATE, checker: CHECKER, flat: FLAT, characters },
   );
 }
 
-async function stablePixelProbe<T>(
+/** Open the staged plate fight on a party turn, with the board settled. */
+async function openPlateFight(
   page: Page,
-  canvas: Locator,
-  sample: () => Promise<{ camera: CameraSnapshot; probe: T } | null>,
-  label: string,
-): Promise<{ probe: T; pixels: Awaited<ReturnType<typeof screenshotPixels>> } | null> {
-  let cameraMoved = false;
-  for (let attempt = 0; attempt < MAX_STABLE_PROBE_ATTEMPTS; attempt++) {
-    const candidate = await sample();
-    if (!candidate) {
-      if (cameraMoved) {
-        throw new Error(
-          `${label}: camera moved while sampling; no stable probe after ${MAX_STABLE_PROBE_ATTEMPTS} attempts`,
-        );
-      }
-      return null;
-    }
-    const pixels = await screenshotPixels(canvas);
-    const after = await page.evaluate(() => {
-      const camera = window.fnt?.app.rendererCamera?.();
-      if (!camera) return null;
-      const m = camera.groundTransform;
-      return { a: m.a, b: m.b, c: m.c, d: m.d, tx: m.tx, ty: m.ty, tilePx: camera.tilePx };
-    });
-    if (after && sameCamera(candidate.camera, after)) return { probe: candidate.probe, pixels };
-    cameraMoved = true;
-    test.info().annotations.push({
-      type: 'camera-moved',
-      description: `${label}: retry ${attempt + 1} of ${MAX_STABLE_PROBE_ATTEMPTS}`,
-    });
-  }
-  if (cameraMoved) {
-    throw new Error(
-      `${label}: camera moved while sampling; no stable probe after ${MAX_STABLE_PROBE_ATTEMPTS} attempts`,
-    );
-  }
-  return null;
+  renderer: Renderer,
+  plate: Plate,
+  characters: string[],
+): Promise<void> {
+  await resetStorage(page, `?renderer=${renderer}`);
+  await startGame(
+    page,
+    characters.map((_, i) => `P${i + 1}`),
+    characters,
+    `plate-${plate}-${renderer}`,
+  );
+  await stagePlateFight(page, plate, characters);
+  await enterNode(page, 'battle_forest_road');
+  expect(await takeTurn(page)).toBe(true);
+  await waitForIdle(page);
+  await settleMapCanvas(page);
+  expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
+  expect(await page.evaluate(() => window.fnt?.app.rendererCamera()?.projection)).toBe('topdown');
 }
+
+/**
+ * Runs `body` on a page at `dpr`. The Chromium touch project opens its own context at each ratio
+ * (an iPad-sized viewport); another project runs only the case at its own ratio, on its own page.
+ */
+async function atDpr(
+  browser: Browser,
+  page: Page,
+  testInfo: TestInfo,
+  dpr: number,
+  body: (page: Page) => Promise<void>,
+): Promise<void> {
+  if (testInfo.project.name !== 'surface-touch') {
+    const own = testInfo.project.use.deviceScaleFactor ?? 1;
+    test.skip(own !== dpr, `this project runs at dpr ${own}`);
+    await body(page);
+    return;
+  }
+  const context = await browser.newContext({
+    baseURL: `http://127.0.0.1:${process.env.FNT_E2E_PORT ?? '4173'}`,
+    viewport: { width: 1194, height: 834 },
+    deviceScaleFactor: dpr,
+    hasTouch: true,
+  });
+  try {
+    await body(await context.newPage());
+  } finally {
+    await context.close();
+  }
+}
+
+interface CameraKey {
+  readonly key: string;
+}
+
+/** Everything a probe position depends on: the camera and the canvas' box and backing store. */
+async function cameraKey(page: Page): Promise<CameraKey | null> {
+  return page.evaluate(() => {
+    const camera = window.fnt?.app.rendererCamera();
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    if (!camera || !canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    return {
+      key: JSON.stringify([
+        camera.groundTransform,
+        camera.tilePx,
+        rect.width,
+        rect.height,
+        canvas.width,
+        canvas.height,
+      ]),
+    };
+  });
+}
+
+/**
+ * One screenshot of the canvas, and `locate`'s probe positions read on either side of it: if the
+ * camera or the canvas moved while the capture was on its way, it is taken again.
+ */
+async function stableCapture<T>(
+  page: Page,
+  locate: () => Promise<T>,
+): Promise<{ probe: T; pixels: Pixels }> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const before = await cameraKey(page);
+    const probe = await locate();
+    const pixels = await screenshotPixels(page.locator('.map-canvas'));
+    const after = await cameraKey(page);
+    if (before && after && before.key === after.key) return { probe, pixels };
+    await settleMapCanvas(page);
+  }
+  throw new Error('the camera kept moving while the canvas was captured');
+}
+
+const distance = (a: Rgb, b: Rgb) =>
+  Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
 
 /**
  * The renderer picks a backend at runtime, so both paths need covering.
@@ -109,59 +228,6 @@ test.describe('renderer backends', () => {
     expect(chosen, 'software WebGL should fall back to Canvas 2D').toBe('canvas');
   });
 
-  test('renders the board through the WebGL backend when forced', async ({ page }) => {
-    test.setTimeout(120_000);
-    // This case forces the shader path on both engines, and both rasterise in
-    // software on a runner with no GPU: SwiftShader in Chromium, Mesa in WebKit.
-    allowSoftwareWebgl(test, 'webgl');
-
-    const errors: string[] = [];
-    page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
-    });
-    page.on('pageerror', (error) => errors.push(error.message));
-
-    await page.goto('/?renderer=webgl');
-    await page.waitForFunction(() => Boolean(window.fnt?.app));
-    await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'renderer-spec');
-    await enterNode(page, 'battle_forest_road');
-    await takeTurn(page);
-    await waitForIdle(page);
-    await settleLayout(page);
-
-    expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe('webgl');
-
-    // A failed shader link throws nothing in Pixi — it logs and draws nothing —
-    // so assert on both the console and the pixels.
-    expect(errors.filter((text) => /shader|webgl|glsl/i.test(text))).toEqual([]);
-
-    const canvas = page.locator('.map-canvas');
-    await expect(canvas).toBeVisible();
-    const box = await canvas.boundingBox();
-    expect(box).not.toBeNull();
-
-    // Check the real authored scene, including its live water overlay. PNG
-    // compression bytes are varied even when the canvas is completely blank.
-    //
-    // The water's ripple is animated, so one frame is not a fixed colour: six
-    // samples on one host moved the blue-minus-red difference between 21.2 and
-    // 23.2, and a runner whose screenshot lands on another phase measured 19.9
-    // against the 20 this asserts (both heads, measured 20 September 2026).
-    // A missing overlay never clears the bar on any frame, so read a few and
-    // let the best one speak; the threshold is unchanged.
-    const water = await tileCentre(page, { x: 5, y: 6 });
-    let wet = { r: 0, g: 0, b: 0, bMinusR: -Infinity };
-    for (let sample = 0; sample < 3 && wet.bMinusR <= 20; sample++) {
-      if (sample) await page.waitForTimeout(400);
-      const pixels = await screenshotPixels(canvas);
-      const read = average(pixels, water.x, water.y, 3);
-      wet = { ...read, bMinusR: read.b - read.r };
-    }
-    expect(wet.bMinusR, `authored scene water is absent: ${JSON.stringify(wet)}`).toBeGreaterThan(
-      20,
-    );
-  });
-
   /*
    * The ground has to be painted where the tiles are, on both backends and at
    * every device pixel ratio. The WebGL ground is a full-screen filter whose
@@ -173,491 +239,325 @@ test.describe('renderer backends', () => {
    * grass green where the grass is.
    */
   for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`paints the ground under the tiles on ${renderer}`, async ({ page }) => {
-      test.setTimeout(120_000);
-      allowSoftwareWebgl(test, renderer);
-
-      await resetStorage(page, `?renderer=${renderer}`);
-      await startGame(page, ['Elias'], ['kaya'], 'ground-spec');
-      await enterNode(page, 'battle_forest_road');
-      await takeTurn(page);
-      await waitForIdle(page);
-      await settleLayout(page);
-      expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
-
-      // This is the procedural ground's test: every unpainted map and the
-      // fallback draw it, so take any painting the forest road may carry away.
-      await page.evaluate(() => {
-        const app = window.fnt?.app;
-        const map = app?.content.maps.get('forest_road');
-        // Layered scenes supersede legacy backdrops. Remove both paintings to
-        // exercise procedural fallback, retaining its original color contract.
-        if (map) Object.defineProperty(map, 'scene', { value: undefined, configurable: true });
-        return app?.overrideBackdrop('forest_road', null);
-      });
-      // Ordering, not readiness: the fixture swap must reach a frame before the
-      // first capture, or the painted scene it replaced could satisfy the poll.
-      await page.evaluate(
-        () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
-      );
-
-      // The forest road's puddle is authored at (5, 6); the top-left corner is grass.
-      const canvas = page.locator('.map-canvas');
-      let drawn:
-        | {
-            wet: ReturnType<typeof average>;
-            green: ReturnType<typeof average>;
-            water: { x: number; y: number };
-            grass: { x: number; y: number };
-          }
-        | undefined;
-      await expect
-        .poll(
-          async () => {
-            const captured = await stablePixelProbe(
-              page,
-              canvas,
-              () =>
-                page.evaluate(() => {
-                  const camera = window.fnt?.app.rendererCamera?.();
-                  if (!camera) return null;
-                  const m = camera.groundTransform;
-                  const centre = (x: number, y: number) => ({
-                    x: m.a * (x + 0.5) * 64 + m.c * (y + 0.5) * 64 + m.tx,
-                    y: m.b * (x + 0.5) * 64 + m.d * (y + 0.5) * 64 + m.ty,
-                  });
-                  return {
-                    camera: {
-                      a: m.a,
-                      b: m.b,
-                      c: m.c,
-                      d: m.d,
-                      tx: m.tx,
-                      ty: m.ty,
-                      tilePx: camera.tilePx,
-                    },
-                    probe: { water: centre(5, 6), grass: centre(3, 1) },
-                  };
-                }),
-              `procedural ground pixel probe (${renderer})`,
-            );
-            if (!captured) return false;
-            const wet = average(captured.pixels, captured.probe.water.x, captured.probe.water.y, 3);
-            const green = average(
-              captured.pixels,
-              captured.probe.grass.x,
-              captured.probe.grass.y,
-              3,
-            );
-            const ready = wet.b > wet.r + 20 && green.g > green.b + 10 && green.g > green.r;
-            if (ready) drawn = { wet, green, ...captured.probe };
-            return ready;
-          },
-          { timeout: renderer === 'webgl' ? 60_000 : 10_000 },
-        )
-        .toBe(true);
-      if (!drawn) throw new Error(`procedural ground was not presented on ${renderer}`);
-      const { wet, green, water, grass } = drawn;
-
-      expect(
-        wet.b,
-        `puddle at ${water.x},${water.y} is not blue: ${JSON.stringify(wet)}`,
-      ).toBeGreaterThan(wet.r + 20);
-      expect(
-        green.g,
-        `grass at ${grass.x},${grass.y} is not green: ${JSON.stringify(green)}`,
-      ).toBeGreaterThan(green.b + 10);
-      expect(green.g).toBeGreaterThan(green.r);
-    });
-  }
-
-  /**
-   * Raised ground is board correctness (ADR 0065), so both backends draw the
-   * same block. The Driller floor's front bench stands a quarter tile up, so
-   * the far corner of its top is drawn over the dirt floor behind it: there
-   * the pixel must be the bench's stone, as at the top's centre, not the dirt
-   * that a flat board shows at that spot.
-   */
-  for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`lifts a raised bench over the floor behind it on ${renderer}`, async ({ page }) => {
-      test.setTimeout(120_000);
-      allowSoftwareWebgl(test, renderer);
-
-      await resetStorage(page, `?renderer=${renderer}`);
-      await startGame(page, ['Elias'], ['kaya'], 'lift-spec');
-      await enterNode(page, 'battle_grumbler');
-      await takeTurn(page);
-      await waitForIdle(page);
-      await settleLayout(page);
-      expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
-      // The readable oblique fit pans; bring the front bench into view.
-      await page.evaluate(() => {
-        const scene = (
-          window.fnt?.app as unknown as {
-            scene: {
-              manualCamera: boolean;
-              renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } };
-            };
-          }
-        ).scene;
-        // This is the existing scene flag used by a player's manual pan; it
-        // keeps a ResizeObserver refit from undoing the test's centreOn().
-        scene.manualCamera = true;
-        scene.renderer?.camera.centreOn({ x: 9, y: 9 });
-      });
-      await page.evaluate(
-        () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
-      );
-
-      const canvas = page.locator('.map-canvas');
-      const captured = await stablePixelProbe(
+    for (const dpr of [1, 2] as const) {
+      test(`paints the top-down ground under the tiles on ${renderer} at dpr ${dpr}`, async ({
+        browser,
         page,
-        canvas,
-        () =>
-          page.evaluate(() => {
-            const app = window.fnt?.app;
-            const camera = app?.rendererCamera();
-            const battle = app?.state?.battle;
-            const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-            if (!camera || !battle || !canvas) return null;
-            const rect = canvas.getBoundingClientRect();
-            const m = camera.groundTransform;
-            const cameraSnapshot = {
-              a: m.a,
-              b: m.b,
-              c: m.c,
-              d: m.d,
-              tx: m.tx,
-              ty: m.ty,
-              tilePx: camera.tilePx,
-            };
-            const { grid } = battle;
-            const tile = (x: number, y: number) => grid.tiles[y * grid.width + x];
-            const near = (x: number, y: number) =>
-              battle.units.some((u) => Math.abs(u.pos.x - x) <= 2 && Math.abs(u.pos.y - y) <= 2) ||
-              battle.props.some((p) => Math.abs(p.pos.x - x) <= 2 && Math.abs(p.pos.y - y) <= 2);
-            const screen = (gx: number, gy: number, up: number) => ({
-              x: m.a * gx * 64 + m.c * gy * 64 + m.tx,
-              y: m.b * gx * 64 + m.d * gy * 64 + m.ty - camera.tilePx * up,
-            });
-            const clear = (p: { x: number; y: number }) =>
-              p.x > 8 &&
-              p.y > 8 &&
-              p.x < rect.width - 8 &&
-              p.y < rect.height - 8 &&
-              document.elementFromPoint(rect.left + p.x, rect.top + p.y) === canvas;
-            for (const x of [5, 6, 10, 14, 15, 4, 9, 13]) {
-              const bench = tile(x, 10);
-              const behind = tile(x - 1, 9);
-              if (!bench?.ramp || bench.surface || behind?.elevation !== 0 || behind.surface)
-                continue;
-              if (near(x, 10)) continue;
-              // The top's far corner, a quarter tile up; its centre; the dirt it covers.
-              const corner = screen(x + 0.12, 10.12, 0.25);
-              const centre = screen(x + 0.5, 10.5, 0.25);
-              const dirt = screen(x - 0.5, 9.4, 0);
-              if (![corner, centre, dirt].every(clear)) continue;
-              return { camera: cameraSnapshot, probe: { corner, centre, dirt } };
-            }
-            return null;
-          }),
-        'raised bench pixel probe',
-      );
-      expect(captured, 'no clear front bench on screen').not.toBeNull();
-      if (!captured) return;
-
-      const { probe, pixels } = captured;
-      const corner = average(pixels, probe.corner.x, probe.corner.y, 2);
-      const centre = average(pixels, probe.centre.x, probe.centre.y, 2);
-      const dirt = average(pixels, probe.dirt.x, probe.dirt.y, 2);
-      const gap = (a: typeof corner, b: typeof corner) =>
-        Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
-      const seen = JSON.stringify({ corner, centre, dirt });
-      expect(gap(centre, dirt), `bench and floor differ: ${seen}`).toBeGreaterThan(60);
-      expect(gap(corner, centre), `the lifted corner is stone: ${seen}`).toBeLessThan(
-        gap(corner, dirt),
-      );
-    });
-  }
-
-  /**
-   * A live mark on a raised tile sits on its lifted top, where the tap picks
-   * it, however much of the lift the art already paints: the Forest Road's
-   * shelf is painted at the whole lift, the Driller's benches at a little of
-   * it. Hovering the tile must lighten the far corner of the lifted top and
-   * leave the tile's own south face, which covers its flat footprint, alone.
-   */
-  for (const renderer of ['canvas', 'webgl'] as const) {
-    for (const node of ['battle_forest_road', 'battle_grumbler'] as const) {
-      test(`marks a raised tile's lifted top on ${node} on ${renderer}`, async ({ page }) => {
-        test.setTimeout(120_000);
+      }, testInfo) => {
         allowSoftwareWebgl(test, renderer);
+        await atDpr(browser, page, testInfo, dpr, async (page) => {
+          await openPlateFight(page, renderer, 'checker', ['kaya']);
+          expect(await page.evaluate(() => window.devicePixelRatio)).toBe(dpr);
 
-        await resetStorage(page, `?renderer=${renderer}`);
-        await startGame(page, ['Elias'], ['kaya'], 'lift-marks');
-        await enterNode(page, node);
-        await takeTurn(page);
-        await waitForIdle(page);
-        await settleLayout(page);
-        expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
+          // Every whole tile on the canvas, clear of the HUD and of the figures, probed at its centre
+          // and a fifth of a tile in from each corner: the colour there must be that tile's colour.
+          const locate = () =>
+            page.evaluate(
+              ({ board }) => {
+                const app = window.fnt?.app;
+                const camera = app?.rendererCamera();
+                const battle = app?.state?.battle;
+                const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+                if (!camera || !battle || !canvas) throw new Error('No top-down board mounted.');
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const m = camera.groundTransform;
+                const sx = rect.width / (canvas.width / dpr);
+                const sy = rect.height / (canvas.height / dpr);
+                const at = (gx: number, gy: number) => ({
+                  x: (m.a * gx * camera.tile + m.c * gy * camera.tile + m.tx) * sx,
+                  y: (m.b * gx * camera.tile + m.d * gy * camera.tile + m.ty) * sy,
+                });
+                const clear = (p: { x: number; y: number }) =>
+                  p.x >= 3 &&
+                  p.y >= 3 &&
+                  p.x <= rect.width - 3 &&
+                  p.y <= rect.height - 3 &&
+                  document.elementFromPoint(rect.left + p.x, rect.top + p.y) === canvas;
+                const nearFigure = (x: number, y: number) =>
+                  battle.units.some(
+                    (u) => Math.abs(u.pos.x - x) <= 1 && u.pos.y - y >= -1 && u.pos.y - y <= 2,
+                  );
+                const probes: { tile: { x: number; y: number }; x: number; y: number }[] = [];
+                for (let y = 0; y < board.height; y++)
+                  for (let x = 0; x < board.width; x++) {
+                    if (nearFigure(x, y)) continue;
+                    const points = [
+                      at(x + 0.5, y + 0.5),
+                      at(x + 0.2, y + 0.2),
+                      at(x + 0.8, y + 0.2),
+                      at(x + 0.2, y + 0.8),
+                      at(x + 0.8, y + 0.8),
+                    ];
+                    if (!points.every(clear)) continue;
+                    for (const p of points) probes.push({ tile: { x, y }, ...p });
+                  }
+                return probes;
+              },
+              { board: PLATE },
+            );
 
-        // A raised tile with a lower walkable tile south of it (so it shows a
-        // south face), no surface, and nobody near enough to stand over it.
-        const find = () =>
-          page.evaluate(() => {
-            const app = window.fnt?.app;
-            const camera = app?.rendererCamera();
-            const battle = app?.state?.battle;
-            const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-            if (!camera || !battle || !canvas) return null;
-            const rect = canvas.getBoundingClientRect();
-            const m = camera.groundTransform;
-            const cameraSnapshot = {
-              a: m.a,
-              b: m.b,
-              c: m.c,
-              d: m.d,
-              tx: m.tx,
-              ty: m.ty,
-              tilePx: camera.tilePx,
-            };
-            const { grid } = battle;
-            const tile = (x: number, y: number) =>
-              x < 0 || y < 0 || x >= grid.width || y >= grid.height
-                ? undefined
-                : grid.tiles[y * grid.width + x];
-            const near = (x: number, y: number) =>
-              battle.units.some((u) => Math.abs(u.pos.x - x) <= 2 && Math.abs(u.pos.y - y) <= 2) ||
-              battle.props.some((p) => Math.abs(p.pos.x - x) <= 2 && Math.abs(p.pos.y - y) <= 2);
-            const screen = (gx: number, gy: number, up: number) => ({
-              x: m.a * gx * 64 + m.c * gy * 64 + m.tx,
-              y: m.b * gx * 64 + m.d * gy * 64 + m.ty - camera.tilePx * up,
-            });
-            const clear = (p: { x: number; y: number }) =>
-              p.x > 8 &&
-              p.y > 8 &&
-              p.x < rect.width - 8 &&
-              p.y < rect.height - 8 &&
-              document.elementFromPoint(rect.left + p.x, rect.top + p.y) === canvas;
-            const cells: { x: number; y: number }[] = [];
-            for (let y = 0; y < grid.height; y++)
-              for (let x = 0; x < grid.width; x++) {
-                const here = tile(x, y);
-                const south = tile(x, y + 1);
-                if (!here || here.blocked || here.elevation < 1 || here.surface) continue;
-                if (!south || south.blocked || south.elevation >= here.elevation) continue;
-                if (south.surface || near(x, y)) continue;
-                cells.push({ x, y });
-              }
-            for (const cell of cells) {
-              const up = 0.25 * (tile(cell.x, cell.y)?.elevation ?? 0);
-              // The lifted top's far corner, its centre, and the middle of
-              // its south face (the flat footprint the top no longer covers).
-              const corner = screen(cell.x + 0.2, cell.y + 0.2, up);
-              const centre = screen(cell.x + 0.5, cell.y + 0.5, up);
-              const face = screen(cell.x + 0.375, cell.y + 0.875, 0);
-              if (![corner, centre, face].every(clear)) continue;
-              return {
-                camera: cameraSnapshot,
-                cell,
-                aim: { corner, centre, face, x: rect.left, y: rect.top },
-              };
-            }
-            return { camera: cameraSnapshot, cell: cells[0] ?? null, aim: null };
-          });
-        let probe = await find();
-        if (probe?.aim) {
-          // Keep the already-clear tile under the camera chosen by this read;
-          // a late canvas resize must not refit between the before/after probes.
-          await page.evaluate(() => {
-            const scene = (window.fnt?.app as unknown as { scene: { manualCamera: boolean } })
-              .scene;
-            scene.manualCamera = true;
-          });
-        }
-        if (probe?.cell && !probe.aim) {
-          // The readable oblique fit pans; bring the tile into view.
-          await page.evaluate((cell) => {
-            const scene = (
-              window.fnt?.app as unknown as {
-                scene: {
-                  manualCamera: boolean;
-                  renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } };
-                };
-              }
-            ).scene;
-            scene.manualCamera = true;
-            scene.renderer?.camera.centreOn(cell);
-          }, probe.cell);
-          await page.evaluate(
-            () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
-          );
-          probe = await find();
-        }
-        expect(probe?.aim, `no clear raised tile: ${JSON.stringify(probe)}`).toBeTruthy();
-        if (!probe?.aim || !probe.cell) return;
-        const { cell } = probe;
-        const { corner, ...rect } = probe.aim;
-
-        const hover = () =>
-          page.evaluate(
-            () =>
-              (window.fnt?.app as unknown as { scene: { hover: { x: number; y: number } | null } })
-                .scene.hover,
-          );
-        const frame = () =>
-          page.evaluate(
-            () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
-          );
-        const read = async () => {
-          const captured = await stablePixelProbe(
-            page,
-            page.locator('.map-canvas'),
-            async () => {
-              const next = await find();
-              return next?.aim ? { camera: next.camera, probe: next } : null;
-            },
-            `raised tile mark pixel probe on ${node} (${renderer})`,
-          );
-          if (!captured) throw new Error(`no clear raised tile on ${node} (${renderer})`);
-          expect(captured.probe.cell).toEqual(cell);
-          const next = captured.probe.aim;
-          if (!next) throw new Error(`no clear raised tile on ${node} (${renderer})`);
-          const pixels = captured.pixels;
-          return {
-            corner: average(pixels, next.corner.x, next.corner.y, 2),
-            face: average(pixels, next.face.x, next.face.y, 2),
-            aim: next,
-          };
-        };
-
-        // Away from the tile, then on its lifted top.
-        await page.mouse.move(rect.x + 2, rect.y + 2);
-        await page.mouse.move(rect.x + corner.x + 60, rect.y + corner.y - 200);
-        await expect.poll(async () => JSON.stringify(await hover())).not.toBe(JSON.stringify(cell));
-        await frame();
-        const before = await read();
-        await page.mouse.move(
-          before.aim.x + before.aim.centre.x,
-          before.aim.y + before.aim.centre.y,
-        );
-        await expect.poll(hover).toEqual(cell);
-
-        const gap = (a: typeof before.face, b: typeof before.face) =>
-          Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
-        let after: Awaited<ReturnType<typeof read>> | undefined;
-        await expect
-          .poll(
-            async () => {
-              const captured = await read();
-              if (gap(captured.corner, before.corner) > 24) after = captured;
-              return gap(captured.corner, before.corner);
-            },
-            { timeout: renderer === 'webgl' ? 60_000 : 10_000 },
-          )
-          .toBeGreaterThan(24);
-        if (!after) throw new Error(`raised tile mark was not presented on ${node} (${renderer})`);
-        const seen = JSON.stringify({ cell, before, after });
-        expect(
-          gap(after.corner, before.corner),
-          `the lifted top is marked: ${seen}`,
-        ).toBeGreaterThan(24);
-        expect(gap(after.face, before.face), `the flat footprint is not: ${seen}`).toBeLessThan(10);
+          // The plate is a data URL decoded off the frame; wait for it to be presented, then the
+          // very capture that shows it has to hold for every probe.
+          let probed = 0;
+          await expect
+            .poll(
+              async () => {
+                const { probe, pixels } = await stableCapture(page, locate);
+                probed = probe.length;
+                const misses: string[] = [];
+                for (const p of probe) {
+                  const seen = average1(pixels, p.x, p.y);
+                  const nearest = CHECKER.map((c) => distance(c, seen));
+                  const best = nearest.indexOf(Math.min(...nearest));
+                  if (best !== checkerIndex(p.tile.x, p.tile.y))
+                    misses.push(
+                      `(${p.tile.x},${p.tile.y}) at ${p.x.toFixed(1)},${p.y.toFixed(1)}: ${JSON.stringify(seen)}`,
+                    );
+                }
+                // The first few are enough to see a pattern in a failure report.
+                return misses.slice(0, 12);
+              },
+              {
+                message: 'ground pixels that are not their tile',
+                timeout: renderer === 'webgl' ? 180_000 : 20_000,
+                intervals: [500, 1_000, 2_000],
+              },
+            )
+            .toEqual([]);
+          // A board that shows little of itself would prove little: forty clear tiles at least.
+          expect(probed).toBeGreaterThanOrEqual(5 * 40);
+        });
       });
     }
   }
 
-  /**
-   * The lift pass's cost, read from its probe (`window.fnt.liftCost`). A
-   * still raised board is drawn every frame, and each of those frames must
-   * be the flat ground plus one copy of the cached raised blocks: no rebuild
-   * of the blocks, and no render of the ground into a target, until the
-   * camera or the ground moves. The layer holds less than the screen does.
+  /*
+   * The same check from the other side: the tap handler's pick. In Move mode a tap on any tile
+   * makes it the pending target, so tapping where each tile of a slice of the Forest Road is painted
+   * must pend exactly that tile, on both backends. The opening top-down frame is scrolled (the board
+   * is wider than a readable zoom shows), so the slice is picked through a non-zero offset.
    */
   for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`holds a still raised board without redrawing its blocks on ${renderer}`, async ({
+    test(`a tap on every cell of a top-down board slice acts on that cell on ${renderer}`, async ({
       page,
     }) => {
-      test.setTimeout(120_000);
       allowSoftwareWebgl(test, renderer);
-
       await resetStorage(page, `?renderer=${renderer}`);
-      await startGame(page, ['Elias'], ['kaya'], 'lift-cost');
-      await enterNode(page, 'battle_grumbler');
-      await takeTurn(page);
+      await startGame(page, ['Solo'], ['kaya'], `slice-taps-${renderer}`);
+      await enterNode(page, 'battle_forest_road');
+      expect(await takeTurn(page)).toBe(true);
       await waitForIdle(page);
-      await settleLayout(page);
+      await settleMapCanvas(page);
       expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
-      // Out of the way of the board, so no hover changes under the pointer.
-      await page.mouse.move(1, 1);
+      expect(await page.evaluate(() => window.fnt?.app.rendererCamera()?.projection)).toBe(
+        'topdown',
+      );
 
-      const frames = (count: number) =>
-        page.evaluate(
-          (n) =>
-            new Promise((done) => {
-              let left = n;
-              const tick = () => (--left > 0 ? requestAnimationFrame(tick) : done(null));
-              requestAnimationFrame(tick);
-            }),
-          count,
-        );
-      const cost = () => page.evaluate(() => ({ ...window.fnt?.liftCost }));
-      await frames(10);
-      const before = await cost();
-      await frames(40);
-      const after = await cost();
-      const d = (key: keyof typeof before) => (after[key] ?? 0) - (before[key] ?? 0);
-      const seen = JSON.stringify({ before, after });
-      const drawn = d('frames');
-      const screen = await page.evaluate(() => {
-        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-        return (canvas?.width ?? 0) * (canvas?.height ?? 0);
-      });
+      await page.getByRole('button', { name: /^Move\b/ }).click();
+      const pending = () =>
+        page.evaluate(() => {
+          const scene = (window.fnt?.app as unknown as { scene?: { pending?: Vec2 | null } })
+            ?.scene;
+          return scene?.pending ?? null;
+        });
 
-      expect(drawn, `raised frames were drawn: ${seen}`).toBeGreaterThan(10);
-      expect(d('layerBuilds'), `no rebuild while still: ${seen}`).toBe(0);
-      expect(after.heldPx, `the layer is cropped: ${seen}`).toBeGreaterThan(0);
-      expect(after.heldPx ?? Infinity, `the layer is cropped: ${seen}`).toBeLessThan(screen);
-      if (renderer === 'webgl') {
-        // Anything still rendered into a target is a lifted mark that moves,
-        // cropped to it: never the ground.
-        expect(d('targetPx') / drawn, `no board-sized render: ${seen}`).toBeLessThan(screen / 8);
-      } else {
-        // One copy of the layer a frame, and the odd copy over a marked top.
-        expect(d('copiedPx') / drawn, `no board-sized copy: ${seen}`).toBeLessThan(
-          (after.heldPx ?? 0) * 1.25,
+      // Three by three beside Kaya: road, the puddle's water and its edge, none under a figure.
+      // Each tap costs seconds of software-WebGL frames, so the slice stays small; the ground
+      // check above covers the whole visible board for drift.
+      const slice: Vec2[] = [];
+      for (let y = 6; y <= 8; y++) for (let x = 4; x <= 6; x++) slice.push({ x, y });
+      let settled = true;
+      for (const cell of slice) {
+        // The first pending tile shows the confirm bar, which reflows the map. Settle whenever the
+        // camera or the canvas moved since the last point was measured; a software-WebGL settle
+        // costs several seconds, so not after every tap.
+        if (!settled) await settleMapCanvas(page);
+        const measured = await cameraKey(page);
+        const point = await paintedTileCentre(page, cell);
+        expect(point, `no painted centre for (${cell.x},${cell.y})`).not.toBeNull();
+        if (!point) return;
+        const onCanvas = await page.evaluate(
+          ({ x, y }) => document.elementFromPoint(x, y) === document.querySelector('.map-canvas'),
+          point,
         );
+        expect(onCanvas, `(${cell.x},${cell.y}) is not on the canvas`).toBe(true);
+        await page.mouse.click(point.x, point.y);
+        await expect.poll(pending, { message: `tap on (${cell.x},${cell.y})` }).toEqual(cell);
+        const now = await cameraKey(page);
+        settled = cell !== slice[0] && now !== null && now.key === measured?.key;
       }
+    });
+  }
 
-      // A pan is a new camera: the blocks are drawn again, once.
-      await page.evaluate(() => {
-        const scene = (
-          window.fnt?.app as unknown as {
-            scene: { renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } } };
-          }
-        ).scene;
-        scene.renderer?.camera.centreOn({ x: 9, y: 9 });
-      });
-      await frames(20);
-      const panned = await cost();
-      expect((panned.layerBuilds ?? 0) - (after.layerBuilds ?? 0)).toBe(1);
+  /*
+   * Figure grounding on the top-down board (ADR 0104 T4): each figure stands on Imagination's
+   * `feetBlob`, a hard ellipse of the shadow ink under its feet, on both backends. On a plate of one
+   * flat colour the blob is the one darker, same-hued colour on the ground, so it can be found
+   * without the renderer's own geometry: it must lie under the figure's lowest drawn pixels, centred
+   * on them, wider than the feet and a third as tall as it is wide.
+   */
+  for (const renderer of ['canvas', 'webgl'] as const) {
+    test(`stands each top-down figure on its feet blob on ${renderer}`, async ({ page }) => {
+      allowSoftwareWebgl(test, renderer);
+      await openPlateFight(page, renderer, 'flat', ['kaya', 'sura', 'bo']);
+
+      const figures = () =>
+        page.evaluate(() => {
+          const app = window.fnt?.app;
+          const camera = app?.rendererCamera();
+          const battle = app?.state?.battle;
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          if (!camera || !battle || !canvas) throw new Error('No top-down board mounted.');
+          const rect = canvas.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+          const m = camera.groundTransform;
+          const sx = rect.width / (canvas.width / dpr);
+          const sy = rect.height / (canvas.height / dpr);
+          const active = battle.order[battle.turnIndex];
+          return {
+            // The last CSS row and column of a fractional box are blended with what is around it.
+            width: rect.width - 2,
+            height: rect.height - 2,
+            figures: battle.units
+              .filter((u) => u.hp > 0 && u.size === 1)
+              .map((u) => ({
+                id: u.id,
+                // The active figure stands in its turn ring, drawn over the blob on purpose.
+                active: u.id === active,
+                left: (m.a * u.pos.x * camera.tile + m.tx) * sx,
+                top: (m.d * u.pos.y * camera.tile + m.ty) * sy,
+                size: camera.tilePx * sx,
+              })),
+          };
+        });
+
+      await expect
+        .poll(
+          async () => {
+            const { probe, pixels } = await stableCapture(page, figures);
+            const others = probe.figures.filter((f) => !f.active);
+            const report = others.flatMap((figure) => {
+              const result = groundingOf(pixels, figure, probe);
+              return result.ok ? [] : [`${figure.id}: ${result.why}`];
+            });
+            // Two party members besides the active one, and both thugs.
+            return others.length >= 4 ? report : [`only ${others.length} figures to check`];
+          },
+          {
+            message: 'figures off their feet blobs',
+            timeout: renderer === 'webgl' ? 180_000 : 20_000,
+            intervals: [500, 1_000, 2_000],
+          },
+        )
+        .toEqual([]);
     });
   }
 });
 
-/** Screen point at a tile's centre, inside the canvas element, through the camera. */
-async function tileCentre(
-  page: Page,
-  pos: { x: number; y: number },
-): Promise<{ x: number; y: number }> {
-  const point = await page.evaluate((p) => {
-    const camera = window.fnt?.app.rendererCamera?.();
-    if (!camera) return null;
-    const m = camera.groundTransform;
-    const x = (p.x + 0.5) * 64,
-      y = (p.y + 0.5) * 64;
-    return { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty };
-  }, pos);
-  if (!point) throw new Error('no map camera');
-  return point;
+/** The colour at a point, averaged over the 3x3 CSS px around it. */
+function average1(pixels: Pixels, x: number, y: number): Rgb {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let n = 0;
+  for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++) {
+      const c = pixels.at(x + dx, y + dy);
+      if (!c) continue;
+      r += c.r;
+      g += c.g;
+      b += c.b;
+      n++;
+    }
+  return n ? { r: r / n, g: g / n, b: b / n } : { r: 0, g: 0, b: 0 };
+}
+
+const luminance = (c: Rgb) => 0.299 * c.r + 0.587 * c.g + 0.114 * c.b;
+
+/**
+ * Finds a figure's feet blob on the flat plate and checks it is under the figure. The region is the
+ * figure's tile and the half tile below it, below the tile's middle (so the health bar and head are
+ * out of it). Ground is the plate colour; the blob is the commonest colour that darkens it without
+ * changing its hue (the plate is magenta, which no figure wears); the rest is figure.
+ */
+function groundingOf(
+  pixels: Pixels,
+  figure: { left: number; top: number; size: number },
+  canvas: { width: number; height: number },
+): { ok: true } | { ok: false; why: string } {
+  const x0 = Math.round(figure.left - figure.size * 0.25);
+  const x1 = Math.round(figure.left + figure.size * 1.25);
+  const y0 = Math.round(figure.top + figure.size * 0.5);
+  const y1 = Math.round(figure.top + figure.size * 1.5);
+  if (x0 < 0 || y0 < 0 || x1 > canvas.width || y1 > canvas.height)
+    return { ok: false, why: `off the canvas: ${JSON.stringify({ x0, y0, x1, y1, canvas })}` };
+  const counts = new Map<string, { c: Rgb; n: number }>();
+  for (let y = y0; y < y1; y++)
+    for (let x = x0; x < x1; x++) {
+      const c = pixels.at(x, y);
+      if (!c) continue;
+      const key = `${c.r},${c.g},${c.b}`;
+      const entry = counts.get(key);
+      if (entry) entry.n++;
+      else counts.set(key, { c, n: 1 });
+    }
+  const sorted = [...counts.values()].sort((a, b) => b.n - a.n);
+  const ground = sorted[0]?.c;
+  if (!ground || distance(ground, FLAT) > 30)
+    return { ok: false, why: `ground is not the plate: ${JSON.stringify(ground)}` };
+  const isBlob = (c: Rgb) =>
+    luminance(c) < luminance(ground) * 0.7 &&
+    c.r > c.g * 1.3 &&
+    c.b > c.g * 1.3 &&
+    c.r / c.b > 0.75 &&
+    c.r / c.b < 1.35;
+  const blob = sorted.find((e) => e.n >= 20 && isBlob(e.c))?.c;
+  if (!blob) return { ok: false, why: 'no darkened plate colour near the feet' };
+
+  const shadow = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity, sx: 0, n: 0 };
+  let soles = -Infinity;
+  const figureRows = new Map<number, number[]>();
+  for (let y = y0; y < y1; y++)
+    for (let x = x0; x < x1; x++) {
+      const c = pixels.at(x, y);
+      if (!c) continue;
+      if (distance(c, blob) <= 12) {
+        shadow.minX = Math.min(shadow.minX, x);
+        shadow.maxX = Math.max(shadow.maxX, x);
+        shadow.minY = Math.min(shadow.minY, y);
+        shadow.maxY = Math.max(shadow.maxY, y);
+        shadow.sx += x;
+        shadow.n++;
+      } else if (distance(c, ground) > 24) {
+        soles = Math.max(soles, y);
+        const row = figureRows.get(y) ?? [];
+        row.push(x);
+        figureRows.set(y, row);
+      }
+    }
+  const width = shadow.maxX - shadow.minX + 1;
+  const height = shadow.maxY - shadow.minY + 1;
+  const centre = shadow.sx / shadow.n;
+  // The feet: the figure's drawn pixels in its lowest three rows.
+  const feet = [soles, soles - 1, soles - 2].flatMap((y) => figureRows.get(y) ?? []);
+  const seen = JSON.stringify({
+    blob,
+    ground,
+    shadow: { ...shadow, width, height, centre },
+    soles,
+    feet: feet.length ? [Math.min(...feet), Math.max(...feet)] : null,
+  });
+  if (!feet.length) return { ok: false, why: `no figure pixels: ${seen}` };
+  const feetLeft = Math.min(...feet);
+  const feetRight = Math.max(...feet);
+  if (soles < shadow.minY || soles > shadow.maxY + 1)
+    return { ok: false, why: `the soles are not on the blob: ${seen}` };
+  if (centre < feetLeft - 2 || centre > feetRight + 2)
+    return { ok: false, why: `the blob is not centred under the feet: ${seen}` };
+  if (shadow.minX > feetLeft || shadow.maxX < feetRight)
+    return { ok: false, why: `the blob does not reach past the feet: ${seen}` };
+  if (width < figure.size * 0.3 || width > figure.size * 0.8 || height > width * 0.6)
+    return { ok: false, why: `the blob is not a feet ellipse: ${seen}` };
+  return { ok: true };
 }

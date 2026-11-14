@@ -187,7 +187,44 @@ export interface FigureSpec {
   /** The pose the legacy mirrored `cast` plays (its east heading). */
   readonly cast?: string;
   readonly timing: Timing;
+  /**
+   * The riverside's legacy poses (`VillageLife`): the seated tea and the friendly wave, each two cels of one take in
+   * one heading, drawn mirrored by the actor's facing like the legacy cast (`prototypes/topdown/tools/t14riverside.py`).
+   */
+  readonly riverside?: Readonly<Record<RiversidePose, RiversideTake>>;
+  /**
+   * Ruon's surrender (`tools/t15ruon.py`): his sabre laid at his feet and his open hands raised a little, the held
+   * cels of one take in one heading. Unlike a riverside pose it stands on the sheet's own foot line, not its lowest
+   * ink row, because the sabre lies on the ground in front of the boots and reaches below them.
+   */
+  readonly surrender?: StandingTake;
 }
+
+/** A standing pose's held cels: one take, one heading, its feet on the sheet's ground. */
+interface StandingTake {
+  readonly anim: string;
+  readonly heading: Heading;
+  readonly cels: readonly number[];
+  /** Ms each cel holds. */
+  readonly celMs: number;
+}
+
+/** The two unheaded poses the riverside asks a sheet for. */
+type RiversidePose = 'tea' | 'wave';
+interface RiversideTake {
+  readonly anim: string;
+  readonly heading: Heading;
+  /** The take's two cels: the held pose and its pair (the sip; the hand swung across). */
+  readonly cels: readonly [number, number];
+}
+/**
+ * How each riverside pose plays (the clip vocabulary's two cels): the tea holds each cel four seconds, the cup in the
+ * lap then at the lips; the wave swings at four a second, the frame named by the choreography (`waveDrawing`).
+ */
+const RIVERSIDE_TIMING: Readonly<Record<RiversidePose, { fps: number }>> = {
+  tea: { fps: 0.25 },
+  wave: { fps: 4 },
+};
 
 const ROSTER: readonly FigureSpec[] = [
   {
@@ -208,6 +245,14 @@ const ROSTER: readonly FigureSpec[] = [
     },
     cast: 'jab',
     timing: 'bend',
+    riverside: {
+      tea: { anim: 'custom-seated tea: she is already sit@ff3d70', heading: 'east', cels: [1, 3] },
+      wave: {
+        anim: 'custom-a big friendly hello wave: sta@9c9d91',
+        heading: 'south',
+        cels: [1, 2],
+      },
+    },
   },
   {
     name: 'sura',
@@ -226,6 +271,14 @@ const ROSTER: readonly FigureSpec[] = [
     },
     cast: 'attack',
     timing: 'blow',
+    riverside: {
+      tea: { anim: 'custom-seated tea: she sits cross-leg@2af7bc', heading: 'east', cels: [3, 5] },
+      wave: {
+        anim: 'custom-a big friendly hello wave: sta@782513',
+        heading: 'south',
+        cels: [1, 2],
+      },
+    },
   },
   {
     name: 'bo',
@@ -429,6 +482,13 @@ const ROSTER: readonly FigureSpec[] = [
     actions: { attack: { anim: 'custom-a disciplined sabre cut: draws@4d716f' } },
     cast: 'attack',
     timing: 'blow',
+    // The first take's last cel: upright (its head on the idle's top row), its boots on the idle's foot line.
+    surrender: {
+      anim: 'custom-a calm surrender: standing in @891623',
+      heading: 'south',
+      cels: [7],
+      celMs: 1000,
+    },
   },
   // T8: the heroes the tutorial does not cast, made like Sura and Bo by `tools/t8heroes.py`: idle, walk, hit,
   // knockout and a pose for each of the level-1 and level-2 abilities; the cast is the level-1 ability's.
@@ -859,6 +919,11 @@ export interface SheetData {
   readonly cast: ClipOut | null;
   readonly clipData: boolean;
   readonly actions: boolean;
+  /** The riverside's seated tea and wave (`FigureSpec.riverside`), for a sheet that carries them. */
+  readonly tea?: ClipOut;
+  readonly wave?: ClipOut;
+  /** Ruon's surrender (`FigureSpec.surrender`), for a sheet that carries it. */
+  readonly surrender?: ClipOut;
   /** Driller tread geometry measured from alpha>=128 in the bottom 16 ink rows of each static heading. */
   readonly treadGrounding?: readonly {
     readonly spanPx: number;
@@ -1058,6 +1123,55 @@ function figureSheet(spec: FigureSpec): Sheet {
     const cels = load((a[DIR.east] ?? []).slice(0, spec.actions[spec.cast]?.frames));
     cast = trimClip('cast', cels, source.frameMs ?? [], { events: source.events ?? { hit: 0 } });
   }
+  // The riverside poses stand (or sit) on their own lowest ink row: a seated body on the foot line, not on the
+  // standing take's, so the seat lands on the ground and the shadow pool under it.
+  const riverside: Partial<Record<RiversidePose, ClipOut>> = {};
+  for (const [pose, take] of Object.entries(spec.riverside ?? {}) as [
+    RiversidePose,
+    RiversideTake,
+  ][]) {
+    const files = anim(take.anim)[DIR[take.heading]] ?? [];
+    const cels = load(
+      take.cels.map((i) => {
+        const file = files[i];
+        if (!file) throw new Error(`${spec.folder}: ${pose} has no ${DIR[take.heading]} cel ${i}`);
+        return file;
+      }),
+    );
+    const seat = Math.max(...cels.map(groundOf));
+    const t = trimmed(cels, { x: COLUMN, y: seat });
+    t.images.forEach((im, i) => add(pose, i, im));
+    riverside[pose] = {
+      frames: t.images.map((_, i) => `${spec.key}/${pose}/${i}`),
+      fps: RIVERSIDE_TIMING[pose].fps,
+      loop: true,
+      frameSize: t.frameSize,
+      anchor: { x: round6(t.anchor.x), y: round6(t.anchor.y) },
+    };
+  }
+  // A standing pose keeps the sheet's own foot line (the idle's ground), so the boots do not move when it starts.
+  let surrender: ClipOut | undefined;
+  if (spec.surrender) {
+    const take = spec.surrender;
+    const files = anim(take.anim)[DIR[take.heading]] ?? [];
+    const cels = load(
+      take.cels.map((i) => {
+        const file = files[i];
+        if (!file)
+          throw new Error(`${spec.folder}: surrender has no ${DIR[take.heading]} cel ${i}`);
+        return file;
+      }),
+    );
+    const t = trimmed(cels, anchorPoint);
+    t.images.forEach((im, i) => add('surrender', i, im));
+    surrender = {
+      frames: t.images.map((_, i) => `${spec.key}/surrender/${i}`),
+      fps: 1000 / take.celMs,
+      loop: true,
+      frameSize: t.frameSize,
+      anchor: { x: round6(t.anchor.x), y: round6(t.anchor.y) },
+    };
+  }
   const celMs =
     Math.round((spec.stride / Math.max(1, walkCels.east.length) / WALK_PX_PER_S) * 1000 * 1000) /
     1000;
@@ -1080,6 +1194,8 @@ function figureSheet(spec: FigureSpec): Sheet {
       cast,
       clipData: Object.keys(clips).length > 0,
       actions: Object.keys(actions).length > 0,
+      ...riverside,
+      ...(surrender && { surrender }),
     },
   };
 }
@@ -1404,8 +1520,9 @@ export async function dataModule(data: Record<string, SheetData>): Promise<strin
     ' *',
     " * The top-down figure sheets (ADR 0104 T2): each sheet's pages, its locomotion frame and foot anchor",
     ' * (idle, walk and rest share it), the idle and walk cels per heading (`HEADINGS` order), the walk timing',
-    " * and the legacy cast. The hits and knockouts are in each sheet's clip file, the per-heading abilities in",
-    ' * its actions file, both beside its atlas under `public/art/topdown/`.',
+    " * and the legacy cast, and the riverside's seated tea and wave and Ruon's surrender where a sheet has them. The",
+    " * hits and knockouts are in each sheet's clip file, the per-heading abilities in its actions file, both beside",
+    ' * its atlas under `public/art/topdown/`.',
     ' */',
     "import type { ClipDef } from './clips';",
     '',
@@ -1427,6 +1544,9 @@ export async function dataModule(data: Record<string, SheetData>): Promise<strin
     '  readonly cast: ClipDef | null;',
     '  readonly clipData: boolean;',
     '  readonly actions: boolean;',
+    '  readonly tea?: ClipDef;',
+    '  readonly wave?: ClipDef;',
+    '  readonly surrender?: ClipDef;',
     '  readonly treadGrounding?: readonly { readonly spanPx: number; readonly centerXFromAnchorPx: number; readonly baselineYFromAnchorPx: number }[];',
     '}',
     '',
