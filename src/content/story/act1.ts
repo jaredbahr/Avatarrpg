@@ -37,6 +37,9 @@ export const GATE_TALK_EARNED: Condition = {
   ],
 };
 
+const MIRA = 'Elder Mira';
+const PELLA = 'Pella';
+
 export const ACT1_NODES: readonly StoryNode[] = [
   /* --------------------------------------------------------------- Prologue */
   /*
@@ -101,16 +104,167 @@ export const ACT1_NODES: readonly StoryNode[] = [
     next: 'road_depart',
   },
 
+  /*
+   * Mira's table (canon DLG-01; story bible C-13). The first conversation is a
+   * table with a covered fifth bowl on it, and Pella making the count right.
+   * Mira names her four messengers only when asked; Pella supplies Bo-shan.
+   * Every answer meets again at the bowl Pella will not let anyone take. The
+   * names also stay in the journal (`mira_table`), so nobody is quizzed later.
+   * Their outsiders' details are planted elsewhere and never remarked on here.
+   */
   {
     id: 'mira_intro',
     kind: 'dialogue',
-    speaker: 'Elder Mira',
+    speaker: MIRA,
     portrait: 'portrait.mira',
     lines: [
-      'Come in. There is rice if you have not eaten. We need to talk about the quarry.',
-      'No carts for a month. I sent four people to find out why. None came home.',
-      'Dorin went as far as the gate yesterday. They have guards now. Would not let him through.',
-      'I can offer you food and a bed here. I wish it were more. Will you look for our people?',
+      'Come in. There is rice if you have not eaten.',
+      'The quarry stopped sending stone a month ago. I sent four people to ask why. None came back.',
+    ],
+    next: 'mira_table_five',
+  },
+  {
+    id: 'mira_table_five',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Five.'],
+    next: 'mira_table_hush',
+  },
+  {
+    id: 'mira_table_hush',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['Pella—'],
+    next: 'mira_table_before',
+  },
+  {
+    id: 'mira_table_before',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Bo-shan went before them. Before still counts.'],
+    next: 'mira_table_bowl',
+  },
+  {
+    id: 'mira_table_bowl',
+    kind: 'dialogue',
+    speaker: 'Mira’s Table',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Pella hooks a bowl out from under the table with one shoe. It has a cloth over it.',
+      'Mira looks at it for a moment. Then she lifts it onto the table, beside the others.',
+    ],
+    next: 'mira_table_ask',
+  },
+  {
+    id: 'mira_table_ask',
+    kind: 'choice',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    prompt: 'Yes. Five people from this village. And the crews who were already working there.',
+    options: [
+      {
+        label: 'Tell us their names.',
+        detail: 'Mira tells you who she sent.',
+        next: 'mira_table_names',
+      },
+      {
+        label: 'What can you tell us about the gate?',
+        detail: 'Mira tells you what Dorin found there.',
+        next: 'mira_table_gate',
+      },
+      {
+        label: 'We can look. We can’t promise.',
+        detail: 'Be honest with her about what you can do.',
+        next: 'mira_table_promise',
+      },
+    ],
+  },
+  {
+    id: 'mira_table_names',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['Leto. Amri. Hesra. Senn. And—'],
+    next: 'mira_table_names_pella',
+  },
+  {
+    id: 'mira_table_names_pella',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Bo-shan.'],
+    next: 'mira_table_road',
+  },
+  {
+    id: 'mira_table_gate',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: [
+      'There are guards on it now. Dorin went as far as the gate yesterday, and they would not let him through.',
+      'Nothing has come down that road since. Not stone, not a letter.',
+    ],
+    next: 'mira_table_cart',
+  },
+  {
+    id: 'mira_table_cart',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Look for his cart, too. He wouldn’t leave it unless he had to.'],
+    next: 'mira_table_road',
+  },
+  {
+    id: 'mira_table_promise',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['Then tell me what you find. Even if you have to come back without them.'],
+    next: 'mira_table_road',
+  },
+  {
+    // Kaya says it when she is in the party; otherwise Pella asks. Mira answers either way.
+    id: 'mira_table_road',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Are you going now?'],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: ['We can leave now.'],
+      },
+    ],
+    next: 'mira_table_eat',
+  },
+  {
+    id: 'mira_table_eat',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['You can eat first.'],
+    next: 'mira_table_his',
+  },
+  {
+    id: 'mira_table_his',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Don’t take that bowl. That’s his.'],
+    next: 'mira_table_set',
+  },
+  {
+    id: 'mira_table_set',
+    kind: 'dialogue',
+    speaker: 'Mira’s Table',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Mira slides another bowl across to you. The covered one stays where Pella can see it.',
     ],
     next: 'village_explore',
   },
@@ -223,6 +377,19 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich horse, so I would ask someone else.',
       'Mira says “the missing people” every time. She could say his name. She knows his name.',
       "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
+    ],
+    variants: [
+      {
+        // After Mira's table (C-13) the count is settled; Pella talks about the bowl instead.
+        when: { kind: 'visited', nodeId: 'mira_intro' },
+        lines: [
+          "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
+          'Bo-shan took vegetables up before Mira sent the others. He was supposed to be back on Tuesday.',
+          'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich horse, so I would ask someone else.',
+          'That bowl was under the table all month. Mira kept putting soup in it.',
+          "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
+        ],
+      },
     ],
     next: 'pella_asked',
   },
@@ -815,7 +982,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
-      'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
+      'You pull the bars from the gallery doors. Leto, Amri, Hesra and Senn come out first, then the crews. Bo-shan follows them and asks where Pella is.',
       'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],

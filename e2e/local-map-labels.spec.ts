@@ -224,10 +224,10 @@ test('the unchanged objective route remains usable after reading the map', async
   await expect
     .poll(() => page.evaluate(() => window.fnt!.app.state?.story.nodeId))
     .toBe('mira_intro');
-  await expect(page.locator('.line-count')).toHaveText('1 of 4');
+  await expect(page.locator('.line-count')).toHaveText('1 of 2');
   await page.locator('[data-conversation-control="next"]').focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('.line-count')).toHaveText('2 of 4');
+  await expect(page.locator('.line-count')).toHaveText('2 of 2');
   await info.attach('actual-route-positive-control', {
     body: JSON.stringify({ before, after: await game(page) }),
     contentType: 'application/json',

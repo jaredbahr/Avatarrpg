@@ -33,8 +33,14 @@ function withProfiles(state: GameState, profile: ResidentProfile): GameState {
 }
 
 function finish(state: GameState): GameState {
-  for (let count = 0; state.screen === 'dialogue' && count < 12; count++) {
-    state = apply(CONTENT, state, { type: 'advanceDialogue' }).state;
+  for (let count = 0; state.screen === 'dialogue' && count < 24; count++) {
+    // Mira's table asks one question (DLG-01); every answer meets again at the bowl.
+    const choosing = CONTENT.story.get(state.story.nodeId ?? '')?.kind === 'choice';
+    state = apply(
+      CONTENT,
+      state,
+      choosing ? { type: 'chooseOption', optionIndex: 0 } : { type: 'advanceDialogue' },
+    ).state;
   }
   expect(state.screen).toBe('explore');
   return state;

@@ -99,7 +99,7 @@ test('a failed canonical portrait image keeps a visible painted fallback', async
     }),
   ).toBe(true);
   await page.locator('.dialogue-panel button').tap();
-  await expect(page.locator('.line-count')).toHaveText('2 of 4');
+  await expect(page.locator('.line-count')).toHaveText('2 of 2');
 });
 
 test('party speaker title agrees with the portrait and staged narration keeps its label', async ({

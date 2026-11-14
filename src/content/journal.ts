@@ -92,6 +92,15 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     when: { kind: 'flag', key: 'world.discovered.tea_station', op: 'set' },
   },
   {
+    id: 'mira_table',
+    mapId: 'ba_dan_village',
+    title: 'Five bowls',
+    hint: 'Elder Mira is waiting at her table in the square.',
+    found:
+      'Mira sent four people to the quarry: Leto, Amri, Hesra and Senn. Pella’s brother, Bo-shan, went before them. His bowl stays on the table, covered.',
+    when: { kind: 'visited', nodeId: 'mira_intro' },
+  },
+  {
     id: 'bo_shan_cart',
     mapId: 'ba_dan_village',
     title: 'Five missing, not four',
@@ -122,7 +131,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'Out of the galleries',
     hint: 'Below the stone ledges, the gallery entrances have been barred with timber.',
     found:
-      'Pulled the bars from the gallery doors. Mira’s four messengers came out, then Bo-shan, asking where Pella was.',
+      'Pulled the bars from the gallery doors. Leto, Amri, Hesra and Senn came out, then Bo-shan, asking where Pella was.',
     when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
   {
