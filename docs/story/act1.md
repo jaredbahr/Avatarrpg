@@ -61,9 +61,9 @@ flowchart TD
   n101["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
   n102["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
   n103["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
-  n130["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
-  n131["trade_payment<br/>Set flags"]
-  n132["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
+  n144["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
+  n145["trade_payment<br/>Set flags"]
+  n146["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
   n13["cutting_after_explore — exit to world / part 1"]:::external
   n33["forest_after_explore — exit to world / part 1"]:::external
   n37["forest_explore — exit to world / part 1"]:::external
@@ -71,11 +71,11 @@ flowchart TD
   n51["gate_trade_explore — exit to world / part 1"]:::external
   n83["quarry_after_explore — exit to return / part 1"]:::external
   n112["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
-  n134["village_return_explore — exit to return / part 1"]:::external
+  n148["village_return_explore — exit to return / part 1"]:::external
   n0 -->|"Next"| n2
   n2 -->|"set: (none); phase: evening"| n83
   n3 -->|"set: act1_lost=true"| n1
-  n4 -->|"Next"| n132
+  n4 -->|"Next"| n146
   n5 -->|"set: act1_complete=true; resident profiles: lw.npc.amri=#quot;returning#quot;, lw.npc.bo_shan=#quot;returning#quot;, lw.npc.hesra=#quot;returning#quot;, lw.npc.leto=#quot;returning#quot;, lw.npc.senn_messenger=#quot;returning#quot;"| n0
   n6 -->|"Next"| n13
   n7 -->|"Next"| n33
@@ -91,10 +91,10 @@ flowchart TD
   n22 -->|"Next"| n3
   n23 -->|"Next"| n62
   n24 -->|"Next"| n63
-  n30 -->|"Next"| n132
+  n30 -->|"Next"| n146
   n32 -->|"Next"| n46
-  n41 -->|"Next"| n132
-  n42 -->|"Next"| n132
+  n41 -->|"Next"| n146
+  n42 -->|"Next"| n146
   n45 -->|"set: gate_fire_bluff=true"| n11
   n47 -->|"Next"| n50
   n48 -->|"Walk up and knock"| n11
@@ -105,23 +105,23 @@ flowchart TD
   n62 -->|"set: lost_forest_road=true; grant XP: 100"| n7
   n63 -->|"set: lost_quarry_gate=true; grant XP: 150"| n103
   n64 -->|"Next"| n66
-  n65 -->|"Next"| n132
+  n65 -->|"Next"| n146
   n66 -->|"Next"| n67
-  n67 -->|"set: rubbing_given=true"| n134
-  n68 -->|"Next"| n134
-  n69 -->|"Next"| n132
+  n67 -->|"set: rubbing_given=true"| n148
+  n68 -->|"Next"| n148
+  n69 -->|"Next"| n146
   n70 -->|"set: pella_asked=true"| n112
   n72 -->|"Next"| n70
   n84 -->|"Next"| n10
   n85 -->|"Next"| n84
   n100 -->|"Next"| n37
   n101 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n32
-  n101 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n131
+  n101 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n145
   n102 -->|"Next"| n13
   n103 -->|"Next"| n101
-  n130 -->|"Next"| n51
-  n131 -->|"set: ruon_paid=true; grant XP: 150"| n130
-  n132 -->|"Legacy/audit exit (live map exits differ)"| n100
+  n144 -->|"Next"| n51
+  n145 -->|"set: ruon_paid=true; grant XP: 150"| n144
+  n146 -->|"Legacy/audit exit (live map exits differ)"| n100
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

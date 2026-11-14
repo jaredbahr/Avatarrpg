@@ -28,7 +28,7 @@ flowchart TD
   n57{"hanru_watch_leave<br/>Branch: act1_complete"}
   n73["plant_chair<br/>Gao the Shopkeeper: Come in out of the sun. Sit down a minute."]:::entry
   n74["plant_chair_box<br/>Gao the Shopkeeper: There are three drawers in it. I have found…"]
-  n75{"plant_chair_decline<br/>Branch: act1_complete"}
+  n75{"plant_chair_decline<br/>Branch: act1_complete"}:::entry
   n76{"plant_chair_decline_home<br/>Branch: ruon_traded"}
   n77{"plant_chair_decline_road<br/>Branch: ruon_traded"}
   n78["plant_chair_done<br/>Set flags"]
@@ -37,20 +37,20 @@ flowchart TD
   n81["plant_chair_seat<br/>Gao’s shop: The only spare chair holds a potted plant. Gao move…"]
   n82["plant_chair_talk<br/>Gao the Shopkeeper: There."]
   n104["school_notice<br/>School notice: “School this morning. Pupils home at midday.”"]:::entry
-  n133{"village_leave<br/>Branch: act1_complete"}:::entry
+  n147{"village_leave<br/>Branch: act1_complete"}:::entry
   n41["gao_cold — exit to act1 / part 1"]:::external
   n42["gao_friendly — exit to act1 / part 1"]:::external
   n43["gao_home — exit to return / part 1"]:::external
   n44["gao_home_cold — exit to return / part 1"]:::external
-  n132["village_explore — exit to act1 / part 1"]:::external
-  n134["village_return_explore — exit to return / part 1"]:::external
+  n146["village_explore — exit to act1 / part 1"]:::external
+  n148["village_return_explore — exit to return / part 1"]:::external
   n52 -->|"set: scene.bd03_handover=#quot;completed#quot;"| n57
   n53 -->|"Next"| n52
   n54 -->|"Next"| n53
   n55 -->|"Next"| n54
   n56 -->|"Next"| n57
-  n57 -->|"act1_complete: truthy (you have act1 complete)"| n134
-  n57 -->|"act1_complete: falsy (you have not act1 complete)"| n132
+  n57 -->|"act1_complete: truthy (you have act1 complete)"| n148
+  n57 -->|"act1_complete: falsy (you have not act1 complete)"| n146
   n73 -->|"Sit down"| n81
   n73 -->|"Another time"| n75
   n74 -->|"Next"| n78
@@ -60,16 +60,16 @@ flowchart TD
   n76 -->|"ruon_traded: falsy (you have not ruon traded)"| n43
   n77 -->|"ruon_traded: truthy (you have ruon traded)"| n41
   n77 -->|"ruon_traded: falsy (you have not ruon traded)"| n42
-  n78 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n133
+  n78 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n147
   n79 -->|"Next"| n78
   n80 -->|"Next"| n78
   n81 -->|"Next"| n82
   n82 -->|"Admire the plant"| n79
   n82 -->|"Ask about the puzzle box"| n74
   n82 -->|"Just sit"| n80
-  n104 -->|"Next"| n133
-  n133 -->|"act1_complete: truthy (you have act1 complete)"| n134
-  n133 -->|"act1_complete: falsy (you have not act1 complete)"| n132
+  n104 -->|"Next"| n147
+  n147 -->|"act1_complete: truthy (you have act1 complete)"| n148
+  n147 -->|"act1_complete: falsy (you have not act1 complete)"| n146
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

@@ -35,32 +35,32 @@ flowchart TD
   n83["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
   n96["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
   n105["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n134["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n135["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n136["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n137["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
-  n138["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
+  n148["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n149["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n150["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n151["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n152["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
   n93["riverside_explore — exit to riverside / part 1"]:::external
   n12 -->|"Next"| n26
   n17 -->|"Legacy/audit exit (live map exits differ)"| n49
   n25 -->|"Next"| n40
-  n26 -->|"Continue after ending"| n134
-  n31 -->|"Next"| n134
+  n26 -->|"Continue after ending"| n148
+  n31 -->|"Next"| n148
   n38 -->|"Next"| n39
-  n39 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n134
+  n39 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n148
   n40 -->|"Legacy/audit exit (live map exits differ)"| n38
-  n43 -->|"Next"| n134
-  n44 -->|"Next"| n134
+  n43 -->|"Next"| n148
+  n44 -->|"Next"| n148
   n49 -->|"Legacy/audit exit (live map exits differ)"| n40
-  n71 -->|"Next"| n134
+  n71 -->|"Next"| n148
   n83 -->|"Legacy/audit exit (live map exits differ)"| n17
   n96 -->|"Next"| n93
   n105 -->|"Next"| n17
-  n134 -->|"Legacy/audit exit (live map exits differ)"| n137
-  n135 -->|"Next"| n138
-  n136 -->|"Next"| n135
-  n137 -->|"Next"| n136
-  n138 -->|"Next"| n12
+  n148 -->|"Legacy/audit exit (live map exits differ)"| n151
+  n149 -->|"Next"| n152
+  n150 -->|"Next"| n149
+  n151 -->|"Next"| n150
+  n152 -->|"Next"| n12
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
