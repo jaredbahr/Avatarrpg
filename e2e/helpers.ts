@@ -69,12 +69,18 @@ export async function snapshot(page: Page): Promise<AppSnapshot> {
 /**
  * Clears saved games and settings so each spec starts from nothing.
  *
- * `query` is kept across the reload, which is how a spec forces a renderer
+ * Storage is cleared on a same-origin page that does not boot the game, and
+ * the game then boots once. Booting it first and reloading aborted its
+ * startup fetches (the top-down scenes), and WebKit reports an aborted fetch
+ * as `TypeError: Load failed`, which the game logs as a console error that
+ * every spec collecting errors then failed on (explore.spec, intermittently).
+ *
+ * `query` is passed to that one boot, which is how a spec forces a renderer
  * (`?renderer=webgl`) or the frame-time readout (`?stats=1`): both are read
  * from `location.search` when the app boots.
  */
 export async function resetStorage(page: Page, query = ''): Promise<void> {
-  await page.goto(`/${query}`);
+  await page.goto('/robots.txt');
   await page.evaluate(() => {
     try {
       localStorage.clear();
@@ -82,7 +88,7 @@ export async function resetStorage(page: Page, query = ''): Promise<void> {
       /* private window: nothing to clear */
     }
   });
-  await page.reload();
+  await page.goto(`/${query}`);
   await page.waitForFunction(() => Boolean(window.fnt?.app));
 }
 
