@@ -132,6 +132,9 @@
   --roster-card-width: 6.25rem;
   --dialogue-portrait-compact: 4rem;
   --conversation-portrait: 15rem; /* 240 px: 3x the 160 px pixel portraits at dpr 2 (ADR 0107); phone and portrait boxes below override it */
+  /* Largest text keeps the speaker portrait at its Large-text size (300 px), so a short line
+     gets a shorter panel while the text still grows (owner, 2026-11-14). */
+  --conversation-portrait-largest: 12.5rem;
   --conversation-panel-max: 58rem;
   --explore-actions-width: 26rem;
 
