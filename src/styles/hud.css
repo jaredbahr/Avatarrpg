@@ -1369,6 +1369,44 @@ html[data-contrast='high'] .title-card .tagline {
   .stage .choice-panel.conversation-panel {
     max-height: 100%;
   }
+
+  /* Largest text in a wide fallback font (DejaVu Sans, as on a CI runner) left
+   * the last answer below the panel. Close up the vertical spacing; every
+   * control keeps its --tap minimum. */
+  .choice-panel.conversation-panel .choice-options {
+    gap: var(--sp-1);
+  }
+
+  .choice-panel.conversation-panel .choice-option {
+    padding-block: var(--sp-1);
+  }
+
+  .choice-panel.conversation-panel .decider-banner {
+    padding-block: 0;
+  }
+
+  .explore-conversation .choice-panel.conversation-panel .decider-banner .btn-large {
+    min-height: var(--tap);
+  }
+
+  /* On the stage, a Largest-text choice takes width from the speaker column so
+   * its answers wrap onto fewer lines; the portrait shrinks to fit. */
+  html[data-large-text='huge'] .stage:has(.choice-panel.conversation-panel) {
+    grid-template-columns: minmax(11rem, 13rem) minmax(0, 1fr);
+    column-gap: var(--sp-3);
+  }
+
+  html[data-large-text='huge'] .stage:has(.choice-panel.conversation-panel) .stage-portrait {
+    max-width: 100%;
+  }
+
+  html[data-large-text='huge']
+    .stage:has(.choice-panel.conversation-panel)
+    .stage-portrait
+    .painter {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 .vote-names {
