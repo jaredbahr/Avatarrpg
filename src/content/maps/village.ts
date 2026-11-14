@@ -12,6 +12,7 @@
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
 import {
+  BA_DAN_CANAL_BRIDGE,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
   BA_DAN_DRESSING_FOOTPRINTS,
@@ -31,6 +32,18 @@ export const BA_DAN_VILLAGE: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
+  // The courtyard's open air, with a pond tone that swells near the canal's water.
+  soundscape: 'courtyard',
+  // Bending practice (#284) on the south canal bank, east of the bridge's foot, inside the demo
+  // slice (x 0-13, y 0-9). The bends go north-west at a mark on the canal's near edge, so they burst
+  // over the open water. The bridge deck itself is within reach of Mira's table, a seat, where Wait
+  // keeps the slot; west of the bridge the house hides a follower.
+  practice: {
+    label: 'Canal bank',
+    anchor: { x: BA_DAN_CANAL_BRIDGE.x + 1, y: BA_DAN_CANAL_BRIDGE.y + 2 },
+    reach: 1,
+    mark: { x: 6, y: 7 },
+  },
   legend: {
     ...LEGEND,
     l: { terrain: 'stone', blocked: true, blocksSight: false },

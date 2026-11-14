@@ -854,6 +854,36 @@ export interface MapDef {
   readonly backdrop?: MapBackdrop;
   /** Keep the viewport centre within the map, optionally grown by this many tiles. */
   readonly cameraCentreMargin?: number;
+  /*
+   * Presentation only, like `ambience`: the app reads these, nothing in core does. They are on the
+   * map so a new region declares them as data rather than adding a map id to app code.
+   */
+  /** An environment bed: `courtyard` plays open air and swells a pond tone near water. */
+  readonly soundscape?: 'courtyard';
+  /** A bending practice ground (#284): offered while the leader stands within `reach` of `anchor`. */
+  readonly practice?: MapPractice;
+  /** The camera's first framing of the map, on arriving at `at` before `unlessVisited` is visited. */
+  readonly arrivalShot?: MapArrivalShot;
+}
+
+export interface MapPractice {
+  /** What the action calls the place. */
+  readonly label: string;
+  readonly anchor: Vec2;
+  /** Chebyshev tiles from `anchor`. */
+  readonly reach: number;
+  /** The tile every bend is thrown at. */
+  readonly mark: Vec2;
+}
+
+export interface MapArrivalShot {
+  readonly at: Vec2;
+  /** A story node; once visited the map frames as usual. */
+  readonly unlessVisited: string;
+  /** How many tile rows the fitted view holds (top-down only). */
+  readonly rows: number;
+  /** The row the view centres on when those rows fit; otherwise it centres on the party. */
+  readonly centreY: number;
 }
 
 /**
