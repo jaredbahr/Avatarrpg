@@ -1,0 +1,1184 @@
+{
+  "saveShape": {
+    "exploring": [
+      "save.format: number",
+      "save.label: string",
+      "save.magic: string",
+      "save.savedAt: number",
+      "save.session.players[].name: string",
+      "save.session.players[].unitId: string",
+      "save.session.soloPlay: boolean",
+      "save.state.battle: null",
+      "save.state.difficulty: string",
+      "save.state.discoveredCombos: []",
+      "save.state.discoveredCombos[]: string",
+      "save.state.flags.*: boolean",
+      "save.state.flags.*: number",
+      "save.state.location.mapId: string",
+      "save.state.location.pos.x: number",
+      "save.state.location.pos.y: number",
+      "save.state.log[]: string",
+      "save.state.party[].abilities[]: string",
+      "save.state.party[].ai: string",
+      "save.state.party[].ap: number",
+      "save.state.party[].bankedAp: number",
+      "save.state.party[].base.defense: number",
+      "save.state.party[].base.focus: number",
+      "save.state.party[].base.maxAp: number",
+      "save.state.party[].base.maxHp: number",
+      "save.state.party[].base.maxMove: number",
+      "save.state.party[].base.power: number",
+      "save.state.party[].base.speed: number",
+      "save.state.party[].characterId: string",
+      "save.state.party[].cooldowns: {}",
+      "save.state.party[].disciplineId: null",
+      "save.state.party[].element: string",
+      "save.state.party[].enemyId: null",
+      "save.state.party[].faction: string",
+      "save.state.party[].hp: number",
+      "save.state.party[].id: string",
+      "save.state.party[].level: number",
+      "save.state.party[].move: number",
+      "save.state.party[].name: string",
+      "save.state.party[].pendingAp: number",
+      "save.state.party[].pos.x: number",
+      "save.state.party[].pos.y: number",
+      "save.state.party[].size: number",
+      "save.state.party[].sprite: string",
+      "save.state.party[].statuses: []",
+      "save.state.party[].temporary: boolean",
+      "save.state.party[].xp: number",
+      "save.state.pendingChoices: []",
+      "save.state.rng: number",
+      "save.state.screen: string",
+      "save.state.seed: number",
+      "save.state.story.deciderIndex: number",
+      "save.state.story.lineIndex: number",
+      "save.state.story.nodeId: string",
+      "save.state.story.visited[]: string",
+      "save.state.version: number",
+      "save.state.world.cleared[]: string",
+      "save.state.world.clock.day: number",
+      "save.state.world.clock.phase: string",
+      "save.state.world.fired[]: string",
+      "save.state.world.residentProfiles.*: string",
+      "save.state.world.residentProfiles: {}",
+      "save.state.world.returnPos.*.x: number",
+      "save.state.world.returnPos.*.y: number",
+      "save.state.world.runoff: string",
+      "save.state.world.talk: null",
+      "save.summary: string"
+    ],
+    "battleOpening": [
+      "save.format: number",
+      "save.label: string",
+      "save.magic: string",
+      "save.savedAt: number",
+      "save.session.players[].name: string",
+      "save.session.players[].unitId: string",
+      "save.session.soloPlay: boolean",
+      "save.state.battle.encounterId: string",
+      "save.state.battle.grid.height: number",
+      "save.state.battle.grid.tiles[].blocked: boolean",
+      "save.state.battle.grid.tiles[].blocksSight: boolean",
+      "save.state.battle.grid.tiles[].cover: boolean",
+      "save.state.battle.grid.tiles[].elevation: number",
+      "save.state.battle.grid.tiles[].ramp: boolean",
+      "save.state.battle.grid.tiles[].surface.duration: number",
+      "save.state.battle.grid.tiles[].surface.id: string",
+      "save.state.battle.grid.tiles[].surface.spread: number",
+      "save.state.battle.grid.tiles[].surface: null",
+      "save.state.battle.grid.tiles[].terrain: string",
+      "save.state.battle.grid.width: number",
+      "save.state.battle.mapId: string",
+      "save.state.battle.nextUnitSerial: number",
+      "save.state.battle.openingRng: number",
+      "save.state.battle.order[]: string",
+      "save.state.battle.phase: string",
+      "save.state.battle.props[].hp: number",
+      "save.state.battle.props[].id: string",
+      "save.state.battle.props[].pos.x: number",
+      "save.state.battle.props[].pos.y: number",
+      "save.state.battle.props[].previous.blocked: boolean",
+      "save.state.battle.props[].previous.blocksSight: boolean",
+      "save.state.battle.props[].previous.cover: boolean",
+      "save.state.battle.props[].previous.elevation: number",
+      "save.state.battle.props[].previous.ramp: boolean",
+      "save.state.battle.props[].previous.surface: null",
+      "save.state.battle.props[].previous.terrain: string",
+      "save.state.battle.props[].propId: string",
+      "save.state.battle.round: number",
+      "save.state.battle.temporaryWalls: []",
+      "save.state.battle.turnIndex: number",
+      "save.state.battle.units[].abilities[]: string",
+      "save.state.battle.units[].ai: string",
+      "save.state.battle.units[].ap: number",
+      "save.state.battle.units[].bankedAp: number",
+      "save.state.battle.units[].base.defense: number",
+      "save.state.battle.units[].base.focus: number",
+      "save.state.battle.units[].base.maxAp: number",
+      "save.state.battle.units[].base.maxHp: number",
+      "save.state.battle.units[].base.maxMove: number",
+      "save.state.battle.units[].base.power: number",
+      "save.state.battle.units[].base.speed: number",
+      "save.state.battle.units[].characterId: null",
+      "save.state.battle.units[].characterId: string",
+      "save.state.battle.units[].cooldowns: {}",
+      "save.state.battle.units[].disciplineId: null",
+      "save.state.battle.units[].element: string",
+      "save.state.battle.units[].enemyId: null",
+      "save.state.battle.units[].enemyId: string",
+      "save.state.battle.units[].faction: string",
+      "save.state.battle.units[].hp: number",
+      "save.state.battle.units[].id: string",
+      "save.state.battle.units[].level: number",
+      "save.state.battle.units[].move: number",
+      "save.state.battle.units[].name: string",
+      "save.state.battle.units[].pendingAp: number",
+      "save.state.battle.units[].pos.x: number",
+      "save.state.battle.units[].pos.y: number",
+      "save.state.battle.units[].size: number",
+      "save.state.battle.units[].sprite: string",
+      "save.state.battle.units[].statuses: []",
+      "save.state.battle.units[].temporary: boolean",
+      "save.state.battle.units[].xp: number",
+      "save.state.battle.variantId: string",
+      "save.state.difficulty: string",
+      "save.state.discoveredCombos: []",
+      "save.state.flags: {}",
+      "save.state.location.mapId: string",
+      "save.state.location.pos.x: number",
+      "save.state.location.pos.y: number",
+      "save.state.log[]: string",
+      "save.state.party[].abilities[]: string",
+      "save.state.party[].ai: string",
+      "save.state.party[].ap: number",
+      "save.state.party[].bankedAp: number",
+      "save.state.party[].base.defense: number",
+      "save.state.party[].base.focus: number",
+      "save.state.party[].base.maxAp: number",
+      "save.state.party[].base.maxHp: number",
+      "save.state.party[].base.maxMove: number",
+      "save.state.party[].base.power: number",
+      "save.state.party[].base.speed: number",
+      "save.state.party[].characterId: string",
+      "save.state.party[].cooldowns: {}",
+      "save.state.party[].disciplineId: null",
+      "save.state.party[].element: string",
+      "save.state.party[].enemyId: null",
+      "save.state.party[].faction: string",
+      "save.state.party[].hp: number",
+      "save.state.party[].id: string",
+      "save.state.party[].level: number",
+      "save.state.party[].move: number",
+      "save.state.party[].name: string",
+      "save.state.party[].pendingAp: number",
+      "save.state.party[].pos.x: number",
+      "save.state.party[].pos.y: number",
+      "save.state.party[].size: number",
+      "save.state.party[].sprite: string",
+      "save.state.party[].statuses: []",
+      "save.state.party[].temporary: boolean",
+      "save.state.party[].xp: number",
+      "save.state.pendingChoices: []",
+      "save.state.rng: number",
+      "save.state.screen: string",
+      "save.state.seed: number",
+      "save.state.story.deciderIndex: number",
+      "save.state.story.lineIndex: number",
+      "save.state.story.nodeId: string",
+      "save.state.story.visited[]: string",
+      "save.state.version: number",
+      "save.state.world.cleared: []",
+      "save.state.world.clock.day: number",
+      "save.state.world.clock.phase: string",
+      "save.state.world.fired[]: string",
+      "save.state.world.residentProfiles: {}",
+      "save.state.world.returnPos.*.x: number",
+      "save.state.world.returnPos.*.y: number",
+      "save.state.world.runoff: string",
+      "save.state.world.talk: null",
+      "save.summary: string"
+    ]
+  },
+  "trade": {
+    "firstBattleOpening": {
+      "encounterId": "enc_forest_road",
+      "variantId": "thugs",
+      "phase": "active",
+      "round": 1,
+      "order": [
+        "p0",
+        "e7",
+        "p1",
+        "e6",
+        "e5",
+        "p2"
+      ],
+      "units": [
+        {
+          "id": "p0",
+          "name": "Kaya",
+          "faction": "party",
+          "kind": "kaya",
+          "level": 1,
+          "hp": 26,
+          "pos": {
+            "x": 2,
+            "y": 5
+          }
+        },
+        {
+          "id": "p1",
+          "name": "Nilak",
+          "faction": "party",
+          "kind": "nilak",
+          "level": 1,
+          "hp": 28,
+          "pos": {
+            "x": 3,
+            "y": 4
+          }
+        },
+        {
+          "id": "p2",
+          "name": "Bo",
+          "faction": "party",
+          "kind": "bo",
+          "level": 1,
+          "hp": 38,
+          "pos": {
+            "x": 1,
+            "y": 5
+          }
+        },
+        {
+          "id": "e5",
+          "name": "Quarry Worker",
+          "faction": "enemy",
+          "kind": "bandit_thug",
+          "level": 1,
+          "hp": 28,
+          "pos": {
+            "x": 17,
+            "y": 5
+          }
+        },
+        {
+          "id": "e6",
+          "name": "Quarry Worker",
+          "faction": "enemy",
+          "kind": "bandit_thug",
+          "level": 1,
+          "hp": 28,
+          "pos": {
+            "x": 17,
+            "y": 7
+          }
+        },
+        {
+          "id": "e7",
+          "name": "Slinger",
+          "faction": "enemy",
+          "kind": "bandit_slinger",
+          "level": 1,
+          "hp": 22,
+          "pos": {
+            "x": 18,
+            "y": 3
+          }
+        }
+      ]
+    },
+    "gate": {
+      "screen": "explore",
+      "difficulty": "story",
+      "story": {
+        "nodeId": "gate_trade_explore",
+        "deciderIndex": 2,
+        "visited": [
+          "act1_open",
+          "village_explore",
+          "mira_intro",
+          "road_depart",
+          "forest_explore",
+          "battle_forest_road",
+          "after_forest",
+          "forest_after_explore",
+          "gate_parley",
+          "gate_kinship",
+          "gate_ruon_listens",
+          "gate_talked_through",
+          "ruon_surrender",
+          "ruon_choice",
+          "trade_payment",
+          "trade_chosen",
+          "gate_trade_explore"
+        ]
+      },
+      "location": {
+        "mapId": "quarry_gate",
+        "pos": {
+          "x": 8,
+          "y": 4
+        }
+      },
+      "party": [
+        {
+          "id": "p0",
+          "name": "Kaya",
+          "characterId": "kaya",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 400,
+          "base": {
+            "maxHp": 34,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 10,
+            "defense": 2,
+            "speed": 7,
+            "focus": 10
+          },
+          "abilities": [
+            "fire_jab",
+            "flame_arc",
+            "fire_blast"
+          ]
+        },
+        {
+          "id": "p1",
+          "name": "Nilak",
+          "characterId": "nilak",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 400,
+          "base": {
+            "maxHp": 36,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 6,
+            "defense": 2,
+            "speed": 5,
+            "focus": 18
+          },
+          "abilities": [
+            "water_whip",
+            "healing_stream",
+            "water_pull"
+          ]
+        },
+        {
+          "id": "p2",
+          "name": "Bo",
+          "characterId": "bo",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 400,
+          "base": {
+            "maxHp": 46,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 8,
+            "defense": 6,
+            "speed": 2,
+            "focus": 5
+          },
+          "abilities": [
+            "rock_throw",
+            "stone_stance",
+            "earth_wall"
+          ]
+        }
+      ],
+      "flags": {
+        "gate_talked_through": true,
+        "jin_has_satchel": true,
+        "ruon_paid": true,
+        "ruon_respects_you": true,
+        "ruon_traded": true,
+        "standing.earth": 0
+      },
+      "world": {
+        "cleared": [
+          "enc_forest_road"
+        ],
+        "fired": [
+          "forest_road:road_depart",
+          "forest_road:battle_forest_road",
+          "quarry_gate:gate_parley"
+        ],
+        "clock": {
+          "day": 1,
+          "phase": "midday"
+        },
+        "returnPos": {
+          "ba_dan_village": {
+            "x": 23,
+            "y": 7
+          },
+          "forest_road": {
+            "x": 19,
+            "y": 4
+          },
+          "quarry_gate": {
+            "x": 8,
+            "y": 4
+          }
+        },
+        "residentProfiles": {},
+        "runoff": "unresolved"
+      }
+    },
+    "afterDriller": {
+      "screen": "explore",
+      "difficulty": "story",
+      "story": {
+        "nodeId": "quarry_after_explore",
+        "deciderIndex": 2,
+        "visited": [
+          "act1_open",
+          "village_explore",
+          "mira_intro",
+          "road_depart",
+          "forest_explore",
+          "battle_forest_road",
+          "after_forest",
+          "forest_after_explore",
+          "gate_parley",
+          "gate_kinship",
+          "gate_ruon_listens",
+          "gate_talked_through",
+          "ruon_surrender",
+          "ruon_choice",
+          "trade_payment",
+          "trade_chosen",
+          "gate_trade_explore",
+          "cutting_culvert",
+          "cutting_culvert_ripple",
+          "cutting_after_explore",
+          "quarry_descent",
+          "quarry_assessment",
+          "battle_grumbler",
+          "act1_victory",
+          "act1_epilogue",
+          "quarry_ledger",
+          "act1_evening",
+          "quarry_after_explore"
+        ]
+      },
+      "location": {
+        "mapId": "quarry_floor",
+        "pos": {
+          "x": 9,
+          "y": 5
+        }
+      },
+      "party": [
+        {
+          "id": "p0",
+          "name": "Kaya",
+          "characterId": "kaya",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 38,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 11,
+            "defense": 2,
+            "speed": 7,
+            "focus": 10
+          },
+          "abilities": [
+            "fire_jab",
+            "flame_arc",
+            "fire_blast"
+          ]
+        },
+        {
+          "id": "p1",
+          "name": "Nilak",
+          "characterId": "nilak",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 40,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 7,
+            "defense": 2,
+            "speed": 5,
+            "focus": 18
+          },
+          "abilities": [
+            "water_whip",
+            "healing_stream",
+            "water_pull"
+          ]
+        },
+        {
+          "id": "p2",
+          "name": "Bo",
+          "characterId": "bo",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 50,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 9,
+            "defense": 6,
+            "speed": 2,
+            "focus": 5
+          },
+          "abilities": [
+            "rock_throw",
+            "stone_stance",
+            "earth_wall"
+          ]
+        }
+      ],
+      "flags": {
+        "act1_complete": true,
+        "gate_talked_through": true,
+        "jin_has_satchel": true,
+        "ruon_paid": true,
+        "ruon_respects_you": true,
+        "ruon_traded": true,
+        "standing.earth": 0
+      },
+      "world": {
+        "cleared": [
+          "enc_forest_road",
+          "enc_grumbler"
+        ],
+        "fired": [
+          "forest_road:road_depart",
+          "forest_road:battle_forest_road",
+          "quarry_gate:gate_parley",
+          "ambush_road:cutting_culvert",
+          "quarry_floor:quarry_descent"
+        ],
+        "clock": {
+          "day": 1,
+          "phase": "evening"
+        },
+        "returnPos": {
+          "ambush_road": {
+            "x": 19,
+            "y": 4
+          },
+          "ba_dan_village": {
+            "x": 23,
+            "y": 7
+          },
+          "forest_road": {
+            "x": 19,
+            "y": 4
+          },
+          "quarry_floor": {
+            "x": 9,
+            "y": 5
+          },
+          "quarry_gate": {
+            "x": 19,
+            "y": 5
+          }
+        },
+        "residentProfiles": {
+          "lw.npc.amri": "returning",
+          "lw.npc.bo_shan": "returning",
+          "lw.npc.hesra": "returning",
+          "lw.npc.leto": "returning",
+          "lw.npc.senn_messenger": "returning"
+        },
+        "runoff": "unresolved"
+      }
+    }
+  },
+  "escort": {
+    "firstBattleOpening": {
+      "encounterId": "enc_forest_road",
+      "variantId": "bruisers",
+      "phase": "active",
+      "round": 1,
+      "order": [
+        "p5",
+        "p0",
+        "e8",
+        "p1",
+        "p3",
+        "e7",
+        "e5",
+        "e6",
+        "p4",
+        "p2"
+      ],
+      "units": [
+        {
+          "id": "p0",
+          "name": "Kaya",
+          "faction": "party",
+          "kind": "kaya",
+          "level": 1,
+          "hp": 26,
+          "pos": {
+            "x": 2,
+            "y": 5
+          }
+        },
+        {
+          "id": "p1",
+          "name": "Nilak",
+          "faction": "party",
+          "kind": "nilak",
+          "level": 1,
+          "hp": 28,
+          "pos": {
+            "x": 3,
+            "y": 4
+          }
+        },
+        {
+          "id": "p2",
+          "name": "Bo",
+          "faction": "party",
+          "kind": "bo",
+          "level": 1,
+          "hp": 38,
+          "pos": {
+            "x": 1,
+            "y": 5
+          }
+        },
+        {
+          "id": "p3",
+          "name": "Tenzo",
+          "faction": "party",
+          "kind": "tenzo",
+          "level": 1,
+          "hp": 28,
+          "pos": {
+            "x": 3,
+            "y": 6
+          }
+        },
+        {
+          "id": "p4",
+          "name": "Lin Mei",
+          "faction": "party",
+          "kind": "lin_mei",
+          "level": 1,
+          "hp": 32,
+          "pos": {
+            "x": 1,
+            "y": 7
+          }
+        },
+        {
+          "id": "p5",
+          "name": "Nima",
+          "faction": "party",
+          "kind": "nima",
+          "level": 1,
+          "hp": 21,
+          "pos": {
+            "x": 3,
+            "y": 8
+          }
+        },
+        {
+          "id": "e5",
+          "name": "Quarry Hauler",
+          "faction": "enemy",
+          "kind": "bandit_bruiser",
+          "level": 1,
+          "hp": 42,
+          "pos": {
+            "x": 17,
+            "y": 5
+          }
+        },
+        {
+          "id": "e6",
+          "name": "Quarry Hauler",
+          "faction": "enemy",
+          "kind": "bandit_bruiser",
+          "level": 1,
+          "hp": 42,
+          "pos": {
+            "x": 17,
+            "y": 7
+          }
+        },
+        {
+          "id": "e7",
+          "name": "Quarry Worker",
+          "faction": "enemy",
+          "kind": "bandit_thug",
+          "level": 1,
+          "hp": 28,
+          "pos": {
+            "x": 18,
+            "y": 6
+          }
+        },
+        {
+          "id": "e8",
+          "name": "Slinger",
+          "faction": "enemy",
+          "kind": "bandit_slinger",
+          "level": 1,
+          "hp": 22,
+          "pos": {
+            "x": 16,
+            "y": 2
+          }
+        }
+      ]
+    },
+    "gate": {
+      "screen": "explore",
+      "difficulty": "story",
+      "story": {
+        "nodeId": "gate_escort_explore",
+        "deciderIndex": 2,
+        "visited": [
+          "act1_open",
+          "village_explore",
+          "mira_intro",
+          "road_depart",
+          "forest_explore",
+          "battle_forest_road",
+          "after_forest",
+          "forest_after_explore",
+          "gate_parley",
+          "gate_kinship",
+          "gate_ruon_listens",
+          "gate_talked_through",
+          "ruon_surrender",
+          "ruon_choice",
+          "escort_chosen",
+          "gate_escort_explore"
+        ]
+      },
+      "location": {
+        "mapId": "quarry_gate",
+        "pos": {
+          "x": 8,
+          "y": 4
+        }
+      },
+      "party": [
+        {
+          "id": "p0",
+          "name": "Kaya",
+          "characterId": "kaya",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 250,
+          "base": {
+            "maxHp": 34,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 10,
+            "defense": 2,
+            "speed": 7,
+            "focus": 10
+          },
+          "abilities": [
+            "fire_jab",
+            "flame_arc",
+            "fire_blast"
+          ]
+        },
+        {
+          "id": "p1",
+          "name": "Nilak",
+          "characterId": "nilak",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 250,
+          "base": {
+            "maxHp": 36,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 6,
+            "defense": 2,
+            "speed": 5,
+            "focus": 18
+          },
+          "abilities": [
+            "water_whip",
+            "healing_stream",
+            "water_pull"
+          ]
+        },
+        {
+          "id": "p2",
+          "name": "Bo",
+          "characterId": "bo",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 250,
+          "base": {
+            "maxHp": 46,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 8,
+            "defense": 6,
+            "speed": 2,
+            "focus": 5
+          },
+          "abilities": [
+            "rock_throw",
+            "stone_stance",
+            "earth_wall"
+          ]
+        },
+        {
+          "id": "p3",
+          "name": "Tenzo",
+          "characterId": "tenzo",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 250,
+          "base": {
+            "maxHp": 36,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 9,
+            "defense": 3,
+            "speed": 5,
+            "focus": 13
+          },
+          "abilities": [
+            "fire_jab",
+            "fire_blast",
+            "fire_step"
+          ]
+        },
+        {
+          "id": "p4",
+          "name": "Lin Mei",
+          "characterId": "lin_mei",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 250,
+          "base": {
+            "maxHp": 40,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 9,
+            "defense": 5,
+            "speed": 3,
+            "focus": 10
+          },
+          "abilities": [
+            "rock_throw",
+            "shockwave",
+            "earth_wall"
+          ]
+        },
+        {
+          "id": "p5",
+          "name": "Nima",
+          "characterId": "nima",
+          "disciplineId": null,
+          "level": 3,
+          "xp": 250,
+          "base": {
+            "maxHp": 29,
+            "maxAp": 4,
+            "maxMove": 6,
+            "power": 6,
+            "defense": 1,
+            "speed": 9,
+            "focus": 15
+          },
+          "abilities": [
+            "air_blast",
+            "air_scooter",
+            "air_shield"
+          ]
+        }
+      ],
+      "flags": {
+        "gate_talked_through": true,
+        "ruon_respects_you": true,
+        "ruon_spared": true,
+        "standing.earth": 4
+      },
+      "world": {
+        "cleared": [
+          "enc_forest_road"
+        ],
+        "fired": [
+          "forest_road:road_depart",
+          "forest_road:battle_forest_road",
+          "quarry_gate:gate_parley"
+        ],
+        "clock": {
+          "day": 1,
+          "phase": "midday"
+        },
+        "returnPos": {
+          "ba_dan_village": {
+            "x": 23,
+            "y": 7
+          },
+          "forest_road": {
+            "x": 19,
+            "y": 4
+          },
+          "quarry_gate": {
+            "x": 8,
+            "y": 4
+          }
+        },
+        "residentProfiles": {},
+        "runoff": "unresolved"
+      }
+    },
+    "afterDriller": {
+      "screen": "explore",
+      "difficulty": "story",
+      "story": {
+        "nodeId": "quarry_after_explore",
+        "deciderIndex": 2,
+        "visited": [
+          "act1_open",
+          "village_explore",
+          "mira_intro",
+          "road_depart",
+          "forest_explore",
+          "battle_forest_road",
+          "after_forest",
+          "forest_after_explore",
+          "gate_parley",
+          "gate_kinship",
+          "gate_ruon_listens",
+          "gate_talked_through",
+          "ruon_surrender",
+          "ruon_choice",
+          "escort_chosen",
+          "gate_escort_explore",
+          "battle_ambush",
+          "after_ambush",
+          "cutting_after_explore",
+          "cutting_culvert",
+          "cutting_culvert_ripple",
+          "quarry_descent",
+          "quarry_assessment",
+          "battle_grumbler",
+          "act1_victory",
+          "act1_epilogue",
+          "quarry_ledger",
+          "act1_evening",
+          "quarry_after_explore"
+        ]
+      },
+      "location": {
+        "mapId": "quarry_floor",
+        "pos": {
+          "x": 9,
+          "y": 5
+        }
+      },
+      "party": [
+        {
+          "id": "p0",
+          "name": "Kaya",
+          "characterId": "kaya",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 38,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 11,
+            "defense": 2,
+            "speed": 7,
+            "focus": 10
+          },
+          "abilities": [
+            "fire_jab",
+            "flame_arc",
+            "fire_blast"
+          ]
+        },
+        {
+          "id": "p1",
+          "name": "Nilak",
+          "characterId": "nilak",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 40,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 7,
+            "defense": 2,
+            "speed": 5,
+            "focus": 18
+          },
+          "abilities": [
+            "water_whip",
+            "healing_stream",
+            "water_pull"
+          ]
+        },
+        {
+          "id": "p2",
+          "name": "Bo",
+          "characterId": "bo",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 50,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 9,
+            "defense": 6,
+            "speed": 2,
+            "focus": 5
+          },
+          "abilities": [
+            "rock_throw",
+            "stone_stance",
+            "earth_wall"
+          ]
+        },
+        {
+          "id": "p3",
+          "name": "Tenzo",
+          "characterId": "tenzo",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 40,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 10,
+            "defense": 3,
+            "speed": 5,
+            "focus": 13
+          },
+          "abilities": [
+            "fire_jab",
+            "fire_blast",
+            "fire_step"
+          ]
+        },
+        {
+          "id": "p4",
+          "name": "Lin Mei",
+          "characterId": "lin_mei",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 44,
+            "maxAp": 4,
+            "maxMove": 4,
+            "power": 10,
+            "defense": 5,
+            "speed": 3,
+            "focus": 10
+          },
+          "abilities": [
+            "rock_throw",
+            "shockwave",
+            "earth_wall"
+          ]
+        },
+        {
+          "id": "p5",
+          "name": "Nima",
+          "characterId": "nima",
+          "disciplineId": null,
+          "level": 4,
+          "xp": 570,
+          "base": {
+            "maxHp": 33,
+            "maxAp": 4,
+            "maxMove": 6,
+            "power": 7,
+            "defense": 1,
+            "speed": 9,
+            "focus": 15
+          },
+          "abilities": [
+            "air_blast",
+            "air_scooter",
+            "air_shield"
+          ]
+        }
+      ],
+      "flags": {
+        "act1_complete": true,
+        "gate_talked_through": true,
+        "ruon_respects_you": true,
+        "ruon_spared": true,
+        "standing.earth": 4
+      },
+      "world": {
+        "cleared": [
+          "enc_forest_road",
+          "enc_ambush",
+          "enc_grumbler"
+        ],
+        "fired": [
+          "forest_road:road_depart",
+          "forest_road:battle_forest_road",
+          "quarry_gate:gate_parley",
+          "ambush_road:battle_ambush",
+          "ambush_road:cutting_culvert",
+          "quarry_floor:quarry_descent"
+        ],
+        "clock": {
+          "day": 1,
+          "phase": "evening"
+        },
+        "returnPos": {
+          "ambush_road": {
+            "x": 19,
+            "y": 4
+          },
+          "ba_dan_village": {
+            "x": 23,
+            "y": 7
+          },
+          "forest_road": {
+            "x": 19,
+            "y": 4
+          },
+          "quarry_floor": {
+            "x": 9,
+            "y": 5
+          },
+          "quarry_gate": {
+            "x": 19,
+            "y": 5
+          }
+        },
+        "residentProfiles": {
+          "lw.npc.amri": "returning",
+          "lw.npc.bo_shan": "returning",
+          "lw.npc.hesra": "returning",
+          "lw.npc.leto": "returning",
+          "lw.npc.senn_messenger": "returning"
+        },
+        "runoff": "unresolved"
+      }
+    }
+  }
+}

@@ -1,9 +1,19 @@
-import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { CONTENT, RETURNEE_IDS, STORY_ENTRY } from '../../src/content';
 import { createGame } from '../../src/core/state/createGame';
 import { apply } from '../../src/core/state/reducer';
 import { deserialize, serialize, stateFromBlob } from '../../src/core/save/serialize';
+import { DEFAULT_MAX_ROUNDS } from '../../src/core/sim/runCombat';
+import {
+  CUSTODIES,
+  STAGES,
+  diffFacts,
+  factsReport,
+  fightSummaries,
+  quarryCheckpointFacts,
+  type QuarryCheckpointFacts,
+} from './checkpoint-facts';
+import { readPinnedFacts } from './checkpoint-pins';
 import {
   QUARRY_ROUTES,
   generateQuarryCheckpoints,
@@ -11,78 +21,85 @@ import {
   quarryRouteBoundary,
 } from './quarry-checkpoints';
 
-const PINS = {
-  trade: {
-    gate: {
-      save: '7dcf44d8315671045b31115fa264d431caac840f7d465a700a6fa7e2b5100cb2',
-      commands: '6faf8b05614ff4254590040534563bee312f2ccec7b68eabfcc9386d564cbe23',
-      count: 59,
-      node: 'gate_trade_explore',
-      map: 'quarry_gate',
-      level: 3,
-      xp: 400,
-      cleared: ['enc_forest_road'],
-    },
-    afterDriller: {
-      save: '8225c831228d35760141d7c110019a8b02c9d7eccf49a363e3d673af7466bb30',
-      commands: 'ea696189a8999cce52645245e22c91fa6971ac71e42f83a56723b51fc9a9af1e',
-      count: 145,
-      node: 'quarry_after_explore',
-      map: 'quarry_floor',
-      level: 4,
-      xp: 570,
-      cleared: ['enc_forest_road', 'enc_grumbler'],
-    },
-  },
-  escort: {
-    gate: {
-      save: 'd86e46aa535b080b46ee97a6fe015cc11314729a98f7c37d61d023d4477da307',
-      commands: '80f2dc38ba8abea391d05855e3375b02c7a090d429457235fd4ddce689d62b1b',
-      count: 88,
-      node: 'gate_escort_explore',
-      map: 'quarry_gate',
-      level: 3,
-      xp: 250,
-      cleared: ['enc_forest_road'],
-    },
-    afterDriller: {
-      save: '0735c2591ce375c04e7b2cfcde4ff8322c2a260f8b26de28f87bf89c300cc94e',
-      commands: 'e6725e73fcb6dc7b686e6fcc221d454cdc4439b25843d4af6a1265738ecfdc09',
-      count: 385,
-      node: 'quarry_after_explore',
-      map: 'quarry_floor',
-      level: 4,
-      xp: 570,
-      cleared: ['enc_forest_road', 'enc_ambush', 'enc_grumbler'],
-    },
-  },
-} as const;
+/*
+ * No digest is pinned here (#795). `quarry-checkpoints.facts.json` holds the
+ * facts an AI retune must not move, a failure lists the ones that moved by
+ * path, and `npm run checkpoints -- --write` re-pins them. How the fights were
+ * played (the transcript, the RNG cursor, the log) is free to change; it is
+ * held by rules instead: every command is legal and replays, every fight is
+ * won inside the round cap, and the same seed gives the same bytes twice.
+ */
 
-const digest = (value: string) => createHash('sha256').update(value).digest('hex');
+const checkpoints = {
+  trade: generateQuarryCheckpoints('trade'),
+  escort: generateQuarryCheckpoints('escort'),
+};
+const facts = quarryCheckpointFacts((custody) => checkpoints[custody]);
+const pinned = readPinnedFacts() as Partial<QuarryCheckpointFacts>;
 
-for (const custody of ['trade', 'escort'] as const) {
+/** Fails with the moved facts by path and the one command that re-pins them. */
+function expectPinned(label: string, was: unknown, is: unknown, path: string): void {
+  const differences = diffFacts(was, is, path);
+  if (differences.length > 0) expect.fail(factsReport(label, differences));
+}
+
+describe('quarry checkpoint save format', () => {
+  it('keeps the shape of a save at a route boundary', () => {
+    expectPinned(
+      'The save shape while exploring',
+      pinned.saveShape?.exploring,
+      facts.saveShape.exploring,
+      'saveShape.exploring',
+    );
+  });
+
+  it('keeps the shape of a save in a fight that has just opened', () => {
+    expectPinned(
+      'The save shape at a battle opening',
+      pinned.saveShape?.battleOpening,
+      facts.saveShape.battleOpening,
+      'saveShape.battleOpening',
+    );
+  });
+});
+
+for (const custody of CUSTODIES) {
   describe(`${custody} quarry checkpoints`, () => {
     const route = QUARRY_ROUTES[custody];
-    const checkpoints = generateQuarryCheckpoints(custody);
 
-    for (const stage of ['gate', 'afterDriller'] as const) {
-      const fixture = checkpoints[stage];
-      const pin = PINS[custody][stage];
+    it('opens the first fight with the pinned roster, places and turn order', () => {
+      expectPinned(
+        `The ${custody} route's first fight`,
+        pinned[custody]?.firstBattleOpening,
+        facts[custody].firstBattleOpening,
+        `${custody}.firstBattleOpening`,
+      );
+    });
 
-      it(`pins the entire ${stage} save and legal command transcript`, () => {
-        expect(digest(fixture.json)).toBe(pin.save);
-        expect(digest(JSON.stringify(fixture.transcript))).toBe(pin.commands);
-        expect(fixture.transcript).toHaveLength(pin.count);
+    it('generates the same saves and transcripts every time', () => {
+      const again = generateQuarryCheckpoints(custody);
+      for (const stage of STAGES) {
+        expect(again[stage].transcript, stage).toEqual(checkpoints[custody][stage].transcript);
+        expect(again[stage].json, stage).toBe(checkpoints[custody][stage].json);
+      }
+    });
+
+    for (const stage of STAGES) {
+      const fixture = checkpoints[custody][stage];
+
+      it(`reaches the ${stage} boundary with the pinned story, party, flags and world`, () => {
+        expectPinned(
+          `The ${custody} ${stage} checkpoint`,
+          pinned[custody]?.[stage],
+          facts[custody][stage],
+          `${custody}.${stage}`,
+        );
+      });
+
+      it(`stands at the ${stage} boundary as the route intends`, () => {
         expect(fixture.projection).toEqual(quarryRouteBoundary(fixture.state));
-        expect(fixture.projection.story.nodeId).toBe(pin.node);
-        expect(fixture.projection.location.mapId).toBe(pin.map);
-        expect(fixture.projection.world.cleared).toEqual(pin.cleared);
-        expect(fixture.projection.party.map((unit) => unit.level)).toEqual(
-          route.names.map(() => pin.level),
-        );
-        expect(fixture.projection.party.map((unit) => unit.xp)).toEqual(
-          route.names.map(() => pin.xp),
-        );
+        expect(fixture.projection.stage).toBe(stage);
+        expect(fixture.projection.custody).toBe(custody);
         expect(fixture.projection.party.map((unit) => unit.id)).toEqual(
           route.names.map((_, index) => `p${index}`),
         );
@@ -92,10 +109,13 @@ for (const custody of ['trade', 'escort'] as const) {
         expect(fixture.projection.flags.ruon_respects_you).toBe(true);
         expect(fixture.projection.flags.ruon_traded === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_paid === true).toBe(custody === 'trade');
-        // Jin takes the satchel with Ruon on the trade; a won ambush keeps it (C-10).
-        expect(fixture.projection.flags.jin_has_satchel === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_spared === true).toBe(custody === 'escort');
         expect(fixture.projection.flags.act1_complete === true).toBe(stage === 'afterDriller');
+        expect(fixture.projection.world.cleared).toEqual([
+          'enc_forest_road',
+          ...(stage === 'afterDriller' && custody === 'escort' ? ['enc_ambush'] : []),
+          ...(stage === 'afterDriller' ? ['enc_grumbler'] : []),
+        ]);
         expect(fixture.projection.screen).toBe('explore');
         expect(fixture.projection.pendingChoices).toEqual([]);
         expect(fixture.projection.battle).toBeNull();
@@ -106,6 +126,18 @@ for (const custody of ['trade', 'escort'] as const) {
         expect(fixture.state.world.clock.phase).toBe(
           stage === 'afterDriller' ? 'evening' : 'midday',
         );
+      });
+
+      it(`wins every fight on the way to ${stage} inside the round cap`, () => {
+        const fights = fightSummaries(custody, fixture.transcript);
+        expect(fights.map((fight) => fight.encounterId)).toEqual(fixture.projection.world.cleared);
+        for (const fight of fights) {
+          expect(fight.rounds, `${fight.encounterId} rounds`).toBeGreaterThan(0);
+          expect(fight.rounds, `${fight.encounterId} rounds`).toBeLessThanOrEqual(
+            DEFAULT_MAX_ROUNDS,
+          );
+          expect(fight.partyHpLeft, `${fight.encounterId} party HP`).toBeGreaterThan(0);
+        }
       });
 
       it(`replays every ${stage} command through the reducer`, () => {

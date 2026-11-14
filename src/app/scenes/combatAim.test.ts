@@ -1,10 +1,15 @@
-import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { grumblerAimCheckpoint } from '../../../scripts/e2e/grumbler-aim-checkpoint';
 import { loadQuarryCheckpoint } from '../../../scripts/e2e/quarry-checkpoints';
 import { CONTENT } from '../../content';
-import { isValidTarget, targetableTiles } from '../../core/rules/abilities';
+import {
+  canUseAbility,
+  isValidTarget,
+  resolveAim,
+  targetableTiles,
+} from '../../core/rules/abilities';
 import { occupiedCells } from '../../core/rules/grid';
+import { activeUnit } from '../../core/rules/turnOrder';
 import type { GameState, Vec2 } from '../../core/types';
 import { Session } from '../session';
 import { CombatScene } from './CombatScene';
@@ -68,25 +73,29 @@ function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abili
 }
 
 describe('combat tap aim acceptance', () => {
-  it('uses the earned Grumbler turn and exact reloadable save', () => {
-    expect(checkpoint.transcript).toHaveLength(81);
-    expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '3fd8c38506b6d01f6e957f38d63b47e2fe630f11fbc4cb099407f5b5e280e374',
-    );
+  /*
+   * No digest, transcript length or exact square is pinned (#795): they moved
+   * with every AI change and said nothing a reviewer could read. What the
+   * taps below need from the earned turn is stated instead, as rules.
+   */
+  it('uses an earned, reloadable Grumbler turn with the boss highlighted out of range', () => {
+    expect(checkpoint.transcript.length).toBeGreaterThan(0);
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
-    expect(checkpoint.state.battle).toMatchObject({
-      encounterId: 'enc_grumbler',
-      phase: 'active',
-      round: 2,
-    });
+    expect(checkpoint.state.battle).toMatchObject({ encounterId: 'enc_grumbler', phase: 'active' });
     const battle = checkpoint.state.battle;
     if (!battle) throw new Error('Missing earned battle');
     const caster = battle.units.find((unit) => unit.id === checkpoint.casterId);
     const boss = battle.units.find((unit) => unit.id === checkpoint.targetId);
     const ability = CONTENT.abilities.get(checkpoint.abilityId);
     if (!caster || !boss || !ability) throw new Error('Missing earned aim participants');
-    expect(caster).toMatchObject({ pos: { x: 8, y: 1 }, ap: 5 });
-    expect(boss).toMatchObject({ pos: { x: 12, y: 7 }, hp: 88, size: 2 });
+    expect(activeUnit(battle)?.id).toBe(caster.id);
+    expect(caster).toMatchObject({ faction: 'party', characterId: 'kaya' });
+    expect(caster.hp).toBeGreaterThan(0);
+    expect(canUseAbility(CONTENT, caster, ability).ok).toBe(true);
+    expect(boss).toMatchObject({ faction: 'enemy', enemyId: 'grumbler', size: 2 });
+    expect(boss.hp).toBeGreaterThan(0);
+    expect(checkpoint.near).not.toEqual(checkpoint.far);
+    expect(resolveAim(CONTENT, battle, caster, ability, checkpoint.far)).toEqual(checkpoint.near);
     expect(occupiedCells(boss)).toContainEqual(checkpoint.far);
     expect(targetableTiles(CONTENT, battle, caster, ability)).toContainEqual(checkpoint.far);
     expect(isValidTarget(CONTENT, battle, caster, ability, checkpoint.far)).toEqual({
