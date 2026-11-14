@@ -231,13 +231,17 @@ be needed instead.
 ## 6. Proof trial
 
 A small region after the walk home, built through the loop above. Story content is a placeholder for the owner.
+The trial region is Saltstep and Emberwatch (MQ-02). It includes one new mechanic, the **guest ally**, for Veyra's
+fight beside the party (owner, 2026-11-14; [saga outline](story-outline.md#people), decision 15). It is new
+engine work that needs its own ADR, and it doubles as this trial's test that a region can add a mechanic cleanly.
 
-| Item    | Proposal                                                                                                        |
-| ------- | --------------------------------------------------------------------------------------------------------------- |
-| Size    | Two explore maps (a hub about Ba Dan's size, 24 × 16, and a smaller route map), one combat board                |
-| Beats   | Owner supplies about 5: arrival, a person with a problem, a choice with two outcomes, a fight, a return or hook |
-| Fights  | Two: one ordinary with a new enemy type, one harder with a combo set-up; no new boss, to keep render code out   |
-| New art | Two tilesets, about 20 objects, two enemy types and one NPC with full clips, three portraits, one area track    |
+| Item     | Proposal                                                                                                        |
+| -------- | --------------------------------------------------------------------------------------------------------------- |
+| Size     | Two explore maps (a hub about Ba Dan's size, 24 × 16, and a smaller route map), one combat board                |
+| Beats    | Owner supplies about 5: arrival, a person with a problem, a choice with two outcomes, a fight, a return or hook |
+| Fights   | Two: one ordinary with a new enemy type, one harder with a combo set-up; no new boss, to keep render code out   |
+| Mechanic | One: the guest ally, for Veyra's fight beside the party at the Saltstep docks (MQ-02; owner, 2026-11-14)        |
+| New art  | Two tilesets, about 20 objects, two enemy types and one NPC with full clips, three portraits, one area track    |
 
 ### What to measure
 
@@ -247,22 +251,25 @@ A small region after the walk home, built through the loop above. Story content 
 - KB gz added to the bundle (before the split) and to each asset family; region chunk size (after).
 - Load time of the region on the iPad (cold and warm); **unknown today**, no baseline recorded.
 - Saves from the demo route and from each trial checkpoint load on the trial build and on the build after.
+- For the guest ally: files and lines touched in `src/core/`, `src/app/` and `src/render/`, and whether the
+  encounter data alone can place, kit and drive a guest.
 
 ### Pass bar
 
-| Pipeline | Pass                                                                                                                                                  |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Content  | Zero changes in `src/core/`; zero map or encounter ids added to `src/app/` or `src/render/`; region added by its manifest plus one list entry         |
-| Art      | Every figure on-model at the first owner review or one retake; region cost within ±25% of the estimate made before generation                         |
-| Story    | Beat sheet approved in one round; validators, flag registry and continuity tests green; no line by an absent speaker in review                        |
-| Scale    | Region code and data load on entry, not at boot; core JS does not grow by more than the shared code the region adds; offline play of a visited region |
-| Saves    | Every v5 golden save and every demo-route save loads and reaches the trial region; new checkpoints added to the corpus                                |
-| Devices  | Trial played start to end with mouse and keyboard in a PC window and once over Steam Remote Play; iPad landscape still passes CI                      |
+| Pipeline | Pass                                                                                                                                                                         |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Content  | Zero changes in `src/core/` beyond the guest-ally mechanic; zero map or encounter ids added to `src/app/` or `src/render/`; region added by its manifest plus one list entry |
+| Mechanic | The guest ally lands as one general, data-driven addition behind its ADR: no Veyra- or MQ-02-specific code, and a second guest needs data only                               |
+| Art      | Every figure on-model at the first owner review or one retake; region cost within ±25% of the estimate made before generation                                                |
+| Story    | Beat sheet approved in one round; validators, flag registry and continuity tests green; no line by an absent speaker in review                                               |
+| Scale    | Region code and data load on entry, not at boot; core JS does not grow by more than the shared code the region adds; offline play of a visited region                        |
+| Saves    | Every v5 golden save and every demo-route save loads and reaches the trial region; new checkpoints added to the corpus                                                       |
+| Devices  | Trial played start to end with mouse and keyboard in a PC window and once over Steam Remote Play; iPad landscape still passes CI                                             |
 
 ### Order of work
 
 1. Region manifest and flag registry (no behaviour change); story bible skeleton for the owner.
 2. Per-region loading behind the manifest, with its ADR; release fixtures and the id-forever test.
 3. Keyboard and right-click basics; a desktop Playwright project.
-4. The trial region through the loop, measured.
+4. The guest-ally ADR, then the trial region through the loop, measured.
 5. A short report: measured cost and time per region, and what to fix before region three.
