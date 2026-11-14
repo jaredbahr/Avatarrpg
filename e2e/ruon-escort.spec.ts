@@ -98,6 +98,17 @@ const npcIds = (page: Page) =>
     ).scene.lastNpcs.map((npc) => npc.id),
   );
 
+/** The clip each named NPC marker is drawn with, in the order asked. */
+const npcClips = (page: Page, ids: readonly string[]) =>
+  page.evaluate((ids) => {
+    const npcs = (
+      window.fnt!.app as unknown as {
+        scene: { lastNpcs: readonly { id: string; clip?: string }[] };
+      }
+    ).scene.lastNpcs;
+    return ids.map((id) => npcs.find((npc) => npc.id === id)?.clip ?? null);
+  }, ids);
+
 /** From the gate, after the fight, to the vote on Ruon. */
 async function surrender(page: Page): Promise<void> {
   await adopt(page, {
@@ -135,6 +146,11 @@ test('two of the crew watch from the wall while the parley is read', async ({ pa
   await expect
     .poll(() => npcIds(page))
     .toEqual(expect.arrayContaining(['gate_watch_worker', 'gate_watch_hauler']));
+  // They face the party below the wall, on their south-facing idle, not side-on.
+  expect(await npcClips(page, ['gate_watch_worker', 'gate_watch_hauler'])).toEqual([
+    'idleSouth',
+    'idleSouth',
+  ]);
   // They are the crew the party fights: they come down off the wall for it.
   await page.evaluate(() => window.fnt!.app.dispatch({ type: 'chooseOption', optionIndex: 0 }));
   await expect.poll(() => page.evaluate(() => window.fnt!.app.state!.screen)).toBe('combat');
