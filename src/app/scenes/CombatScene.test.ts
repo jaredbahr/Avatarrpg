@@ -481,7 +481,7 @@ describe('scene-owned top-down playback', () => {
   });
 
   it('keeps victory Continue behind visual KO completion after action-ready', () => {
-    const busy = vi.fn(() => true);
+    const busy = vi.fn<Animator['busy']>(() => true);
     const startVictoryBeat = vi.fn();
     const scene = Object.assign(Object.create(CombatScene.prototype) as object, {
       sceneAnimator: {
@@ -501,7 +501,7 @@ describe('scene-owned top-down playback', () => {
       startVictoryBeat,
     }) as unknown as {
       updateVictoryBeat: (now: number) => void;
-      sceneAnimator: { busy: ReturnType<typeof vi.fn> };
+      sceneAnimator: { busy: typeof busy };
       startVictoryBeat: ReturnType<typeof vi.fn>;
     };
 
