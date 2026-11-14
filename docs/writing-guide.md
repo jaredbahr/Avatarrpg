@@ -60,8 +60,8 @@ The village cast also needs different concerns and rhythms:
 | Gao     | Stock, repairs, people he knows                   | Fussy practical advice; short and direct when angry            |
 | Ruon    | Orders he gave and things he allowed              | Military habits, uncomfortable specifics, some defensiveness   |
 | Jin     | The bounty, the equipment, terms of a deal        | Brief and businesslike; lets the terms reveal her priorities   |
-| Dema    | The bank, runoff, her washing                     | Irritation grounded in what she has had to deal with           |
-| Sen     | The absent crews and keeping their rest stop open | Offers company by finding something practical to do            |
+| Lanfen  | The bank, runoff, her washing                     | Irritation grounded in what she has had to deal with           |
+| Kuan    | The absent crews and keeping their rest stop open | Offers company by finding something practical to do            |
 
 Make bending part of ordinary work: cooking, surveying, fishing, hauling stone.
 Give non-benders useful skills and commitments of their own. Industrial machinery
@@ -89,13 +89,14 @@ for sarcastic objects, elaborate bureaucracy for every animal, mock philosophy
 about chores, and a narrator who keeps grading the player's misfortune. These
 patterns call for editorial judgment, not a banned-word checker.
 
-Jared specifically rejected this Dema line: “Quiet feet. The turtle-ducks have
+Jared specifically rejected this line for the road keeper (then the placeholder
+Dema, now Lanfen): “Quiet feet. The turtle-ducks have
 right of way. I have explained this to the carts; the carts are taking it
 personally.” The carts have no motive or relationship in the scene; giving them
 offended feelings supplies a detachable punchline. Replacing “personally” with
 another word leaves the same weak joke.
 
-The replacement gives Dema an immediate concern: “Mind your feet. There are
+The replacement gives Lanfen an immediate concern: “Mind your feet. There are
 ducklings under that fern. Yes, the one you are about to step on.” Check the whole
 exchange for a specific listener, behaviour and consequence. Remove an unearned
 joke outright. Objects with opinions, mock officials among the animals and stock
@@ -180,7 +181,7 @@ The optional scenes stay optional; there is no compulsory roll call.
 | Character | Node                     | Contribution and when to encounter it                                                                               |
 | --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | Kaya      | `after_forest`           | Recognizes the attackers as quarry workers and questions why they are guarding the road; either road outcome        |
-| Tenzo     | `cutting_tea`            | Offers to help Sen feed the freed crews and wash cups; optional cutting rest stop                                   |
+| Tenzo     | `cutting_tea`            | Offers to help Kuan feed the freed crews and wash cups; optional cutting rest stop                                  |
 | Nilak     | `riverside_mira`         | Arranges a place and supplies for aftercare, with room for families; optional riverside visit before the rescue     |
 | Sura      | `discover_runoff_marker` | Recognizes grit from fishing work and reads the clue about the settling pit; optional stream marker                 |
 | Bo        | `gate_kinship`           | Uses his crew experience to argue for stopping unsafe work and opening the gate; earthbender approach               |
@@ -196,11 +197,11 @@ has two, the first present hero speaks.
 | Node                | Voices in priority order | Contribution and when to encounter it                                                  |
 | ------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
 | `defeat_forest`     | Tenzo                    | Mourns the stolen food, then sets off after the tracks; forest road loss               |
-| `forest_dema_again` | Sura                     | A fishing boast, then the runoff is still owed an answer; any return visit to Dema     |
+| `forest_dema_again` | Sura                     | A fishing boast, then the runoff is still owed an answer; any return visit to Lanfen   |
 | `defeat_gate`       | Riko, Kaya               | Kept the retreat together / was first back up; the gate is open on return; gate loss   |
 | `gate_kinship`      | Bo, Lin Mei              | Lin Mei reads the fresh falls on the east face when Bo is absent; earthbender approach |
 | `defeat_ambush`     | Nilak, Jinu              | Tends to Ruon after he carries the party clear / misremembers a route; cutting loss    |
-| `cutting_tea_again` | Nima                     | Finds the cloth and dries the cups, turning up the blue handle; return to Sen          |
+| `cutting_tea_again` | Nima                     | Finds the cloth and dries the cups, turning up the blue handle; return to Kuan         |
 | `quarry_assessment` | Wen, Bo                  | Both name Grumbler; Bo keeps the ramp clear and counts heads; before the driller       |
 | `defeat_boss`       | Wen                      | Owns the plan that missed the blocked ramp; Mira arrives; boss loss                    |
 

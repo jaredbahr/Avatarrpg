@@ -1,4 +1,6 @@
-# Portrait: Sen, the tea keeper — `portrait.sen`
+# Portrait: Kuan, the tea keeper — `portrait.sen`
+
+Kuan was the placeholder Sen until 2026-11-14; the key and file keep the old name.
 
 |              |                                                                                       |
 | ------------ | ------------------------------------------------------------------------------------- |
