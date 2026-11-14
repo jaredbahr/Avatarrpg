@@ -287,7 +287,8 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   'npc.household': ['household', 'earth'],
   'npc.hanru': ['hanru', 'nonbender'],
   'npc.guard': ['guard', 'earth'],
-  // T10: Dema, the road keeper, and Sen, the tea keeper, in their own clothes.
+  // T10: Lanfen, the road keeper, and Kuan, the tea keeper, in their own clothes. The keys keep
+  // their placeholder names (`dema`, `sen`) so the shipped sheets and portraits stay put.
   'npc.dema': ['dema', 'earth'],
   'npc.sen': ['sen', 'earth'],
 };
@@ -326,7 +327,7 @@ let topDownStyle: Readonly<Record<string, AssetEntry>> | undefined;
 /**
  * The top-down PixelLab figures (ADR 0104), laid over `ASSETS`: the game's only look since T7, so
  * `main.ts` turns it on at boot. Every `unit.*` key and the residents T7 moved hold the same top-down sheet in
- * `ASSETS` itself; the overlay still swaps the painted Dema, Sen and Hanru for theirs.
+ * `ASSETS` itself; the overlay still swaps the painted Lanfen, Kuan and Hanru for theirs.
  */
 export function useTopDownStyle(): void {
   topDownStyle = Object.fromEntries([
@@ -372,7 +373,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   // The residents (issue #284), drawn top-down since T7 retired their G sheets. The shrine figure shares Mira's.
   'npc.elder': topdownSheet('mira', 'npc.elder', 'neutral'),
   'npc.shopkeeper': topdownSheet('gao', 'npc.shopkeeper', 'earth'),
-  // Dema and Sen have their own top-down sheets (T10), laid over these by `useTopDownStyle`.
+  // Lanfen and Kuan have their own top-down sheets (T10), laid over these by `useTopDownStyle`.
   'npc.dema': painter('villager', 'earth', 'elder'),
   'npc.sen': painter('villager', 'earth', 'shopkeeper'),
   'world.turtle_ducks': image('art/world/turtle-ducks-nest.webp', 'earth'),

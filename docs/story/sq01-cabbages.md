@@ -32,8 +32,8 @@ flowchart TD
   n113["sq01_sled_again<br/>Overturned sled: The sled waits upright by the road, its note p…"]:::entry
   n30["forest_after_explore — exit to world / part 1"]:::external
   n37["forest_return_explore — exit to return / part 1"]:::external
-  n116["village_explore — exit to act1 / part 1"]:::external
-  n118["village_return_explore — exit to return / part 1"]:::external
+  n130["village_explore — exit to act1 / part 1"]:::external
+  n132["village_return_explore — exit to return / part 1"]:::external
   n104 -->|"Send it home to Ba Dan; set: sq01.cabbages=#quot;families#quot;"| n106
   n104 -->|"Keep some for the trapped crews; set: sq01.cabbages=#quot;crew#quot;"| n105
   n104 -->|"Hide it all to bargain with; set: sq01.cabbages=#quot;leverage#quot;"| n108
@@ -43,8 +43,8 @@ flowchart TD
   n107 -->|"act1_complete: falsy (you have not act1 complete)"| n30
   n108 -->|"Next"| n107
   n109 -->|"Next"| n104
-  n110 -->|"Next"| n116
-  n111 -->|"Next"| n118
+  n110 -->|"Next"| n130
+  n111 -->|"Next"| n132
   n112 -->|"Next"| n109
   n113 -->|"Next"| n107
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d

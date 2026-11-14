@@ -33,7 +33,7 @@ walks use the same distance-based four-frame cadence as the rest of the party.
   See the next route, then watch the party finish both walks without jumping.
 - Replace the queued destination, cancel it, tap a roof, and open Pause during
   the first walk. The party must never continue into an unintended next walk.
-- Enter Forest Road and use Look around to find Dema. After the roadside
+- Enter Forest Road and use Look around to find Lanfen. After the roadside
   discoveries are available, they appear through the same content-driven UI.
 - Tap past a visible encounter. The drawn destination must stop at that event.
 - Check Canvas and WebGL, reduced motion, large text and portrait layout.

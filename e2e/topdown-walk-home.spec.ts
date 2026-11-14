@@ -10,7 +10,7 @@ import { completeAuthoredPlayback, resetStorage, settleLayout, waitForIdle } fro
  * The walk home under `?style=topdown` (#452 item 7): from a save with `act1_complete` on the
  * Driller floor, west through the Cutting, the quarry gate and the Forest Road to Ba Dan. Every board
  * on the way draws its baked top-down scene, and on each one a tap where a tile is painted walks the
- * party there. The story stops on the road (Sen, Dema, the arrival) play through as they do in the
+ * party there. The story stops on the road (Kuan, Lanfen, the arrival) play through as they do in the
  * default style, which `quarry-return.spec.ts` covers in full.
  */
 const FOLDERS: Readonly<Record<string, string>> = {

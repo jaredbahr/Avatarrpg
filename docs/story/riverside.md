@@ -27,9 +27,9 @@ flowchart TD
   n95["riverside_pella<br/>Pella: I have to stay where Mira can see me. That is why I am s…"]:::entry
   n96["riverside_shrine<br/>The riverside shrine: Fresh flowers stand in a chipped jar besi…"]:::entry
   n97["riverside_shrine_found<br/>Set flags"]
-  n116["village_explore — exit to act1 / part 1"]:::external
+  n130["village_explore — exit to act1 / part 1"]:::external
   n90 -->|"Next"| n91
-  n91 -->|"Legacy/audit exit (live map exits differ)"| n116
+  n91 -->|"Legacy/audit exit (live map exits differ)"| n130
   n92 -->|"Next"| n91
   n93 -->|"Next"| n91
   n95 -->|"Next"| n91

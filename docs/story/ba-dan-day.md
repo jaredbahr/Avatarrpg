@@ -37,20 +37,20 @@ flowchart TD
   n78["plant_chair_seat<br/>Gao’s shop: The only spare chair holds a potted plant. Gao move…"]
   n79["plant_chair_talk<br/>Gao the Shopkeeper: There."]
   n102["school_notice<br/>School notice: “School this morning. Pupils home at midday.”"]:::entry
-  n117{"village_leave<br/>Branch: act1_complete"}
+  n131{"village_leave<br/>Branch: act1_complete"}:::entry
   n38["gao_cold — exit to act1 / part 1"]:::external
   n39["gao_friendly — exit to act1 / part 1"]:::external
   n40["gao_home — exit to return / part 1"]:::external
   n41["gao_home_cold — exit to return / part 1"]:::external
-  n116["village_explore — exit to act1 / part 1"]:::external
-  n118["village_return_explore — exit to return / part 1"]:::external
+  n130["village_explore — exit to act1 / part 1"]:::external
+  n132["village_return_explore — exit to return / part 1"]:::external
   n49 -->|"set: scene.bd03_handover=#quot;completed#quot;"| n54
   n50 -->|"Next"| n49
   n51 -->|"Next"| n50
   n52 -->|"Next"| n51
   n53 -->|"Next"| n54
-  n54 -->|"act1_complete: truthy (you have act1 complete)"| n118
-  n54 -->|"act1_complete: falsy (you have not act1 complete)"| n116
+  n54 -->|"act1_complete: truthy (you have act1 complete)"| n132
+  n54 -->|"act1_complete: falsy (you have not act1 complete)"| n130
   n70 -->|"Sit down"| n78
   n70 -->|"Another time"| n72
   n71 -->|"Next"| n75
@@ -60,16 +60,16 @@ flowchart TD
   n73 -->|"ruon_traded: falsy (you have not ruon traded)"| n40
   n74 -->|"ruon_traded: truthy (you have ruon traded)"| n38
   n74 -->|"ruon_traded: falsy (you have not ruon traded)"| n39
-  n75 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n117
+  n75 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n131
   n76 -->|"Next"| n75
   n77 -->|"Next"| n75
   n78 -->|"Next"| n79
   n79 -->|"Admire the plant"| n76
   n79 -->|"Ask about the puzzle box"| n71
   n79 -->|"Just sit"| n77
-  n102 -->|"Next"| n117
-  n117 -->|"act1_complete: truthy (you have act1 complete)"| n118
-  n117 -->|"act1_complete: falsy (you have not act1 complete)"| n116
+  n102 -->|"Next"| n131
+  n131 -->|"act1_complete: truthy (you have act1 complete)"| n132
+  n131 -->|"act1_complete: falsy (you have not act1 complete)"| n130
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

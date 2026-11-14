@@ -20,7 +20,7 @@ for (const renderer of ['canvas', 'webgl']) {
       app.resync();
     });
     await waitForIdle(page);
-    await page.getByRole('button', { name: /Inspect.*Turtle-duck nest/ }).click();
+    await page.getByRole('button', { name: /Inspect.*Turtle duck nest/ }).click();
     await expect
       .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
       .toBe('discover_duck_nest');
@@ -30,7 +30,7 @@ for (const renderer of ['canvas', 'webgl']) {
         app.dispatch({ type: 'advanceDialogue' });
     });
     await expect(page.locator('.explore-scene')).toBeVisible();
-    await page.getByRole('button', { name: /Inspect.*Turtle-duck nest/ }).click();
+    await page.getByRole('button', { name: /Inspect.*Turtle duck nest/ }).click();
     await expect
       .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
       .toBe('revisit_duck_nest');

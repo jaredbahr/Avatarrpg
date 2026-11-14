@@ -5,7 +5,7 @@ export const DISCOVERIES = [
   {
     id: 'duck_nest',
     map: 'forest_road',
-    name: 'Turtle-duck nest',
+    name: 'Turtle duck nest',
     pos: { x: 2, y: 9 },
     sprite: 'world.turtle_ducks',
     back: 'forest_explore',

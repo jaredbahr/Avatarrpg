@@ -50,6 +50,7 @@ export const FLAG_ARCS = [
   'Demo · Riverside',
   'Demo · A Ba Dan day',
   'Side story · SQ-01 Too Many Cabbages',
+  'Side story · SQ-02 A Very Official Gate',
   'Saga · Nation standing',
   'Saga · Disciplines',
   'App · Guidance',
@@ -170,7 +171,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.ducks_seen',
     type: 'boolean',
     values: [true],
-    meaning: 'The party met Dema and her displaced turtle-ducks on the Forest Road.',
+    meaning: 'The party met Lanfen and her displaced turtle ducks on the Forest Road.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:forest_ducks_seen'],
@@ -180,7 +181,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.discovered.duck_nest',
     type: 'boolean',
     values: [true],
-    meaning: 'The party found the turtle-duck nest in the woollen sock.',
+    meaning: 'The party found the turtle duck nest in the woollen sock.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:remember_duck_nest'],
@@ -314,7 +315,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.tea_shared',
     type: 'boolean',
     values: [true],
-    meaning: 'The party sat and shared Sen’s tea at the workers’ rest stop.',
+    meaning: 'The party sat and shared Kuan’s tea at the workers’ rest stop.',
     arc: 'Demo · The Cutting',
     status: 'live',
     setBy: ['story:cutting_tea_shared'],
@@ -390,10 +391,9 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     values: [true],
     meaning: 'The party finished Dorin’s flow-spark-flow footwork drill by the river.',
     arc: 'Demo · Riverside',
-    status: 'informational',
-    note: 'Saved for a later payoff; no journal note or line reads it yet.',
+    status: 'live',
     setBy: ['app:app/village/VillageLife'],
-    readBy: [],
+    readBy: ['story:sq02_return'],
   },
 
   /* -------------------------------------------------------- A Ba Dan day */
@@ -435,6 +435,25 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:pella_home',
       'story:sq01_sled_again',
       'story:sq01_pella_list',
+    ],
+  },
+
+  /* -------------------------------------- SQ-02 A Very Official Gate */
+  {
+    key: 'sq02.gate',
+    type: 'string',
+    values: ['quiet', 'public', 'mocked'],
+    meaning:
+      'How the backwards side gate was put right: quietly with Dorin, by helping him explain it publicly, or by laughing it open.',
+    arc: 'Side story · SQ-02 A Very Official Gate',
+    status: 'live',
+    setBy: ['story:sq02_choice'],
+    readBy: [
+      'map:ba_dan_village',
+      'story:demo_complete',
+      'story:sq02_after',
+      'story:sq02_return',
+      'story:sq02_return_gate',
     ],
   },
 
