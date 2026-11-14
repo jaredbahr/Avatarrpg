@@ -1262,11 +1262,11 @@ html[data-contrast='high'] .title-card .tagline {
   margin-top: var(--sp-2);
 }
 
-/* A landscape tablet has room beside the vote heading, and beside each
+/* A tablet, either way up, has room beside the vote heading, and beside each
  * answer heading, for the hand-off controls and the revealed names. Keep the
  * selected text size and every answer visible instead of stacking those into
- * a second screenful (#664). Narrow screens retain the scrolling layout. */
-@media (min-width: 60rem) and (min-height: 35rem) and (orientation: landscape) {
+ * a second screenful (#664). Phones retain the scrolling layout. */
+@media (min-width: 42.0625rem) and (min-height: 35rem) {
   .choice-panel[data-vote] {
     gap: var(--sp-1);
     padding: var(--sp-3);
@@ -1319,14 +1319,6 @@ html[data-contrast='high'] .title-card .tagline {
     align-self: center;
   }
 
-  .stage:has(.choice-panel[data-vote]) {
-    grid-template-rows: minmax(0, 1fr);
-  }
-
-  .stage .choice-panel[data-vote] {
-    max-height: 100%;
-  }
-
   /* Reuse the compact portrait/header arrangement from narrow dialogue, only
    * for a vote. The answers can then use the whole card, while the speaker
    * and prompt share its first row. No portrait or wording is removed. */
@@ -1356,6 +1348,17 @@ html[data-contrast='high'] .title-card .tagline {
   .explore-conversation .choice-panel[data-vote] > .choice-options,
   .explore-conversation .choice-panel[data-vote] > .center {
     grid-column: 1 / -1;
+  }
+}
+
+/* The landscape stage sets its panel beside the speaker, in one row. */
+@media (min-width: 60rem) and (min-height: 35rem) and (orientation: landscape) {
+  .stage:has(.choice-panel[data-vote]) {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .stage .choice-panel[data-vote] {
+    max-height: 100%;
   }
 }
 
