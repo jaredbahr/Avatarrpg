@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import type { EncounterDef, MapDef, Vec2 } from '../src/core/types';
 import { buildGrid } from '../src/core/rules/grid';
 import { TOPDOWN_FIXTURE } from '../src/render/topdown.fixture';
-import { allowSoftwareWebgl } from './budget';
+import { SOFTWARE_WEBGL_BUDGET_MS, allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
 
@@ -152,6 +152,12 @@ for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[
         'This exhaustive touch matrix runs in the Chromium touch project; the shared suite covers WebKit iPad separately.',
       );
       allowSoftwareWebgl(test, renderer);
+      // A centre tap on every walkable cell plus the corner probes, each read
+      // back through software WebGL on CI: the phone case ran past the shared
+      // software-WebGL cap (main, 2026-11-14), so it gets two of them.
+      // Canvas pays the same 60-odd touch-and-read round trips: the tablet case
+      // ran past the 60 s default on CI and in a loaded local container (66 s).
+      test.setTimeout(renderer === 'webgl' ? 2 * SOFTWARE_WEBGL_BUDGET_MS : 180_000);
 
       const context = await browser.newContext({
         baseURL: `http://127.0.0.1:${process.env.FNT_E2E_PORT ?? '4173'}`,

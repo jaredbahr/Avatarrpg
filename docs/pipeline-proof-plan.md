@@ -56,8 +56,9 @@ not ticked for them and should be brought up to date.
       look on the ability. Exit test: `grep` for map and encounter ids in `src/app` and `src/render` finds none.
       **Partly done (#767):** the courtyard soundscape, the practice ground and the Forest Road's arrival shot are
       map data (`MapDef.soundscape`, `practice`, `arrivalShot`), and `src/app/contentIdLiterals.test.ts` is the exit
-      test, with an allowlist that may only shrink. What it still lists is the guided first fight
-      (`enc_forest_road`); the projectile look is keyed by ability, not by map, and is unchanged.
+      test, with an allowlist that may only shrink. The guided first fight followed (#780: `EncounterDef.guidance`),
+      so the allowlist is empty and no map or encounter id is left in `src/app` or `src/render`. **Left:** the
+      projectile look (`SHOT_LOOKS` in `src/app/anim/choreography.ts`) is still keyed by ability id in app code.
 - [x] **Region template and generator** (#766): `npm run new:region -- <id> "<Name>"` writes
       `src/content/regions/<camelId>/` (manifest, content, layouts, a placeholder map with one NPC and a two-node
       story, every placeholder marked `TODO(region)`) and appends it to the three region lists; the result passes
@@ -112,7 +113,11 @@ costs above: tilesets 4 × 15, objects 25 × 5, three enemies × (base + idle, w
 
 ### Gaps
 
-- [ ] A per-region cost roll-up: tag every ledger job with a region id; `ledger_audit.py` prints a total per region.
+- [x] A per-region cost roll-up (#783): a job's `region` (written by `pl.py run(..., region=)` or `PIXELLAB_REGION`)
+      or the ledger's `default_region` assigns it; `ledger_audit.py` prints booked credits per region and per endpoint
+      (asset type), JSON and text. Measured for the demo route, `ba_dan_valley`: 658 jobs, **5,711 booked credits**,
+      of which animation clips are 4,051 (289 jobs), objects 494, portrait edits 373, tilesets 300. The retired G1
+      ledgers (`art/source/*-g1/`) are not included.
 - [ ] The ledgers are split (`prototypes/topdown/ledger.json`, `art/source/forest-road-g1/ledger.json`,
       `art/source/fx-g1/ledger.json`); one ledger, or one audit over all of them.
 - [ ] A written model sheet per recurring character (description, palette, seed, character id) so a retake months

@@ -13,7 +13,16 @@ const profiles = [
   { name: 'short Largest', viewport: { width: 844, height: 390 }, size: 'huge' },
   { name: 'tablet Large', viewport: { width: 834, height: 1194 }, size: 'on' },
 ] as const;
-const nodes = ['pella_tips', 'ruon_surrender', 'ruon_choice', 'gate_parley'] as const;
+// `quarry_ledger` holds the longest authored line (Senn reading the delivery book);
+// each dialogue test checks the inventory still agrees, so a longer line elsewhere
+// fails here and gets its node added rather than going unread.
+const nodes = [
+  'pella_tips',
+  'quarry_ledger',
+  'ruon_surrender',
+  'ruon_choice',
+  'gate_parley',
+] as const;
 const inventory = [...CONTENT.story.values()]
   .flatMap((node) => {
     if (node.kind === 'dialogue')
@@ -229,7 +238,8 @@ for (const profile of profiles)
           for (let line = 0; line < index; line++)
             await panel.locator('[data-conversation-control="next"]').tap();
           expect(await page.evaluate(() => window.fnt!.app.state!.story.lineIndex)).toBe(index);
-          expect(inventory[0]?.node).toBe('pella_tips');
+          expect(nodes as readonly string[]).toContain(inventory[0]?.node);
+          expect(inventory[0]?.variant).toBe(false);
         }
         await page.evaluate(() => document.fonts.ready);
         const before = await page.evaluate(() => window.fnt!.app.state!);

@@ -14,9 +14,9 @@ import {
 const PINS = {
   trade: {
     gate: {
-      save: '085ea1ec2ae70f9fb6510da7f074c2b60fbd615f644e063dd81706c6e2a06d64',
-      commands: '1fdc58ce7e46bdfb1bd06866a1b29694238b23b6bb8b51c87d7cd228826dc168',
-      count: 58,
+      save: '71951c7d743bd08e1ab4417c87f9ce3ea5fce6e2c052914e94defc3ef2ce3b43',
+      commands: '2986b8bd2cb798c780d0bdd23a0c9f3384f6a3898ec27c228d1ac97b27416e98',
+      count: 62,
       node: 'gate_trade_explore',
       map: 'quarry_gate',
       level: 3,
@@ -24,9 +24,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: 'f2392516358713cb7f2104cca53397bf6b248186aa7c314db5b2ba0b203eca64',
-      commands: '0119129ad5c6683e5e191f47425f0e4f89c265c398c93ba2e74dd43f3bc8359b',
-      count: 144,
+      save: 'd50551c30bd72440b911383a45c09cc2d05590a0a112f638d5fcdc2666708a49',
+      commands: '359fa02033cdb4fe950aa2b02a45b781fa9927e6bcf4a77e4a281ee9817c39b6',
+      count: 148,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
@@ -36,9 +36,9 @@ const PINS = {
   },
   escort: {
     gate: {
-      save: '90524687edaccb8c29525f46331d2e50294e6f06460bb7056c3faac290046136',
-      commands: '984e5c19915d3560c9630fd9d44950426c5d89bb6c44e020a140c35d29b89144',
-      count: 84,
+      save: 'd86e46aa535b080b46ee97a6fe015cc11314729a98f7c37d61d023d4477da307',
+      commands: '80f2dc38ba8abea391d05855e3375b02c7a090d429457235fd4ddce689d62b1b',
+      count: 88,
       node: 'gate_escort_explore',
       map: 'quarry_gate',
       level: 3,
@@ -46,9 +46,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '6f00f09f35d69aebc097368d3ee292794ee901ce098f0dffc06a38547bb76b1b',
-      commands: 'cbf5ca79234f891a957545104c75a22a5040fc22d6469cefe2c9f0555cd2b9a9',
-      count: 381,
+      save: '0735c2591ce375c04e7b2cfcde4ff8322c2a260f8b26de28f87bf89c300cc94e',
+      commands: 'e6725e73fcb6dc7b686e6fcc221d454cdc4439b25843d4af6a1265738ecfdc09',
+      count: 385,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
@@ -92,6 +92,8 @@ for (const custody of ['trade', 'escort'] as const) {
         expect(fixture.projection.flags.ruon_respects_you).toBe(true);
         expect(fixture.projection.flags.ruon_traded === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_paid === true).toBe(custody === 'trade');
+        // Jin takes the satchel with Ruon on the trade; a won ambush keeps it (C-10).
+        expect(fixture.projection.flags.jin_has_satchel === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_spared === true).toBe(custody === 'escort');
         expect(fixture.projection.flags.act1_complete === true).toBe(stage === 'afterDriller');
         expect(fixture.projection.screen).toBe('explore');

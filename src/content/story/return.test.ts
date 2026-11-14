@@ -163,7 +163,7 @@ describe('the authored walk home', () => {
     const gates = [
       [{}, 'knocked', 'knocked'],
       [{ gate_talked_through: true }, 'talked Captain Ruon', 'talked the quarry gate open'],
-      [{ gate_fire_bluff: true }, 'bluffed the deserter', 'stared the deserter'],
+      [{ gate_fire_bluff: true }, 'off his post', 'guard by the oil barrels'],
       [{ gate_fire_bluff: true, lost_quarry_gate: true }, 'drove you back', 'chased you down'],
     ] as const;
     for (const [flags, recapText, dorinText] of gates) {

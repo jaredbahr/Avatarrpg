@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { CONTENT, RETURNEE_IDS } from '../src/content';
+import { CONTENT, RETURNEE_IDS, STORY_PROLOGUE } from '../src/content';
 import { generateQuarryCheckpoints, quarryRouteBoundary } from '../scripts/e2e/quarry-checkpoints';
 import { previewAiPlan } from '../src/core/rules/ai';
 import { distance, reachable } from '../src/core/rules/grid';
@@ -251,7 +251,7 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
       continue;
     }
     if (snapshot.nodeId === 'gate_parley') {
-      // Bo speaks to the earthbender.
+      // Bo talks to Ruon about the galleries.
       await timed('gateParley', 'click', () => page.locator('.choice-option').nth(2).click());
       continue;
     }
@@ -454,7 +454,16 @@ for (const custody of ['trade', 'escort'] as const) {
       body: JSON.stringify(liveBoundary),
       contentType: 'application/json',
     });
-    expect(quarryRouteBoundary(liveBoundary)).toEqual(fixture.projection);
+    // A new game opens on the storm prologue; the fixture starts at
+    // STORY_ENTRY by design (src/content/entry.ts), so the live route has
+    // visited exactly one node more, first.
+    expect(quarryRouteBoundary(liveBoundary)).toEqual({
+      ...fixture.projection,
+      story: {
+        ...fixture.projection.story,
+        visited: [STORY_PROLOGUE, ...fixture.projection.story.visited],
+      },
+    });
   });
 
   test(`${custody} 2/3: the gate route resolves the Driller and summary`, async ({ page }) => {

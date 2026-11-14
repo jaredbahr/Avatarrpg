@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-import { resetStorage } from './helpers';
+import { CONTENT } from '../src/content';
+import { resetStorage, waitForIdle } from './helpers';
 
 async function expectVisibleFocus(target: Locator): Promise<void> {
   await expect(target).toBeFocused();
@@ -39,6 +40,12 @@ async function pressControl(
     expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
   }
   throw new Error(`Keyboard could not reach ${await control.textContent()}`);
+}
+
+function linesOf(nodeId: string): number {
+  const node = CONTENT.story.get(nodeId);
+  if (node?.kind !== 'dialogue') throw new Error(`${nodeId} is not a dialogue`);
+  return node.lines.length;
 }
 
 function button(page: Page, name: string | RegExp): Locator {
@@ -89,14 +96,17 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   }
   await expectVisibleFocus(button(page, 'Begin'));
   await page.keyboard.press('Enter');
-  await expectNode(page, 'act1_open');
+  // The campaign opens on the prologue (#763), then Ba Dan's opening lines.
+  await expectNode(page, 'prologue_storm');
   expect(await page.evaluate(() => window.fnt?.app.session.participants[0]?.name)).toBe('Alex');
   expect(
     await page.evaluate(() => window.fnt?.app.state?.party.map((hero) => hero.characterId)),
   ).toEqual(['kaya', 'nilak', 'bo']);
 
   const opening = page.locator('[data-interlude-control="next"]');
-  await advanceLines(page, opening, 3);
+  await advanceLines(page, opening, linesOf('prologue_storm'));
+  await expectNode(page, 'act1_open');
+  await advanceLines(page, opening, linesOf('act1_open'));
   await expectNode(page, 'village_explore');
   const map = button(page, 'Map');
   await expectVisibleFocus(map);
@@ -127,7 +137,11 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId))
     .toBe('forest_road');
   // Wait for the actual board arrival before asking to talk. Scene state
-  // can name the next map while the animated village exit is still playing.
+  // can name the next map while the animated village exit is still playing:
+  // from Gao to the east road that walk is about nine seconds of playback
+  // (measured), so wait for the playback to end rather than racing it with
+  // the 10 s assertion default, which CI's WebKit lost.
+  await waitForIdle(page);
   await expect(page.locator('.title-plate-name')).toHaveText('The Forest Road');
   await expect(page.locator('canvas.map-canvas')).toHaveAttribute(
     'aria-label',

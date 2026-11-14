@@ -48,8 +48,8 @@ describe('the quarry gate watchers (#696)', () => {
       expect(watcher.pos && tileAt(grid, { x: watcher.pos.x, y: 0 })?.blocked).toBe(true);
   });
 
-  it('include the deserter the parley names, beside the east stack of barrels', () => {
-    // "A Fire Nation deserter stands beside the oil barrels": the same figure the
+  it('include the guard the parley names, beside the east stack of barrels', () => {
+    // "A hired guard stands by the oil barrels": the same figure the
     // gate fight then fields, on the open cell #725 left for him.
     const deserter = GATE_WATCHERS.find((npc) => npc.id === 'gate_watch_deserter');
     expect(deserter?.pos).toEqual({ x: 13, y: 1 });

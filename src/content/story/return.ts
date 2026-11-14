@@ -173,7 +173,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
       {
         when: { kind: 'flag', key: 'gate_fire_bluff', op: 'set' },
         lines: [
-          'The crew says your firebender stared the deserter right out of the way. I tried a stern voice on that gate. It didn’t work on anybody.',
+          'The crew says your firebender asked the guard by the oil barrels where he’d like to be standing once things caught. He picked somewhere else entirely.',
           'I’m putting all of it in the watch book, so it’s done properly. Does “mecha-driller” have a dash in it?',
         ],
       },
@@ -257,7 +257,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
       choices: [
         {
           when: { kind: 'flag', key: 'gate_talked_through', op: 'set' },
-          text: 'At the quarry gate, your earthbender talked Captain Ruon into opening it.',
+          text: 'At the quarry gate, you talked Captain Ruon into opening it.',
         },
         {
           when: { kind: 'flag', key: 'lost_quarry_gate', op: 'set' },
@@ -271,7 +271,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
               { kind: 'flag', key: 'lost_quarry_gate', op: 'unset' },
             ],
           },
-          text: 'At the quarry gate, your firebender bluffed the deserter aside.',
+          text: 'At the quarry gate, your firebender talked the guard by the oil barrels off his post.',
         },
         {
           when: {

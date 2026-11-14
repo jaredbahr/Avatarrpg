@@ -24,6 +24,11 @@
  *
  * Adding a flag: add the entry first, then the content. The test prints the
  * exact `setBy`/`readBy` it found when they disagree, so paste from there.
+ *
+ * Reading the past from a later scene: a save already past a flag's setter can
+ * never come to hold it, so declare how such a save answers in
+ * `flagBackfills.ts` (#773). `flagContinuity.test.ts` holds every frozen save
+ * to that rule.
  */
 
 import type { FlagValue } from '../../core/types';
@@ -75,6 +80,11 @@ export interface FlagDef {
   readonly note?: string;
   readonly setBy: readonly string[];
   readonly readBy: readonly string[];
+  /**
+   * The save format or release that introduced the flag, such as `'save v5'`
+   * or `'0.3.0'`. Documentation for whoever writes its backfill (`flagBackfills.ts`).
+   */
+  readonly since?: string;
 }
 
 /* The hub flag: read nearly everywhere after the quarry. */
@@ -172,11 +182,19 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.ducks_seen',
     type: 'boolean',
     values: [true],
-    meaning: 'The party met Lanfen and her displaced turtle ducks on the Forest Road.',
+    meaning:
+      'The party met Lanfen and her displaced turtle ducks on the Forest Road, and heard about the runoff; it opens the gate talk.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:forest_ducks_seen'],
-    readBy: ['map:forest_road', 'story:demo_complete', 'journal:ducks'],
+    readBy: [
+      'map:forest_road',
+      'story:gate_parley',
+      'story:gate_kinship',
+      'story:gate_ruon_listens',
+      'story:demo_complete',
+      'journal:ducks',
+    ],
   },
   {
     key: 'world.discovered.duck_nest',
@@ -192,11 +210,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.discovered.runoff_marker',
     type: 'boolean',
     values: [true],
-    meaning: 'The party read the silted flood marker that asks if the settling pit is blocked.',
+    meaning:
+      'The party read the silted flood marker that asks if the settling pit is blocked; it opens the gate talk.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:remember_runoff_marker'],
-    readBy: ['map:forest_road', 'journal:runoff_marker'],
+    readBy: [
+      'map:forest_road',
+      'story:gate_parley',
+      'story:gate_kinship',
+      'story:gate_ruon_listens',
+      'journal:runoff_marker',
+    ],
   },
 
   /* -------------------------------------------------------- Quarry gate */
@@ -204,7 +229,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'gate_fire_bluff',
     type: 'boolean',
     values: [true],
-    meaning: 'A firebender bluffed the Fire Nation deserter aside at the quarry gate.',
+    meaning:
+      'A firebender talked Hotaro, the hired guard by the oil barrels, off his post at the quarry gate; the crew fought without him.',
     arc: 'Demo · Quarry gate',
     status: 'live',
     setBy: ['story:gate_bluff'],
@@ -214,7 +240,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'gate_talked_through',
     type: 'boolean',
     values: [true],
-    meaning: 'An earthbender talked Captain Ruon into opening the gate; no gate fight.',
+    meaning:
+      'The party talked Captain Ruon into opening the gate on what it knew about his quarry; no gate fight.',
     arc: 'Demo · Quarry gate',
     status: 'live',
     setBy: ['story:gate_talked_through'],
@@ -224,10 +251,11 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'ruon_respects_you',
     type: 'boolean',
     values: [true],
-    meaning: 'Ruon opened the gate to the party’s earthbender as one stoneworker to another.',
+    meaning:
+      'Ruon opened the gate because the party knew what his quarry was doing: Bo’s crew work, Lin Mei’s survey eye, or the runoff the road showed it.',
     arc: 'Demo · Quarry gate',
     status: 'informational',
-    note: 'Set alongside gate_talked_through. Nothing reads it yet; a later act with Ruon should.',
+    note: 'Set alongside gate_talked_through. Nothing reads it yet; Ruon’s account (DLG-08) credits the party’s knowledge of the galleries.',
     setBy: ['story:gate_talked_through'],
     readBy: [],
   },
@@ -296,10 +324,11 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'lost_ambush',
     type: 'boolean',
     values: [true],
-    meaning: 'Jin’s mercenaries beat the party in the Cutting (escort branch only).',
+    meaning:
+      'Jin’s mercenaries beat the party in the Cutting and took Ruon’s dispatch satchel, not Ruon (escort branch only).',
     arc: 'Demo · The Cutting',
     status: 'informational',
-    note: 'Unlike the other losses, no line or recap reads it yet; ruon_carried_you carries the story.',
+    note: 'No line or recap reads it yet; ruon_carried_you and jin_has_satchel carry the story.',
     setBy: ['story:lost_ambush'],
     readBy: [],
   },
@@ -312,6 +341,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     status: 'informational',
     note: '“The sort of thing a later act should remember about him” (act1.ts). Unread until then.',
     setBy: ['story:lost_ambush'],
+    readBy: [],
+  },
+  {
+    key: 'jin_has_satchel',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Jin holds Ruon’s dispatch satchel, his orders and every delivery he signed for: seized in the Cutting, or handed over with him in the trade.',
+    arc: 'Demo · The Cutting',
+    status: 'informational',
+    note: 'Story bible C-10. Nothing reads it yet; MQ-02’s paper trail should, as Jin bargains over evidence.',
+    setBy: ['story:lost_ambush', 'story:trade_payment'],
     readBy: [],
   },
   {
@@ -600,9 +641,9 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     type: 'number',
     meaning: 'How the Fire Nation feels about the party, from -5 (hostile) to 5 (trusted).',
     arc: 'Saga · Nation standing',
-    status: 'pending',
-    note: 'Raised by the firebender’s bluff at the gate. No Condition reads standing yet.',
-    setBy: ['story:gate_parley'],
+    status: 'reserved',
+    note: 'Nothing moves it since the gate bluff stopped trading on a nation (owner, 2026-11-14; C-09). Community trust replaces it (C-25).',
+    setBy: [],
     readBy: [],
   },
   {

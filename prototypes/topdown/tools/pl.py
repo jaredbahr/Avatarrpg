@@ -101,8 +101,11 @@ def finish(name, jobs):
     save(L); print(name, e['status'], e['credits']); return last
 
 
-def run(endpoint, payload, name, notes='', estimate=0, method='POST'):
-    """Post, poll, save raw json + images under raw/<name>/. Returns (entry, response)."""
+def run(endpoint, payload, name, notes='', estimate=0, method='POST', region=None):
+    """Post, poll, save raw json + images under raw/<name>/. Returns (entry, response).
+
+    `region` (or PIXELLAB_REGION) tags the job with the region it is for, so ledger_audit.py can
+    total the cost per region; an untagged job counts toward the ledger's default_region."""
     e = cached(name)
     if e:
         print(name, 'cached'); return e, json.load(open(RAW / name / 'response.json'))
@@ -143,6 +146,8 @@ def run(endpoint, payload, name, notes='', estimate=0, method='POST'):
              'settings': strip(payload), 'credits': credits, 'credit_source': src, 'balance_diff': round(before - after, 2), 'usage': strip(last.get('usage')),
              'balance_before': before, 'balance_after': after, 'secs': round(time.time() - t0), 'notes': notes,
              'ids': {k: resp.get(k) for k in resp if k.endswith('_id')}}
+    region = region or os.environ.get('PIXELLAB_REGION')
+    if region: entry['region'] = region
     with open(str(LEDGER) + '.lock', 'w') as lk:
         fcntl.flock(lk, fcntl.LOCK_EX); L = ledger(); L['jobs'].append(entry); save(L)
     print(name, entry['status'], 'credits', entry['credits'], 'total', round(spent(), 1))
