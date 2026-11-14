@@ -435,6 +435,9 @@ export class DialogueScene implements Scene {
       ? [
           button('Credits', () => new CreditsDialog().open(host())),
           button('Save this game', () => this.app.openPause()),
+          // A copy outside the browser at each region's end (#772): the one
+          // backup a cleared site cannot take with it.
+          button('Save a copy', () => this.app.exportSave()),
           next
             ? button('Keep exploring', () => this.app.dispatch({ type: 'enterNode', nodeId: next }))
             : null,

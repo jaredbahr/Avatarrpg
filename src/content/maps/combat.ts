@@ -131,6 +131,9 @@ export const FOREST_ROAD: MapDef = {
   projection: 'topdown',
   // The plate runs two cells past the grid either side and three above (the pine margin).
   cameraCentreMargin: 1,
+  // The first arrival frames Lanfen and the party between the objective and the dock: the view
+  // fits 4.25 rows and centres on row 2.25, until the party has set off (`road_depart`).
+  arrivalShot: { at: { x: 1, y: 4 }, unlessVisited: 'road_depart', rows: 4.25, centreY: 2.25 },
   scene: ruleScene(FOREST_RUBBLE_CELLS),
   name: 'The Forest Road',
   kind: 'combat',

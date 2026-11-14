@@ -13,13 +13,13 @@
  * records a flag through the reducer; this one records nothing.
  */
 
-import type { Ability, ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
-import { BA_DAN_CANAL_BRIDGE } from '../../content/maps/baDanLayout';
+import type { Ability, ContentIndex, GameEvent, MapDef, Unit, Vec2 } from '../../core/types';
 
 // Preserve the practice module's established export while sharing the easing
 // primitive with other presentation systems.
 export { glidePoint } from '../anim/glide';
 
+/** A map's practice ground (`MapDef.practice`), with the map it is on. */
 export interface PracticeGround {
   readonly mapId: string;
   /** What the action calls the place, under its name. */
@@ -31,32 +31,22 @@ export interface PracticeGround {
   readonly mark: Vec2;
 }
 
-/**
- * Ba Dan's south canal bank, east of the bridge's foot, inside the demo slice
- * (x 0-13, y 0-9). The bends go north-west at a mark on the canal's near edge,
- * so they burst over the open water.
- * The bridge deck itself is within reach of Mira's table, a seat, where Wait
- * keeps the slot; west of the bridge the house hides a follower.
- */
-export const BA_DAN_PRACTICE: PracticeGround = {
-  mapId: 'ba_dan_village',
-  label: 'Canal bank',
-  anchor: { x: BA_DAN_CANAL_BRIDGE.x + 1, y: BA_DAN_CANAL_BRIDGE.y + 2 },
-  reach: 1,
-  mark: { x: 6, y: 7 },
-};
-
-const GROUNDS: readonly PracticeGround[] = [BA_DAN_PRACTICE];
+/** The practice ground `map` declares, or null. */
+export function practiceGround(
+  map: Pick<MapDef, 'id' | 'practice'> | null | undefined,
+): PracticeGround | null {
+  return map?.practice ? { mapId: map.id, ...map.practice } : null;
+}
 
 const chebyshev = (a: Vec2, b: Vec2): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /** The practice ground the leader stands at on this map, or null. */
-export function practiceAt(mapId: string | undefined, leader: Vec2): PracticeGround | null {
-  return (
-    GROUNDS.find(
-      (ground) => ground.mapId === mapId && chebyshev(leader, ground.anchor) <= ground.reach,
-    ) ?? null
-  );
+export function practiceAt(
+  map: Pick<MapDef, 'id' | 'practice'> | null | undefined,
+  leader: Vec2,
+): PracticeGround | null {
+  const ground = practiceGround(map);
+  return ground && chebyshev(leader, ground.anchor) <= ground.reach ? ground : null;
 }
 
 /**

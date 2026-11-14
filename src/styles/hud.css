@@ -512,7 +512,10 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
   color: var(--c-ink-faint);
 }
 
-.warn-note {
+/* The storage note (#772) says saves may be cleared; it reads like a warning
+   but is its own class, so "is site data blocked?" checks never match it. */
+.warn-note,
+.storage-note {
   color: var(--c-warn-ink);
   background: color-mix(in srgb, var(--c-warn-bg) 45%, transparent);
   border: var(--hairline) solid var(--c-warn-line);
@@ -668,6 +671,11 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
 
 .title-card .muted {
   color: var(--c-air);
+}
+
+/* On the dark plate the note's tint is too thin to carry its ink: solid paper. */
+.title-card .title-storage-note {
+  background: var(--c-warn-bg);
 }
 
 .btn-large {

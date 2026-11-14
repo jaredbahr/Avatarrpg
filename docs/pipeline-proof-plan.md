@@ -54,6 +54,10 @@ not ticked for them and should be brought up to date.
       `TOPDOWN_SCENES`, `TOPDOWN_LAYOUTS` and `MAP_MUSIC` built from the list of regions (ADR 0111 §1).
 - [ ] **Move special cases into data:** guided-fight steps on the encounter, environment audio on the map, projectile
       look on the ability. Exit test: `grep` for map and encounter ids in `src/app` and `src/render` finds none.
+      **Partly done (#767):** the courtyard soundscape, the practice ground and the Forest Road's arrival shot are
+      map data (`MapDef.soundscape`, `practice`, `arrivalShot`), and `src/app/contentIdLiterals.test.ts` is the exit
+      test, with an allowlist that may only shrink. What it still lists is the guided first fight
+      (`enc_forest_road`); the projectile look is keyed by ability, not by map, and is unchanged.
 - [x] **Region template and generator** (#766): `npm run new:region -- <id> "<Name>"` writes
       `src/content/regions/<camelId>/` (manifest, content, layouts, a placeholder map with one NPC and a two-node
       story, every placeholder marked `TODO(region)`) and appends it to the three region lists; the result passes
