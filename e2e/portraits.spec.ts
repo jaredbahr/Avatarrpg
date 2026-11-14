@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame } from './helpers';
+import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
 
 for (const [nodeId, portrait] of [
   ['mira_intro', 'mira'],
@@ -41,3 +41,34 @@ for (const [nodeId, portrait] of [
     });
   });
 }
+
+test.describe('Largest text', () => {
+  test.use({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2 });
+
+  // The owner capped the speaker portrait at its Large-text size (300 px) on
+  // 2026-11-14, so a short line at Largest gets a shorter panel. Text still grows.
+  test('the stage portrait keeps its Large-text size', async ({ page }) => {
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Elias'], ['kaya']);
+    const sizes: Record<string, number> = {};
+    for (const size of ['on', 'huge'] as const) {
+      await setLargeText(page, size);
+      await enterNode(page, 'mira_intro');
+      const canvas = page.locator('.stage-portrait canvas[data-asset="portrait.mira"]');
+      await expect(canvas).toBeVisible();
+      const box = await canvas.boundingBox();
+      expect(box?.width).toBe(box?.height);
+      sizes[size] = box?.width ?? 0;
+      // The backing store follows the capped box, on whole device pixels.
+      await expect
+        .poll(() => canvas.evaluate((c: HTMLCanvasElement) => c.width))
+        .toBe(Math.round(sizes[size]! * 2));
+    }
+    expect(sizes.on).toBe(300);
+    expect(sizes.huge).toBe(300);
+    const text = await page
+      .locator('.dialogue-line')
+      .evaluate((line) => parseFloat(getComputedStyle(line).fontSize));
+    expect(text).toBeGreaterThan(24);
+  });
+});
