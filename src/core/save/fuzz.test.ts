@@ -1,10 +1,10 @@
 /**
  * Seeded corrupt-save corpus. Keep the seed and case labels in failures so a
- * failing mutation can be replayed without a random search. The budget covers
- * fixture creation, all mutations, loading, reconciliation and reducer steps.
+ * failing mutation can be replayed without a random search. The workload is
+ * fixture creation, all mutations, loading, reconciliation and reducer steps;
+ * its size is the exact mutation count, not a time.
  */
 import { createHash } from 'node:crypto';
-import { performance } from 'node:perf_hooks';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor, seedFromString } from '../rng';
@@ -20,7 +20,6 @@ import { deserialize, SAVE_FORMAT_VERSION, serialize, stateFromBlob } from './se
 
 const SEED = 'save-fuzz-485-v1';
 const SAMPLES = 32;
-const BUDGET_MS = 20_000;
 type Raw = Record<string, unknown>;
 
 interface Fixture {
@@ -344,92 +343,84 @@ function checkLoaded(json: string, mustAccept: boolean): boolean {
 }
 
 describe('seeded save corruption', () => {
-  it(
-    'checks 2080 mutations and usable valid saves within 20 seconds',
-    () => {
-      const started = performance.now();
-      const failures: string[] = [];
-      const seen = new Map<string, number>();
-      const distinctPayloads = new Set<string>();
-      let failureCount = 0;
-      let mutations = 0;
-      let accepted = 0;
+  it('checks 2080 mutations and usable valid saves', () => {
+    const failures: string[] = [];
+    const seen = new Map<string, number>();
+    const distinctPayloads = new Set<string>();
+    let failureCount = 0;
+    let mutations = 0;
+    let accepted = 0;
 
-      const run = (label: string, check: () => void): void => {
-        try {
-          check();
-          ensure(({} as Raw).polluted === undefined, 'Object.prototype was polluted');
-        } catch (error) {
-          failureCount++;
-          if (failures.length < 12)
-            failures.push(`${label}: ${error instanceof Error ? error.message : String(error)}`);
-        }
-      };
+    const run = (label: string, check: () => void): void => {
+      try {
+        check();
+        ensure(({} as Raw).polluted === undefined, 'Object.prototype was polluted');
+      } catch (error) {
+        failureCount++;
+        if (failures.length < 12)
+          failures.push(`${label}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    };
 
-      ensure(({} as Raw).polluted === undefined, 'pollution predates the corpus');
-      for (let sample = 0; sample < SAMPLES; sample++) {
-        for (const fixture of fixtures(sample)) {
-          run(`${SEED}/${fixture.name}/${sample}/unmodified-control`, () => {
-            const control = deserialize(fixture.json);
-            ensure(control.ok, 'real fixture was rejected');
-            expect(stateFromBlob(control.blob)).toEqual(fixture.state);
-            ensure(checkLoaded(fixture.json, true), 'control did not load');
+    ensure(({} as Raw).polluted === undefined, 'pollution predates the corpus');
+    for (let sample = 0; sample < SAMPLES; sample++) {
+      for (const fixture of fixtures(sample)) {
+        run(`${SEED}/${fixture.name}/${sample}/unmodified-control`, () => {
+          const control = deserialize(fixture.json);
+          ensure(control.ok, 'real fixture was rejected');
+          expect(stateFromBlob(control.blob)).toEqual(fixture.state);
+          ensure(checkLoaded(fixture.json, true), 'control did not load');
+        });
+
+        for (const mutation of MUTATIONS) {
+          const label = `${SEED}/${fixture.name}/${mutation.name}/${sample}`;
+          const seed = seedFromString(label);
+          mutations++;
+          seen.set(mutation.name, (seen.get(mutation.name) ?? 0) + 1);
+          run(`${label} seed=${seed}`, () => {
+            const json = mutation.mutate(object(JSON.parse(fixture.json)), new RngCursor(seed));
+            ensure(json !== fixture.json, 'mutation did not change the input');
+            // Count the exact input before loading, including cases which
+            // later throw or violate an invariant. This cannot hide repeats.
+            distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
+            if (checkLoaded(json, mutation.mustAccept === true)) accepted++;
           });
+        }
 
-          for (const mutation of MUTATIONS) {
-            const label = `${SEED}/${fixture.name}/${mutation.name}/${sample}`;
-            const seed = seedFromString(label);
-            mutations++;
-            seen.set(mutation.name, (seen.get(mutation.name) ?? 0) + 1);
-            run(`${label} seed=${seed}`, () => {
-              const json = mutation.mutate(object(JSON.parse(fixture.json)), new RngCursor(seed));
-              ensure(json !== fixture.json, 'mutation did not change the input');
-              // Count the exact input before loading, including cases which
-              // later throw or violate an invariant. This cannot hide repeats.
-              distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
-              if (checkLoaded(json, mutation.mustAccept === true)) accepted++;
-            });
-          }
-
-          if (fixture.state.battle) {
-            // Extra battle-only cases avoid inventing a battle in the other
-            // fixtures or counting a mutation of an unused field as coverage.
-            const label = `${SEED}/${fixture.name}/invalid-active-cursor/${sample}`;
-            const seed = seedFromString(label);
-            mutations++;
-            seen.set('invalid-active-cursor', (seen.get('invalid-active-cursor') ?? 0) + 1);
-            run(`${label} seed=${seed}`, () => {
-              const blob = object(JSON.parse(fixture.json));
-              const battle = object(object(blob.state).battle);
-              const count = array(battle.order).length;
-              const values = [0.5, -1, count, count + 1, 2 ** 31, '0', null];
-              battle.turnIndex = values[sample % values.length];
-              const json = JSON.stringify(blob);
-              distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
-              if (checkLoaded(json, false)) accepted++;
-            });
-          }
+        if (fixture.state.battle) {
+          // Extra battle-only cases avoid inventing a battle in the other
+          // fixtures or counting a mutation of an unused field as coverage.
+          const label = `${SEED}/${fixture.name}/invalid-active-cursor/${sample}`;
+          const seed = seedFromString(label);
+          mutations++;
+          seen.set('invalid-active-cursor', (seen.get('invalid-active-cursor') ?? 0) + 1);
+          run(`${label} seed=${seed}`, () => {
+            const blob = object(JSON.parse(fixture.json));
+            const battle = object(object(blob.state).battle);
+            const count = array(battle.order).length;
+            const values = [0.5, -1, count, count + 1, 2 ** 31, '0', null];
+            battle.turnIndex = values[sample % values.length];
+            const json = JSON.stringify(blob);
+            distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
+            if (checkLoaded(json, false)) accepted++;
+          });
         }
       }
+    }
 
-      const elapsed = performance.now() - started;
-      expect(elapsed, `complete ${mutations}-mutation workload, seed=${SEED}`).toBeLessThan(
-        BUDGET_MS,
-      );
-      expect(mutations).toBe(2_080);
-      expect(
-        distinctPayloads.size,
-        'at least 2000 distinct mutated inputs, not repeated cases',
-      ).toBeGreaterThanOrEqual(2_000);
-      for (const mutation of MUTATIONS) expect(seen.get(mutation.name), mutation.name).toBe(128);
-      expect(seen.get('invalid-active-cursor')).toBe(32);
-      expect(
-        accepted,
-        'valid name/duplicate-key mutations must reach real reducer commands',
-      ).toBeGreaterThanOrEqual(256);
-      expect(failureCount, failures.join('\n')).toBe(0);
-      expect(({} as Raw).polluted).toBeUndefined();
-    },
-    BUDGET_MS,
-  );
+    // The work is the corpus, and it is exact: 2080 mutations on any machine (#796).
+    expect(mutations, 'mutations loaded, seed=' + SEED).toBe(2_080);
+    expect(
+      distinctPayloads.size,
+      'at least 2000 distinct mutated inputs, not repeated cases',
+    ).toBeGreaterThanOrEqual(2_000);
+    for (const mutation of MUTATIONS) expect(seen.get(mutation.name), mutation.name).toBe(128);
+    expect(seen.get('invalid-active-cursor')).toBe(32);
+    expect(
+      accepted,
+      'valid name/duplicate-key mutations must reach real reducer commands',
+    ).toBeGreaterThanOrEqual(256);
+    expect(failureCount, failures.join('\n')).toBe(0);
+    expect(({} as Raw).polluted).toBeUndefined();
+  });
 });
