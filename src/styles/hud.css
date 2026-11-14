@@ -1323,6 +1323,21 @@ html[data-contrast='high'] .title-card .tagline {
     grid-template-rows: minmax(0, 1fr);
   }
 
+  /* Give the longest staged votes more room beside the speaker at Largest. */
+  html[data-large-text='huge'] .stage:has(.choice-panel[data-vote]) {
+    grid-template-columns: minmax(11rem, 13rem) minmax(0, 1fr);
+    column-gap: var(--sp-3);
+  }
+
+  html[data-large-text='huge'] .stage:has(.choice-panel[data-vote]) .stage-portrait {
+    max-width: 100%;
+  }
+
+  html[data-large-text='huge'] .stage:has(.choice-panel[data-vote]) .stage-portrait .painter {
+    max-width: 100%;
+    height: auto;
+  }
+
   .stage .choice-panel[data-vote] {
     max-height: 100%;
   }
@@ -1350,6 +1365,24 @@ html[data-contrast='high'] .title-card .tagline {
   .explore-conversation .choice-panel[data-vote] .conversation-compact-speaker {
     width: auto;
     text-align: left;
+  }
+
+  /* Keep wrapped answers inside the world card when the system font is wide.
+   * The buttons retain their minimum heights and the chosen text size. */
+  :is(.stage, .explore-conversation) .choice-panel[data-vote] .choice-options {
+    gap: var(--sp-1);
+  }
+
+  :is(.stage, .explore-conversation) .choice-panel[data-vote] .choice-option {
+    padding-block: var(--sp-1);
+  }
+
+  :is(.stage, .explore-conversation) .choice-panel[data-vote] .vote-banner {
+    padding-block: 0;
+  }
+
+  .explore-conversation .choice-panel[data-vote] .vote-banner .btn-large {
+    min-height: var(--tap);
   }
 
   .explore-conversation .choice-panel[data-vote] > .vote-banner,
