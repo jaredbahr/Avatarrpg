@@ -4,7 +4,7 @@
 
 Generated from the effective runtime story nodes, including party voice dialogue variants. Regenerate with `npm run docs:story`; verify committed output with `npm run docs:story -- --check`.
 
-149 nodes; 4 fights; 9 branches; 9 choices
+150 nodes; 4 fights; 9 branches; 9 choices
 
 Each runtime story node is owned by exactly one diagram. Entry points are highlighted; cross-file exits and cross-part continuations link to the diagram owning their target. Files over 80 nodes split from entry points into parts of at most 80 owned nodes. Boundary placeholders are excluded from counts.
 
@@ -12,7 +12,7 @@ Edges show every authored story transition, choice condition and flag mutation. 
 
 | Story file                                            | Nodes | Fights | Branches | Choices | Parts |
 | ----------------------------------------------------- | ----: | -----: | -------: | ------: | ----: |
-| [Act 1](./act1.md)                                    |    44 |      4 |        0 |       2 |     1 |
+| [Act 1](./act1.md)                                    |    45 |      4 |        0 |       2 |     1 |
 | [Ba Dan day](./ba-dan-day.md)                         |    18 |      0 |        5 |       2 |     1 |
 | [Discoveries](./discoveries.md)                       |    12 |      0 |        3 |       0 |     1 |
 | [Return](./return.md)                                 |    18 |      0 |        0 |       0 |     1 |
