@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { GameEvent, GameState, PropDef, Unit } from '../../core/types';
+import { CONTENT } from '../../content';
+import type { EncounterDef, GameEvent, GameState, PropDef, Unit } from '../../core/types';
 import {
   FIRST_FIGHT_GUIDANCE,
   combatTipEvents,
@@ -24,6 +25,12 @@ const enemy = {
   statuses: [],
 } as unknown as Unit;
 
+/** The guided fight declares itself on its encounter (`EncounterDef.guidance`). */
+const ENCOUNTERS: ReadonlyMap<string, Pick<EncounterDef, 'guidance'>> = new Map([
+  ['enc_forest_road', { guidance: 'firstFight' }],
+  ['enc_quarry_gate', {}],
+]);
+
 function state(overrides: Partial<GameState> = {}): GameState {
   return {
     screen: 'combat',
@@ -41,18 +48,33 @@ function state(overrides: Partial<GameState> = {}): GameState {
 }
 
 describe('first fight guidance', () => {
+  it('is declared by the shipped Forest Road encounter and no other', () => {
+    const guided = [...CONTENT.encounters.values()].filter(
+      (encounter) => encounter.guidance === 'firstFight',
+    );
+    expect(guided.map((encounter) => encounter.id)).toEqual(['enc_forest_road']);
+  });
+
   it('starts only for a flagged new game in the Forest Road fight', () => {
-    expect(firstFightStage(state())).toBe(0);
-    expect(firstFightStage(state({ flags: {} }))).toBeNull();
+    expect(firstFightStage(state(), ENCOUNTERS)).toBe(0);
+    expect(firstFightStage(state({ flags: {} }), ENCOUNTERS)).toBeNull();
     expect(
-      firstFightStage(state({ battle: { ...state().battle!, mapId: 'quarry_gate' } })),
+      firstFightStage(
+        state({
+          battle: { ...state().battle!, mapId: 'quarry_gate', encounterId: 'enc_quarry_gate' },
+        }),
+        ENCOUNTERS,
+      ),
     ).toBeNull();
     expect(
       firstFightStage(
         state({ battle: { ...state().battle!, encounterId: 'another_forest_fight' } }),
+        ENCOUNTERS,
       ),
     ).toBeNull();
-    expect(firstFightStage(state({ battle: { ...state().battle!, phase: 'victory' } }))).toBeNull();
+    expect(
+      firstFightStage(state({ battle: { ...state().battle!, phase: 'victory' } }), ENCOUNTERS),
+    ).toBeNull();
     expect(
       firstFightStage(
         state({
@@ -61,6 +83,7 @@ describe('first fight guidance', () => {
             [FIRST_FIGHT_GUIDANCE.stage]: 'done',
           },
         }),
+        ENCOUNTERS,
       ),
     ).toBeNull();
   });
@@ -115,16 +138,13 @@ describe('later combat tips', () => {
     const laterFight = state({
       battle: { ...state().battle!, mapId: 'quarry_gate', encounterId: 'enc_quarry_gate' },
     });
-    expect(combatTipFeatures(state(), new Map())).toEqual([]);
-    expect(combatTipFeatures(laterFight, new Map([['barrel', { hp: 6 } as PropDef]]))).toEqual([
-      'cover',
-      'surface.oil',
-      'prop',
-    ]);
-    expect(combatTipFeatures(laterFight, new Map([['barrel', { hp: 0 } as PropDef]]))).toEqual([
-      'cover',
-      'surface.oil',
-    ]);
+    expect(combatTipFeatures(state(), new Map(), ENCOUNTERS)).toEqual([]);
+    expect(
+      combatTipFeatures(laterFight, new Map([['barrel', { hp: 6 } as PropDef]]), ENCOUNTERS),
+    ).toEqual(['cover', 'surface.oil', 'prop']);
+    expect(
+      combatTipFeatures(laterFight, new Map([['barrel', { hp: 0 } as PropDef]]), ENCOUNTERS),
+    ).toEqual(['cover', 'surface.oil']);
     expect(
       combatTipEvents([{ type: 'statusApplied', unitId: 'e0', status: 'burning', duration: 1 }]),
     ).toEqual(['status']);
