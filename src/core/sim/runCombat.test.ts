@@ -37,7 +37,15 @@ describe('combat simulation', () => {
   });
 
   for (const encounterId of encounterIds) {
-    it(`terminates cleanly: ${encounterId}`, async (ctx) => {
+    /*
+     * The boss runs through the worker pool and is its first batch, so it
+     * pays each lane's JIT warm-up on twelve six-player fights (3.4-5.4 s of
+     * CPU in one thread, warm to cold). Hosted runs on the 5 s default (13-14
+     * Nov 2026): 3.2-3.7 s on the faster runner type, 4.3-5.0 s on the slower
+     * one, where it timed out once. Ten seconds is twice the slowest run.
+     */
+    const timeout = encounterId === 'enc_grumbler' ? 10_000 : undefined;
+    it(`terminates cleanly: ${encounterId}`, { timeout }, async (ctx) => {
       const cases = Array.from({ length: 12 }, (_, trial) => ({
         seed: seedFor(`terminate-${encounterId}`, trial),
         encounterId,
