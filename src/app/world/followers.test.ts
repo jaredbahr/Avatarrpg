@@ -237,8 +237,14 @@ describe('followers (#696)', () => {
     const trade = poseAlong(TRADE.slice(0, 7), { ruon_traded: true });
     expect(trade.ruon_choice).toBe('surrender');
     expect(trade.trade_payment).toBeNull();
-    // The earthbender's talk brings him to the same surrender.
-    const talked = ['forest_after_explore', 'gate_parley', 'gate_kinship', 'gate_talked_through'];
+    // Talking the gate open brings him to the same surrender.
+    const talked = [
+      'forest_after_explore',
+      'gate_parley',
+      'gate_kinship',
+      'gate_ruon_listens',
+      'gate_talked_through',
+    ];
     expect(followerPose(walked(base, [...talked, 'ruon_surrender'], {}), ruon)).toBe('surrender');
     // His top-down sheet carries the pose it names, one held cel.
     expect(TOPDOWN_SHEETS.ruon.surrender?.frames).toEqual(['unit.ally.ruon/surrender/0']);

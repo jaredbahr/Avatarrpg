@@ -403,7 +403,9 @@ test.describe('a session', () => {
     // Each locked option names who it would take and why it is closed.
     await expect(locked.first().locator('.speaker-tag')).toHaveText(/firebender/i);
     await expect(locked.first().locator('.locked-hint')).toContainText('firebender');
-    await expect(locked.nth(1).locator('.speaker-tag')).toHaveText(/earthbender/i);
+    // The talk is earned, not an element: no bender tag, a hint at what earns it.
+    await expect(locked.nth(1).locator('.speaker-tag')).toHaveCount(0);
+    await expect(locked.nth(1).locator('.locked-hint')).toContainText('quarry work');
 
     // Still a full-size control, per the touch rules.
     const box = await locked.first().boundingBox();
@@ -422,9 +424,9 @@ test.describe('a session', () => {
     await enterNode(page, 'gate_parley');
 
     await expect(page.locator('.choice-option.is-locked')).toHaveCount(0);
-    // Kaya is the firebender, Bo the earthbender: the tags name them, not their
-    // elements, because "who walks up" is the decision being made.
+    // Kaya is the firebender: the tag names her, not her element, because "who
+    // walks up" is the decision being made. The talk is the party's, untagged.
+    await expect(page.locator('.speaker-tag')).toHaveCount(1);
     await expect(page.locator('.speaker-tag').first()).toContainText('Kaya');
-    await expect(page.locator('.speaker-tag').nth(1)).toContainText('Bo');
   });
 });

@@ -38,7 +38,7 @@ async function handOff(page: Page, next: string): Promise<void> {
 
 test('three players vote 2-1, then a 1-1-1 tie goes to the decider', async ({ page }) => {
   await resetStorage(page, '?renderer=canvas');
-  // A firebender but no earthbender: two roads open at the gate, one locked.
+  // A firebender, and nobody who has learned enough to talk Ruon round: two roads open, one locked.
   await startGame(page, ['Ava', 'Ben', 'Cleo'], ['kaya', 'nilak', 'riko'], 'table-vote', {
     storyChoices: 'vote',
   });
@@ -52,7 +52,7 @@ test('three players vote 2-1, then a 1-1-1 tie goes to the decider', async ({ pa
   const locked = panel.locator('.choice-option.is-locked');
   await expect(locked).toHaveCount(1);
   await expect(locked).toBeDisabled();
-  await expect(locked.locator('.locked-hint')).toContainText(/earthbender/i);
+  await expect(locked.locator('.locked-hint')).toContainText(/quarry work/i);
 
   const before = await page.evaluate(() => window.fnt!.app.state!);
   await vote(page, 'Ava', 'Let the firebender');

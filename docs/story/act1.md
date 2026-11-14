@@ -6,7 +6,7 @@
 
 Source: [act1.ts](../../src/content/story/act1.ts).
 
-45 nodes; 4 fights; 0 branches; 2 choices
+47 nodes; 4 fights; 0 branches; 2 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -16,7 +16,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `act1_evening`
 
-45 owned nodes.
+47 owned nodes.
 
 ```mermaid
 flowchart TD
@@ -41,43 +41,45 @@ flowchart TD
   n41["gao_cold<br/>Gao the Shopkeeper: Jin came through with Ruon. Rope round his …"]:::entry
   n42["gao_friendly<br/>Gao the Shopkeeper: For the quarry? Water skins are by the door…"]:::entry
   n45["gate_bluff<br/>Set flags"]
-  n47["gate_kinship<br/>Captain Ruon: Hold on. You know the galleries? The supports und…"]
-  n48["gate_parley<br/>The Quarry Gate: Quarry workers watch from the wall. A Fire Nat…"]:::entry
-  n50["gate_talked_through<br/>Set flags"]
-  n61["lost_ambush<br/>Set flags"]
-  n62["lost_forest_road<br/>Set flags"]
-  n63["lost_quarry_gate<br/>Set flags"]
-  n64["mira_epilogue<br/>Elder Mira: Bo-shan came through the gate ahead of you. Pella h…"]:::entry
-  n65["mira_intro<br/>Elder Mira: Come in. There is rice if you have not eaten. We ne…"]:::entry
-  n66["mira_rubbing<br/>Elder Mira: Is that the rubbing? Hold that corner flat for me."]
-  n67["mira_rubbing_given<br/>Set flags"]
-  n68["mira_rubbing_kept<br/>Elder Mira: The rubbing is folded into the province report. Dor…"]:::entry
-  n69["pella_again<br/>Pella: He puts the cabbages on top of the turnips. Every bump, …"]:::entry
-  n70["pella_asked<br/>Set flags"]
-  n72["pella_tips<br/>Pella: You're going to the quarry? I can show you the way. I kn…"]:::entry
-  n83["prologue_storm<br/>The Storm: Rain hammers on an iron roof, somewhere far overhead."]:::entry
-  n85["quarry_assessment<br/>The Quarry: Workers bang on the barred gallery doors. One shout…"]
-  n86["quarry_descent<br/>The Quarry: Stone ledges step down to the quarry floor. Below t…"]:::entry
-  n120["road_depart<br/>The East Road: The road climbs between the pines. Rainwater fil…"]:::entry
-  n121["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
-  n122["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
-  n123["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
-  n164["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
-  n165["trade_payment<br/>Set flags"]
-  n166["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
+  n46["gate_bluff_words<br/>The Quarry Gate: Your firebender calls up to the guard by the b…"]
+  n48["gate_kinship<br/>The Quarry Gate: You call up to the wall about the stream below…"]
+  n49["gate_parley<br/>The Quarry Gate: Quarry workers watch from the wall with slings…"]:::entry
+  n51["gate_ruon_listens<br/>Captain Ruon: That silt is from the settling pit. It has been c…"]
+  n52["gate_talked_through<br/>Set flags"]
+  n63["lost_ambush<br/>Set flags"]
+  n64["lost_forest_road<br/>Set flags"]
+  n65["lost_quarry_gate<br/>Set flags"]
+  n66["mira_epilogue<br/>Elder Mira: Bo-shan came through the gate ahead of you. Pella h…"]:::entry
+  n67["mira_intro<br/>Elder Mira: Come in. There is rice if you have not eaten. We ne…"]:::entry
+  n68["mira_rubbing<br/>Elder Mira: Is that the rubbing? Hold that corner flat for me."]
+  n69["mira_rubbing_given<br/>Set flags"]
+  n70["mira_rubbing_kept<br/>Elder Mira: The rubbing is folded into the province report. Dor…"]:::entry
+  n71["pella_again<br/>Pella: He puts the cabbages on top of the turnips. Every bump, …"]:::entry
+  n72["pella_asked<br/>Set flags"]
+  n74["pella_tips<br/>Pella: You're going to the quarry? I can show you the way. I kn…"]:::entry
+  n85["prologue_storm<br/>The Storm: Rain hammers on an iron roof, somewhere far overhead."]:::entry
+  n87["quarry_assessment<br/>The Quarry: Workers bang on the barred gallery doors. One shout…"]
+  n88["quarry_descent<br/>The Quarry: Stone ledges step down to the quarry floor. Below t…"]:::entry
+  n122["road_depart<br/>The East Road: The road climbs between the pines. Rainwater fil…"]:::entry
+  n123["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
+  n124["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
+  n125["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
+  n166["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
+  n167["trade_payment<br/>Set flags"]
+  n168["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
   n13["cutting_after_explore — exit to world / part 1"]:::external
   n33["forest_after_explore — exit to world / part 1"]:::external
   n37["forest_explore — exit to world / part 1"]:::external
-  n46["gate_escort_explore — exit to world / part 1"]:::external
-  n51["gate_trade_explore — exit to world / part 1"]:::external
-  n84["quarry_after_explore — exit to return / part 1"]:::external
-  n87["quarry_ledger — exit to reasons / part 1"]:::external
-  n132["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
-  n168["village_return_explore — exit to return / part 1"]:::external
-  n0 -->|"Next"| n87
-  n2 -->|"set: (none); phase: evening"| n84
+  n47["gate_escort_explore — exit to world / part 1"]:::external
+  n53["gate_trade_explore — exit to world / part 1"]:::external
+  n86["quarry_after_explore — exit to return / part 1"]:::external
+  n89["quarry_ledger — exit to reasons / part 1"]:::external
+  n134["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
+  n170["village_return_explore — exit to return / part 1"]:::external
+  n0 -->|"Next"| n89
+  n2 -->|"set: (none); phase: evening"| n86
   n3 -->|"set: act1_lost=true"| n1
-  n4 -->|"Next"| n166
+  n4 -->|"Next"| n168
   n5 -->|"set: act1_complete=true; resident profiles: lw.npc.amri=#quot;returning#quot;, lw.npc.bo_shan=#quot;returning#quot;, lw.npc.hesra=#quot;returning#quot;, lw.npc.leto=#quot;returning#quot;, lw.npc.senn_messenger=#quot;returning#quot;"| n0
   n6 -->|"Next"| n13
   n7 -->|"Next"| n33
@@ -87,44 +89,46 @@ flowchart TD
   n9 -->|"Defeat"| n23
   n10 -->|"Victory"| n5
   n10 -->|"Defeat"| n22
-  n11 -->|"Victory"| n123
+  n11 -->|"Victory"| n125
   n11 -->|"Defeat"| n24
-  n21 -->|"Next"| n61
+  n21 -->|"Next"| n63
   n22 -->|"Next"| n3
-  n23 -->|"Next"| n62
-  n24 -->|"Next"| n63
-  n30 -->|"Next"| n166
-  n32 -->|"Next"| n46
-  n41 -->|"Next"| n166
-  n42 -->|"Next"| n166
+  n23 -->|"Next"| n64
+  n24 -->|"Next"| n65
+  n30 -->|"Next"| n168
+  n32 -->|"Next"| n47
+  n41 -->|"Next"| n168
+  n42 -->|"Next"| n168
   n45 -->|"set: gate_fire_bluff=true"| n11
-  n47 -->|"Next"| n50
-  n48 -->|"Walk up and knock"| n11
-  n48 -->|"Let the firebender do the talking; requires: you have a firebender; standing deltas: earth=-1, fire=1"| n45
-  n48 -->|"Let the earthbender speak — these are quarry workers; requires: you have an earthbender; standing deltas: earth=2"| n47
-  n50 -->|"set: gate_talked_through=true, ruon_respects_you=true; grant XP: 150"| n123
-  n61 -->|"set: lost_ambush=true, ruon_carried_you=true; grant XP: 150"| n6
-  n62 -->|"set: lost_forest_road=true; grant XP: 100"| n7
-  n63 -->|"set: lost_quarry_gate=true; grant XP: 150"| n123
-  n64 -->|"Next"| n66
-  n65 -->|"Next"| n166
-  n66 -->|"Next"| n67
-  n67 -->|"set: rubbing_given=true"| n168
-  n68 -->|"Next"| n168
-  n69 -->|"Next"| n166
-  n70 -->|"set: pella_asked=true"| n132
-  n72 -->|"Next"| n70
-  n83 -->|"Next"| n4
-  n85 -->|"Next"| n10
-  n86 -->|"Next"| n85
-  n120 -->|"Next"| n37
-  n121 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n32
-  n121 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n165
-  n122 -->|"Next"| n13
-  n123 -->|"Next"| n121
-  n164 -->|"Next"| n51
-  n165 -->|"set: ruon_paid=true; grant XP: 150"| n164
-  n166 -->|"Legacy/audit exit (live map exits differ)"| n120
+  n46 -->|"Next"| n45
+  n48 -->|"Next"| n51
+  n49 -->|"Walk up and knock"| n11
+  n49 -->|"Let the firebender do the talking; requires: you have a firebender"| n46
+  n49 -->|"Talk to Captain Ruon about the galleries; requires: Bo is with you or Lin Mei is with you or you have world ducks seen or you have world discovered runoff marker; standing deltas: earth=2"| n48
+  n51 -->|"Next"| n52
+  n52 -->|"set: gate_talked_through=true, ruon_respects_you=true; grant XP: 150"| n125
+  n63 -->|"set: lost_ambush=true, ruon_carried_you=true; grant XP: 150"| n6
+  n64 -->|"set: lost_forest_road=true; grant XP: 100"| n7
+  n65 -->|"set: lost_quarry_gate=true; grant XP: 150"| n125
+  n66 -->|"Next"| n68
+  n67 -->|"Next"| n168
+  n68 -->|"Next"| n69
+  n69 -->|"set: rubbing_given=true"| n170
+  n70 -->|"Next"| n170
+  n71 -->|"Next"| n168
+  n72 -->|"set: pella_asked=true"| n134
+  n74 -->|"Next"| n72
+  n85 -->|"Next"| n4
+  n87 -->|"Next"| n10
+  n88 -->|"Next"| n87
+  n122 -->|"Next"| n37
+  n123 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n32
+  n123 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n167
+  n124 -->|"Next"| n13
+  n125 -->|"Next"| n123
+  n166 -->|"Next"| n53
+  n167 -->|"set: ruon_paid=true; grant XP: 150"| n166
+  n168 -->|"Legacy/audit exit (live map exits differ)"| n122
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

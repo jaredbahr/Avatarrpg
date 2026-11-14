@@ -14,13 +14,28 @@
  * Choice descriptions state the consequences; the players judge Ruon themselves.
  */
 
-import type { ResidentProfile, StoryNode } from '../../core/types';
+import type { Condition, ResidentProfile, StoryNode } from '../../core/types';
 import { RETURNEE_IDS } from '../residents/returnees';
 import { RETURNEES_HOME } from './return';
 
 const RETURNING_PROFILES = Object.fromEntries(
   RETURNEE_IDS.map((id) => [id, 'returning']),
 ) as Readonly<Record<(typeof RETURNEE_IDS)[number], ResidentProfile>>;
+
+/**
+ * What opens the gate talk (story bible C-07, C-08): Bo's crew work, Lin Mei's
+ * survey eye, or what any party learned on the Forest Road below, from Lanfen
+ * or from the flood marker. Never an element on its own.
+ */
+export const GATE_TALK_EARNED: Condition = {
+  kind: 'any',
+  of: [
+    { kind: 'partyHas', characterId: 'bo' },
+    { kind: 'partyHas', characterId: 'lin_mei' },
+    { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
+    { kind: 'flag', key: 'world.discovered.runoff_marker', op: 'set' },
+  ],
+};
 
 export const ACT1_NODES: readonly StoryNode[] = [
   /* --------------------------------------------------------------- Prologue */
@@ -341,15 +356,21 @@ export const ACT1_NODES: readonly StoryNode[] = [
 
   /* ------------------------------------------------------------ The gate */
   /*
-   * The Speaker Choice, and the first place the party's *composition* is the
-   * decision rather than its abilities.
+   * The Speaker Choice: three ways up to the same gate, every one shown to
+   * everyone, greyed with a reason when it is not yours to take, because
+   * seeing the road you cannot walk is what makes somebody want to come back
+   * with a different party.
    *
-   * Avatar's whole argument is that difference is the problem and also the
-   * answer: the same gate opens differently for a firebender and for an
-   * earthbender, and a party with neither has to do it the hard way. Every
-   * option is shown to everyone, greyed with a reason when it is not yours to
-   * take, because seeing the road you cannot walk is what makes somebody want
-   * to come back with a different four people.
+   * The talk is earned, not inherited (story bible C-07, C-08; canon MQ-01).
+   * Ruon listens to people who know what his quarry is doing: Bo, who ran a
+   * crew; Lin Mei, who reads ground for a living; or any party at all that
+   * stopped on the road below to hear Lanfen out or to read the flood marker.
+   * Element alone is not a biography, and a party of non-benders can walk in
+   * through the front gate on what it bothered to learn.
+   *
+   * The bluff plays on one man's fear (C-09). Hotaro was a ship's guard; he
+   * knows what a stack of lamp oil does near an open flame, and this post does
+   * not pay enough to stand beside it. It is not a rule about anyone's nation.
    */
   {
     id: 'gate_parley',
@@ -357,7 +378,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry Gate',
     portrait: 'portrait.narrator',
     prompt:
-      'Quarry workers watch from the wall. A Fire Nation deserter stands beside the oil barrels. How will you approach?',
+      'Quarry workers watch from the wall with slings. A hired guard stands by the oil barrels, as far from them as his post allows. How will you approach?',
     options: [
       {
         label: 'Walk up and knock',
@@ -367,44 +388,144 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         label: 'Let the firebender do the talking',
         detail:
-          'Bluff the deserter into standing aside. You will still have to fight the quarry crew.',
-        next: 'gate_bluff',
+          'Make the guard by the oil barrels think twice about his post. You will still have to fight the quarry crew.',
+        next: 'gate_bluff_words',
         speaker: { element: 'fire' },
         requires: { kind: 'partyHas', element: 'fire' },
         lockedHint: 'You need a firebender for this bluff.',
-        // Trading on Fire Nation fear works, and it is remembered on both sides.
-        adjust: { fire: 1, earth: -1 },
       },
       {
-        label: 'Let the earthbender speak — these are quarry workers',
+        label: 'Talk to Captain Ruon about the galleries',
         detail:
-          'Ask about the unsafe galleries. An earthbender may get Ruon to open the gate without a fight.',
+          'Tell him what you know about his quarry. If he listens, the gate may open without a fight.',
         next: 'gate_kinship',
-        speaker: { element: 'earth' },
-        requires: { kind: 'partyHas', element: 'earth' },
-        lockedHint: 'You need an earthbender to speak about the stonework.',
+        requires: GATE_TALK_EARNED,
+        lockedHint:
+          'Ruon listens to someone who knows quarry work, or knows what the quarry is doing to the stream below the road.',
         adjust: { earth: 2 },
       },
     ],
   },
   {
+    id: 'gate_bluff_words',
+    kind: 'dialogue',
+    speaker: 'The Quarry Gate',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Your firebender calls up to the guard by the barrels: how much lamp oil is in that stack, and where would he like to be standing once a fight starts?',
+    ],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'tenzo' },
+        speaker: 'Tenzo',
+        portrait: 'portrait.tenzo',
+        lines: [
+          'That stack by your feet. Lamp oil? Cooking oil smells sweeter.',
+          'I light my stove with one finger every morning. I would not stand where you are standing. Not once this starts.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'Hey! You by the barrels! Is all of that lamp oil?',
+          'I’m a firebender. I’m only saying, if this turns into a fight, I’d stand somewhere else.',
+        ],
+      },
+    ],
+    next: 'gate_bluff',
+  },
+  {
     id: 'gate_bluff',
     kind: 'flags',
-    // Feeds the `bluffed` variant on enc_quarry_gate: the deserter steps back
-    // and the quarry crew comes forward in his place, at the same threat cost.
+    // Feeds the `bluffed` variant on enc_quarry_gate: Hotaro walks off and the
+    // quarry crew comes forward in his place, at the same threat cost.
     set: { gate_fire_bluff: true },
     next: 'battle_quarry_gate',
   },
   {
+    /*
+     * The party makes its case. Bo and Lin Mei speak from their own work
+     * (`partyVoices.ts`); any other party says what the road showed it.
+     */
     id: 'gate_kinship',
+    kind: 'dialogue',
+    speaker: 'The Quarry Gate',
+    portrait: 'portrait.narrator',
+    lines: [
+      'You call up to the wall about the stream below the road, and the white silt in it.',
+      'For a moment nobody answers. Then an officer comes to the top of the wall, a sabre at his belt.',
+    ],
+    variants: [
+      {
+        when: { kind: 'flag', key: 'world.discovered.runoff_marker', op: 'set' },
+        lines: [
+          'You call up to the wall about the stone by the stream below the road: its flood marks silted over, and the question someone scratched under the arrow.',
+          '“Settling pit blocked?”',
+          'For a moment nobody answers. Then an officer comes to the top of the wall, a sabre at his belt.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
+        lines: [
+          'You call up to the wall. The road keeper below the switchbacks wants to know why her stream runs white, and she asked you to ask.',
+          'For a moment nobody answers. Then an officer comes to the top of the wall, a sabre at his belt.',
+        ],
+      },
+    ],
+    next: 'gate_ruon_listens',
+  },
+  {
+    /* Ruon answers whichever case was made, in the same order as `gate_kinship`. */
+    id: 'gate_ruon_listens',
     kind: 'dialogue',
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'Hold on. You know the galleries? The supports under the east face?',
-      'I told my quartermaster those needed replacing. He sent the crew back in anyway.',
+      'That silt is from the settling pit. It has been choked since the driller came.',
+      'What cannot drain out of the pit runs down into the lower galleries. I told my quartermaster. He said the machine cuts faster than water rises.',
       'All right. Lower the slings. Open the gate.',
       'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+    ],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'bo' },
+        lines: [
+          'A week of wages. My crews have not seen wages in a month.',
+          'I told my quartermaster those supports needed replacing. He sent the crew back in anyway.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'lin_mei' },
+        lines: [
+          'I was told. Twice.',
+          'I told my quartermaster those supports needed replacing. He sent the crew back in anyway.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'world.discovered.runoff_marker', op: 'set' },
+        lines: [
+          'Blocked since the driller came. It fills the pit with cuttings faster than anyone can dig them out.',
+          'What cannot drain out of the pit runs down into the lower galleries. I told my quartermaster. He said the machine cuts faster than water rises.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
+        lines: [
+          'The road keeper. She has walked up here twice about that stream. I sent her back down twice.',
+          'It runs white because the settling pit is choked with cuttings. What cannot drain out of the pit runs down into the lower galleries.',
+          'I told my quartermaster. He said the machine cuts faster than water rises.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
     ],
     next: 'gate_talked_through',
   },

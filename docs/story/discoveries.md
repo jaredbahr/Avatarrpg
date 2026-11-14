@@ -23,34 +23,34 @@ flowchart TD
   n27["discover_duck_nest<br/>Turtle duck nest: A turtle duck stands over a nest lined with r…"]:::entry
   n28["discover_runoff_marker<br/>Runoff measuring stone: Flood marks are cut into the stone besi…"]:::entry
   n29["discover_tea_station<br/>Workers’ tea station: Six cups stand beside the kettle. A seven…"]:::entry
-  n58{"leave_duck_nest<br/>Branch: act1_complete"}
-  n59{"leave_runoff_marker<br/>Branch: act1_complete"}
-  n60{"leave_tea_station<br/>Branch: act1_complete"}
-  n106["remember_duck_nest<br/>Set flags"]
-  n107["remember_runoff_marker<br/>Set flags"]
-  n108["remember_tea_station<br/>Set flags"]
-  n109["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
-  n110["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
-  n111["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
+  n60{"leave_duck_nest<br/>Branch: act1_complete"}
+  n61{"leave_runoff_marker<br/>Branch: act1_complete"}
+  n62{"leave_tea_station<br/>Branch: act1_complete"}
+  n108["remember_duck_nest<br/>Set flags"]
+  n109["remember_runoff_marker<br/>Set flags"]
+  n110["remember_tea_station<br/>Set flags"]
+  n111["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
+  n112["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
+  n113["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
   n16["cutting_explore — exit to world / part 1"]:::external
   n17["cutting_return_explore — exit to return / part 1"]:::external
   n37["forest_explore — exit to world / part 1"]:::external
   n40["forest_return_explore — exit to return / part 1"]:::external
-  n27 -->|"Next"| n106
-  n28 -->|"Next"| n107
-  n29 -->|"Next"| n108
-  n58 -->|"act1_complete: truthy (you have act1 complete)"| n40
-  n58 -->|"act1_complete: falsy (you have not act1 complete)"| n37
-  n59 -->|"act1_complete: truthy (you have act1 complete)"| n40
-  n59 -->|"act1_complete: falsy (you have not act1 complete)"| n37
-  n60 -->|"act1_complete: truthy (you have act1 complete)"| n17
-  n60 -->|"act1_complete: falsy (you have not act1 complete)"| n16
-  n106 -->|"set: world.discovered.duck_nest=true"| n58
-  n107 -->|"set: world.discovered.runoff_marker=true"| n59
-  n108 -->|"set: world.discovered.tea_station=true"| n60
-  n109 -->|"Next"| n58
-  n110 -->|"Next"| n59
+  n27 -->|"Next"| n108
+  n28 -->|"Next"| n109
+  n29 -->|"Next"| n110
+  n60 -->|"act1_complete: truthy (you have act1 complete)"| n40
+  n60 -->|"act1_complete: falsy (you have not act1 complete)"| n37
+  n61 -->|"act1_complete: truthy (you have act1 complete)"| n40
+  n61 -->|"act1_complete: falsy (you have not act1 complete)"| n37
+  n62 -->|"act1_complete: truthy (you have act1 complete)"| n17
+  n62 -->|"act1_complete: falsy (you have not act1 complete)"| n16
+  n108 -->|"set: world.discovered.duck_nest=true"| n60
+  n109 -->|"set: world.discovered.runoff_marker=true"| n61
+  n110 -->|"set: world.discovered.tea_station=true"| n62
   n111 -->|"Next"| n60
+  n112 -->|"Next"| n61
+  n113 -->|"Next"| n62
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

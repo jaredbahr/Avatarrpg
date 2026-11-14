@@ -21,7 +21,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
       await expect(page.locator('.explore-conversation .choice-panel')).toBeVisible();
       await expect(page.getByRole('button', { name: /Let the firebender/ })).toBeDisabled();
-      await expect(page.getByRole('button', { name: /Let the earthbender/ })).toBeDisabled();
+      await expect(page.getByRole('button', { name: /Talk to Captain Ruon/ })).toBeDisabled();
       const direct = page.getByRole('button', { name: /^Walk up and knock/ });
       await expect(direct).toBeEnabled();
       await direct.scrollIntoViewIfNeeded();

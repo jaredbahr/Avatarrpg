@@ -96,9 +96,10 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     baselinePartySize: 3,
     /*
      * The firebender's bluff at the gate does not skip the fight — it changes
-     * who is in it. The deserter steps back rather than raise a hand to Fire
-     * Nation colours, and the quarry crew comes forward in his place, angrier
-     * for having been left to it.
+     * who is in it. Hotaro, the deserter, was a ship's guard and knows what lamp
+     * oil does near an open flame; he walks off a post that does not pay enough
+     * for that, and the quarry crew comes forward in his place, angrier for
+     * having been left to it.
      *
      * Same 450-XP cost as the authored roster (150 x 3 against 200 + 100 + 150),
      * and a very different fight: no firebender on the field means the oil only
@@ -115,7 +116,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           at(16, 8, 'bandit_bruiser'),
         ],
         intro:
-          'The deserter looks at your firebender, then at the ground, and steps back from the gate. The quarry crew comes forward anyway.',
+          'The guard looks at your firebender, then at the oil barrels, and walks away from both. “Hotaro!” a worker shouts after him. He does not turn round. The quarry crew comes forward anyway.',
         tip: 'Nobody left at the gate bends fire, so the oil burns only if you light it. If a quarry bender is with them, it raises rubble for cover; close in, because melee attacks ignore cover.',
       },
     ],
