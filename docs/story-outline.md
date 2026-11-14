@@ -93,7 +93,10 @@ Never stated (canon rule: no morals, no "what we learned"). Each theme has a rec
     named Veyra who mends her own teapot and hauls a pump with them. She never lies; nobody asks her job.
 15. **Veyra fights beside the party once.** One guest fight at the Saltstep docks (MQ-02), AI-controlled, a
     non-bender with engineering tools (a pressure lance, a signal flare; canon §9 limits apply). If she gives up
-    command in the finale, she rejoins with the same kit.
+    command in the finale, she rejoins with the same kit. **The guest fight is in the trial region** (Saltstep and
+    Emberwatch, MQ-02; owner, 2026-11-14). The guest-ally system is new engine work that needs its own ADR, and it
+    doubles as the pipeline proof's test that a region can add a mechanic cleanly
+    ([pipeline-proof-plan.md](pipeline-proof-plan.md#6-proof-trial)).
 16. **The reveal ladder holds.** At Emberwatch (MQ-03) the supply-control order is signed **"V. Sen, Director."**
     The festival (MQ-04) puts her face to the name. Nothing about her role is known before MQ-03.
 17. **Veyra's ending target: accountable, still useful.** In every ending she has given up command and testified.
@@ -265,7 +268,8 @@ Each act ends on a quiet meal and a view (canon tone rule: follow intensity with
   cost per region is measured.
 - **The echo phase and guest units may need engine work.** "Every action echoes next round" is likely a new
   effect kind, and an AI-controlled guest may be new to the encounter data. Both touch `src/core/` and need an
-  ADR. Prove the echo on a small Act III encounter (MQ-07) and the guest at MQ-02 before the finale relies on them.
+  ADR. Prove the echo on a small Act III encounter (MQ-07) before the finale relies on it; the guest is proved
+  at MQ-02, inside the trial region (decision 15).
 - **The fall must not undo choices.** Impounding the cart is fixed; it must not erase side-story progress or punish
   the publish-or-protect vote (canon says both are justified).
 - **Veyra in MQ-02 is presence, not a reveal.** Her name, not her role, is known early. No line may hint at her
