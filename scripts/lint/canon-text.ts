@@ -14,6 +14,8 @@ interface CanonPattern {
   pattern: RegExp;
 }
 
+type AllowedContext = Readonly<Record<string, Readonly<Record<string, string>>>>;
+
 function patterns(names: readonly string[]): CanonPattern[] {
   return names.map((name) => {
     const phrase = name
@@ -60,7 +62,12 @@ export function scanPlainText(text: string, file: string, names: readonly string
   }));
 }
 
-export function scanTypeScript(text: string, file: string, names: readonly string[]): CanonHit[] {
+export function scanTypeScript(
+  text: string,
+  file: string,
+  names: readonly string[],
+  allowedLiterals: Readonly<Record<string, string>> = {},
+): CanonHit[] {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const rules = patterns(names);
   const hits: CanonHit[] = [];
@@ -72,6 +79,7 @@ export function scanTypeScript(text: string, file: string, names: readonly strin
       ts.isTemplateMiddle(node) ||
       ts.isTemplateTail(node)
     ) {
+      if (ts.isStringLiteralLike(node) && Object.hasOwn(allowedLiterals, node.text)) return;
       const raw = node.getText(source);
       const direct = matches(raw, rules);
       for (const match of direct) {
@@ -120,7 +128,11 @@ function sourceFiles(directory: string): string[] {
   return files;
 }
 
-export function collectPlayerFacingHits(root: string, names: readonly string[]): CanonHit[] {
+export function collectPlayerFacingHits(
+  root: string,
+  names: readonly string[],
+  allowedContext: AllowedContext,
+): CanonHit[] {
   const content = sourceFiles(join(root, 'src/content'));
   const app = sourceFiles(join(root, 'src/app'));
   if (!content.length || !app.length) throw new Error('Player-facing source inventory is empty');
@@ -134,7 +146,7 @@ export function collectPlayerFacingHits(root: string, names: readonly string[]):
   }
   const hits = files.flatMap((path) => {
     const file = relative(root, path).replaceAll('\\', '/');
-    return scanTypeScript(readFileSync(path, 'utf8'), file, names);
+    return scanTypeScript(readFileSync(path, 'utf8'), file, names, allowedContext[file]);
   });
   const html = join(root, 'index.html');
   hits.push(...scanPlainText(readFileSync(html, 'utf8'), 'index.html', names));

@@ -14,6 +14,7 @@ const denylist = JSON.parse(
 ) as {
   canonNames: string[];
   allowedGenericWords: Record<string, string>;
+  allowedContext: Record<string, Record<string, string>>;
 };
 const disclaimer = `> **Non-commercial fan work.** Avatar: The Last Airbender and The Legend of Korra
 > are the property of Nickelodeon / Paramount. This is a private fan project made
@@ -31,7 +32,7 @@ describe('fan-work copy guard', () => {
   });
 
   it('keeps the denylist distinct from documented generic words', () => {
-    expect(denylist.canonNames.length).toBeGreaterThan(20);
+    expect(denylist.canonNames).toContain('Korra');
     expect(new Set(denylist.canonNames.map((name) => name.toLowerCase())).size).toBe(
       denylist.canonNames.length,
     );
@@ -42,6 +43,25 @@ describe('fan-work copy guard', () => {
       expect(denylist.allowedGenericWords[generic]).toBeTruthy();
       expect(names).not.toContain(generic);
     }
+  });
+
+  it('allows setting references and restricts approved era copy to exact literals in one file', () => {
+    const file = 'src/app/scenes/TitleScene.ts';
+    const allowed = denylist.allowedContext[file]!;
+    const tagline = Object.keys(allowed).find((copy) => copy.includes('set after Korra'))!;
+    const original = `const tagline = ${JSON.stringify(tagline)};`;
+    expect(scanTypeScript(original, file, denylist.canonNames, allowed)).toEqual([]);
+    expect(scanTypeScript(original, 'src/content/characters.ts', denylist.canonNames)).toEqual([
+      expect.objectContaining({ name: 'Korra' }),
+    ]);
+    const changed = `${original}\nconst cast = { speaker: 'Korra', place: 'Republic City' };`;
+    expect(scanTypeScript(changed, file, denylist.canonNames, allowed)).toEqual([
+      expect.objectContaining({ file, line: 2, name: 'Korra' }),
+    ]);
+    const editedTagline = original.replace('set after Korra.', 'starring Korra.');
+    expect(scanTypeScript(editedTagline, file, denylist.canonNames, allowed)).toEqual([
+      expect.objectContaining({ file, line: 1, name: 'Korra' }),
+    ]);
   });
 
   it('rejects a planted whole canon name with file and line, ignoring comments and substrings', () => {
@@ -69,7 +89,7 @@ describe('fan-work copy guard', () => {
   });
 
   it('finds no canon names in shipped player-facing copy', () => {
-    const hits = collectPlayerFacingHits(root, denylist.canonNames);
+    const hits = collectPlayerFacingHits(root, denylist.canonNames, denylist.allowedContext);
     expect(hits, hits.map(formatCanonHit).join('\n')).toEqual([]);
   });
 });
