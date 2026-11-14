@@ -590,3 +590,63 @@ it('keeps the five-leg courtyard audit separated without the serial cadence regr
   // the same routes played serially to guard the five-walker overlap.
   expect(total).toBeLessThan(serialTotal / 2);
 });
+
+describe('a follower joining and leaving the line (#696)', () => {
+  it('seats a newcomer beside the last member without moving anyone already standing', () => {
+    const seats = placeParty(grid, spawn, 3);
+    const trail = new PartyTrail(seats);
+    trail.resize(4, grid);
+    const after = trail.positions(4);
+    expect(trail.size).toBe(4);
+    expect(after.slice(0, 3)).toEqual(seats);
+    const newcomer = after[3];
+    const tail = seats[2];
+    expect(newcomer && tail && distance(newcomer, tail)).toBe(1);
+    expect(new Set(after.map(posKey)).size).toBe(4);
+    expect(newcomer && tileAt(grid, newcomer)?.blocked).toBeFalsy();
+  });
+
+  it('seats a newcomer exactly where placeParty would have seated a member of that line', () => {
+    const trail = new PartyTrail(placeParty(grid, spawn, 2));
+    trail.resize(4, grid);
+    expect(trail.positions(4)).toEqual(placeParty(grid, spawn, 4));
+  });
+
+  it('keeps a newcomer off the tiles it is told to avoid', () => {
+    const seats = placeParty(grid, spawn, 3);
+    const unrestricted = new PartyTrail(seats);
+    unrestricted.resize(4, grid);
+    const usual = unrestricted.positions(4)[3];
+    expect(usual).toBeDefined();
+    const trail = new PartyTrail(seats);
+    trail.resize(4, grid, usual ? [usual] : []);
+    const moved = trail.positions(4)[3];
+    expect(moved && usual && samePos(moved, usual)).toBe(false);
+  });
+
+  it('lets a leaver go from the end of the line and leaves everyone else standing', () => {
+    const seats = placeParty(grid, spawn, 4);
+    const trail = new PartyTrail(seats);
+    trail.resize(3, grid);
+    expect(trail.size).toBe(3);
+    expect(trail.positions(3)).toEqual(seats.slice(0, 3));
+  });
+
+  it('walks a follower on the end of the line one tile behind the last member', () => {
+    const trail = new PartyTrail(placeParty(grid, spawn, 3));
+    trail.resize(4, grid);
+    const before = trail.positions(4);
+    const path = [
+      { x: spawn.x, y: spawn.y + 1 },
+      { x: spawn.x, y: spawn.y + 2 },
+    ];
+    const routes = trail.walk(path, 4);
+    // Two steps on, everyone takes the tile two places ahead of them in the line.
+    expect(routes.some((route) => route.index === 3)).toBe(true);
+    const after = trail.positions(4);
+    expect(after[3]).toEqual(before[1]);
+    const last = after[2];
+    const follower = after[3];
+    expect(last && follower && distance(last, follower)).toBe(1);
+  });
+});

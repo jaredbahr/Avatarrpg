@@ -53,6 +53,8 @@ import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExits, nearbyExploreTarget, TALK_RANGE } from '../world/guidance';
 import { partyWalkPhase } from '../animator';
+import { activeFollowers, lineIds, placeFollowers } from '../world/followers';
+import type { PlacedFollowers } from '../world/followers';
 import {
   createExploreObjectivePresentation,
   syncExploreObjective,
@@ -110,6 +112,8 @@ export class ExploreScene implements Scene {
    * the leader whenever the party lands somewhere without walking there.
    */
   private trail: PartyTrail | null = null;
+  /** The line (party and followers) the last frame drew, so a still repaints only when it changed. */
+  private paintedLine = '';
   private needsSettle = true;
   private hudMoving = false;
   private departing: GameState | null = null;
@@ -173,6 +177,7 @@ export class ExploreScene implements Scene {
     // In-place travel asks before the first draw of the destination.
     return [
       ...state.party.map((member) => member.sprite),
+      ...activeFollowers(state).map((follower) => follower.sprite),
       ...visibleNpcs(content, map, state).map((npc) => npc.sprite),
       ...backgroundFigures(content, map, state).map((role) => role.sprite),
       ...activeTriggers(map, state).map((trigger) => trigger.sprite),
@@ -369,17 +374,18 @@ export class ExploreScene implements Scene {
         };
       }
       const trail = this.ensureTrail(state, grid, event.from);
-      const before = trail.positions(state.party.length);
+      const ids = lineIds(state, placeFollowers(state).walking);
+      const before = trail.positions(ids.length);
       const plan =
         this.map?.projection === 'topdown'
-          ? trail.planWalk(event.path, state.party.length, grid, this.standing(state))
+          ? trail.planWalk(event.path, ids.length, grid, this.standing(state))
           : null;
       if (plan) {
         this.animatePartyBatches(plan.batches, state, now);
         continue;
       }
       this.app.animator.push(now, [event], []);
-      const routes = trail.walk(event.path, state.party.length);
+      const routes = trail.walk(event.path, ids.length);
       if (routes.length === 0) continue;
       const unitsBefore: Unit[] = state.party.map((member, index) => ({
         ...member,
@@ -389,11 +395,11 @@ export class ExploreScene implements Scene {
       // One push per follower: moves in a single push play one after another,
       // and these all start where the leader's did.
       for (const route of routes) {
-        const member = state.party[route.index];
-        if (!member) continue;
+        const unitId = ids[route.index];
+        if (!unitId) continue;
         const move: GameEvent = {
           type: 'partyWalked',
-          unitId: member.id,
+          unitId,
           from: before[route.index] ?? event.from,
           path: route.path,
         };
@@ -416,16 +422,18 @@ export class ExploreScene implements Scene {
     state: GameState,
     now: number,
   ): void {
+    // A follower (#696) walks on the end of the line, after the party.
+    const ids = lineIds(state, placeFollowers(state).walking);
     for (const batch of batches) {
       for (const [index, route] of batch.entries()) {
-        const member = state.party[route.index];
-        if (!member) continue;
+        const unitId = ids[route.index];
+        if (!unitId) continue;
         this.app.animator.push(
           now,
           [
             {
               type: 'partyWalked',
-              unitId: member.id,
+              unitId,
               from: route.from,
               path: route.path,
             },
@@ -448,9 +456,12 @@ export class ExploreScene implements Scene {
    * somewhere the line did not walk to (a loaded save, a story jump).
    */
   private ensureTrail(state: GameState, grid: Grid, head = state.location.pos): PartyTrail {
-    const count = state.party.length;
+    // The party, then whoever follows it (#696).
+    const count = state.party.length + placeFollowers(state).walking.length;
     const current = this.trail;
-    if (current?.head && samePos(current.head, head) && current.positions(count).length === count) {
+    if (current?.head && samePos(current.head, head)) {
+      // A follower joining or leaving changes the end of the line, nobody else's place.
+      if (current.size !== count) current.resize(count, grid, this.standing(state));
       return current;
     }
     const seated = new PartyTrail(
@@ -477,6 +488,7 @@ export class ExploreScene implements Scene {
         (who) => who.pos,
       ),
       ...this.app.residents.errandTiles(),
+      ...placeFollowers(state).standing.map((who) => who.pos),
     ];
   }
 
@@ -502,6 +514,33 @@ export class ExploreScene implements Scene {
     if (!state || !grid) return null;
     const seats = this.ensureTrail(state, grid).positions(state.party.length);
     return seats.map((seat, index) => (index === 0 ? state.location.pos : seat));
+  }
+
+  /**
+   * Where the last frame drew each follower (#696), for the e2e suite: a
+   * retained backdrop answers for its still, so a missed repaint shows.
+   */
+  followerPositions(): readonly { readonly id: string; readonly pos: Vec2 }[] | null {
+    const state = this.app.state;
+    const drawn = this.lastLife?.units;
+    if (!state || !drawn) return null;
+    const party = new Set(state.party.map((member) => member.id));
+    return drawn
+      .filter((unit) => !party.has(unit.id))
+      .map((unit) => ({ id: unit.id, pos: unit.pos }));
+  }
+
+  /**
+   * A retained backdrop repaints its still when the story moves on under a
+   * staged conversation and someone has joined or left the line: Ruon steps up
+   * as he surrenders after a talked-open gate, and steps away as Jin takes him.
+   */
+  refreshStill(): void {
+    const state = this.app.state;
+    if (!this.suspended || !state) return;
+    if (paintedLine(state, placeFollowers(state)) === this.paintedLine) return;
+    this.suspended = false;
+    this.suspend();
   }
 
   resize(): void {
@@ -1463,11 +1502,14 @@ export class ExploreScene implements Scene {
     residents.tick(now, held);
     const live = !this.departing && !this.conversationMode && state.screen === 'explore';
     const trail = this.ensureTrail(state, grid);
-    let seats = trail.positions(state.party.length);
+    const followers = placeFollowers(state);
+    const ids = lineIds(state, followers.walking);
+    this.paintedLine = paintedLine(state, followers);
+    let seats = trail.positions(ids.length);
     // A routine keeps clear of the party: its tiles, where it is drawn, the way it walks.
     const clear = [...seats, ...(this.walking?.path ?? [])];
-    for (const member of state.party) {
-      const drawn = animator.renderPos(now, member.id);
+    for (const id of ids) {
+      const drawn = animator.renderPos(now, id);
       if (drawn) clear.push({ x: Math.round(drawn.x), y: Math.round(drawn.y) });
     }
     // A follower on a tile someone is walking to steps aside.
@@ -1546,6 +1588,37 @@ export class ExploreScene implements Scene {
       return unit;
     });
     this.localMap?.update(units.map((unit) => unit.renderPos ?? unit.pos));
+    // Followers (#696) walk on the end of the line: drawn as the party is,
+    // never tapped, never on the local map.
+    const placed = [
+      ...followers.walking.map((follower, index) => ({
+        follower,
+        pos: seats[state.party.length + index] ?? state.location.pos,
+      })),
+      ...followers.standing,
+    ];
+    for (const { follower, pos } of placed) {
+      const pose = animator.unitPose(now, follower.id, follower.sprite);
+      units.push({
+        id: follower.id,
+        pos,
+        size: 1,
+        sprite: follower.sprite,
+        name: follower.name,
+        faction: 'ally',
+        hp: 1,
+        maxHp: 1,
+        statuses: [],
+        fallen: false,
+        showHealth: false,
+        shadow: true,
+        scale,
+        renderPos: animator.renderPos(now, follower.id),
+        offset: animator.offset(now, follower.id, follower.sprite),
+        clipTime: pose?.clipTime,
+        ...animator.locomotion(now, follower.id, 'rest', follower.sprite),
+      });
+    }
 
     // Residents and background roles come from the walks, in their drawn
     // places; signs and other unbound NpcDefs stand where they are defined.
@@ -1694,4 +1767,10 @@ export class ExploreScene implements Scene {
         : null;
     drawObjectivePointer(this.objectivePointer, this.mapCorner, renderer.camera, target);
   };
+}
+
+/** Who the frame draws beside the party, and where a staged follower stands (#696). */
+function paintedLine(state: GameState, followers: PlacedFollowers): string {
+  const staged = followers.standing.map(({ follower, pos }) => `${follower.id}@${pos.x},${pos.y}`);
+  return [...lineIds(state, followers.walking), ...staged].join();
 }
