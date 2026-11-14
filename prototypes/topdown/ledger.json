@@ -1,5 +1,6 @@
 {
  "task": "top-down village demo",
+ "default_region": "ba_dan_valley",
  "budget": 1500.0,
  "start_balance": 16945.0,
  "jobs": [
