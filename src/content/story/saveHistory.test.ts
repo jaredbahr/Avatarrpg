@@ -60,6 +60,13 @@ describe('the release fixtures (ADR 0112)', () => {
     expect(frozenProblems()).toEqual([]);
   });
 
+  it('are never dropped or reordered: the index only grows', () => {
+    // The hashes guard each file; this guards the index itself. Freezing a release
+    // (`npm run saves:release`) appends its id here, and nothing is ever taken out.
+    const FROZEN = ['2026-11-08-golden-v5'];
+    expect(RELEASES.map((release) => release.entry.id)).toEqual(FROZEN);
+  });
+
   it('hold a snapshot and saves for every release, oldest first', () => {
     expect(RELEASES.length).toBeGreaterThan(0);
     for (const release of RELEASES) {
@@ -103,23 +110,24 @@ describe('the story against every release (ADR 0112)', () => {
 /* Played forward                                                      */
 /* ------------------------------------------------------------------ */
 
-/** A scene whose `LATE_SCENES` entry accepts that an old save and a new game differ. */
-function acceptedScene(node: string): boolean {
-  const answer = Object.hasOwn(LATE_SCENES, node) ? LATE_SCENES[node]?.answer : undefined;
-  return answer === 'open' || answer === 'unset';
+function answerFor(key: string): string | undefined {
+  return registryEntryFor(FLAG_REGISTRY, key)?.oldSaves?.answer;
 }
 
-/** A flag whose registry entry accepts that an old save and a new game differ. */
-function accepted(key: string): boolean {
-  const answer = registryEntryFor(FLAG_REGISTRY, key)?.oldSaves?.answer;
-  return answer === 'open' || answer === 'unset';
-}
-
-/** What a new game holds at a checkpoint that the old save, played to the same place, does not. */
-function behind(fresh: GameState, old: GameState): string[] {
+/**
+ * What a new game holds at a checkpoint that the old save, played to the same
+ * place, does not. `start` is the new game at the checkpoint the save stood
+ * at. An `unset` answer accepts the difference outright. An `open` answer
+ * accepts it only for what the new game already held at `start`: if the new
+ * game picked it up on the very legs the old save has just played, the scene
+ * was not open to the old save after all.
+ */
+function behind(fresh: GameState, old: GameState, start: GameState | undefined): string[] {
   const out: string[] = [];
   for (const [key, value] of Object.entries(fresh.flags)) {
-    if (accepted(key)) continue;
+    const answer = answerFor(key);
+    if (answer === 'unset') continue;
+    if (answer === 'open' && (!start || Object.hasOwn(start.flags, key))) continue;
     if (!Object.hasOwn(old.flags, key))
       out.push(`flag "${key}" (a new game holds ${JSON.stringify(value)})`);
     else if (old.flags[key] !== value)
@@ -128,9 +136,13 @@ function behind(fresh: GameState, old: GameState): string[] {
       );
   }
   const visited = new Set(old.story.visited);
-  for (const node of fresh.story.visited)
-    if (VISITED_READERS_NOW.has(node) && !acceptedScene(node) && !visited.has(node))
-      out.push(`visited "${node}" (a condition reads it, and a new game has been there)`);
+  for (const node of fresh.story.visited) {
+    if (!VISITED_READERS_NOW.has(node) || visited.has(node)) continue;
+    const answer = Object.hasOwn(LATE_SCENES, node) ? LATE_SCENES[node]?.answer : undefined;
+    if (answer === 'unset') continue;
+    if (answer === 'open' && (!start || start.story.visited.includes(node))) continue;
+    out.push(`visited "${node}" (a condition reads it, and a new game has been there)`);
+  }
   return out;
 }
 
@@ -160,7 +172,8 @@ describe('every release save, played forward on today’s story (ADR 0112)', () 
       const problems = stops.flatMap((stop) => {
         const same = now.find((other) => other.checkpoint === stop.checkpoint);
         if (!same) return [`a new game never reaches ${stop.checkpoint}`];
-        return behind(same.state, stop.state).map(
+        const start = now.find((other) => other.checkpoint === save.checkpoint);
+        return behind(same.state, stop.state, start?.state).map(
           (what) => `${name}, played on to ${stop.checkpoint}, is missing ${what}`,
         );
       });
@@ -177,7 +190,8 @@ const BASELINE = SNAPSHOTS[0];
 const FIRST = BASELINE?.release ?? '';
 
 function site(key: string, area: string, how: WriteSite['how'], ...values: FlagValue[]): WriteSite {
-  return { key, area, how, values: values.map((value) => JSON.stringify(value)).sort() };
+  const at = how === 'entry' ? 'set' : 'options[0].setFlags';
+  return { key, area, how, values: values.map((value) => `${at}=${JSON.stringify(value)}`).sort() };
 }
 
 /** Today's story with extra writes and readers, as a later edit would leave it. */
@@ -222,6 +236,7 @@ describe('a flag added to an early scene and read by a later one (#773)', () => 
   };
   const declared = flag('forest_ledger', {
     upTo: FIRST,
+    sites: ['story:after_forest_rewards'],
     answer: 'backfill',
     why: 'The forest aftermath always records it now.',
   });
@@ -373,7 +388,7 @@ describe('what counts as a late write', () => {
         ...INPUT.now,
         writes: INPUT.now.writes.map((write) =>
           write.key === shipped.key && write.area === shipped.area
-            ? { ...write, values: ['"won"'] }
+            ? { ...write, values: ['set="won"'] }
             : write,
         ),
       },
@@ -408,7 +423,12 @@ describe('what counts as a late write', () => {
       regions: INPUT.now.regions,
       writes: INPUT.now.writes,
     };
-    const answered = flag('test_flag', { upTo: FIRST, answer: 'open', why: 'A new talk.' });
+    const answered = flag('test_flag', {
+      upTo: FIRST,
+      sites: ['story:after_forest'],
+      answer: 'open',
+      why: 'A new talk.',
+    });
     const input = edited([site('test_flag', 'story:after_forest', 'entry', true)], read, {
       releases: [BASELINE, second],
       registry: [...FLAG_REGISTRY, answered],
@@ -421,10 +441,61 @@ describe('what counts as a late write', () => {
       ...input,
       registry: [
         ...FLAG_REGISTRY,
-        { ...answered, oldSaves: { upTo: 'later', answer: 'open' as const, why: 'Still a talk.' } },
+        {
+          ...answered,
+          oldSaves: {
+            upTo: 'later',
+            sites: ['story:after_forest'],
+            answer: 'open' as const,
+            why: 'Still a talk.',
+          },
+        },
       ],
     };
     expect(checkReleases(moved).filter((problem) => problem.includes('"test_flag"'))).toEqual([]);
+  });
+
+  it('sees a flag added to one more option of a choice', () => {
+    // `ruon_choice` shipped setting `ruon_spared` on the escort option only.
+    const shipped = BASELINE?.writes.find((write) => write.key === 'ruon_spared');
+    expect(shipped?.values).toEqual(['options[0].setFlags=true']);
+    if (!shipped) return;
+    const both: HistoryInput = {
+      ...INPUT,
+      now: {
+        ...INPUT.now,
+        writes: INPUT.now.writes.map((write) =>
+          write.key === 'ruon_spared'
+            ? { ...write, values: [...write.values, 'options[1].setFlags=true'] }
+            : write,
+        ),
+      },
+    };
+    const late = lateWrites(both).filter((item) => item.site.key === 'ruon_spared');
+    expect(late.map((item) => item.change)).toEqual(['changed']);
+    expect(checkReleases(both).join('\n')).toContain(
+      'flag "ruon_spared" is written at story:ruon_choice',
+    );
+  });
+
+  it('holds an answer to the sites it names', () => {
+    // `rubbing_given` is answered "open" for Mira's new scene. A write added to an old
+    // scene later is not covered by that sentence.
+    const second = edited([site('rubbing_given', 'story:after_forest', 'entry', true)], {});
+    const problems = checkReleases(second);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain('does not name this site (sites: story:mira_rubbing_given)');
+  });
+
+  it('decides shipped territory by what a region holds, not by its id', () => {
+    const renamed = edited([site('test_flag', 'story:after_forest', 'entry', true)], read, {
+      now: {
+        ...INPUT.now,
+        regions: { the_valley: INPUT.now.regions.ba_dan_valley ?? [] },
+        writes: [...INPUT.now.writes, site('test_flag', 'story:after_forest', 'entry', true)],
+      },
+    });
+    expect(lateWrites(renamed).some((late) => late.site.key === 'test_flag')).toBe(true);
   });
 
   it('holds a scene a visited condition reads to the same rule', () => {
@@ -456,12 +527,13 @@ describe('what counts as a late write', () => {
 describe('the backfill rules, held to the releases', () => {
   const rule: BackfillRule = {
     rev: HISTORY_REV + 1,
-    key: 'act1_complete',
+    key: 'rubbing_given',
     when: { kind: 'visited', nodeId: 'act1_epilogue' },
     set: true,
   };
+  // `rubbing_given` was added under the first release, so a rule may answer for it.
   const registry = FLAG_REGISTRY.map((entry) =>
-    entry.key === 'act1_complete'
+    entry.key === 'rubbing_given'
       ? { ...entry, oldSaves: { upTo: FIRST, answer: 'backfill' as const, why: 'Test.' } }
       : entry,
   );
@@ -498,6 +570,21 @@ describe('the backfill rules, held to the releases', () => {
     ).toContain('"when" reads visited "sq01_packing_list", a scene release');
   });
 
+  it('rejects a rule aimed at a release that already recorded the flag', () => {
+    // `act1_complete` shipped in the first release: its saves hold their real answer, and a
+    // rule would overwrite a "did not happen" or add a standing delta a second time.
+    const aimed = { ...rule, key: 'act1_complete' };
+    const answered = FLAG_REGISTRY.map((entry) =>
+      entry.key === 'act1_complete'
+        ? { ...entry, oldSaves: { upTo: FIRST, answer: 'backfill' as const, why: 'Test.' } }
+        : entry,
+    );
+    const problems = checkRules({ ...INPUT, registry: answered, rules: withRule(aimed) }).join(
+      '\n',
+    );
+    expect(problems).toContain(`release ${FIRST} already recorded this`);
+  });
+
   it('rejects editing or removing a rule a release shipped', () => {
     if (!BASELINE) return;
     const shipped: HistorySnapshot = {
@@ -529,7 +616,23 @@ describe('the backfill rules, held to the releases', () => {
         ? { ...entry, oldSaves: { upTo: FIRST, answer: 'backfill' as const, why: 'Test.' } }
         : entry,
     );
-    expect(checkRules({ ...INPUT, registry: standing, rules: withRule(adjust) })).toEqual([]);
+    // A standing delta added to an old option is a late write like any other.
+    const nudged = edited(
+      [
+        {
+          key: 'standing.earth',
+          area: 'story:gate_parley',
+          how: 'option',
+          values: ['options[0].adjust=1'],
+        },
+      ],
+      { 'standing.earth': ['story:mira_epilogue'] },
+      { registry: standing, rules: withRule(adjust) },
+    );
+    expect(checkRules(nudged)).toEqual([]);
+    expect(
+      checkRules({ ...INPUT, registry: standing, rules: withRule(adjust) }).join('\n'),
+    ).toContain('already recorded this');
     expect(
       checkRules({
         ...INPUT,

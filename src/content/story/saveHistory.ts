@@ -58,7 +58,11 @@ export interface WriteSite {
    * - `app`: app code.
    */
   readonly how: 'entry' | 'option' | 'app';
-  /** Every value the site writes, as sorted JSON; a standing site lists its deltas. */
+  /**
+   * Every write the site makes, sorted: where inside the record and what
+   * (`set=true`, `options[1].setFlags="crew"`, `options[0].adjust=1`). App
+   * sites list none: the registry names the module, not the line.
+   */
   readonly values: readonly string[];
 }
 
@@ -125,7 +129,10 @@ export function writeSites(uses: readonly FlagUse[]): WriteSite[] {
       site: { key: use.key, area: use.area, how, values: [] },
       values: new Set<string>(),
     };
-    if (use.value !== undefined) held.values.add(JSON.stringify(use.value));
+    // Each write keeps its place inside the record (`options[1].setFlags=true`), so a flag added
+    // to one more option of a choice changes the site.
+    if (how !== 'app')
+      held.values.add(`${use.at}=${use.value === undefined ? '' : JSON.stringify(use.value)}`);
     // A node is one kind, so a site cannot be both; if it ever is, `entry` is the stronger claim.
     if (how === 'entry' && held.site.how !== 'entry') held.site = { ...held.site, how };
     sites.set(id, held);
@@ -163,10 +170,17 @@ export function visitedReaders(
         seen.add(value);
         if (Array.isArray(value)) return value.forEach(walk);
         const node = value as Record<string, unknown>;
-        if (node.kind === 'visited' && typeof node.nodeId === 'string') {
-          const areas = readers.get(node.nodeId) ?? [];
+        // A `visited` condition, or an arrival shot that plays until a scene has been seen.
+        const read =
+          node.kind === 'visited' && typeof node.nodeId === 'string'
+            ? node.nodeId
+            : typeof node.unlessVisited === 'string'
+              ? node.unlessVisited
+              : null;
+        if (read !== null) {
+          const areas = readers.get(read) ?? [];
           if (!areas.includes(area)) areas.push(area);
-          readers.set(node.nodeId, areas);
+          readers.set(read, areas);
         }
         Object.values(node).forEach(walk);
       };
@@ -188,6 +202,27 @@ function readersFor(readers: ReadonlyMap<string, readonly string[]>, key: string
 function regionOf(regions: Readonly<Record<string, readonly string[]>>, area: string): string {
   for (const [id, areas] of Object.entries(regions)) if (areas.includes(area)) return id;
   return CORE;
+}
+
+/**
+ * Whether a release shipped the territory `area` is in: shared content, or a
+ * region that today holds anything the release had. Decided by what the
+ * region contains, not by its id, so renaming or splitting a region hides
+ * nothing.
+ */
+function shippedTerritory(now: StoryHistory, shipped: ReadonlySet<string>, area: string): boolean {
+  if (shipped.has(area)) return true;
+  const region = regionOf(now.regions, area);
+  if (region === CORE) return true;
+  return (now.regions[region] ?? []).some((other) => shipped.has(other));
+}
+
+function shippedAreas(release: HistorySnapshot, aliases: IdAliases): Set<string> {
+  return new Set(
+    Object.values(release.regions)
+      .flat()
+      .map((area) => currentArea(aliases, area)),
+  );
 }
 
 function shortList(items: readonly string[], most = 4): string {
@@ -234,11 +269,10 @@ export function lateWrites(input: HistoryInput): LateWrite[] {
       const key = resolveAlias(input.aliases, 'flags', site.key);
       shipped.set(`${key}\n${currentArea(input.aliases, site.area)}`, site);
     }
-    const shippedRegions = new Set(Object.keys(release.regions));
+    const areas = shippedAreas(release, input.aliases);
     for (const site of input.now.writes) {
-      const region = regionOf(input.now.regions, site.area);
       // A region the release never contained is ahead of every one of its saves.
-      if (region !== CORE && !shippedRegions.has(region)) continue;
+      if (!shippedTerritory(input.now, areas, site.area)) continue;
       const readers = readersFor(input.readers, site.key);
       if (readers.length === 0) continue;
       const before = shipped.get(`${site.key}\n${site.area}`);
@@ -268,17 +302,10 @@ export interface LateScene {
 export function lateScenes(input: HistoryInput): LateScene[] {
   const out: LateScene[] = [];
   for (const release of input.releases) {
-    const shipped = new Set(
-      Object.values(release.regions)
-        .flat()
-        .map((area) => currentArea(input.aliases, area)),
-    );
-    const shippedRegions = new Set(Object.keys(release.regions));
+    const shipped = shippedAreas(release, input.aliases);
     for (const [node, readers] of input.visitedReaders) {
       const area = `story:${node}`;
-      if (shipped.has(area)) continue;
-      const region = regionOf(input.now.regions, area);
-      if (region === CORE || !shippedRegions.has(region)) continue;
+      if (shipped.has(area) || !shippedTerritory(input.now, shipped, area)) continue;
       out.push({ release: release.release, node, readers });
     }
   }
@@ -294,7 +321,7 @@ function describeLate(late: LateWrite): string {
 }
 
 const DECLARE =
-  'Say how that release\'s saves answer in its registry entry (src/content/story/flags.ts): oldSaves: { upTo: "<release>", answer: "backfill" | "open" | "unset", why }.';
+  'Say how that release\'s saves answer in its registry entry (src/content/story/flags.ts): oldSaves: { upTo: "<release>", sites: ["<area>"], answer: "backfill" | "open" | "unset", why }.';
 const DECLARE_SCENE =
   'Say how that release\'s saves answer in LATE_SCENES (src/content/story/flags.ts): { upTo: "<release>", answer: "backfill" | "open" | "unset", why }.';
 
@@ -316,9 +343,18 @@ export function checkReleases(input: HistoryInput): string[] {
     declare: string,
     answer: OldSavesAnswer | undefined,
     ruled: (rule: BackfillRule) => boolean,
+    site?: string,
   ): void => {
     if (!answer) {
       problems.push(`${said} ${declare}`);
+      return;
+    }
+    // An answer is for the writes it names: one written for a new talk does not cover a
+    // write added to an old scene later.
+    if (site !== undefined && !(answer.sites ?? []).includes(site)) {
+      problems.push(
+        `${said} Its oldSaves answer does not name this site (sites: ${(answer.sites ?? []).join(', ') || 'none'}): read the answer again with this write in mind, then add "${site}".`,
+      );
       return;
     }
     const covers = order.get(answer.upTo);
@@ -350,6 +386,7 @@ export function checkReleases(input: HistoryInput): string[] {
       DECLARE,
       registryEntryFor(input.registry, late.site.key)?.oldSaves,
       (rule) => 'key' in rule && rule.key === late.site.key,
+      late.site.area,
     );
   for (const late of lateScenes(input))
     hold(
@@ -450,6 +487,21 @@ export function checkRules(input: HistoryInput): string[] {
           problems.push(`${name}: ${JSON.stringify(rule.set)} is not a value the registry allows`);
         }
       }
+    }
+
+    // A rule answers for something added under a release. Aimed at a release that already
+    // recorded it, the rule would overwrite a real answer or add a delta twice.
+    for (const release of releases) {
+      if (release.historyRev >= rule.rev) continue;
+      const one = { ...input, releases: [release] };
+      const late =
+        'node' in rule
+          ? lateScenes(one).some((scene) => scene.node === rule.node)
+          : lateWrites(one).some((write) => write.site.key === rule.key);
+      if (!late)
+        problems.push(
+          `${name}: release ${release.release} already recorded this, so the rule would rewrite what its saves really hold. A rule ships in the same release as the write it answers for.`,
+        );
     }
 
     const inputs = conditionInputs(rule.when);

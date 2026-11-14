@@ -168,25 +168,25 @@
       "key": "act1_complete",
       "area": "story:act1_victory",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "act1_lost",
       "area": "story:act1_lost",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "gate_fire_bluff",
       "area": "story:gate_bluff",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "gate_talked_through",
       "area": "story:gate_talked_through",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "guidance.tip.*",
@@ -198,25 +198,25 @@
       "key": "lost_ambush",
       "area": "story:lost_ambush",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "lost_forest_road",
       "area": "story:lost_forest_road",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "lost_quarry_gate",
       "area": "story:lost_quarry_gate",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "pella_asked",
       "area": "story:pella_asked",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "riverside_drill",
@@ -234,7 +234,7 @@
       "key": "riverside_shrine_found",
       "area": "story:riverside_shrine_found",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "riverside_tea",
@@ -246,91 +246,91 @@
       "key": "ruon_carried_you",
       "area": "story:lost_ambush",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "ruon_paid",
       "area": "story:trade_payment",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "ruon_respects_you",
       "area": "story:gate_talked_through",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "ruon_spared",
       "area": "story:ruon_choice",
       "how": "option",
-      "values": ["true"]
+      "values": ["options[0].setFlags=true"]
     },
     {
       "key": "ruon_traded",
       "area": "story:ruon_choice",
       "how": "option",
-      "values": ["true"]
+      "values": ["options[1].setFlags=true"]
     },
     {
       "key": "scene.bd01_plant_chair",
       "area": "story:plant_chair_done",
       "how": "entry",
-      "values": ["\"completed\""]
+      "values": ["set=\"completed\""]
     },
     {
       "key": "scene.bd03_handover",
       "area": "story:handover_done",
       "how": "entry",
-      "values": ["\"completed\""]
+      "values": ["set=\"completed\""]
     },
     {
       "key": "standing.earth",
       "area": "story:gate_parley",
       "how": "option",
-      "values": ["-1", "2"]
+      "values": ["options[1].adjust=-1", "options[2].adjust=2"]
     },
     {
       "key": "standing.earth",
       "area": "story:ruon_choice",
       "how": "option",
-      "values": ["-2", "2"]
+      "values": ["options[0].adjust=2", "options[1].adjust=-2"]
     },
     {
       "key": "standing.fire",
       "area": "story:gate_parley",
       "how": "option",
-      "values": ["1"]
+      "values": ["options[1].adjust=1"]
     },
     {
       "key": "world.discovered.duck_nest",
       "area": "story:remember_duck_nest",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "world.discovered.runoff_marker",
       "area": "story:remember_runoff_marker",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "world.discovered.tea_station",
       "area": "story:remember_tea_station",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "world.ducks_seen",
       "area": "story:forest_ducks_seen",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     },
     {
       "key": "world.tea_shared",
       "area": "story:cutting_tea_shared",
       "how": "entry",
-      "values": ["true"]
+      "values": ["set=true"]
     }
   ]
 }

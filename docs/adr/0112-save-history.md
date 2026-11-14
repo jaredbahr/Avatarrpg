@@ -73,6 +73,7 @@ is only ever compared).
 rules it shipped; its `HISTORY_REV`) and its saves. `npm run saves:release -- <id> ["note"]` freezes
 one from today's content: the golden route's eighteen saves and the snapshot. It refuses an id that
 exists, and the index holds every file's SHA-256, so a regenerated or edited release fails the test.
+The test also lists the release ids, so one cannot be dropped or reordered without editing the test.
 
 The first release, `2026-11-08-golden-v5`, is the existing `golden/v5` corpus. Its snapshot was read
 back from the commit that wrote those saves (`982e5e65`) with today's scanner.
@@ -95,8 +96,15 @@ The answer in `oldSaves` (and `LATE_SCENES`) is one of:
 - `open`: every save can still play the scene (the writer's claim, with a reason);
 - `unset`: a save past it answers "never happened", and that is intended (with a reason).
 
-Each answer names the newest release it was decided for (`upTo`). A write added under a later release
-is not covered by an older answer: the check asks again.
+Each answer names the newest release it was decided for (`upTo`) and, for a flag, the write sites it
+answers for (`sites`). A write added under a later release, or at a site the answer does not name, is
+not covered: the check asks again. Sites are compared per option of a choice, so a flag added to one
+more option counts. "A region the release contained" is decided by what the region holds, not by its
+id, so renaming or splitting a region hides nothing.
+
+A rule must answer something added under every release it serves. A rule aimed at a flag a release
+already recorded is rejected: it would overwrite a real answer, or add a delta twice. So a rule ships
+in the same release as the write it answers for.
 
 A flag written only in a region newer than the release needs nothing. That is the normal case when
 the saga grows region by region.
@@ -109,25 +117,26 @@ release with its answer, and the rules. Writers read it before drafting.
 
 ## What this covers
 
-| Case                                              | Covered | How                                                                                                                                                   |
-| ------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A flag added to an old scene, read later          | yes     | `checkReleases`; `checkSave` names each stranded frozen save.                                                                                         |
-| A flag added on a new scene in a shipped region   | yes     | Same; the answer is usually `open` or `unset`, and the writer has to say which.                                                                       |
-| Standing keys (0 is falsy)                        | yes     | An `adjust` on an old option is a late write; the rule adds the delta once.                                                                           |
-| Flags set by app code                             | yes     | The registry's `app:` writers are write sites like any other.                                                                                         |
-| A setter that moves to another scene              | yes     | The new site is a late write; saves past the old site keep the flag.                                                                                  |
-| A site that now writes a different value          | partly  | Reported as a changed write, so the writer must answer. The check cannot tell whether the meaning changed.                                            |
-| Deleted or renamed scenes and flags               | yes     | Snapshots and saves go through `ID_ALIASES` before comparing; a rule naming a missing scene fails.                                                    |
-| A save in the middle of a battle                  | yes     | Rules apply on load whatever the screen; the mid-battle saves are played forward to the ending.                                                       |
-| A branch the save can no longer take              | yes     | Not a strand: the snapshot shows the save's content already set the flag there, so unset is its true answer.                                          |
-| A rule whose inputs were added later              | yes     | `checkRules` fails a rule that reads a scene or flag a release it serves did not have.                                                                |
-| A new scene read by `visited`                     | yes     | `LATE_SCENES`, and a `node` rule where the save shows it would have been there.                                                                       |
-| The node a save stands on changes kind            | partly  | Seen by the played-forward check on the golden route only (it found `act1_epilogue`, an ending that became a scene; the app reads on, so it is fine). |
-| A flag whose **meaning** changes, same values     | no      | Nothing in the data shows it. Rule for writers: a new meaning is a new key.                                                                           |
-| A whole **region inserted behind** existing saves | no      | A new region is treated as ahead of every save. A prequel region needs its flags answered by hand.                                                    |
-| An `open` or `unset` answer that is wrong         | no      | It is the writer's claim. The played-forward check contradicts it only along the golden route.                                                        |
-| Saves written between releases                    | no      | A snapshot exists per release. Between two releases a flag could be added, saved without, and read later only if a write was removed and re-added.    |
-| An older build loading a newer save               | no      | It drops `history` and writes 0, as it already drops `difficulty`. The next load re-runs rules; `set` rules are harmless then, `adjust` adds twice.   |
+| Case                                              | Covered | How                                                                                                                                                                          |
+| ------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A flag added to an old scene, read later          | yes     | `checkReleases`; `checkSave` names each stranded frozen save.                                                                                                                |
+| A flag added on a new scene in a shipped region   | yes     | Same; the answer is usually `open` or `unset`, and the writer has to say which.                                                                                              |
+| Standing keys (0 is falsy)                        | yes     | An `adjust` added to an option is a late write (sites are compared per option); the rule adds the delta once.                                                                |
+| Flags set by app code                             | partly  | The registry's `app:` writers are write sites, but per module: a second write in a module already listed, or a changed value, is not seen.                                   |
+| A setter that moves to another scene              | yes     | The new site is a late write; saves past the old site keep the flag.                                                                                                         |
+| A site that now writes a different value          | partly  | Reported as a changed write, so the writer must answer. The check cannot tell whether the meaning changed.                                                                   |
+| Deleted or renamed scenes and flags               | yes     | Snapshots and saves go through `ID_ALIASES` before comparing; a rule naming a missing scene fails.                                                                           |
+| A save in the middle of a battle                  | yes     | Rules apply on load whatever the screen; the mid-battle saves are played forward to the ending.                                                                              |
+| A branch the save can no longer take              | yes     | Not a strand: the snapshot shows the save's content already set the flag there, so unset is its true answer.                                                                 |
+| A rule whose inputs were added later              | yes     | `checkRules` fails a rule that reads a scene or flag a release it serves did not have.                                                                                       |
+| A new scene read by `visited`                     | yes     | `LATE_SCENES`, and a `node` rule where the save shows it would have been there.                                                                                              |
+| The node a save stands on changes kind            | partly  | Seen by the played-forward check on the golden route only (it found `act1_epilogue`, an ending that became a scene; the app reads on, so it is fine).                        |
+| A flag whose **meaning** changes, same values     | no      | Nothing in the data shows it. Rule for writers: a new meaning is a new key.                                                                                                  |
+| A whole **region inserted behind** existing saves | no      | A new region is treated as ahead of every save. A prequel region needs its flags answered by hand.                                                                           |
+| Resident profiles written by a `flags` node       | no      | `residentProfiles` is history a `residentProfile` condition reads, and the scanner does not model it. Same hazard, not checked yet.                                          |
+| An `open` or `unset` answer that is wrong         | partly  | It is the writer's claim. The played-forward check contradicts an `open` only when a new game picks the flag up on the legs the old save has just played without getting it. |
+| Saves written between releases                    | no      | A snapshot exists per release. Between two releases a flag could be added, saved without, and read later only if a write was removed and re-added.                           |
+| An older build loading a newer save               | no      | It drops `history` and writes 0, as it already drops `difficulty`. The next load re-runs rules; `set` rules are harmless then, `adjust` adds twice.                          |
 
 ## Consequences
 
@@ -139,6 +148,16 @@ release with its answer, and the rules. Writers read it before drafting.
 - `ruon_traded`'s rule from #791 is removed: the 2026-11-08 story already set it on that option, so
   a save without it chose the escort.
 - `flagContinuity.ts` (the graph walk) is removed. Reachability is no longer part of the guarantee.
+
+## Known soft spots
+
+- `App.adoptSave` defaults its revision to the current one (right for a game that never left memory),
+  and `SaveMeta.history` defaults to 0 (right for fixtures). Both defaults fail quietly if a new caller
+  picks the wrong one. `src/app/saveHistory.test.ts` holds the app's three readers and two writers by
+  a source scan. Making both parameters required is the stricter follow-up (about forty call sites).
+- The played-forward check follows one route (walk up, escort Ruon, no side stories). It proves that
+  route and nothing beside it; rule 1's sled is not on it.
+- The first snapshot was reconstructed from git, and its app writes were found by text search.
 
 ## Open decisions for the owner
 
