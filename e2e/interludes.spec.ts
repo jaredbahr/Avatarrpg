@@ -207,7 +207,8 @@ for (const [node, title, art] of [
     await page.getByRole('button', { name: 'Read summary' }).click();
     await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Replay scene', exact: true }).click();
-    await expect(page.locator('.line-count')).toHaveText('1 of 5');
+    // Four lines, Pella's ask and Dorin at the reins, then the teaser.
+    await expect(page.locator('.line-count')).toHaveText('1 of 7');
     expect(await page.evaluate(() => window.fnt?.app.state?.flags)).toEqual(flags);
   });
 }
