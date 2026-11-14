@@ -393,6 +393,12 @@ export class App {
   }
 
   showScene(scene: Scene, replaceRetained = false): void {
+    const active = document.activeElement;
+    const enterDialogueWithFocus =
+      scene.name === 'dialogue' &&
+      active instanceof HTMLElement &&
+      this.sceneHost.contains(active) &&
+      active.matches(':focus-visible');
     this.cancelRoute();
     this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
@@ -530,6 +536,14 @@ export class App {
     this.setMood(this.defaultMood());
     scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
+    // Layered dialogue manages its own focus. A full-stage interlude also
+    // needs a keyboard starting point when it replaces the focused scene.
+    if (enterDialogueWithFocus && !this.dialogueHost) {
+      const firstControl = this.sceneHost.querySelector<HTMLElement>(
+        '[data-interlude-control="next"], [data-conversation-control="next"], .choice-option:not(:disabled), .end-panel button',
+      );
+      firstControl?.focus({ preventScroll: true });
+    }
     // After the swap, never instead of it: see Curtain.
     if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? [], scene.firstFrameReady?.());
   }
