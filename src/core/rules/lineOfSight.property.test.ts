@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { expectWorkWithin } from '../../../scripts/test-support/workBounds';
 import { CONTENT } from '../../content';
 import { LEGEND } from '../../content/maps/legend';
 import { RngCursor, seedFromString } from '../rng';
@@ -466,6 +467,8 @@ describe('seeded line-of-sight properties', () => {
       expect(cached).toEqual(grid);
     }
     expect(cases).toBe(RANDOM_CASES + maps.length * REAL_CASES_PER_MAP);
+    // The corpus is the work, and it is the same on every machine: 3,300 cases measured (#796).
+    expectWorkWithin('line-of-sight cases checked against the oracle', cases, 5_000);
     expect(cases).toBeGreaterThanOrEqual(2000);
     expect(clear).toBeGreaterThan(100);
     expect(blocked).toBeGreaterThan(100);
