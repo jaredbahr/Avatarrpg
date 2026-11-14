@@ -236,6 +236,10 @@ test('Jin takes Ruon on the trade route, and he does not follow', async ({ page 
   // He is still there while Jin says "Captain. Hands where I can see them."
   await expect.poll(() => followers(page)).toEqual(['follower.ruon']);
   await finishDialogue(page, 'trade_chosen');
+  // He answers the trade before she takes him.
+  expect(await nodeId(page)).toBe('ruon_traded');
+  await expect.poll(() => followers(page)).toEqual(['follower.ruon']);
+  await finishDialogue(page, 'ruon_traded');
   expect(await nodeId(page)).toBe('gate_trade_explore');
   await waitForIdle(page);
   expect(await followers(page)).toEqual([]);

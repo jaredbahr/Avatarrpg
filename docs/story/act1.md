@@ -6,7 +6,7 @@
 
 Source: [act1.ts](../../src/content/story/act1.ts).
 
-45 nodes; 4 fights; 0 branches; 2 choices
+46 nodes; 4 fights; 0 branches; 2 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -16,7 +16,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `act1_evening`
 
-45 owned nodes.
+46 owned nodes.
 
 ```mermaid
 flowchart TD
@@ -62,9 +62,10 @@ flowchart TD
   n121["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
   n122["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
   n123["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
-  n164["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
-  n165["trade_payment<br/>Set flags"]
-  n166["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
+  n124["ruon_traded<br/>Captain Ruon: A key. Well. I have signed for worse bargains."]
+  n165["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
+  n166["trade_payment<br/>Set flags"]
+  n167["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
   n13["cutting_after_explore — exit to world / part 1"]:::external
   n33["forest_after_explore — exit to world / part 1"]:::external
   n37["forest_explore — exit to world / part 1"]:::external
@@ -72,12 +73,12 @@ flowchart TD
   n51["gate_trade_explore — exit to world / part 1"]:::external
   n84["quarry_after_explore — exit to return / part 1"]:::external
   n87["quarry_ledger — exit to reasons / part 1"]:::external
-  n132["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
-  n168["village_return_explore — exit to return / part 1"]:::external
+  n133["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
+  n169["village_return_explore — exit to return / part 1"]:::external
   n0 -->|"Next"| n87
   n2 -->|"set: (none); phase: evening"| n84
   n3 -->|"set: act1_lost=true"| n1
-  n4 -->|"Next"| n166
+  n4 -->|"Next"| n167
   n5 -->|"set: act1_complete=true; resident profiles: lw.npc.amri=#quot;returning#quot;, lw.npc.bo_shan=#quot;returning#quot;, lw.npc.hesra=#quot;returning#quot;, lw.npc.leto=#quot;returning#quot;, lw.npc.senn_messenger=#quot;returning#quot;"| n0
   n6 -->|"Next"| n13
   n7 -->|"Next"| n33
@@ -93,10 +94,10 @@ flowchart TD
   n22 -->|"Next"| n3
   n23 -->|"Next"| n62
   n24 -->|"Next"| n63
-  n30 -->|"Next"| n166
+  n30 -->|"Next"| n167
   n32 -->|"Next"| n46
-  n41 -->|"Next"| n166
-  n42 -->|"Next"| n166
+  n41 -->|"Next"| n167
+  n42 -->|"Next"| n167
   n45 -->|"set: gate_fire_bluff=true"| n11
   n47 -->|"Next"| n50
   n48 -->|"Walk up and knock"| n11
@@ -107,24 +108,25 @@ flowchart TD
   n62 -->|"set: lost_forest_road=true; grant XP: 100"| n7
   n63 -->|"set: lost_quarry_gate=true; grant XP: 150"| n123
   n64 -->|"Next"| n66
-  n65 -->|"Next"| n166
+  n65 -->|"Next"| n167
   n66 -->|"Next"| n67
-  n67 -->|"set: rubbing_given=true"| n168
-  n68 -->|"Next"| n168
-  n69 -->|"Next"| n166
-  n70 -->|"set: pella_asked=true"| n132
+  n67 -->|"set: rubbing_given=true"| n169
+  n68 -->|"Next"| n169
+  n69 -->|"Next"| n167
+  n70 -->|"set: pella_asked=true"| n133
   n72 -->|"Next"| n70
   n83 -->|"Next"| n4
   n85 -->|"Next"| n10
   n86 -->|"Next"| n85
   n120 -->|"Next"| n37
   n121 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n32
-  n121 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n165
+  n121 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n166
   n122 -->|"Next"| n13
   n123 -->|"Next"| n121
-  n164 -->|"Next"| n51
-  n165 -->|"set: ruon_paid=true; grant XP: 150"| n164
-  n166 -->|"Legacy/audit exit (live map exits differ)"| n120
+  n124 -->|"Next"| n51
+  n165 -->|"Next"| n124
+  n166 -->|"set: ruon_paid=true; grant XP: 150"| n165
+  n167 -->|"Legacy/audit exit (live map exits differ)"| n120
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

@@ -36,21 +36,21 @@ flowchart TD
   n80["plant_chair_quiet<br/>Gao’s shop: You sit. Gao sits. Somewhere across the square, a b…"]
   n81["plant_chair_seat<br/>Gao’s shop: The only spare chair holds a potted plant. Gao move…"]
   n82["plant_chair_talk<br/>Gao the Shopkeeper: There."]
-  n124["school_notice<br/>School notice: “School this morning. Pupils home at midday.”"]:::entry
-  n167{"village_leave<br/>Branch: act1_complete"}:::entry
+  n125["school_notice<br/>School notice: “School this morning. Pupils home at midday.”"]:::entry
+  n168{"village_leave<br/>Branch: act1_complete"}:::entry
   n41["gao_cold — exit to act1 / part 1"]:::external
   n42["gao_friendly — exit to act1 / part 1"]:::external
   n43["gao_home — exit to return / part 1"]:::external
   n44["gao_home_cold — exit to return / part 1"]:::external
-  n166["village_explore — exit to act1 / part 1"]:::external
-  n168["village_return_explore — exit to return / part 1"]:::external
+  n167["village_explore — exit to act1 / part 1"]:::external
+  n169["village_return_explore — exit to return / part 1"]:::external
   n52 -->|"set: scene.bd03_handover=#quot;completed#quot;"| n57
   n53 -->|"Next"| n52
   n54 -->|"Next"| n53
   n55 -->|"Next"| n54
   n56 -->|"Next"| n57
-  n57 -->|"act1_complete: truthy (you have act1 complete)"| n168
-  n57 -->|"act1_complete: falsy (you have not act1 complete)"| n166
+  n57 -->|"act1_complete: truthy (you have act1 complete)"| n169
+  n57 -->|"act1_complete: falsy (you have not act1 complete)"| n167
   n73 -->|"Sit down"| n81
   n73 -->|"Another time"| n75
   n74 -->|"Next"| n78
@@ -60,16 +60,16 @@ flowchart TD
   n76 -->|"ruon_traded: falsy (you have not ruon traded)"| n43
   n77 -->|"ruon_traded: truthy (you have ruon traded)"| n41
   n77 -->|"ruon_traded: falsy (you have not ruon traded)"| n42
-  n78 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n167
+  n78 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n168
   n79 -->|"Next"| n78
   n80 -->|"Next"| n78
   n81 -->|"Next"| n82
   n82 -->|"Admire the plant"| n79
   n82 -->|"Ask about the puzzle box"| n74
   n82 -->|"Just sit"| n80
-  n124 -->|"Next"| n167
-  n167 -->|"act1_complete: truthy (you have act1 complete)"| n168
-  n167 -->|"act1_complete: falsy (you have not act1 complete)"| n166
+  n125 -->|"Next"| n168
+  n168 -->|"act1_complete: truthy (you have act1 complete)"| n169
+  n168 -->|"act1_complete: falsy (you have not act1 complete)"| n167
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

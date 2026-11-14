@@ -460,7 +460,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
       'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
       'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
-      'Jin’s mercenaries keep the inner gate. Jin holds a provincial bounty on me, and she will pay whoever hands me over.',
+      'Jin’s people hold the inner gate, and Jin has the key. Her client wants me, and what I signed for. She will tell you her price herself.',
     ],
     next: 'ruon_choice',
   },
@@ -501,7 +501,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.ruon',
     lines: [
       'Ba Dan, then, once the galleries are open.',
-      "Jin will not let her bounty walk down the hill. She'll send people after us.",
+      "Jin has been paid to bring me in. She will not watch that walk down the hill. She'll send people after us.",
       "If they catch us in the cutting, I'll need my sabre. You can take it back afterwards.",
     ],
     next: 'gate_escort_explore',
@@ -581,8 +581,27 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'The inner gate key, as agreed. Your payment is in the pouch.',
       'Captain. Hands where I can see them.',
-      'The province wants him alive. Keep the receipt if anyone asks who took him.',
+      'My client wants him whole, and the papers he signed along with him. Keep the receipt, in case anyone asks who took him.',
       'My crew is in the quarry securing the equipment. The key gets you through the gate. It does not give you a claim on the machinery.',
+    ],
+    next: 'ruon_traded',
+  },
+  /*
+   * Ruon answers the trade (owner, 2026-11-14: the people the demo is about
+   * get to speak). He was sold without a word; now he says what he is worth,
+   * puts the people in the galleries first, and asks for one thing. He does not
+   * forgive the party and is not asked to (bible DLG-08 keeps his "cheaper than
+   * a key" for the hearing).
+   */
+  {
+    id: 'ruon_traded',
+    kind: 'dialogue',
+    speaker: 'Captain Ruon',
+    portrait: 'portrait.ruon',
+    lines: [
+      'A key. Well. I have signed for worse bargains.',
+      'The gallery bars lift from the outside. There are people behind every one of them. Count them as they come out.',
+      'If the families ask, tell them I did not run. That is all I am asking you to carry.',
     ],
     next: 'gate_trade_explore',
   },

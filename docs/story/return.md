@@ -34,33 +34,33 @@ flowchart TD
   n71["pella_home<br/>Pella: My brother is home. Bo-shan. He came through the gate an…"]:::entry
   n84["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
   n116["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
-  n125["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n168["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n169["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n170["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n171["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
-  n172["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
+  n126["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
+  n169["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n170["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n171["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n172["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n173["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
   n113["riverside_explore — exit to riverside / part 1"]:::external
   n12 -->|"Next"| n26
   n17 -->|"Legacy/audit exit (live map exits differ)"| n49
   n25 -->|"Next"| n40
-  n26 -->|"Continue after ending"| n168
-  n31 -->|"Next"| n168
+  n26 -->|"Continue after ending"| n169
+  n31 -->|"Next"| n169
   n38 -->|"Next"| n39
-  n39 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n168
+  n39 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n169
   n40 -->|"Legacy/audit exit (live map exits differ)"| n38
-  n43 -->|"Next"| n168
-  n44 -->|"Next"| n168
+  n43 -->|"Next"| n169
+  n44 -->|"Next"| n169
   n49 -->|"Legacy/audit exit (live map exits differ)"| n40
-  n71 -->|"Next"| n168
+  n71 -->|"Next"| n169
   n84 -->|"Legacy/audit exit (live map exits differ)"| n17
   n116 -->|"Next"| n113
-  n125 -->|"Next"| n17
-  n168 -->|"Legacy/audit exit (live map exits differ)"| n171
-  n169 -->|"Next"| n172
-  n170 -->|"Next"| n169
+  n126 -->|"Next"| n17
+  n169 -->|"Legacy/audit exit (live map exits differ)"| n172
+  n170 -->|"Next"| n173
   n171 -->|"Next"| n170
-  n172 -->|"Next"| n12
+  n172 -->|"Next"| n171
+  n173 -->|"Next"| n12
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
