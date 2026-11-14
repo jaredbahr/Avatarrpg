@@ -20,6 +20,7 @@ import { RIVERSIDE_STORY } from './story/riverside';
 import { BA_DAN_VILLAGE } from './maps/village';
 import { COMBAT_MAPS } from './maps/combat';
 import { connectAct1 } from './maps/world';
+import { stageGateWatch } from './maps/gateWatch';
 import { DISCOVERY_STORY } from './story/discoveries';
 import { WORLD_STORY } from './story/world';
 import { PROPS, PROP_BY_ID } from './props';
@@ -35,9 +36,9 @@ import type { ContentBundle } from './schemas';
 import type { BackgroundRole, MapDef, ResidentDef, StoryNode, WorldAnchor } from '../core/types';
 import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from './residents/baDan';
 
-export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS].map(
-  connectAct1,
-);
+export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS]
+  .map(connectAct1)
+  .map(stageGateWatch);
 export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
   ...ACT1_NODES,
   ...RIVERSIDE_STORY,
