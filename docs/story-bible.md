@@ -253,7 +253,7 @@ essential scene has a party-neutral version (01 §8).
 | Dorin                   | NPC-04, late 20s  | non-bender  | Rehearses, wants things done properly; keeps a watch book                               | Miniature parade floats; Deputy the turtle duck (SQ-31)        | `portrait.dorin` |
 | Hanru                   | NPC-25            | non-bender  | Night watch; few words, practical, kind without saying so                               | — (see the entry below)                                        | `portrait.hanru` |
 | Bo-shan                 | NPC-08, 19        | earthbender | Pella's brother; took vegetables up before the messengers: **the fifth missing person** | Easy humour, terrible packing; comes home tired, not a prize   | placeholder      |
-| Leto, Amri, Hesra, Senn | DLG-01            | non-benders | Mira's **four messengers**, held in the galleries; home after victory                   | Names fixed by DLG-01; sketches approved below                 | placeholder      |
+| Leto, Amri, Hesra, Senn | DLG-01            | non-benders | Mira's **four messengers**, held in the galleries; home after victory                   | Names fixed by DLG-01; all outsiders or hired (gap-fill 17)    | placeholder      |
 | Pebble                  | Not in canon      | —           | Otter-turtle on the riverbank                                                           | Species conflicts with canon fauna rules (C-18)                | —                |
 
 Every element in that column was approved on 2026-11-14 (question 3; gap-fills 7–13). The sprite palettes in
@@ -559,11 +559,14 @@ canon Avatar names this page could think of):
 
 **People and threads:**
 
-17. **The four messengers** (question 7): **Leto** (he, 30s), Ba Dan's cart driver, who knows every rut on the
-    east road; **Amri** (she, 40s), the village's best walker, who carries Mira's letters and argues with her about
-    them; **Hesra** (she, early 20s), an apprentice mason, eager and quick to volunteer; **Senn** (he, 50s), a
-    retired quarry tallyman who still knows the old ledgers. All non-benders. Each comes home tired, with their own
-    preferences (09).
+17. **The four messengers** (question 7): **Leto** (he, 30s), Ba Dan's cart driver, hired from the coast, who
+    has learned every rut on the east road; **Amri** (she, 40s), the village's best walker, who carries Mira's
+    letters and argues with her about them, and came from Saltstep about five years ago; **Hesra** (she, early
+    20s), a hill-farm girl apprenticed into Ba Dan as a mason, eager and quick to volunteer; **Senn** (he, 50s), a
+    quarry-company tallyman who stayed when the company left and still knows the old ledgers. All non-benders.
+    Each comes home tired, with their own preferences (09). **All four are outsiders or hired hands; no
+    old-family child was sent** (owner, 2026-11-14; [saga outline](story-outline.md#people), decision 20). Act I
+    plants it quietly, never remarked on, and it lands in MQ-11 as Mira's flaw.
 18. **`ruon_respects_you`** (question 9): read in Ruon's account (DLG-08), where he credits the party's
     knowledge of the galleries.
 19. **`riverside_drill`** (question 9): Dorin's finished drill pays off in SQ-02, when he corrects an evacuation

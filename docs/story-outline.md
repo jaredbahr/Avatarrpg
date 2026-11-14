@@ -108,7 +108,12 @@ Never stated (canon rule: no morals, no "what we learned"). Each theme has a rec
 20. **Mira's flaw lands through the messengers.** In MQ-11 it surfaces that all four messengers Mira sent into
     danger were hired workers and newcomers; no old-family child went. She did not decide it consciously, and
     that is the point. She admits it at her own table. Afterwards the notice board is written in more than one
-    hand.
+    hand. The messengers keep the names and jobs approved earlier that day, each with an outsider's or hired
+    background: **Leto**, a cart driver hired from the coast; **Amri**, the letter walker who argues with Mira,
+    who came from Saltstep about five years ago; **Hesra**, a hill-farm girl apprenticed into Ba Dan as a mason;
+    **Senn**, a quarry-company tallyman who stayed after the company left. Act I plants this quietly (a stray
+    detail each, never remarked on); MQ-11 lands it. The bible's messenger entry
+    ([story-bible.md](story-bible.md#gap-fills-approved-2026-11-14), gap-fill 17) records the backgrounds.
 21. **Ruon: repair without rank.** His MQ-11 testimony names the harmed workers before his reasons. In Act V he
     leads a brace crew on one front under the authority of a worker he once guarded. The epilogue shows him fitting
     boots for that crew. He never gets his captaincy back, and Mira never embraces him.
