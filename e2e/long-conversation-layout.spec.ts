@@ -3,7 +3,6 @@ import type { Locator, Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { apply } from '../src/core/state/reducer';
 import { resolveDialogue } from '../src/core/story/storyEngine';
-import { presentationFor } from '../src/content/story/presentations';
 import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
 
 // This bounded #492 regression covers body/option text, not the separately
@@ -13,6 +12,16 @@ const profiles = [
   { name: 'phone Largest', viewport: { width: 390, height: 844 }, size: 'huge' },
   { name: 'short Largest', viewport: { width: 844, height: 390 }, size: 'huge' },
   { name: 'tablet Large', viewport: { width: 834, height: 1194 }, size: 'on' },
+] as const;
+// `quarry_ledger` holds the longest authored line (Senn reading the delivery book);
+// each dialogue test checks the inventory still agrees, so a longer line elsewhere
+// fails here and gets its node added rather than going unread.
+const nodes = [
+  'pella_tips',
+  'quarry_ledger',
+  'ruon_surrender',
+  'ruon_choice',
+  'gate_parley',
 ] as const;
 const inventory = [...CONTENT.story.values()]
   .flatMap((node) => {
@@ -36,24 +45,6 @@ const inventory = [...CONTENT.story.values()]
     return [];
   })
   .sort((a, b) => b.length - a.length);
-
-/**
- * Whichever scene holds the longest authored line, plus the long scenes this
- * spec was written for. The longest moves as the story grows (it was
- * `pella_tips` until `quarry_ledger`, #770), so it is read from the content.
- */
-const LONGEST = inventory[0]?.node ?? 'pella_tips';
-const nodes = [...new Set([LONGEST, 'pella_tips', 'ruon_surrender', 'ruon_choice', 'gate_parley'])];
-
-/** The exploration a scene is played over: its staged map, or Ba Dan. */
-function hostFor(id: string): string {
-  if (id === 'gate_parley') return 'gate_escort_explore';
-  const mapId = presentationFor(id)?.mapId;
-  const host = [...CONTENT.story.values()].find(
-    (node) => node.kind === 'explore' && node.mapId === mapId,
-  );
-  return host?.id ?? 'village_explore';
-}
 
 async function sample(panel: Locator) {
   return panel.evaluate((element) => {
@@ -236,7 +227,7 @@ for (const profile of profiles)
         await resetStorage(page, '?renderer=canvas');
         await startGame(page, ['Tala', 'Mina'], ['sura', 'riko'], 'long-conversation-layout');
         await setLargeText(page, profile.size);
-        await enterNode(page, hostFor(id));
+        await enterNode(page, id === 'gate_parley' ? 'gate_escort_explore' : 'village_explore');
         await enterNode(page, id);
         const panel = page.locator('.conversation-panel');
         if (node.kind === 'dialogue') {
@@ -247,6 +238,8 @@ for (const profile of profiles)
           for (let line = 0; line < index; line++)
             await panel.locator('[data-conversation-control="next"]').tap();
           expect(await page.evaluate(() => window.fnt!.app.state!.story.lineIndex)).toBe(index);
+          expect(nodes as readonly string[]).toContain(inventory[0]?.node);
+          expect(inventory[0]?.variant).toBe(false);
         }
         await page.evaluate(() => document.fonts.ready);
         const before = await page.evaluate(() => window.fnt!.app.state!);

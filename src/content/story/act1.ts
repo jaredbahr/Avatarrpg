@@ -9,7 +9,7 @@
  * The branch: Captain Ruon surrenders after the gate fight.
  *   escort him  -> `ruon_spared`, an extra ambush, and Ruon fights beside you
  *   trade him   -> `ruon_traded`, no ambush, but Jin's mercenaries are waiting
- *                  at the boss and Gao the shopkeeper will not look at you
+ *                  at the boss and Gao the shopkeeper tells you what he thinks
  *
  * Choice descriptions state the consequences; the players judge Ruon themselves.
  */
@@ -196,8 +196,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.gao',
     lines: [
       'Jin came through with Ruon. Rope round his wrists.',
-      'He should answer for what happened up there. Here, where the families can hear him. What is Jin going to do with him?',
-      "No. Leave the water skins on the counter. We're done.",
+      'You handed him to her. I know what you needed. I’m asking what she is allowed to do with him now.',
+      'He should have answered for it here, where the families could hear him. Now nobody in Ba Dan can even check on him.',
+      'Take a water skin. It’s for the road.',
+      'Yes, I’m angry. Drink anyway.',
     ],
     next: 'village_explore',
   },
@@ -581,7 +583,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
       'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
       'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
-      'Jin’s mercenaries keep the inner gate. Jin holds a provincial bounty on me, and she will pay whoever hands me over.',
+      'Jin’s mercenaries keep the inner gate. Jin’s client wants me, and what I signed for. She will pay whoever hands me over.',
     ],
     next: 'ruon_choice',
   },
@@ -611,7 +613,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         adjust: { earth: -2 },
       },
     ],
-    footer: 'Both routes reach the quarry floor.',
+    footer: 'Both routes reach the quarry. Ruon will live with the choice.',
   },
 
   /* ----------------------------------------------------- Branch A: escort */
@@ -622,7 +624,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.ruon',
     lines: [
       'Ba Dan, then, once the galleries are open.',
-      "Jin will not let her bounty walk down the hill. She'll send people after us.",
+      "Jin has a client waiting on me. She won't let me walk down the hill. She'll send people after us.",
       "If they catch us in the cutting, I'll need my sabre. You can take it back afterwards.",
     ],
     next: 'gate_escort_explore',
@@ -641,8 +643,25 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The mercenaries block the road. Ruon points to a gap in the rocks and pulls you towards it.',
-      'He hauls you over the loose scree, stopping to check that everyone is still with him.',
-      'You lose the pursuers below the cutting. Ruon stays beside you, bent over and struggling for breath.',
+      'Ruon gets you out through the scree, then goes back for anyone still trapped.',
+      'You lose the pursuers below the cutting. Ruon sits down beside you, bent over and struggling for breath.',
+    ],
+    next: 'ambush_satchel',
+  },
+  {
+    /*
+     * What the Cutting loss costs (story bible C-10; canon 09): Jin's raiders
+     * take Ruon's dispatch satchel, not Ruon. A node of its own, after the
+     * party voices on `defeat_ambush`, so every party hears it.
+     */
+    id: 'ambush_satchel',
+    kind: 'dialogue',
+    speaker: 'The Cutting',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Only then does Ruon put a hand to his shoulder. The strap of his dispatch satchel has been cut clean through.',
+      'Far up the slope, one of Jin’s people is running back towards the road with it.',
+      '“Every order I signed is in that satchel,” Ruon says. “Her client will be pleased.” He gets to his feet. “Ba Dan still gets me.”',
     ],
     next: 'lost_ambush',
   },
@@ -650,8 +669,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'lost_ambush',
     kind: 'flags',
     // 450 across three. `ruon_carried_you` is the sort of thing a later act
-    // should remember about him.
-    set: { lost_ambush: true, ruon_carried_you: true },
+    // should remember about him; so is what Jin's people took.
+    set: { lost_ambush: true, ruon_carried_you: true, jin_has_satchel: true },
     grantXp: 150,
     next: 'after_ambush',
   },
@@ -690,7 +709,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
   {
     id: 'trade_payment',
     kind: 'flags',
-    set: { ruon_paid: true },
+    // Jin's client pays for Ruon and the papers he signed for (C-03).
+    set: { ruon_paid: true, jin_has_satchel: true },
     grantXp: 150,
     next: 'trade_chosen',
   },
@@ -701,8 +721,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.jin',
     lines: [
       'The inner gate key, as agreed. Your payment is in the pouch.',
-      'Captain. Hands where I can see them.',
-      'The province wants him alive. Keep the receipt if anyone asks who took him.',
+      'Captain. Hands where I can see them. The satchel too.',
+      'My client wants him alive, and his papers with him. Keep the receipt if anyone asks who took him.',
       'My crew is in the quarry securing the equipment. The key gets you through the gate. It does not give you a claim on the machinery.',
     ],
     next: 'gate_trade_explore',
