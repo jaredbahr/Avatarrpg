@@ -30,7 +30,7 @@ import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
 import { idlePhase } from '../../render/sheets/store';
 import { resolveAsset, sheetLocomotion } from '../../content/assets/manifest';
-import { authoredForBothSides } from '../../content/assets/clips';
+import { authoredForBothSides, headingClip } from '../../content/assets/clips';
 import { FOOT_LINE } from '../../render/sheets/bake';
 import { placeFrame } from '../../render/sheets/placement';
 import { npcClip } from '../../render/view';
@@ -1632,9 +1632,13 @@ export class ExploreScene implements Scene {
           sprite: npc.sprite,
           name: npc.name,
           scale: npcPresentationScale(npc.sprite),
-          // Someone at a post on a G sheet faces the camera on its idle loop.
+          // Someone at a post on a G sheet faces the camera on its idle loop,
+          // or the way its NpcDef says it faces (the gate's watchers, the party).
           ...(sheetLocomotion(npc.sprite)?.headings === 8
-            ? { clip: 'idleSouthEast' as const, clipTime: now + idlePhase(npc.id) }
+            ? {
+                clip: headingClip('idle', npc.faces ?? 'southEast'),
+                clipTime: now + idlePhase(npc.id),
+              }
             : {}),
         })),
       ...people.map((who) => ({
