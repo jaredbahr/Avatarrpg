@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createCombatCasePool } from '../../../scripts/test-support/runCombatCases';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
@@ -8,6 +8,9 @@ import type { ContentIndex, EncounterDef } from '../types';
 import type { TestContext } from 'vitest';
 
 const combatCases = createCombatCasePool();
+// Bundling the worker and loading the content into every lane is pool
+// start-up, not a test's work: pay it here, under the hook's own deadline.
+beforeAll(() => combatCases.warm(), 30_000);
 afterAll(async () => {
   await combatCases.close();
 });
