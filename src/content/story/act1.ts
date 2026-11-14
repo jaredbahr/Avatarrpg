@@ -367,6 +367,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
    * stopped on the road below to hear Lanfen out or to read the flood marker.
    * Element alone is not a biography, and a party of non-benders can walk in
    * through the front gate on what it bothered to learn.
+   *
+   * The bluff plays on one man's fear (C-09). Hotaro was a ship's guard; he
+   * knows what a stack of lamp oil does near an open flame, and this post does
+   * not pay enough to stand beside it. It is not a rule about anyone's nation.
    */
   {
     id: 'gate_parley',
@@ -374,7 +378,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry Gate',
     portrait: 'portrait.narrator',
     prompt:
-      'Quarry workers watch from the wall. A Fire Nation deserter stands beside the oil barrels. How will you approach?',
+      'Quarry workers watch from the wall with slings. A hired guard stands by the oil barrels, as far from them as his post allows. How will you approach?',
     options: [
       {
         label: 'Walk up and knock',
@@ -384,12 +388,12 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         label: 'Let the firebender do the talking',
         detail:
-          'Bluff the deserter into standing aside. You will still have to fight the quarry crew.',
-        next: 'gate_bluff',
+          'Make the guard by the oil barrels think twice about his post. You will still have to fight the quarry crew.',
+        next: 'gate_bluff_words',
         speaker: { element: 'fire' },
         requires: { kind: 'partyHas', element: 'fire' },
         lockedHint: 'You need a firebender for this bluff.',
-        // Trading on Fire Nation fear works, and it is remembered on both sides.
+        // The old nation-standing nudge; community trust replaces it (C-25).
         adjust: { fire: 1, earth: -1 },
       },
       {
@@ -405,10 +409,40 @@ export const ACT1_NODES: readonly StoryNode[] = [
     ],
   },
   {
+    id: 'gate_bluff_words',
+    kind: 'dialogue',
+    speaker: 'The Quarry Gate',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Your firebender calls up to the guard by the barrels: how much lamp oil is in that stack, and where would he like to be standing once a fight starts?',
+    ],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'tenzo' },
+        speaker: 'Tenzo',
+        portrait: 'portrait.tenzo',
+        lines: [
+          'That stack by your feet. Lamp oil? Cooking oil smells sweeter.',
+          'I light my stove with one finger every morning. I would not stand where you are standing. Not once this starts.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'Hey! You by the barrels! Is all of that lamp oil?',
+          'I’m a firebender. I’m only saying, if this turns into a fight, I’d stand somewhere else.',
+        ],
+      },
+    ],
+    next: 'gate_bluff',
+  },
+  {
     id: 'gate_bluff',
     kind: 'flags',
-    // Feeds the `bluffed` variant on enc_quarry_gate: the deserter steps back
-    // and the quarry crew comes forward in his place, at the same threat cost.
+    // Feeds the `bluffed` variant on enc_quarry_gate: Hotaro walks off and the
+    // quarry crew comes forward in his place, at the same threat cost.
     set: { gate_fire_bluff: true },
     next: 'battle_quarry_gate',
   },

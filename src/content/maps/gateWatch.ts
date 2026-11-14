@@ -3,7 +3,7 @@
  * parley says, so two of the crew stand under the curtain wall while it is
  * read: on the open ground of row 1 (the wall's own cells are blocked), west
  * of the gate's first stack of oil barrels and inside the stage `gate_parley`
- * frames, leaving the east stack to the deserter the parley also names. They
+ * frames, leaving the east stack to the hired guard the parley also names. They
  * are the crew the party then fights (the Quarry Worker and the Quarry Hauler,
  * their combat art), so they leave the wall as the fight starts, or once Ruon
  * has the gate opened for a party that talked him round.

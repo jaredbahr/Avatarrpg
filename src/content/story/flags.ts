@@ -219,7 +219,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'gate_fire_bluff',
     type: 'boolean',
     values: [true],
-    meaning: 'A firebender bluffed the Fire Nation deserter aside at the quarry gate.',
+    meaning:
+      'A firebender talked Hotaro, the hired guard by the oil barrels, off his post at the quarry gate; the crew fought without him.',
     arc: 'Demo · Quarry gate',
     status: 'live',
     setBy: ['story:gate_bluff'],

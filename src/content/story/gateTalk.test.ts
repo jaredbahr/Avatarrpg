@@ -82,4 +82,11 @@ describe('the quarry gate talk', () => {
       expect(answer.lines[0]).toContain(reply);
     }
   });
+
+  it('gives the bluff to a firebender who is present', () => {
+    const words = dialogue('gate_bluff_words');
+    expect(resolveDialogue(atGate(['tenzo']), words).speaker).toBe('Tenzo');
+    expect(resolveDialogue(atGate(['kaya']), words).speaker).toBe('Kaya');
+    expect(resolveDialogue(atGate(['kaya', 'tenzo']), words).speaker).toBe('Tenzo');
+  });
 });
