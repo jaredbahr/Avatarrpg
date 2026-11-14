@@ -643,8 +643,25 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The mercenaries block the road. Ruon points to a gap in the rocks and pulls you towards it.',
-      'He hauls you over the loose scree, stopping to check that everyone is still with him.',
-      'You lose the pursuers below the cutting. Ruon stays beside you, bent over and struggling for breath.',
+      'Ruon gets you out through the scree, then goes back for anyone still trapped.',
+      'You lose the pursuers below the cutting. Ruon sits down beside you, bent over and struggling for breath.',
+    ],
+    next: 'ambush_satchel',
+  },
+  {
+    /*
+     * What the Cutting loss costs (story bible C-10; canon 09): Jin's raiders
+     * take Ruon's dispatch satchel, not Ruon. A node of its own, after the
+     * party voices on `defeat_ambush`, so every party hears it.
+     */
+    id: 'ambush_satchel',
+    kind: 'dialogue',
+    speaker: 'The Cutting',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Only then does Ruon put a hand to his shoulder. The strap of his dispatch satchel has been cut clean through.',
+      'Far up the slope, one of Jin’s people is running back towards the road with it.',
+      '“Every order I signed is in that satchel,” Ruon says. “Her client will be pleased.” He gets to his feet. “Ba Dan still gets me.”',
     ],
     next: 'lost_ambush',
   },
@@ -652,8 +669,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'lost_ambush',
     kind: 'flags',
     // 450 across three. `ruon_carried_you` is the sort of thing a later act
-    // should remember about him.
-    set: { lost_ambush: true, ruon_carried_you: true },
+    // should remember about him; so is what Jin's people took.
+    set: { lost_ambush: true, ruon_carried_you: true, jin_has_satchel: true },
     grantXp: 150,
     next: 'after_ambush',
   },
