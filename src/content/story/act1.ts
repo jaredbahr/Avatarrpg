@@ -9,7 +9,7 @@
  * The branch: Captain Ruon surrenders after the gate fight.
  *   escort him  -> `ruon_spared`, an extra ambush, and Ruon fights beside you
  *   trade him   -> `ruon_traded`, no ambush, but Jin's mercenaries are waiting
- *                  at the boss and Gao the shopkeeper will not look at you
+ *                  at the boss and Gao the shopkeeper tells you what he thinks
  *
  * Choice descriptions state the consequences; the players judge Ruon themselves.
  */
@@ -196,8 +196,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.gao',
     lines: [
       'Jin came through with Ruon. Rope round his wrists.',
-      'He should answer for what happened up there. Here, where the families can hear him. What is Jin going to do with him?',
-      "No. Leave the water skins on the counter. We're done.",
+      'You handed him to her. I know what you needed. I’m asking what she is allowed to do with him now.',
+      'He should have answered for it here, where the families could hear him. Now nobody in Ba Dan can even check on him.',
+      'Take a water skin. It’s for the road.',
+      'Yes, I’m angry. Drink anyway.',
     ],
     next: 'village_explore',
   },
