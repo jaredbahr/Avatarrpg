@@ -13,45 +13,42 @@ import { CHARACTERS, CHARACTER_BY_ID } from './characters';
 import { DISCIPLINES, DISCIPLINE_BY_ID } from './disciplines';
 import { COMBOS } from './combos';
 import { ELEMENT_BY_ID } from './elements';
-import { ENCOUNTERS, ENCOUNTER_BY_ID } from './encounters';
+import { ENCOUNTERS } from './encounters';
 import { ENEMIES, ENEMY_BY_ID } from './enemies';
-import { RIVERSIDE } from './maps/riverside';
-import { RIVERSIDE_STORY } from './story/riverside';
-import { BA_DAN_VILLAGE } from './maps/village';
-import { COMBAT_MAPS } from './maps/combat';
-import { connectAct1 } from './maps/world';
-import { stageGateWatch } from './maps/gateWatch';
-import { DISCOVERY_STORY } from './story/discoveries';
-import { WORLD_STORY } from './story/world';
 import { PROPS, PROP_BY_ID } from './props';
 import { STATUSES, STATUS_BY_ID } from './statuses';
 import { SURFACES, SURFACE_BY_ID } from './surfaces';
 import { COMBAT_TUNING } from './tuning';
 import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
-import { withPartyVoices } from './story/partyVoices';
-import { RETURN_STORY } from './story/return';
-import { BA_DAN_DAY_STORY } from './story/baDanDay';
 import type { ContentBundle } from './schemas';
-import type { BackgroundRole, MapDef, ResidentDef, StoryNode, WorldAnchor } from '../core/types';
-import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from './residents/baDan';
+import type {
+  BackgroundRole,
+  EncounterDef,
+  MapDef,
+  ResidentDef,
+  StoryNode,
+  WorldAnchor,
+} from '../core/types';
+import { REGION_CONTENT } from './regions/content';
 
-export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS]
-  .map(connectAct1)
-  .map(stageGateWatch);
-export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
-  ...ACT1_NODES,
-  ...RIVERSIDE_STORY,
-  ...WORLD_STORY,
-  ...DISCOVERY_STORY,
-  ...RETURN_STORY,
-  ...BA_DAN_DAY_STORY,
-]);
+/*
+ * Everything a region owns is registered by its manifest (ADR 0111), and the whole world is the
+ * regions in order. The app loads them one at a time; tests, the balance report and the docs read
+ * this full index.
+ */
+export const ALL_MAPS: readonly MapDef[] = REGION_CONTENT.flatMap((region) => region.maps);
+export const ALL_STORY: readonly StoryNode[] = REGION_CONTENT.flatMap((region) => region.story);
+const ALL_ENCOUNTERS: readonly EncounterDef[] = REGION_CONTENT.flatMap(
+  (region) => region.encounters,
+);
 
-/** Living-world records (ADR 0047 §2): Ba Dan's anchors, residents and background roles. */
-const ANCHORS: readonly WorldAnchor[] = BA_DAN_ANCHORS;
-const RESIDENTS: readonly ResidentDef[] = BA_DAN_RESIDENTS;
-const BACKGROUND_ROLES: readonly BackgroundRole[] = BA_DAN_BACKGROUND_ROLES;
+/** Living-world records (ADR 0047 §2): each region's anchors, residents and background roles. */
+const ANCHORS: readonly WorldAnchor[] = REGION_CONTENT.flatMap((region) => region.anchors);
+const RESIDENTS: readonly ResidentDef[] = REGION_CONTENT.flatMap((region) => region.residents);
+const BACKGROUND_ROLES: readonly BackgroundRole[] = REGION_CONTENT.flatMap(
+  (region) => region.backgroundRoles,
+);
 
 /** The flat form, used by the validation test and the balance report. */
 export const CONTENT_BUNDLE: ContentBundle = {
@@ -61,7 +58,7 @@ export const CONTENT_BUNDLE: ContentBundle = {
   enemies: ENEMIES,
   maps: ALL_MAPS,
   assets: ASSETS,
-  encounters: ENCOUNTERS,
+  encounters: ALL_ENCOUNTERS,
   statuses: STATUSES,
   surfaces: SURFACES,
   props: PROPS,
@@ -80,7 +77,7 @@ export const CONTENT: ContentIndex = {
   disciplines: DISCIPLINE_BY_ID,
   enemies: ENEMY_BY_ID,
   maps: new Map(ALL_MAPS.map((m) => [m.id, m])),
-  encounters: ENCOUNTER_BY_ID,
+  encounters: new Map(ALL_ENCOUNTERS.map((e) => [e.id, e])),
   statuses: STATUS_BY_ID as ReadonlyMap<StatusId, (typeof STATUSES)[number]>,
   surfaces: SURFACE_BY_ID as ReadonlyMap<SurfaceId, (typeof SURFACES)[number]>,
   props: PROP_BY_ID,
