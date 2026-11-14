@@ -551,6 +551,13 @@ export function scoreAbility(
   weights: Weights,
   wallTargets: WallTargetCache,
 ): number {
+  // A pure dash must leave both the proposed pose and this iteration's actual
+  // pose: a move-first plan must not walk out only to Rush straight back.
+  // Compound abilities may intentionally stay put to apply their other effects.
+  if (ability.effects.length > 0 && ability.effects.every((effect) => effect.kind === 'dash')) {
+    const current = draft.unit(caster.id);
+    if (samePos(caster.pos, target) || (current && samePos(current.pos, target))) return -Infinity;
+  }
   const content = draft.content;
   const squareFootprints = draft.squareFootprints;
   const tiles = affectedTiles(content, draft.grid, caster, ability, target, squareFootprints);
