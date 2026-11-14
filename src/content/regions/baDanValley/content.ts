@@ -15,6 +15,7 @@ import { BA_DAN_DAY_STORY } from '../../story/baDanDay';
 import { SQ01_STORY } from '../../story/sq01Cabbages';
 import { SQ02_STORY } from '../../story/sq02OfficialGate';
 import { REASON_STORY } from '../../story/reasons';
+import { SQ03_STORY } from '../../story/sq03GaosLedger';
 import { withPartyVoices } from '../../story/partyVoices';
 import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from '../../residents/baDan';
 
@@ -37,6 +38,12 @@ const STORY_GROUPS: readonly StoryGroup[] = [
     title: 'SQ-02 A Very Official Gate',
     source: 'sq02OfficialGate.ts',
     nodes: SQ02_STORY,
+  },
+  {
+    slug: 'sq03-gaos-ledger',
+    title: 'SQ-03 Gao’s Other Ledger',
+    source: 'sq03GaosLedger.ts',
+    nodes: SQ03_STORY,
   },
 ];
 

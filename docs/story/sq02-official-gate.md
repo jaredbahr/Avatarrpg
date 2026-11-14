@@ -35,8 +35,8 @@ flowchart TD
   n144["sq02_return_gate<br/>The side gate: Behind him, the side gate stands open the right …"]
   n145["sq02_shortcut<br/>The side gate: Beyond the side gate, a path runs behind the hou…"]
   n27["dorin_directions — exit to act1 / part 1"]:::external
-  n149["village_leave — exit to ba-dan-day / part 1"]:::external
-  n132 -->|"Next"| n149
+  n163["village_leave — exit to ba-dan-day / part 1"]:::external
+  n132 -->|"Next"| n163
   n133 -->|"Read the register"| n142
   n133 -->|"Another time"| n27
   n134 -->|"Fix it quietly; set: sq02.gate=#quot;quiet#quot;"| n141
@@ -51,8 +51,8 @@ flowchart TD
   n141 -->|"Next"| n145
   n142 -->|"Next"| n135
   n143 -->|"Next"| n144
-  n144 -->|"Next"| n149
-  n145 -->|"Next"| n149
+  n144 -->|"Next"| n163
+  n145 -->|"Next"| n163
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

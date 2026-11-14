@@ -101,6 +101,7 @@ describe('runtime story graph', () => {
       'riverside.md',
       'sq01-cabbages.md',
       'sq02-official-gate.md',
+      'sq03-gaos-ledger.md',
       'world.md',
     ]);
     expect([...documents.values()].join('\n').match(/ -->\|/g)).toHaveLength(graph.edges.length);
