@@ -32,6 +32,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     name: 'Ambush on the Forest Road',
     mapId: 'forest_road',
     expectedLevel: 1,
+    // The first fight a new table plays: the guide teaches Move, an attack and End turn here.
+    guidance: 'firstFight',
     enemies: [at(17, 5, 'bandit_thug'), at(17, 7, 'bandit_thug'), at(18, 3, 'bandit_slinger')],
     allies: [],
     conditionalEnemies: [],

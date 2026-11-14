@@ -395,8 +395,6 @@ export const ACT1_NODES: readonly StoryNode[] = [
         speaker: { element: 'fire' },
         requires: { kind: 'partyHas', element: 'fire' },
         lockedHint: 'You need a firebender for this bluff.',
-        // The old nation-standing nudge; community trust replaces it (C-25).
-        adjust: { fire: 1, earth: -1 },
       },
       {
         label: 'Talk to Captain Ruon about the galleries',

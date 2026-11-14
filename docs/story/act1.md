@@ -105,7 +105,7 @@ flowchart TD
   n47 -->|"Next"| n46
   n49 -->|"Next"| n52
   n50 -->|"Walk up and knock"| n12
-  n50 -->|"Let the firebender do the talking; requires: you have a firebender; standing deltas: earth=-1, fire=1"| n47
+  n50 -->|"Let the firebender do the talking; requires: you have a firebender"| n47
   n50 -->|"Talk to Captain Ruon about the galleries; requires: Bo is with you or Lin Mei is with you or you have world ducks seen or you have world discovered runoff marker; standing deltas: earth=2"| n49
   n52 -->|"Next"| n53
   n53 -->|"set: gate_talked_through=true, ruon_respects_you=true; grant XP: 150"| n126

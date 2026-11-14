@@ -5,7 +5,7 @@
  * or on its encounter.
  *
  * The allowlist below is what is left to move. It may only shrink: an entry that no longer
- * matches fails too, so a fix removes its line.
+ * matches fails too, so a fix removes its line. The guided first fight is `EncounterDef.guidance`.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -14,12 +14,11 @@ import { CONTENT } from '../content';
 
 const ROOT = join(__dirname, '..', '..');
 
-/** `file: id`. The guided first fight is the follow-up: its steps belong on the encounter. */
-const ALLOWED = new Set([
-  'src/app/scenes/combatGuidance.ts: forest_road',
-  'src/app/scenes/combatGuidance.ts: enc_forest_road',
-  'src/app/scenes/CombatScene.ts: enc_forest_road',
-]);
+/**
+ * `file: id`, for a special case still to move. Empty since the guided first fight moved onto its
+ * encounter (#780); keep it that way.
+ */
+const ALLOWED = new Set<string>([]);
 
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {

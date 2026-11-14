@@ -24,6 +24,11 @@
  *
  * Adding a flag: add the entry first, then the content. The test prints the
  * exact `setBy`/`readBy` it found when they disagree, so paste from there.
+ *
+ * Reading the past from a later scene: a save already past a flag's setter can
+ * never come to hold it, so declare how such a save answers in
+ * `flagBackfills.ts` (#773). `flagContinuity.test.ts` holds every frozen save
+ * to that rule.
  */
 
 import type { FlagValue } from '../../core/types';
@@ -75,6 +80,11 @@ export interface FlagDef {
   readonly note?: string;
   readonly setBy: readonly string[];
   readonly readBy: readonly string[];
+  /**
+   * The save format or release that introduced the flag, such as `'save v5'`
+   * or `'0.3.0'`. Documentation for whoever writes its backfill (`flagBackfills.ts`).
+   */
+  readonly since?: string;
 }
 
 /* The hub flag: read nearly everywhere after the quarry. */
@@ -631,9 +641,9 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     type: 'number',
     meaning: 'How the Fire Nation feels about the party, from -5 (hostile) to 5 (trusted).',
     arc: 'Saga · Nation standing',
-    status: 'pending',
-    note: 'Raised by the firebender’s bluff at the gate. No Condition reads standing yet.',
-    setBy: ['story:gate_parley'],
+    status: 'reserved',
+    note: 'Nothing moves it since the gate bluff stopped trading on a nation (owner, 2026-11-14; C-09). Community trust replaces it (C-25).',
+    setBy: [],
     readBy: [],
   },
   {
