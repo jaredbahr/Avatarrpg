@@ -248,8 +248,8 @@ describe('content', () => {
 
   it('holds a G knockout to every diagonal and a G hit to every heading, timed cel by cel (ADR 0059, ADR 0063)', () => {
     const bo = CONTENT_BUNDLE.assets?.['unit.earth.bo'];
-    const linmei = CONTENT_BUNDLE.assets?.['unit.earth.linmei'];
-    if (bo?.kind !== 'sheet' || linmei?.kind !== 'sheet') throw new Error('Expected sheets');
+    const probe = CONTENT_BUNDLE.assets?.['unit.test.probe'];
+    if (bo?.kind !== 'sheet' || probe?.kind !== 'sheet') throw new Error('Expected sheets');
     // The retired G Bo's knockouts and hits, kept as a fixture: a family of each, timed cel by cel.
     const fetched = JSON.parse(
       readFileSync('src/app/anim/fixtures/bo-g-clips.json', 'utf8'),
@@ -308,8 +308,8 @@ describe('content', () => {
       validateContent({ ...CONTENT_BUNDLE, assets } as ContentBundle).filter((p) =>
         p.startsWith('asset '),
       );
-    expect(check({ 'unit.earth.linmei': { ...linmei, clipData: bo.clipData } })).toContain(
-      'asset unit.earth.linmei: clip data needs declared eight-way locomotion',
+    expect(check({ 'unit.test.probe': { ...probe, clipData: bo.clipData } })).toContain(
+      'asset unit.test.probe: clip data needs declared eight-way locomotion',
     );
     expect(check({ 'unit.earth.bo': bo })).toEqual([]);
   });

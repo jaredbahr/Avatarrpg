@@ -8,8 +8,8 @@ describe('figure scale', () => {
     expect(partyScale(0.9)).toBe(0.9);
   });
 
-  it('keeps the older adult sheets level with the party, and sizes the Driller by its footprint', () => {
-    expect(enemyScale('unit.enemy.crossbow', 1)).toBeCloseTo(1.23, 12);
+  it('draws every enemy at the party’s scale, the Driller included', () => {
+    expect(enemyScale('unit.enemy.crossbow', 1)).toBe(1);
     expect(enemyScale('unit.enemy.merc', 1)).toBe(1);
     expect(enemyScale('unit.enemy.driller', 1)).toBe(1);
     expect(enemyScale('unit.enemy.thug', 0.9)).toBe(partyScale(0.9));

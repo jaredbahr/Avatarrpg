@@ -9,12 +9,6 @@ export function partyScale(poseScale = 1): number {
   return poseScale;
 }
 
-// An older 121px body needs the same adult world height as the newer 151px
-// sheets.
-const ADULT_ENEMIES: Readonly<Record<string, number>> = {
-  'unit.enemy.crossbow': 1.23,
-};
-
 /**
  * Shared by the visible body, effect sockets and exploration encounter markers.
  * An enemy drawn on an eight-heading sheet is packed at the party's size, so it
@@ -22,5 +16,5 @@ const ADULT_ENEMIES: Readonly<Record<string, number>> = {
  */
 export function enemyScale(sprite: string, poseScale = 1): number {
   if (sheetLocomotion(sprite)?.headings === 8) return partyScale(poseScale);
-  return (ADULT_ENEMIES[sprite] ?? 1) * poseScale;
+  return poseScale;
 }

@@ -109,106 +109,6 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
 const image = (url: string, palette?: string): AssetEntry =>
   palette ? { kind: 'image', url, palette } : { kind: 'image', url };
 
-/** Original combat poses plus idle and walking cels in every direction. */
-const heroSheet = (key: string, palette: string): SheetEntry => {
-  const name = key.slice(key.lastIndexOf('.') + 1);
-  const frames = (clip: ClipName, count: number): string[] =>
-    Array.from({ length: count }, (_, index) => `${key}/${clip}/${index}`);
-  return {
-    kind: 'sheet',
-    atlas: `art/units/walking-${name}.json`,
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette,
-    clips: {
-      idle: { frames: frames('idle', 2), fps: 1, loop: true },
-      walk: { frames: frames('walk', 4), fps: 4, loop: true },
-      cast: { frames: frames('cast', 3), fps: 8, loop: false },
-      ko: { frames: frames('ko', 1), fps: 1, loop: false },
-      idleNorth: { frames: frames('idleNorth', 1), fps: 1, loop: true },
-      idleSouth: { frames: frames('idleSouth', 1), fps: 1, loop: true },
-      walkNorth: { frames: frames('walkNorth', 4), fps: 4, loop: true },
-      walkSouth: { frames: frames('walkSouth', 4), fps: 4, loop: true },
-      ...(['nima', 'wen'].includes(name)
-        ? {
-            rest: { frames: frames('rest', 1), fps: 1, loop: true },
-            restNorth: { frames: frames('restNorth', 1), fps: 1, loop: true },
-            restSouth: { frames: frames('restSouth', 1), fps: 1, loop: true },
-          }
-        : {}),
-    },
-  };
-};
-
-function rikoSheet(): SheetEntry {
-  const key = 'unit.non.riko';
-  const base = heroSheet(key, 'nonbender');
-  return {
-    ...base,
-    clips: {
-      ...base.clips,
-      // The legacy side-facing melee still uses the cast pixels, but the
-      // metadata aliases keep the clip contract self-describing. Directional
-      // contact variants select their own authored cells below.
-      melee: { frames: [`${key}/melee/0`, `${key}/melee/1`], fps: 8, loop: false },
-    },
-    meleeDirections: {
-      screenUp: [`${key}/cast/0`, `${key}/meleeNorth/0`],
-      screenDown: [`${key}/cast/0`, `${key}/meleeSouth/0`],
-    },
-  };
-}
-
-/** Compact illustrated enemy clips preserve the procedural clip rates. */
-function quarryEnemySheet(name: string, palette: string): SheetEntry {
-  const key = `unit.enemy.${name}`;
-  const frames = (clip: ClipName, count: number) =>
-    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
-  return {
-    kind: 'sheet',
-    atlas: `art/units/${name}.json`,
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette,
-    clips: {
-      idle: { frames: frames('idle', 2), fps: 1, loop: true },
-      walk: { frames: frames('walk', 2), fps: 4, loop: true },
-      cast: { frames: frames('cast', 3), fps: 8, loop: false },
-      hit: { frames: frames('hit', 1), fps: 1, loop: false },
-      ko: { frames: frames('ko', 1), fps: 1, loop: false },
-    },
-  };
-}
-
-/** Blade wind-up and contact reuse the authored cast cels at the existing rate. */
-function cuttingSheet(name: string, palette: string): SheetEntry {
-  const key = name === 'ruon' ? 'unit.ally.ruon' : `unit.enemy.${name}`;
-  const base = quarryEnemySheet(name, palette);
-  const frames = (clip: ClipName, count: number) =>
-    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
-  return {
-    ...base,
-    frameSize:
-      name === 'ruon'
-        ? { w: 139, h: 192 }
-        : name === 'merc'
-          ? { w: 169, h: 199 }
-          : { w: 147, h: 203 },
-    clips: {
-      idle: { frames: frames('idle', 2), fps: 1, loop: true },
-      walk: { frames: frames('walk', 2), fps: 4, loop: true },
-      cast: { frames: frames('cast', 3), fps: 8, loop: false },
-      melee: { frames: frames('melee', 2), fps: 8, loop: false },
-      hit: { frames: frames('hit', 1), fps: 1, loop: false },
-      ko: { frames: frames('ko', 1), fps: 1, loop: false },
-    },
-  };
-}
-
 export interface TopdownActionMap {
   readonly cast: string;
   readonly idle?: string;
@@ -423,8 +323,8 @@ let topDownStyle: Readonly<Record<string, AssetEntry>> | undefined;
 
 /**
  * The top-down PixelLab figures (ADR 0104), laid over `ASSETS`: the game's only look since T7, so
- * `main.ts` turns it on at boot. The keys whose G1 sheets T7 retired hold the same top-down sheet in
- * `ASSETS` itself.
+ * `main.ts` turns it on at boot. Every `unit.*` key and the residents T7 moved hold the same top-down sheet in
+ * `ASSETS` itself; the overlay still swaps the painted Dema, Sen and Hanru for theirs.
  */
 export function useTopDownStyle(): void {
   topDownStyle = Object.fromEntries([
@@ -444,69 +344,27 @@ export function topDownStyleActive(): boolean {
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* ------------------------------------------------------ Party sprites */
   'unit.fire.kaya': topdownSheet('kaya', 'unit.fire.kaya', 'fire'),
-  'unit.fire.tenzo': heroSheet('unit.fire.tenzo', 'fire'),
-  'unit.water.nilak': heroSheet('unit.water.nilak', 'water'),
+  'unit.fire.tenzo': topdownSheet('tenzo', 'unit.fire.tenzo', 'fire'),
+  'unit.water.nilak': topdownSheet('nilak', 'unit.water.nilak', 'water'),
   'unit.water.sura': topdownSheet('sura', 'unit.water.sura', 'water'),
   'unit.earth.bo': topdownSheet('bo', 'unit.earth.bo', 'earth'),
-  'unit.earth.linmei': heroSheet('unit.earth.linmei', 'earth'),
-  'unit.air.nima': heroSheet('unit.air.nima', 'air'),
-  'unit.air.jinu': heroSheet('unit.air.jinu', 'air'),
-  'unit.non.riko': rikoSheet(),
-  'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
+  'unit.earth.linmei': topdownSheet('linmei', 'unit.earth.linmei', 'earth'),
+  'unit.air.nima': topdownSheet('nima', 'unit.air.nima', 'air'),
+  'unit.air.jinu': topdownSheet('jinu', 'unit.air.jinu', 'air'),
+  'unit.non.riko': topdownSheet('riko', 'unit.non.riko', 'nonbender'),
+  'unit.non.wen': topdownSheet('wen', 'unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
   'unit.enemy.thug': topdownSheet('thug', 'unit.enemy.thug', 'enemy'),
   'unit.enemy.slinger': topdownSheet('slinger', 'unit.enemy.slinger', 'enemy'),
   'unit.enemy.bruiser': topdownSheet('bruiser', 'unit.enemy.bruiser', 'enemy'),
   'unit.enemy.quarrybender': topdownSheet('quarrybender', 'unit.enemy.quarrybender', 'earth'),
-  'unit.enemy.deserter': quarryEnemySheet('deserter', 'fire'),
-  'unit.enemy.merc': cuttingSheet('merc', 'enemy'),
-  'unit.enemy.crossbow': quarryEnemySheet('crossbow', 'enemy'),
-  'unit.enemy.sergeant': cuttingSheet('sergeant', 'enemy'),
-  'unit.enemy.driller': {
-    kind: 'sheet',
-    atlas: 'art/units/driller.json',
-    pixelsPerTile: 80,
-    frameSize: { w: 176, h: 176 },
-    footprint: { w: 2, h: 2 },
-    anchor: { x: 0.5, y: 0.8295454545454546 },
-    // Steam and debris reach above the rig; UI stays anchored to the 2x2 body envelope.
-    uiHeadroomCap: 0.85,
-    facing: 'mirror',
-    palette: 'enemy',
-    clips: {
-      idle: {
-        frames: Array.from({ length: 6 }, (_, i) => `unit.enemy.driller/idle/${i}`),
-        fps: 4,
-        loop: true,
-        frameMs: [260, 260, 280, 260, 260, 280],
-      },
-      walk: {
-        frames: Array.from({ length: 6 }, (_, i) => `unit.enemy.driller/walk/${i}`),
-        fps: 8,
-        loop: true,
-      },
-      cast: {
-        frames: Array.from({ length: 8 }, (_, i) => `unit.enemy.driller/cast/${i}`),
-        fps: 9,
-        loop: false,
-        frameMs: [140, 140, 160, 120, 100, 120, 180, 240],
-      },
-      hit: {
-        frames: Array.from({ length: 4 }, (_, i) => `unit.enemy.driller/hit/${i}`),
-        fps: 10,
-        loop: false,
-        frameMs: [100, 120, 140, 180],
-      },
-      ko: {
-        frames: Array.from({ length: 8 }, (_, i) => `unit.enemy.driller/ko/${i}`),
-        fps: 8,
-        loop: false,
-        frameMs: [120, 120, 140, 160, 180, 220, 260, 360],
-      },
-    },
-  },
-  'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
+  'unit.enemy.deserter': topdownSheet('deserter', 'unit.enemy.deserter', 'fire'),
+  'unit.enemy.merc': topdownSheet('merc', 'unit.enemy.merc', 'enemy'),
+  'unit.enemy.crossbow': topdownSheet('crossbow', 'unit.enemy.crossbow', 'enemy'),
+  'unit.enemy.sergeant': topdownSheet('sergeant', 'unit.enemy.sergeant', 'enemy'),
+  'unit.enemy.driller': topdownSheet('driller', 'unit.enemy.driller', 'enemy'),
+  'unit.ally.ruon': topdownSheet('ruon', 'unit.ally.ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
   // The residents (issue #284), drawn top-down since T7 retired their G sheets. The shrine figure shares Mira's.

@@ -29,7 +29,7 @@ for (const renderer of ['canvas', 'webgl'] as const)
         let failedImageRequests = 0;
         let failedPortraitRequests = 0;
         if (fallback) {
-          await page.route('**/art/units/deserter.png', async (route) => {
+          await page.route('**/art/topdown/deserter.*', async (route) => {
             failedImageRequests++;
             await route.abort();
           });
