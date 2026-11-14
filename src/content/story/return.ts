@@ -264,6 +264,18 @@ export const RETURN_STORY: readonly StoryNode[] = [
           text: 'You laughed the side gate open. Dorin wrote something down.',
         },
         {
+          when: { kind: 'flag', key: 'sq03.ledger', op: 'eq', value: 'extension' },
+          text: 'You helped Gao ask the wholesaler for more time, and kept his neighbours’ names out of it.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq03.ledger', op: 'eq', value: 'fund' },
+          text: 'You helped Ba Dan start a food jar at Gao’s, with no names on it.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq03.ledger', op: 'eq', value: 'praised' },
+          text: 'You told the square about Gao’s other ledger. He had asked you not to.',
+        },
+        {
           when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
           text: 'You stopped for Lanfen’s ducklings on the Forest Road.',
         },
