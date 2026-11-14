@@ -318,7 +318,7 @@ describe('movement against an independent seeded graph oracle (#517)', () => {
       expect(coverage[category], category).toBeGreaterThan(100);
     for (const category of ['diagonal', 'weighted', 'transit', 'props'] as const)
       expect(coverage[category], category).toBeGreaterThan(0);
-  }, 15_000);
+  });
 
   it('pins straddling, both diagonal guards, worst costs, ramps, cliffs and self paths', () => {
     const grid: Grid = {

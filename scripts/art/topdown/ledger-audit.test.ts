@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { CHILD_HANG_GUARD_MS } from '../../test-support/workBounds';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const script = join(repo, 'prototypes/topdown/tools/ledger_audit.py');
@@ -16,7 +17,7 @@ function run(args: string[], cwd = repo) {
   return spawnSync(python, ['-I', script, ...args], {
     cwd,
     encoding: 'utf8',
-    timeout: 10_000,
+    timeout: CHILD_HANG_GUARD_MS,
     windowsHide: true,
   });
 }

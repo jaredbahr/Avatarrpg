@@ -9,15 +9,15 @@ import type { TestContext } from 'vitest';
 
 const combatCases = createCombatCasePool();
 // Bundling the worker and loading the content into every lane is pool
-// start-up, not a test's work: pay it here, under the hook's own deadline.
-beforeAll(() => combatCases.warm(), 30_000);
+// start-up, not a test's work: pay it here, once.
+beforeAll(() => combatCases.warm());
 afterAll(async () => {
   await combatCases.close();
 });
 
-function runTimedCases(cases: Parameters<typeof combatCases.run>[0], ctx: TestContext) {
+function runPooledCases(cases: Parameters<typeof combatCases.run>[0], ctx: TestContext) {
   const run = combatCases.run(cases, ctx.signal);
-  // Vitest can finish a timed-out test before the workers finish terminating.
+  // Vitest can finish an aborted test before the workers finish terminating.
   ctx.onTestFinished(async () => {
     await Promise.allSettled([run]);
   });
@@ -38,14 +38,12 @@ describe('combat simulation', () => {
 
   for (const encounterId of encounterIds) {
     /*
-     * The boss runs through the worker pool and is its first batch, so it
-     * pays each lane's JIT warm-up on twelve six-player fights (3.4-5.4 s of
-     * CPU in one thread, warm to cold). Hosted runs on the 5 s default (13-14
-     * Nov 2026): 3.2-3.7 s on the faster runner type, 4.3-5.0 s on the slower
-     * one, where it timed out once. Ten seconds is twice the slowest run.
+     * Termination is a work bound, not a deadline (#796): `runCombat` stops at
+     * `DEFAULT_MAX_ROUNDS` and reports a stalemate, and both are asserted
+     * below. The boss's twelve six-player fights go through the worker pool
+     * only to keep the gate short (3.4-5.4 s of CPU in one thread).
      */
-    const timeout = encounterId === 'enc_grumbler' ? 10_000 : undefined;
-    it(`terminates cleanly: ${encounterId}`, { timeout }, async (ctx) => {
+    it(`terminates cleanly: ${encounterId}`, async (ctx) => {
       const cases = Array.from({ length: 12 }, (_, trial) => ({
         seed: seedFor(`terminate-${encounterId}`, trial),
         encounterId,
@@ -53,7 +51,7 @@ describe('combat simulation', () => {
       }));
       const results =
         encounterId === 'enc_grumbler'
-          ? await runTimedCases(cases, ctx)
+          ? await runPooledCases(cases, ctx)
           : cases.map((options) => runCombat(CONTENT, options));
       for (const [trial, result] of results.entries()) {
         expect(result.anomalies, `${encounterId} trial ${trial}`).toEqual([]);
@@ -105,7 +103,7 @@ describe('combat simulation', () => {
         party: STANDARD_PARTY,
       })),
     );
-    for (const result of await runTimedCases(cases, ctx)) {
+    for (const result of await runPooledCases(cases, ctx)) {
       expect(result.anomalies).toEqual([]);
       expect(result.partyHpRemaining).toBeGreaterThanOrEqual(0);
       expect(result.partyHpRemaining).toBeLessThanOrEqual(result.partyHpTotal);
@@ -126,13 +124,9 @@ describe('combat simulation', () => {
   });
 
   /*
-   * Eighty boss fights are the work here, and they need more than the default
-   * 5 s on a slow hosted runner even with every worker started and warm. Hosted
-   * 4-vCPU runs of this test on the 5 s default (13-14 Nov 2026): 2.9-3.8 s on
-   * the faster runner type, 4.6-5.0 s on the slower one, where it timed out on
-   * six PR runs. The same 80 fights take 7.4-8 s of warmed CPU in one thread,
-   * so four lanes cannot honestly bring the slow runner under 4 s. Ten seconds
-   * is twice the slowest run; pool start-up is not in it (`beforeAll`).
+   * Eighty boss fights are the work here: 7.4-8 s of warmed CPU in one thread,
+   * which is why they run on the worker pool. Their number is fixed and every
+   * fight ends by the round limit, so nothing here is timed (#796).
    */
   it('keeps the quarry winnable with every character in a three-person party', async (ctx) => {
     const cases = [...CONTENT.characters.values()].map((character) => {
@@ -157,7 +151,7 @@ describe('combat simulation', () => {
         };
       }),
     ).flat();
-    const results = await runTimedCases(
+    const results = await runPooledCases(
       trials.map(({ options }) => options),
       ctx,
     );
@@ -170,11 +164,12 @@ describe('combat simulation', () => {
         const result = ordered[index * 8 + trial]!;
         expect(result.anomalies, `${id} trial ${trial}`).toEqual([]);
         expect(result.outcome, `${id} trial ${trial}`).not.toBe('stalemate');
+        expect(result.rounds, `${id} trial ${trial}`).toBeLessThanOrEqual(DEFAULT_MAX_ROUNDS);
         if (result.outcome === 'victory') victories++;
       }
       expect(victories, `${id} in the quarry`).toBeGreaterThan(0);
     }
-  }, 10_000);
+  });
 });
 
 describe('encounter rosters', () => {

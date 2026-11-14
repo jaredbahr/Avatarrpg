@@ -589,7 +589,7 @@ describe('reducer input immutability', () => {
       continuedExploreCount,
       'corpus includes post-resolution exploration walks',
     ).toBeGreaterThan(0);
-  }, 20_000);
+  });
 
   it('guards nested objects, arrays, Maps, Sets, and their contents', () => {
     const key = { id: 'nested-key' };

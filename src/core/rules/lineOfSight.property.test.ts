@@ -477,7 +477,7 @@ describe('seeded line-of-sight properties', () => {
     expect(noTieCases).toBeGreaterThan(100);
     expect(asymmetricSight).toBeGreaterThan(10);
     expect(octants.size).toBe(8);
-  }, 10_000);
+  });
 
   it('keeps real fence tiles transparent and cached maps isolated by object identity', () => {
     expect(LEGEND.F).toEqual({ terrain: 'wood', blocked: true, blocksSight: false, cover: true });

@@ -3,7 +3,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ABILITY_BY_ID } from '../../../src/content/abilities';
 import { FX_RECIPES } from '../../../src/content/fx';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { CHILD_HANG_GUARD_MS } from '../../test-support/workBounds';
 import { readPng } from '../lib/image';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import {
@@ -15,8 +16,6 @@ import {
   type PackedVfx,
   type VfxUse,
 } from './pack-vfx';
-
-vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
 
 const readManifest = (): PackedVfx => JSON.parse(readFileSync(JSON_OUTPUT, 'utf8')) as PackedVfx;
 const abilityUse = (
@@ -47,7 +46,7 @@ describe('top-down VFX packing', () => {
     const check = execFileSync(
       process.execPath,
       ['--import', 'tsx', 'scripts/art/topdown/pack-vfx.ts', '--check'],
-      { cwd: process.cwd(), encoding: 'utf8', timeout: 600_000 },
+      { cwd: process.cwd(), encoding: 'utf8', timeout: CHILD_HANG_GUARD_MS },
     );
     expect(check).toContain('0 stale');
   });

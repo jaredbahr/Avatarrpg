@@ -6,7 +6,7 @@
  * seated). Ba Dan's own pieces (the ford, the bridge, the plants it strips) follow.
  */
 import { readFileSync, readdirSync } from 'node:fs';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import { measureStyle } from '../lib/colours';
 import {
@@ -25,8 +25,6 @@ import { bakedDisc, bakedMound, dehalo } from './lib/sprites';
 import type { MapScene } from '../../../src/core/types';
 import { readPng } from '../lib/image';
 import { PLATE_W } from '../../../src/content/scenes/baDan.topdown.terrain';
-
-vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 });
 
 interface Packed {
   readonly board: TopDownBoard;
