@@ -174,8 +174,22 @@ export class Renderer {
 
   draw(view: MapView): void {
     if (this.destroyed) return;
-    this.lastView = view;
-    this.backend.draw(view, this.camera);
+    // Both backends use the live view clock for a standing sheet unless the
+    // scene supplies a clip time. Keep its first cel under reduced motion.
+    // Explicit pose timing and the view clock still drive active effects.
+    this.lastView = view.reducedMotion
+      ? {
+          ...view,
+          units: view.units.map((unit) =>
+            unit.clipTime === undefined &&
+            unit.clipFrame === undefined &&
+            (!unit.clip || /^(idle|rest|stance)/.test(unit.clip))
+              ? { ...unit, clipTime: 0 }
+              : unit,
+          ),
+        }
+      : view;
+    this.backend.draw(this.lastView, this.camera);
   }
 
   /** Releases GPU resources. Safe to call more than once. */

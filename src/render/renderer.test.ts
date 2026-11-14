@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Camera } from './camera';
-import type { MapView } from './view';
+import type { MapView, RenderUnit } from './view';
 
 const backend = vi.hoisted(() => ({
   capabilities: { name: 'canvas' as const, shaders: false, particles: false },
@@ -59,6 +59,38 @@ beforeEach(() => {
 });
 
 afterEach(() => vi.unstubAllGlobals());
+
+it('holds only implicit standing cels with reduced motion, including resize redraws', () => {
+  const renderer = new Renderer(canvas, { width: 20, height: 12 });
+  const idle: RenderUnit = {
+    id: 'p0',
+    pos: { x: 0, y: 0 },
+    size: 1,
+    sprite: 'kaya',
+    name: 'Kaya',
+    faction: 'party',
+    hp: 10,
+    maxHp: 10,
+    statuses: [],
+    fallen: false,
+    clip: 'idleSouthEast',
+  };
+  const walk = { ...idle, id: 'p1', clip: 'walk' as const };
+  const timed = { ...idle, id: 'p2', clipTime: 210 };
+  const framed = { ...idle, id: 'p3', clipFrame: 1 };
+  const ordinary = { ...view, units: [idle, walk, timed, framed] };
+  renderer.draw(ordinary);
+  expect(backend.draw).toHaveBeenLastCalledWith(ordinary, renderer.camera);
+
+  const reduced = { ...ordinary, reducedMotion: true };
+  const standing = { ...reduced, units: [{ ...idle, clipTime: 0 }, walk, timed, framed] };
+  renderer.draw(reduced);
+  expect(backend.draw).toHaveBeenLastCalledWith(standing, renderer.camera);
+  expect(idle.clipTime).toBeUndefined();
+  renderer.resizeAndRedraw(() => undefined);
+  expect(backend.draw).toHaveBeenLastCalledWith(standing, renderer.camera);
+  renderer.destroy();
+});
 
 describe('renderer observer repaint', () => {
   it('repaints explicit scene resizing after refit even when the later observer sees no change', () => {
