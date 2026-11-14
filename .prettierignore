@@ -40,3 +40,7 @@ prototypes/
 
 # Claude Code agent worktrees (full repo copies).
 .claude/worktrees/
+
+# The owner's story canon, committed verbatim as he supplied it (see docs/story-bible.md).
+docs/story/the-common-current-bible.md
+docs/story/living-world-expansion.md
