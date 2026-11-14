@@ -19,6 +19,12 @@ MISMATCH_RATIO = Decimal("0.20")
 PHASE_TOLERANCE = Decimal("0.000001")
 PHASE_PREFIX_RE = re.compile(r"^([a-z]+[0-9]+_)", re.IGNORECASE)
 PHASE_KEY_RE = re.compile(r"^([a-z]+[0-9]+_)(start_balance|end_balance|ledger_spent)$", re.IGNORECASE)
+# A region id, as `src/content/regions/` spells it (snake_case).
+REGION_RE = re.compile(r"^[a-z][a-z0-9]*(_[a-z0-9]+)*$")
+# Ledger-level keys the audit reads; anything else stays reported as unmapped metadata.
+KNOWN_METADATA_KEYS = {"default_region"}
+# An id segment in an endpoint path (`/objects/<uuid>/animations`), folded so one asset type is one row.
+UUID_SEGMENT_RE = re.compile(r"/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=/|$)", re.IGNORECASE)
 SNAPSHOT_CAVEAT = (
     "Per-job balance_diff values are balance snapshots and may overlap when jobs run in parallel. "
     "Their raw sum is shown for comparison, not as an exclusive charge or spend total."
@@ -107,6 +113,12 @@ def audit(raw: bytes, ledger_path: Path) -> dict[str, Any]:
     if not isinstance(rows, list):
         raise AuditError("ledger.jobs must be a JSON array")
 
+    default_region = ledger.get("default_region")
+    if default_region is not None and (
+        not isinstance(default_region, str) or not REGION_RE.match(default_region)
+    ):
+        raise AuditError("ledger.default_region must be a snake_case region id")
+
     parsed_rows: list[dict[str, Any]] = []
     for index, row in enumerate(rows):
         where = f"jobs[{index}]"
@@ -127,6 +139,10 @@ def audit(raw: bytes, ledger_path: Path) -> dict[str, Any]:
         after = None
         if "balance_after" in row:
             after = _number(row["balance_after"], f"{where}.balance_after")
+        region = row.get("region")
+        if region is not None and (not isinstance(region, str) or not REGION_RE.match(region)):
+            raise AuditError(f"{where}.region must be a snake_case region id")
+        endpoint = row.get("endpoint")
         parsed_rows.append(
             {
                 "index": index,
@@ -136,6 +152,11 @@ def audit(raw: bytes, ledger_path: Path) -> dict[str, Any]:
                 "delta": delta,
                 "balance_after": after,
                 "prefix": _job_prefix(name),
+                "region": region if region is not None else default_region,
+                "region_source": "job" if region is not None else ("default" if default_region else None),
+                "endpoint": UUID_SEGMENT_RE.sub("/{id}", endpoint)
+                if isinstance(endpoint, str) and endpoint
+                else "(none)",
             }
         )
 
@@ -144,7 +165,7 @@ def audit(raw: bytes, ledger_path: Path) -> dict[str, Any]:
     unmapped_metadata_keys: list[str] = []
     all_phase_prefixes = {row["prefix"] for row in parsed_rows if row["prefix"] is not None}
     for key, value in ledger.items():
-        if key == "jobs":
+        if key == "jobs" or key in KNOWN_METADATA_KEYS:
             continue
         prefix_match = PHASE_PREFIX_RE.match(key) if isinstance(key, str) else None
         mapped = PHASE_KEY_RE.match(key)
@@ -236,6 +257,9 @@ def audit(raw: bytes, ledger_path: Path) -> dict[str, Any]:
             }
         )
 
+    regions = _region_rollup(parsed_rows)
+    untagged_jobs = [row["name"] for row in parsed_rows if row["region"] is None]
+
     unmapped_rows = [row for row in parsed_rows if row["prefix"] is None]
     all_booked = sum((row["credits"] for row in parsed_rows), Decimal(0))
     all_delta_sum = sum((row["delta"] for row in parsed_rows if row["delta"] is not None), Decimal(0))
@@ -266,6 +290,13 @@ def audit(raw: bytes, ledger_path: Path) -> dict[str, Any]:
             "noncompleted_job_count": len(noncompleted_jobs),
         },
         "phases": phases,
+        "regions": regions,
+        "region_policy": {
+            "default_region": default_region,
+            "rule": "a job's own region wins; otherwise the ledger's default_region; otherwise untagged",
+            "credits": "booked per-job credits, as in the summary (not balance snapshots)",
+        },
+        "untagged_jobs": untagged_jobs,
         "t3_evidence": {
             "present": bool(metadata.get("t3_")) or any(row["prefix"] == "t3_" for row in parsed_rows),
             "job_count": sum(row["prefix"] == "t3_" for row in parsed_rows),
@@ -282,6 +313,40 @@ def audit(raw: bytes, ledger_path: Path) -> dict[str, Any]:
         },
         "caveats": [SNAPSHOT_CAVEAT],
     }
+
+
+def _region_rollup(parsed_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Booked credits per region, and per endpoint (the asset type) inside each region."""
+    out: list[dict[str, Any]] = []
+    for region in sorted({row["region"] for row in parsed_rows if row["region"] is not None}):
+        rows = [row for row in parsed_rows if row["region"] == region]
+        completed = [row for row in rows if row["status"].casefold() == "completed"]
+        endpoints: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            entry = endpoints.setdefault(row["endpoint"], {"job_count": 0, "booked": Decimal(0)})
+            entry["job_count"] += 1
+            entry["booked"] += row["credits"]
+        out.append(
+            {
+                "region": region,
+                "job_count": len(rows),
+                "tagged_on_job_count": sum(row["region_source"] == "job" for row in rows),
+                "booked_credits": _json_number(sum((row["credits"] for row in rows), Decimal(0))),
+                "completed_job_count": len(completed),
+                "completed_booked_credits": _json_number(
+                    sum((row["credits"] for row in completed), Decimal(0))
+                ),
+                "by_endpoint": [
+                    {
+                        "endpoint": name,
+                        "job_count": entry["job_count"],
+                        "booked_credits": _json_number(entry["booked"]),
+                    }
+                    for name, entry in sorted(endpoints.items(), key=lambda item: (-item[1]["booked"], item[0]))
+                ],
+            }
+        )
+    return out
 
 
 def _human_report(report: dict[str, Any]) -> str:
@@ -319,6 +384,21 @@ def _human_report(report: dict[str, Any]) -> str:
                 f"{meta['last_listed_job_name_with_balance_after']} after={meta['last_listed_job_balance_after']} (order-based)."
             )
         lines.append(f"    Flags: {', '.join(flags) if flags else 'none'}")
+    lines.extend(["", "Cost per region (booked credits):"])
+    if not report["regions"]:
+        lines.append("  No job has a region and the ledger sets no default_region.")
+    for region in report["regions"]:
+        lines.append(
+            f"  {region['region']}: jobs={region['job_count']} booked={region['booked_credits']} "
+            f"completed={region['completed_booked_credits']} ({region['completed_job_count']} jobs) "
+            f"tagged-on-job={region['tagged_on_job_count']}"
+        )
+        for endpoint in region["by_endpoint"]:
+            lines.append(
+                f"    {endpoint['endpoint']}: jobs={endpoint['job_count']} booked={endpoint['booked_credits']}"
+            )
+    if report["untagged_jobs"]:
+        lines.append(f"  Untagged jobs ({len(report['untagged_jobs'])}): {', '.join(report['untagged_jobs'])}")
     exceptions = report["exceptions"]
     for key, label in (
         ("zero_credit_jobs", "Zero-credit jobs"),
