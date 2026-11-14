@@ -183,6 +183,12 @@ test('act1_victory frees the workers and walks on home without an end card', asy
   await expect(page.locator('.line-count')).toHaveText('1 of 4');
   await expect(page.getByRole('button', { name: 'Read summary' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Skip scene', exact: true }).click();
+  // Bo-shan's delivery book turns up in the Driller's cab (C-31), then the walk home.
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('quarry_ledger');
+  for (let line = 0; line < 4; line++)
+    await page.locator('.dialogue-panel button.btn-primary').click();
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('quarry_after_explore');

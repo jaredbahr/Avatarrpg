@@ -66,14 +66,17 @@ describe('the authored walk home', () => {
     const victory = CONTENT.story.get('act1_epilogue');
     const defeat = CONTENT.story.get('act1_epilogue_lost');
     if (victory?.kind !== 'dialogue' || defeat?.kind !== 'end') throw new Error('Missing endings');
-    expect(victory.next).toBe('act1_evening');
+    // The cart's delivery book (reasons.ts) plays between the rescue and the walk home.
+    expect(victory.next).toBe('quarry_ledger');
+    const ledger = CONTENT.story.get(victory.next);
+    if (ledger?.kind !== 'dialogue') throw new Error('Missing the delivery book');
+    expect(ledger.next).toBe('act1_evening');
     expect(defeat.next).toBeUndefined();
     const lost = enterStoryNode(CONTENT, game(), 'act1_lost').state;
     expect(lost.world.residentProfiles).toEqual({});
-    if (!victory.next) throw new Error('Missing victory continuation');
     const ended = apply(CONTENT, game(), { type: 'enterNode', nodeId: 'act1_victory' }).state;
     expect(ended.world.residentProfiles).toEqual(profiles('returning'));
-    const returned = apply(CONTENT, ended, { type: 'enterNode', nodeId: victory.next }).state;
+    const returned = apply(CONTENT, ended, { type: 'enterNode', nodeId: ledger.next }).state;
     expect(returned.screen).toBe('explore');
     expect(returned.location.mapId).toBe('quarry_floor');
     expect(returned.flags).toEqual(ended.flags);
