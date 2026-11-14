@@ -148,13 +148,19 @@ function oilSimpleEdge(m: Uint8Array, BW: number, x: number, y: number): boolean
   }
 }
 
+/** Keep priority peaks apart while their changing offsets let nearby cuts deepen. */
+function oilTrimPriority(x: number, y: number, phase: number): number {
+  const offset = phase % 2;
+  const lattice = (x + offset) % 2 === 0 && (y + offset) % 2 === 0 ? 1 : 0;
+  const shape = 0.65 * vnoise(x, y, 181, 10) + 0.35 * vnoise(x, y, 183, 4);
+  return lattice + shape + 0.1 * hash2(x, y, 191 + phase);
+}
+
 /**
- * Fine oil scallops inside the canonical mask, never a change to rules coverage.
- * World-coordinate priority maxima have no eight-adjacent pixels. Their simultaneous
- * simple-edge deletions cannot invalidate one another's 3x3 connection witness.
- * Three snapshot rounds trim at most three layers and preserve thin bridges.
- * Their shrinking halos leave an exact own+6 mask for the capped-six shading
- * distance: three local reads plus six still fit the existing nine-pixel apron.
+ * Three snapshot passes form shallow, irregular lobes inside the canonical oil.
+ * Eight-neighbour priority peaks cannot invalidate one another's connection checks.
+ * Their shrinking halos leave the exact six pixels read by shading within the
+ * existing nine-pixel repaint apron.
  */
 function oilPaintMask(canonical: Uint8Array, BW: number, BH: number, own: Region): Uint8Array {
   let previous = canonical;
@@ -167,12 +173,12 @@ function oilPaintMask(canonical: Uint8Array, BW: number, BH: number, own: Region
       for (let x = Math.max(1, region.x0); x < Math.min(BW - 1, region.x1); x++) {
         const i = y * BW + x;
         if (!previous[i]) continue;
-        const priority = hash2(x, y, 181 + phase);
+        const priority = oilTrimPriority(x, y, phase);
         let highest = true;
         for (let dy = -1; dy <= 1 && highest; dy++)
           for (let dx = -1; dx <= 1; dx++) {
             if (!dx && !dy) continue;
-            const neighbour = hash2(x + dx, y + dy, 181 + phase);
+            const neighbour = oilTrimPriority(x + dx, y + dy, phase);
             if (neighbour > priority || (neighbour === priority && (dy < 0 || (!dy && dx < 0)))) {
               highest = false;
               break;

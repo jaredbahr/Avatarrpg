@@ -221,6 +221,56 @@ function median(values: number[]): number {
 }
 
 describe('oil liquid edges and core (#598 follow-up)', () => {
+  it('breaks the tile-aligned sides of all four Driller floor oil patches', () => {
+    const grid = oilOnly(buildGrid(QUARRY_FLOOR));
+    const { width, height, mask } = footprint(fresh(grid).art.layer);
+    const { labels } = components({ width, height, mask }, 1);
+    const patches = [
+      { name: 'north-west', x: 7, y: 2 },
+      { name: 'north-east', x: 11, y: 2 },
+      { name: 'south-west', x: 7, y: 8 },
+      { name: 'south-east', x: 11, y: 8 },
+    ];
+    const limits = new Map<number, number>();
+    for (const { name, x, y } of patches) {
+      const label = labels[(y * CS + CS / 2) * width + x * CS + CS / 2] ?? 0;
+      expect(label, name).toBeGreaterThan(0);
+      expect(limits.has(label), name).toBe(false);
+      limits.set(label, 0);
+    }
+
+    for (const horizontal of [true, false]) {
+      const length = horizontal ? width : height;
+      const lines = horizontal ? height : width;
+      for (const outside of [-1, 1]) {
+        for (let line = 0; line < lines; line++) {
+          let previous = 0;
+          let run = 0;
+          for (let position = 0; position < length; position++) {
+            const index = horizontal ? line * width + position : position * width + line;
+            const label = labels[index] ?? 0;
+            const nextLine = line + outside;
+            const neighbour = horizontal ? index + outside * width : index + outside;
+            const onOutline =
+              limits.has(label) && (nextLine < 0 || nextLine >= lines || !mask[neighbour]);
+            if (!onOutline) {
+              previous = 0;
+              run = 0;
+              continue;
+            }
+            run = label === previous ? run + 1 : 1;
+            previous = label;
+            if (run > (limits.get(label) ?? 0)) limits.set(label, run);
+          }
+        }
+      }
+    }
+
+    for (const [index, run] of [...limits.values()].entries()) {
+      expect.soft(run, patches[index]?.name).toBeLessThanOrEqual(6);
+    }
+  });
+
   for (const { name, grid } of fixtures) {
     it(`${name}: breaks long straight tops and square sides into pixel contours`, () => {
       const shape = footprint(fresh(grid).art.layer);
