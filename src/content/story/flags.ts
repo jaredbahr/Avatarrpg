@@ -172,11 +172,19 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.ducks_seen',
     type: 'boolean',
     values: [true],
-    meaning: 'The party met Lanfen and her displaced turtle ducks on the Forest Road.',
+    meaning:
+      'The party met Lanfen and her displaced turtle ducks on the Forest Road, and heard about the runoff; it opens the gate talk.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:forest_ducks_seen'],
-    readBy: ['map:forest_road', 'story:demo_complete', 'journal:ducks'],
+    readBy: [
+      'map:forest_road',
+      'story:gate_parley',
+      'story:gate_kinship',
+      'story:gate_ruon_listens',
+      'story:demo_complete',
+      'journal:ducks',
+    ],
   },
   {
     key: 'world.discovered.duck_nest',
@@ -192,11 +200,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.discovered.runoff_marker',
     type: 'boolean',
     values: [true],
-    meaning: 'The party read the silted flood marker that asks if the settling pit is blocked.',
+    meaning:
+      'The party read the silted flood marker that asks if the settling pit is blocked; it opens the gate talk.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:remember_runoff_marker'],
-    readBy: ['map:forest_road', 'journal:runoff_marker'],
+    readBy: [
+      'map:forest_road',
+      'story:gate_parley',
+      'story:gate_kinship',
+      'story:gate_ruon_listens',
+      'journal:runoff_marker',
+    ],
   },
 
   /* -------------------------------------------------------- Quarry gate */
@@ -214,7 +229,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'gate_talked_through',
     type: 'boolean',
     values: [true],
-    meaning: 'An earthbender talked Captain Ruon into opening the gate; no gate fight.',
+    meaning:
+      'The party talked Captain Ruon into opening the gate on what it knew about his quarry; no gate fight.',
     arc: 'Demo · Quarry gate',
     status: 'live',
     setBy: ['story:gate_talked_through'],
@@ -224,10 +240,11 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'ruon_respects_you',
     type: 'boolean',
     values: [true],
-    meaning: 'Ruon opened the gate to the party’s earthbender as one stoneworker to another.',
+    meaning:
+      'Ruon opened the gate because the party knew what his quarry was doing: Bo’s crew work, Lin Mei’s survey eye, or the runoff the road showed it.',
     arc: 'Demo · Quarry gate',
     status: 'informational',
-    note: 'Set alongside gate_talked_through. Nothing reads it yet; a later act with Ruon should.',
+    note: 'Set alongside gate_talked_through. Nothing reads it yet; Ruon’s account (DLG-08) credits the party’s knowledge of the galleries.',
     setBy: ['story:gate_talked_through'],
     readBy: [],
   },

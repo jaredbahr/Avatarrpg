@@ -251,7 +251,7 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
       continue;
     }
     if (snapshot.nodeId === 'gate_parley') {
-      // Bo speaks to the earthbender.
+      // Bo talks to Ruon about the galleries.
       await timed('gateParley', 'click', () => page.locator('.choice-option').nth(2).click());
       continue;
     }

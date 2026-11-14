@@ -171,7 +171,7 @@ test('two of the crew watch from the wall while the parley is read', async ({ pa
   await expect.poll(() => page.evaluate(() => window.fnt!.app.state!.screen)).toBe('combat');
 });
 
-test('an earthbender talks the gate open and Ruon steps up to surrender', async ({ page }) => {
+test('Bo talks the gate open and Ruon steps up to surrender', async ({ page }) => {
   await adopt(page, {
     node: 'forest_after_explore',
     mapId: 'quarry_gate',
@@ -180,11 +180,13 @@ test('an earthbender talks the gate open and Ruon steps up to surrender', async 
   });
   await walkTo(page, 8, 5);
   expect(await nodeId(page)).toBe('gate_parley');
-  // Bo speaks about the stonework; the crew watch until the gate is opened.
+  // Bo speaks from his own crew work; the crew watch until the gate is opened.
   await page.evaluate(() => window.fnt!.app.dispatch({ type: 'chooseOption', optionIndex: 2 }));
   expect(await nodeId(page)).toBe('gate_kinship');
   expect(await followers(page)).toEqual([]);
   await finishDialogue(page, 'gate_kinship');
+  expect(await nodeId(page)).toBe('gate_ruon_listens');
+  await finishDialogue(page, 'gate_ruon_listens');
   expect(await nodeId(page)).toBe('ruon_surrender');
   // The world kept behind the conversation repaints with him in it.
   await expect.poll(() => followers(page)).toEqual(['follower.ruon']);

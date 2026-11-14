@@ -257,7 +257,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
       choices: [
         {
           when: { kind: 'flag', key: 'gate_talked_through', op: 'set' },
-          text: 'At the quarry gate, your earthbender talked Captain Ruon into opening it.',
+          text: 'At the quarry gate, you talked Captain Ruon into opening it.',
         },
         {
           when: { kind: 'flag', key: 'lost_quarry_gate', op: 'set' },

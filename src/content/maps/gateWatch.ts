@@ -6,7 +6,7 @@
  * frames, leaving the east stack to the deserter the parley also names. They
  * are the crew the party then fights (the Quarry Worker and the Quarry Hauler,
  * their combat art), so they leave the wall as the fight starts, or once Ruon
- * has the gate opened for an earthbender.
+ * has the gate opened for a party that talked him round.
  *
  * Kept apart from `connectAct1` so the gate's other staging can change there
  * without touching this list.
