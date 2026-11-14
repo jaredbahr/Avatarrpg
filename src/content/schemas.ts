@@ -879,6 +879,15 @@ const standingAdjust = z
   })
   .partial();
 
+const nodePresentation = z
+  .object({
+    mapId: id,
+    stage: z
+      .union([z.object({ npc: id }).strict(), z.object({ tiles: z.array(vec2) }).strict()])
+      .optional(),
+  })
+  .strict();
+
 export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
@@ -888,6 +897,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     lines: z.array(z.string().min(1)).min(1),
     next: id,
     variants: z.array(dialogueVariant).optional(),
+    presentation: nodePresentation.optional(),
   }),
   z.object({
     id,
@@ -895,6 +905,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     speaker: z.string().min(1),
     portrait: z.string().min(1),
     prompt: z.string().min(1),
+    presentation: nodePresentation.optional(),
     options: z
       .array(
         z.object({
