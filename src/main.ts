@@ -14,6 +14,7 @@ import './styles/a11y.css';
 
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
 import { App } from './app/App';
+import { loadIcons } from './app/ui/icons';
 import { bakeReview } from './render/sheets/review';
 import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
@@ -46,6 +47,14 @@ if (import.meta.env.DEV) {
     }
   });
 }
+
+// The icon sprite is requested now, while the page is still loading, rather than when the app
+// starts. The app waits for the top-down scenes below, so a request made from `App.start` goes out
+// after the load event; a reload or navigation then cancels it in flight, and WebKit logs that as
+// an uncaught "Cannot load … due to access control checks" error although `loadIcons` catches it.
+// Started here, it goes out with the page's own loading, as it did before the top-down boot made
+// the start asynchronous. `App.start` still calls it, as a no-op.
+loadIcons();
 
 // The game draws in the top-down style (ADR 0104); `?style=` is ignored, so old links still work.
 useTopDownStyle();
