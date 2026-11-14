@@ -1,7 +1,8 @@
 # ADR 0111: Regions as the unit of content, loading and budgets
 
 **Status:** §1 (the region manifest) and §2 (per-region loading) accepted, 2026-11-14. §3's
-current behaviour is unchanged; its proposal for later regions and §4 (budgets) wait for the owner. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
+current behaviour is unchanged; its proposal for later regions and §4 (budgets) wait for the owner;
+the budget gates change only when the owner accepts §4. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
 (top-down scenes as assets), ADR 0108 (area music) and ADR 0109 (the JS budget). Answers "Scale and
 saves" in `docs/pipeline-proof-plan.md`.
 
@@ -116,9 +117,48 @@ region's chunk (`assets/region-<folder>-*`) and art are left out of the precache
 a tablet plays offline anywhere it has already been. The alternative is to precache every region:
 simpler and always offline, but the install grows with the saga.
 
-### 4. Budgets (proposed, owner decision)
+### 4. Budgets (proposed; the owner decides)
 
-To land as a draft PR; no budget number or rule changes before the owner agrees.
+One total per kind grows with every region and would need raising each time. Proposed instead: a
+budget for what the core ships and one per region. **For the demo's one region every proposed cap
+adds up to today's number**, so nothing grows today; each new region then brings its own caps
+instead of a raise. Measured on this branch:
+
+| Gate                 | Today (rule, number)                       | Proposed (rule, number)                                       | Demo now             |
+| -------------------- | ------------------------------------------ | ------------------------------------------------------------- | -------------------- |
+| JS per session       | all shipped JS ≤ 410 KB gz                 | boot JS + the largest region chunk ≤ **410 KB gz**            | 362.8 + 21.9 = 384.7 |
+| JS per region        | (none)                                     | each region chunk ≤ **40 KB gz**                              | 21.9                 |
+| Top-down art, shared | `topdown` family (boards included) ≤ 6 MiB | `topdown` family without region boards ≤ **4.5 MiB**          | 3.27 MB              |
+| Top-down art, region | (in the family)                            | each region's boards (its scenes' folders) ≤ **1.5 MiB**      | 1.39 MB              |
+| Audio, sound effects | `audio` family (all sound) ≤ 4 MiB         | sound effects ≤ **0.5 MiB**                                   | 0.16 MB              |
+| Audio, shared music  | (in the family)                            | music no region plays (the title) ≤ **0.75 MiB**              | 0.53 MB              |
+| Audio, region music  | (in the family)                            | each region's area music ≤ **2.75 MiB**                       | 2.66 MB              |
+| Precache             | ≤ 25 MB                                    | unchanged, ≤ **25 MB** (core plus every precached region, §3) | 10.43 MB             |
+| Other art families   | 4 MiB each; units 8.5; maps 6              | unchanged                                                     | unchanged            |
+
+(The caps are MiB, as the scripts have always measured; the report prints them as "MB".)
+
+The draft PR that carries this section implements exactly these gates in
+`scripts/check-bundle-size.mjs` and `scripts/check-asset-budget.mjs`; a region's files are found
+from its manifest (`scripts/region-assets.ts`). Until the owner agrees, `main` keeps today's gates
+and only reports the per-region numbers.
+
+**The audio rethink.** Music is most of the audio (3.19 of 3.35 MiB) and the reason it is out of
+room. With the split above, each region carries up to 2.75 MiB of its own music, streamed and never
+precached, so the next region's track does not break anything. Two further options, for the owner's
+ear rather than for the budget: shorter loops (the Ba Dan loop is 90 s, the title 45 s), or HE-AAC at
+about 64 kbps, roughly a third smaller per track, which ADR 0108 did not try. And music is not
+cached for offline play today (ADR 0108); caching each track on first play would make a visited
+region's music play offline too.
+
+### Decisions for the owner
+
+1. **Budgets:** accept §4's structure and numbers (the draft PR), change them, or keep the totals.
+2. **Offline for later regions:** precache every region (simple, the install grows with the saga) or
+   only the start region, with later regions cached on first visit (§3). The demo is the start region
+   either way.
+3. **Music:** keep 96 kbps and per-region caps, or try shorter loops or HE-AAC; and whether music
+   should be cached for offline after its first play.
 
 ## Consequences
 
