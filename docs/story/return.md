@@ -34,29 +34,29 @@ flowchart TD
   n80["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
   n93["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
   n102["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n107["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n108["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n109["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n110["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n117["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n118["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n119["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n120["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
   n90["riverside_explore — exit to riverside / part 1"]:::external
   n14 -->|"Legacy/audit exit (live map exits differ)"| n46
   n22 -->|"Next"| n37
-  n23 -->|"Continue after ending"| n107
-  n28 -->|"Next"| n107
+  n23 -->|"Continue after ending"| n117
+  n28 -->|"Next"| n117
   n35 -->|"Next"| n36
-  n36 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n107
+  n36 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n117
   n37 -->|"Legacy/audit exit (live map exits differ)"| n35
-  n40 -->|"Next"| n107
-  n41 -->|"Next"| n107
+  n40 -->|"Next"| n117
+  n41 -->|"Next"| n117
   n46 -->|"Legacy/audit exit (live map exits differ)"| n37
-  n68 -->|"Next"| n107
+  n68 -->|"Next"| n117
   n80 -->|"Legacy/audit exit (live map exits differ)"| n14
   n93 -->|"Next"| n90
   n102 -->|"Next"| n14
-  n107 -->|"Legacy/audit exit (live map exits differ)"| n110
-  n108 -->|"Next"| n23
-  n109 -->|"Next"| n108
-  n110 -->|"Next"| n109
+  n117 -->|"Legacy/audit exit (live map exits differ)"| n120
+  n118 -->|"Next"| n23
+  n119 -->|"Next"| n118
+  n120 -->|"Next"| n119
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

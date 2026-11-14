@@ -62,6 +62,9 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
   ['school_notice', 'ba_dan_village'],
+  // SQ-01 (sq01Cabbages.ts): Pella's packing list, and her corrected list after the rescue.
+  ['sq01_packing_list', 'ba_dan_village'],
+  ['sq01_pella_list', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],
@@ -76,6 +79,14 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['forest_dema_again', 'forest_road'],
   ['dema_home', 'forest_road'],
   ['forest_return_arrival', 'forest_road'],
+  // SQ-01: Bo-shan's tipped sled, east of the roadblock.
+  ['sq01_sled', 'forest_road'],
+  ['sq01_note', 'forest_road'],
+  ['sq01_choice', 'forest_road'],
+  ['sq01_families', 'forest_road'],
+  ['sq01_crew', 'forest_road'],
+  ['sq01_leverage', 'forest_road'],
+  ['sq01_sled_again', 'forest_road'],
 
   // The watch speaks at the gate before the party chooses its approach, and
   // the camera rises to the curtain wall the workers watch from (#628).
