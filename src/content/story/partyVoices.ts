@@ -27,7 +27,7 @@ export const VOICES = [
     lines: [
       "That's quarry grit. I've had nets come up full of it near a stone yard.",
       "The scratch here says the settling pit may be blocked. I'd ask there before digging up this bank.",
-      'The lower reeds are coated in it. The turtle-ducks will need somewhere else to nest.',
+      'The lower reeds are coated in it. The turtle ducks will need somewhere else to nest.',
     ],
   },
   {

@@ -43,7 +43,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     mapId: 'forest_road',
     title: 'Lanfen’s unexpected tenants',
     hint: 'Meet the road keeper on the northwestern verge.',
-    found: 'Lanfen says quarry runoff has driven the turtle-ducks uphill into her washing.',
+    found: 'Lanfen says quarry runoff has driven the turtle ducks uphill into her washing.',
     when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
   },
   {

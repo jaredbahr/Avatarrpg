@@ -54,7 +54,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     portrait: 'portrait.dema',
     lines: [
       'Mind your feet. There are ducklings under that fern. Yes, the one you are about to step on.',
-      "They used to nest down by the stream. Now it's full of quarry silt, and I've got a turtle-duck sitting in my clean washing.",
+      "They used to nest down by the stream. Now it's full of quarry silt, and I've got a turtle duck sitting in my clean washing.",
       'If you are going up there, ask them about the runoff. The duck can keep whichever sock it took. I want my stream back.',
     ],
     next: 'forest_ducks_seen',

@@ -4,7 +4,7 @@ import { DISCOVERIES } from '../maps/discoveries';
 const TEXT = {
   duck_nest: {
     first: [
-      'A turtle-duck stands over a nest lined with reeds and a woollen sock. Three ducklings crowd into the heel.',
+      'A turtle duck stands over a nest lined with reeds and a woollen sock. Three ducklings crowd into the heel.',
       'She spreads her wings when you get close. You step back. One duckling carries on pulling at a loose thread.',
       'Down by the stream, white silt has dried over the old nest. The reeds are bent flat, and a wooden clothes peg is stuck in the crust.',
     ],
