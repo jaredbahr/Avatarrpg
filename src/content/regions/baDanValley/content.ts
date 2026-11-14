@@ -13,6 +13,7 @@ import { DISCOVERY_STORY } from '../../story/discoveries';
 import { RETURN_STORY } from '../../story/return';
 import { BA_DAN_DAY_STORY } from '../../story/baDanDay';
 import { SQ01_STORY } from '../../story/sq01Cabbages';
+import { SQ02_STORY } from '../../story/sq02OfficialGate';
 import { withPartyVoices } from '../../story/partyVoices';
 import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from '../../residents/baDan';
 
@@ -28,6 +29,12 @@ const STORY_GROUPS: readonly StoryGroup[] = [
     title: 'SQ-01 Too Many Cabbages',
     source: 'sq01Cabbages.ts',
     nodes: SQ01_STORY,
+  },
+  {
+    slug: 'sq02-official-gate',
+    title: 'SQ-02 A Very Official Gate',
+    source: 'sq02OfficialGate.ts',
+    nodes: SQ02_STORY,
   },
 ];
 
