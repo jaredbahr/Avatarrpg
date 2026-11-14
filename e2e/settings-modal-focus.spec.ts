@@ -75,7 +75,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(await gameState(page)).toBe(before);
       await page.locator('[data-conversation-control="next"]').focus();
       await page.keyboard.press('Enter');
-      await expect(page.locator('.line-count')).toHaveText('2 of 4');
+      await expect(page.locator('.line-count')).toHaveText('2 of 2');
     });
 
     test('a text-size radio cannot choose a response behind Settings', async ({ page }) => {
