@@ -144,6 +144,9 @@ an appropriate narrator. Do not put unmarked actions into a character's speech.
 Keep node IDs, destinations, conditions, rewards, and interlude shot counts intact
 unless the task explicitly requires a behavior change.
 
+Reading the past from a later region means declaring how old saves answer: a save
+already past a flag's setter never gets it, so add its answer to `flagBackfills.ts`.
+
 ## Let the themes stay unspoken
 
 The core themes (responsibility, belonging, balance, racial and social
