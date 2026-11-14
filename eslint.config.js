@@ -46,6 +46,80 @@ const impureProperties = [
   },
 ];
 
+/**
+ * The unit gate bounds work, never the wall clock (#796; `scripts/test-support/workBounds.ts`).
+ * A timeout in the gate is one hang guard, set once in `vitest.config.ts`; a test that reads a
+ * clock or passes its own timeout is measuring the machine it runs on.
+ */
+const TEST_FN = '/^(it|test|describe|bench|beforeAll|afterAll|beforeEach|afterEach)$/';
+/** A number, or a constant named like one, as the last argument after the test body. */
+const TIMEOUT_ARG =
+  ':matches(Literal[raw=/^[0-9_.]+$/], BinaryExpression, Identifier[name=/(TIMEOUT|BUDGET|_MS|[a-z]Ms|[tT]imeout)$/]).arguments:last-child:not(:first-child)';
+const ownTimeout =
+  'Do not give a test its own timeout: it fails on a busy machine while every rule passes. ' +
+  'The one hang guard is HANG_GUARD_MS in vitest.config.ts; prove termination with a work bound ' +
+  '(expectWorkWithin in scripts/test-support/workBounds.ts).';
+const ownClock =
+  'Do not read a clock in a unit test. Bound the work with expectWorkWithin; where time is the ' +
+  'requirement use elapsedMs/cpuMs and expectTimeWithin from scripts/test-support/workBounds.ts ' +
+  'inside it.runIf(TIME_BUDGETS).';
+const wallClockGuards = [
+  // it('name', fn, 20_000) and the same on describe, hooks, it.each(...)(...), it.skipIf(...)(...)
+  {
+    selector: `CallExpression[callee.name=${TEST_FN}] > ${TIMEOUT_ARG}`,
+    message: ownTimeout,
+  },
+  {
+    selector: `CallExpression[callee.object.name=${TEST_FN}] > ${TIMEOUT_ARG}`,
+    message: ownTimeout,
+  },
+  {
+    selector: `CallExpression[callee.type='CallExpression'] > ${TIMEOUT_ARG}`,
+    message: ownTimeout,
+  },
+  // it('name', { timeout }, fn), vi.setConfig({ testTimeout }), spawnSync(..., { timeout: 10_000 })
+  {
+    selector: `CallExpression[callee.name=${TEST_FN}] > ObjectExpression > Property[key.name=/^(timeout|retry)$/]`,
+    message: ownTimeout,
+  },
+  {
+    selector: `CallExpression[callee.type='CallExpression'] > ObjectExpression > Property[key.name=/^(timeout|retry)$/]`,
+    message: ownTimeout,
+  },
+  {
+    selector: 'Property[key.name=/^(testTimeout|hookTimeout|teardownTimeout)$/]',
+    message: ownTimeout,
+  },
+  {
+    selector: "Property[key.name='timeout'][value.type='Literal']",
+    message:
+      'A child-process timeout in a test is a hang guard, not a budget: use CHILD_HANG_GUARD_MS ' +
+      'from scripts/test-support/workBounds.ts.',
+  },
+  // performance.now() - started, Date.now() - t0, and the reverse
+  {
+    selector:
+      "BinaryExpression[operator='-'] > CallExpression[callee.property.name=/^(now|hrtime|bigint|cpuUsage)$/]",
+    message: ownClock,
+  },
+  {
+    selector:
+      "CallExpression[callee.object.name='process'][callee.property.name=/^(hrtime|cpuUsage|uptime)$/]",
+    message: ownClock,
+  },
+  {
+    selector: "MemberExpression[object.object.name='process'][object.property.name='hrtime']",
+    message: ownClock,
+  },
+];
+const clockCalls = [
+  {
+    selector:
+      "CallExpression[callee.object.name=/^(performance|Date)$/][callee.property.name='now']",
+    message: ownClock,
+  },
+];
+
 export default tseslint.config(
   {
     ignores: [
@@ -152,6 +226,17 @@ export default tseslint.config(
       'no-restricted-properties': 'off',
       'no-restricted-imports': 'off',
     },
+  },
+  {
+    // The vitest suite. `src/app` tests may still read a clock to stamp the real-time animators
+    // they drive; nothing may subtract one, and no test anywhere sets its own timeout.
+    files: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
+    rules: { 'no-restricted-syntax': ['error', ...wallClockGuards] },
+  },
+  {
+    files: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
+    ignores: ['src/app/**'],
+    rules: { 'no-restricted-syntax': ['error', ...wallClockGuards, ...clockCalls] },
   },
   {
     // Build-time Node scripts and config files: Node globals, console allowed.
