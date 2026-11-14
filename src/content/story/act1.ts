@@ -615,7 +615,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         adjust: { earth: -2 },
       },
     ],
-    footer: 'Both routes reach the quarry floor.',
+    footer: 'Both routes reach the quarry. Ruon will live with the choice.',
   },
 
   /* ----------------------------------------------------- Branch A: escort */
