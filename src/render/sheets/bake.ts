@@ -16,6 +16,7 @@ import type { BaseClipName, ClipDef, ClipName } from '../../content/assets/clips
 import type { ResolvedPainter } from '../painters/registry';
 import type { AtlasFrame } from './atlasJson';
 import { layoutSheet } from './layout';
+import { cropPixels, type PagePixels } from './pagePixels';
 
 /** A frame is one and a half tiles tall: the head overlaps the tile above. */
 export const FRAME_HEIGHT_TILES = 1.5;
@@ -118,6 +119,12 @@ export function bakeSheet(
     });
   }
 
+  // One readback for the whole sheet, then each pose measured from it (`pagePixels.ts`).
+  const page: PagePixels = {
+    data: ctx.getImageData(0, 0, layout.width, layout.height).data,
+    width: layout.width,
+    height: layout.height,
+  };
   return {
     canvas,
     frames: layout.frames,
@@ -127,7 +134,7 @@ export function bakeSheet(
     anchor: { x: 0.5, y: FOOT_LINE },
     headroom: Math.max(
       0,
-      ...[...layout.frames.values()].map((frame) => measureHeadroom(ctx, frame, pixelsPerTile)),
+      ...[...layout.frames.values()].map((frame) => measureHeadroom(page, frame, pixelsPerTile)),
     ),
     bytes: layout.width * layout.height * 4,
   };
@@ -139,13 +146,12 @@ export function bakeSheet(
  * 0.85 tile above the foot line the anchor stands on.
  */
 function measureHeadroom(
-  ctx: CanvasRenderingContext2D,
+  page: PagePixels,
   frame: AtlasFrame | undefined,
   pixelsPerTile: number,
 ): number {
   if (!frame || frame.w === 0 || frame.h === 0) return 0;
-  const data = ctx.getImageData(frame.x, frame.y, frame.w, frame.h).data;
-  return headroomFromPixels(data, frame.w, frame.h, pixelsPerTile);
+  return headroomFromPixels(cropPixels(page, frame), frame.w, frame.h, pixelsPerTile);
 }
 
 /**
