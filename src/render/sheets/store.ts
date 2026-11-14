@@ -100,6 +100,7 @@ export function atlasHeadroom(
   atlas: AtlasJson,
   image: CanvasImageSource,
   clips: SheetClips = entry.clips,
+  page: PagePixels | null = readPagePixels(image, atlas.width, atlas.height),
 ): number {
   // Each frame is measured from the anchor it stands by: a trimmed clip's own
   // (ADR 0059), or the sheet's.
@@ -108,7 +109,6 @@ export function atlasHeadroom(
     for (const name of clip?.frames ?? []) names.set(name, clip?.anchor?.y ?? entry.anchor.y);
   for (const frames of Object.values(entry.meleeDirections ?? {}))
     for (const name of frames ?? []) names.set(name, entry.anchor.y);
-  const page = readPagePixels(image, atlas.width, atlas.height);
   let envelope = 0;
   for (const [name, anchorY] of names) {
     const frame = atlas.frames.get(name);
@@ -130,11 +130,12 @@ export function atlasFeet(
   atlas: AtlasJson,
   image: CanvasImageSource,
   clips: SheetClips = entry.clips,
+  pixels?: PagePixels | null,
 ): Map<string, FrameFeet> {
   const feet = new Map<string, FrameFeet>();
   let page: PagePixels | null;
   try {
-    page = readPagePixels(image, atlas.width, atlas.height);
+    page = pixels === undefined ? readPagePixels(image, atlas.width, atlas.height) : pixels;
   } catch {
     return feet;
   }
@@ -442,8 +443,19 @@ export class SheetStore {
     const loading = Promise.all([pages, clipsPromise, actionsPromise])
       .then(([pages, fetched, actions]) => {
         const clips: SheetClips = fetched ? { ...entry.clips, ...fetched } : entry.clips;
+        // Each page is read back once for both measures. A page that cannot be read (tainted)
+        // goes to each on its own: the feet fall back to the anchor, the headroom fails the load.
+        const pixels = pages.map((page) => {
+          try {
+            return readPagePixels(page.image, page.atlas.width, page.atlas.height);
+          } catch {
+            return undefined;
+          }
+        });
         const feet = new Map(
-          pages.flatMap((page) => [...atlasFeet(entry, page.atlas, page.image, clips)]),
+          pages.flatMap((page, i) => [
+            ...atlasFeet(entry, page.atlas, page.image, clips, pixels[i]),
+          ]),
         );
         this.loaded.set(key, {
           pages,
@@ -453,7 +465,11 @@ export class SheetStore {
             : clips,
           headroom: Math.min(
             entry.uiHeadroomCap ?? Number.POSITIVE_INFINITY,
-            Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips))),
+            Math.max(
+              ...pages.map((page, i) =>
+                atlasHeadroom(entry, page.atlas, page.image, clips, pixels[i]),
+              ),
+            ),
           ),
           feet,
         });
