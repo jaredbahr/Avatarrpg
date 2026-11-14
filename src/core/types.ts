@@ -1101,6 +1101,17 @@ export type Condition =
       readonly in: readonly ResidentProfile[];
     };
 
+/**
+ * Where a world conversation plays: over the map it belongs to, with the camera keeping a person
+ * (an NpcDef id on that map) or some tiles above the dialogue panel (#628). Presentation only;
+ * nothing in core reads it. A region's own conversations declare it on the node, so a new region
+ * needs no entry in a shared registry (`src/content/story/presentations.ts`).
+ */
+export interface NodePresentation {
+  readonly mapId: string;
+  readonly stage?: { readonly npc: string } | { readonly tiles: readonly Vec2[] };
+}
+
 export interface StoryOption {
   readonly label: string;
   readonly detail: string;
@@ -1155,6 +1166,8 @@ export type StoryNode =
       readonly portrait: string;
       readonly lines: readonly string[];
       readonly next: string;
+      /** Played over its map instead of the dialogue scene (`NodePresentation`). */
+      readonly presentation?: NodePresentation;
       /** First match wins; falls back to `lines` when none do. */
       readonly variants?: readonly DialogueVariant[];
     }
@@ -1164,6 +1177,8 @@ export type StoryNode =
       readonly speaker: string;
       readonly portrait: string;
       readonly prompt: string;
+      /** Played over its map instead of the dialogue scene (`NodePresentation`). */
+      readonly presentation?: NodePresentation;
       readonly options: readonly StoryOption[];
       readonly variants?: readonly DialogueVariant[];
       /** Line under the options. Act-specific colour, so it lives in the data. */
