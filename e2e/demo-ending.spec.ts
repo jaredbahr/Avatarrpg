@@ -76,6 +76,12 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await nextLine(page);
   await nextLine(page);
   await nextLine(page);
+  // The reunion at Mira's table (DLG-07), staged one turn at a time.
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('reunion_run');
+  await expect(line).toContainText('Pella comes down the lane');
+  for (let index = 0; index < 14; index++) await nextLine(page);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('welcome_home_gao');

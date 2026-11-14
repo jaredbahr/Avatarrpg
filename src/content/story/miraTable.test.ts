@@ -95,3 +95,34 @@ describe("Mira's table (DLG-01)", () => {
     expect(tips.next).toBe('pella_asked');
   });
 });
+
+describe('the reunion (DLG-07)', () => {
+  it('is staged between Pella and Bo-shan, and ends on the bowl, not a tally', () => {
+    const victory = { ...game('sura'), flags: { act1_complete: true, ruon_spared: true } };
+    const run = play(victory, 'welcome_home_mira', 0);
+    const turns = run.heard.map((turn) => `${turn.speaker}: ${turn.lines.join(' ')}`);
+    const from = turns.findIndex((turn) => turn.startsWith('Mira’s Table: Pella comes down'));
+    expect(from).toBeGreaterThan(0);
+    expect(turns.slice(from + 1, from + 4)).toEqual([
+      'Bo-shan: I’m all right.',
+      'Pella: You’re shaking.',
+      'Bo-shan: I know. Let me sit down a minute.',
+    ]);
+    expect(turns).toContain('Pella: You said Tuesday.');
+    const kept = turns.indexOf('Pella: She kept making it. In case you came back hungry.');
+    expect(kept).toBeGreaterThan(from);
+    expect(turns[kept + 1]?.startsWith('Gao the Shopkeeper:')).toBe(true);
+    // Mira no longer tells it for Pella.
+    expect(turns[0]).not.toContain('Pella reached');
+  });
+
+  it('keeps Pella’s lost shoe and Hesra’s boot as two different stories', () => {
+    const supper = CONTENT.story.get('welcome_home_supper');
+    const pella = CONTENT.story.get('pella_home');
+    if (supper?.kind !== 'dialogue' || pella?.kind !== 'dialogue') throw new Error('moved');
+    expect(supper.lines.join(' ')).toContain('Hesra finds a boot');
+    expect(supper.lines.join(' ')).not.toContain('shoe');
+    expect(pella.lines.join(' ')).toContain('lost a shoe');
+    expect(pella.lines.join(' ')).not.toContain('boot');
+  });
+});

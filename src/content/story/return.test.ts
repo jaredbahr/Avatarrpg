@@ -135,14 +135,23 @@ describe('the authored walk home', () => {
 
     let card = welcomed;
     const speakers: string[] = [];
-    for (let count = 0; card.screen === 'dialogue' && count < 30; count++) {
+    for (let count = 0; card.screen === 'dialogue' && count < 60; count++) {
       const node = CONTENT.story.get(card.story.nodeId ?? '');
       if (node?.kind === 'dialogue' && !speakers.includes(node.speaker))
         speakers.push(node.speaker);
       card = advanceDialogue(CONTENT, card).state;
     }
-    // Then the narrator: the supper and the boot, and Bo-shan taking the reins.
-    expect(speakers).toEqual(['Elder Mira', 'Gao the Shopkeeper', 'Gate Guard Dorin', 'Ba Dan']);
+    // The reunion at Mira's table (DLG-07), then Gao and Dorin, then the narrator: the
+    // supper and the boot, and Bo-shan taking the reins.
+    expect(speakers).toEqual([
+      'Elder Mira',
+      'Mira’s Table',
+      'Bo-shan',
+      'Pella',
+      'Gao the Shopkeeper',
+      'Gate Guard Dorin',
+      'Ba Dan',
+    ]);
     expect(card.screen).toBe('ended');
     expect(card.story.nodeId).toBe('demo_complete');
 
@@ -187,8 +196,9 @@ describe('the authored walk home', () => {
     );
     expect(line('welcome_home_gao', { ruon_spared: true }, 1)).toContain('beside you');
     expect(line('welcome_home_gao', { ruon_traded: true }, 1)).toContain('Jin has him now');
-    expect(line('welcome_home_mira', { pella_asked: true }, 1)).toContain('Pella reached Bo-shan');
-    expect(line('welcome_home_mira', {}, 1)).toContain('soup');
+    // The reunion is staged now (C-14), so Mira no longer tells it for Pella.
+    for (const flags of [{}, { pella_asked: true }] as GameState['flags'][])
+      expect(line('welcome_home_mira', flags, 1)).toContain('run out of bowls');
   });
 
   it('allows an explicit later liberation without clearing the loss history', () => {
