@@ -20,33 +20,33 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n126["sq01_choice<br/>Overturned sled: Where does Bo-shan’s load go?"]
-  n127["sq01_crew<br/>Overturned sled: You heave the sled back onto its runners and s…"]
-  n128["sq01_families<br/>Overturned sled: You heave the sled back onto its runners and s…"]
-  n129{"sq01_leave<br/>Branch: act1_complete"}
-  n130["sq01_leverage<br/>Overturned sled: You drag the sled into the bracken and pull fe…"]
-  n131["sq01_note<br/>Overturned sled: A note is jammed into the sled’s rail, in big …"]
-  n132["sq01_packing_list<br/>Pella: Wait. Take this. It is his packing list. I wrote it, bec…"]:::entry
-  n133["sq01_pella_list<br/>Pella: I made a new list. Everybody who helped bring Bo-shan ho…"]:::entry
-  n134["sq01_sled<br/>Overturned sled: A delivery sled lies on its side in the ditch.…"]:::entry
-  n135["sq01_sled_again<br/>Overturned sled: The sled waits upright by the road, its note p…"]:::entry
+  n128["sq01_choice<br/>Overturned sled: Where does Bo-shan’s load go?"]
+  n129["sq01_crew<br/>Overturned sled: You heave the sled back onto its runners and s…"]
+  n130["sq01_families<br/>Overturned sled: You heave the sled back onto its runners and s…"]
+  n131{"sq01_leave<br/>Branch: act1_complete"}
+  n132["sq01_leverage<br/>Overturned sled: You drag the sled into the bracken and pull fe…"]
+  n133["sq01_note<br/>Overturned sled: A note is jammed into the sled’s rail, in big …"]
+  n134["sq01_packing_list<br/>Pella: Wait. Take this. It is his packing list. I wrote it, bec…"]:::entry
+  n135["sq01_pella_list<br/>Pella: I made a new list. Everybody who helped bring Bo-shan ho…"]:::entry
+  n136["sq01_sled<br/>Overturned sled: A delivery sled lies on its side in the ditch.…"]:::entry
+  n137["sq01_sled_again<br/>Overturned sled: The sled waits upright by the road, its note p…"]:::entry
   n33["forest_after_explore — exit to world / part 1"]:::external
   n40["forest_return_explore — exit to return / part 1"]:::external
-  n166["village_explore — exit to act1 / part 1"]:::external
-  n168["village_return_explore — exit to return / part 1"]:::external
-  n126 -->|"Send it home to Ba Dan; set: sq01.cabbages=#quot;families#quot;"| n128
-  n126 -->|"Keep some for the trapped crews; set: sq01.cabbages=#quot;crew#quot;"| n127
-  n126 -->|"Hide it all to bargain with; set: sq01.cabbages=#quot;leverage#quot;"| n130
-  n127 -->|"Next"| n129
-  n128 -->|"Next"| n129
-  n129 -->|"act1_complete: truthy (you have act1 complete)"| n40
-  n129 -->|"act1_complete: falsy (you have not act1 complete)"| n33
-  n130 -->|"Next"| n129
-  n131 -->|"Next"| n126
-  n132 -->|"Next"| n166
-  n133 -->|"Next"| n168
-  n134 -->|"Next"| n131
-  n135 -->|"Next"| n129
+  n168["village_explore — exit to act1 / part 1"]:::external
+  n170["village_return_explore — exit to return / part 1"]:::external
+  n128 -->|"Send it home to Ba Dan; set: sq01.cabbages=#quot;families#quot;"| n130
+  n128 -->|"Keep some for the trapped crews; set: sq01.cabbages=#quot;crew#quot;"| n129
+  n128 -->|"Hide it all to bargain with; set: sq01.cabbages=#quot;leverage#quot;"| n132
+  n129 -->|"Next"| n131
+  n130 -->|"Next"| n131
+  n131 -->|"act1_complete: truthy (you have act1 complete)"| n40
+  n131 -->|"act1_complete: falsy (you have not act1 complete)"| n33
+  n132 -->|"Next"| n131
+  n133 -->|"Next"| n128
+  n134 -->|"Next"| n168
+  n135 -->|"Next"| n170
+  n136 -->|"Next"| n133
+  n137 -->|"Next"| n131
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

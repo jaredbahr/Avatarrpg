@@ -194,7 +194,7 @@ The optional scenes stay optional; there is no compulsory roll call.
 | Tenzo     | `cutting_tea`            | Offers to help Kuan feed the freed crews and wash cups; optional cutting rest stop                                  |
 | Nilak     | `riverside_mira`         | Arranges a place and supplies for aftercare, with room for families; optional riverside visit before the rescue     |
 | Sura      | `discover_runoff_marker` | Recognizes grit from fishing work and reads the clue about the settling pit; optional stream marker                 |
-| Bo        | `gate_kinship`           | Uses his crew experience to argue for stopping unsafe work and opening the gate; earthbender approach               |
+| Bo        | `gate_kinship`           | Uses his crew experience to argue for stopping unsafe work and opening the gate; the gate talk                      |
 | Lin Mei   | `forest_dema`            | Proposes comparing the banks to locate incoming runoff; optional road-keeper conversation                           |
 | Nima      | `discover_duck_nest`     | Spots why the birds moved uphill and gives them room; optional woodland path                                        |
 | Jinu      | `dorin_directions`       | Applies courier route knowledge and arranges for Dorin to receive anyone sent home; optional departure conversation |
@@ -204,16 +204,16 @@ The optional scenes stay optional; there is no compulsory roll call.
 Further voices cover the road, the defeats and the quarry floor. Where a node
 has two, the first present hero speaks.
 
-| Node                | Voices in priority order | Contribution and when to encounter it                                                  |
-| ------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
-| `defeat_forest`     | Tenzo                    | Mourns the stolen food, then sets off after the tracks; forest road loss               |
-| `forest_dema_again` | Sura                     | A fishing boast, then the runoff is still owed an answer; any return visit to Lanfen   |
-| `defeat_gate`       | Riko, Kaya               | Kept the retreat together / was first back up; the gate is open on return; gate loss   |
-| `gate_kinship`      | Bo, Lin Mei              | Lin Mei reads the fresh falls on the east face when Bo is absent; earthbender approach |
-| `defeat_ambush`     | Nilak, Jinu              | Tends to Ruon after he carries the party clear / misremembers a route; cutting loss    |
-| `cutting_tea_again` | Nima                     | Finds the cloth and dries the cups, turning up the blue handle; return to Kuan         |
-| `quarry_assessment` | Wen, Bo                  | Both name Grumbler; Bo keeps the ramp clear and counts heads; before the driller       |
-| `defeat_boss`       | Wen                      | Owns the plan that missed the blocked ramp; Mira arrives; boss loss                    |
+| Node                | Voices in priority order | Contribution and when to encounter it                                                                                      |
+| ------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `defeat_forest`     | Tenzo                    | Mourns the stolen food, then sets off after the tracks; forest road loss                                                   |
+| `forest_dema_again` | Sura                     | A fishing boast, then the runoff is still owed an answer; any return visit to Lanfen                                       |
+| `defeat_gate`       | Riko, Kaya               | Kept the retreat together / was first back up; the gate is open on return; gate loss                                       |
+| `gate_kinship`      | Bo, Lin Mei              | Lin Mei reads the fresh falls on the east face when Bo is absent; the gate talk, which any party can also earn on the road |
+| `defeat_ambush`     | Nilak, Jinu              | Tends to Ruon after he carries the party clear / misremembers a route; cutting loss                                        |
+| `cutting_tea_again` | Nima                     | Finds the cloth and dries the cups, turning up the blue handle; return to Kuan                                             |
+| `quarry_assessment` | Wen, Bo                  | Both name Grumbler; Bo keeps the ramp clear and counts heads; before the driller                                           |
+| `defeat_boss`       | Wen                      | Owns the plan that missed the blocked ramp; Mira arrives; boss loss                                                        |
 
 All are available during Act 1 without advanced disciplines or extra XP. The
 content tests cover solo availability, unconscious/absent fallbacks and pairs;

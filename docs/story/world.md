@@ -32,26 +32,26 @@ flowchart TD
   n35["forest_dema_again<br/>Lanfen: She has brought the ducklings over. I suppose the washi…"]:::entry
   n36["forest_ducks_seen<br/>Set flags"]
   n37["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
-  n46["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
-  n51["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
+  n47["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
+  n53["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
   n8["battle_ambush — exit to act1 / part 1"]:::external
   n9["battle_forest_road — exit to act1 / part 1"]:::external
-  n48["gate_parley — exit to act1 / part 1"]:::external
-  n86["quarry_descent — exit to act1 / part 1"]:::external
-  n13 -->|"Legacy/audit exit (live map exits differ)"| n86
+  n49["gate_parley — exit to act1 / part 1"]:::external
+  n88["quarry_descent — exit to act1 / part 1"]:::external
+  n13 -->|"Legacy/audit exit (live map exits differ)"| n88
   n14 -->|"Next"| n15
   n15 -->|"Next"| n13
   n16 -->|"Legacy/audit exit (live map exits differ)"| n8
   n18 -->|"Next"| n20
   n19 -->|"Next"| n13
   n20 -->|"set: world.tea_shared=true"| n13
-  n33 -->|"Legacy/audit exit (live map exits differ)"| n48
+  n33 -->|"Legacy/audit exit (live map exits differ)"| n49
   n34 -->|"Next"| n36
   n35 -->|"Next"| n37
   n36 -->|"set: world.ducks_seen=true"| n37
   n37 -->|"Legacy/audit exit (live map exits differ)"| n9
-  n46 -->|"Legacy/audit exit (live map exits differ)"| n16
-  n51 -->|"Legacy/audit exit (live map exits differ)"| n13
+  n47 -->|"Legacy/audit exit (live map exits differ)"| n16
+  n53 -->|"Legacy/audit exit (live map exits differ)"| n13
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
