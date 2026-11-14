@@ -32,7 +32,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
       const before = await page.evaluate(() => {
         const app = window.fnt!.app;
+        // The caption keeps its authored text and placement; only its lifetime
+        // is held. On a runner with no GPU one software-WebGL frame takes about
+        // three seconds (e2e/budget.ts), so the few checks before the geometry
+        // sample outlast the caption's few seconds of reading time.
+        const show = app.toasts.show.bind(app.toasts);
+        app.toasts.show = (text, kind, _ms, onDismiss) => show(text, kind, 600_000, onDismiss);
         const events = app.dispatch({ type: 'enterNode', nodeId: 'battle_forest_road' });
+        app.toasts.show = show;
         const battle = app.state?.battle;
         const started = events.find((event) => event.type === 'battleStarted');
         const intro = events.find((event) => event.type === 'message');
