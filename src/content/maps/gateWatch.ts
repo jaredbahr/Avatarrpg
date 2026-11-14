@@ -8,7 +8,7 @@
  * their combat art), so they leave the wall as the fight starts, or once Ruon
  * has the gate opened for a party that talked him round.
  *
- * The deserter the parley names "beside the oil barrels" stands at the east
+ * Hotaro, the guard the parley shows "by the oil barrels", stands at the east
  * stack, (13,1), from the same moment and for the same stretch: he is in the
  * gate fight's roster too (or steps back there for a firebender's bluff, which
  * also starts that fight). He faces down and west toward the party on (8,5).
@@ -49,7 +49,7 @@ export const GATE_WATCHERS: readonly NpcDef[] = [
   },
   {
     id: 'gate_watch_deserter',
-    name: 'Fire Nation deserter',
+    name: 'Guard by the oil barrels',
     pos: { x: 13, y: 1 },
     sprite: 'unit.enemy.deserter',
     faces: 'southWest',
