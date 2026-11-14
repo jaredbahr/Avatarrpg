@@ -9,7 +9,7 @@
  * is bigger than the viewport.
  */
 
-import { RIVERSIDE_ID } from '../../content/maps/riverside';
+import { RIVERSIDE_ID } from '../../content/maps/riversideIds';
 import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
 import { evaluate } from '../../core/story/conditions';
 import {

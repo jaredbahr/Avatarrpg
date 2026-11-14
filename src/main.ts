@@ -12,16 +12,17 @@ import './styles/interludes.css';
 import './styles/objective-pointer.css';
 import './styles/a11y.css';
 
-import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
+import { STORY_ENTRY } from './content/entry';
 import { App } from './app/App';
 import { bakeReview } from './render/sheets/review';
 import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
-import { loadTopDownPresentations, withTopDownMaps } from './content/topdown';
+import { START_REGION_ID, regionOfMap } from './content/regions';
+import { RegionStore } from './app/regions';
+import { AUTOSAVE_ID, loadFromSlot } from './app/storage/localSaves';
 import { loadTopdownVfx } from './content/assets/topdownVfx';
 import { useTopDownStyle } from './content/assets/manifest';
 import { assetUrl } from './render/spriteCache';
-import type { ContentIndex } from './core/types';
 
 /** Gallery checks await decoded pixels, not just successful HTTP requests. */
 async function loadedFxCels() {
@@ -38,40 +39,52 @@ if (!root) throw new Error('Missing #app mount point in index.html');
  * production the validation module is omitted entirely.
  */
 if (import.meta.env.DEV) {
-  void import('./content/schemas').then(({ validateContent }) => {
-    const problems = validateContent(CONTENT_BUNDLE);
-    if (problems.length > 0) {
-      console.error(`Content validation found ${problems.length} problem(s):`);
-      for (const problem of problems) console.error(`  - ${problem}`);
-    }
-  });
+  void Promise.all([import('./content/schemas'), import('./content')]).then(
+    ([{ validateContent }, { CONTENT_BUNDLE }]) => {
+      const problems = validateContent(CONTENT_BUNDLE);
+      if (problems.length > 0) {
+        console.error(`Content validation found ${problems.length} problem(s):`);
+        for (const problem of problems) console.error(`  - ${problem}`);
+      }
+    },
+  );
 }
 
 // The game draws in the top-down style (ADR 0104); `?style=` is ignored, so old links still work.
 useTopDownStyle();
 void loadTopdownVfx(import.meta.env.BASE_URL);
 
-function boot(content: ContentIndex): void {
-  if (!root) return;
-  const app = new App(content, root, STORY_ENTRY);
-  app.start();
-  window.fnt = { app, bakeReview, loadedFxCels };
-}
-
-// The top-down scenes are assets (ADR 0104), fetched before the app boots. Without them the maps
-// draw their bare boards: the rules never read a scene's art.
-loadTopDownPresentations(async (url) => {
+// Regions load as the party needs them (ADR 0111 §2). The top-down scenes are assets (ADR 0104),
+// fetched with their region; without them the maps draw their bare boards.
+const regions = new RegionStore(async (url) => {
   const response = await fetch(assetUrl(url));
   if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
   return (await response.json()) as unknown;
-})
-  .then(
-    (presentations) => withTopDownMaps(CONTENT, presentations),
-    (error: unknown) => {
-      console.error('The top-down scenes did not load; drawing the bare boards.', error);
-      return CONTENT;
-    },
-  )
+});
+
+/** The region the title's Continue resumes in, or the start region when there is no autosave. */
+function bootRegion(): string {
+  const autosave = loadFromSlot(AUTOSAVE_ID);
+  const mapId = autosave.ok ? autosave.save.state.location.mapId : null;
+  return (mapId && regionOfMap(mapId)?.id) || START_REGION_ID;
+}
+
+function boot(): void {
+  if (!root) return;
+  const app = new App(regions.content, root, STORY_ENTRY, regions);
+  app.start();
+  window.fnt = { app, bakeReview, loadedFxCels };
+  // New game and the riverside preview start in the start region; fetch it while the title shows.
+  void regions.ensure(START_REGION_ID).catch((error: unknown) => {
+    console.error('The start region did not load.', error);
+  });
+}
+
+// Boot waits for the autosave's region, so Continue never waits; it boots without it if the fetch
+// fails (offline before a first visit), and the region is fetched again when it is needed.
+regions
+  .ensure(bootRegion())
+  .catch((error: unknown) => console.error('The first region did not load.', error))
   .then(boot);
 
 // Handy from the browser console, and how the e2e suite drives setup quickly.

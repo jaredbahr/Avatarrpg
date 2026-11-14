@@ -1,6 +1,6 @@
 import { createGame } from '../../core/state/createGame';
 import type { ContentIndex, GameState } from '../../core/types';
-import { RIVERSIDE_ENTRY } from '../../content/maps/riverside';
+import { RIVERSIDE_ENTRY } from '../../content/maps/riversideIds';
 
 /**
  * The title screen's riverside preview: a fresh game at the river (ADR 0047

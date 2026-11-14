@@ -1,8 +1,7 @@
 # ADR 0111: Regions as the unit of content, loading and budgets
 
-**Status:** §1 (the region manifest) accepted, 2026-11-14. §2 (per-region loading), §3 (caching and
-offline) and §4 (budgets) are proposed and land in their own PRs; §4 changes budget rules and waits
-for the owner. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
+**Status:** §1 (the region manifest) and §2 (per-region loading) accepted, 2026-11-14. §3's
+current behaviour is unchanged; its proposal for later regions and §4 (budgets) wait for the owner. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
 (top-down scenes as assets), ADR 0108 (area music) and ADR 0109 (the JS budget). Answers "Scale and
 saves" in `docs/pipeline-proof-plan.md`.
 
@@ -62,13 +61,60 @@ authored: the next region gets its own story files from its first beat.
 (605,710 bytes each); the progression, golden-save, continuity and determinism tests pass
 unchanged.
 
-### 2. Per-region loading (proposed)
+### 2. Per-region loading
 
-To land in its own PR; this section is filled in there.
+**Chunks.** Each region's `manifest.ts` has `load: () => import('./content')`, so the bundler puts
+the region's data in a chunk of its own, named `assets/region-<folder>-<hash>.js`
+(`chunkFileNames` in `vite.config.ts`). The shared half of the index (`src/content/core.ts`) and the
+manifests stay in the boot chunk. `src/content/index.ts`, the full index, is for tests, scripts, the
+balance report and the dev-only validator; `src/app/regions.test.ts` fails if any shipped module in
+`src/app`, `src/render` or `src/main.ts` imports it, a region list, or anything a region's
+`content.ts` imports.
 
-### 3. Caching and offline (proposed)
+**The store.** `RegionStore` (`src/app/regions.ts`) owns the one `ContentIndex` the app hands every
+rules call: the core fields, plus region maps it fills **in place** as regions load. A region loads
+with its neighbours (data and top-down scenes, in parallel); a region is ready when it and every
+neighbour are in. Loaded regions are never removed. After each load the region maps are refilled in
+`REGIONS` order, so any set of loaded regions iterates as the full index does with the others left
+out: a first-match read gives the full index's answer whenever that answer is in a loaded region,
+which §1's neighbour rule guarantees for everything the current region can name. A failed fetch is
+forgotten so the next request tries again; a failed scene draws its region's bare boards, as a failed
+scene did at boot before.
 
-To land with §2.
+**When regions load.**
+
+| Moment                             | What waits                                                                                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Boot                               | The autosave's region (the start region when there is none), before `App`                                                                   |
+| Title showing                      | The start region is fetched in the background, for New game and the preview                                                                 |
+| New game, riverside preview        | The start region, if not yet in                                                                                                             |
+| Load a save (slot, file, Continue) | The save's region (and its battle board's), before reconciling it                                                                           |
+| Every command                      | `App.dispatch` runs nothing until the party's region is ready; after it, the party's (possibly new) region and its neighbours start loading |
+
+With everything ready each of these is synchronous, as before; otherwise the app shows "Loading the
+next area…" and runs the action when the region is in. `src/core/` is unchanged and stays pure: it
+reads what it is handed.
+
+**Determinism.** The rules see the same records for the same command, so the same seed and commands
+give the same events. Tests, replays, the balance report and the golden saves use the full index.
+
+**Measured (demo):** the boot chunk went from 369.9 to 349.9 KB gz (`check-bundle-size.mjs`); the
+`ba_dan_valley` chunk is 21.9 KB gz; total JS 384.7 KB gz (was 382.8: the split costs about 2 KB of
+gzip context). Still in the boot chunk and region-specific, for a follow-up: story presentations and
+interludes, discovery markers, followers, journal notes, Ba Dan's routines and canal bridge
+(about 4 KB gz), which `src/app` imports by name.
+
+### 3. Caching and offline
+
+**Today nothing changes:** the demo is one region and it is the start region, so its chunk
+(`**/*.js`) and its scenes and boards (`art/topdown/**`) stay precached and the game plays offline
+after a first visit. Music still streams (ADR 0108).
+
+**Proposed for the next region** (owner decision, below): the start region is precached; every other
+region's chunk (`assets/region-<folder>-*`) and art are left out of the precache
+(`scripts/precache.mjs`) and cached by the service worker on first fetch (workbox `CacheFirst`), so
+a tablet plays offline anywhere it has already been. The alternative is to precache every region:
+simpler and always offline, but the install grows with the saga.
 
 ### 4. Budgets (proposed, owner decision)
 

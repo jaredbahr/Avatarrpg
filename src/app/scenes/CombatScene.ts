@@ -64,7 +64,6 @@ import {
   weatherChipShortText,
   weatherChipText,
 } from '../../core/rules/obscurementPresentation';
-import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
@@ -3103,7 +3102,7 @@ export class CombatScene implements Scene {
 
     // Resolved here, not in the renderer: the renderer never reads content.
     const props: RenderProp[] = battle.props.map((p) => {
-      const def = CONTENT.props.get(p.propId);
+      const def = this.app.content.props.get(p.propId);
       return {
         id: p.id,
         kind: p.propId,
